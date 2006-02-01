@@ -1,0 +1,1 @@
+SUBDIRS = this test Catalog

@@ -1,0 +1,474 @@
+
+<wsdl:definitions
+    targetNamespace="http://schemas.microsoft.com/wmx/2005/06"
+    xmlns:tns="http://schemas.microsoft.com/wmx/2005/06"
+    xmlns:wsman="http://schemas.xmlsoap.org/ws/2005/06/management"
+    xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wxf="http://schemas.xmlsoap.org/ws/2004/09/transfer"
+    xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+    xmlns:wse="http://schemas.xmlsoap.org/ws/2004/08/eventing"
+    >
+
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/wmx/2005/06">
+      <xs:import namespace="http://schemas.xmlsoap.org/ws/2005/06/management"/>
+      <xs:import namespace="http://schemas.xmlsoap.org/ws/2004/09/transfer"/>
+      <xs:import namespace="http://schemas.xmlsoap.org/ws/2004/09/enumeration"/>
+      <xs:import namespace="http://schemas.xmlsoap.org/ws/2004/08/eventing"/>
+
+      <!-- Acts as a placeholder for any real resource type that can be carried over WS-Management -->
+
+      <xs:complexType name="SampleResourceType" >
+        <xs:sequence>
+           <xs:element name="PropertyA" type="xs:string"/>
+           <xs:element name="PropertyB" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+
+      <xs:complexType name="OptionalSampleXml" >
+        <xs:sequence>
+          <xs:any minOccurs="0" namespace="##other" processContents="lax" />
+        </xs:sequence>
+      </xs:complexType>
+
+      <!-- The next two act as placeholders for any real resources or events that can be carried over WS-Management -->
+
+      <xs:element name="SampleResource" type="tns:SampleResourceType"/>
+      <xs:element name="SampleEvent" type="tns:SampleResourceType"/>
+    </xs:schema>
+
+  </wsdl:types>
+
+  <!-- Generic -->
+
+  <wsdl:message name="ResourceMessage">
+    <wsdl:part name="Body" type="tns:SampleResource"/>
+  </wsdl:message>
+
+  <wsdl:message name="EventMessage">
+    <wsdl:part name="Body" type="tns:SampleResource"/>
+  </wsdl:message>
+
+  <!-- WS-Management headers -->
+
+  <wsdl:message name="ResourceURIMessage">
+     <wsdl:part name="Header" element="wsman:ResourceURI"/>
+  </wsdl:message>
+
+  <wsdl:message name="SelectorSetMessage">
+     <wsdl:part name="Header"  element="wsman:SelectorSet"/>
+  </wsdl:message>
+
+  <wsdl:message name="OptionSetMessage">
+     <wsdl:part name="Header" element="wsman:OptionSet"/>
+  </wsdl:message>
+
+  <wsdl:message name="OperationTimeoutMessage">
+     <wsdl:part name="Header" element="wsman:OperationTimeout"/>
+  </wsdl:message>
+
+  <wsdl:message name="MaxEnvelopeSizeMessage">
+     <wsdl:part name="Header" element="wsman:MaxEnvelopeSize"/>
+  </wsdl:message>
+
+  <wsdl:message name="LocaleMessage">
+     <wsdl:part name="Header" element="wsman:Locale"/>
+  </wsdl:message>
+
+
+  <!-- WS-Transfer -->
+
+  <wsdl:message name="GetMessage"/>
+
+  <wsdl:message name="GetResponseMessage">
+     <wsdl:part name="Body" element="tns:SampleResource"/>
+  </wsdl:message>
+
+  <wsdl:message name="PutMessage">
+     <wsdl:part name="Body" element="tns:SampleResource"/>
+  </wsdl:message>
+
+  <wsdl:message name="PutResponseMessage">
+     <wsdl:part name="Body" element="tns:SampleResource"/>
+  </wsdl:message>
+
+  <wsdl:message name="CreateMessage">
+     <wsdl:part name="Body" element="tns:SampleResource"/>
+  </wsdl:message>
+
+  <wsdl:message name="CreateResponseMessage">
+    <wsdl:part name="Body" element="wxf:ResourceCreated"/>
+  </wsdl:message>
+
+  <wsdl:message name="DeleteMessage"/>
+  <wsdl:message name="DeleteResponseMessage"/>
+
+
+  <!-- WS-Management Rename -->
+
+  <wsdl:message name="RenameMessage">
+    <wsdl:part name="Body" element="wsman:Rename"/>
+  </wsdl:message>
+
+  <wsdl:message name="RenameResponseMessage">
+     <wsdl:part name="Body" element="wsman:RenamedTo"/>
+  </wsdl:message>
+
+
+  <!-- WS-Enumeration -->
+
+  <wsdl:message name="EnumerateMessage">
+    <wsdl:part name="Body" element="wsen:Enumerate" />
+  </wsdl:message>
+
+  <wsdl:message name="EnumerateResponseMessage">
+    <wsdl:part name="Body" element="wsen:EnumerateResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="PullMessage">
+    <wsdl:part name="Body" element="wsen:Pull" />
+  </wsdl:message>
+
+  <wsdl:message name="PullResponseMessage">
+    <wsdl:part name="Body" element="wsen:PullResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="ReleaseMessage">
+    <wsdl:part name="Body" element="wsen:Release" />
+  </wsdl:message>
+
+  <wsdl:message name="ReleaseResponseMessage" />
+
+  <!-- WS-Eventing -->
+
+  <wsdl:message name="SubscribeMsg" >
+    <wsdl:part name="body" element="wse:Subscribe" />
+  </wsdl:message>
+
+  <wsdl:message name="SubscribeResponseMsg" >
+    <wsdl:part name="body" element="wse:SubscribeResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="RenewMsg" >
+    <wsdl:part name="body" element="wse:Renew" />
+  </wsdl:message>
+
+  <wsdl:message name="RenewResponseMsg" >
+    <wsdl:part name="body" element="wse:RenewResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="UnsubscribeMsg">
+    <wsdl:part name="body" element="wse:Unsubscribe" />
+  </wsdl:message>
+
+  <wsdl:message name="UnsubscribeResponseMsg"/>
+
+  <wsdl:message name="SubscriptionEnd" >
+    <wsdl:part name="body" element="wse:SubscriptionEnd" />
+  </wsdl:message>
+
+
+  <!-- Typical WS-Management ports -->
+
+  <wsdl:portType name="ResourceAccess">
+    <wsdl:operation name="Get">
+      <wsdl:input wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Get" message="tns:GetMessage"/>
+      <wsdl:output wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse" message="tns:GetResponseMessage" />
+    </wsdl:operation>
+
+    <wsdl:operation name="Put">
+      <wsdl:input wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Put" message="tns:PutMessage"/>
+      <wsdl:output wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/PutResponse" message="tns:PutResponseMessage" />
+    </wsdl:operation>
+
+    <wsdl:operation name="Create">
+      <wsdl:input wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Create" message="tns:CreateMessage"/>
+      <wsdl:output wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/CreateResponse" message="tns:CreateResponseMessage" />
+    </wsdl:operation>
+
+    <wsdl:operation name="Delete">
+      <wsdl:input wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete" message="tns:DeleteMessage"/>
+      <wsdl:output wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/transfer/DeleteResponse" message="tns:DeleteResponseMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="ResourceEnumeration">
+    <wsdl:operation name="EnumerateOp">
+      <wsdl:input message="tns:EnumerateMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"/>
+      <wsdl:output message="tns:EnumerateResponseMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerateResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="PullOp">
+      <wsdl:input message="tns:PullMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull"/>
+      <wsdl:output message="tns:PullResponseMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="ReleaseOp">
+      <wsdl:input message="tns:ReleaseMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Release"/>
+      <wsdl:output message="tns:ReleaseResponseMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReleaseResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="EventSource" wse:EventSource="true">
+    <wsdl:operation name="SubscribeOp">
+      <wsdl:input message="tns:SubscribeMsg"  wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"/>
+      <wsdl:output message="tns:SubscribeResponseMsg"  wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscribeResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="RenewOp">
+      <wsdl:input message="tns:RenewMsg"  wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/Renew"/>
+      <wsdl:output message="tns:RenewResponseMsg"  wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/RenewResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="UnsubscribeOp">
+      <wsdl:input message="tns:UnsubscribeMsg" wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/Unsubscribe"/>
+      <wsdl:output message="tns:UnsubscribeResponseMsg" wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/UnsubscribeResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="SubscriptionEndOp" >
+      <wsdl:output message="tns:SubscriptionEnd" wsa:Action="http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscriptionEnd"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="SampleEventOp" >
+      <wsdl:output message="tns:EventMessage" wsa:Action="http://schemas.xmlsoap.org/ws/2005/06/wsman/sampleEvent"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+
+  <!--- Transfer binding -->
+
+  <wsdl:binding name="WsManResourceBinding" type="tns:ResourceAccess">
+    <wsoap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+    <wsdl:operation name="Get">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/transfer/Get" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+
+    <wsdl:operation name="Delete">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="Put">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/transfer/Put" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+
+    <wsdl:operation name="Create">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/transfer/Create" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="WsManResourceEnumerationBinding" type="tns:ResourceEnumeration">
+    <wsoap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+
+    <wsdl:operation name="EnumerateOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="PullOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ReleaseOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/09/enumeration/Release" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="WsManEventBinding" type="tns:EventSource">
+    <wsoap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+
+    <wsdl:operation name="SubscribeOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe" />
+      <wsdl:input>
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UnsubscribeOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/08/eventing/Unsubscribe" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RenewOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/08/eventing/Renew" />
+      <wsdl:input>
+        <wsoap12:header message="tns:ResourceURIMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:MaxEnvelopeSizeMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OperationTimeoutMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:LocaleMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:SelectorSetMessage" part="Header" use="literal" />
+        <wsoap12:header message="tns:OptionSetMessage" part="Header" use="literal" />
+        <wsoap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="SubscriptionEndOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscriptionEnd" />
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="SampleEventOp">
+      <wsoap12:operation soapAction="http://schemas.xmlsoap.org/ws/2005/06/wsman/sampleEvent" />
+      <wsdl:output>
+        <wsoap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+  </wsdl:binding>
+
+
+  <wsdl:service name="WsManService">
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Simple sample to demonstrate use of SOAP Headers</wsdl:documentation>
+
+    <wsdl:port name="ResourceAccess" binding="tns:WsManResourceBinding">
+      <wsoap12:address location="http://172.30.173.30/wsman" />
+      <wsa:EndpointReference>
+        <wsa:Address>http://172.30.173.30/wsman</wsa:Address>
+        <wsa:ReferenceParameters>
+           <wsman:ResourceURI>wsman:acme.com/2005/06/resource/example</wsman:ResourceURI>
+           <wsman:SelectorSet>
+              <wsman:Selector Name="Key">InstanceXXX</wsman:Selector>
+           </wsman:SelectorSet>
+        </wsa:ReferenceParameters>
+      </wsa:EndpointReference>
+    </wsdl:port>
+
+    <wsdl:port name="ResourceEnumeration" binding="tns:WsManResourceEnumerationBinding">
+      <wsoap12:address location="http://172.30.173.30/wsman" />
+      <wsa:EndpointReference>
+        <wsa:Address>http://172.30.173.30/wsman</wsa:Address>
+        <wsa:ReferenceParameters>
+           <wsman:ResourceURI>wsman:acme.com/2005/06/resource/example</wsman:ResourceURI>
+        </wsa:ReferenceParameters>
+      </wsa:EndpointReference>
+    </wsdl:port>
+
+    <wsdl:port name="EventSource" binding="tns:WsManEventBinding">
+      <wsoap12:address location="http://172.30.173.30/wsman" />
+      <wsa:EndpointReference>
+        <wsa:Address>http://172.30.173.30/wsman</wsa:Address>
+        <wsa:ReferenceParameters>
+           <wsman:ResourceURI>wsman:acme.com/2005/06/resource/eventlog</wsman:ResourceURI>
+        </wsa:ReferenceParameters>
+      </wsa:EndpointReference>
+    </wsdl:port>
+
+  </wsdl:service>
+
+
+</wsdl:definitions>
+
+
+
+

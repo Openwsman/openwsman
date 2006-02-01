@@ -1,0 +1,110 @@
+
+How to run openwsman from CVS?
+===============================
+
+After checking out the project from CVS run ./autoconfiscate in the TOP directory and 
+follow that by running ./configure <options>.
+Most likely you will need to install some of the packages, depending on the distribution
+you are running.
+
+After all packages are installed, compile everything and install. The server can run as
+a daemon, which would require root access; But it can be run in the foreground with debugging
+messages printed to stdout as well. This the help output when you run:
+
+% /usr/local/sbin/wsmand  --help
+Usage:
+  wsmand [OPTION...] WS-Management Server
+
+Help Options:
+  -?, --help                         Show help options
+
+Application Options:
+  -c, --ssl-cert-file=<filename>     SSL certificate file
+  -k, --ssl-key-file=<filename>      SSL key file
+  -p, --port=<port>                  Server Port
+  -l, --ssl-port=<port>              SSL Port
+  -D, --daemon                       Run as daemon
+  -n, --no-plugins                   Do not load any plugins
+  -d, --debug=1-6                    Set the verbosity of debugging output.
+  -s, --syslog=0-6                   Set the verbosity of syslog output.
+
+
+
+Some options are still not implemented. For testing what you need is there however.
+To start the server, run:
+
+% /usr/local/sbin/wsmand  -p 8889 -d 6
+
+
+8889 would be the port and 6 is the debug level which shows everything. If all went ok, you
+should see all debug message on the screen and tha last message would be:
+
+..... Waiting for requests...
+
+
+On the client side, which has the following options:
+
+% /usr/local/bin/wsman --help-all
+Usage:
+  wsman [OPTION...] WS-Management Client
+
+Help Options:
+  -?, --help                     Show help options
+  --help-all                     Show all help options
+  --help-actions                 Supported Actions
+
+Actions
+  --get=<Resource URI>           Transfer Get
+  --put=<Resource URI>           Transfer Put
+  --enumerate=<Resource URI>     Enumeration
+
+Application Options:
+  -C, --cafile=<filename>        Certificate file
+  -u, --username=<username>      User name
+  -p, --password=<password>      Password
+  -h, --hostname=<hostname>      Host name
+  -P, --port=<port>              Port
+  -k, --prop=<key=val>           Properties with key value pairs
+
+
+
+you can connect to the server with something like that:
+
+
+wsman --get  wsman:system/2005/06/this  -h <hostname> --port 8889 -u wsman --password secret
+
+
+User and password are both hardcoded in the server right now. User is "wsman" and password is "secret".
+
+The above command should have the following result:
+
+
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
+     xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing"
+     xmlns:n1="http://schemas.xmlsoap.org/ws/2005/06/management/this">
+    <s:Header>
+        <a:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:To>
+        <a:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse</a:Action>
+        <a:RelatesTo>uuid:8d5c39c4-53c4-40ea-add7-1464823e2cac</a:RelatesTo>
+        <a:MessageID>uuid:9378c6be-9062-4a70-810f-a40ecf889fcf</a:MessageID>
+    </s:Header>
+    <s:Body>
+        <n1:This>
+            <n1:Vendor>openwsman</n1:Vendor>
+            <n1:Version>0.01</n1:Version>
+        </n1:This>
+    </s:Body>
+</s:Envelope>
+
+
+Thats it for now. More plugins with more functionality are in the works.
+
+Please report any bugs to the mailing list.
+
+
+
+
+
+
+
+

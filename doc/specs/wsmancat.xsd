@@ -1,0 +1,133 @@
+<xs:schema
+    targetNamespace="http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
+    xmlns="http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
+    xmlns:tns="http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    >
+
+   <xs:complexType name="RelationshipType">
+     <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="Type" type="xs:QName" use="required"/>
+          <xs:attribute name="Role" type="xs:QName" use="optional"/>
+          <xs:attribute name="Ref" type="xs:anyURI" use="required"/>
+        </xs:extension>
+     </xs:simpleContent>
+   </xs:complexType>
+
+
+   <xs:complexType name="SelectorType">
+     <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="Name" type="xs:token" use="required"/>
+          <xs:attribute name="Type" type="xs:QName" use="optional"/>
+        </xs:extension>
+     </xs:simpleContent>
+   </xs:complexType>
+
+    <xs:complexType name="OptionType">
+        <xs:simpleContent>
+          <xs:extension base="xs:string">
+            <xs:attribute name="Name" type="xs:token" use="required"/>
+          <xs:attribute name="Type" type="xs:QName" use="optional"/>
+          </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+   <xs:complexType name="SelectorSetType">
+      <xs:sequence>
+         <xs:element name="Selector" type="tns:SelectorType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="Name" type="xs:token"/>
+   </xs:complexType>
+
+
+   <xs:complexType name="OptionSetType">
+      <xs:sequence>
+         <xs:element name="Option" type="tns:OptionType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="Name" type="xs:token"/>
+   </xs:complexType>
+
+
+   <xs:complexType name="RelationshipListType">
+      <xs:sequence>
+         <xs:element name="Relationship" type="tns:RelationshipType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="KeywordListType">
+      <xs:sequence>
+         <xs:element name="Keyword" type="xs:QName" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="SimpleRefType">
+     <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="Name" type="xs:token" use="required"/>
+        </xs:extension>
+     </xs:simpleContent>
+   </xs:complexType>
+
+   <xs:complexType name="SchemaRefType">
+     <xs:simpleContent>
+        <xs:extension base="xs:QName">
+          <xs:attribute name="Location" type="xs:anyURI" use="optional"/>
+        </xs:extension>
+     </xs:simpleContent>
+   </xs:complexType>
+
+
+     <xs:complexType name="OperationType">
+      <xs:sequence>
+         <xs:element name="Action" type="xs:anyURI" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element name="SelectorSetRef" type="tns:SimpleRefType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="OptionSetRef" type="tns:SimpleRefType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="SchemaRef" type="tns:SchemaRefType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="FilterDialect" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="DeliveryMode" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="WsdlPort" type="xs:token" use="optional"/>
+      <xs:attribute name="WsdlRef" type="xs:anyURI" use="optional"/>
+      <xs:attribute name="WsdlLocation" type="xs:anyURI" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="AccessType">
+      <xs:sequence>
+         <xs:element name="Compliance"  type="xs:anyURI" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element name="Operation" type="tns:OperationType" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element name="SelectorSet" type="tns:SelectorSetType" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="OptionSet" type="tns:OptionSetType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+
+   </xs:complexType>
+
+    <xs:complexType name="ResourceType">
+      <xs:sequence>
+        <xs:element name="ResourceURI" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Notes" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Vendor" type="xs:string" minOccurs="0"/>
+        <xs:element name="DisplayName" type="xs:string" minOccurs="0" />
+        <xs:element name="Keywords" type="tns:KeywordListType" minOccurs="0" />
+        <xs:element name="Access" type="tns:AccessType" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element name="Relationships" type="tns:RelationshipListType" minOccurs="0" maxOccurs="1"/>
+        <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="lang" type="xs:language" use="optional"/>
+    </xs:complexType>
+
+    <xs:element name="Resource" type="tns:ResourceType"/>
+    <xs:element name="Catalog">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="Resource" type="tns:ResourceType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+     </xs:complexType>
+    </xs:element>
+</xs:schema>
+
+
+

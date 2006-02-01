@@ -1,0 +1,540 @@
+                                Plugin Framework Design
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Plugin Framework is designed as a bridge to connect WS-MAN with Plugins, it
+manages these plugins, including load and unload. All plugins are in a special
+directory.  Plugin Framework just call wsman_plugins_load during its
+initialization.  When WS-MAN receive the request from client, it analyze this
+request and deliver this request to the appropriate plugin, and get the response
+from this plugin. Then it envelops this response by WS-Management Specification,
+and send this package to client.
+
+
+0. Structure of Plugin Framework
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 --------------          --------------
+                 |  plugin 0  |          |  plugin 1  |         ...
+                 --------------          --------------
+                       |                        |
+              ----------------------------------------------
+                                   |
+                       --------------------------
+                       |   Plugin    Framework  |
+                       --------------------------
+                       --------------------------
+                       |         WS-MAN         |
+                       --------------------------
+
+1. Importand Data Structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+struct __WsDispatchInterfaceInfo
+{
+	unsigned long flags;                // reserved
+	char *notes;                        // plugin information -- note
+	char *vendor;                       // plugin information -- vendor
+	char *displayName;                  // plugin information -- titile
+	char *compliance;                   // compliant protocol
+	char *actionUriBase;                // base part of the action URI string
+	char *wsmanSystemUri;               // WS-MAN system URI, it may be NULL
+	char *wsmanResourceUri;             // WS-MAN resource URI, it can not be 
+                                            // NULL
+	void *extraData;                    // reserved
+	WsDispatchEndPointInfo *endPoints;  // pointer to table of resource.
+};
+typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
+
+This structure describes the plugin and its resource. The endPoints table is an
+array of struct __WsDispatchEndPointInfo ending with a all-zero entry.
+================================================================================
+struct __WsSelector 
+{
+	char *name;                         // selector name, it identifies with
+                                            // mof class keybind.
+	char *value;                        // selector value
+	char *type;                         // selector type,
+	char *description;                  // decription of 
+};
+typedef struct __WsSelector WsSelector;
+
+This structure describes the selectors about endpoint.
+================================================================================
+#define WS_DISP_TYPE_RAW_DOC			0
+#define WS_DISP_TYPE_GET                        1
+#define WS_DISP_TYPE_PUT			2
+#define WS_DISP_TYPE_CREATE			3
+#define WS_DISP_TYPE_DELETE			4
+
+#define WS_DISP_TYPE_ENUMERATE			5
+#define WS_DISP_TYPE_PULL			6
+#define WS_DISP_TYPE_RELEASE			7
+#define WS_DISP_TYPE_UPDATE			8
+#define WS_DISP_TYPE_GETSTATUS			9
+
+#define WS_DISP_TYPE_SOAP_RPC			10
+
+#define WS_DISP_TYPE_COUNT			11
+
+struct __WsDispatchEndPointInfo
+{
+	unsigned long flags;                   // it is one of the above macro
+	char* rqstName;                        // request name, usually it is 
+                                               // NULL 
+                                               // except WS_DISP_TYPE_SOAP_RPC 
+	char* respName;                        // response name, usually it is 
+                                               // NULL except WS_DISP_TYPE_SOAP_RPC
+	char* inAction;                        // an unique input action name
+	char* outAction;                       // an unique output action name
+	struct __XmlSerializerInfo* serializationInfo;  
+                                               // pointer to a table, used to 
+                                               // serialize this endpoint
+	WsProcType serviceEndPoint;            // hook fuction for this endpoint
+	void* data;                            // pointer to the base resource 
+                                               // URI, used as a namespace
+	struct __WsSelector* selectors;        // pointer to a seclector table,
+                                               // It may be NULL.
+};
+typedef struct __WsDispatchEndPointInfo WsDispatchEndPointInfo;
+
+This structure describes all information about endpoint, An endpoint which
+represents a distinct type of management operation or value. The
+serializationInfo table is an array of struct __XmlSerializerInfo, only include
+one element, it include some detail about this endpoint 
+The selectors table is an array of struct __WsSelector  ending with a 
+all-zero entry.
+===============================================================================
+
+struct __XmlSerializerInfo
+{
+	char* name;                       // property of resource                     
+	unsigned short flagsMinCount;     // count can be 1 for single               	
+                                          // elementd; > 1 for fixed size             
+                                          // array; 0 for dynamic array.              
+	unsigned short funcMaxCount;                                                        
+	XmlSerializationProc proc;        // hook fuction for this property,          
+                                          // used to serialize this property.         
+                                          // it can be one of do_serialize_xxx        
+	XML_TYPE_PTR extData;             // if type of this property is a            
+                                          // simple date, it is NULL, or              
+                                          // it is a pointer to a                     
+                                          // __XmlSerializerInfo structure.           
+};
+typedef struct __XmlSerializerInfo XmlSerializerInfo;
+
+This structure deccribes all Serialization type information for resource
+================================================================================
+
+2. useful MACRO
+~~~~~~~~~~~~~~~
+#define SER_UINT8(n, x, y)\
+	{(n), (x), (y), do_serialize_uint8, NULL}
+#define SER_UINT16(n, x, y)\
+	{(n), (x), (y), do_serialize_uint16, NULL}
+#define SER_UINT32(n, x, y)\
+	{(n), (x), (y), do_serialize_uint32, NULL}
+#define SER_BOOL(n, x, y)\
+	{(n), (x), (y), do_serialize_bool, NULL}
+
+#define SER_UINT8_PTR (n, x, y)\
+	{(n), SER_PTR | (x), (y), do_serialize_uint8, NULL}
+#define SER_UINT16_PTR (n, x, y)\
+	{(n), SER_PTR | (x), (y), do_serialize_uint16, NULL}
+#define SER_UINT32_PTR(n, x, y)\
+	{(n), SER_PTR | (x), (y), do_serialize_uint32, NULL}
+#define SER_BOOL_PTR(n, x, y)\
+	{(n), SER_PTR | (x), (y), do_serialize_bool, NULL}
+
+#define SER_STR(n, x, y)\
+	{(n), SER_PTR | (x), (y), do_serialize_string, NULL}
+
+#define SER_STRUCT(n, x, y, t)\
+	{(n), (x), (y), do_serialize_struct, t##_TypeItems}
+	
+#define SER_DYN_ARRAY_PTR(t)\
+	{NULL, SER_PTR, 1, do_serialize_syn_size_array, t##_TypeInfo}
+
+#define SER_DYN_ARRAY(t)\
+	{NULL, 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
+
+
+#define SER_IN_UINT8 (n)\
+	{(n), 1, 1 | SER_IN, do_serialize_uint8, NULL}
+#define SER_IN_UINT16(n)\
+	{(n), 1, 1 | SER_IN, do_serialize_uint16, NULL}
+#define SER_IN_UINT32(n)\
+	{(n), 1, 1 | SER_IN, do_serialize_uint32, NULL}
+#define SER_IN_BOOL(n)\
+	{(n), 1, 1 | SER_IN, do_serialize_bool, NULL}
+
+#define SER_IN_UINT8_PTR (n)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint8, NULL}
+#define SER_IN_UINT16_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint16, NULL}
+#define SER_IN_UINT32_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint32, NULL}
+#define SER_IN_BOOL_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_bool, NULL}
+
+#define SER_IN_STR(n)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_string, NULL}
+
+#define SER_IN_STRUCT_PTR(n, t)\
+	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_Struct, t##_TypeItems}
+
+
+#define SER_OUT_UINT8 (n)\
+	{(n), 1, 1 | SER_OUT, do_serialize_uint8, NULL}
+#define SER_OUT_UINT16 (n)\
+	{(n), 1, 1 | SER_OUT, do_serialize_uint16, NULL}
+#define SER_OUT_UINT32(n)\
+	{(n), 1, 1 | SER_OUT, do_serialize_uint32, NULL}
+#define SER_OUT_BOOL(n)\
+	{(n), 1, 1 | SER_OUT, do_serialize_bool, NULL}
+
+#define SER_OUT_UINT8_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_uint8, NULL}
+#define SER_OUT_UINT16_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_uint16, NULL}
+#define SER_OUT_UINT32_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_uint32, NULL}
+#define SER_OUT_BOOL_PTR(n)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_bool, NULL}
+
+#define SER_OUT_STR(n)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_string, NULL}
+
+#define SER_OUT_STRUCT_PTR(n, t)\
+	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_struct, t##_TypeItems}
+
+
+#define SER_INOUT_UINT8 (n)\
+	{(n), 1, 1 | SER_INOUT, do_serialize_uint8, NULL}
+#define SER_INOUT_UINT16 (n)\
+	{(n), 1, 1 | SER_INOUT, do_serialize_uint16, NULL}
+#define SER_INOUT_UINT32(n)\
+	{(n), 1, 1 | SER_INOUT, do_serialize_uint32, NULL}
+#define SER_INOUT_BOOL(n)\
+	{(n), 1, 1 | SER_INOUT, do_serialize_bool, NULL}
+
+#define SER_INOUT_UINT8_PTR (n)\
+	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint8, NULL}
+#define SER_INOUT_UINT16_PTR (n)\
+	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint16, NULL}
+#define SER_INOUT_UINT32_PTR(n)\
+	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint32, NULL}
+#define SER_INOUT_BOOL_PTR(n)\
+	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_bool, NULL}
+
+#define SER_INOUT_STR(n)\
+	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_string, NULL}
+
+#define SER_INOUT_STRUCT_PTR(n, t)\
+	{(n), SER_PTR | 1, 1 | SER_INOUT, do_serialize_struct, t##_TypeItems}
+
+
+#define SER_RET_VAL_UINT8 (n)\
+	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint8, NULL}
+#define SER_RET_VAL_UINT16 (n)\
+	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint16, NULL}
+#define SER_RET_VAL_UINT32(n)\
+	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint32, NULL}
+#define SER_RET_VAL_BOOL(n)\
+	{(n), 1, 1 | SER_RET_VAL, do_serialize_bool, NULL}
+
+#define SER_RET_VAL_UINT8_PTR (n)\
+	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint8, NULL}
+#define SER_RET_VAL_UINT16_PTR (n)\
+	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint16, NULL}
+#define SER_RET_VAL_UINT32_PTR(n)\
+	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint32, NULL}
+#define SER_RET_VAL_BOOL_PTR(n)\
+	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_bool, NULL}
+
+#define SER_RET_VAL_STR(n)\
+	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_string, NULL}
+
+#define SER_RET_VAL_STRUCT_PTR(n, t)\
+	{(n), SER_PTR | 1, 1 | SER_RET_VAL, do_serialize_struct, t##_TypeItems}
+
+#define SER_TYPE_STRUCT(n, t)\
+struct __XmlSerializerInfo t##_TypeInfo[] = {\
+{(n), 1, 1, do_serialize_struct, t##_TypeItems} }
+
+#define SER_START_ITEMS(n, t)\
+struct __XmlSerializerInfo t##_TypeItems[] = {
+
+#define SER_END_ITEMS(n, t)\
+	{NULL, 0, 0, NULL, NULL} };\
+	SER_TYPE_STRUCT(n, t)
+
+These macros are used to create an array of items with name 
+StateDescription_TypeInfo 
+
+for example:
+SER_START_ITEMS("This", WsManThis)
+SER_STR("Vendor", 1, 1), 
+SER_STR("Version", 1, 1),
+SER_END_ITEMS("This", WsManThis);
+
+After the preprocessing stage, the result is 
+struct __XmlSerializerInfo WsManThis_TypeItems[] = {
+       {("Vendor"), 0x8000 | (1), (1), do_serialize_string, 0},
+       {("Version"), 0x8000 | (1), (1), do_serialize_string, 0},
+       {0, 0, 0, 0, 0} };
+struct __XmlSerializerInfo WsManThis_TypeInfo[] = {
+       {(this), 1, 1, do_serialize_struct, WsManThis_TypeItems} };
+================================================================================
+#define ADD_SELECTOR(n,t,d)\
+	{ n, NULL, t, d}
+	  
+#define SELECTOR_LAST { NULL, NULL, NULL, NULL }
+
+#define START_TRANSFER_GET_SELECTORS(t) WsSelector t##_Get_Selectors[] = {
+
+#define FINISH_TRANSFER_GET_SELECTORS(t) SELECTOR_LAST }
+
+These macros are used to create array of items with name WsSelector.
+
+for example:
+START_TRANSFER_GET_SELECTORS(WsManThis)
+	ADD_SELECTOR("CreationClassName", "string", "Creation Class Name"),
+FINISH_TRANSFER_GET_SELECTORS(IpmiSel);
+
+After the preprocessing stage, the result is
+
+struct WsSelector WsManThis_Get_Selectors[] = {
+       { "CreationClassName", NULL, "string", "Creation Class Name" },
+       { 0, 0, 0, 0}
+};
+================================================================================
+#define END_POINT_TRANSFER_GET(t, ns)\
+	{ WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}
+
+#define END_POINT_TRANSFER_GET_RAW(t, ns)\
+	{ WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}	  
+
+#define END_POINT_TRANSFER_PUT(t, ns)\
+	{ WS_DISP_TYPE_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}
+
+
+
+
+#define END_POINT_TRANSFER_ENUMERATE(t, ns)\
+	{ WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
+
+#define END_POINT_TRANSFER_RELEASE(t, ns)\
+	{ WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Release_EP, ns, NULL}
+
+#define END_POINT_TRANSFER_PULL(t, ns)\
+	{ WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
+#define END_POINT_TRANSFER_PULL_RAW(t, ns)\
+	{ WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}	  
+
+#define END_POINT_PRIVATE_EP(t, a, m, ns)    \
+        { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL, \
+          t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
+
+#define END_POINT_LAST	{ 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+
+#define SER_START_END_POINTS(t) WsDispatchEndPointInfo t##_EndPoints[] = {
+
+#define SER_FINISH_END_POINTS(t) END_POINT_LAST }
+
+These macros are used to create an array that describes all endpoints in this class
+
+for example:
+SER_START_END_POINTS(WsManThis)
+END_POINT_TRANSFER_GET(WsManThis, XML_NS_WS_MAN"/this"),
+SER_FINISH_END_POINTS(WsManThis);
+
+After the preprocessing stage, the result is:
+WsDispatchEndPointInfo WsManThis_EndPoints[] = {
+	{ 1, 0, 0, "http://schemas.xmlsoap.org/ws/2004/09/transfer/Get", 
+          WsManThis_TypeInfo, 
+          (WsProcType)WsManThis_Get_EP, 
+          "http://schemas.xmlsoap.org/ws/2005/06/management/this",
+          WsMan_Get_Selectors},
+          { 0, 0, 0, 0, 0, 0, 0, 0 }};
+================================================================================
+
+3. write a plugin
+~~~~~~~~~~~~~~~~~
+requisite interfaces:
+
+int init(GModule *self, void **data);
+    parameters:
+          self   a pointer to this module
+          data   reference to a user data structure. used to initial this 
+                 plugin.
+    return value:
+          On  error, 0 is returned, On success, a no_zerro value is returned.
+
+After loading a plugin, The Plugin Framework use this interface to initialize 
+this plugin.
+
+================================================================================
+void get_endpoints(GModule *self, void **data);
+     parameters:
+          self    a pointer to this module
+          data    reference to a WsDispatchEndPointInfo structure.
+
+This is the only way that the plugin framework collects all endpoints
+information about this plugin, so in this interface body, the plugin should
+initialize the WsDispatchEndPointInfo structre pointed by data.
+
+for example:
+void get_endpoints(GModule *self, void **data) 
+{		 
+    WsDispatchInterfaceInfo *itf = (WsDispatchInterfaceInfo *)*data;
+
+    itf->flags = 0;
+    itf->actionUriBase = XML_NS_WS_MAN;
+    itf->wsmanSystemUri = NULL;
+    itf->wsmanResourceUri = WS_MAN_THIS_RESOURCE_URI;
+    itf->extraData = NULL;
+    itf->endPoints = WsManThis_EndPoints;			
+}
+
+================================================================================
+optional interface:
+
+void cleanup( GModule *self, void *data );
+     parameters:
+            self    a pointer to this module
+            data    reference to a user data structure.
+
+When the Plugin Framework free a plugin, it call this interface.
+
+================================================================================
+endpoint action interface:
+xxx* xxx_Get_EP(WsContextH cntx);
+     parameter:
+        cntx:   It is a context about this require. The plugin can get some 
+                useful information from cntx, such as selector.
+
+     return value:
+               The xxx structure is declared in this plugin, it is invisible 
+               to the framework, but its fields must be identical with the 
+               items of an array with name StateDescription_TypeInfo
+
+The Plugin Framework call this api to get all properties of this resource.
+
+================================================================================
+int xxx_Put_EP(WsContextH cntx, void *data, void **outData)
+     parameter:
+        cntx:   It is a context about this require. The plugin can get some 
+                useful information from cntx, such as selector.
+
+        data:   BTD
+
+        outDdata: reference to buffer, used to store response information 
+                  from plugin.
+
+     return value:
+                On success, return 0, on error, return non-zero value.
+
+The Plugin Framework call this api to model an update of an entire item.
+================================================================================
+int xxx_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
+    parameter:
+        cntx:   It is a context about this require. The plugin can get some 
+                useful information from cntx, such as selector.
+
+        enumInfo: output parameter.
+
+    return value:
+                On success, return 0, on error, reuturn non-zero value.     
+         
+The Plugin Framework call this api to begin an enumeration or query.
+================================================================================
+int xxx_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
+    parameter:
+        cntx:   It is a context about this require. The plugin can get some 
+                useful information from cntx, such as selector.
+
+        enumInfo: the index field specifies an instance.
+
+    return value:
+                On success, return 0, on error, reuturn non-zero value.     
+
+The Plugin Framework call this api to release an active enumerator
+================================================================================
+int xxx_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
+    parameter:
+        cntx:   It is a context about this require. The plugin can get some 
+                useful information from cntx, such as selector.
+
+        enumInfo: specify the enumeration information
+
+    return value:
+                On success, return 0, on error, reuturn non-zero value.     
+
+The Plugin Framework call this api to retrieve the next batch of result from 
+enumeration
+================================================================================
+int xxx_xxx_EP(SoapOpH soaph, void *data);
+    parameter: 
+        soaph:  pointer to a SOAP_OP_ENTRY structure, The plugin can get the 
+                context info from this pointer.
+        
+        data:   pointer to this endpoint structure.
+
+We add a private endpoint to this plugin by 'The 'END_POINT_PRIVATE_EP' macro, 
+WS_DISP_TYPE_PRIVATE flag is assigned to this endpoint. A function whose 
+prototype is like as 'int xxx_xxx_EP(SoapOpH soaph, void *data)' is needed. 
+The Plugin Framework will call this api to realize plugin's private action.
+
+for example:
+#define CATCH_RESP      "CatchResponse"
+#define PLUGIN_INFO     "This plugin is designed for IPMI_SEL class"
+int IpmiSel_Catch_EP(SoapOpH op, void* appData)
+{
+	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Catch Endpoint Called"); 
+        
+        // get the context from op
+        SoapH soap = soap_get_op_soap(op);	
+        WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));    
+
+        // get endpoint information
+        WsDispatchEndPointInfo* info = (WsDispatchEndPointInfo*)appData;
+        XmlSerializerInfo* typeInfo = info->serializationInfo;
+
+        void* data;
+        WsXmlDocH doc = NULL;
+
+        // add some code for private endpoint
+
+        // create response doc
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Creating Response doc");
+        doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+
+        if ( doc )
+        {
+                WsXmlNodeH body = ws_xml_get_soap_body(doc);
+                WsXmlNodeH node = ws_xml_add_child(body, 
+                                                   XML_NS_DOEM_TEST,
+                                                   CATCH_RESP,
+                                                   PLUGIN_INFO);
+        }
+
+        if ( doc )
+        {
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Setting operation document");
+                soap_set_op_doc(op, doc, 0);
+                soap_submit_op(op, soap_get_op_channel_id(op), NULL);
+                ws_xml_destroy_doc(doc);
+        }
+
+        ws_serializer_free_all(cntx);
+        return 0;
+}
+
+
+
+
