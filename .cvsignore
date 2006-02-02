@@ -23,4 +23,6 @@ stamp-h*
 *.pc
 *.pc.in
 Doxyfile
+.project
+.cdtproject
 
