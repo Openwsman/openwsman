@@ -194,7 +194,7 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 
 WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc);
 
-
+void ws_xml_parser_destroy(SoapH soap);
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
 

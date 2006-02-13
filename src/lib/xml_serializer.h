@@ -164,13 +164,53 @@ struct __dummy
 #define XML_SADJUSTMENT		(sizeof(struct __dummy))
 
 
-int ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char *str, char *nameNs, char *name);
-int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent, unsigned long val, char *nameNs, char *name);
-char *ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index, char *nameNs, char *name);
-unsigned long ws_deserialize_uint32(WsContextH cntx, WsXmlNodeH parent, int index, char *nameNs, char *name);
-int ws_serialize(WsContextH cntx, WsXmlNodeH xmlNode, XML_TYPE_PTR dataPtr, XmlSerializerInfo *info, char *name, char *nameNs, char *elementNs, int output);
-int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo *info);
-void *ws_deserialize(WsContextH cntx, WsXmlNodeH xmlParent, XmlSerializerInfo *info, char *name, char *nameNs, char *elementNs, int index, int output);
+int ws_serialize_str(WsContextH cntx, 
+				WsXmlNodeH parent, 
+				char *str, 
+				char *nameNs, 
+				char *name);
+
+int ws_serialize_uint32(
+				WsContextH cntx, 
+				WsXmlNodeH parent, 
+				unsigned long val, 
+				char *nameNs, 
+				char *name);
+
+char *ws_deserialize_str(WsContextH cntx, 
+				WsXmlNodeH parent, 
+				int index, 
+				char *nameNs, 
+				char *name);
+
+unsigned long ws_deserialize_uint32(
+				WsContextH cntx, 
+				WsXmlNodeH parent, 
+				int index, 
+				char *nameNs, 
+				char *name);
+
+int ws_serialize(WsContextH cntx, 
+				WsXmlNodeH xmlNode, 
+				XML_TYPE_PTR dataPtr, 
+				XmlSerializerInfo *info, 
+				char *name, 
+				char *nameNs, 
+				char *elementNs, 
+				int output);
+
+int ws_serializer_free_mem(WsContextH cntx, 
+				XML_TYPE_PTR buf, 
+				XmlSerializerInfo *info);
+
+void *ws_deserialize(WsContextH cntx, 
+				WsXmlNodeH xmlParent, 
+				XmlSerializerInfo *info, 
+				char *name, 
+				char *nameNs, 
+				char *elementNs, 
+				int index, 
+				int output);
 
 /**
  * @def SER_UINT8

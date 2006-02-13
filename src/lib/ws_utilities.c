@@ -408,7 +408,129 @@ DL_Node* DL_FindNode(DL_List* list, void* data, int (*proc)(void*, DL_Node*))
     return NULL;
 }
 
+unsigned long soap_get_ticks()
+{
+        // struct has seconds+us since Epoch in 1970
+        // turn these into total ms
+        struct timeval tv;
+        gettimeofday( &tv, NULL );
+        unsigned long tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+        return tick;
+}
+
+int is_time_up(unsigned long lastTicks, unsigned long tm)
+{
+    if ( (soap_get_ticks() - lastTicks) >= tm )
+        return 1;
+    return 0;
+}
+
+void soap_sleep(unsigned long tm)
+{
+        int sec = tm / 1000;
+        int msec = tm - sec * 1000;
+        int nsec = msec * 1000000;
+
+        struct timespec ts;
+
+        ts.tv_sec = sec;
+        ts.tv_nsec = nsec;
+        nanosleep( &ts, NULL );
+}
 
 
+#define MAX_QUERY_KEYS 100
+
+
+
+struct pair_t * parse_query(const char *string, int separator)
+{
+  int i;
+  char *p;
+  char *query_string;
+  size_t query_len;
+  struct pair_t *query;
+
+  if(!string)
+    return NULL;
+
+  if((query = (struct pair_t *)malloc(sizeof(struct pair_t)*MAX_QUERY_KEYS))
+     == NULL)
+  {
+    fprintf(stderr, "Could not malloc\n");
+    exit (1);
+  }
+
+  query_len = strlen(string);
+  if((query_string = malloc(query_len + 1)) == NULL)
+  {
+    fprintf(stderr, "Could not malloc\n");
+    exit (1);
+  }
+
+  memcpy(query_string, string, query_len + 1);
+
+  for(i = 0, p = query_string; i < MAX_QUERY_KEYS && *p; i++, p++) {
+    while(*p == ' ') p++;
+
+    query[i].name = p;
+    while(*p != '=' && *p != separator && *p) p++;
+    if(*p != '=') {
+      *p = 0;
+      query[i].value = NULL;
+      continue;
+    }
+    *p++ = 0;
+    
+    query[i].value = p;
+    while(*p != separator && *p) p++;
+    *p = 0;
+  }
+
+  query[i].name = NULL;
+
+  for(i = 0; query[i].name; i++) {
+    uri_unescape(query[i].name);
+    uri_unescape(query[i].value);
+  }
+
+  return query;
+}
+
+int xdigit_to_int(int c)
+{
+  c = tolower(c);
+
+  if(isdigit(c))
+    return c - '0';
+  else if(isxdigit(c))
+    return c - 'a';
+  else
+    return -1;
+}
+
+
+void uri_unescape(char *ptr)
+{
+  char *nptr = ptr;
+  int c, d;
+
+  while(*ptr) {
+    if(*ptr == '%') {
+      if((c = xdigit_to_int(*++ptr)) != -1 &&
+     (d = xdigit_to_int(*++ptr)) != -1) {
+    *nptr++ = (c << 4) | d;
+    ptr++;
+      }
+    } else if(*ptr == '+') {
+      *nptr++ = ' ';
+      ptr++;
+    } else {
+      *nptr++ = *ptr++;
+    }
+  }
+  *nptr = 0;
+  return;
+}
 
 

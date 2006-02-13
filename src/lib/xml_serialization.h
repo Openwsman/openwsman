@@ -67,10 +67,6 @@ typedef struct __XmlSerializationData XmlSerializationData;
 
 
 
-
-
-
-
 void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
 int get_adjusted_size(int baseSize);
 

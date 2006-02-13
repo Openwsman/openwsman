@@ -12,7 +12,8 @@ OWSMAN_INCLUDES = \
 	xml_api_generic.h \
 	xml_binding_libxml2.h \
 	xml_serialization.h \
-	xml_serializer.h
+	xml_serializer.h \
+	wsman-client.h
 		      
 
 libwsman_la_SOURCES = \
@@ -25,6 +26,7 @@ libwsman_la_SOURCES = \
 	ws_transport.c \
 	wsman-debug.c \
 	wsman-faults.c \
+	wsman-client.c \
 	$(OWSMAN_INCLUDES)
 
 INCLUDES = -I$(top_srcdir) \

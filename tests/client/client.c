@@ -63,8 +63,6 @@
 #include "xml_serializer.h"
 
 #include "wsman-client.h"
-#include "wsman-client-options.h"
-#include "wsman.h"
 
 
 
@@ -173,76 +171,3 @@ wsman_client_handler(
     return;
 }
 
-
-int main(int argc, char** argv)
-{     
-    int retVal = 0;   
-
-
-    
- 
-    g_type_init ();
-    g_thread_init (NULL);
-    wsman_parse_options(argc, argv);
-    
-    WsContextH cntx = ws_create_runtime(NULL);
-    
-    WsManClient *cl = 
-    		wsman_connect(
-    			cntx,
-    			wsman_options_get_server(),
-    			wsman_options_get_server_port(),
-    			NULL,
-    			wsman_options_get_username(),
-    			wsman_options_get_password(),
-    			NULL);
-    			
-    			
-    if (cl == NULL)
-    {
-    		fprintf(stderr, "Null Client\n");
-    } 
-    
-                                                                
-    wsman_client_add_handler(wsman_client_handler, NULL);
-    char *resourceUri = wsman_options_get_resource_uri();
-  	int op = wsman_options_get_action();
-  	WsXmlDocH doc = NULL;
-  	GList *enumeration = NULL;
-  	
-	switch (op) 
-	{
-		case  ACTION_TRANSFER_GET: 			
-        		doc = Get(cl, resourceUri);        		        		
-        break;
-        
-   		case ACTION_ENUMERATION:
-        		enumeration = Enumerate(cl, resourceUri ,  5);
-        		if (!enumeration) {
-        			printf("returns null\n");
-        		}
-        		while (enumeration) {
-        			WsXmlDocH enDoc = (WsXmlDocH)enumeration->data;
-        			ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc), 1);
-        			enumeration = g_list_next(enumeration);
-        		}
-		break;
-		/*
-        case ACTION_PRIVATE_CATCH:
-            retVal = wsman_private_catch( cl, resourceUri);
-        break;
-        */
-  		default:
-    			fprintf(stderr, "Action not supported\n");    		
-    			retVal = 1;
-	}    
-	
-	if (doc) 
-	{
-		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
-	}    
-    soap_free(cntx);
-    
-    return retVal;
-    
-}

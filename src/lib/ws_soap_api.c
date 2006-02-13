@@ -48,11 +48,9 @@
 #include "ws_transport.h"
 #include "ws_dispatcher.h"
 #include "xml_serializer.h"
+#include "wsman-client.h"
 #include "wsman-debug.h"
 #include "wsman-faults.h"
-
-
-
 
 
 WsXmlNsData g_wsNsData[] =
@@ -125,11 +123,8 @@ WsContextH ws_create_context(SoapH soap)
 
 
 SoapH ws_soap_initialize() 
-{
-
-    SOAP_FW* fw = NULL;
-
-    fw = (SOAP_FW*)soap_alloc(sizeof(SOAP_FW), 1);
+{	
+    SOAP_FW* fw = (SOAP_FW*)soap_alloc(sizeof(SOAP_FW), 1);
 
     if ( fw )
     {
@@ -137,7 +132,8 @@ SoapH ws_soap_initialize()
         fw->cntx = ws_create_context((SoapH)fw);    	
         soap_initialize_lock(fw);
     }	
-    // make_listener_callback((void *)fw, NULL, "");
+    
+    //make_listener_callback((void *)fw, NULL, "");
     ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
 
     soap_add_defalt_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
@@ -173,7 +169,7 @@ static int calculate_map_count(GList *interfaces)
 WsContextH ws_create_runtime (GList *interfaces)
 {
     SoapH soap = ws_soap_initialize();
-    if (soap) 
+    if (soap && interfaces != NULL ) 
     {
         int size = calculate_map_count(interfaces);
         WsManDispatcherInfo* dispInfo = (WsManDispatcherInfo*)soap_alloc(size, 1);
@@ -211,6 +207,7 @@ WsContextH ws_create_runtime (GList *interfaces)
             }                     
         }		
     }
+    
     return ((SOAP_FW*)soap)->cntx;
 }
 
@@ -866,6 +863,7 @@ int ws_transfer_get(SoapOpH op, void* appData)
     else
     {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Creating Response doc");
+        
         doc = ws_create_response_envelope(cntx, 
                 soap_get_op_doc(op, 1), 
                 NULL);
@@ -1686,27 +1684,31 @@ int do_submit_back_channel_response(SOAP_FW* fw,
     {
         chain->errorCode = httpErrorCode;
         if ( httpErrorMsg )
+        {
             chain->errorMsg = soap_clone_string(httpErrorMsg);
+        }
         add_chain_to_waiting_list(fw, chain);
         retVal = 0;
     }
 
-
-
     return retVal;
 }
 
-
-// SoapSubmitOp
+/**
+ * Submit SOAP operation
+ * @param h SOAP opeeration
+ * @param channelId Channel ID
+ * @return 0 on success, 1 on error.
+ */
 int soap_submit_op(SoapOpH h, int channelId, char* destUrl )        
-{
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Submitting operation");
+{    
     int retVal = 1;
     SOAP_OP_ENTRY* op = (SOAP_OP_ENTRY*)h;
-
+	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Submitting operation");
+	
     if ( op )
     {
-        if ( !process_filters(op, 0) )
+        if ( (retVal = process_filters(op, 0)) == 0 )
         {        	
             char* buf =	NULL;
             int len;
@@ -1728,17 +1730,46 @@ int soap_submit_op(SoapOpH h, int channelId, char* destUrl )
                     add_response_entry(op->dispatch->fw, op);                                       
                 }
 
-
-                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Sending Response");               	              
-
                 if ( channelId )
                 {
+             		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Sending Response");       
                     int errCode = 0;
                     char* errMsg = get_http_response_status(op->outDoc, &errCode);
 
                     retVal = do_submit_back_channel_response
-                        (op->dispatch->fw, channelId, buf, len, errCode, errMsg);
+                        (
+                        		op->dispatch->fw, 
+                        		channelId, 
+                        		buf, 
+                        		len, 
+                        		errCode, 
+                        		errMsg
+                        	);
+                } 
+                else 
+                {   
+                	 	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Sending Request");
+                    char* msgId = NULL;
+
+                    if ( !(op->dispatch->flags & SOAP_NO_RESP_OP)
+                            &&
+                            !(op->dispatch->flags & SOAP_ONE_WAY_OP) )
+                    {
+                        msgId = get_soap_header_value(op->dispatch->fw,
+                                op->outDoc,
+                                XML_NS_ADDRESSING,
+                                WSA_MESSAGE_ID);
+                    }
+                    retVal = send_on_new_channel(op->dispatch->fw,
+                            buf,
+                            len,
+                            destUrl,                           
+                            msgId,
+                            (op->dispatch->flags & SOAP_ONE_WAY_OP),
+                            op->timeoutTicks);
                 }
+                		
+                
             }
             if ( retVal )
             {
@@ -1749,6 +1780,40 @@ int soap_submit_op(SoapOpH h, int channelId, char* destUrl )
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Document Submitted (%d)", retVal); 
     return retVal;
 }
+
+
+int send_on_new_channel(SOAP_FW* fw, 
+        char* buf,
+        int len,
+        char* sendToUrl,         
+        char* msgIdToKeep, //TBD: ??? not used
+        int oneWay,
+        unsigned long tm)
+{
+	
+    SOAP_CHANNEL* ch = NULL;
+    ch = make_soap_channel(
+    				soap_fw_make_unique_id(fw),
+    				NULL,
+                dispatch_inbound_call, 
+                fw,
+                SOAP_CHANNEL_DEF_INACTIVITY_TIMEOUT,
+                SOAP_CHANNEL_DEF_KEEP_ALIVE_TIMEOUT,                
+                SOAP_CHANNEL_DEF_TCP_CLIENT_FLAGS);
+    if ( ch )
+    {
+		soap_fw_lock(fw);
+        DL_AddTail(&fw->channelList, &ch->node);
+        soap_fw_unlock(fw);
+             
+        ch->flags |= SOAP_TRANSPORT_HTTP;
+        
+        if ( tm && !(ch->flags & SOAP_CHANNEL_KEEP_ALIVE) )
+			ch->inactivityTimeout = tm;					
+    }
+    return (ch == NULL); // return 0 on success
+}
+
 
 
 /*
@@ -2175,6 +2240,76 @@ void wsmancat_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *interfa
     }    
     
 }
+
+
+int soap_submit_client_op(SoapOpH op, WsManClient *cl )
+{	
+	char *buf = NULL;
+	int	 buflen;		
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;
+	SOAP_FW *fw = (SOAP_FW *)ws_context_get_runtime(wsc->wscntx);  
+	
+	wsman_client(cl, ((SOAP_OP_ENTRY*)op)->outDoc);
+	
+	char* response = wsc->connection->response;
+	if (response)
+	{
+		WsXmlDocH inDoc = wsman_build_inbound_envelope(fw, response, strlen(response));	
+		((SOAP_OP_ENTRY*)op)->inDoc = inDoc;
+	} else {
+		((SOAP_OP_ENTRY*)op)->inDoc = NULL;
+	}
+		
+	return 0;
+}
+
+
+
+
+//WsSendGetResponse
+WsXmlDocH ws_send_get_response(WsManClient *cl, 
+				WsXmlDocH rqstDoc,				
+				unsigned long timeout)
+{
+    WsXmlDocH respDoc = NULL;
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    SoapH soap = ws_context_get_runtime(wsc->wscntx);
+
+    if ( rqstDoc != NULL && soap != NULL )
+    {
+        SoapOpH op;
+        op = soap_create_op(soap, NULL, NULL, NULL, NULL, NULL, 0, timeout);
+        if ( op != NULL )
+        {        		       		
+            soap_set_op_doc(op, rqstDoc, 0);
+            soap_submit_client_op(op, cl);
+            respDoc = soap_detach_op_doc(op, 1);
+           	soap_destroy_op(op);            
+        }
+    }
+    return respDoc;
+}
+
+//SoapXmlWaitForResponse
+int soap_xml_wait_for_response(SoapOpH op, unsigned long tm)
+{
+    int retVal = -1;
+
+    if ( op )
+    {
+        unsigned long startTicks = soap_get_ticks();
+
+        retVal = soap_get_op_doc(op, 1);
+        while( !(retVal = (soap_get_op_doc(op, 1) != NULL)) )
+        {
+            if ( is_time_up(startTicks, tm) )
+                break;
+            soap_sleep(50);
+        }
+    }    
+    return retVal;
+}
+
 
 
 

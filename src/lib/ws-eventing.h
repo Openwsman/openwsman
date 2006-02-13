@@ -30,18 +30,76 @@
 
 /**
  * @author Anas Nashif
+ * @author Eugene Yarmosh
  */
-#ifndef PARSE_URI_H_
-#define PARSE_URI_H_
+ 
+#ifndef WS_SOAP_EVENTING_H
+#define WS_SOAP_EVENTING_H
 
+struct __EventingInfo
+{
+	SoapH soap;
 
-struct pair_t {
-      char *name;
-      char *value;
+	char* managerUrl;
+
+	DL_List publisherList;
+
+	DL_List localSubscriberList;
+	
+	DL_List remoteSinkList;
 };
+typedef struct __EventingInfo EventingInfo;
 
-int xdigit_to_int(int c);
-void uri_unescape(char *ptr);
-struct pair_t * parse_query(const char *string, int separator);
+struct __PublisherInfo
+{
+	DL_Node node;
+	EventingInfo* eventingInfo;
+	DL_List actionList;
+//	char* subcriptionManagerUrl;
+};
+typedef struct __PublisherInfo PublisherInfo;
 
-#endif /*PARSE_URI_H_*/
+struct __LocalSubscriberInfo
+{
+	DL_Node node;
+	
+	EventingInfo* eventingInfo;
+	DL_List actionList;
+	char* subscribeToUrl;
+	char* subscriberUrl;
+	char* uuid;
+
+	WsXmlDocH doc;
+	unsigned long sendRenewTicks;
+	char* identifier;
+	//WsXmlNodeH subscriptionManager;
+
+	void (*procNotification)(void*, WsXmlDocH);
+	void (*procSubscriptionEnd)(void*, WsXmlDocH);
+	void* data;
+};
+typedef struct __LocalSubscriberInfo LocalSubscriberInfo;
+
+
+struct __RemoteSinkInfo
+{
+	DL_Node node;
+
+	EventingInfo* eventingInfo;
+	DL_List actionList;
+
+	WsXmlDocH doc;
+	WsXmlNodeH notifyTo;
+	WsXmlNodeH endTo;
+
+	char* uuidIdentifier;
+	unsigned long durationSeconds;
+	unsigned long lastSetTicks;
+};
+typedef struct __RemoteSinkInfo RemoteSinkInfo;
+
+
+
+
+
+#endif //WS_SOAP_EVENTING_H

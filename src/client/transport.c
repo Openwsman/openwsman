@@ -47,139 +47,15 @@
 #include "soap_api.h"
 #include "xml_api_generic.h"
 #include "xml_serializer.h"
-
+#include "wsman-client.h"
 
 
 #include "wsman.h"
 
 
-#if NOT_YET
-static void
-print_header (gpointer name, gpointer value, gpointer data)
-{
-    printf ("%s: %s\n", (char *)name, (char *)value);
-}
-
-
-static void
-got_headers ( SoupMessage *msg,
-         gpointer data)
-{
-	printf("\ngot headers\n");
-	soup_message_foreach_header (msg->request_headers, print_header, NULL);
-  	
-}
-
-
-static void
-wrote_headers ( SoupMessage *msg,
-         gpointer data)
-{
-  	printf("\nwrote headers\n");
-}
-#endif
-
-static void
-authenticate (SoupSession *session, 
-		SoupMessage *msg,
-        const char *auth_type, 
-        const char *auth_realm,
-        char **username, 
-        char **password, 
-        gpointer data)
-{
-	// printf("authenticating...\n");
-    WsClientContextH *cctx = data;
-    *username = g_strdup (cctx->username);
-    *password = g_strdup (cctx->password);
-}
-
-
-static void
-reauthenticate (SoupSession *session, SoupMessage *msg,
-        const char *auth_type, const char *auth_realm,
-        char **username, char **password, gpointer data)
-{
-    char *pw;
-    char user[21];
-
-    fprintf(stderr,"Authentication failed, please retry\n");
-    printf("User name: ");
-    fflush(stdout); 
-    fgets(user, 20, stdin);
-
-    if (strchr(user, '\n'))
-        (*(strchr(user, '\n'))) = '\0';
-    *username = g_strdup_printf ("%s", user);
-
-    pw = getpass("Password: ");
-    *password = g_strdup_printf ("%s", pw);
-
-}
 
 
 
-WsXmlDocH  _ws_send_get_response(WsClientContextH *cctx, 
-			WsXmlDocH rqstDoc, 
-			char* url) 
-{
-    SoupSession *session = NULL;
-    SoupMessage *msg= NULL;
-    WsXmlDocH respDoc = NULL;
-    char *buf;
-    int len;
 
-    session = soup_session_async_new ();
-    
-    g_signal_connect (session, "authenticate",
-            G_CALLBACK (authenticate), cctx);
-    g_signal_connect (session, "reauthenticate",
-            G_CALLBACK (reauthenticate), cctx);
-                                   
-    msg = soup_message_new_from_uri (SOUP_METHOD_POST, soup_uri_new(url));
-    if (!msg) 
-    {
-        fprintf (stderr, "Could not parse URI\n");
-        return NULL;
-    }
-            
-    /*
-   	g_signal_connect (msg, "got-headers",
-            G_CALLBACK (got_headers), cctx);            
 
-   	g_signal_connect (msg, "wrote-headers",
-            G_CALLBACK (got_headers), cctx);    
-    */
-    
-    // FIXME: define in header file and use real version
-    soup_message_add_header(msg->request_headers, "User-Agent", "OpenWSMAN/0.01");
 
-    ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-    soup_message_set_request(msg, 
-            SOAP1_2_CONTENT_TYPE,
-            SOUP_BUFFER_SYSTEM_OWNED,
-            buf,
-            len);
-                        
-    // Send the message...        
-    soup_session_send_message (session, msg);
-  
-    if (msg->status_code != SOUP_STATUS_UNAUTHORIZED &&
-            msg->status_code != SOUP_STATUS_OK) 
-    {
-        printf ("Connection to server failed: %s (%d)\n", 
-        			msg->reason_phrase, 
-        			msg->status_code);        
-    }
-    
-    if (msg->response.body) 
-    {    
-    		char * xmlstr = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
-		strncpy (xmlstr, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);				   	
-    		respDoc = ws_xml_read_memory((SoapH)cctx->wscntx, xmlstr, strlen(xmlstr), "UTF-8", 0);
-    } 
-
-    g_object_unref (session);
-    g_object_unref (msg);
-    return respDoc;
-}

@@ -262,4 +262,7 @@ AC_OUTPUT([
         src/plugins/wsman/test/Makefile
         doc/Makefile
         doc/specs/Makefile
+        tests/Makefile
+        tests/xml/Makefile
+        tests/client/Makefile
 	])

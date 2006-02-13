@@ -89,13 +89,14 @@ gboolean wsmand_parse_options(int argc, char **argv)
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
     if (error)
     {
-    	if (error->message)
-    	{
-        	printf ("%s\n", error->message);
-    	}
-        return FALSE;
+    		if (error->message)
+    		{
+        		printf ("%s\n", error->message);
+    		}
+        	return FALSE;
     }
-        
+    
+    g_free(error);
     g_option_context_free(opt_ctx);
     return retval;    
 }

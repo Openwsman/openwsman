@@ -36,9 +36,6 @@
 
 
 
-
-
-
 #define ACTION_TRANSFER_GET 	1
 #define ACTION_TRANSFER_PUT	2
 #define ACTION_ENUMERATION 	3
@@ -46,14 +43,9 @@
 
 
 #define MY_ENCODING "UTF-8"
-#define SOAP1_2_CONTENT_TYPE "application/soap+xml; charset=utf-8"
 
 
-struct _WsClientContext {
-    char *uri, *username, *password;
-    WsContextH  wscntx;
-};
-typedef struct _WsClientContext WsClientContextH;
+
 
 struct _WsProperties {
     char *key;
@@ -61,57 +53,8 @@ struct _WsProperties {
 };
 typedef struct _WsProperties WsProperties;
 
-
-
-char* wsman_make_action(char* uri, char* opName);
-
-void text_output(char *body);
-
-
-SoapH wsman_client_initialize(void);
-WsContextH wsman_client_create(void);
-
-
-WsXmlDocH  _ws_send_get_response(WsClientContextH *ctx, WsXmlDocH rqstDoc, char* url);
-
-
-
-int wsman_transfer_get (
-        char *url,
-        WsClientContextH *ctx,
-        char *resourceUri
-        );
         
- 
-WsXmlDocH wsman_make_enum_message(WsContextH soap,
-        char* op,
-        char* enumContext,
-        char* resourceUri,
-        char* url);
 
-WsXmlNodeH wsman_enum_send_get_response(
-        WsClientContextH *ctx,
-        char* op,
-        char* enumContext,
-        char* resourceUri,
-        char* url);
 
-int  wsman_transfer_put(
-	char* url, 
-	WsClientContextH *ctx, 
-	char *resourceUri, 
-	WsProperties *properties);
-	
-int  wsman_enumeration(char* url,
-        WsClientContextH *ctx,
-        char *resourceUri,
-        int count);
-        
-int  wsman_private_catch (
-        char *url,
-        WsClientContextH *ctx,
-        char *resourceUri
-        );
-        
                
 #endif // WSMAN_CLIENT_H

@@ -72,7 +72,9 @@
 static int log_pid = 0;
 
 static void
-debug_message_handler (const char *str, WsmanDebugLevel level, gpointer user_data)
+debug_message_handler (const char *str, 
+						WsmanDebugLevel level, 
+						gpointer user_data)
 {
     if (log_pid == 0)
     {

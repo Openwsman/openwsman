@@ -40,6 +40,7 @@
 #include <pthread.h>
 #include "wsman-faults.h"
 
+#define SOAP1_2_CONTENT_TYPE "application/soap+xml; charset=utf-8"
 
 #define SOAP_SKIP_DEF_FILTERS			0x01
 #define SOAP_ACTION_PREFIX				0x02 // otherwise exact
@@ -594,6 +595,19 @@ void wsman_generate_fault_buffer(
 int  wsmancat_create_resource(WsXmlNodeH r, WsDispatchInterfaceInfo *interface);
 void wsmancat_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *interface);
 
+
+int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);				
+
+int send_on_new_channel(SOAP_FW* fw, 
+        char* buf,
+        int len,
+        char* sendToUrl, 
+         
+        char* msgIdToKeep, //TBD: ??? not used
+        int oneWay,
+        unsigned long tm);
+        
+ 
 // ******************** 
 
 #define WS_DISP_TYPE_MASK				0xffff

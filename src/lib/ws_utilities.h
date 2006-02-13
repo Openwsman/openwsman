@@ -75,8 +75,19 @@ typedef struct __DL_List DL_List;
 
 
 
+/*
+ * Parsing Query String from URI
+ */
+struct pair_t {
+      char *name;
+      char *value;
+};
 
+int xdigit_to_int(int c);
+void uri_unescape(char *ptr);
+struct pair_t * parse_query(const char *string, int separator);
 
+/**/
 
 
 void soap_get_uuid (char* buf, int size, int bNoPrefix);
@@ -113,6 +124,9 @@ void DL_RemoveAndDestroyAllNodesCallback(DL_List *list, void (*callback)(void *,
 DL_Node *DL_FindNode(DL_List *list, void *data, int (*proc)(void *, DL_Node *));
 
 
+unsigned long soap_get_ticks(void);
+int is_time_up(unsigned long lastTicks, unsigned long tm);
+void soap_sleep(unsigned long tm);
 
 #endif /*WS_UTILITIES_H_*/
 

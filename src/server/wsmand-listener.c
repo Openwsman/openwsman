@@ -140,7 +140,9 @@ server_callback (SoupServerContext *context, SoupMessage *msg, gpointer data)
             soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
             goto DONE;
         }
-    } else {
+    } 
+    else 
+    {
         path = g_strdup ("");
     }    
     
@@ -219,7 +221,7 @@ DONE:
 
 WsContextH wsmand_start_listener(WsManListenerH *listener)
 {	
-	GList *list = NULL;
+    GList *list = NULL;
     WsContextH cntx = NULL;	  	
 
 	if (!wsmand_options_get_no_plugins_flag())
@@ -316,7 +318,7 @@ int wsmand_start_server()
                 
         soup_server_run_async (ssl_server);
     }
-    
+    g_free(listener);
 	wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Waiting for requests...");
 	return 0;
 }

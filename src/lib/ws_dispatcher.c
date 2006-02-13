@@ -383,14 +383,19 @@ int process_filter_chain(SOAP_OP_ENTRY* op, DL_List* list)
     return retVal;
 }
 
-
-// ProcessFilters
+/**
+ * Process Filters
+ * @param op SOAP operation
+ * @param inbound Direction of message, 0 for outbound  and 1 for inbound.
+ * @return 0 on sucesses, 1 on error.
+ **/
 int process_filters(SOAP_OP_ENTRY* op, int inbound)
 {
     int retVal = 0;
     DL_List* list;
 
 	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Filters");
+	
     if ( !(op->dispatch->flags & SOAP_SKIP_DEF_FILTERS) )
     {
         list = (!inbound) ? &op->dispatch->fw->outboundFilterList :
@@ -411,28 +416,6 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
         if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 )
         {        
         		wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
-        		/*
-            WsXmlNodeH child;
-            WsXmlNodeH header;
-            op->outDoc = ws_xml_create_fault(op->cntx,
-                    op->inDoc,
-                    "MustUnderstand",
-                    NULL,
-                    NULL,
-                    NULL,
-                    "One or more mandatory headers are not understood",
-                    NULL,
-                    NULL);
-            header = ws_xml_get_soap_header(op->outDoc);
-
-            child = ws_xml_add_child(header, XML_NS_SOAP_1_2, "NotUnderstood", NULL);
-            ws_xml_add_qname_attr(child, 
-                    NULL, 
-                    "qname", 
-                    ws_xml_get_node_name_ns(notUnderstoodHeader),
-                    ws_xml_get_node_local_name(notUnderstoodHeader));
-			*/                    
-
             retVal = 1;
         }
     }
@@ -621,6 +604,43 @@ WsXmlDocH build_inbound_envelope(SOAP_FW* fw, SOAP_CHANNEL *ch)
     }
     return doc;
 }
+
+
+/**
+ * Buid Inbound Envelope
+ * @param  fw SOAP Framework handle
+ * @param buf Message buffer
+ * @return XML document with Envelope
+ */
+WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize)
+{
+    WsXmlDocH doc = NULL;   
+	char *buf = (char *)soap_alloc( inputBufferSize + 1, 1);
+	strncpy (buf, inputBuffer, inputBufferSize);	        
+    
+ 	if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
+    {        
+    		WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
+    		
+        if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_FAULT_NONE )
+        {            
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
+            		"Envelope Discarded: Duplicate MessageID");    
+        }   
+        
+        if (fault_code != WSMAN_FAULT_NONE)
+        {        		        		
+            ws_xml_destroy_doc(doc);
+            doc = NULL;            
+        }        
+    }
+    else 
+    {
+    		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
+    }
+    return doc;
+}
+
 
 
 

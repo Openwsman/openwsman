@@ -8,19 +8,18 @@ INCLUDES = \
 
 LIBS = \
        $(XML_LIBS) \
-       $(LIBXSLT_LIBS) \
        $(SOUP_LIBS) \
        $(top_builddir)/src/lib/libwsman.la
 
 
-wsman_SOURCES = wsman.c \
-		wsman-client-options.c \
-		wsman.h
+wsman_this_SOURCES = client.c \
+		     wsman_this.c
 		
 
 
-bin_PROGRAMS = \
-	wsman
+noinst_PROGRAMS = \
+		  wsman_this
+	
    
 
 

@@ -49,6 +49,8 @@
 #include "xml_serializer.h"
 
 #include "wsman-debug.h"
+#include "wsman-client.h"
+
 #include "wsman.h"
 
 
@@ -88,22 +90,22 @@ WsXmlDocH wsman_make_enum_message(WsContextH soap,
 WsXmlNodeH wsman_enum_send_get_response(WsClientContextH *ctx, 
         char* op, 
         char* enumContext, 
-        char* resourceUri,
-        char* url)
+        char* resourceUri)
 {
     WsXmlNodeH node = NULL;
-    WsXmlDocH rqstDoc = wsman_make_enum_message(ctx->wscntx, 
+    WsXmlDocH rqstDoc = wsman_make_enum_message(
+    			ctx->wscntx, 
             op, 
             enumContext,
             resourceUri,
-            url);
+            ctx->url);
 
     if ( rqstDoc )
     {
         WsXmlDocH respDoc;
      
         //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);
-        respDoc = _ws_send_get_response(ctx, rqstDoc, url);
+        respDoc = ws_send_get_response(ctx->wscntx, rqstDoc, 60000);
 
         if ( respDoc )
         {           
@@ -127,7 +129,7 @@ WsXmlNodeH wsman_enum_send_get_response(WsClientContextH *ctx,
 
 
 
-int wsman_enumeration(char* url, 
+int wsman_enumeration( 
         WsClientContextH *ctx, 
         char *resourceUri,
         int count)
@@ -138,8 +140,7 @@ int wsman_enumeration(char* url,
     WsXmlNodeH enumStartNode = wsman_enum_send_get_response(ctx, 
             WSENUM_ENUMERATE, 
             NULL, 
-            resourceUri,
-            url);
+            resourceUri);
 
     if ( enumStartNode )
     {    		
@@ -155,8 +156,8 @@ int wsman_enumeration(char* url,
             while( count && (node = wsman_enum_send_get_response(ctx, 
                             WSENUM_PULL, 
                             enumContext, 
-                            resourceUri,
-                            url)) )
+                            resourceUri
+                            )) )
             {
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 )
                 {
@@ -191,8 +192,7 @@ int wsman_enumeration(char* url,
                 node = wsman_enum_send_get_response(ctx, 
                         WSENUM_RELEASE, 
                         enumContext, 
-                        resourceUri,
-                        url);
+                        resourceUri);
                 ws_xml_destroy_doc(ws_xml_get_node_doc(node));
             }
         }

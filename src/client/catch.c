@@ -51,14 +51,14 @@
 #include "soap_api.h"
 #include "xml_api_generic.h"
 #include "xml_serializer.h"
+#include "wsman-client.h"
 #include "wsman.h"
 
-#include "parse_uri.h"
+
 
 #define PRIVATE_CATCH "Catch"
 
-int  wsman_private_catch( 
-        char *url,
+int  wsman_private_catch(         
         WsClientContextH *ctx,
         char *resourceUri
         ) 
@@ -71,7 +71,7 @@ int  wsman_private_catch(
                                              WSA_TO_ANONYMOUS, 
                                              NULL, 
                                              resourceUri,
-                                             url,
+                                             ctx->url,
                                              60000,
                                              50000); 
         if ( rqstdoc != NULL ) {
@@ -82,7 +82,7 @@ int  wsman_private_catch(
         }
 
 
-        respdoc = _ws_send_get_response(ctx, rqstdoc, url);
+        respdoc = ws_send_get_response(ctx->wscntx, rqstdoc, 60000);
 
         if (respdoc)
         {
