@@ -118,8 +118,8 @@ wsman_client_handler(
     char *buf = NULL;
     int len;
     
-	WsManClientEnc *wsc =(WsManClientEnc*)cl;
-	WsManConnection *con = wsc->connection;
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    WsManConnection *con = wsc->connection;
 		
     session = soup_session_async_new ();    
     g_signal_connect (session, "authenticate",
@@ -127,8 +127,8 @@ wsman_client_handler(
     g_signal_connect (session, "reauthenticate",
             G_CALLBACK (reauthenticate), cl);
                     
-	;                                   
-    msg = soup_message_new_from_uri (SOUP_METHOD_POST, soup_uri_new(wsc->data.endpoint));
+    SoupUri *ep = soup_uri_new(wsc->data.endpoint);
+    msg = soup_message_new_from_uri (SOUP_METHOD_POST, ep);
     if (!msg) 
     {
         fprintf (stderr, "Could not parse URI\n");
@@ -167,6 +167,7 @@ wsman_client_handler(
 	
     g_object_unref (session);
     g_object_unref (msg);
+    g_free(ep);
     
     return;
 }

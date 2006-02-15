@@ -57,6 +57,7 @@ int main(void) {
                 NULL);
                 
                 
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
     if (cl == NULL)
     {
             fprintf(stderr, "Null Client\n");
@@ -81,6 +82,9 @@ int main(void) {
 
     
     ws_xml_parser_destroy((SoapH)cntx);
+    ws_xml_destroy_doc(xmlDoc);
+    soap_free(wsc);
+    soap_free(cl);
     soap_free(cntx);
 
     return (0);

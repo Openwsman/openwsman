@@ -55,6 +55,16 @@
 
 
 
+struct _WsmanClientHandler {
+    WsmanClientFn    	fn;   
+    gpointer     		user_data;
+    guint        		id;
+};
+typedef struct _WsmanClientHandler WsmanClientHandler;
+
+static GSList *handlers = NULL;
+
+
 
 char* wsman_make_action(char* uri, char* opName)
 {
@@ -142,8 +152,10 @@ WsXmlDocH Get(
             wsc->data.endpoint,
             60000,
             50000);	
+            
 	wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 	respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+	ws_xml_destroy_doc(rqstDoc);
 	// ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);	   
     return respDoc;
         
@@ -356,16 +368,6 @@ WsManClient *wsman_connect(
 }
 
 
-
-
-struct _WsmanClientHandler {
-    WsmanClientFn    	fn;   
-    gpointer     		user_data;
-    guint        		id;
-};
-typedef struct _WsmanClientHandler WsmanClientHandler;
-
-static GSList *handlers = NULL;
 
 guint
 wsman_client_add_handler (WsmanClientFn    fn,                     
