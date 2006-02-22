@@ -200,7 +200,6 @@ GList *Enumerate(
         	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 )
                 {                		                		
-                    printf("blah\n");
                     ws_xml_destroy_doc(ws_xml_get_node_doc(node));
                     break;
                 }

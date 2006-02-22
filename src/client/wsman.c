@@ -213,11 +213,11 @@ int main(int argc, char** argv)
 	switch (op) 
 	{
 		case  ACTION_TRANSFER_GET: 			
-        		doc = Get(cl, resourceUri);        		        		
+        		doc = cl->ft->Get(cl, resourceUri);        		        		
         break;
         
    		case ACTION_ENUMERATION:
-        		enumeration = Enumerate(cl, resourceUri ,  5);
+        		enumeration = cl->ft->Enumerate(cl, resourceUri ,  5);
         		if (!enumeration) {
         			printf("returns null\n");
         		}
