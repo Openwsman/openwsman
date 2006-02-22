@@ -171,7 +171,7 @@ GList *Enumerate(
 {
 	
     char* enumContext = NULL;
-	GList *enumeration = NULL;
+    GList *enumeration = NULL;
 
     WsXmlDocH respDoc = wsman_enum_send_get_response(cl, 
             WSENUM_ENUMERATE, 
@@ -197,9 +197,10 @@ GList *Enumerate(
                             resourceUri
                             )) )
             {
-            		WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
+        	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 )
                 {                		                		
+                    printf("blah\n");
                     ws_xml_destroy_doc(ws_xml_get_node_doc(node));
                     break;
                 }
@@ -219,7 +220,7 @@ GList *Enumerate(
                     enumContext = soap_clone_string(ws_xml_get_node_text(cntxNode));
                 }                				
 				
-                ws_xml_destroy_doc(ws_xml_get_node_doc(node));
+                //ws_xml_destroy_doc(ws_xml_get_node_doc(node));
                 count--;
                 if ( enumContext == NULL || enumContext[0] == 0 )
                 {
@@ -365,7 +366,7 @@ WsManClient *wsman_connect(
    	wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
 	
 	wsc->connection=initConnection(&wsc->data);	
-	return (WsManClient*)wsc;
+	return (WsManClient *)wsc;
 }
 
 

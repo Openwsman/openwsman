@@ -104,11 +104,11 @@ struct _WsManConnection {
 typedef struct _WsManConnection WsManConnection;
 
 struct _WsManClientEnc {
-	WsContextH				wscntx;
    	WsManClient          	enc;
+	WsContextH		wscntx;
    	WsManClientData      	data;
    	WsManCredentialData  	certData;
-   	WsManConnection     		*connection;
+   	WsManConnection     	*connection;
 };
 
 char* wsman_make_action(char* uri, char* opName);

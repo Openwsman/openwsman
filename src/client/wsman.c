@@ -223,7 +223,8 @@ int main(int argc, char** argv)
         		}
         		while (enumeration) {
         			WsXmlDocH enDoc = (WsXmlDocH)enumeration->data;
-        			ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc), 1);
+                                if (enDoc)
+        			    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc), 1);
         			enumeration = g_list_next(enumeration);
         		}
 		break;
