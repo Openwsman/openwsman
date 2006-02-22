@@ -491,7 +491,8 @@ struct pair_t * parse_query(const char *string, int separator)
 
   for(i = 0; query[i].name; i++) {
     uri_unescape(query[i].name);
-    uri_unescape(query[i].value);
+    // FIXME
+    //uri_unescape(query[i].value);
   }
 
   return query;
