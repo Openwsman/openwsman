@@ -326,7 +326,7 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl,
 
 
 
-WsManConnection *initConnection(WsManClientData *cld)
+WsManConnection *initClientConnection(WsManClientData *cld)
 {
    WsManConnection *c=(WsManConnection*)calloc(1,sizeof(WsManConnection));
    c->response = NULL;
@@ -364,7 +364,7 @@ WsManClient *wsman_connect(
          	
    	wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
 	
-	wsc->connection=initConnection(&wsc->data);	
+	wsc->connection=initClientConnection(&wsc->data);	
 	return (WsManClient *)wsc;
 }
 

@@ -148,7 +148,7 @@ WsXmlDocH wsman_enum_send_get_response(
         char* resourceUri);
 
 
-WsManConnection *initConnection(WsManClientData *cld);
+WsManConnection *initClientConnection(WsManClientData *cld);
 
 typedef void (*WsmanClientFn) (WsManClient *cl,                           
                            	 WsXmlDocH rqstDoc,
