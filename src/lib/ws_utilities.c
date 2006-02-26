@@ -534,4 +534,12 @@ void uri_unescape(char *ptr)
   return;
 }
 
+char* skip_white_spaces(char* ptr)
+{
+    if ( ptr )
+        while(isspace(*ptr))
+            ptr++;
+    return ptr;
+}
+
 

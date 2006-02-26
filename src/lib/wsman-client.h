@@ -54,9 +54,6 @@ typedef struct _WsManStatus {
       char *msg;
 } WsManClientStatus;
 
-
-
-
 typedef struct clientData {
    char *hostName;
    int port;
@@ -154,6 +151,11 @@ typedef void (*WsmanClientFn) (WsManClient *cl,
                            	 WsXmlDocH rqstDoc,
                            	 gpointer user_data);
 
+void
+wsman_client (WsManClient *cl, 
+				WsXmlDocH rqstDoc
+                );
+
 guint
 wsman_client_add_handler (WsmanClientFn fn,                     
                       gpointer user_data);
@@ -178,8 +180,6 @@ char* wsman_add_selector_from_uri(
 char *wsman_remove_query_string(char * resourceUri);
 
 	
-
-
 
 #ifdef __cplusplus
 }

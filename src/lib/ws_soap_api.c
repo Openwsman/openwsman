@@ -2311,5 +2311,16 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm)
 }
 
 
+void soap_enter(SoapH soap)
+{
+    soap_fw_lock((SOAP_FW*)soap);
+}
+
+void soap_leave(SoapH soap)
+{
+    soap_fw_unlock((SOAP_FW*)soap);
+}
+
+
 
 

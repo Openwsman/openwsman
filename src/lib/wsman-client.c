@@ -50,7 +50,6 @@
 #include "xml_serializer.h" 
 #include "wsman-faults.h"
 #include "wsman-debug.h"
-#include "wsman-debug.h"
 #include "wsman-client.h"
 
 
@@ -422,7 +421,6 @@ wsman_client (WsManClient *cl,
 {    	
     GSList *iter;      
     iter = handlers;
-
     // FIXME: Only one handler available.
     while (iter) 
     {
@@ -430,7 +428,42 @@ wsman_client (WsManClient *cl,
        	handler->fn (cl, rqstDoc, handler->user_data);       	       	
         iter = iter->next;
     }     
-       
+    return;
 }
 
 
+static WsManClientStatus releaseClient(WsManClient * cl)
+{
+  WsManClientStatus rc={0,NULL};
+  WsManClientEnc             * wsc = (WsManClientEnc*)cl;
+
+  if (wsc->data.hostName) {
+    free(wsc->data.hostName);
+  }
+  if (wsc->data.user) {
+    free(wsc->data.user);
+  }
+  if (wsc->data.pwd) {
+    free(wsc->data.pwd);
+  }
+  if (wsc->data.endpoint) {
+    free(wsc->data.endpoint);
+  }    
+  if (wsc->data.scheme) {
+    free(wsc->data.scheme);
+  }
+  if (wsc->certData.trustStore) {
+    free(wsc->certData.trustStore);
+  }
+  if (wsc->certData.certFile) {
+    free(wsc->certData.certFile);
+  }
+  if (wsc->certData.keyFile) {
+    free(wsc->certData.keyFile);
+  }
+
+  // if (wsc->connection) CMRelease(wsc->connection);
+
+  free(wsc);
+  return rc;
+}

@@ -41,10 +41,21 @@
 #include "assert.h"
 #include "time.h"
 
+#include "glib.h"
+
+#include "ws_utilities.h"
+#include "ws_xml_api.h"
+#include "soap_api.h"
+#include "ws_dispatcher.h"
+
+#include "xml_api_generic.h"
+#include "xml_serializer.h"
+#include "ws-eventing.h" 
+#include "wsman-faults.h"
+#include "wsman-debug.h"
 
 
-
-void make_eventing_end_point(EventingInfo* e,
+void make_eventing_endpoint(EventingInfo* e,
         SoapServiceCallback endPointProc,
         SoapServiceCallback validateProc,
         char* opName)
@@ -338,7 +349,7 @@ WsXmlDocH build_notification(WsXmlDocH event,
 
             assert(userNs);
 
-            ws_xml_dup_tree(body, ws_xml_get_doc_root(event)); 
+            ws_xml_duplicate_tree(body, ws_xml_get_doc_root(event)); 
 
             ws_xml_define_ns(body, ws_xml_get_ns_uri(userNs), NULL, 0);
         }
@@ -950,7 +961,7 @@ int wse_subscribe_endpoint(SoapOpH op, void* data)
     WsXmlDocH doc = soap_get_op_doc(op, 1);
     RemoteSinkInfo* sink;
 
-    _wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,("SubscribeEndPoint start");
+    wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SubscribeEndPoint start");
 
     // TBD: ??? Check dialect
     // TBD: ??? Check if we have a publisher
@@ -973,7 +984,7 @@ int wse_subscribe_endpoint(SoapOpH op, void* data)
             {
                 retVal = 0;
                 send_eventing_response(e, op, resp);
-                _T2("Subscribition added %s, %u seconds", sink->uuidIdentifier, sink->durationSeconds); 
+                wsman_debug(WSMAN_DEBUG_LEVEL_MESSAGE, "Subscribition added %s, %u seconds", sink->uuidIdentifier, sink->durationSeconds); 
             }
         }
         else
@@ -1033,7 +1044,7 @@ int wse_renew_endpoint(SoapOpH op, void* data)
         else
             sink->durationSeconds = 0;
 
-        _T2("Subscribition renewed %s, %u seconds", sink->uuidIdentifier, sink->durationSeconds); 
+        wsman_debug(WSMAN_DEBUG_LEVEL_MESSAGE, "Subscribition renewed %s, %u seconds", sink->uuidIdentifier, sink->durationSeconds); 
 
         resp = build_eventing_response(e, 
                 WSE_RENEW_RESPONSE, 
@@ -1070,7 +1081,7 @@ int wse_unsubscribe_endpoint(SoapOpH op, void* data)
                 NULL, 
                 NULL);
 
-        _T2("Subscribition removed %s", sink->uuidIdentifier); 
+        wsman_debug(WSMAN_DEBUG_LEVEL_MESSAGE, "Subscribition removed %s", sink->uuidIdentifier); 
         destroy_remote_sink(sink);
 
         send_eventing_response(e, op, resp);
@@ -1082,7 +1093,7 @@ int wse_unsubscribe_endpoint(SoapOpH op, void* data)
 }
 
 
-int wse_get_status_end_point(SoapOpH op, void* data)
+int wse_get_status_endpoint(SoapOpH op, void* data)
 {
     EventingInfo* e = (EventingInfo*)data;
     WsXmlDocH doc = soap_get_op_doc(op, 1);
@@ -1133,7 +1144,7 @@ int wse_subscription_end_endpoint(SoapOpH op, void* data)
 
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SubscriptionEndEndPoint start");
 
-    if ( (sub = find_subscriberByLocalId(e, doc)) != NULL )
+    if ( (sub = find_subscriber_by_local_id(e, doc)) != NULL )
     {
         if ( sub->procSubscriptionEnd != NULL )
             sub->procSubscriptionEnd(sub->data, doc);
@@ -1258,7 +1269,7 @@ void add_eventing_epr(EventingInfo* e,
     }
 }
 
-void AddFilters(WsXmlNodeH xmlNode, char* ns, DL_List* list, char* dialect)
+void add_filters(WsXmlNodeH xmlNode, char* ns, DL_List* list, char* dialect)
 {
     DL_Node* node = DL_GetHead(list);
     int size = 1;
@@ -1278,7 +1289,7 @@ void AddFilters(WsXmlNodeH xmlNode, char* ns, DL_List* list, char* dialect)
         while( node )
         {
             if ( node->dataBuf )
-                sprintf(&buf[strlen(buf)], "%s ", node->dataBuf); 
+                sprintf(&buf[strlen(buf)], "%s ", (char *)node->dataBuf); 
             node = DL_GetNext(node);	
         }
 
@@ -1344,7 +1355,7 @@ WsXmlDocH build_eventing_request(EventingInfo* e,
 
                 if ( DL_GetCount(&sub->actionList) )
                 {
-                    AddFilters(opNode, XML_NS_EVENTING, &sub->actionList, WSE_DIALECT_ACTION);
+                    add_filters(opNode, XML_NS_EVENTING, &sub->actionList, WSE_DIALECT_ACTION);
                 }
             }
             else
@@ -1358,7 +1369,7 @@ WsXmlDocH build_eventing_request(EventingInfo* e,
 
             if ( durationSecs )
             {
-                sprintf(buf, "%u", durationSecs);
+                sprintf(buf, "%lu", durationSecs);
                 ws_xml_add_child(opNode, XML_NS_EVENTING, WSE_EXPIRES, buf); 
             }
         }
@@ -1375,7 +1386,7 @@ void add_epr_to_header(EventingInfo* e, WsXmlNodeH header, WsXmlNodeH epr)
             1);
 
     if ( node )
-        ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, WsXmlGetNodeText(node));
+        ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, ws_xml_get_node_text(node));
 
     if ( (node = ws_xml_find_in_tree(epr, 
                     XML_NS_ADDRESSING, 
@@ -1386,7 +1397,7 @@ void add_epr_to_header(EventingInfo* e, WsXmlNodeH header, WsXmlNodeH epr)
         WsXmlNodeH child;
         for(i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++)
         {
-            ws_xml_dup_tree(header, child);
+            ws_xml_duplicate_tree(header, child);
         }
     }
 }
@@ -1466,7 +1477,7 @@ WsXmlDocH build_eventing_response(EventingInfo* e,
                                     reason = "Canceling notifications";
                     }
 
-                    sprintf(buf, "%s:%s", WsXmlGetNsPrefix(evntNs), status);
+                    sprintf(buf, "%s:%s", ws_xml_get_ns_prefix(evntNs), status);
                     ws_xml_add_child(opNode, XML_NS_EVENTING, WSE_STATUS, buf); 
 
                     if ( reason )
@@ -1486,7 +1497,7 @@ WsXmlDocH build_eventing_response(EventingInfo* e,
                     strcmp(opName, WSE_UNSUBSCRIBE_RESPONSE) != 0 )
             {
                 // TBD: ??/ we may need to correct number
-                sprintf(buf, "%u", sink->durationSeconds);
+                sprintf(buf, "%lu", sink->durationSeconds);
                 ws_xml_add_child(opNode, XML_NS_EVENTING, WSE_EXPIRES, buf); 
             }
         }
@@ -1555,7 +1566,6 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
     WsXmlDocH resp = NULL;
     WsXmlNodeH outHeaders = ws_xml_get_soap_header(rqst);
 
-    //DumpXmlNode(stdout, SoapXmlGetDocRoot(rqst)); // ??? dbg
 
     if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL )
     {
@@ -1565,9 +1575,6 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
     }
 
-    if ( g_DumpEnvelopeProc )
-        g_DumpEnvelopeProc(NULL, rqst);
-
     op = soap_create_op(e->soap, NULL, NULL, NULL, NULL, NULL, flags, tm + 10000);
 
     if ( op != NULL )
@@ -1575,7 +1582,7 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         //		SoapAddOpFilter(op, SetEventingRelatesToId, NULL, 0);
 
         soap_set_op_doc(op, rqst, 0);
-        soap_submit_op(op, 0, url, NULL);
+        soap_submit_op(op, 0, url);
 
         if ( tm != 0 )
         {
@@ -1584,30 +1591,26 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         }
 
         ws_xml_destroy_doc(rqst);
-        soap_destroy(op);
+        soap_destroy_op(op);
     }
-
-    if ( g_DumpEnvelopeProc )
-        g_DumpEnvelopeProc(NULL, resp);
 
     return resp;
 }
 
 void send_eventing_response(EventingInfo* e, SoapOpH op, WsXmlDocH doc)
 {
-    //DumpXmlNode(stdout, SoapXmlGetDocRoot(doc)); // ??? dbg
     if ( op != NULL )
     {
         soap_set_op_doc(op, doc, 0);
 
-        soap_submit_op(op, SoapGetOpChannelId(op), NULL, NULL);
+        soap_submit_op(op, soap_get_op_channel_id(op), NULL);
 
         ws_xml_destroy_doc(doc);
         //soap_destroy(op);
     }
 }
 
-// TBD: ??? simple mex implementation
+/*
 
 WsXmlDocH build_get_metadata_response(SoapH soap, WsXmlDocH base, char* relatesTo) 
 {
@@ -1636,7 +1639,7 @@ WsXmlDocH build_get_metadata_response(SoapH soap, WsXmlDocH base, char* relatesT
 
         if ( (body = ws_xml_add_child(root, XML_NS_SOAP_1_2, SOAP_BODY, NULL)) != NULL )
         {
-            ws_xml_dup_tree(body, ws_xml_get_doc_root(base)); 
+            ws_xml_duplicate_tree(body, ws_xml_get_doc_root(base)); 
         }
     }
     return doc;
@@ -1645,7 +1648,7 @@ WsXmlDocH build_get_metadata_response(SoapH soap, WsXmlDocH base, char* relatesT
 int get_metadata_request_endpoint(SoapOpH op, void* data)
 {
     WsXmlDocH base = (WsXmlDocH)data;
-    SoapH soap = SoapGetOpSoap(op);
+    SoapH soap = soap_get_op_soap(op);
     char* msgId = ws_xml_find_text_in_doc(soap_get_op_doc(op, 1), 
             XML_NS_ADDRESSING, 
             WSA_MESSAGE_ID);
@@ -1656,7 +1659,7 @@ int get_metadata_request_endpoint(SoapOpH op, void* data)
     if ( (doc = build_get_metadata_response(soap, base, msgId)) != NULL )
     {
         soap_set_op_doc(op, doc, 0);
-        soap_submit_op(op, SoapGetOpChannelId(op), NULL, NULL);
+        soap_submit_op(op, soap_get_op_channel_id(op), NULL, NULL);
         ws_xml_destroy_doc(doc);
     }
 
@@ -1670,7 +1673,7 @@ int set_metadata_request_endpoint(SoapH soap, WsXmlDocH base)
     SoapDispatchH disp;
     int retVal = 1;
 
-    if ( (disp = SoapCreateDispatch(soap, 
+    if ( (disp = soap_create_dispatch(soap, 
                     MEX_GET_MTD_REQUEST_ACTION, 
                     NULL, 
                     NULL, 
@@ -1684,7 +1687,6 @@ int set_metadata_request_endpoint(SoapH soap, WsXmlDocH base)
 
     return retVal;
 }
-
 
 WsXmlDocH build_mex_get_metadata_request(SoapH soap)
 {
@@ -1765,4 +1767,6 @@ WsXmlDocH mex_get_metadata(SoapH soap, char* url)
 
     return resp;
 }
+
+*/
 

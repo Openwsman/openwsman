@@ -36,6 +36,65 @@
 #ifndef WS_SOAP_EVENTING_H
 #define WS_SOAP_EVENTING_H
 
+
+#define WSE_RESPONSE_TIMEOUT			20000
+
+#define WSE_SUBSCRIBE					"Subscribe"	
+#define WSE_SUBSCRIBE_RESPONSE			"SubscribeResponse"	
+#define WSE_RENEW						"Renew"	
+#define WSE_RENEW_RESPONSE				"RenewResponse"	
+#define WSE_GET_STATUS					"GetStatus"	
+#define WSE_GET_STATUS_RESPONSE			"GetStatusResponse"	
+#define WSE_UNSUBSCRIBE					"Unsubscribe"	
+#define WSE_UNSUBSCRIBE_RESPONSE		"UnsubscribeResponse"	
+#define WSE_SUBSCRIPTION_END			"SubscriptionEnd"	
+
+#define WSE_EXPIRES						"Expires"
+#define WSE_END_TO						"EndTo"
+#define WSE_NOTIFY_TO					"NotifyTo"
+#define WSE_DELIVERY					"Delivery"
+#define WSE_FILTER						"Filter"
+#define WSE_DIALECT						"Dialect"
+#define WSE_STATUS						"Status"
+#define WSE_REASON						"Reason"
+#define WSE_SUBSCRIPTION_MANAGER		"SubscriptionManager"
+#define WSE_IDENTIFIER					"Identifier"
+
+#define WSE_DELIVERY_FAILURE			"DeliveryFailure"
+#define WSE_SOURCE_SHUTTING_DOWN		"SourceShuttingDown"
+#define WSE_SOURCE_CANCELING			"SourceCanceling"
+
+
+#define WSE_DIALECT_ACTION	"http://schemas.xmlsoap.org/ws/2004/08/devprof/Action"
+
+#define WSE_DP_SUB_ID					"SubId"
+
+#define WS_PUB_ADD			1
+#define WS_PUB_CHECK		0
+#define WS_PUB_REMOVE		-1
+
+
+struct __EventingH
+{
+	int __undefined;
+};
+typedef struct __EventingH* EventingH;
+
+struct __WsePublisherH
+{
+	int __undefined;
+};
+typedef struct __WsePublisherH* WsePublisherH;
+
+struct __WseSubscriberH
+{
+	int __undefined;
+};
+typedef struct __WseSubscriberH* WseSubscriberH;
+
+
+typedef int (*SubMatchProc)(WsePublisherH, void*, WsXmlDocH, WsXmlDocH*, int);
+
 struct __EventingInfo
 {
 	SoapH soap;
@@ -100,6 +159,60 @@ typedef struct __RemoteSinkInfo RemoteSinkInfo;
 
 
 
+void make_eventing_endpoint(EventingInfo *e, SoapServiceCallback endPointProc, SoapServiceCallback validateProc, char *opName);
+EventingH wse_initialize(SoapH soap, char *managerUrl);
+void WseDestroy(EventingH hEventing);
+void WseProcess(EventingH hEventing);
+void populate_string_list(DL_List *list, int count, char **strs);
+WsePublisherH wse_publisher_initialize(EventingH hEventing, int actionCount, char **actionList, void *proc, void *data);
+int is_sink_expired(RemoteSinkInfo *sink);
+void destroy_remote_sinks(EventingInfo *e, char *_status, char *_reason, int enforceDestroy);
+int wse_publisher_destroy(WsePublisherH hPub, char *status, char *reason);
+int is_sink_for_notification(RemoteSinkInfo *sink, char *action);
+int is_sink_for_publisher(RemoteSinkInfo *sink, PublisherInfo *pub);
+WsXmlDocH build_notification(WsXmlDocH event, RemoteSinkInfo *sink, char *userNsUri, char *action);
+int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char *userNsUri);
+WseSubscriberH wse_subscriber_initialize(EventingH hEventing, int actionCount, char **actionList, char *publisherUrl, char *subscriberUrl, void (*procNotification)(void *, WsXmlDocH), void (*procSubscriptionEnd)(void *, WsXmlDocH), void *data);
+int wse_dont_unsubscribe_on_destroy(WseSubscriberH hSubscriber);
+void wse_enum_sinks(EventingH hEventing, unsigned long (*proc)(void *data, char *id, char *url, unsigned long tm, void *reserved), void *data);
+int wse_subscriber_destroy(WseSubscriberH hSubscriber);
+int wse_subscribe(WseSubscriberH hSubscriber, unsigned long durationSecs);
+int wse_unsubscribe(WseSubscriberH hSubscriber);
+int wse_renew(WseSubscriberH hSubscriber, unsigned long durationSeconds);
+WsXmlDocH wse_get_status(WseSubscriberH hSubscriber);
+void populate_list_with_strings(char *buf, DL_List *list);
+RemoteSinkInfo *make_remote_sink_info(EventingInfo *e, WsXmlDocH doc);
+void destroy_remote_sink(RemoteSinkInfo *sink);
+void destroy_publisher(PublisherInfo *pub);
+void destroy_local_subscriber(LocalSubscriberInfo *sub);
+void destroy_eventing_info(EventingInfo *e);
+void wse_scan(EventingInfo *e, int enforceUnsubscribe);
+int is_filter_supported(EventingInfo *e, RemoteSinkInfo *sink);
+int wse_subscribe_endpoint(SoapOpH op, void *data);
+RemoteSinkInfo *find_remote_sink(EventingInfo *e, WsXmlDocH doc);
+int wse_renew_endpoint(SoapOpH op, void *data);
+int wse_unsubscribe_endpoint(SoapOpH op, void *data);
+int wse_get_status_endpoint(SoapOpH op, void *data);
+LocalSubscriberInfo *find_subscriber_by_local_id(EventingInfo *e, WsXmlDocH doc);
+int wse_subscription_end_endpoint(SoapOpH op, void *data);
+LocalSubscriberInfo *find_subscriber(EventingInfo *e, char *action, LocalSubscriberInfo *sub);
+int wse_sink_endpoint(SoapOpH op, void *data);
+void eventing_lock(EventingInfo *e);
+void eventing_unlock(EventingInfo *e);
+void add_eventing_action(EventingInfo *e, WsXmlNodeH node, char *opName);
+void add_eventing_epr(EventingInfo *e, WsXmlNodeH xmlNode, char *urlName, char *url, char *idName, char *idNsUri, char *id);
+void add_filters(WsXmlNodeH xmlNode, char *ns, DL_List *list, char *dialect);
+WsXmlDocH build_eventing_request(EventingInfo *e, char *opName, LocalSubscriberInfo *sub, unsigned long durationSecs);
+void add_epr_to_header(EventingInfo *e, WsXmlNodeH header, WsXmlNodeH epr);
+WsXmlDocH build_eventing_response(EventingInfo *e, char *opName, RemoteSinkInfo *sink, char *relatesTo, char *status, char *reason);
+int is_eventing_op_name(char *opName);
+WsXmlDocH send_eventing_request(EventingInfo *e, WsXmlDocH rqst, char *url, unsigned long tm, unsigned long flags);
+void send_eventing_response(EventingInfo *e, SoapOpH op, WsXmlDocH doc);
+WsXmlDocH build_get_metadata_response(SoapH soap, WsXmlDocH base, char *relatesTo);
+int get_metadata_request_endpoint(SoapOpH op, void *data);
+int set_metadata_request_endpoint(SoapH soap, WsXmlDocH base);
+WsXmlDocH build_mex_get_metadata_request(SoapH soap);
+WsXmlDocH mex_get_metadata(SoapH soap, char *url);
 
 
 #endif //WS_SOAP_EVENTING_H
