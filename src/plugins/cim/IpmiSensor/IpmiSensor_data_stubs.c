@@ -57,7 +57,7 @@
 #include "sfcc-interface.h"
 #include "interface_utils.h"
 
-// ******************* Intel_IPMI_sensor *******************************
+// ******************* Intel_IPMI_Sensor *******************************
 static IpmiSensor *set_values(CMPIInstance *instance)
 {
 	IpmiSensor *g_IpmiSensor = (IpmiSensor *)malloc(sizeof(IpmiSensor));
@@ -101,7 +101,7 @@ IpmiSensor* IpmiSensor_Get_EP(WsContextH cntx)
 		if (CreationClassName)			
 			className = CreationClassName;
 		else
-			className = "Intel_IPMI_sensor";
+			className = "Intel_IPMI_Sensor";
 		
 		CMPIInstance *instance = cim_get_instance(cimclient.cc, className, keys);
 			
@@ -125,7 +125,7 @@ int IpmiSensor_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 	if (!cimclient.cc)
 		return 1;
 		
-    CMPIArray * enumArr = cim_enum_instances (cimclient.cc, "Intel_IPMI_sensor" );
+    CMPIArray * enumArr = cim_enum_instances (cimclient.cc, "Intel_IPMI_Sensor" );
     if (!enumArr)
 	    return 1;
 

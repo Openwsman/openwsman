@@ -59,7 +59,7 @@
 // It creates an array of items with name StateDescription_TypeInfo 
 // It can be used in calls to WsSerialize and WsDeserialize 
 //
-SER_START_ITEMS("Intel_IPMI_sensor", IpmiSensor)
+SER_START_ITEMS("Intel_IPMI_Sensor", IpmiSensor)
         SER_STR("SystemCreationClassName", 0, 1),
         SER_STR("SystemName", 0, 1),
         SER_STR("CreationClassName", 0, 1),
@@ -70,7 +70,7 @@ SER_START_ITEMS("Intel_IPMI_sensor", IpmiSensor)
         SER_STR("SensorType", 0, 1),
         SER_STR("OtherSensorTypeDescription", 0, 1),
         SER_STR("CurrentState", 0, 1),
-SER_END_ITEMS("Intel_IPMI_sensor", IpmiSensor);
+SER_END_ITEMS("Intel_IPMI_Sensor", IpmiSensor);
 
 
 // ************** Array of end points for resource ****************
@@ -100,8 +100,8 @@ void get_endpoints(GModule *self, void **data)
         ifc->actionUriBase = XML_NS_CIM_V2_9;
         ifc->version = PACKAGE_VERSION;
         ifc->vendor = "Intel Corp.";
-        ifc->displayName = "Intel_IPMI_sensor";
-        ifc->notes = "Intel_IPMI_sensor";
+        ifc->displayName = "Intel_IPMI_Sensor";
+        ifc->notes = "Intel_IPMI_Sensor";
         ifc->compliance = XML_NS_WS_MAN;
         ifc->wsmanSystemUri = NULL;
         ifc->wsmanResourceUri = WS_IPMI_SENSOR_RESOURCE_URI;

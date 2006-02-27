@@ -43,7 +43,7 @@
 #define __WS_IPMI_SENSOR_H__
 
 #define WS_IPMI_SENSOR_RESOURCE_URI \
-        "http://schemas.dmtf.org/wsman/2005/06/cimv2.9/Intel_IPMI_sensor"
+        "http://schemas.dmtf.org/wsman/2005/06/cimv2.9/Intel_IPMI_Sensor"
 
 // The resource is modeled as a struct
 struct __IpmiSensor
