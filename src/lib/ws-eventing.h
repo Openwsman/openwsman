@@ -161,8 +161,8 @@ typedef struct __RemoteSinkInfo RemoteSinkInfo;
 
 void make_eventing_endpoint(EventingInfo *e, SoapServiceCallback endPointProc, SoapServiceCallback validateProc, char *opName);
 EventingH wse_initialize(SoapH soap, char *managerUrl);
-void WseDestroy(EventingH hEventing);
-void WseProcess(EventingH hEventing);
+void wse_destroy(EventingH hEventing);
+void wse_process(EventingH hEventing);
 void populate_string_list(DL_List *list, int count, char **strs);
 WsePublisherH wse_publisher_initialize(EventingH hEventing, int actionCount, char **actionList, void *proc, void *data);
 int is_sink_expired(RemoteSinkInfo *sink);
@@ -208,11 +208,12 @@ WsXmlDocH build_eventing_response(EventingInfo *e, char *opName, RemoteSinkInfo 
 int is_eventing_op_name(char *opName);
 WsXmlDocH send_eventing_request(EventingInfo *e, WsXmlDocH rqst, char *url, unsigned long tm, unsigned long flags);
 void send_eventing_response(EventingInfo *e, SoapOpH op, WsXmlDocH doc);
+/*
 WsXmlDocH build_get_metadata_response(SoapH soap, WsXmlDocH base, char *relatesTo);
 int get_metadata_request_endpoint(SoapOpH op, void *data);
 int set_metadata_request_endpoint(SoapH soap, WsXmlDocH base);
 WsXmlDocH build_mex_get_metadata_request(SoapH soap);
 WsXmlDocH mex_get_metadata(SoapH soap, char *url);
-
+*/
 
 #endif //WS_SOAP_EVENTING_H

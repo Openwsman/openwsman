@@ -103,7 +103,7 @@ EventingH wse_initialize(SoapH soap, char* managerUrl)
     return (EventingH)e;
 }
 
-void WseDestroy(EventingH hEventing)
+void wse_destroy(EventingH hEventing)
 {
     EventingInfo* e = (EventingInfo*)hEventing;
     if ( e )
@@ -116,7 +116,7 @@ void WseDestroy(EventingH hEventing)
     }
 }
 
-void WseProcess(EventingH hEventing)
+void wse_process(EventingH hEventing)
 {
     EventingInfo* e = (EventingInfo*)hEventing;
     if ( e )
