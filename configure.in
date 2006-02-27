@@ -254,7 +254,8 @@ AC_OUTPUT([
         src/plugins/Makefile
         src/plugins/cim/Makefile
         src/plugins/cim/ComputerSystem/Makefile
-        src/plugins/cim/IpmiSel/Makefile
+        src/plugins/cim/IpmiLogRecord/Makefile
+        src/plugins/cim/IpmiSensor/Makefile
         src/plugins/cim/lib/Makefile
         src/plugins/wsman/Makefile
         src/plugins/wsman/this/Makefile
