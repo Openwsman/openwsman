@@ -63,10 +63,35 @@
 #include "xml_serializer.h"
 
 #include "wsman-client.h"
+#include "wsman-debug.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
 
 
+static void
+debug_message_handler (const char *str, 
+			WsmanDebugLevel level, 
+			gpointer user_data)
+{
+    if (level <= wsman_options_get_debug_level ()) 
+    {
+        struct tm *tm;
+        time_t now;
+        char timestr[128];
+        char *log_msg;
+
+        time (&now);
+        tm = localtime (&now);
+        strftime (timestr, 128, "%b %e %T", tm);
+
+        log_msg = g_strdup_printf ("%s  %s\n",
+                                   timestr, str);
+       
+        fprintf (stderr, log_msg);
+        g_free (log_msg);
+    }
+
+}
 
 static void
 authenticate (SoupSession *session, 
@@ -173,18 +198,22 @@ wsman_client_handler(
     return;
 }
 
+static void
+initialize_logging (void)
+{    
+    wsman_debug_add_handler (debug_message_handler, WSMAN_DEBUG_LEVEL_ALWAYS, NULL);    
+
+} /* initialize_logging */
 
 int main(int argc, char** argv)
 {     
     int retVal = 0;   
 
-
-
-
     g_type_init ();
     g_thread_init (NULL);
     wsman_parse_options(argc, argv);
 
+    initialize_logging ();
     WsContextH cntx = ws_create_runtime(NULL);
 
     WsManClient *cl = 

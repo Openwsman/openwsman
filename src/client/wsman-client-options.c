@@ -44,7 +44,6 @@ static const char **wsman_argv = NULL;
 static gint server_port =  -1;
 static gchar *cafile = NULL;
 static gint debug_level = -1;
-static gint syslog_level = -1;
 
 static gchar *username = NULL;
 static gchar *password = NULL;
@@ -63,6 +62,7 @@ gboolean wsman_parse_options(int argc, char **argv)
     GError *error = NULL;
 
     GOptionEntry options[] = {						
+	{ "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
         { "cafile", 'C', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
@@ -118,12 +118,6 @@ wsman_options_get_debug_level (void)
     return debug_level;
 }
 
-
-int
-wsman_options_get_syslog_level (void)
-{
-    return syslog_level;
-}
 
 
 int

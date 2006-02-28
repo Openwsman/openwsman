@@ -7,7 +7,6 @@
 gboolean wsman_parse_options(int argc, char **argv);
 
 int wsman_options_get_debug_level(void);
-int wsman_options_get_syslog_level(void);
 int wsman_options_get_server_port(void);
 
 char *wsman_options_get_cafile(void);
