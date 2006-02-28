@@ -45,7 +45,6 @@ lib_LTLIBRARIES= libwsman.la
 libwsman_la_LIBADD =       \
         $(XML_LIBS)   \
 	$(GLIB_LIBS)	\
-	-luuid \
 	-lpthread
 
 libwsman_la_LDFLAGS= -version-info 1:0

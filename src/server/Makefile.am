@@ -11,7 +11,6 @@ LIBS = \
        $(XML_LIBS) \
        $(GMODULE_LIBS) \
        $(SOUP_LIBS) \
-       -luuid \
        $(top_builddir)/src/lib/libwsman.la
 
 

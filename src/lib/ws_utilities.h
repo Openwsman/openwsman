@@ -36,6 +36,7 @@
 #ifndef WS_UTILITIES_H_
 #define WS_UTILITIES_H_
 
+#define SIZE_OF_UUID_STRING     37
 
 
 
@@ -90,7 +91,7 @@ struct pair_t * parse_query(const char *string, int separator);
 /**/
 
 
-void soap_get_uuid (char* buf, int size, int bNoPrefix);
+int soap_get_uuid (char* buf, int size, int bNoPrefix);
 void soap_fw_unlock(void* data);
 void soap_fw_lock(void* data);
 
