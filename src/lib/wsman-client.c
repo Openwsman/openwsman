@@ -133,9 +133,34 @@ char *wsman_remove_query_string(char * resourceUri)
 }
 
 
+WsXmlDocH transfer_put(        
+        WsManClient *cl,
+        char *resourceUri) 
+{   		      
+    char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
+    WsXmlDocH respDoc = NULL;
+    
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;	
+    WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx,
+            action,
+            WSA_TO_ANONYMOUS,
+            NULL,
+            wsman_remove_query_string(resourceUri),
+            wsc->data.endpoint,
+            60000,
+            50000);	
+            
+	wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
+	respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+	ws_xml_destroy_doc(rqstDoc);
+	free(action);
+	// ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);	   
+    return respDoc;
+        
+}
 
 
-WsXmlDocH Get(        
+WsXmlDocH transfer_get(        
         WsManClient *cl,
         char *resourceUri) 
 {   		      
@@ -163,7 +188,7 @@ WsXmlDocH Get(
 
 
 
-GList *Enumerate( 
+GList *enumerate( 
         WsManClient* cl, 
         char *resourceUri,
         int count)
@@ -250,12 +275,48 @@ GList *Enumerate(
 }
 
 
+static WsManClientStatus releaseClient(WsManClient * cl)
+{
+  WsManClientStatus rc={0,NULL};
+  WsManClientEnc             * wsc = (WsManClientEnc*)cl;
+
+  if (wsc->data.hostName) {
+    free(wsc->data.hostName);
+  }
+  if (wsc->data.user) {
+    free(wsc->data.user);
+  }
+  if (wsc->data.pwd) {
+    free(wsc->data.pwd);
+  }
+  if (wsc->data.endpoint) {
+    free(wsc->data.endpoint);
+  }    
+  if (wsc->data.scheme) {
+    free(wsc->data.scheme);
+  }
+  if (wsc->certData.trustStore) {
+    free(wsc->certData.trustStore);
+  }
+  if (wsc->certData.certFile) {
+    free(wsc->certData.certFile);
+  }
+  if (wsc->certData.keyFile) {
+    free(wsc->certData.keyFile);
+  }
+
+  // if (wsc->connection) CMRelease(wsc->connection);
+
+  free(wsc);
+  return rc;
+}
 
 
 
 static WsManClientFT clientFt = {   	
- 	Get, 	
- 	Enumerate
+        releaseClient,
+ 	transfer_get, 	
+        enumerate	
 };
 
 
@@ -432,38 +493,3 @@ wsman_client (WsManClient *cl,
 }
 
 
-static WsManClientStatus releaseClient(WsManClient * cl)
-{
-  WsManClientStatus rc={0,NULL};
-  WsManClientEnc             * wsc = (WsManClientEnc*)cl;
-
-  if (wsc->data.hostName) {
-    free(wsc->data.hostName);
-  }
-  if (wsc->data.user) {
-    free(wsc->data.user);
-  }
-  if (wsc->data.pwd) {
-    free(wsc->data.pwd);
-  }
-  if (wsc->data.endpoint) {
-    free(wsc->data.endpoint);
-  }    
-  if (wsc->data.scheme) {
-    free(wsc->data.scheme);
-  }
-  if (wsc->certData.trustStore) {
-    free(wsc->certData.trustStore);
-  }
-  if (wsc->certData.certFile) {
-    free(wsc->certData.certFile);
-  }
-  if (wsc->certData.keyFile) {
-    free(wsc->certData.keyFile);
-  }
-
-  // if (wsc->connection) CMRelease(wsc->connection);
-
-  free(wsc);
-  return rc;
-}

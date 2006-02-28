@@ -1,1 +1,1 @@
-SUBDIRS = wsman  cim
+SUBDIRS = @ENABLED_PLUGINS@

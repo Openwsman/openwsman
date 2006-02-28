@@ -63,7 +63,7 @@ int main(void) {
             fprintf(stderr, "Null Client\n");
     } 
     wsman_client_add_handler(wsman_client_handler, NULL);
-    WsXmlDocH xmlDoc = cl->ft->Get(cl, "wsman:system/2005/06/this");
+    WsXmlDocH xmlDoc = cl->ft->get(cl, "wsman:system/2005/06/this");
     WsXmlNodeH soapBody = ws_xml_get_soap_body(xmlDoc);
     if (ws_xml_get_child(soapBody, 0, XML_NS_WS_MAN"/this", "This")) {
         WsManThis *this = ws_deserialize(
@@ -83,9 +83,7 @@ int main(void) {
     
     ws_xml_parser_destroy((SoapH)cntx);
     ws_xml_destroy_doc(xmlDoc);
-    soap_free(wsc);
-    soap_free(cl);
-    soap_free(cntx);
+    cl->ft->release(cl);
 
     return (0);
 }

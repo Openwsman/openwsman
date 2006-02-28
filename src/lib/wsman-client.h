@@ -75,15 +75,16 @@ typedef struct credentialData {
 
 typedef struct _WsManClientFT 
 {
+         WsManClientStatus (*release)(WsManClient * cl);
 	/**
 	 * Transfer Get
 	 */	
-	WsXmlDocH (*Get)(WsManClient* cl, char* resourceUri);
+	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri);
 	
 	/**
 	 * Transfer Put
 	 */
-	GList *(*Enumerate)(WsManClient* cl, char* resourceUri, int count);
+	GList *(*enumerate)(WsManClient* cl, char* resourceUri, int count);
 	 	 	 	 	 
 	
 } WsManClientFT;
@@ -121,11 +122,11 @@ WsManClient *wsman_connect(
 		WsManClientStatus *rc);
 
 
-WsXmlDocH Get(        
+WsXmlDocH transfer_get(        
         WsManClient *cl,
         char *resourceUri);
 
-GList *Enumerate(        
+GList *enumerate(        
         WsManClient *cl,
         char *resourceUri,
         int count);

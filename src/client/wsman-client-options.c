@@ -1,3 +1,36 @@
+/*******************************************************************************
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of Intel Corp. nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
+
+/**
+ * @author Anas Nashif
+ */
 
 #include <stdio.h>
 
@@ -26,52 +59,52 @@ static gchar **properties = NULL;
 gboolean wsman_parse_options(int argc, char **argv) 
 {
 
-	gboolean retval = FALSE;
-	GError *error = NULL;
-	
+    gboolean retval = FALSE;
+    GError *error = NULL;
+
     GOptionEntry options[] = {						
-    		{ "cafile", 'C', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
+        { "cafile", 'C', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
-		{ "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
-		{ "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
+        { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
+        { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Port", "<port>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs" , "<key=val>" },
         { NULL }
     };
-    
-   	GOptionEntry action_options[] = 
-   	{				
-		{ "get", 0, 0, G_OPTION_ARG_STRING, &get_action, "Transfer Get", "<Resource URI>"  },
-		{ "put", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Put", "<Resource URI>"  },
-		{ "enumerate", 0, 0, G_OPTION_ARG_STRING, &enum_action, "Enumeration", "<Resource URI>"  },
+
+    GOptionEntry action_options[] = 
+    {				
+        { "get", 0, 0, G_OPTION_ARG_STRING, &get_action, "Transfer Get", "<Resource URI>"  },
+        { "put", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Put", "<Resource URI>"  },
+        { "enumerate", 0, 0, G_OPTION_ARG_STRING, &enum_action, "Enumeration", "<Resource URI>"  },
         { "catch", 0, 0, G_OPTION_ARG_STRING, &catch_action, "Private Catch (For Testing Only)", "<Resource URI>" },
-		
-		{ NULL }
-   	};
-   
-   	GOptionGroup *action_group;
-	GOptionContext *opt_ctx;	
+
+        { NULL }
+    };
+
+    GOptionGroup *action_group;
+    GOptionContext *opt_ctx;	
     opt_ctx = g_option_context_new("WS-Management Client");    
     action_group = g_option_group_new("actions", "Actions", "Supported Actions", NULL, NULL);
     g_option_group_add_entries(action_group, action_options);
-    
+
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
     g_option_context_add_group(opt_ctx, action_group);
-    
+
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
-    
+
     if (error)
     {
-    		if (error->message)
-        		printf ("%s\n", error->message);
+        if (error->message)
+            printf ("%s\n", error->message);
         return FALSE;
-     }
-                    
+    }
+
     g_option_context_free(opt_ctx);
     return retval;
 }
-        
+
 const char **
 wsman_options_get_argv (void)
 {
@@ -127,30 +160,30 @@ wsman_options_get_password (void)
 int
 wsman_options_get_action (void)
 {
-	int op;
-	if (get_action != NULL)	
-		op = ACTION_TRANSFER_GET;			
-	else if (put_action != NULL)	
-		op = ACTION_TRANSFER_PUT;			
-	else if (enum_action != NULL)	
-		op = ACTION_ENUMERATION;						
+    int op;
+    if (get_action != NULL)	
+        op = ACTION_TRANSFER_GET;			
+    else if (put_action != NULL)	
+        op = ACTION_TRANSFER_PUT;			
+    else if (enum_action != NULL)	
+        op = ACTION_ENUMERATION;						
     else if (catch_action != NULL)    
         op = ACTION_PRIVATE_CATCH;
     else
-    		op = 0;
+        op = 0;
     return op;
 }   
 
 char*
 wsman_options_get_resource_uri (void)
 {	
-	char* resourceUri = NULL;
-	if (get_action != NULL)	
-		resourceUri = get_action;			
-	else if (put_action != NULL)	
-		resourceUri = put_action;					
-	else if (enum_action != NULL)	
-		resourceUri = enum_action;								
+    char* resourceUri = NULL;
+    if (get_action != NULL)	
+        resourceUri = get_action;			
+    else if (put_action != NULL)	
+        resourceUri = put_action;					
+    else if (enum_action != NULL)	
+        resourceUri = enum_action;								
     else if (catch_action != NULL)    
         resourceUri = catch_action;        		
     return resourceUri;
