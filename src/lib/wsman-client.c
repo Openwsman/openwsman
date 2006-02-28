@@ -152,6 +152,7 @@ WsXmlDocH transfer_put(
             
 	wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 	respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "test");
 	ws_xml_destroy_doc(rqstDoc);
 	free(action);
 	// ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);	   

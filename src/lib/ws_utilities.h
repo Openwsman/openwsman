@@ -129,6 +129,7 @@ unsigned long soap_get_ticks(void);
 int is_time_up(unsigned long lastTicks, unsigned long tm);
 void soap_sleep(unsigned long tm);
 char* skip_white_spaces(char* ptr);
+gboolean soap_fw_trylock(void* data);
 
 #endif /*WS_UTILITIES_H_*/
 

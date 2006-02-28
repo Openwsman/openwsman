@@ -1,38 +1,38 @@
 /*******************************************************************************
-* Copyright (C) 2004-2006 Intel Corp. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-*  - Neither the name of Intel Corp. nor the names of its
-*    contributors may be used to endorse or promote products derived from this
-*    software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
-* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************/
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of Intel Corp. nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
 
 /**
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -49,7 +49,7 @@
 #include <assert.h>
 #include <sys/ioctl.h>
 #include <netdb.h>
-#include <net/if_arp.h>
+// #include <net/if_arp.h>
 #include <sys/utsname.h>
 
 #include <fcntl.h>
@@ -58,25 +58,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include <glib.h>
 
 
 #include "ws_utilities.h"
+#include "wsman-debug.h"
 
+/*
 #ifndef __USE_UNIX98
 extern int pthread_mutexattr_settype (pthread_mutexattr_t *__attr, int __kind)
-	     __THROW;
+__THROW;
 #endif
-
-void soap_initialize_lock(void *data)
-{
-        pthread_mutexattr_t attrVal;
-        // void* data = soap_alloc(sizeof(pthread_mutex_t), 0);
-        pthread_mutexattr_init( &attrVal );
-        pthread_mutexattr_settype( &attrVal, PTHREAD_MUTEX_RECURSIVE_NP );
-        if ( data != NULL )
-                pthread_mutex_init((pthread_mutex_t*)data, &attrVal);
-        // return data;
-}
+*/
 
 static long mac_addr_sys ( u_char *addr)
 {
@@ -95,7 +88,7 @@ static long mac_addr_sys ( u_char *addr)
     ifc.ifc_len = sizeof(buf);
     ifc.ifc_buf = buf;
     ioctl(s, SIOCGIFCONF, &ifc);
- 
+
     IFR = ifc.ifc_req;
     for (i = ifc.ifc_len / sizeof(struct ifreq); --i >= 0; IFR++) {
 
@@ -123,134 +116,163 @@ static long mac_addr_sys ( u_char *addr)
 int soap_get_uuid (char* buf, int size, int bNoPrefix) 
 {
 
-        static int clock_sequence = 1;
-        u_int64_t longTimeVal;
-        int timeLow = 0;
-        int timeMid = 0;
-        int timeHigh = 0;
-        unsigned char mac[6];
-        unsigned char uuid[16];
-        int i;
-        char* ptr = buf;
-        struct timeval tv;
-        int max_length = SIZE_OF_UUID_STRING;
+    static int clock_sequence = 1;
+    u_int64_t longTimeVal;
+    int timeLow = 0;
+    int timeMid = 0;
+    int timeHigh = 0;
+    unsigned char mac[6];
+    unsigned char uuid[16];
+    int i;
+    char* ptr = buf;
+    struct timeval tv;
+    int max_length = SIZE_OF_UUID_STRING;
 
-        if ( !bNoPrefix ) max_length += 5;      // space for "uuid:"
-        if ( size < max_length )
-                return 0;
+    if ( !bNoPrefix ) max_length += 5;      // space for "uuid:"
+    if ( size < max_length )
+        return 0;
 
-        if ( buf == NULL )
-                return 0;
+    if ( buf == NULL )
+        return 0;
 
-        // get time data
-        gettimeofday( &tv, NULL );
-        longTimeVal = (u_int64_t)1000000 * (u_int64_t)tv.tv_sec + (u_int64_t)tv.tv_usec;
-        timeLow = longTimeVal & 0xffffffff;     // lower 32 bits
-        timeMid = (longTimeVal >> 32) & 0xffff; // middle 16 bits
-        timeHigh = (longTimeVal >> 32) & 0xfff; // upper 12 bits
+    // get time data
+    gettimeofday( &tv, NULL );
+    longTimeVal = (u_int64_t)1000000 * (u_int64_t)tv.tv_sec + (u_int64_t)tv.tv_usec;
+    timeLow = longTimeVal & 0xffffffff;     // lower 32 bits
+    timeMid = (longTimeVal >> 32) & 0xffff; // middle 16 bits
+    timeHigh = (longTimeVal >> 32) & 0xfff; // upper 12 bits
 
-        // update clock sequence number
-        clock_sequence++;
+    // update clock sequence number
+    clock_sequence++;
 
-        // get mac address
-            if ( mac_addr_sys( mac ) < 0 )
-                return 0;
+    // get mac address
+    if ( mac_addr_sys( mac ) < 0 )
+        return 0;
 
-        // now assemble UUID from fragments above
-        for( i = 0; i < 6; i++ )
-                uuid[i] = mac[i];                       // mac address
+    // now assemble UUID from fragments above
+    for( i = 0; i < 6; i++ )
+        uuid[i] = mac[i];                       // mac address
 
-        uuid[6] = clock_sequence & 0xff;                // clock seq. low
-        uuid[7] = 0x80 | ((clock_sequence >> 8) & 0x3f);// clock seq. high and variant
-        uuid[8] = timeHigh & 0xff;                      // time high/version low bits
-        uuid[9] = timeHigh >> 8 | 0x10;                 // time high/version high bits
-        *(short int*)(uuid+10) = (short int)timeMid;
-        *(int*)(uuid+12) = timeLow;
+    uuid[6] = clock_sequence & 0xff;                // clock seq. low
+    uuid[7] = 0x80 | ((clock_sequence >> 8) & 0x3f);// clock seq. high and variant
+    uuid[8] = timeHigh & 0xff;                      // time high/version low bits
+    uuid[9] = timeHigh >> 8 | 0x10;                 // time high/version high bits
+    *(short int*)(uuid+10) = (short int)timeMid;
+    *(int*)(uuid+12) = timeLow;
 
-        // sha1 the uuid above, to mix things up
-        //icrypto_sha1_calc( uuid, 16, sha1uuid );
+    // sha1 the uuid above, to mix things up
+    //icrypto_sha1_calc( uuid, 16, sha1uuid );
 
-        // convert these bytes into chars at output
+    // convert these bytes into chars at output
 
 
-        if ( !bNoPrefix )
-        {
-                sprintf( ptr, "uuid:" );
-                ptr += 5;
-        }
+    if ( !bNoPrefix )
+    {
+        sprintf( ptr, "uuid:" );
+        ptr += 5;
+    }
 
-        sprintf( ptr, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                        uuid[15], uuid[14], uuid[13], uuid[12],
-                        uuid[11], uuid[10], uuid[9], uuid[8],
-                        uuid[7], uuid[6], uuid[5], uuid[4],
-                        uuid[3], uuid[2], uuid[1], uuid[0] );
+    sprintf( ptr, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+            uuid[15], uuid[14], uuid[13], uuid[12],
+            uuid[11], uuid[10], uuid[9], uuid[8],
+            uuid[7], uuid[6], uuid[5], uuid[4],
+            uuid[3], uuid[2], uuid[1], uuid[0] );
 
-        return 1;
-    
+    return 1;
+
 }
 
 
+static GMutex *fw_mutex = NULL;
+
+void soap_initialize_lock(void *data)
+{
+    fw_mutex = (GMutex *)data;
+    g_assert(fw_mutex != NULL );
+    fw_mutex = g_mutex_new();
+    wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"lock initialize");
+    /*
+    pthread_mutexattr_t attrVal;
+    pthread_mutexattr_init( &attrVal );
+    pthread_mutexattr_settype( &attrVal, PTHREAD_MUTEX_RECURSIVE_NP );
+    if ( data != NULL )
+        pthread_mutex_init((pthread_mutex_t*)data, &attrVal);
+    // return data;
+    */
+}
+
+gboolean soap_fw_trylock(void* data)
+{
+    gboolean try = FALSE;
+    if ( data )
+    {
+        g_mutex_trylock(fw_mutex);
+        //pthread_mutex_lock( (pthread_mutex_t*)data );
+    }
+    return try;
+}
+
 void soap_fw_lock(void* data)
 {
-	if ( data )
-	{
-		//printf("\nfwEntryCount = %i\n", fwEntryCount);
-		pthread_mutex_lock( (pthread_mutex_t*)data );
-		
-	}
+    if ( data )
+    {
+        g_mutex_lock(fw_mutex);
+        //pthread_mutex_lock( (pthread_mutex_t*)data );
+    }
 }
 
 
 
 void soap_fw_unlock(void* data)
 {
-	if ( data )
-	{	
-		pthread_mutex_unlock((pthread_mutex_t*)data);
-	}
+    if ( data )
+    {	
+        g_mutex_unlock(fw_mutex);
+        //pthread_mutex_unlock((pthread_mutex_t*)data);
+    }
 }
 
 
 // SoapCloneString
 char* soap_clone_string(char* str)
 {
-	char* buf = NULL;
-	
-	if ( str )
-	{
-		int size = strlen(str) + 1;
-		buf = soap_clone(str, size);
-	}
-	return buf;
+    char* buf = NULL;
+
+    if ( str )
+    {
+        int size = strlen(str) + 1;
+        buf = soap_clone(str, size);
+    }
+    return buf;
 }
 
 // SoapClone
 void* soap_clone(void* buf, int size)
 {
-	void* clone = NULL;
-	
-	if ( buf )
-	{
-		if ( (clone = soap_alloc(size, 0)) != NULL )
-			memcpy(clone, buf, size);
-	}
-	return clone;
+    void* clone = NULL;
+
+    if ( buf )
+    {
+        if ( (clone = soap_alloc(size, 0)) != NULL )
+            memcpy(clone, buf, size);
+    }
+    return clone;
 }
 
 
 // soap_alloc
 void* soap_alloc(int size, int zeroInit)
 {
-	void* ptr = malloc(size);
-	if ( ptr && zeroInit )
-		memset(ptr, 0, size);
-	return ptr;
+    void* ptr = malloc(size);
+    if ( ptr && zeroInit )
+        memset(ptr, 0, size);
+    return ptr;
 }
 
 void soap_free(void* ptr)
 {
-	if ( ptr )
-		free(ptr);
+    if ( ptr )
+        free(ptr);
 }
 
 
@@ -522,12 +544,12 @@ DL_Node* DL_FindNode(DL_List* list, void* data, int (*proc)(void*, DL_Node*))
 
 unsigned long soap_get_ticks()
 {
-        // struct has seconds+us since Epoch in 1970
-        // turn these into total ms
-        struct timeval tv;
-        gettimeofday( &tv, NULL );
-        unsigned long tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-        return tick;
+    // struct has seconds+us since Epoch in 1970
+    // turn these into total ms
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    unsigned long tick = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    return tick;
 }
 
 int is_time_up(unsigned long lastTicks, unsigned long tm)
@@ -539,15 +561,15 @@ int is_time_up(unsigned long lastTicks, unsigned long tm)
 
 void soap_sleep(unsigned long tm)
 {
-        int sec = tm / 1000;
-        int msec = tm - sec * 1000;
-        int nsec = msec * 1000000;
+    int sec = tm / 1000;
+    int msec = tm - sec * 1000;
+    int nsec = msec * 1000000;
 
-        struct timespec ts;
+    struct timespec ts;
 
-        ts.tv_sec = sec;
-        ts.tv_nsec = nsec;
-        nanosleep( &ts, NULL );
+    ts.tv_sec = sec;
+    ts.tv_nsec = nsec;
+    nanosleep( &ts, NULL );
 }
 
 
@@ -557,93 +579,93 @@ void soap_sleep(unsigned long tm)
 
 struct pair_t * parse_query(const char *string, int separator)
 {
-  int i;
-  char *p;
-  char *query_string;
-  size_t query_len;
-  struct pair_t *query;
+    int i;
+    char *p;
+    char *query_string;
+    size_t query_len;
+    struct pair_t *query;
 
-  if(!string)
-    return NULL;
+    if(!string)
+        return NULL;
 
-  if((query = (struct pair_t *)malloc(sizeof(struct pair_t)*MAX_QUERY_KEYS))
-     == NULL)
-  {
-    fprintf(stderr, "Could not malloc\n");
-    exit (1);
-  }
-
-  query_len = strlen(string);
-  if((query_string = malloc(query_len + 1)) == NULL)
-  {
-    fprintf(stderr, "Could not malloc\n");
-    exit (1);
-  }
-
-  memcpy(query_string, string, query_len + 1);
-
-  for(i = 0, p = query_string; i < MAX_QUERY_KEYS && *p; i++, p++) {
-    while(*p == ' ') p++;
-
-    query[i].name = p;
-    while(*p != '=' && *p != separator && *p) p++;
-    if(*p != '=') {
-      *p = 0;
-      query[i].value = NULL;
-      continue;
+    if((query = (struct pair_t *)malloc(sizeof(struct pair_t)*MAX_QUERY_KEYS))
+            == NULL)
+    {
+        fprintf(stderr, "Could not malloc\n");
+        exit (1);
     }
-    *p++ = 0;
-    
-    query[i].value = p;
-    while(*p != separator && *p) p++;
-    *p = 0;
-  }
 
-  query[i].name = NULL;
+    query_len = strlen(string);
+    if((query_string = malloc(query_len + 1)) == NULL)
+    {
+        fprintf(stderr, "Could not malloc\n");
+        exit (1);
+    }
 
-  for(i = 0; query[i].name; i++) {
-    uri_unescape(query[i].name);
-    // FIXME
-    //uri_unescape(query[i].value);
-  }
+    memcpy(query_string, string, query_len + 1);
 
-  return query;
+    for(i = 0, p = query_string; i < MAX_QUERY_KEYS && *p; i++, p++) {
+        while(*p == ' ') p++;
+
+        query[i].name = p;
+        while(*p != '=' && *p != separator && *p) p++;
+        if(*p != '=') {
+            *p = 0;
+            query[i].value = NULL;
+            continue;
+        }
+        *p++ = 0;
+
+        query[i].value = p;
+        while(*p != separator && *p) p++;
+        *p = 0;
+    }
+
+    query[i].name = NULL;
+
+    for(i = 0; query[i].name; i++) {
+        uri_unescape(query[i].name);
+        // FIXME
+        //uri_unescape(query[i].value);
+    }
+
+    return query;
 }
 
 int xdigit_to_int(int c)
 {
-  c = tolower(c);
+    c = tolower(c);
 
-  if(isdigit(c))
-    return c - '0';
-  else if(isxdigit(c))
-    return c - 'a';
-  else
-    return -1;
+    if(isdigit(c))
+        return c - '0';
+    else if(isxdigit(c))
+        return c - 'a';
+    else
+        return -1;
 }
 
 
 void uri_unescape(char *ptr)
 {
-  char *nptr = ptr;
-  int c, d;
+    char *nptr = ptr;
+    int c, d;
 
-  while(*ptr) {
-    if(*ptr == '%') {
-      if((c = xdigit_to_int(*++ptr)) != -1 &&
-     (d = xdigit_to_int(*++ptr)) != -1) {
-    *nptr++ = (c << 4) | d;
-    ptr++;
-      }
-    } else if(*ptr == '+') {
-      *nptr++ = ' ';
-      ptr++;
-    } else {
-      *nptr++ = *ptr++;
+    while(*ptr) {
+        if(*ptr == '%') {
+            if((c = xdigit_to_int(*++ptr)) != -1 &&
+                    (d = xdigit_to_int(*++ptr)) != -1) {
+                *nptr++ = (c << 4) | d;
+                ptr++;
+            }
+        } else if(*ptr == '+') {
+            *nptr++ = ' ';
+            ptr++;
+        } else {
+            *nptr++ = *ptr++;
+        }
     }
-  }
-  *nptr = 0;
-  return;
+    *nptr = 0;
+    return;
 }
 
 char* skip_white_spaces(char* ptr)

@@ -802,4 +802,8 @@ WsXmlDocH soap_get_ch_doc(SOAP_CHANNEL* ch, SOAP_FW* fw);
 void soap_enter(SoapH soap);
 void soap_leave(SoapH soap);
 
+WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize);
+
+
+
 #endif /*SOAP_API_H_*/

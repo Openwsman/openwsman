@@ -1,32 +1,32 @@
 /*******************************************************************************
-* Copyright (C) 2004-2006 Intel Corp. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-*  - Neither the name of Intel Corp. nor the names of its
-*    contributors may be used to endorse or promote products derived from this
-*    software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
-* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************/
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of Intel Corp. nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
 
 /**
  * @author Anas Nashif
@@ -163,15 +163,14 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
             doc, 
             XML_NS_ADDRESSING, 
             WSA_MESSAGE_ID);
-            
+
     int retVal = 0;
-	
+
     if ( msgId )
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Checking Message ID: %s", msgId);
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Checking Message ID: %s", msgId);
         DL_Node* node;
         soap_fw_lock(fw);
-
         node = DL_GetHead(&fw->processedMsgIdList);
 
         while( node != NULL )
@@ -180,7 +179,7 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
             if ( !strcmp(msgId, (char*)node->dataBuf) )
             {              
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-                		"Duplicate Message ID: %s", msgId);                         
+                        "Duplicate Message ID: %s", msgId);                         
                 retVal = 1;
                 break;
             }
@@ -206,7 +205,6 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
                 }
             }
         }
-
         soap_fw_unlock(fw);
     }
     else
@@ -235,14 +233,14 @@ WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc)
 
     if ( !strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) )
     {
-    	        
+
         char* soapNsUri = ws_xml_get_node_name_ns(root);		      
         if ( (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0
                     &&
                     strcmp(soapNsUri, XML_NS_SOAP_1_1) != 0) )
         {
-       		// FIXME: Check for message id
-        		// build_soap_version_fault(fw);
+            // FIXME: Check for message id
+            // build_soap_version_fault(fw);
             fault_code = SOAP_FAULT_VERSION_MISMATCH;
         }
         else
@@ -251,8 +249,8 @@ WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc)
 
             if ( node == NULL ) 
             {
-            		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Invalid envelope (no body)"); 
-            		fault_code = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;               
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Invalid envelope (no body)"); 
+                fault_code = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;               
             }
         }
     }
@@ -291,7 +289,7 @@ SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id)
         soap_fw_unlock(fw);
     }
 
- 
+
 
     return entry;
 }
@@ -300,12 +298,13 @@ SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id)
 int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry)
 {
     int retVal = 0;
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "test");
 
     if ( fw && entry )
     {
         DL_Node* node;
 
-        soap_fw_lock(fw);
+        gboolean try = soap_fw_trylock(fw);
 
         node = DL_GetHead(&fw->responseList);
         while( node != NULL )
@@ -320,7 +319,8 @@ int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry)
             node = DL_GetNext(node);
         }
 
-        soap_fw_unlock(fw);
+        if (!try)
+            soap_fw_unlock(fw);
     }
 
     return retVal;
@@ -361,7 +361,7 @@ WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op)
     if ( child != NULL ) 
     {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-        		"Mustunderstand Fault; %s", ws_xml_get_node_text(child) );
+                "Mustunderstand Fault; %s", ws_xml_get_node_text(child) );
     }
     return child;
 }
@@ -394,8 +394,8 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
     int retVal = 0;
     DL_List* list;
 
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Filters");
-	
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Filters");
+
     if ( !(op->dispatch->flags & SOAP_SKIP_DEF_FILTERS) )
     {
         list = (!inbound) ? &op->dispatch->fw->outboundFilterList :
@@ -415,11 +415,11 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
         WsXmlNodeH notUnderstoodHeader;
         if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 )
         {        
-        		wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
+            wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
             retVal = 1;
         }
     }
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Filteres Processed: %d", retVal);
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Filteres Processed: %d", retVal);
     return retVal;
 }
 
@@ -432,12 +432,12 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
  */
 void wsman_dispatcher_list( GList *interfaces ) 
 {
-	GList *node = interfaces;
-	while(node) {
-		WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
-		wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Listing Dispatcher: interface->wsmanResourceUri: %s", interface->wsmanResourceUri);		 
-		node = g_list_next (node);
-	}		
+    GList *node = interfaces;
+    while(node) {
+        WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Listing Dispatcher: interface->wsmanResourceUri: %s", interface->wsmanResourceUri);		 
+        node = g_list_next (node);
+    }		
 }
 
 
@@ -455,7 +455,7 @@ int process_inbound_operation(SOAP_OP_ENTRY* op)
         op->inDoc = NULL;
         if ( (op->dispatch->flags & SOAP_CLIENT_RESPONSE) != 0 )
         {
-			retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
+            retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
         }
         else
         {
@@ -466,7 +466,7 @@ int process_inbound_operation(SOAP_OP_ENTRY* op)
     }
     else
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
         if ( op->dispatch->serviceCallback != NULL )
         {
             retVal = op->dispatch->serviceCallback((SoapOpH)op, 
@@ -493,25 +493,25 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
 // DispatchInboundCall
 void  dispatch_inbound_call(SOAP_CHANNEL *ch)
 {   
-	
-	SOAP_FW* fw = (SOAP_FW*)ch->recvDispatchData;		
-	int ret;		
-	
+
+    SOAP_FW* fw = (SOAP_FW*)ch->recvDispatchData;		
+    int ret;		
+
     WsXmlDocH inDoc = build_inbound_envelope( fw, ch );
-    
-	SOAP_OP_ENTRY* op = NULL;	
+
+    SOAP_OP_ENTRY* op = NULL;	
     if ( inDoc == NULL )
     {
         if ( ch->inputBuffer->associatedTransportData )
         {
-                soap_free(ch->inputBuffer->associatedTransportData);
+            soap_free(ch->inputBuffer->associatedTransportData);
         }
         ch->inputBuffer->associatedTransportData = NULL;  	
     }
     else
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
-        
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
+
         char* relatesTo = get_relates_to_message_id(fw, inDoc);
         if ( relatesTo == NULL ||
                 (op = find_response_entry(fw, relatesTo)) == NULL )
@@ -522,19 +522,19 @@ void  dispatch_inbound_call(SOAP_CHANNEL *ch)
             {
                 if ( (op = create_op_entry(fw, dispatch, 0)) == NULL )
                 {
-		    			wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "create_op_entry() failed");
+                    wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "create_op_entry() failed");
                     destroy_dispatch_entry(dispatch);
                 }
             } 
             else 
             {
-            		if (!ch->FaultCodeType) 
-            		{
-           			wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-            				"Fault (No dispatcher entry for this resourceUri)");            			
-            			ch->FaultCodeType = WSA_FAULT_DESTINATION_UNREACHABLE;
-            			ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;                       	
-            		}
+                if (!ch->FaultCodeType) 
+                {
+                    wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
+                            "Fault (No dispatcher entry for this resourceUri)");            			
+                    ch->FaultCodeType = WSA_FAULT_DESTINATION_UNREACHABLE;
+                    ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;                       	
+                }
             }
         }
 
@@ -542,25 +542,25 @@ void  dispatch_inbound_call(SOAP_CHANNEL *ch)
         {
             if ( ch->inputBuffer->associatedTransportData )
             {
-            		soap_free(ch->inputBuffer->associatedTransportData);
+                soap_free(ch->inputBuffer->associatedTransportData);
                 ch->inputBuffer->associatedTransportData = NULL;
             }        	
             ws_xml_destroy_doc(inDoc);
         }
         else
         {   
-        		op->backchannelId = ch->uniqueId;   	
+            op->backchannelId = ch->uniqueId;   	
             op->inDoc = inDoc;
-            
+
             ret = process_inbound_operation(op);
             if (ret) 
             {
-            		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-            			"Fault (process_inbound_operation error)");
-            			
-            		ch->FaultCodeType = WSMAN_FAULT_INTERNAL_ERROR;
-            		ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;
-	    		}
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
+                        "Fault (process_inbound_operation error)");
+
+                ch->FaultCodeType = WSMAN_FAULT_INTERNAL_ERROR;
+                ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;
+            }
         }
     }      
 }
@@ -575,22 +575,22 @@ void  dispatch_inbound_call(SOAP_CHANNEL *ch)
 WsXmlDocH build_inbound_envelope(SOAP_FW* fw, SOAP_CHANNEL *ch)
 {
     WsXmlDocH doc = NULL;   
-	char *buf = (char *)soap_alloc(ch->inputBuffer->bufSize + 1, 1);
-	strncpy (buf, ch->inputBuffer->buf, ch->inputBuffer->bufSize);	        
-    
- 	if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
+    char *buf = (char *)soap_alloc(ch->inputBuffer->bufSize + 1, 1);
+    strncpy (buf, ch->inputBuffer->buf, ch->inputBuffer->bufSize);	        
+
+    if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
     {        
-    		WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
-    		
+        WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
+
         if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_FAULT_NONE )
         {            
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-            		"Envelope Discarded: Duplicate MessageID");
-            		
+                    "Envelope Discarded: Duplicate MessageID");
+
             ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;  
             ch->FaultDetailType = WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID;          
         }   
-        
+
         if (fault_code != WSMAN_FAULT_NONE)
         {        		        		
             ws_xml_destroy_doc(doc);
@@ -599,8 +599,8 @@ WsXmlDocH build_inbound_envelope(SOAP_FW* fw, SOAP_CHANNEL *ch)
     }
     else 
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");
-    		ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");
+        ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;
     }
     return doc;
 }
@@ -615,19 +615,19 @@ WsXmlDocH build_inbound_envelope(SOAP_FW* fw, SOAP_CHANNEL *ch)
 WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize)
 {
     WsXmlDocH doc = NULL;   
-	char *buf = (char *)soap_alloc( inputBufferSize + 1, 1);
-	strncpy (buf, inputBuffer, inputBufferSize);	        
-    
- 	if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
+    char *buf = (char *)soap_alloc( inputBufferSize + 1, 1);
+    strncpy (buf, inputBuffer, inputBufferSize);	        
+
+    if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
     {        
-    		WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
-    		
+        WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
+
         if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_FAULT_NONE )
         {            
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-            		"Envelope Discarded: Duplicate MessageID");    
+                    "Envelope Discarded: Duplicate MessageID");    
         }   
-        
+
         if (fault_code != WSMAN_FAULT_NONE)
         {        		        		
             ws_xml_destroy_doc(doc);
@@ -636,7 +636,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
     }
     else 
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
     }
     return doc;
 }
@@ -658,10 +658,10 @@ SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlDocH
 
     if ( dispatch == NULL )
     {    	
-    		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Dispatcher Error");    	
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Dispatcher Error");    	
         if ( (dispatch = do_get_dispatch_entry(fw, ch, doc)) == NULL )
         {
-        		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Dispatcher not defined"); 
+            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Dispatcher not defined"); 
         }
     }
     else 
@@ -675,7 +675,7 @@ SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlDocH
 // DoGetDispatchEntry
 SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlDocH doc)
 {
-	
+
     SOAP_DISPATCH_ENTRY* dispatch = NULL;
 
     if ( fw )
@@ -685,7 +685,7 @@ SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlD
                 doc, 
                 XML_NS_ADDRESSING, 
                 WSA_ACTION);
-                
+
         if ( action == NULL )
         {                      		
             ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;  
@@ -698,8 +698,8 @@ SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlD
             while( dispatch != NULL )
             {
                 char* dispatchAction = dispatch->inboundAction;
-				wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Dispatch entry for %s", dispatchAction);
-				
+                wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Dispatch entry for %s", dispatchAction);
+
                 if ( !(dispatch->flags & SOAP_CUSTOM_DISPATCHER) )
                 {                	
                     if ( (dispatch->flags & SOAP_ACTION_PREFIX) != 0 )
@@ -730,7 +730,7 @@ SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlD
             if ( dispatch == NULL )
             {
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-                		"No dispatch entry for %s", action);
+                        "No dispatch entry for %s", action);
             }
 
             if ( bDestroyAction ) 
@@ -756,39 +756,39 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc)
     else
     {
         WsManDispatcherInfo* dispInfo = (WsManDispatcherInfo*)data;
-       	wsman_dispatcher_list(dispInfo->interfaces);
+        wsman_dispatcher_list(dispInfo->interfaces);
         WsDispatchEndPointInfo* ep = NULL;
         char* uri = wsman_get_resource_uri(cntx, doc);
         char* action = ws_addressing_get_action(cntx, doc);
         int i; 
         int resUriMatch = 0;
 
-		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: %s, %s", uri, action);
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: %s, %s", uri, action);
         if ( uri && action )
         {
             WsDispatchInterfaceInfo* r = NULL;  
-                                              
-			wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, 
-				"Registered interfaces: %d", g_list_length(dispInfo->interfaces) );
-				
-			GList *node = dispInfo->interfaces;
+
+            wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, 
+                    "Registered interfaces: %d", g_list_length(dispInfo->interfaces) );
+
+            GList *node = dispInfo->interfaces;
             while(node!=NULL)
             {            
-            		WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->data;
-            	
-            		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: uri: %s, interface->wsmanResourceUri: %s", uri, interface->wsmanResourceUri);
-            	
+                WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->data;
+
+                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: uri: %s, interface->wsmanResourceUri: %s", uri, interface->wsmanResourceUri);
+
                 if ( !strcmp(uri, interface->wsmanResourceUri) )
                 {     
-                		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
-                			"Dispatcher interface match: %s", interface->wsmanResourceUri);        	                                       
+                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+                            "Dispatcher interface match: %s", interface->wsmanResourceUri);        	                                       
                     r = interface;
                     resUriMatch = 1;
                     break;                    
                 }
                 node = g_list_next (node);                            
             }
-            
+
             if ( r != NULL )
             {            	
                 char* ptr = action;
@@ -829,27 +829,27 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc)
         } 
         else 
         {
-        		if (resUriMatch == 1 ) 
-        		{
-        			wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"No endpoint found for this action");
-             	//ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;  
-            		//ch->FaultDetailType = WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID;  	
-        			// TBD: detailed fault as in spec.
-        			/*
-        			WsSoapMessageH* ws_message = (WsSoapMessageH*)message;
-            		WsXmlDocH fault = ws_xml_create_fault(cntx,
-                        doc,
-                        "Sender",
-                        XML_NS_WS_MAN,
-                        "ActionMismatch",
-                        NULL,
-                        "Action not supported for this resource",
-                        NULL,
-                        NULL);
-                        
-            		build_soap_message_response(fault, ws_message );                    
-            		*/
-        		}
+            if (resUriMatch == 1 ) 
+            {
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"No endpoint found for this action");
+                //ch->FaultCodeType = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;  
+                //ch->FaultDetailType = WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID;  	
+                // TBD: detailed fault as in spec.
+                /*
+                   WsSoapMessageH* ws_message = (WsSoapMessageH*)message;
+                   WsXmlDocH fault = ws_xml_create_fault(cntx,
+                   doc,
+                   "Sender",
+                   XML_NS_WS_MAN,
+                   "ActionMismatch",
+                   NULL,
+                   "Action not supported for this resource",
+                   NULL,
+                   NULL);
+
+                   build_soap_message_response(fault, ws_message );                    
+                   */
+            }
         }
     }	
     return disp;

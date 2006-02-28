@@ -1443,12 +1443,11 @@ void destroy_op_entry(SOAP_OP_ENTRY* entry)
             soap_fw_lock(fw);
         DL_RemoveNode(&entry->dispatch->node);
         unlink_response_entry(fw, entry);
-        if ( fw )
+        if ( fw ) {
             soap_fw_unlock(fw);
+        }
 
         destroy_dispatch_entry(entry->dispatch);
-
-
 
         DL_RemoveAndDestroyAllNodes(&entry->processedHeaders, 0);
 
@@ -2284,7 +2283,7 @@ WsXmlDocH ws_send_get_response(WsManClient *cl,
             soap_set_op_doc(op, rqstDoc, 0);
             soap_submit_client_op(op, cl);
             respDoc = soap_detach_op_doc(op, 1);
-           	soap_destroy_op(op);            
+            soap_destroy_op(op);            
         }
     }
     return respDoc;
@@ -2299,7 +2298,6 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm)
     {
         unsigned long startTicks = soap_get_ticks();
 
-        retVal = soap_get_op_doc(op, 1);
         while( !(retVal = (soap_get_op_doc(op, 1) != NULL)) )
         {
             if ( is_time_up(startTicks, tm) )
