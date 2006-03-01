@@ -1,14 +1,12 @@
 
 INCLUDES = \
 	   $(XML_CFLAGS) \
-	   $(LIBXSLT_CFLAGS) \
 	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib
 
 LIBS = \
        $(XML_LIBS) \
-       $(LIBXSLT_LIBS) \
        $(SOUP_LIBS) \
        $(top_builddir)/src/lib/libwsman.la
 
@@ -17,8 +15,6 @@ wsman_SOURCES = wsman.c \
 		wsman-client-options.c \
 		wsman.h
 		
-
-
 bin_PROGRAMS = \
 	wsman
    
