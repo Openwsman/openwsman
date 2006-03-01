@@ -2320,5 +2320,53 @@ void soap_leave(SoapH soap)
 }
 
 
+void soap_destroy_fw(SoapH soap)
+{
+    SOAP_FW* fw = (SOAP_FW*)soap;
 
+    if ( fw->dispatcherProc )
+        fw->dispatcherProc(fw->cntx, fw->dispatcherData, NULL);
+
+    while( !DL_IsEmpty(&fw->channelList) )
+    {
+        DL_Node* node = DL_RemoveHead(&fw->channelList);
+        destroy_soap_channel((SOAP_CHANNEL*)node, SOAP_SEND_CALLBACK_REASON_SHUTDOWN);
+    }
+
+    while( !DL_IsEmpty(&fw->sendWaitingList) )
+    {
+        DL_Node* node = DL_RemoveHead(&fw->channelList);
+        destroy_output_chain((SOAP_OUTPUT_CHAIN*)node,
+                SOAP_SEND_CALLBACK_REASON_SHUTDOWN);
+    }
+
+    while( !DL_IsEmpty(&fw->dispatchList) )
+    {
+        destroy_dispatch_entry((SOAP_DISPATCH_ENTRY*)DL_GetHead(&fw->dispatchList));
+    }
+
+    while( !DL_IsEmpty(&fw->processedMsgIdList) )
+    {
+        DL_Node* node = DL_RemoveHead(&fw->processedMsgIdList);
+        soap_free(node->dataBuf);
+        soap_free(node);
+    }
+    while( !DL_IsEmpty(&fw->responseList) )
+    {
+        DL_Node* node = DL_RemoveHead(&fw->responseList);
+        SOAP_OP_ENTRY* entry = (SOAP_OP_ENTRY*)node->dataBuf;
+        destroy_op_entry(entry);
+        soap_free(node);
+    }
+
+    DL_RemoveAndDestroyAllNodes(&fw->inboundFilterList, 0);
+    DL_RemoveAndDestroyAllNodes(&fw->outboundFilterList, 0);
+
+    ws_xml_parser_destroy((SoapH)soap);
+    soap_free(fw->addrWakeUp);
+    ws_destroy_context(fw->cntx);
+    //soap_destroy_lock(fw);
+    soap_free(soap);
+    return;
+}
 

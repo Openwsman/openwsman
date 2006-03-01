@@ -211,6 +211,7 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
     {       
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "No MessageId found");
     }
+    free(msgId);
 
     return retVal;
 }
@@ -638,6 +639,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
     {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
     }
+    free(buf);
     return doc;
 }
 

@@ -222,6 +222,13 @@ void soap_fw_lock(void* data)
 }
 
 
+void soap_destroy_lock(void* data)
+{
+    if ( data )
+    {
+        g_mutex_free(fw_mutex);
+    }
+}
 
 void soap_fw_unlock(void* data)
 {
@@ -675,5 +682,7 @@ char* skip_white_spaces(char* ptr)
             ptr++;
     return ptr;
 }
+
+
 
 

@@ -81,8 +81,8 @@ int main(void) {
     
 
     
-    ws_xml_parser_destroy((SoapH)cntx);
     ws_xml_destroy_doc(xmlDoc);
+    soap_destroy_fw(ws_context_get_runtime(cntx));
     cl->ft->release(cl);
 
     return (0);
