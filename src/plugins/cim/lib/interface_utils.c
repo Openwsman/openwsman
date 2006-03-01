@@ -36,7 +36,7 @@
 
 #include "interface_utils.h"
 
-GList * add_key(WsContextH cntx, GList *keys, char *name)
+GList * add_key(WsContextH cntx, GList *keys, char *name, char *type)
 {
 	wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Adding Key: %s", name );
 	WsSelectorInfo *sel= malloc(sizeof(WsSelectorInfo));
@@ -46,6 +46,7 @@ GList * add_key(WsContextH cntx, GList *keys, char *name)
 		return NULL;
 	}
 	sel->key = name;
+        sel->type = type ? type : "string";
 	if ( (sel->val = wsman_get_selector(cntx, NULL, name, 0)) == NULL)
 	{
 		wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "NULL Key");
@@ -61,7 +62,7 @@ GList *create_key_list(WsContextH cntx, WsSelector *selectors)
 	int i;
 	for(i = 0; selectors && selectors[i].name != NULL; i++)
 	{
-		if ( (keys = add_key(cntx, keys, selectors[i].name)) == NULL )
+		if ( (keys = add_key(cntx, keys, selectors[i].name, selectors[i].type)) == NULL )
 		{
 			return NULL;
 		}

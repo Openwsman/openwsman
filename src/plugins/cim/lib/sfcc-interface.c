@@ -32,6 +32,8 @@
  * @author Anas Nashif
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 #include <CimClientLib/cmci.h>
 #include "ws_utilities.h"
@@ -84,7 +86,14 @@ CMPIInstance * cim_get_instance (CMCIClient *cc,
     {    	
     		WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
     		wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Adding key: %s", selector->key);
-    		CMAddKey(objectpath, selector->key, selector->val, CMPI_chars);    	
+                
+                if (!strcmp(selector->type, "uint64")) {
+                        CMPIUint64 uint64val = strtoull(selector->val, NULL, 0);
+                        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "add an uint64: %llu", uint64val);
+                        CMAddKey(objectpath, selector->key, &uint64val, CMPI_uint64);    	
+                } else {
+                        CMAddKey(objectpath, selector->key, selector->val, CMPI_chars);    	
+                }
     		node = g_list_next (node);
     }
     

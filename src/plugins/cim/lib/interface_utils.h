@@ -50,7 +50,7 @@
 #include "wsman-debug.h"
 
 
-GList *add_key(WsContextH cntx, GList *keys, char *name);
+GList *add_key(WsContextH cntx, GList *keys, char *name, char *type);
 GList *create_key_list(WsContextH cntx, WsSelector *selectors);
 
 

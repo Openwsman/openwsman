@@ -77,7 +77,7 @@ SER_END_ITEMS("Intel_IPMI_LogRecord", IpmiLogRecord);
 #define IPMI_LOGRECORD_CATCH      XML_NS_DOEM_TEST"/Catch"
 
 START_TRANSFER_GET_SELECTORS(IpmiLogRecord)
-        ADD_SELECTOR("MessageTimestamp", "string", "Message Time Stamp"),
+        ADD_SELECTOR("MessageTimestamp", "uint64", "Message Time Stamp"),
         ADD_SELECTOR("RecordID", "string", "Record ID"),
 	ADD_SELECTOR("CreationClassName", "string", "Creation Class Name"),
 	ADD_SELECTOR("LogName", "string", "LogName"),
