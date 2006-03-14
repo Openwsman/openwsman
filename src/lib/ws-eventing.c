@@ -29,6 +29,7 @@
 *******************************************************************************/
 
 /**
+ * @author Zijiang Yang
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
@@ -79,11 +80,38 @@ void make_eventing_endpoint(EventingInfo* e,
         if ( validateProc )
             soap_add_disp_filter(disp, validateProc, e, 1);
         soap_start_dispatch(disp);
+       
+        // testing code
+        printf("make_eventing_endpoint: start dispatch: %s\n", buf);
+        // end of testing code
     }
+    // testing code
+    else
+    {
+       printf("%s %d: soap_create_dispatch returned NULL!\n");
+    }
+    // end of testing code
 }
 
+// Client and server have different end points
+EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUrl)
+{
+    EventingInfo* e;
 
-EventingH wse_initialize(SoapH soap, char* managerUrl)
+
+    if ( (e = (EventingInfo*)soap_alloc(sizeof(EventingInfo), 1)) != NULL )
+    {
+        e->soap = soap;
+        e->client = client;
+        e->managerUrl = soap_clone_string(managerUrl);
+        eventing_lock(e);
+        make_eventing_endpoint(e, wse_subscription_end_endpoint, NULL, WSE_SUBSCRIPTION_END);
+        eventing_unlock(e);
+    }
+    return (EventingH)e;
+}
+
+EventingH wse_initialize_server(SoapH soap, char* managerUrl)
 {
     EventingInfo* e;
 
@@ -97,7 +125,6 @@ EventingH wse_initialize(SoapH soap, char* managerUrl)
         make_eventing_endpoint(e, wse_unsubscribe_endpoint, NULL, WSE_UNSUBSCRIBE);
         make_eventing_endpoint(e, wse_renew_endpoint, NULL, WSE_RENEW);
         make_eventing_endpoint(e, wse_get_status_endpoint, NULL, WSE_GET_STATUS);
-        make_eventing_endpoint(e, wse_subscription_end_endpoint, NULL, WSE_SUBSCRIPTION_END);
         eventing_unlock(e);
     }
     return (EventingH)e;
@@ -648,6 +675,7 @@ int wse_subscribe(WseSubscriberH hSubscriber, unsigned long durationSecs)
                             WSE_RESPONSE_TIMEOUT,
                             0)) != NULL )
             {
+                
                 if ( (sub->identifier = ws_xml_find_text_in_tree( 
                                 ws_xml_get_soap_body(sub->doc),
                                 XML_NS_EVENTING,
@@ -961,6 +989,9 @@ int wse_subscribe_endpoint(SoapOpH op, void* data)
     WsXmlDocH doc = soap_get_op_doc(op, 1);
     RemoteSinkInfo* sink;
 
+    // testing code
+    printf("SubscribeEndPoint start...\n");
+    // end of testing code
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SubscribeEndPoint start");
 
     // TBD: ??? Check dialect
@@ -1001,8 +1032,27 @@ int wse_subscribe_endpoint(SoapOpH op, void* data)
 
 RemoteSinkInfo* find_remote_sink(EventingInfo* e, WsXmlDocH doc)
 {
-    RemoteSinkInfo* sink = NULL;
-    char* uuid = ws_xml_find_text_in_doc(doc, XML_NS_EVENTING, WSE_IDENTIFIER);
+    RemoteSinkInfo  *sink = NULL;
+    WsXmlNodeH      node = NULL;
+    WsXmlNodeH      child = NULL;
+    WsXmlNodeH      id_node = NULL;
+    char            *uuid = NULL;
+    int             i;
+
+    node = ws_xml_get_doc_root(doc);
+    if(node)
+       node = ws_xml_find_in_tree(node, XML_NS_SOAP_1_2, SOAP_HEADER, 1);
+    if(node)
+    {
+       for(i = 0; child = ws_xml_get_child(node, i, NULL, NULL); i++) // We have no width-first search routine?
+       {
+          id_node = ws_xml_find_in_tree(child, XML_NS_EVENTING, WSE_IDENTIFIER, 0);
+          if(id_node)
+             break;
+       }
+    }
+    if(id_node)
+       uuid = ws_xml_find_text_in_tree(id_node, XML_NS_EVENTING, WSE_IDENTIFIER, 1);
 
     if ( uuid != NULL )
     {
@@ -1316,12 +1366,26 @@ WsXmlDocH build_eventing_request(EventingInfo* e,
         WsXmlNodeH root = ws_xml_get_doc_root(doc);
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
+        WsXmlNodeH child;
 
         ws_xml_define_ns(root, XML_NS_SOAP_1_2, NULL, 0);
         ws_xml_define_ns(root, XML_NS_ADDRESSING, NULL, 0);
         ws_xml_define_ns(root, XML_NS_EVENTING, NULL, 0);
 
+        /* Action */
         add_eventing_action(e, header, opName);
+
+        /* Message id */
+        soap_get_uuid(buf, sizeof(buf), 0);
+        ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID, buf);
+
+        /* Reply to */
+        child = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
+        add_eventing_epr(e, child, WSA_ADDRESS, sub->subscriberUrl, 
+                         WSE_IDENTIFIER, XML_NS_EVENTING, sub->uuid);
+        
+        /* To */
+        child = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, sub->subscribeToUrl);
 
         if ( (opNode = ws_xml_add_child(body, XML_NS_EVENTING, opName, NULL)) != NULL )
         {
@@ -1582,7 +1646,12 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         //		SoapAddOpFilter(op, SetEventingRelatesToId, NULL, 0);
 
         soap_set_op_doc(op, rqst, 0);
-        soap_submit_op(op, 0, url);
+        soap_submit_client_op(op, e->client);
+        // testing code
+        printf("eventing request sent:\n");
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqst), 1);
+        printf("\n");
+        // end of testing code
 
         if ( tm != 0 )
         {
@@ -1594,6 +1663,16 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         soap_destroy_op(op);
     }
 
+    // testing code
+    if(resp)
+    {
+       printf("Response to request:\n");
+       ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(resp), 1);
+       printf("\n");
+    }
+    else
+       printf("No response to this request.\n");
+    // end of testing code
     return resp;
 }
 
@@ -1604,6 +1683,11 @@ void send_eventing_response(EventingInfo* e, SoapOpH op, WsXmlDocH doc)
         soap_set_op_doc(op, doc, 0);
 
         soap_submit_op(op, soap_get_op_channel_id(op), NULL);
+        // testing code
+        printf("eventing response sent:\n");
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+        printf("\n");
+        // end of testing code
 
         ws_xml_destroy_doc(doc);
         //soap_destroy(op);

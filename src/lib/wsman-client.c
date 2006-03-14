@@ -53,6 +53,45 @@
 #include "wsman-client.h"
 
 
+// WS-Eventing testing code
+#include "ws-eventing.h"
+#include "wsman-debug.h"
+
+static char g_event_sink_url[] = "http://www.otc_event.com/event_sink";
+static char g_event_source_url[] = "http://www.otc_event.com/event_source";
+static EventingH  g_event_handler;
+
+void do_notification(void *data, WsXmlDocH event_doc)
+{
+   printf("Notification for %s:\n", data);
+   ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(event_doc), 1);
+   printf("\n");
+}
+
+void do_end(void *data, WsXmlDocH end_doc)
+{
+   printf("Subscription end for %s:\n", data);
+   ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(end_doc), 1);
+   printf("\n");
+}
+
+void start_event_sink(WsManClient *cl, char *resourceUri, SoapH soap)
+{
+   char            *action_list[] = {"random_event", NULL};
+   WseSubscriberH  subscriber_handler;
+   WsManClientEnc  *wsc = (WsManClientEnc *)cl;
+
+   g_event_handler = wse_initialize_client(soap, cl, g_event_sink_url);
+   subscriber_handler = wse_subscriber_initialize(g_event_handler, 1, action_list, wsc->data.endpoint,
+                                                  g_event_sink_url, do_notification, do_end, "Subscriber for testing");
+   printf("Subscribe...\n");
+   wse_subscribe(subscriber_handler, 1000);
+   printf("Renew...\n");
+   wse_renew(subscriber_handler, 50);
+   printf("Unscribe...\n");
+   wse_unsubscribe(subscriber_handler);
+}
+// End of WS-Eventing testing code
 
 struct _WsmanClientHandler {
     WsmanClientFn    	fn;   
@@ -317,7 +356,10 @@ static WsManClientStatus releaseClient(WsManClient * cl)
 static WsManClientFT clientFt = {   	
         releaseClient,
  	transfer_get, 	
-        enumerate	
+        enumerate,
+        // WS-Eventing testing code
+        start_event_sink	
+        // End of WS-Eventing testing code
 };
 
 

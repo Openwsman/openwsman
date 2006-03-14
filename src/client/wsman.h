@@ -40,6 +40,9 @@
 #define ACTION_TRANSFER_PUT	2
 #define ACTION_ENUMERATION 	3
 #define ACTION_PRIVATE_CATCH    4
+// WS-Eventing testing code
+#define ACTION_EVENT_SINK       5
+// End of WS-Eventing testing code
 
 
 #define MY_ENCODING "UTF-8"

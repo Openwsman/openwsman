@@ -86,7 +86,13 @@ typedef struct _WsManClientFT
 	 */
 	GList *(*enumerate)(WsManClient* cl, char* resourceUri, int count);
 	 	 	 	 	 
-	
+       // WS-Eventing testing code
+       /**
+        * Event Sink
+        */
+        void (*event_sink)(WsManClient *cl, char *resourceUri, SoapH soap);
+       // End of WS-Eventing testing code
+
 } WsManClientFT;
 
 

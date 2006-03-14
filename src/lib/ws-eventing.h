@@ -29,12 +29,25 @@
 *******************************************************************************/
 
 /**
+ * @author Zijiang Yang
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
  
 #ifndef WS_SOAP_EVENTING_H
 #define WS_SOAP_EVENTING_H
+
+#include <stdio.h>
+#include "glib.h"
+
+#include "ws_utilities.h"
+#include "ws_xml_api.h"
+#include "soap_api.h"
+#include "ws_dispatcher.h"
+#include "wsman-client.h"
+
+#include "xml_api_generic.h"
+#include "xml_serializer.h"
 
 
 #define WSE_RESPONSE_TIMEOUT			20000
@@ -99,6 +112,8 @@ struct __EventingInfo
 {
 	SoapH soap;
 
+        WsManClient *client;
+
 	char* managerUrl;
 
 	DL_List publisherList;
@@ -158,13 +173,19 @@ struct __RemoteSinkInfo
 typedef struct __RemoteSinkInfo RemoteSinkInfo;
 
 
-
-void make_eventing_endpoint(EventingInfo *e, SoapServiceCallback endPointProc, SoapServiceCallback validateProc, char *opName);
-EventingH wse_initialize(SoapH soap, char *managerUrl);
+EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUrl);
+EventingH wse_initialize_server(SoapH soap, char* managerUrl);
 void wse_destroy(EventingH hEventing);
 void wse_process(EventingH hEventing);
-void populate_string_list(DL_List *list, int count, char **strs);
+int wse_subscriber_destroy(WseSubscriberH hSubscriber);
+int wse_subscribe(WseSubscriberH hSubscriber, unsigned long durationSecs);
+int wse_unsubscribe(WseSubscriberH hSubscriber);
+int wse_renew(WseSubscriberH hSubscriber, unsigned long durationSeconds);
+WsXmlDocH wse_get_status(WseSubscriberH hSubscriber);
 WsePublisherH wse_publisher_initialize(EventingH hEventing, int actionCount, char **actionList, void *proc, void *data);
+
+void make_eventing_endpoint(EventingInfo *e, SoapServiceCallback endPointProc, SoapServiceCallback validateProc, char *opName);
+void populate_string_list(DL_List *list, int count, char **strs);
 int is_sink_expired(RemoteSinkInfo *sink);
 void destroy_remote_sinks(EventingInfo *e, char *_status, char *_reason, int enforceDestroy);
 int wse_publisher_destroy(WsePublisherH hPub, char *status, char *reason);
@@ -175,11 +196,6 @@ int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char *userNsUri);
 WseSubscriberH wse_subscriber_initialize(EventingH hEventing, int actionCount, char **actionList, char *publisherUrl, char *subscriberUrl, void (*procNotification)(void *, WsXmlDocH), void (*procSubscriptionEnd)(void *, WsXmlDocH), void *data);
 int wse_dont_unsubscribe_on_destroy(WseSubscriberH hSubscriber);
 void wse_enum_sinks(EventingH hEventing, unsigned long (*proc)(void *data, char *id, char *url, unsigned long tm, void *reserved), void *data);
-int wse_subscriber_destroy(WseSubscriberH hSubscriber);
-int wse_subscribe(WseSubscriberH hSubscriber, unsigned long durationSecs);
-int wse_unsubscribe(WseSubscriberH hSubscriber);
-int wse_renew(WseSubscriberH hSubscriber, unsigned long durationSeconds);
-WsXmlDocH wse_get_status(WseSubscriberH hSubscriber);
 void populate_list_with_strings(char *buf, DL_List *list);
 RemoteSinkInfo *make_remote_sink_info(EventingInfo *e, WsXmlDocH doc);
 void destroy_remote_sink(RemoteSinkInfo *sink);
