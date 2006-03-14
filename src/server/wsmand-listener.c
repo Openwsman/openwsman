@@ -57,6 +57,7 @@
 #include "ws_utilities.h"
 #include "ws_xml_api.h"
 #include "soap_api.h"
+extern void start_event_source(SoapH soap);
 
 #include "xml_api_generic.h"
 #include "xml_serializer.h"
@@ -316,6 +317,10 @@ int wsmand_start_server()
         soup_server_run_async (ssl_server);
     }
 #endif
+
+    // WS-Eventing test code
+    start_event_source(soap);
+    // End of WS-Eventing test code
 
     g_free(listener);
     wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Waiting for requests...");
