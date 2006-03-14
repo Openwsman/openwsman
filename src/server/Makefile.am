@@ -22,7 +22,8 @@ wsmand_SOURCES = \
 		 wsmand-listener.c \
 		 wsmand-plugins.c \
 		 wsmand-daemon.c \
-		 wsmand.c
+		 wsmand.c \
+                 wse-server-test.c
 
 
 sbin_PROGRAMS = \
