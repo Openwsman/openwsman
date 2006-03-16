@@ -232,6 +232,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Null Client\n");
     } 
 
+
     wsman_client_add_handler(wsman_client_handler, NULL);
     char *resourceUri = wsman_options_get_resource_uri();
     int op = wsman_options_get_action();
@@ -261,13 +262,6 @@ int main(int argc, char** argv)
            retVal = wsman_private_catch( cl, resourceUri);
            break;
            */
-
-    // WS-Eventing testing code 
-    case ACTION_EVENT_SINK:
-        cl->ft->event_sink(cl, resourceUri, ws_context_get_runtime(cntx));
-        break;
-    // End of WS-Eventing testing code 
-      
     default:
         fprintf(stderr, "Action not supported\n");    		
         retVal = 1;
