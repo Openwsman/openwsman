@@ -451,13 +451,15 @@ SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw,
 
 int ws_transfer_put(SoapOpH op, void* appData)
 {
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put");
     SoapH soap = soap_get_op_soap(op);	
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
     WsDispatchEndPointInfo* info = (WsDispatchEndPointInfo*)appData;
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 1");
     XmlSerializerInfo* typeInfo = info->serializationInfo;
     WsEndPointPut endPoint = (WsEndPointPut)info->serviceEndPoint;
 
-    int data = ws_serialize(cntx, 
+    void *data = ws_deserialize(cntx, 
             ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 
             typeInfo,
             NULL,
@@ -465,10 +467,12 @@ int ws_transfer_put(SoapOpH op, void* appData)
             (char*)info->data,
             NULL,
             0); 
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 2");
 
     int retVal = 0;
     WsXmlDocH doc = NULL;
     void* outData = NULL;
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 3");
 
     if ( (retVal = endPoint(cntx, &data, &outData)) )
     {
@@ -478,10 +482,13 @@ int ws_transfer_put(SoapOpH op, void* appData)
     }
     else
     {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 4");
         doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 5");
 
         if ( outData )
         {
+            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put: Serializing data...");
             ws_serialize(cntx, 
                     ws_xml_get_soap_body(doc), 
                     outData, 
@@ -499,11 +506,11 @@ int ws_transfer_put(SoapOpH op, void* appData)
     {
         soap_set_op_doc(op, doc, 0);
         soap_submit_op(op, soap_get_op_channel_id(op), NULL);
-        ws_xml_destroy_doc(doc);
+        //ws_xml_destroy_doc(doc);
     }
 
     ws_serializer_free_all(cntx);
-    ws_destroy_context(cntx);
+    //ws_destroy_context(cntx);
 
     return retVal;
 }
@@ -894,9 +901,6 @@ int ws_transfer_get(SoapOpH op, void* appData)
     }
 
     ws_serializer_free_all(cntx);
-
-    //	WsDestroyContext(cntx);
-
     return 0;
 }
 
@@ -2083,7 +2087,9 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx,
         }
 
         if ( maxEnvelopeSize)
+        {
             ws_serialize_uint32(cntx, header, maxEnvelopeSize, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+        }
 
         ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
 

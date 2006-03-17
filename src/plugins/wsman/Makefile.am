@@ -1,1 +1,1 @@
-SUBDIRS = this test Catalog
+SUBDIRS = this test test2 Catalog

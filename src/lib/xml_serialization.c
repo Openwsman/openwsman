@@ -233,74 +233,76 @@ int do_serialize_uint32(XmlSerializationData* data)
 // We will need special function DoSerializeArrayOfStringPtrs()
 int do_serialize_string(XmlSerializationData* data)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing string...");
-	WsXmlNodeH child;
-	int retVal = sizeof(XML_TYPE_STR);
+    WsXmlNodeH child;
+    int retVal = sizeof(XML_TYPE_STR);
 
-	if ( data->mode == XML_SMODE_FREE_MEM )
-	{
-		xml_serializer_free_scalar_mem(data);
-	}
-	else
-	if ( data->mode == XML_SMODE_SERIALIZE )
-	{
-		char* valPtr = *((char**)data->elementBuf); 
+    if ( data->mode == XML_SMODE_FREE_MEM )
+    {
+        xml_serializer_free_scalar_mem(data);
+    }
+    else
+        if ( data->mode == XML_SMODE_SERIALIZE )
+        {
+            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing string...");
+            char* valPtr = *((char**)data->elementBuf); 
 
-		if ( (child = xml_serializer_add_child(data, valPtr)) == NULL )
-		{
-			retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-		}
-		else
-		{
-			if ( ws_xml_get_node_text(child) == NULL )
-			{
-				ws_xml_add_node_attr(child, XML_NS_SCHEMA_INSTANCE, XML_SCHEMA_NIL, "true");
-			}
-		}
-	}
-	else
-	{
-		if ( data->mode == XML_SMODE_DESERIALIZE )
-		{
-			if ( (child = xml_serializer_get_child(data)) == NULL )
-			{
-				retVal = WS_ERR_XML_NODE_NOT_FOUND;
-			}
-			else
-			{
-				char* src = ws_xml_get_node_text(child);
-			
-				if ( src != NULL && *src != 0 )
-				{
-					char* dstPtr;
-					int dstSize = 1 + strlen(src);
-				
-					if ( (dstPtr = (char*)xml_serializer_alloc(data, dstSize, 0)) == NULL )
-						retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-					else
-					{
-						strncpy(dstPtr, src, dstSize);
-						*((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
-						retVal = dstSize;
-					}
-				}
-				else
-				{
-					*((XML_TYPE_PTR*)data->elementBuf) = NULL;
-					retVal = 0;
-				}
-			}
-		}
-		else
-		{
-			if ( data->mode != XML_SMODE_BINARY_SIZE )
-			{
-				retVal = WS_ERR_INVALID_PARAMETER;
-			}
-		}
-	}
+            if ( (child = xml_serializer_add_child(data, valPtr)) == NULL )
+            {
+                retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+            }
+            else
+            {
+                if ( ws_xml_get_node_text(child) == NULL )
+                {
+                    ws_xml_add_node_attr(child, XML_NS_SCHEMA_INSTANCE, XML_SCHEMA_NIL, "true");
+                }
+            }
+        }
+        else
+        {
+            if ( data->mode == XML_SMODE_DESERIALIZE )
+            {
+                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "De-serializing string...");
+                if ( (child = xml_serializer_get_child(data)) == NULL )
+                {
+                    retVal = WS_ERR_XML_NODE_NOT_FOUND;
+                }
+                else
+                {
+                    char* src = ws_xml_get_node_text(child);
+                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "string: %s", src);
 
-	return retVal;
+                    if ( src != NULL && *src != 0 )
+                    {
+                        char* dstPtr;
+                        int dstSize = 1 + strlen(src);
+
+                        if ( (dstPtr = (char*)xml_serializer_alloc(data, dstSize, 0)) == NULL )
+                            retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+                        else
+                        {
+                            strncpy(dstPtr, src, dstSize);
+                            *((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
+                            retVal = dstSize;
+                        }
+                    }
+                    else
+                    {
+                        *((XML_TYPE_PTR*)data->elementBuf) = NULL;
+                        retVal = 0;
+                    }
+                }
+            }
+            else
+            {
+                if ( data->mode != XML_SMODE_BINARY_SIZE )
+                {
+                    retVal = WS_ERR_INVALID_PARAMETER;
+                }
+            }
+        }
+
+    return retVal;
 }
 
 int do_serialize_char_array(XmlSerializationData* data)
@@ -834,61 +836,63 @@ int do_serialize_struct(XmlSerializationData* data)
 
 //InitializeXmlSerializationData
 void initialize_xml_serialization_data(
-									XmlSerializationData* data,
-									WsContextH cntx,
-									XmlSerializerInfo* elementInfo,
-									XML_TYPE_PTR dataBuf,
-									int mode,
-									char* nameNs,
-									char* ns,
-									WsXmlNodeH xmlNode)
+        XmlSerializationData* data,
+        WsContextH cntx,
+        XmlSerializerInfo* elementInfo,
+        XML_TYPE_PTR dataBuf,
+        int mode,
+        char* nameNs,
+        char* ns,
+        WsXmlNodeH xmlNode)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Initialize XML Serialization..."); 
-	
-	memset(data, 0, sizeof(XmlSerializationData));
-	data->cntx = cntx;
-	data->elementInfo = elementInfo;
-	data->elementBuf = dataBuf;
-	data->mode = mode;
-	data->ns = ns;
-	data->nameNs = nameNs;
-	data->xmlNode = xmlNode;
-	
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Finished initializing XML Serialization..."); 
-	return;
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Initialize XML Serialization..."); 
+
+    memset(data, 0, sizeof(XmlSerializationData));
+    data->cntx = cntx;
+    data->elementInfo = elementInfo;
+    data->elementBuf = dataBuf;
+    data->mode = mode;
+    data->ns = ns;
+    data->nameNs = nameNs;
+    data->xmlNode = xmlNode;
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Finished initializing XML Serialization..."); 
+    return;
 }
 
 
 
 // WsSerialize
 int ws_serialize(WsContextH cntx, 
-				WsXmlNodeH xmlNode, 
-				XML_TYPE_PTR dataPtr, 
-				XmlSerializerInfo* info,
-				char* name,
-				char* nameNs,
-				char* elementNs,
-				int output)
+        WsXmlNodeH xmlNode, 
+        XML_TYPE_PTR dataPtr, 
+        XmlSerializerInfo* info,
+        char* name,
+        char* nameNs,
+        char* elementNs,
+        int output)
 {
-	int retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-	XmlSerializationData data;
-	initialize_xml_serialization_data(&data,
-								   cntx,
-								   info, 
-								   dataPtr, 
-								   XML_SMODE_SERIALIZE, 
-								   nameNs,
-								   elementNs,
-								   xmlNode);
-	data.name = name;
-	if ( output )
-		data.skipFlag = SER_IN;
-	else
-		data.skipFlag = SER_OUT;
+    int retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+    XmlSerializationData data;
+    initialize_xml_serialization_data(&data,
+            cntx,
+            info, 
+            dataPtr, 
+            XML_SMODE_SERIALIZE, 
+            nameNs,
+            elementNs,
+            xmlNode);
+    data.name = name;
+    if ( output )
+        data.skipFlag = SER_IN;
+    else
+        data.skipFlag = SER_OUT;
 
-	retVal = info->proc(&data);
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "About to process data...");
+    if (info->proc)
+        retVal = info->proc(&data);
 
-	return retVal;
+    return retVal;
 }
 
 

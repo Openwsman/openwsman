@@ -15,7 +15,7 @@ char *wsman_options_get_password(void);
 char *wsman_options_get_server(void);
 int wsman_options_get_action(void);
 char *wsman_options_get_resource_uri(void);
-
+GList *wsman_options_get_properties (void);
 
 const char **
 wsman_options_get_argv (void);

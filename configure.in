@@ -266,6 +266,7 @@ AC_OUTPUT([
         src/plugins/wsman/this/Makefile
         src/plugins/wsman/Catalog/Makefile
         src/plugins/wsman/test/Makefile
+        src/plugins/wsman/test2/Makefile
         doc/Makefile
         doc/specs/Makefile
         tests/Makefile

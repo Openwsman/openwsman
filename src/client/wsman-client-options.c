@@ -33,6 +33,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <glib.h>
 
@@ -52,8 +53,6 @@ static gchar *server = NULL;
 static gchar *get_action = NULL;
 static gchar *enum_action = NULL;
 static gchar *put_action = NULL;
-static gchar *catch_action = NULL;
-static gchar *sink_action = NULL;
 static gchar **properties = NULL;
 
 gboolean wsman_parse_options(int argc, char **argv) 
@@ -78,9 +77,6 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "get", 0, 0, G_OPTION_ARG_STRING, &get_action, "Transfer Get", "<Resource URI>"  },
         { "put", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Put", "<Resource URI>"  },
         { "enumerate", 0, 0, G_OPTION_ARG_STRING, &enum_action, "Enumeration", "<Resource URI>"  },
-        { "catch", 0, 0, G_OPTION_ARG_STRING, &catch_action, "Private Catch (For Testing Only)", "<Resource URI>" },
-        { "sink", 0, 0, G_OPTION_ARG_STRING, &sink_action, "Start Sink", "<Resource URI>" },
-
         { NULL }
     };
 
@@ -153,6 +149,24 @@ wsman_options_get_password (void)
     return password;
 }  
 
+GList *
+wsman_options_get_properties (void)
+{
+    int c = 0;
+    
+    GList *list = NULL;
+    while(properties != NULL && properties[c] != NULL)
+    {
+        WsProperties *p =  malloc(sizeof(WsProperties));
+        char **cc = g_strsplit(properties[c], "=", 2 );
+        p->key = cc[0];
+        p->value = cc[1];
+        list=g_list_append(list, p);
+        c++;
+    }
+    return list;
+}   
+
 int
 wsman_options_get_action (void)
 {
@@ -163,10 +177,6 @@ wsman_options_get_action (void)
         op = ACTION_TRANSFER_PUT;			
     else if (enum_action != NULL)	
         op = ACTION_ENUMERATION;						
-    else if (catch_action != NULL)    
-        op = ACTION_PRIVATE_CATCH;
-    else if (sink_action != NULL)
-        op = ACTION_EVENT_SINK;
     else
         op = 0;
     return op;
@@ -182,8 +192,6 @@ wsman_options_get_resource_uri (void)
         resourceUri = put_action;					
     else if (enum_action != NULL)	
         resourceUri = enum_action;								
-    else if (catch_action != NULL)    
-        resourceUri = catch_action;        		
     return resourceUri;
 }   
 

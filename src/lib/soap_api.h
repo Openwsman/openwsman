@@ -345,6 +345,12 @@ typedef void (*WsProcType)(void);
 
 
 
+struct __PropertyInfo 
+{
+	char *key;
+	char *val;
+};
+typedef struct __WsPropertyInfo WsPropertyInfo;
 
 struct __WsSelectorInfo 
 {

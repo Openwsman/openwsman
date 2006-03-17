@@ -24,7 +24,7 @@
 #include "xml_serializer.h"
 #include "ws_dispatcher.h"
 
-#include "wsman_test.h"
+#include "wsman_test2.h"
 
 //
 // ************ Serialization type information for resource ************
@@ -32,16 +32,11 @@
 // It creates an array of items with name StateDescription_TypeInfo 
 // It can be used in calls to WsSerialize and WsDeserialize 
 //
-SER_START_ITEMS("Test", WsManTestResult)
-SER_UINT8("result1", 1, 1), 
-SER_UINT8("result2", 1, 1), 
-SER_END_ITEMS("Test", WsManTestResult);
 
 
-SER_START_ITEMS("Test", WsManTest)
-SER_STR("Test", 1, 1), 
-SER_STRUCT("Result", 1, 1, WsManTestResult), 
-SER_END_ITEMS("Test", WsManTest);
+SER_START_ITEMS("Test", WsManTest2)
+SER_STR("Testing", 1, 1), 
+SER_END_ITEMS("Test", WsManTest2);
 
 
 // ************** Array of end points for resource ****************
@@ -49,16 +44,16 @@ SER_END_ITEMS("Test", WsManTest);
 // Must follow general convention xxx_EndPoints
 //
 
-START_TRANSFER_GET_SELECTORS(WsManTest)
-FINISH_TRANSFER_GET_SELECTORS(WsManTest);
+START_TRANSFER_GET_SELECTORS(WsManTest2)
+FINISH_TRANSFER_GET_SELECTORS(WsManTest2);
 
-SER_START_END_POINTS(WsManTest)
-    END_POINT_TRANSFER_GET(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_TRANSFER_ENUMERATE(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_TRANSFER_PULL(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_TRANSFER_RELEASE(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_TRANSFER_PUT(WsManTest, XML_NS_WS_MAN"/test"),
-SER_FINISH_END_POINTS(WsManTest);
+SER_START_END_POINTS(WsManTest2)
+    END_POINT_TRANSFER_GET(WsManTest2, XML_NS_WS_MAN"/test2"),
+    END_POINT_TRANSFER_ENUMERATE(WsManTest2, XML_NS_WS_MAN"/test2"),
+    END_POINT_TRANSFER_PULL(WsManTest2, XML_NS_WS_MAN"/test2"),
+    END_POINT_TRANSFER_RELEASE(WsManTest2, XML_NS_WS_MAN"/test2"),
+    END_POINT_TRANSFER_PUT(WsManTest2, XML_NS_WS_MAN"/test2"),
+SER_FINISH_END_POINTS(WsManTest2);
 
 
 
@@ -66,18 +61,18 @@ SER_FINISH_END_POINTS(WsManTest);
 
 void get_endpoints(GModule *self, void **data) 
 {		
-	WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = XML_NS_WS_MAN;
     ifc->version = PACKAGE_VERSION;
     ifc->vendor = "Intel Corp.";
-    ifc->displayName = "Test";
-    ifc->notes = "Test Plugin";
+    ifc->displayName = "Test2";
+    ifc->notes = "Test2 Plugin";
     ifc->compliance = XML_NS_WS_MAN;
     ifc->wsmanSystemUri = NULL;
     ifc->wsmanResourceUri = WS_MAN_TEST_RESOURCE_URI;
     ifc->extraData = NULL;
-    ifc->endPoints = WsManTest_EndPoints;
+    ifc->endPoints = WsManTest2_EndPoints;
 }
 
 

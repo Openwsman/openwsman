@@ -172,7 +172,7 @@ void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 }
 
 /**
- * Duplication childrens of an XML node
+ * Duplicate children of an XML node
  * @param dstNode Destination XML node
  * @param srcNode Source XML node
  */

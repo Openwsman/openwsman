@@ -52,52 +52,53 @@
 #include "xml_serializer.h"
 #include "ws_dispatcher.h"
 
-#include "wsman_test.h"
+#include "wsman_test2.h"
 #include "wsman-debug.h"
 
 
 
-WsManTest g_WsManTest1 = { "Simple Test" , { 0, 0 } };
-WsManTest g_WsManTest2 = { "Simple Test 1" , {0, 0}};
-WsManTest g_WsManTest3 = { "Simple Test 2" , { 0, 0} };
+WsManTest2 g_WsManTest21 = { "Simple Test"  };
+WsManTest2 g_WsManTest22 = { "Simple Test 1" };
+WsManTest2 g_WsManTest23 = { "Simple Test 2" };
 
-WsManTest* g_WsManTestArr[2] = 
+WsManTest2* g_WsManTest2Arr[2] = 
  {
- 	&g_WsManTest2, &g_WsManTest3
+ 	&g_WsManTest22, &g_WsManTest23
  };
 
 // ******************* WS-MAN this *******************************
 
-WsManTest* WsManTest_Get_EP(WsContextH cntx)
+WsManTest2* WsManTest2_Get_EP(WsContextH cntx)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called"); 
-    return &g_WsManTest1;
+    return &g_WsManTest21;
 }
 
-WsManTest* WsManTest_Put_EP(WsContextH cntx)
+int WsManTest2_Put_EP(WsContextH cntx, void *in, WsManTest2 **out)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put Endpoint Called"); 
-    return &g_WsManTest1;
+    *out =  &g_WsManTest23;
+    return 0;
 }
 
-int WsManTest_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
+int WsManTest2_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called");   
     return 0;
 }
 
-int WsManTest_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
+int WsManTest2_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Release Endpoint Called");    
     return 0;
 }
 
-int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
+int WsManTest2_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 { 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called"); 
     if ( enumInfo->index >= 0 && enumInfo->index < 2 )
     {
-        enumInfo->pullResultPtr = g_WsManTestArr[enumInfo->index];
+        enumInfo->pullResultPtr = g_WsManTest2Arr[enumInfo->index];
     }
     else
     {    	

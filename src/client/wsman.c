@@ -241,6 +241,9 @@ int main(int argc, char** argv)
 
     switch (op) 
     {
+    case  ACTION_TRANSFER_PUT: 			
+        doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties());        		        		
+        break;
     case  ACTION_TRANSFER_GET: 			
         doc = cl->ft->get(cl, resourceUri);        		        		
         break;
@@ -257,11 +260,6 @@ int main(int argc, char** argv)
             enumeration = g_list_next(enumeration);
         }
         break;
-        /*
-           case ACTION_PRIVATE_CATCH:
-           retVal = wsman_private_catch( cl, resourceUri);
-           break;
-           */
     default:
         fprintf(stderr, "Action not supported\n");    		
         retVal = 1;

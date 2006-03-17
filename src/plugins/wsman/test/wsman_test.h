@@ -67,6 +67,7 @@ typedef struct __WsManTest WsManTest;
 int WsManTest_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
 int WsManTest_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
 int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
+WsManTest* WsManTest_Put_EP(WsContextH cntx);
 WsManTest* WsManTest_Get_EP (WsContextH cntx);
 
 
