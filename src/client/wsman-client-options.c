@@ -69,7 +69,7 @@ gboolean wsman_parse_options(int argc, char **argv)
 
     GOptionEntry options[] = {						
 	{ "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
-        { "cafile", 'C', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
+        { "cafile", 'c', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },

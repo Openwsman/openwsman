@@ -148,7 +148,14 @@ wsman_client_handler(
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
 
-    session = soup_session_async_new ();    
+    if (wsman_options_get_cafile() != NULL) {
+        session = soup_session_async_new_with_options (
+            SOUP_SESSION_SSL_CA_FILE, wsman_options_get_cafile(),
+            NULL);
+    } else {
+        session = soup_session_async_new ();    
+    }
+
     g_signal_connect (session, "authenticate",
             G_CALLBACK (authenticate), cl);
     g_signal_connect (session, "reauthenticate",
