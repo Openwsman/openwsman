@@ -211,20 +211,35 @@ int main(int argc, char** argv)
 
     g_type_init ();
     g_thread_init (NULL);
-    wsman_parse_options(argc, argv);
+    if (!wsman_parse_options(argc, argv))
+        return 1;
 
     initialize_logging ();
     WsContextH cntx = ws_create_runtime(NULL);
 
-    WsManClient *cl = 
-        wsman_connect(
-                cntx,
-                wsman_options_get_server(),
-                wsman_options_get_server_port(),
-                NULL,
-                wsman_options_get_username(),
-                wsman_options_get_password(),
-                NULL);
+
+    WsManClient *cl;
+    if (wsman_options_get_cafile != NULL) {
+        cl = wsman_connect_with_ssl(
+                    cntx,
+                    wsman_options_get_server(),
+                    wsman_options_get_server_port(),
+                    "https",
+                    wsman_options_get_username(),
+                    wsman_options_get_password(),
+                    wsman_options_get_cafile(),
+                    NULL,
+                    NULL);
+    } else {
+        cl = wsman_connect(
+                    cntx,
+                    wsman_options_get_server(),
+                    wsman_options_get_server_port(),
+                    NULL,
+                    wsman_options_get_username(),
+                    wsman_options_get_password(),
+                    NULL);
+    }
 
 
     if (cl == NULL)

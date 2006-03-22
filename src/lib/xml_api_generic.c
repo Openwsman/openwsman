@@ -972,16 +972,16 @@ void make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
 // WsXmlFindWkNs
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
 {   
-	SOAP_FW* fw = (SOAP_FW*)soap;
+    SOAP_FW* fw = (SOAP_FW*)soap;
     WsXmlNsH ns = NULL;
-  	if ( fw )
+    if ( fw )
     {
-    	WsXmlParserData* data = (WsXmlParserData*)fw->parserData;
-    	if ( data && data->nsHolder )
-    	{            
-                WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);
-    		ns = ws_xml_find_ns(root, uri, prefix, 0);            
-    	}
+        WsXmlParserData* data = (WsXmlParserData*)fw->parserData;
+        if ( data && data->nsHolder )
+        {            
+            WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);
+            ns = ws_xml_find_ns(root, uri, prefix, 0);            
+        }
     }
     return ns;
 }
@@ -1167,9 +1167,9 @@ char* ws_xml_get_ns_uri(WsXmlNsH ns)
 
 
 /**
- * Get Namespace from node
+ * Get Namespace from a node
  * @param node XML node
- * @param index Indec
+ * @param index Index
  * @return Namespace
  */
 // WsXmlGetNs
@@ -1215,7 +1215,6 @@ int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
  * @param val Value
  * @return New XML node
  */
-// ws_xml_add_child
 WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* ns, char* localName, char* val)
 {
     WsXmlNodeH newNode = 
@@ -1792,11 +1791,8 @@ int ws_xml_dump_node_tree_callback(WsXmlNodeH node, void* _data)
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node, int bRecursive)
 {
     WsXmlDumpNodeTreeData data;
-
     data.indent = 0;
     data.stream = f;
-
-    //WsXmlEnumTree(node, WsXmlDumpNodeTreeCallBack, &data, bRecursive);
     ws_xml_dump_node_tree_callback(node, &data);
 }
 

@@ -48,16 +48,5 @@
 #define MY_ENCODING "UTF-8"
 
 
-
-
-struct _WsProperties {
-    char *key;
-    char *value;   
-};
-typedef struct _WsProperties WsProperties;
-
-        
-
-
                
 #endif // WSMAN_CLIENT_H

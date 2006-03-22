@@ -459,13 +459,14 @@ int ws_transfer_put(SoapOpH op, void* appData)
     XmlSerializerInfo* typeInfo = info->serializationInfo;
     WsEndPointPut endPoint = (WsEndPointPut)info->serviceEndPoint;
 
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "localname: %s",  ws_xml_get_node_local_name(ws_xml_get_child(ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 0 , NULL, NULL)));
     void *data = ws_deserialize(cntx, 
             ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 
             typeInfo,
-            NULL,
+            ws_xml_get_node_local_name(ws_xml_get_child(ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 0 , NULL, NULL)),
             (char*)info->data, 
             (char*)info->data,
-            NULL,
+            0,
             0); 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 2");
 
@@ -474,7 +475,7 @@ int ws_transfer_put(SoapOpH op, void* appData)
     void* outData = NULL;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 3");
 
-    if ( (retVal = endPoint(cntx, &data, &outData)) )
+    if ( (retVal = endPoint(cntx, data, &outData)) )
     {
      	wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
         			WSMAN_FAULT_INVALID_SELECTORS, 

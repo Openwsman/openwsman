@@ -34,9 +34,9 @@
 //
 
 
-SER_START_ITEMS("Test", WsManTest2)
+SER_START_ITEMS("Test2", WsManTest2)
 SER_STR("Testing", 1, 1), 
-SER_END_ITEMS("Test", WsManTest2);
+SER_END_ITEMS("Test2", WsManTest2);
 
 
 // ************** Array of end points for resource ****************

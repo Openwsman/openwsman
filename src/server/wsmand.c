@@ -297,14 +297,14 @@ main (int argc, char **argv)
     sigemptyset (&sig_action.sa_mask);
     sig_action.sa_flags = 0;
     sigaction (SIGHUP, &sig_action, NULL);
-   	
-   	initialize_logging ();
-   	if (wsmand_start_server()) 
-   	{
-   		return 1;
-   	}
-   		
-	
+
+    initialize_logging ();
+    if (wsmand_start_server()) 
+    {
+        return 1;
+    }
+
+
     loop = g_main_loop_new (NULL, TRUE);
     g_main_loop_run (loop);
 

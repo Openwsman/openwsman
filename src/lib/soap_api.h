@@ -441,6 +441,11 @@ typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*);
 typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*);
 
 
+struct _WsProperties {
+    char *key;
+    char *value;   
+};
+typedef struct _WsProperties WsProperties;
 
 
 /** *********************************** */

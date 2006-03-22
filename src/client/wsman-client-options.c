@@ -37,6 +37,12 @@
 
 #include <glib.h>
 
+#include "ws_utilities.h"
+
+
+#include "ws_xml_api.h"
+#include "ws_errors.h"
+#include "soap_api.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
 

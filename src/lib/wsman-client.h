@@ -66,8 +66,6 @@ typedef struct clientData {
 
 
 typedef struct credentialData {
-  int    verifyMode;
-  char * trustStore;
   char * certFile;
   char * keyFile;
 } WsManCredentialData;
@@ -125,6 +123,16 @@ WsManClient *wsman_connect(
 		const char *scheme,
 		const char *username,
 		const char *password,		
+		WsManClientStatus *rc);
+WsManClient *wsman_connect_with_ssl( 
+		WsContextH wscntxt,
+		const char *hostname,
+		const int port,
+		const char *scheme,
+		const char *username,
+		const char *password,		
+                const char * certFile, 
+                const char * keyFile,
 		WsManClientStatus *rc);
 
 

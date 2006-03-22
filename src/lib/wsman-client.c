@@ -154,8 +154,10 @@ WsXmlDocH transfer_put(
     get_respDoc = ws_send_get_response(cl, get_rqstDoc, 60000);
 
     WsXmlNodeH get_body = ws_xml_get_soap_body(get_respDoc);
+    ws_dump_node_ns_list(stdout, ws_xml_get_child(ws_xml_get_soap_body(get_respDoc), 0 , NULL, NULL ),  1 , 1);
 
 
+    free(action);
     action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
     WsXmlDocH put_rqstDoc = wsman_build_envelope(wsc->wscntx,
             action,
@@ -169,16 +171,27 @@ WsXmlDocH transfer_put(
     wsman_add_selector_from_uri(cl, put_rqstDoc, resourceUri);
     WsXmlNodeH put_body = ws_xml_get_soap_body(put_rqstDoc);
     //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc), 1);	   
+    //wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "node: %s", ws_xml_get_node_local_name( ws_xml_get_child(put_body, 0 , NULL, NULL)));
 
-    int i;
-    WsXmlNodeH node;
-
-    //ws_xml_duplicate_children(put_body, get_body);
     ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0 , NULL, NULL));
-    // ws_xml_add_child(put_body, ws_xml_get_node_name_ns(node), ws_xml_get_node_local_name(node), ws_xml_get_node_text(node));
 
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "localname: %s",  ws_xml_get_node_local_name(ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL)));
+    GList * node = prop;
+    
+    WsXmlNsH ns = ws_xml_get_ns(ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL), 0 );
+    char *uri =  ws_xml_get_ns_uri(ns);
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "namespace: %s",  uri);
+
+    ws_dump_node_ns_list(stdout, ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL ),  1 , 1);
+    while(node) {
+        WsProperties *p = (WsProperties *)node->data;
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "key= %s, value= %s", p->key, p->value);
+        //ws_xml_add_child(ws_xml_get_child(put_body, 0 , NULL, NULL), ws_xml_get_ns_uri(ns), p->key, p->value);
+        node = g_list_next (node);
+    }
+    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc), 1);	   
+    
     respDoc = ws_send_get_response(cl, put_rqstDoc, 60000);
-    //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc), 1);	   
 
     ws_xml_destroy_doc(get_rqstDoc);
     ws_xml_destroy_doc(put_rqstDoc);
@@ -186,36 +199,6 @@ WsXmlDocH transfer_put(
     return respDoc;
 
 }
-
-
-
-/*
-WsXmlDocH transfer_put(        
-        WsManClient *cl,
-        char *resourceUri,
-        GList *prop) 
-{   		      
-    char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
-    WsXmlDocH respDoc = NULL;
-
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;	
-    WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx,
-            action,
-            WSA_TO_ANONYMOUS,
-            NULL,
-            wsman_remove_query_string(resourceUri),
-            wsc->data.endpoint,
-            60000,
-            50000);	
-
-    wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
-    respDoc = ws_send_get_response(cl, rqstDoc, 60000);
-    ws_xml_destroy_doc(rqstDoc);
-    free(action);
-    return respDoc;
-
-}
-*/
 
 
 WsXmlDocH transfer_get(        
@@ -237,6 +220,13 @@ WsXmlDocH transfer_get(
 
     wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
     respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+
+    
+    WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0 , NULL, NULL);
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "localname: %s",  ws_xml_get_node_local_name(node));
+    WsXmlNsH ns = ws_xml_get_ns(node, 0 );
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "namespace: %s",  ws_xml_get_ns_uri(ns));
+    
     ws_xml_destroy_doc(rqstDoc);
     free(action);
     // ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);	   
@@ -353,9 +343,6 @@ static WsManClientStatus releaseClient(WsManClient * cl)
   if (wsc->data.scheme) {
     free(wsc->data.scheme);
   }
-  if (wsc->certData.trustStore) {
-    free(wsc->certData.trustStore);
-  }
   if (wsc->certData.certFile) {
     free(wsc->certData.certFile);
   }
@@ -454,7 +441,6 @@ WsManConnection *initClientConnection(WsManClientData *cld)
    return c;
 }
 
-
 WsManClient *wsman_connect( 
 		WsContextH wscntxt,
 		const char *hostname,
@@ -464,27 +450,42 @@ WsManClient *wsman_connect(
 		const char *password,
 		WsManClientStatus *rc)
 {
-	WsManClientEnc *wsc = (WsManClientEnc*)calloc(1, sizeof(WsManClientEnc));
-   	wsc->enc.hdl          = &wsc->data;
-   	wsc->enc.ft           = &clientFt;
-   	
-   	wsc->wscntx			  = wscntxt;
+    return wsman_connect_with_ssl(wscntxt, hostname, port, scheme, username, password, NULL, NULL, rc);
+}
 
-   	wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
-   	wsc->data.user        = username ? strdup(username) : NULL;
-   	wsc->data.pwd         = password ? strdup(password) : NULL;
-   	wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
-   	  
-   	if (port)
-      	wsc->data.port = port;
-   	else
-      	wsc->data.port = strcmp(wsc->data.scheme, "https") == 0 ?
-        8888 : 8889;
-         	
-   	wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
-	
-	wsc->connection=initClientConnection(&wsc->data);	
-	return (WsManClient *)wsc;
+WsManClient *wsman_connect_with_ssl( 
+		WsContextH wscntxt,
+		const char *hostname,
+		const int port,
+		const char *scheme,
+		const char *username,
+		const char *password,
+                const char * certFile, 
+                const char * keyFile,
+		WsManClientStatus *rc)
+{
+    WsManClientEnc *wsc = (WsManClientEnc*)calloc(1, sizeof(WsManClientEnc));
+    wsc->enc.hdl          = &wsc->data;
+    wsc->enc.ft           = &clientFt;
+
+    wsc->wscntx			  = wscntxt;
+
+    wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
+    wsc->data.user        = username ? strdup(username) : NULL;
+    wsc->data.pwd         = password ? strdup(password) : NULL;
+    wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
+
+    if (port)
+        wsc->data.port = port;
+    else
+        wsc->data.port = strcmp(wsc->data.scheme, "https") == 0 ?  8888 : 8889;
+
+    wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
+    wsc->certData.certFile = certFile ? strdup(certFile) : NULL;
+    wsc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;
+
+    wsc->connection=initClientConnection(&wsc->data);	
+    return (WsManClient *)wsc;
 }
 
 

@@ -562,26 +562,27 @@ int xml_parser_ns_remove(WsXmlNodeH node, char* nsUri)
 // XmlParserNsGet
 WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which)
 {
-	xmlNodePtr xmlNode = (xmlNodePtr)node;
-	xmlNsPtr xmlNs = NULL;
+    xmlNodePtr xmlNode = (xmlNodePtr)node;
+    xmlNsPtr xmlNs = NULL;
 
-	if ( which >= 0 )
-	{
-		int count = 0;
-		xmlNs = xmlNode->nsDef;
-		while( xmlNs != NULL )
-		{
-			if ( which == count )
-				break;	
-			count++;
-			xmlNs = xmlNs->next;
-		}
-	}
-	else
-	{
-		assert(which >= 0); 
-	}
-	return (WsXmlNsH)xmlNs;
+    if ( which >= 0 )
+    {
+        int count = 0;
+        xmlNs = xmlNode->nsDef;
+        while( xmlNs != NULL )
+        {
+            //printf("href: %s\n", xmlNs->href);
+            if ( which == count )
+                break;	
+            count++;
+            xmlNs = xmlNs->next;
+        }
+    }
+    else
+    {
+        assert(which >= 0); 
+    }
+    return (WsXmlNsH)xmlNs;
 }
 
 

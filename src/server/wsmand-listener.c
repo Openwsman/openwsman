@@ -97,7 +97,6 @@ server_auth_callback (
         if ( !strcmp(username, "wsman") 
                 && soup_server_auth_check_passwd(auth, "secret" ) )
             return TRUE;		 
-
     } 
 
     soup_message_add_header (msg->response_headers, "Content-Length", "0" );    			
@@ -252,18 +251,10 @@ WsContextH wsmand_start_listener(WsManListenerH *listener)
 
 int wsmand_start_server() 
 {	
-    SoupServer *server;
+    SoupServer *server = NULL;
     // Authentication handler   	   	
     SoupServerAuthContext auth_ctx = { 0 };	
 
-    server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
-    if (!server) 
-    {
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-                "Unable to bind to server port %d", 
-                wsmand_options_get_server_port());
-        return 1;
-    }		
 
     WsManListenerH *listener = (WsManListenerH *)g_malloc0(sizeof(WsManListenerH) );	
     WsContextH cntx = wsmand_start_listener(listener);           
@@ -288,14 +279,25 @@ int wsmand_start_server()
 
     auth_ctx.callback = server_auth_callback;   	   	
     // The server handler to deal with all requests
-    soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);       	    
+    if (wsmand_options_get_server_port() > 0) 
+    {
+        server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
+        if (!server) 
+        {
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
+                "Unable to bind to server port %d", 
+                wsmand_options_get_server_port());
+            return 1;
+        }		
+        soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);       	    
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting Server on port %d",  soup_server_get_port (server));
-    soup_server_run_async (server);
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting Server on port %d",  soup_server_get_port (server));
+        soup_server_run_async (server);
+    }
 
-#ifdef ENABEL_SSL
-    SoupServer *ssl_server;
-    if (wsmand_options_get_ssl_key_file() && wsmand_options_get_ssl_cert_file()) 
+#ifdef HAVE_SSL
+    SoupServer *ssl_server = NULL;
+    if (wsmand_options_get_ssl_key_file() && wsmand_options_get_ssl_cert_file() && wsmand_options_get_server_ssl_port() > 0)  
     {
         ssl_server = soup_server_new (
                 SOUP_SERVER_PORT, wsmand_options_get_server_ssl_port(),
@@ -306,10 +308,9 @@ int wsmand_start_server()
         if (!ssl_server) 
         {
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to bind to SSL server port %d", wsmand_options_get_server_ssl_port());
-            exit (1);
+            return 1;
         }
-        soup_server_add_handler (ssl_server, NULL, NULL,
-                server_callback, NULL, NULL);
+        soup_server_add_handler (ssl_server , NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);
 
         wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting SSL Server on port %d", 
                 soup_server_get_port (ssl_server));
@@ -318,8 +319,22 @@ int wsmand_start_server()
     }
 #endif
 
+#ifdef HAVE_SSL
+    if (server == NULL && ssl_server == NULL) {
+        fprintf(stderr, "Can't start server.\n");
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Can't start server...");
+        return 1;   
+    }
+#else
+    if (server == NULL) {
+        fprintf(stderr, "Can't start server.\n");
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Can't start server...");
+        return 1;   
+    }
+#endif
+
     // WS-Eventing test code
-    start_event_source(soap);
+    //start_event_source(soap);
     // End of WS-Eventing test code
 
     g_free(listener);

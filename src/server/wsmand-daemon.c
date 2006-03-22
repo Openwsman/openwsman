@@ -63,39 +63,39 @@ static gint syslog_level = -1;
 
 gboolean wsmand_parse_options(int argc, char **argv) 
 {
-	GOptionContext *opt_ctx;
-	gboolean retval = FALSE;
-	GError *error = NULL;
-	
-	GOptionEntry options[] = {
-						
-	    { "ssl-cert-file", 	'c', 0, G_OPTION_ARG_FILENAME, 	&ssl_cert_file, 	"SSL certificate file", "<filename>"  },                          
-	    { "ssl-key-file", 	'k', 0, G_OPTION_ARG_FILENAME,  &ssl_key_file, 		"SSL key file", "<filename>"  },
-	    { "port", 			'p', 0, G_OPTION_ARG_INT, 		&server_port, 		"Server Port", "<port>" },
-		{ "ssl-port", 		'l', 0, G_OPTION_ARG_INT, 		&server_ssl_port, 	"SSL Port", "<port>" },    
-		{ "daemon", 			'D', 0 ,G_OPTION_ARG_NONE, 		&daemon_flag, 		"Run as daemon", NULL },    
-		{ "no-plugins", 		'n', 0 ,G_OPTION_ARG_NONE, 		&no_plugin_flag, 	"Do not load any plugins", NULL }, 
-		{ "debug", 			'd', 0 ,G_OPTION_ARG_INT, 		&debug_level, 		"Set the verbosity of debugging output.", "1-6" },
-		{ "syslog", 			's', 0, G_OPTION_ARG_INT, 		&syslog_level,  	"Set the verbosity of syslog output.", "0-6" },
-		{ "auth-type", 		'a', 0, G_OPTION_ARG_STRING, 		&auth_type,  	"Authentication Types", "basic|digest" },
-		
-	  	{ NULL }
-  	};	
-  	
-  	wsmand_argv = (const char **)argv;
-  	opt_ctx = g_option_context_new("WS-Management Server");
+    GOptionContext *opt_ctx;
+    gboolean retval = FALSE;
+    GError *error = NULL;
+
+    GOptionEntry options[] = {
+
+        { "ssl-cert-file", 	'c', 0, G_OPTION_ARG_FILENAME, 	&ssl_cert_file, "SSL certificate file", "<filename>"  },                          
+        { "ssl-key-file", 	'k', 0, G_OPTION_ARG_FILENAME,  &ssl_key_file, 	"SSL key file", "<filename>"  },
+        { "port", 		'p', 0, G_OPTION_ARG_INT,	&server_port, 	"Server Port", "<port>" },
+        { "ssl-port", 		'l', 0, G_OPTION_ARG_INT, 	&server_ssl_port,"SSL Port", "<port>" },    
+        { "daemon", 		'D', 0 ,G_OPTION_ARG_NONE, 	&daemon_flag, 	"Run as daemon", NULL },    
+        { "no-plugins", 	'n', 0 ,G_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
+        { "debug", 		'd', 0 ,G_OPTION_ARG_INT, 	&debug_level, 	"Set the verbosity of debugging output.", "1-6" },
+        { "syslog", 		's', 0, G_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
+        { "auth-type", 		'a', 0, G_OPTION_ARG_STRING, 	&auth_type,  	"Authentication Types", "basic|digest" },
+
+        { NULL }
+    };	
+
+    wsmand_argv = (const char **)argv;
+    opt_ctx = g_option_context_new("WS-Management Server");
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");  	
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
     if (error)
     {
-    		if (error->message)
-    		{
-        		printf ("%s\n", error->message);
-    		}
-        	return FALSE;
+        if (error->message)
+        {
+            printf ("%s\n", error->message);
+        }
+        return FALSE;
     }
-    
+
     g_free(error);
     g_option_context_free(opt_ctx);
     return retval;    
