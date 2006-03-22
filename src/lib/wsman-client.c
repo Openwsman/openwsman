@@ -481,6 +481,7 @@ WsManClient *wsman_connect_with_ssl(
         wsc->data.port = strcmp(wsc->data.scheme, "https") == 0 ?  8888 : 8889;
 
     wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Endpoint: %s", wsc->data.endpoint);
     wsc->certData.certFile = certFile ? strdup(certFile) : NULL;
     wsc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;
 

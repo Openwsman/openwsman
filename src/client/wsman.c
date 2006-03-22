@@ -226,7 +226,8 @@ int main(int argc, char** argv)
 
 
     WsManClient *cl;
-    if (wsman_options_get_cafile != NULL) {
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Certificate: %s", wsman_options_get_cafile());
+    if (wsman_options_get_cafile() != NULL) {
         cl = wsman_connect_with_ssl(
                     cntx,
                     wsman_options_get_server(),
@@ -242,7 +243,7 @@ int main(int argc, char** argv)
                     cntx,
                     wsman_options_get_server(),
                     wsman_options_get_server_port(),
-                    NULL,
+                    "http",
                     wsman_options_get_username(),
                     wsman_options_get_password(),
                     NULL);
