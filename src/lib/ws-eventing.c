@@ -55,6 +55,7 @@
 #include "wsman-faults.h"
 #include "wsman-debug.h"
 
+int g_notify_connection_status;
 
 void make_eventing_endpoint(EventingInfo* e,
         SoapServiceCallback endPointProc,
@@ -88,7 +89,7 @@ void make_eventing_endpoint(EventingInfo* e,
     // testing code
     else
     {
-       printf("%s %d: soap_create_dispatch returned NULL!\n");
+       printf("%s %d: soap_create_dispatch returned NULL!\n", __FILE__, __LINE__);
     }
     // end of testing code
 }
@@ -111,7 +112,7 @@ EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUr
     return (EventingH)e;
 }
 
-EventingH wse_initialize_server(SoapH soap, char* managerUrl)
+EventingH wse_initialize_server(SoapH soap, WsManClient *client, char* managerUrl)
 {
     EventingInfo* e;
 
@@ -119,6 +120,7 @@ EventingH wse_initialize_server(SoapH soap, char* managerUrl)
     if ( (e = (EventingInfo*)soap_alloc(sizeof(EventingInfo), 1)) != NULL )
     {
         e->soap = soap;
+        e->client = client;
         e->managerUrl = soap_clone_string(managerUrl);
         eventing_lock(e);
         make_eventing_endpoint(e, wse_subscribe_endpoint, NULL, WSE_SUBSCRIBE);
@@ -347,8 +349,8 @@ int is_sink_for_publisher(RemoteSinkInfo* sink, PublisherInfo* pub)
 
 WsXmlDocH build_notification(WsXmlDocH event, 
         RemoteSinkInfo* sink,
-        char* userNsUri,
-        char* action)
+        char* action,
+        char* replyTo)
 {
     SoapH soap = sink->eventingInfo->soap;
 
@@ -366,26 +368,26 @@ WsXmlDocH build_notification(WsXmlDocH event,
 
         if ( (header = ws_xml_add_child(root, XML_NS_SOAP_1_2, SOAP_HEADER, NULL)) != NULL )
         {
+            if(replyTo)   /* non-NULL replyTo denotes acknowledgement required */ 
+            {
+                WsXmlNodeH child = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
+                add_eventing_epr(sink->eventingInfo, child, WSA_ADDRESS, replyTo, NULL, NULL, NULL);
+                ws_xml_add_child(header, XML_NS_WS_MAN, "AckRequested", NULL);
+            }
             ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_ACTION, action);
             add_epr_to_header(sink->eventingInfo, header, sink->notifyTo);
         }
 
         if ( (body = ws_xml_add_child(root, XML_NS_SOAP_1_2, SOAP_BODY, NULL)) != NULL )
         {
-            WsXmlNsH userNs = ws_xml_find_wk_ns(soap, userNsUri, NULL);
-
-            assert(userNs);
-
             ws_xml_duplicate_tree(body, ws_xml_get_doc_root(event)); 
-
-            ws_xml_define_ns(body, ws_xml_get_ns_uri(userNs), NULL, 0);
         }
     }
     return doc;
 }
 
 
-int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri)
+int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri, char* replyTo)
 {
     int retVal = 0;
 
@@ -412,19 +414,17 @@ int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri)
 
             if ( is_sink_for_notification(sink, action) )
             {
-                WsXmlDocH doc = build_notification(event, sink, userNsUri, action);
+                WsXmlDocH doc = build_notification(event, sink, action, replyTo);
                 if ( doc != NULL )
                 {
                     char* url = ws_xml_find_text_in_tree(sink->notifyTo, 
                             XML_NS_ADDRESSING, 
                             WSA_ADDRESS,
                             1);
-
-                    send_eventing_request(e, 
-                            doc, 
-                            url, 
-                            0, 
-                            SOAP_ONE_WAY_OP | SOAP_NO_RESP_OP);
+                    if(replyTo)   /* non-NULL replyTo denotes ack required mode */
+                       send_eventing_request(e, doc, url, WSE_RESPONSE_TIMEOUT, 0);
+                    else
+                       send_eventing_request(e, doc, url, 0, SOAP_ONE_WAY_OP | SOAP_NO_RESP_OP);
                 }
             }
         }
@@ -1240,6 +1240,31 @@ LocalSubscriberInfo* find_subscriber(EventingInfo* e,
     return sub;
 }
 
+WsXmlDocH build_notification_response(EventingInfo *e, char *toAddress, char *relatesTo)
+{
+    WsXmlDocH doc = ws_xml_create_envelope(e->soap, NULL);
+    if ( doc != NULL )
+    {
+        WsXmlNodeH root = ws_xml_get_doc_root(doc);
+        WsXmlNodeH header = ws_xml_get_child(root, 0, NULL, NULL);
+        WsXmlNodeH body = ws_xml_get_child(root, 1, NULL, NULL);
+        WsXmlNsH evntNs;
+
+        ws_xml_define_ns(root, XML_NS_SOAP_1_2, NULL, 0);
+        ws_xml_define_ns(root, XML_NS_ADDRESSING, NULL, 0);
+        evntNs = ws_xml_define_ns(root, XML_NS_EVENTING, NULL, 0);
+
+        ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, toAddress);
+        add_eventing_action(e, header, WSE_DELIVERY_ACK_ACTION);
+
+        if ( relatesTo != NULL )
+        {
+            ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_RELATES_TO, relatesTo);
+        }
+    }
+
+    return doc;
+}
 
 int wse_sink_endpoint(SoapOpH op, void* data)
 {
@@ -1247,8 +1272,23 @@ int wse_sink_endpoint(SoapOpH op, void* data)
     EventingInfo* e = (EventingInfo*)data;
     WsXmlDocH doc = soap_get_op_doc(op, 1);
     char* action = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_ACTION);
+    char         *msgId = NULL;
+    char         *replyTo = NULL;
+    WsXmlDocH    resp = NULL;
 
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SinkEndPoint start %s", (!action) ? "<null>" : action);
+
+    // testing code
+    printf("--- Notification received:\n");
+    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+    printf("\n");
+    // End of testing code
+
+    if(replyTo = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_REPLY_TO))
+    {
+       msgId = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+       resp = build_notification_response(e, replyTo, msgId);
+    }
 
     if ( action != NULL )
     {
@@ -1259,6 +1299,12 @@ int wse_sink_endpoint(SoapOpH op, void* data)
                 sub->procNotification(sub->data, doc);
             }
         }
+    }
+
+    soap_detach_op_doc(op, 1);
+    if(resp)
+    {
+       send_eventing_response(e, op, resp);
     }
 
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SinkEndPoint end");
