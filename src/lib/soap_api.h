@@ -65,7 +65,6 @@
 #define XML_NS_DEVRPROF			"http://schemas.xmlsoap.org/ws/2004/08/devprof"	
 #define XML_NS_MTD_EXCHANGE		"http://schemas.xmlsoap.org/ws/2004/09/mex"
 //#define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
-#define XML_NS_DOEM_TEST		"http://intel.com/doem/ws/poc"
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
 #define XML_NS_SCHEMA_INSTANCE	"http://www.w3.org/2001/XMLSchema-instance"
 #define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
@@ -74,6 +73,9 @@
 #define XML_NS_WS_MAN_CAT		"http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 #define XML_NS_CIM_SCHEMA		"http://schemas.dmtf.org/cimv2.9/CIM_Schema"
 #define XML_NS_XML_SCHEMA		"http://www.w3.org/2001/XMLSchema"
+
+// Testing
+#define XML_NS_DOEM_TEST              "http://intel.com/doem/ws/poc"
 
 
 #define XML_SCHEMA_NIL			"nil"

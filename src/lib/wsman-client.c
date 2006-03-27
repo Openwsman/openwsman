@@ -170,26 +170,20 @@ WsXmlDocH transfer_put(
 
     wsman_add_selector_from_uri(cl, put_rqstDoc, resourceUri);
     WsXmlNodeH put_body = ws_xml_get_soap_body(put_rqstDoc);
-    //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc), 1);	   
-    //wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "node: %s", ws_xml_get_node_local_name( ws_xml_get_child(put_body, 0 , NULL, NULL)));
-
     ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0 , NULL, NULL));
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "localname: %s",  ws_xml_get_node_local_name(ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL)));
     GList * node = prop;
     
-    WsXmlNsH ns = ws_xml_get_ns(ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL), 0 );
-    char *uri =  ws_xml_get_ns_uri(ns);
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "namespace: %s",  uri);
-
-    ws_dump_node_ns_list(stdout, ws_xml_get_child(ws_xml_get_soap_body(put_rqstDoc), 0 , NULL, NULL ),  1 , 1);
-    while(node) {
+    WsXmlNodeH resource_node = ws_xml_get_child(put_body, 0 , NULL, NULL);
+    char *nsUri = ws_xml_get_node_name_ns_uri(resource_node);
+    while(node) 
+    {
         WsProperties *p = (WsProperties *)node->data;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "key= %s, value= %s", p->key, p->value);
-        //ws_xml_add_child(ws_xml_get_child(put_body, 0 , NULL, NULL), ws_xml_get_ns_uri(ns), p->key, p->value);
+        WsXmlNodeH n = ws_xml_get_child(resource_node, 0 , nsUri , p->key );
+        ws_xml_set_node_text(n, p->value);
         node = g_list_next (node);
     }
-    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc), 1);	   
     
     respDoc = ws_send_get_response(cl, put_rqstDoc, 60000);
 

@@ -197,6 +197,13 @@ WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc);
 void ws_xml_parser_destroy(SoapH soap);
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
+char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
+char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
+WsXmlDocH ws_xml_read_file(
+        SoapH soap,
+        char* filename,
+        char* encoding,
+        unsigned long options);
 
 /** @} */
 

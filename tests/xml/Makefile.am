@@ -13,9 +13,11 @@ LIBS = \
 
 
 xml1_SOURCES = xml1.c 
+xml2_SOURCES = xml2.c 
 
 noinst_PROGRAMS = \
-		  xml1 
+		  xml1  \
+		  xml2
 	
    
 

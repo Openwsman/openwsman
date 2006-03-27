@@ -12,13 +12,16 @@ LIBS = \
        $(top_builddir)/src/lib/libwsman.la
 
 
-wsman_this_SOURCES = client.c \
-		     wsman_this.c
+test_this_SOURCES = client.c \
+		     test_this.c
 		
 
+test2_put_SOURCES = client.c \
+		    test2_put.c
 
 noinst_PROGRAMS = \
-		  wsman_this
+		  test_this \
+		  test2_put
 	
    
 

@@ -318,7 +318,7 @@ WsXmlDocH ws_create_response_envelope(struct __WsContext* cntx,
 }
 
 /**
- * Find a text in a XML document
+ * Find a text in an XML document
  * @param doc The XML document
  * @param nsUri Namespace URI
  * @param name Node name
@@ -688,15 +688,25 @@ char* ws_xml_get_node_text(WsXmlNodeH node) {
  * @return XML document
  */
 // WsXmlReadMemory
-WsXmlDocH ws_xml_read_memory(	SoapH soap, 
-								char* buf, 
-								int size, 
-								char* encoding, 
-								unsigned long options)
+WsXmlDocH ws_xml_read_memory(
+        SoapH soap, 
+        char* buf, 
+        int size, 
+        char* encoding, 
+        unsigned long options)
 {
     return xml_parser_memory_to_doc(soap, buf, size, encoding, options);
 }
 
+
+WsXmlDocH ws_xml_read_file(
+        SoapH soap, 
+        char* filename, 
+        char* encoding, 
+        unsigned long options)
+{
+    return xml_parser_file_to_doc(soap, filename, encoding, options);
+}
 
 
 /**
@@ -707,21 +717,21 @@ WsXmlDocH ws_xml_read_memory(	SoapH soap,
  * @return XML document
  */
 WsXmlDocH ws_xml_create_doc( 
-		SoapH soap, 
-		char* rootNsUri, 
-		char* rootName) 
+        SoapH soap, 
+        char* rootNsUri, 
+        char* rootName) 
 {
-  iWsDoc* wsDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1);
+    iWsDoc* wsDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1);
 
-  if ( wsDoc )
-  {       
-   	 	wsDoc->fw = (SOAP_FW*)soap;
+    if ( wsDoc )
+    {       
+        wsDoc->fw = (SOAP_FW*)soap;
         if ( xml_parser_create_doc(wsDoc, rootName) != 0 )
         {
             soap_free(wsDoc);
             wsDoc = NULL;
         }
-        else
+        else {
             if ( rootNsUri != NULL )
             {
                 WsXmlNodeH rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
@@ -738,8 +748,9 @@ WsXmlDocH ws_xml_create_doc(
                 else
                     ws_xml_set_node_name(rootNode, rootNsUri, NULL);
             }
-   }
-   return (WsXmlDocH)wsDoc;	
+        }
+    }
+    return (WsXmlDocH)wsDoc;	
 }
 
 
@@ -1120,6 +1131,25 @@ int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void* _data)
     return (data->ns != NULL);
 }
 
+// WsXmlGetNodeNameNsPrefix
+char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
+{
+    char* prefix = NULL;
+    if ( node )
+        prefix = xml_parser_node_query(node, XML_NS_PREFIX);
+    return prefix;
+
+}
+
+// WsXmlGetNodeNameNsPrefix
+char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
+{
+    char* uri = NULL;
+    if ( node )
+        uri = xml_parser_node_query(node, XML_NS_URI);
+    return uri;
+
+}
 
 
 /**
@@ -1210,15 +1240,15 @@ int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
 /**
  * Add child to an XML node
  * @param node XML node
- * @param ns Namespace
+ * @param nsUri Namespace URI
  * @param localName local name
  * @param val Value
  * @return New XML node
  */
-WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* ns, char* localName, char* val)
+WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
 {
     WsXmlNodeH newNode = 
-        xml_parser_node_add(node, XML_LAST_CHILD, ns, localName, val); 
+        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 
 
     return newNode;
 }

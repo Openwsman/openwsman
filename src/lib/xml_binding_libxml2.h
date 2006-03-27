@@ -70,6 +70,7 @@ WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where, char *nsUri, char *lo
 int xml_parser_node_remove(WsXmlNodeH node);
 WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char *uri, char *name, char *value);
 int xml_parser_attr_remove(WsXmlAttrH attr);
+WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options);
 
 char* xml_parser_attr_query(WsXmlAttrH attr, int what);
 WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
@@ -77,7 +78,6 @@ WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
 void xml_parser_free_memory(void* ptr);
 void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
 
-char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
 
 #endif /*XML_BINDING_LIBXML2_H_*/

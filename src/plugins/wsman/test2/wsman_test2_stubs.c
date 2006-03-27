@@ -79,7 +79,8 @@ int WsManTest2_Put_EP(WsContextH cntx, void *in, WsManTest2 **out)
     WsManTest2 *x = (WsManTest2 *)malloc(sizeof(WsManTest2));
     x = (WsManTest2 *)in;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put Endpoint Called: %s", x->Test); 
-    *out =  &g_WsManTest23;
+    g_WsManTest21 = *x;
+    *out =  x;
     return 0;
 }
 

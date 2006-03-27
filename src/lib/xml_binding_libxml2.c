@@ -71,19 +71,6 @@ void xml_parser_destroy(SoapH soap)
 {
 }
 
-// WsXmlGetNodeNameNsPrefix
-char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
-{
-    char* prefix = NULL;
-
-    if ( node )
-        prefix = xml_parser_node_query(node, XML_NS_PREFIX);
-
-    return prefix;
-
-}
-
-
 // XmlParserDocToMemory
 void xml_parser_doc_to_memory(
 	WsXmlDocH doc, 
@@ -211,79 +198,106 @@ WsXmlNodeH xml_parser_get_root(WsXmlDocH doc)
 	return NULL;
 }
 
+WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
+{
+    SOAP_FW* fw = (SOAP_FW*)soap;
+    WsXmlDocH soapDoc = NULL;
+    if (fw)
+    {
+        xmlDocPtr xmlDoc = xmlReadFile(filename, 
+                encoding,
+                XML_PARSE_NONET | XML_PARSE_NSCLEAN);
+        if ( xmlDoc != NULL )
+        {
+            iWsDoc* iDoc;
+            if ( (iDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1)) == NULL )
+            {
+                xmlFreeDoc(xmlDoc);
+            }
+            else
+            {
+                xmlDoc->_private = iDoc;
+                iDoc->fw = fw;			
+                iDoc->parserDoc = xmlDoc;
+                soapDoc = (WsXmlDocH)iDoc;
+            }
+        }
+    }
+    return soapDoc;
 
+}
 
 // XmlParserMemoryToDoc
 WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
 {	
-	SOAP_FW* fw = (SOAP_FW*)soap;
-	WsXmlDocH soapDoc = NULL;
+    SOAP_FW* fw = (SOAP_FW*)soap;
+    WsXmlDocH soapDoc = NULL;
 
-	if ( buf && size && fw)
-	{
-		xmlDocPtr xmlDoc = xmlReadMemory(buf,
-										 size,
-										 NULL,
-										 encoding,
-										 XML_PARSE_NONET | XML_PARSE_NSCLEAN);
-		if ( xmlDoc != NULL )
-		{
-			iWsDoc* iDoc;
-			if ( (iDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1)) == NULL )
-			{
-				xmlFreeDoc(xmlDoc);
-			}
-			else
-			{
-				xmlDoc->_private = iDoc;
-				iDoc->fw = fw;			
-				iDoc->parserDoc = xmlDoc;
-				soapDoc = (WsXmlDocH)iDoc;
-			}
-		}
-	}
-	return soapDoc;
+    if ( buf && size && fw)
+    {
+        xmlDocPtr xmlDoc = xmlReadMemory(buf,
+                size,
+                NULL,
+                encoding,
+                XML_PARSE_NONET | XML_PARSE_NSCLEAN);
+        if ( xmlDoc != NULL )
+        {
+            iWsDoc* iDoc;
+            if ( (iDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1)) == NULL )
+            {
+                xmlFreeDoc(xmlDoc);
+            }
+            else
+            {
+                xmlDoc->_private = iDoc;
+                iDoc->fw = fw;			
+                iDoc->parserDoc = xmlDoc;
+                soapDoc = (WsXmlDocH)iDoc;
+            }
+        }
+    }
+    return soapDoc;
 }
 
 
 // XmlParserNodeQuery
 char* xml_parser_node_query(WsXmlNodeH node, int what)
 {
-	char* ptr = NULL;
-	xmlNodePtr xmlNode = (xmlNodePtr)node;
-	iWsNode* wsNode = (iWsNode*)xmlNode->_private;
-	
-	switch(what)
-	{
-	case XML_TEXT_VALUE:
-		if ( wsNode == NULL )
-			xmlNode->_private = wsNode = soap_alloc(sizeof(iWsNode), 1);
+    char* ptr = NULL;
+    xmlNodePtr xmlNode = (xmlNodePtr)node;
+    iWsNode* wsNode = (iWsNode*)xmlNode->_private;
 
-		if ( wsNode != NULL )
-		{
-			if ( wsNode->valText == NULL )
-			{
-				wsNode->valText =  (char *)xmlNodeGetContent(xmlNode);
-			}
-			ptr = wsNode->valText;
-		}
-		break;
-	case XML_LOCAL_NAME:
-		ptr = (char*)xmlNode->name;
-		break;
-	case XML_NS_URI:
-		if ( xmlNode->ns != NULL )
-			ptr = (char*)xmlNode->ns->href;
-		break;
-	case XML_NS_PREFIX:
-		if ( xmlNode->ns != NULL )
-			ptr = (char*)xmlNode->ns->prefix;
-		break;
-	default:
-		break;
-	}
-	
-	return ptr;
+    switch(what)
+    {
+    case XML_TEXT_VALUE:
+        if ( wsNode == NULL )
+            xmlNode->_private = wsNode = soap_alloc(sizeof(iWsNode), 1);
+
+        if ( wsNode != NULL )
+        {
+            if ( wsNode->valText == NULL )
+            {
+                wsNode->valText =  (char *)xmlNodeGetContent(xmlNode);
+            }
+            ptr = wsNode->valText;
+        }
+        break;
+    case XML_LOCAL_NAME:
+        ptr = (char*)xmlNode->name;
+        break;
+    case XML_NS_URI:
+        if ( xmlNode->ns != NULL )
+            ptr = (char*)xmlNode->ns->href;
+        break;
+    case XML_NS_PREFIX:
+        if ( xmlNode->ns != NULL )
+            ptr = (char*)xmlNode->ns->prefix;
+        break;
+    default:
+        break;
+    }
+
+    return ptr;
 }
 
 
@@ -571,7 +585,6 @@ WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which)
         xmlNs = xmlNode->nsDef;
         while( xmlNs != NULL )
         {
-            //printf("href: %s\n", xmlNs->href);
             if ( which == count )
                 break;	
             count++;
@@ -668,35 +681,35 @@ xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value
 
 // XmlParserNodeAdd
 WsXmlNodeH xml_parser_node_add(WsXmlNodeH base,
-							int where, 
-							char* nsUri, 
-							char* localName, 
-							char* value)
+        int where, 
+        char* nsUri, 
+        char* localName, 
+        char* value)
 {
-	xmlNodePtr xmlBase = (xmlNodePtr)base;
-	xmlNodePtr newNode = 
-		make_new_xml_node((where != XML_ELEMENT_NEXT && where != XML_ELEMENT_PREV) 
-						? xmlBase : xmlBase->parent, 
-						nsUri, 
-						localName, 
-						value); 
-	if ( newNode )
-	{
-		switch(where)
-		{
-		case XML_ELEMENT_NEXT:
-			xmlAddNextSibling((xmlNodePtr)base, newNode);
-			break;
-		case XML_ELEMENT_PREV:
-			xmlAddPrevSibling((xmlNodePtr)base, newNode);
-			break;
-		case XML_LAST_CHILD:
-		default:
-			xmlAddChild((xmlNodePtr)base, newNode);
-			break;
-		}
-	}
-	return (WsXmlNodeH)newNode;
+    xmlNodePtr xmlBase = (xmlNodePtr)base;
+    xmlNodePtr newNode = 
+        make_new_xml_node((where != XML_ELEMENT_NEXT && where != XML_ELEMENT_PREV) 
+                ? xmlBase : xmlBase->parent, 
+                nsUri, 
+                localName, 
+                value); 
+    if ( newNode )
+    {
+        switch(where)
+        {
+        case XML_ELEMENT_NEXT:
+            xmlAddNextSibling((xmlNodePtr)base, newNode);
+            break;
+        case XML_ELEMENT_PREV:
+            xmlAddPrevSibling((xmlNodePtr)base, newNode);
+            break;
+        case XML_LAST_CHILD:
+        default:
+            xmlAddChild((xmlNodePtr)base, newNode);
+            break;
+        }
+    }
+    return (WsXmlNodeH)newNode;
 
 }
 
@@ -713,27 +726,27 @@ int xml_parser_node_remove(WsXmlNodeH node)
 // XmlParserAttrAdd
 WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char* uri, char* name, char* value)
 {
-	xmlNodePtr xmlNode = (xmlNodePtr)node;
-	xmlNsPtr xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 1, 1);
-	xmlAttrPtr xmlAttr	= (xmlAttrPtr)ws_xml_find_node_attr(node, uri, name);
-	
-	if ( xmlAttr != NULL )
-		ws_xml_remove_node_attr((WsXmlAttrH)xmlAttr);
-		
-	if ( xmlNs == NULL ) 
-		xmlAttr = xmlNewProp(xmlNode, BAD_CAST name, BAD_CAST value);
-	else
-		xmlAttr = xmlNewNsProp(xmlNode, xmlNs, BAD_CAST name, BAD_CAST value);
+    xmlNodePtr xmlNode = (xmlNodePtr)node;
+    xmlNsPtr xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 1, 1);
+    xmlAttrPtr xmlAttr	= (xmlAttrPtr)ws_xml_find_node_attr(node, uri, name);
 
-	if ( xmlAttr != NULL )
-	{
-		if ( xmlNs == NULL ) 
-			xmlAttr->_private = xmlGetProp(xmlNode, BAD_CAST name); 
-		else
-			xmlAttr->_private = xmlGetNsProp(xmlNode, BAD_CAST name, xmlNs->href); 
-	}
-	
-	return (WsXmlAttrH)xmlAttr;
+    if ( xmlAttr != NULL )
+        ws_xml_remove_node_attr((WsXmlAttrH)xmlAttr);
+
+    if ( xmlNs == NULL ) 
+        xmlAttr = xmlNewProp(xmlNode, BAD_CAST name, BAD_CAST value);
+    else
+        xmlAttr = xmlNewNsProp(xmlNode, xmlNs, BAD_CAST name, BAD_CAST value);
+
+    if ( xmlAttr != NULL )
+    {
+        if ( xmlNs == NULL ) 
+            xmlAttr->_private = xmlGetProp(xmlNode, BAD_CAST name); 
+        else
+            xmlAttr->_private = xmlGetNsProp(xmlNode, BAD_CAST name, xmlNs->href); 
+    }
+
+    return (WsXmlAttrH)xmlAttr;
 }
 
 

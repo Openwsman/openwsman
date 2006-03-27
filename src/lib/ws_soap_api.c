@@ -65,7 +65,6 @@ WsXmlNsData g_wsNsData[] =
     {XML_NS_EVENTING, "wse"},
     {XML_NS_MTD_EXCHANGE, "mex"},
     {XML_NS_DEVRPROF, "dp"},
-    {XML_NS_DOEM_TEST, "z"},
     {XML_NS_SCHEMA_INSTANCE, "xsi"},
     {XML_NS_CIM_V2_9, "cim"},
     {XML_NS_WS_MAN_CAT, "cat"},
