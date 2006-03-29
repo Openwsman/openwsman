@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:n1="http://schemas.xmlsoap.org/ws/2005/06/management/this">
+  <s:Header>
+    <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/GetResponse</wsa:Action>
+    <wsa:RelatesTo>uuid:bfb7af58-0f9d-1f9d-8002-ea1e403f1200</wsa:RelatesTo>
+    <wsa:MessageID>uuid:bfb7e733-0f9d-1f9d-8006-ea1e403f1200</wsa:MessageID>
+  </s:Header>
+  <s:Body>
+    <n1:This>
+      <n1:Vendor>openwsman</n1:Vendor>
+      <n1:Version>0.05</n1:Version>
+    </n1:This>
+  </s:Body>
+</s:Envelope>
