@@ -1,37 +1,37 @@
 /*******************************************************************************
-* Copyright (C) 2004-2006 Intel Corp. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-*  - Neither the name of Intel Corp. nor the names of its
-*    contributors may be used to endorse or promote products derived from this
-*    software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
-* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************/
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of Intel Corp. nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
 
 /**
  * @author Anas Nashif
  */
- 
+
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -61,12 +61,12 @@
 static void
 free_string_list ( GList * pList )
 {
-	int i ;
+    int i ;
 
     if( pList )
     {
-    	for (i = 0; i < g_list_length (pList); i++)
-        	g_free (g_list_nth (pList, i)->data);
+        for (i = 0; i < g_list_length (pList); i++)
+            g_free (g_list_nth (pList, i)->data);
         g_list_free (pList);
     }
 }
@@ -104,7 +104,7 @@ static WsManPlugin *plugin_new(void)
 
 static void plugin_free(WsManPlugin *self)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "Un-loading plugins: %s", self->p_name ); 
+    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "Un-loading plugins: %s", self->p_name ); 
     g_return_if_fail(self);
     if( self->p_handle && self->cleanup )
         (*self->cleanup)( self->p_handle, self->data );
@@ -123,16 +123,7 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
     self->p_name = g_strdup(p_name) ;
     if (NULL != (self->p_handle = g_module_open(p_name, 0)))
     {
-        /* Symbol load */
-        /*
-        if (
-        
-                g_module_symbol(self->p_handle, "get_description", (gpointer*)&self->get_description)
-                && g_module_symbol(self->p_handle, "get_version", (gpointer*)&self->get_version)
-                && g_module_symbol(self->p_handle, "init", (gpointer*)&self->init)
-                && g_module_symbol(self->p_handle, "cleanup", (gpointer*)&self->cleanup)
-                */
-		if (                
+        if (                
                 g_module_symbol(self->p_handle, "get_endpoints", (gpointer*)&self->get_endpoints)
                 &&  g_module_symbol(self->p_handle, "init", (gpointer*)&self->init)
            )
@@ -148,10 +139,7 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
         } 
         else
         {
-            //self->get_description		= NULL ;
-            //self->get_version	                = NULL ;
             self->init			        = 0 ;
-            //self->cleanup		        = NULL ;
             self->started	                = 0 ;
             PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
         }
@@ -166,7 +154,7 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
 static gboolean
 load_plugin(WsManPlugin *self, const gchar *p_name)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,  "Loading plugin: %s", p_name );
+    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,  "Loading plugin: %s", p_name );
     gboolean ok = FALSE;
     WsManPluginError err = plugin_init(self, p_name);
     const gchar	*plugin_err = g_module_error();
@@ -184,7 +172,7 @@ load_plugin(WsManPlugin *self, const gchar *p_name)
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Plugin protocol %s unknown Error:%s", p_name, plugin_err );
         break;
     case PLUGIN_ERROR_INITFAILED:
-       wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to start plugin %s", p_name );
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to start plugin %s", p_name );
         break;
     case PLUGIN_ERROR_BADPARMS:
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Bad parameters to plugin %s. Error: %s", p_name, plugin_err );
@@ -222,8 +210,8 @@ select_all_files (const struct dirent *e)
 
 static GList *
 scan_plugins_in_directory (WsManListenerH *listener, 
-	const gchar *dir_name, 
-	GList *plugin_list)
+        const gchar *dir_name, 
+        GList *plugin_list)
 {
     GList *files;
     GList *node;
