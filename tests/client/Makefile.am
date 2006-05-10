@@ -14,11 +14,13 @@ LIBS = \
 
 
 test_this_SOURCES = client.c \
-		     test_this.c
+		     test_this.c \
+		     wsman.h
 		
 
 test2_put_SOURCES = client.c \
-		    test2_put.c
+		    test2_put.c \
+		    wsman.h
 
 noinst_PROGRAMS = \
 		  test_this \
