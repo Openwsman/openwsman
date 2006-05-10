@@ -134,16 +134,16 @@ ComputerSystem* ComputerSystem_Get_EP(WsContextH cntx)
 
 int ComputerSystem_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
-	
-	CimClientInfo cimclient;
-	cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL );
-	if (!cimclient.cc)
-		return 1;
-		
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
+
+    CimClientInfo cimclient;
+    cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL );
+    if (!cimclient.cc)
+        return 1;
+
     CMPIArray * enumArr = cim_enum_instances (cimclient.cc, "CIM_ComputerSystem" );
     if (!enumArr)
-	    return 1;
+        return 1;
 
     enumInfo->totalItems = cim_enum_totalItems(enumArr);
     enumInfo->enumResults = enumArr;
@@ -162,19 +162,19 @@ int ComputerSystem_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 
 int ComputerSystem_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 { 
-	ComputerSystem *g_ComputerSystem = (ComputerSystem *)malloc(sizeof(ComputerSystem));
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called"); 
-	
- 	if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems )
+    ComputerSystem *g_ComputerSystem = (ComputerSystem *)malloc(sizeof(ComputerSystem));
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called"); 
+
+    if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems )
     {
-    		CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
-    		CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
-    		g_ComputerSystem = set_values(data.value.inst);
-    		enumInfo->pullResultPtr = g_ComputerSystem;
+        CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
+        CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
+        g_ComputerSystem = set_values(data.value.inst);
+        enumInfo->pullResultPtr = g_ComputerSystem;
     }
     else
     {    	
-    		enumInfo->pullResultPtr = NULL;
+        enumInfo->pullResultPtr = NULL;
     }
 
     return 0;

@@ -38,6 +38,7 @@
 #define WS_SOAP_EVENTING_H
 
 #include <stdio.h>
+#include <pthread.h>
 #include "glib.h"
 
 #include "ws_utilities.h"
@@ -77,6 +78,10 @@
 #define WSE_SOURCE_SHUTTING_DOWN		"SourceShuttingDown"
 #define WSE_SOURCE_CANCELING			"SourceCanceling"
 
+#define WSE_CONNECTION_RETRY       "ConnectionRetry"
+
+#define WSE_PUSH_MODE              "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
+#define WSE_PUSH_WITH_ACK_MODE     "http://schemas.xmlsoap.org/ws/2005/06/management/PushWithAck"
 #define WSE_DELIVERY_ACK_ACTION    "http://schemas.xmlsoap.org/ws/2005/06/management/Ack"
 
 #define WSE_DIALECT_ACTION	"http://schemas.xmlsoap.org/ws/2004/08/devprof/Action"
@@ -111,9 +116,13 @@ typedef int (*SubMatchProc)(WsePublisherH, void*, WsXmlDocH, WsXmlDocH*, int);
 
 struct __EventingInfo
 {
+        GMutex *mutex;
+
 	SoapH soap;
 
         WsManClient *client;
+
+        SoapH daemonSoap;
 
 	char* managerUrl;
 
@@ -131,6 +140,7 @@ struct __PublisherInfo
 	EventingInfo* eventingInfo;
 	DL_List actionList;
 //	char* subcriptionManagerUrl;
+        char *replyTo;   // For sending ack of notification
 };
 typedef struct __PublisherInfo PublisherInfo;
 
@@ -149,6 +159,11 @@ struct __LocalSubscriberInfo
 	char* identifier;
 	//WsXmlNodeH subscriptionManager;
 
+        unsigned long retryCount;
+        unsigned long retryDuration;
+
+        char *deliveryMode;
+
 	void (*procNotification)(void*, WsXmlDocH);
 	void (*procSubscriptionEnd)(void*, WsXmlDocH);
 	void* data;
@@ -156,6 +171,7 @@ struct __LocalSubscriberInfo
 typedef struct __LocalSubscriberInfo LocalSubscriberInfo;
 
 
+#define FORCE_EXPIRED  ((unsigned long)(-1))
 struct __RemoteSinkInfo
 {
 	DL_Node node;
@@ -170,12 +186,17 @@ struct __RemoteSinkInfo
 	char* uuidIdentifier;
 	unsigned long durationSeconds;
 	unsigned long lastSetTicks;
+
+        unsigned long retryCount;
+        unsigned long retryDuration;  /* in seconds */
+
+        char *deliveryMode;
 };
 typedef struct __RemoteSinkInfo RemoteSinkInfo;
 
 /* -------------- API Routines --------------- */
-EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUrl);
-EventingH wse_initialize_server(SoapH soap, WsManClient *client, char* managerUrl);
+EventingH wse_initialize_client(SoapH soap, WsManClient *client, SoapH daemonSoap, char* managerUrl);
+EventingH wse_initialize_server(SoapH soap, WsManClient *client, SoapH daemonSoap, char* managerUrl);
 void wse_destroy(EventingH hEventing);
 void wse_process(EventingH hEventing);
 int wse_subscriber_destroy(WseSubscriberH hSubscriber);
@@ -183,11 +204,12 @@ int wse_subscribe(WseSubscriberH hSubscriber, unsigned long durationSecs);
 int wse_unsubscribe(WseSubscriberH hSubscriber);
 int wse_renew(WseSubscriberH hSubscriber, unsigned long durationSeconds);
 WsXmlDocH wse_get_status(WseSubscriberH hSubscriber);
-WsePublisherH wse_publisher_initialize(EventingH hEventing, int actionCount, char **actionList, void *proc, void *data);
-int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char *userNsUri, char *replyTo);
+WsePublisherH wse_publisher_initialize(EventingH hEventing, int actionCount, char **actionList, char *replyTo);
+int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char *userNsUri);
 WseSubscriberH wse_subscriber_initialize(EventingH hEventing, int actionCount, char **actionList, 
                                          char *publisherUrl, char *subscriberUrl, void (*procNotification)(void *, WsXmlDocH), 
-                                         void (*procSubscriptionEnd)(void *, WsXmlDocH), void *data);
+                                         void (*procSubscriptionEnd)(void *, WsXmlDocH), unsigned long retryCount,
+                                         unsigned long retryDuration, char *deliveryMode, void *data);
 int wse_renew_endpoint(SoapOpH op, void *data);
 int wse_unsubscribe_endpoint(SoapOpH op, void *data);
 int wse_subscribe_endpoint(SoapOpH op, void *data);
@@ -201,6 +223,14 @@ void wse_enum_sinks(EventingH hEventing, unsigned long (*proc)(void *data, char 
 void wse_scan(EventingInfo *e, int enforceUnsubscribe);
 
 extern int g_notify_connection_status;
+#define SET_CONNECTION_STATUS(status)\
+do\
+{\
+   g_notify_connection_status = status;\
+}while(0)
+#define GET_CONNECTION_STATUS()  (g_notify_connection_status)
+#define CONNECTION_OK      (0)
+#define CONNECTION_FAILED  (-1)
 
 
 /* -------------- Internal Routines --------------- */
@@ -211,6 +241,7 @@ void destroy_remote_sinks(EventingInfo *e, char *_status, char *_reason, int enf
 int is_sink_for_notification(RemoteSinkInfo *sink, char *action);
 int is_sink_for_publisher(RemoteSinkInfo *sink, PublisherInfo *pub);
 WsXmlDocH build_notification(WsXmlDocH event, RemoteSinkInfo *sink, char *action, char *replyTo);
+WsXmlDocH build_notification_response(EventingInfo *e, char *toAddress, char *relatesTo);
 void populate_list_with_strings(char *buf, DL_List *list);
 RemoteSinkInfo *make_remote_sink_info(EventingInfo *e, WsXmlDocH doc);
 void destroy_remote_sink(RemoteSinkInfo *sink);

@@ -299,7 +299,6 @@ SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id)
 int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry)
 {
     int retVal = 0;
-        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "test");
 
     if ( fw && entry )
     {
@@ -470,8 +469,7 @@ int process_inbound_operation(SOAP_OP_ENTRY* op)
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
         if ( op->dispatch->serviceCallback != NULL )
         {
-            retVal = op->dispatch->serviceCallback((SoapOpH)op, 
-                    op->dispatch->serviceData);			                   
+            retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
         }
     }
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "retVal=%d", retVal );
@@ -494,7 +492,6 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
 // DispatchInboundCall
 void  dispatch_inbound_call(SOAP_CHANNEL *ch)
 {   
-
     SOAP_FW* fw = (SOAP_FW*)ch->recvDispatchData;		
     int ret;		
 
@@ -552,15 +549,14 @@ void  dispatch_inbound_call(SOAP_CHANNEL *ch)
         {   
             op->backchannelId = ch->uniqueId;   	
             op->inDoc = inDoc;
-
             ret = process_inbound_operation(op);
             if (ret) 
             {
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
                         "Fault (process_inbound_operation error)");
 
-                ch->FaultCodeType = WSMAN_FAULT_INTERNAL_ERROR;
-                ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;
+                //ch->FaultCodeType = WSMAN_FAULT_INTERNAL_ERROR;
+                //ch->FaultDetailType = WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI;
             }
         }
     }      
@@ -774,13 +770,25 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc)
                     "Registered interfaces: %d", g_list_length(dispInfo->interfaces) );
 
             GList *node = dispInfo->interfaces;
-            while(node!=NULL)
+            while(node != NULL)
             {            
                 WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->data;
 
+
+                if (interface->wsmanResourceUri == NULL) 
+                {
+                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: interface->actionUriBase: %s", interface->actionUriBase);
+                    if (strstr(uri, interface->actionUriBase)) {
+                        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+                                "Dispatcher interface match: %s", interface->actionUriBase);        	                                       
+                        r = interface;
+                        resUriMatch = 1;
+                        break;                    
+                    }
+                }
                 wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Dispatcher: uri: %s, interface->wsmanResourceUri: %s", uri, interface->wsmanResourceUri);
 
-                if ( !strcmp(uri, interface->wsmanResourceUri) )
+                if (interface->wsmanResourceUri && !strcmp(uri, interface->wsmanResourceUri) )
                 {     
                     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
                             "Dispatcher interface match: %s", interface->wsmanResourceUri);        	                                       

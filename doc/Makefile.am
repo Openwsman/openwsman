@@ -1,3 +1,3 @@
 SUBDIRS = specs
 
-EXTRA_DIST = README.old plugin-framwork.txt
+EXTRA_DIST = plugin-framwork.txt

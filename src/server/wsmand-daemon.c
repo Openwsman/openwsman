@@ -42,7 +42,6 @@
 #include <errno.h>
 
 #include "glib.h"
-#include <libsoup/soup-server-auth.h>
 #include "wsman-debug.h"
 #include "wsmand-daemon.h"
 

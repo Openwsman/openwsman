@@ -4,6 +4,7 @@ INCLUDES = \
 	   $(LIBXSLT_CFLAGS) \
 	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
+	   -I$(top_srcdir)/src/plugins \
 	   -I$(top_srcdir)/src/lib
 
 LIBS = \

@@ -78,6 +78,8 @@ WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
 void xml_parser_free_memory(void* ptr);
 void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
 
+void xml_parser_doc_dump(FILE* f, WsXmlDocH doc);
+void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node);
 
 
 #endif /*XML_BINDING_LIBXML2_H_*/

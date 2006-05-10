@@ -172,7 +172,6 @@ wsman_client_handler(
 
     // FIXME: define in header file and use real version
     soup_message_add_header(msg->request_headers, "User-Agent", "OpenWSMAN/0.01");
-    // ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);
 
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
 
@@ -264,6 +263,9 @@ int main(int argc, char** argv)
 
     switch (op) 
     {
+    case  ACTION_TRANSFER_CREATE: 			
+        doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties());        		        		
+        break;
     case  ACTION_TRANSFER_PUT: 			
         doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties());        		        		
         break;
@@ -272,14 +274,11 @@ int main(int argc, char** argv)
         break;
 
     case ACTION_ENUMERATION:
-        enumeration = cl->ft->enumerate(cl, resourceUri ,  5);
-        if (!enumeration) {
-            printf("returns null\n");
-        }
+        enumeration = cl->ft->enumerate(cl, resourceUri ,  -1);
         while (enumeration) {
             WsXmlDocH enDoc = (WsXmlDocH)enumeration->data;
             if (enDoc)
-                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc), 1);
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc));
             enumeration = g_list_next(enumeration);
         }
         break;
@@ -290,7 +289,7 @@ int main(int argc, char** argv)
 
     if (doc) 
     {
-        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     }    
     cl->ft->release(cl);        		        		
     soap_free(cntx);

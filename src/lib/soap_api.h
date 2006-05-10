@@ -73,6 +73,7 @@
 #define XML_NS_WS_MAN_CAT		"http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 #define XML_NS_CIM_SCHEMA		"http://schemas.dmtf.org/cimv2.9/CIM_Schema"
 #define XML_NS_XML_SCHEMA		"http://www.w3.org/2001/XMLSchema"
+#define XML_NS_XML_SCHEMA_INSTANCE		"http://www.w3.org/2001/XMLSchema-instance"
 
 // Testing
 #define XML_NS_DOEM_TEST              "http://intel.com/doem/ws/poc"
@@ -213,20 +214,18 @@
 #define WS_CONTEXT_TYPE_FAULT		0x06
 
 
-
-
 struct __WsSoapDataBuffer {
-	char 	*body;
-	int		length;
+    char 	*body;
+    int		length;
 };
 typedef struct __WsSoapDataBuffer WsSoapDataBufferH;
 
 struct __WsSoapMessage {
-	WsSoapDataBufferH	*request;
-	DL_List         	*request_headers;
-	WsSoapDataBufferH	*response;
-	DL_List         	*response_headers;
-	int 				status;
+    WsSoapDataBufferH	*request;
+    DL_List         	*request_headers;
+    WsSoapDataBufferH	*response;
+    DL_List         	*response_headers;
+    int 				status;
 };
 typedef struct __WsSoapMessage WsSoapMessageH;
 
@@ -237,7 +236,6 @@ struct __WsContext
 {
 	int __unk;
 };
-
 typedef struct __WsContext* WsContextH;
 
 struct __SoapDispatch
@@ -438,9 +436,11 @@ struct __WsEnumerateInfo
 };
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
-typedef int (*WsEndPointEnumerate)(WsContextH, WsEnumerateInfo*);
-typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*);
-typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*);
+typedef int (*WsEndPointEnumerate)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+typedef int (*WsEndPointPut)(WsContextH, void*, void**, WsmanStatus*);
+typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 
 
 struct _WsProperties {
@@ -461,10 +461,9 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx,
         unsigned long maxEnvelopeSize);
 
 WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name);
-char* wsman_get_selector(WsContextH cntx, 
-        WsXmlDocH doc, 
-        char* name, 
-        int index);
+char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
+
+GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
         
         
 WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, char* val);
@@ -507,7 +506,6 @@ SoapDispatchH soap_create_dispatch(SoapH soap,
         
 
 
-typedef int (*WsEndPointPut)(WsContextH, void*, void**);
 
 int ws_transfer_put(SoapOpH op, void* appData);        
 int ws_enumerate_stub(SoapOpH op, void* appData);        
@@ -640,11 +638,11 @@ int send_on_new_channel(SOAP_FW* fw,
 #define WS_DISP_TYPE_COUNT				11
 #define WS_DISP_TYPE_PULL_RAW			12
 #define WS_DISP_TYPE_GET_RAW				13
+#define WS_DISP_TYPE_GET_NAMESPACE				14
 
 #define WS_DISP_TYPE_PRIVATE				0xfffe
 
 
-typedef void* (*WsEndPointGet)(WsContextH);
 
 
 #define END_POINT_TRANSFER_GET(t, ns)\
@@ -654,6 +652,10 @@ typedef void* (*WsEndPointGet)(WsContextH);
 #define END_POINT_TRANSFER_GET_RAW(t, ns)\
 	{ WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}	  
+
+#define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)\
+	{ WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
 
 #define END_POINT_TRANSFER_PUT(t, ns)\
 	{ WS_DISP_TYPE_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,\
@@ -818,6 +820,8 @@ void soap_leave(SoapH soap);
 
 WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize);
 
+char *wsman_remove_query_string(char * resourceUri);
+void soap_destroy_fw(SoapH soap);
 
 
 #endif /*SOAP_API_H_*/

@@ -1,1 +1,1 @@
-SUBDIRS = lib ComputerSystem IpmiLogRecord IpmiSensor
+SUBDIRS = lib 

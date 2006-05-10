@@ -16,23 +16,14 @@ LIBS = \
 
 wsmand_SOURCES = \
 		 wsmand-listener.h \
-		 wsmand-options.h \
 		 wsmand-plugins.h \
-		 wsmand-shutdown.h \
 		 wsmand-listener.c \
 		 wsmand-plugins.c \
 		 wsmand-daemon.c \
-		 wsmand.c \
-                 wse-server-test.c
+		 wsmand-daemon.h \
+		 wsmand.c 
 
 
 sbin_PROGRAMS = \
 	wsmand
    
-
-test_plugins_SOURCES = \
-		 wsmand-plugins.c \
-		 test-plugins.c
-
-noinst_PROGRAMS = \
-	test_plugins

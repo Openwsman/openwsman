@@ -53,7 +53,6 @@
 #include "xml_api_generic.h"
 
 #include "xml_binding_libxml2.h"
-#include "ws_utilities.h"
 
 
 
@@ -505,31 +504,31 @@ char* xml_parser_ns_query(WsXmlNsH ns, int what)
 // XmlParserNsAdd
 WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char* uri, char* prefix)
 {
-	xmlNsPtr xmlNs = NULL;
-	
-	if ( node && uri )
-	{
-		if ( (xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 0, 0)) != NULL )
-		{
-			if ( xmlNs->prefix != NULL )
-			{
-				xmlFree((char*)xmlNs->prefix);
-				xmlNs->prefix = NULL;
-			}
-				
-			if ( prefix != NULL )
-			{
-				xmlNs->prefix = xmlStrdup(BAD_CAST prefix);
-			}
-				// TBD: ??? walk down the tree to update QName node and attr values 
-		}
-		else
-		{
-			xmlNs = xmlNewNs((xmlNodePtr)node, BAD_CAST uri, BAD_CAST prefix);
-		}
-	}
+    xmlNsPtr xmlNs = NULL;
 
-	return (WsXmlNsH)xmlNs;
+    if ( node && uri )
+    {
+        if ( (xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 0, 0)) != NULL )
+        {
+            if ( xmlNs->prefix != NULL )
+            {
+                xmlFree((char*)xmlNs->prefix);
+                xmlNs->prefix = NULL;
+            }
+
+            if ( prefix != NULL )
+            {
+                xmlNs->prefix = xmlStrdup(BAD_CAST prefix);
+            }
+            // TBD: walk down the tree to update QName node and attr values 
+        }
+        else
+        {
+            xmlNs = xmlNewNs((xmlNodePtr)node, BAD_CAST uri, BAD_CAST prefix);
+        }
+    }
+
+    return (WsXmlNsH)xmlNs;
 }
 
 
@@ -819,41 +818,54 @@ char* xml_parser_attr_query(WsXmlAttrH attr, int what)
 // XmlParserAttrGet
 WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which)
 {
-	xmlNodePtr xmlNode = (xmlNodePtr)node;
-	xmlAttrPtr xmlAttr = NULL;
+    xmlNodePtr xmlNode = (xmlNodePtr)node;
+    xmlAttrPtr xmlAttr = NULL;
 
-	switch(which)
-	{
-	case XML_LAST_CHILD:
-	default:
-		if ( which >= 0 || which == XML_LAST_CHILD )
-		{
-			int count = 0;
-			xmlAttr = xmlNode->properties;
-			
-			while(xmlAttr)
-			{
-				if ( which == XML_LAST_CHILD && xmlAttr->next == NULL )
-					break;
+    switch(which)
+    {
+    case XML_LAST_CHILD:
+    default:
+        if ( which >= 0 || which == XML_LAST_CHILD )
+        {
+            int count = 0;
+            xmlAttr = xmlNode->properties;
 
-				if ( which == count )
-					break;
-				
-				count++;
-				
-				xmlAttr = xmlAttr->next;
-			}
-		}
-		else
-		{
-			assert(which >= 0 || which == XML_LAST_CHILD); 
-		}
-		break;
-	}
+            while(xmlAttr)
+            {
+                if ( which == XML_LAST_CHILD && xmlAttr->next == NULL )
+                    break;
 
-	return (WsXmlAttrH)xmlAttr;
+                if ( which == count )
+                    break;
+
+                count++;
+
+                xmlAttr = xmlAttr->next;
+            }
+        }
+        else
+        {
+            assert(which >= 0 || which == XML_LAST_CHILD); 
+        }
+        break;
+    }
+
+    return (WsXmlAttrH)xmlAttr;
 }
 
 
 
+void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node) {
+
+    xmlNodePtr n = (xmlNodePtr) node;
+    xmlDocPtr d = (xmlDocPtr) doc;
+    xmlElemDump(f, d, n );
+}
+
+void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
+
+    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc;
+    xmlDocFormatDump(f, d, 1);
+    return;
+}
 

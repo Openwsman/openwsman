@@ -86,9 +86,15 @@ typedef struct _WsManClientFT
 	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri, GList *prop);
 	
 	/**
-	 * Transfer Put
+	 * Transfer Enum
 	 */
 	GList *(*enumerate)(WsManClient* cl, char* resourceUri, int count);
+
+	/**
+	 * Transfer Create
+	 */	
+	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, GList *prop);
+        
 	 	 	 	 	 
 	
 } WsManClientFT;
@@ -145,6 +151,11 @@ WsXmlDocH transfer_put(
         char *resourceUri,
         GList *prop);
 
+WsXmlDocH transfer_create(        
+        WsManClient *cl,
+        char *resourceUri,
+        GList *prop);
+
 GList *enumerate(        
         WsManClient *cl,
         char *resourceUri,
@@ -195,7 +206,6 @@ char* wsman_add_selector_from_uri(
 	WsManClient *cl, 
 	WsXmlDocH doc, 
 	char *resourceUri);
-char *wsman_remove_query_string(char * resourceUri);
 
 	
 

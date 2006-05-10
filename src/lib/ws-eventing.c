@@ -55,7 +55,7 @@
 #include "wsman-faults.h"
 #include "wsman-debug.h"
 
-int g_notify_connection_status;
+int g_notify_connection_status; /* TBD: make it multi-thread safe */
 
 void make_eventing_endpoint(EventingInfo* e,
         SoapServiceCallback endPointProc,
@@ -70,7 +70,7 @@ void make_eventing_endpoint(EventingInfo* e,
     else
         strncpy(buf, opName, sizeof(buf));
 
-    if ( (disp = soap_create_dispatch(e->soap, 
+    if ( (disp = soap_create_dispatch(e->daemonSoap, 
                     buf, 
                     NULL, 
                     NULL, 
@@ -82,28 +82,26 @@ void make_eventing_endpoint(EventingInfo* e,
             soap_add_disp_filter(disp, validateProc, e, 1);
         soap_start_dispatch(disp);
        
-        // testing code
-        printf("make_eventing_endpoint: start dispatch: %s\n", buf);
-        // end of testing code
+        wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, "make_eventing_endpoint: start dispatch: %s\n", buf);
     }
-    // testing code
     else
     {
-       printf("%s %d: soap_create_dispatch returned NULL!\n", __FILE__, __LINE__);
+       wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, "%s %d: soap_create_dispatch returned NULL!\n", __FILE__, __LINE__);
     }
-    // end of testing code
 }
 
 // Client and server have different end points
-EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUrl)
+EventingH wse_initialize_client(SoapH soap, WsManClient *client, SoapH daemonSoap, char* managerUrl)
 {
     EventingInfo* e;
 
 
     if ( (e = (EventingInfo*)soap_alloc(sizeof(EventingInfo), 1)) != NULL )
     {
+        e->mutex = g_mutex_new();
         e->soap = soap;
         e->client = client;
+        e->daemonSoap = daemonSoap;
         e->managerUrl = soap_clone_string(managerUrl);
         eventing_lock(e);
         make_eventing_endpoint(e, wse_subscription_end_endpoint, NULL, WSE_SUBSCRIPTION_END);
@@ -112,15 +110,17 @@ EventingH wse_initialize_client(SoapH soap, WsManClient *client, char* managerUr
     return (EventingH)e;
 }
 
-EventingH wse_initialize_server(SoapH soap, WsManClient *client, char* managerUrl)
+EventingH wse_initialize_server(SoapH soap, WsManClient *client, SoapH daemonSoap, char* managerUrl)
 {
     EventingInfo* e;
 
 
     if ( (e = (EventingInfo*)soap_alloc(sizeof(EventingInfo), 1)) != NULL )
     {
+        e->mutex = g_mutex_new();
         e->soap = soap;
         e->client = client;
+        e->daemonSoap = daemonSoap;
         e->managerUrl = soap_clone_string(managerUrl);
         eventing_lock(e);
         make_eventing_endpoint(e, wse_subscribe_endpoint, NULL, WSE_SUBSCRIBE);
@@ -179,8 +179,7 @@ WsePublisherH wse_publisher_initialize(EventingH hEventing,
         int actionCount, // if <= 0 zero terminated
         char** actionList,
         //								char* subcriptionManagerUrl,
-        void* proc,
-        void* data)
+        char *replyTo)
 {
     PublisherInfo* pub = (PublisherInfo*)soap_alloc(sizeof(PublisherInfo), 1);
 
@@ -189,6 +188,10 @@ WsePublisherH wse_publisher_initialize(EventingH hEventing,
         pub->eventingInfo = (EventingInfo*)hEventing;
         populate_string_list(&pub->actionList, actionCount, actionList);
         //		pub->subcriptionManagerUrl = soap_clone_string(subcriptionManagerUrl);
+        if(replyTo)
+           pub->replyTo = soap_clone_string(replyTo);
+        else
+           pub->replyTo = NULL;
         eventing_lock(pub->eventingInfo);
         DL_AddTail(&((EventingInfo*)hEventing)->publisherList, &pub->node);
         eventing_unlock(pub->eventingInfo);
@@ -199,6 +202,8 @@ WsePublisherH wse_publisher_initialize(EventingH hEventing,
 
 int is_sink_expired(RemoteSinkInfo* sink)
 {
+    if(sink->durationSeconds == FORCE_EXPIRED)
+       return 1;
     if ( sink->durationSeconds )
         return is_time_up(sink->lastSetTicks, sink->durationSeconds * 1000);
     return 0;
@@ -387,7 +392,7 @@ WsXmlDocH build_notification(WsXmlDocH event,
 }
 
 
-int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri, char* replyTo)
+int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri)
 {
     int retVal = 0;
 
@@ -401,7 +406,6 @@ int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri, 
 
         eventing_lock(e);
         wse_scan(e, 0);
-        eventing_unlock(e);
 
         if ( eventName && (strlen(userNsUri) + strlen(eventName) + 2) <= sizeof(action) )
             sprintf(action, "%s/%s", userNsUri, eventName);
@@ -414,21 +418,55 @@ int wse_send_notification(WsePublisherH hPub, WsXmlDocH event, char* userNsUri, 
 
             if ( is_sink_for_notification(sink, action) )
             {
-                WsXmlDocH doc = build_notification(event, sink, action, replyTo);
-                if ( doc != NULL )
+                int retryCount = sink->retryCount;
+                char* url = ws_xml_find_text_in_tree(sink->notifyTo, XML_NS_ADDRESSING, 
+                                                     WSA_ADDRESS, 1);
+                do
                 {
-                    char* url = ws_xml_find_text_in_tree(sink->notifyTo, 
-                            XML_NS_ADDRESSING, 
-                            WSA_ADDRESS,
-                            1);
-                    if(replyTo)   /* non-NULL replyTo denotes ack required mode */
-                       send_eventing_request(e, doc, url, WSE_RESPONSE_TIMEOUT, 0);
-                    else
-                       send_eventing_request(e, doc, url, 0, SOAP_ONE_WAY_OP | SOAP_NO_RESP_OP);
+                   char      *_replyTo = NULL;
+                   WsXmlDocH doc = NULL;
+                   WsXmlDocH resp = NULL;
+		   if(sink->deliveryMode && !strcmp(sink->deliveryMode, WSE_PUSH_WITH_ACK_MODE))
+		      _replyTo = pub->replyTo;
+		   doc = build_notification(event, sink, action, _replyTo);
+                   if(doc != NULL )
+                   {
+                      if(_replyTo) 
+                      {
+                         resp = send_eventing_request(e, doc, url, WSE_RESPONSE_TIMEOUT, 0);
+                         if(resp)
+                            ws_xml_destroy_doc(resp); // TBD: return the response to user? 
+                         else
+                         {
+                            fprintf(stderr, "******** No response to event notify, subscription canceled!!\n");
+                            sink->durationSeconds = FORCE_EXPIRED;
+                            wse_scan(e, 0);
+                            break;
+                         }
+                      }
+                      else
+                         send_eventing_request(e, doc, url, 0, SOAP_ONE_WAY_OP | SOAP_NO_RESP_OP);
+                      if(GET_CONNECTION_STATUS() == CONNECTION_OK)
+                         break;
+                      else if(retryCount > 0)
+                      {
+                         wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, ">>>>>>>> Notify connection failed,"
+                                     " retry after %lu second(s)...\n", sink->retryDuration);
+                         soap_sleep(sink->retryDuration*1000);
+                      }
+                   }
+                }while(retryCount-- > 0);
+                if(retryCount < 0)  /* retry count is exhausted, take it as expired */
+                {
+                   wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, ">>>>>>>> Notify connection retry exhausted,"
+                               " take it as expired.\n");
+                   sink->durationSeconds = FORCE_EXPIRED;
+                   wse_scan(e, 0);
                 }
-            }
-        }
-    }	
+             }
+         }
+         eventing_unlock(e);
+    }
 
     return retVal;
 }
@@ -484,6 +522,9 @@ WseSubscriberH wse_subscriber_initialize(EventingH hEventing,
         char* subscriberUrl,
         void (*procNotification)(void*, WsXmlDocH),
         void (*procSubscriptionEnd)(void*, WsXmlDocH),
+        unsigned long retryCount,
+        unsigned long retryDuration,
+        char *deliveryMode,
         void* data)
 {
     LocalSubscriberInfo* sub = (LocalSubscriberInfo*)soap_alloc(sizeof(LocalSubscriberInfo), 1);
@@ -499,6 +540,12 @@ WseSubscriberH wse_subscriber_initialize(EventingH hEventing,
         sub->subscribeToUrl = soap_clone_string(publisherUrl);
         sub->subscriberUrl = soap_clone_string(subscriberUrl);
         populate_string_list(&sub->actionList, actionCount, actionList);
+        sub->retryCount = retryCount;
+        sub->retryDuration = retryDuration;
+        if(deliveryMode)
+           sub->deliveryMode = soap_clone_string(deliveryMode);
+        else
+           sub->deliveryMode = NULL;
 
         eventing_lock(sub->eventingInfo);
 
@@ -852,6 +899,8 @@ RemoteSinkInfo* make_remote_sink_info(EventingInfo* e, WsXmlDocH doc)
     {
         char* ptr;
         WsXmlNodeH root = ws_xml_get_doc_root(doc);
+        WsXmlNodeH node;
+        WsXmlAttrH attr;
 
         sink->eventingInfo = e;
 
@@ -877,6 +926,47 @@ RemoteSinkInfo* make_remote_sink_info(EventingInfo* e, WsXmlDocH doc)
             sink->durationSeconds = atoi(ptr);
 
         sink->lastSetTicks = soap_get_ticks();
+
+        sink->retryCount = 0;
+        sink->retryDuration = 0;
+        if((node = ws_xml_find_in_tree(root, XML_NS_WS_MAN, WSE_CONNECTION_RETRY, 1)))
+        {
+           if((attr = ws_xml_get_node_attr(node, 0)))
+	   {
+              if((ptr = ws_xml_get_attr_value(attr)))
+              {
+                 while(*ptr && !isdigit(*ptr))
+                    ptr++;
+                 if(*ptr)
+                    sink->retryCount = atoi(ptr);
+              }
+           }
+           if((ptr = ws_xml_get_node_text(node)))
+           {
+              while(*ptr && !isdigit(*ptr))
+                 ptr++;
+              if(*ptr)
+                 sink->retryDuration = atoi(ptr);
+           }
+        }
+
+        sink->deliveryMode = NULL;
+        if((node = ws_xml_find_in_tree(root, XML_NS_EVENTING, WSE_DELIVERY, 1)))
+        {
+           if((attr = ws_xml_get_node_attr(node, 0)))
+           {
+              if((ptr = ws_xml_get_attr_value(attr)))
+              {
+	         if(!strcmp(ptr, WSE_PUSH_MODE) || !strcmp(ptr, WSE_PUSH_WITH_ACK_MODE))
+		    sink->deliveryMode = soap_clone_string(ptr);
+                 else
+		    wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, "**** Unknown delivery mode: %s, ignored.\n", ptr);
+              }
+           }
+        }
+        wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG, 
+                    ">>>>>> sink->deliveryMode = %s, sink->retryCount = %lu, sink->retryDuration = %lu\n",
+                    sink->deliveryMode, sink->retryCount, sink->retryDuration);
         DL_AddTail(&e->remoteSinkList, &sink->node);
     }
 
@@ -890,6 +980,7 @@ void destroy_remote_sink(RemoteSinkInfo* sink)
     if ( sink->doc )
         ws_xml_destroy_doc(sink->doc);
     soap_free(sink->uuidIdentifier);
+    soap_free(sink->deliveryMode);
     soap_free(sink);
 }
 
@@ -898,6 +989,7 @@ void destroy_publisher(PublisherInfo* pub)
     DL_RemoveNode(&pub->node);
     DL_RemoveAndDestroyAllNodes(&pub->actionList, 1);
     //	soap_free(pub->subcriptionManagerUrl);
+    soap_free(pub->replyTo);
     soap_free(pub);
 }
 
@@ -910,6 +1002,7 @@ void destroy_local_subscriber(LocalSubscriberInfo* sub)
     soap_free(sub->subscribeToUrl);
     soap_free(sub->uuid);
     soap_free(sub->subscriberUrl);
+    soap_free(sub->deliveryMode);
     //soap_free(sub->identifier);
     if ( sub->doc )
         ws_xml_destroy_doc(sub->doc);
@@ -989,9 +1082,6 @@ int wse_subscribe_endpoint(SoapOpH op, void* data)
     WsXmlDocH doc = soap_get_op_doc(op, 1);
     RemoteSinkInfo* sink;
 
-    // testing code
-    printf("SubscribeEndPoint start...\n");
-    // end of testing code
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"SubscribeEndPoint start");
 
     // TBD: ??? Check dialect
@@ -1044,7 +1134,7 @@ RemoteSinkInfo* find_remote_sink(EventingInfo* e, WsXmlDocH doc)
        node = ws_xml_find_in_tree(node, XML_NS_SOAP_1_2, SOAP_HEADER, 1);
     if(node)
     {
-       for(i = 0; child = ws_xml_get_child(node, i, NULL, NULL); i++) // We have no width-first search routine?
+       for(i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)); i++) // We have no width-first search routine?
        {
           id_node = ws_xml_find_in_tree(child, XML_NS_EVENTING, WSE_IDENTIFIER, 0);
           if(id_node)
@@ -1119,6 +1209,7 @@ int wse_unsubscribe_endpoint(SoapOpH op, void* data)
 
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"UnSubscribeEndPoint start");
 
+    eventing_lock(e);
     if ( (sink = find_remote_sink(e, doc)) != NULL )
     {
         char* msgId = 
@@ -1136,6 +1227,7 @@ int wse_unsubscribe_endpoint(SoapOpH op, void* data)
 
         send_eventing_response(e, op, resp);
     }
+    eventing_unlock(e);
 
     wsman_debug(WSMAN_DEBUG_LEVEL_DEBUG,"UnSubscribeEndPoint end");
 
@@ -1247,7 +1339,6 @@ WsXmlDocH build_notification_response(EventingInfo *e, char *toAddress, char *re
     {
         WsXmlNodeH root = ws_xml_get_doc_root(doc);
         WsXmlNodeH header = ws_xml_get_child(root, 0, NULL, NULL);
-        WsXmlNodeH body = ws_xml_get_child(root, 1, NULL, NULL);
         WsXmlNsH evntNs;
 
         ws_xml_define_ns(root, XML_NS_SOAP_1_2, NULL, 0);
@@ -1280,11 +1371,11 @@ int wse_sink_endpoint(SoapOpH op, void* data)
 
     // testing code
     printf("--- Notification received:\n");
-    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     printf("\n");
     // End of testing code
 
-    if(replyTo = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_REPLY_TO))
+    if((replyTo = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_REPLY_TO)))
     {
        msgId = ws_xml_find_text_in_doc(doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
        resp = build_notification_response(e, replyTo, msgId);
@@ -1314,12 +1405,12 @@ int wse_sink_endpoint(SoapOpH op, void* data)
 
 void eventing_lock(EventingInfo* e)
 {
-    soap_enter(e->soap);
+    g_mutex_lock(e->mutex);
 }
 
 void eventing_unlock(EventingInfo* e)
 {
-    soap_leave(e->soap);
+    g_mutex_unlock(e->mutex);
 }
 
 
@@ -1451,15 +1542,28 @@ WsXmlDocH build_eventing_request(EventingInfo* e,
 
                 if ( (child = ws_xml_add_child(opNode, XML_NS_EVENTING, WSE_DELIVERY, NULL)) != NULL )
                 {
-                    if ( (child = ws_xml_add_child(child, XML_NS_EVENTING, WSE_NOTIFY_TO, NULL)) )
+                    WsXmlNodeH  node;
+                    if ( (node = ws_xml_add_child(child, XML_NS_EVENTING, WSE_NOTIFY_TO, NULL)) )
                     {
                         add_eventing_epr(e,
-                                child, 
+                                node, 
                                 WSA_ADDRESS, 
                                 sub->subscriberUrl, 
                                 WSE_IDENTIFIER, 
                                 XML_NS_EVENTING,
                                 sub->uuid);
+                    }
+                    if(sub->retryCount)
+                    {
+                       char str[32];
+                       sprintf(str, "xs:%lu", sub->retryDuration);
+                       node = ws_xml_add_child(child, XML_NS_WS_MAN, WSE_CONNECTION_RETRY, str);
+                       sprintf(str, "%lu", sub->retryCount);
+                       ws_xml_add_node_attr(node, NULL, "Total", str);
+                    }
+                    if(sub->deliveryMode)
+                    {
+                       ws_xml_add_node_attr(child, NULL, "Mode", sub->deliveryMode);
                     }
                 }
 
@@ -1694,8 +1798,8 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
         soap_set_op_doc(op, rqst, 0);
         soap_submit_client_op(op, e->client);
         // testing code
-        printf("eventing request sent:\n");
-        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqst), 1);
+        printf("Eventing request sent:\n");
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqst));
         printf("\n");
         // end of testing code
 
@@ -1713,7 +1817,7 @@ WsXmlDocH send_eventing_request(EventingInfo* e,
     if(resp)
     {
        printf("Response to request:\n");
-       ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(resp), 1);
+       ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(resp));
        printf("\n");
     }
     else
@@ -1730,8 +1834,8 @@ void send_eventing_response(EventingInfo* e, SoapOpH op, WsXmlDocH doc)
 
         soap_submit_op(op, soap_get_op_channel_id(op), NULL);
         // testing code
-        printf("eventing response sent:\n");
-        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+        printf("Eventing response sent:\n");
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         printf("\n");
         // end of testing code
 

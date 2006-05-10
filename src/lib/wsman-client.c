@@ -63,25 +63,13 @@ typedef struct _WsmanClientHandler WsmanClientHandler;
 
 static GSList *handlers = NULL;
 
-
-
-char* wsman_make_action(char* uri, char* opName)
-{
-    int len = strlen(uri) + strlen(opName) + 2;
-    char* ptr = (char*)malloc(len);
-    if ( ptr )
-        sprintf(ptr, "%s/%s", uri, opName);
-    return ptr;
-}
-
-
 char* wsman_add_selector_from_uri(
         WsManClient *cl, 
         WsXmlDocH doc, 
         char *resourceUri)
 {
     int j;
-    const char *q;
+    const char *q = NULL;
     struct pair_t *query = NULL;
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
@@ -111,24 +99,25 @@ char* wsman_add_selector_from_uri(
     }		
 }
 
-char *wsman_remove_query_string(char * resourceUri)
+
+char* wsman_make_action(char* uri, char* opName)
 {
-    const char *q;
-    if (resourceUri != NULL )	
-        q = strchr(resourceUri, '?');
-
-    if (q) 
-    {
-        int len =  q - resourceUri;
-        char *res = (char *)malloc(len+1);
-        strncpy( res, resourceUri,  len);    		
-        return res;		
-    } else {
-        return resourceUri;
-    }
-
+    int len = strlen(uri) + strlen(opName) + 2;
+    char* ptr = (char*)malloc(len);
+    if ( ptr )
+        sprintf(ptr, "%s/%s", uri, opName);
+    return ptr;
 }
 
+
+
+WsXmlDocH transfer_create(        
+        WsManClient *cl,
+        char *resourceUri,
+        GList *prop) 
+{   		      
+    return NULL;
+}
 
 
 WsXmlDocH transfer_put(        
@@ -154,8 +143,6 @@ WsXmlDocH transfer_put(
     get_respDoc = ws_send_get_response(cl, get_rqstDoc, 60000);
 
     WsXmlNodeH get_body = ws_xml_get_soap_body(get_respDoc);
-    ws_dump_node_ns_list(stdout, ws_xml_get_child(ws_xml_get_soap_body(get_respDoc), 0 , NULL, NULL ),  1 , 1);
-
 
     free(action);
     action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
@@ -223,7 +210,6 @@ WsXmlDocH transfer_get(
     
     ws_xml_destroy_doc(rqstDoc);
     free(action);
-    // ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc), 1);	   
     return respDoc;
 
 }
@@ -235,7 +221,8 @@ GList *enumerate(
         char *resourceUri,
         int count)
 {
-	
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Doing enumeration");
     char* enumContext = NULL;
     GList *enumeration = NULL;
 
@@ -243,16 +230,19 @@ GList *enumerate(
             WSENUM_ENUMERATE, 
             NULL, 
             resourceUri);   
-   	WsXmlNodeH enumStartNode = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
+    WsXmlNodeH enumStartNode = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
+
+    int get_all = 0;
+    if (count == -1 )
+        get_all = 1;
 
     if ( enumStartNode )
     {    		
-        WsXmlNodeH node;
         WsXmlNodeH cntxNode = ws_xml_get_child(enumStartNode, 
                 0, 
                 XML_NS_ENUMERATION, 
                 WSENUM_ENUMERATION_CONTEXT);
-                
+
         enumContext = soap_clone_string(ws_xml_get_node_text(cntxNode));
 
         if ( enumContext || (enumContext && enumContext[0] == 0) )
@@ -263,10 +253,10 @@ GList *enumerate(
                             resourceUri
                             )) )
             {
-        	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
+                WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc), 0, NULL, NULL);
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 )
                 {                		                		
-                    ws_xml_destroy_doc(ws_xml_get_node_doc(node));
+                    //ws_xml_destroy_doc(ws_xml_get_node_doc(node));
                     break;
                 }
                 enumeration = g_list_append(enumeration, respDoc);
@@ -284,7 +274,7 @@ GList *enumerate(
                     soap_free(enumContext);
                     enumContext = soap_clone_string(ws_xml_get_node_text(cntxNode));
                 }                				
-				
+
                 //ws_xml_destroy_doc(ws_xml_get_node_doc(node));
                 count--;
                 if ( enumContext == NULL || enumContext[0] == 0 )
@@ -293,25 +283,27 @@ GList *enumerate(
                     break;
                 }
             }
-            if ( !count ) 
+            if ( !count  && !get_all) 
             {
                 respDoc = wsman_enum_send_get_response(cl, 
                         WSENUM_RELEASE, 
                         enumContext, 
                         resourceUri);
-                ws_xml_destroy_doc(ws_xml_get_node_doc(node));
+                //ws_xml_destroy_doc(ws_xml_get_node_doc(node));
             }
         }
         else
         {
+            if (respDoc)
+                enumeration = g_list_append(enumeration, respDoc);
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "No enumeration context ???");
         }
 
-        ws_xml_destroy_doc(ws_xml_get_node_doc(enumStartNode));
+        //ws_xml_destroy_doc(ws_xml_get_node_doc(enumStartNode));
     } 
     else 
     {    		
-    		enumeration = NULL;
+        enumeration = NULL;
     }
     return enumeration;
 }
@@ -356,7 +348,8 @@ static WsManClientFT clientFt = {
     releaseClient,
     transfer_get, 	
     transfer_put, 	
-    enumerate	
+    enumerate,
+    transfer_create
 };
 
 
@@ -402,9 +395,7 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl,
         char* resourceUri)
 {
     WsXmlDocH respDoc  = NULL;
-    
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
-    
     WsXmlDocH rqstDoc = wsman_make_enum_message(
     			wsc->wscntx, 
             op, 
@@ -415,6 +406,8 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl,
     if ( rqstDoc )
     {       
         respDoc = ws_send_get_response(cl, rqstDoc, 60000); 
+        if (!respDoc)
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "response doc is null");
         ws_xml_destroy_doc(rqstDoc);
     }
     else 

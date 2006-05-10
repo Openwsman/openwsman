@@ -59,6 +59,9 @@ static gchar *server = NULL;
 static gchar *get_action = NULL;
 static gchar *enum_action = NULL;
 static gchar *put_action = NULL;
+static gchar *create_action = NULL;
+static gchar *invoke_action_method = NULL;
+static gchar *invoke_action = NULL;
 static gchar **properties = NULL;
 
 gboolean wsman_parse_options(int argc, char **argv) 
@@ -74,6 +77,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Port", "<port>" },                
+        { "action", 'a', 0, G_OPTION_ARG_STRING, &invoke_action_method, "Invoke Action (Works only with --invoke=...)", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs" , "<key=val>" },
         { NULL }
     };
@@ -82,7 +86,9 @@ gboolean wsman_parse_options(int argc, char **argv)
     {				
         { "get", 0, 0, G_OPTION_ARG_STRING, &get_action, "Transfer Get", "<Resource URI>"  },
         { "put", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Put", "<Resource URI>"  },
+        { "create", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Create", "<Resource URI>"  },
         { "enumerate", 0, 0, G_OPTION_ARG_STRING, &enum_action, "Enumeration", "<Resource URI>"  },
+        { "invoke", 0, 0, G_OPTION_ARG_STRING, &invoke_action, "Invoke custom action", "<Resource URI>"  },
         { NULL }
     };
 
@@ -144,6 +150,12 @@ wsman_options_get_server (void)
 }   
 
 char*
+wsman_options_get_invoke_action (void)
+{
+    return invoke_action_method;
+}   
+
+char*
 wsman_options_get_username (void)
 {
     return username;
@@ -183,6 +195,8 @@ wsman_options_get_action (void)
         op = ACTION_TRANSFER_PUT;			
     else if (enum_action != NULL)	
         op = ACTION_ENUMERATION;						
+    else if (invoke_action != NULL)	
+        op = ACTION_INVOKE;						
     else
         op = 0;
     return op;

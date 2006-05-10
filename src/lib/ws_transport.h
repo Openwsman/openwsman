@@ -189,10 +189,4 @@ void process_input(SOAP_CHANNEL* ch, char *buf);
 void soap_process(SoapH soap, char* buf);
 
 
-
-
-
-
-
-
 #endif /*WS_TRANSPORT_H_*/

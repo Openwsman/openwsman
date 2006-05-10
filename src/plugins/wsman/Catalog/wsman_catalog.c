@@ -73,7 +73,7 @@ FINISH_TRANSFER_GET_SELECTORS(WsManCatalog);
 // Must follow general convention xxx_EndPoints
 //
 SER_START_END_POINTS(WsManCatalog)
-	END_POINT_TRANSFER_GET_RAW(WsManCatalog, XML_NS_WS_MAN_CAT),
+    END_POINT_TRANSFER_GET_RAW(WsManCatalog, XML_NS_WS_MAN_CAT),
     END_POINT_TRANSFER_ENUMERATE(WsManCatalog, XML_NS_WS_MAN_CAT),
     END_POINT_TRANSFER_PULL_RAW(WsManCatalog, XML_NS_WS_MAN_CAT),
     END_POINT_TRANSFER_RELEASE(WsManCatalog, XML_NS_WS_MAN_CAT),           
@@ -85,7 +85,7 @@ SER_FINISH_END_POINTS(WsManCatalog);
 
 void get_endpoints(GModule *self, void **data) 
 {		
-	WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = XML_NS_WS_MAN;
     ifc->version = PACKAGE_VERSION;

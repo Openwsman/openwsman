@@ -27,15 +27,16 @@ int main(void)
     SOAP_FW* soap = (SOAP_FW*)ws_context_get_runtime(cntx);
     WsXmlDocH doc = ws_xml_read_file (soap, "./data/xml_test1.xml", NULL, 0);
     if (doc) {
-         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc), 1);
+         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     }
     
     char* nameNsPrefix = ws_xml_get_node_name_ns_prefix(ws_xml_get_child(ws_xml_get_soap_body(doc), 0 , NULL, NULL));
     char* Uri = ws_xml_get_node_name_ns_uri(ws_xml_get_child(ws_xml_get_soap_body(doc), 0 , NULL, NULL));
     fprintf(stdout, "\nnamespace: %s\n",  nameNsPrefix);
     fprintf(stdout, "namespace uri: %s\n",  Uri);
+
     
-    ws_xml_parser_destroy((SoapH)cntx);
-    soap_free(cntx);
+    //ws_xml_parser_destroy((SoapH)cntx);
+    //soap_free(cntx);
     return 0;
 }

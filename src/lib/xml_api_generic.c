@@ -964,7 +964,6 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
  * @param buf Text buffer
  * @param bufsize Buffer size
  */
-// MakeDefaultPrefix
 void make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
 {
     iWsDoc* doc = (iWsDoc*)xml_parser_get_doc(node);
@@ -980,7 +979,6 @@ void make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
 }
 
 
-// WsXmlFindWkNs
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
 {   
     SOAP_FW* fw = (SOAP_FW*)soap;
@@ -1242,13 +1240,27 @@ int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
  * @param node XML node
  * @param nsUri Namespace URI
  * @param localName local name
- * @param val Value
+ * @param val Value of the node
  * @return New XML node
  */
 WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
 {
     WsXmlNodeH newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 
+
+    return newNode;
+}
+
+
+WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
+{
+    va_list args;
+    char buf[4096];
+    va_start (args, format);
+    vsnprintf(buf,4096,format,args);
+    va_end(args);
+    WsXmlNodeH newNode = 
+        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, buf); 
 
     return newNode;
 }
@@ -1261,8 +1273,6 @@ WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char*
  * @param bDefault FIXME
  * @return 1 if Ok, 0 if not
  */
-
-// IsNsPrefixOk
 int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
 {
     int retVal = 0;
@@ -1275,7 +1285,7 @@ int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
     }
     else
     {
-        if (	  (newPrefix == NULL && curPrefix != NULL)
+        if ( (newPrefix == NULL && curPrefix != NULL)
                 ||
                 (newPrefix && curPrefix && !strcmp(newPrefix, curPrefix)) )
         {
@@ -1299,7 +1309,6 @@ int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
  * @todo if ns is present, it should work as replace, walk through the tree and
  * update QName values and attributes
  */
-// WsXmlDefineNs
 WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDefault)
 {
     WsXmlNsH ns = NULL;
@@ -1670,6 +1679,7 @@ int is_xml_val_true(char* text)
 // Dump XMl for debugging
 
 
+#if 0
 // WsDumpXmlStrings
 void ws_dump_xml_strings(FILE* f, char* str1, char* str2, char* str3, char* str4)
 {
@@ -1824,6 +1834,27 @@ void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node, int bRecursive)
     data.indent = 0;
     data.stream = f;
     ws_xml_dump_node_tree_callback(node, &data);
+}
+
+#endif
+
+
+void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)
+{
+    WsXmlDocH doc = xml_parser_get_doc(node);
+    //xml_parser_element_dump(f, doc, node);
+    xml_parser_doc_dump(f, doc);
+    return;
+}
+
+void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
+    xml_parser_doc_dump(f, doc);
+    return;
+}
+
+
+WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix) {
+    return xml_parser_ns_add(node, uri, prefix );
 }
 
 

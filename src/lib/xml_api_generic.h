@@ -176,6 +176,7 @@ WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node);
 int ws_xml_set_node_text(WsXmlNodeH node, char *text);
 int is_root_node(WsXmlNodeH node);
 int is_xml_val_true(char *text);
+#if 0
 void ws_dump_xml_strings(FILE *f, char *str1, char *str2, char *str3, char *str4);
 void ws_dump_indent(FILE *f, int indent);
 int ws_dump_node_attrs(FILE *f, WsXmlNodeH node, int indent);
@@ -183,6 +184,10 @@ int ws_dump_node_ns_list(FILE *f, WsXmlNodeH node, int indent, int attrCount);
 void ws_do_dump_xml_node(WsXmlNodeH node, WsXmlDumpNodeTreeData *data);
 int ws_xml_dump_node_tree_callback(WsXmlNodeH node, void *_data);
 void ws_xml_dump_node_tree(FILE *f, WsXmlNodeH node, int bRecursive);
+#endif
+
+void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node);
+void ws_xml_dump_doc(FILE* f, WsXmlDocH doc );
 
 char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name);
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive);
@@ -204,6 +209,10 @@ WsXmlDocH ws_xml_read_file(
         char* filename,
         char* encoding,
         unsigned long options);
+
+
+WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix);
+WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...);
 
 /** @} */
 

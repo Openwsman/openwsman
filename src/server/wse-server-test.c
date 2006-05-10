@@ -63,13 +63,9 @@ static void wse_client_handler(
 
     SoupSession *session = NULL;
     SoupMessage *msg= NULL;
-    int         *ret_ptr = (int *)user_data;
     char *buf = NULL;
     int len;
 
-    if(ret_ptr)
-       *ret_ptr = 0;
-    
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
 
@@ -109,9 +105,10 @@ static void wse_client_handler(
         printf ("Connection to server failed: %s (%d)\n", 
                 msg->reason_phrase, 
                 msg->status_code);        
-        if(ret_ptr)
-           *ret_ptr = -1;
+        SET_CONNECTION_STATUS(CONNECTION_FAILED);
     }
+    else
+       SET_CONNECTION_STATUS(CONNECTION_OK);
 
     if (msg->response.body) 
     {    
@@ -125,7 +122,7 @@ static void wse_client_handler(
     return;
 }
 
-static WsManClient *connection_initialize(void *p_data)
+static WsManClient *connection_initialize()
 {
    WsContextH cntx = ws_create_runtime(NULL);
 
@@ -144,18 +141,20 @@ static WsManClient *connection_initialize(void *p_data)
       fprintf(stderr, "%s %d: Null Client\n", __FILE__, __LINE__);
    } 
 
-   wsman_client_add_handler(wse_client_handler, p_data);
+   wsman_client_add_handler(wse_client_handler, NULL);
 
    return cl;
 }
 
-void start_event_source(SoapH soap)
+void start_event_source(SoapH daemonSoap)
 {
    pthread_t   publiser_thread;
    WsManClient *client;
+   SoapH       soap;
 
-   client = connection_initialize(&g_notify_connection_status);
-   g_event_handler = wse_initialize_server(soap, client, g_event_source_url);
+   client = connection_initialize();
+   soap = ws_context_get_runtime(((WsManClientEnc *)client)->wscntx);
+   g_event_handler = wse_initialize_server(soap, client, daemonSoap, g_event_source_url);
    pthread_create(&publiser_thread, NULL, publish_events, soap);
    
    printf("Eventing source started...\n");
@@ -168,12 +167,11 @@ void *publish_events(void *soap_handler)
    WsXmlDocH       event_doc;
    struct timespec time_val = {1, 0};
    
-   publisher_handler = wse_publisher_initialize((EventingH)g_event_handler, 1, action_list, NULL, NULL);
+   publisher_handler = wse_publisher_initialize((EventingH)g_event_handler, 1, action_list, g_event_source_url);
    while(1)
    {
       nanosleep(&time_val, NULL);
       event_doc = ws_xml_create_doc((SoapH)soap_handler, "http://mynamespace.org", "random_event");  //TBD
-      /* Note: use NULL for no ack mode, g_event_source_url for ack mode */
-      wse_send_notification(publisher_handler, event_doc, "http://mynamespace.org",  NULL /* g_event_source_url */);      
+      wse_send_notification(publisher_handler, event_doc, "http://mynamespace.org");
    }
 }

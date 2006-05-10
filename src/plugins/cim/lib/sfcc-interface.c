@@ -54,178 +54,176 @@ extern char *value2Chars(CMPIType type, CMPIValue * value);
 
 
 void cim_connect_to_cimom(
-	CimClientInfo *cimclient,
-	char *cim_host, 
-	char *cim_host_userid, 
-	char *cim_host_passwd )
+        CimClientInfo *cimclient,
+        char *cim_host, 
+        char *cim_host_userid, 
+        char *cim_host_passwd,
+        CMPIStatus *status)
 {
-	CMPIStatus status;    
-   
+
     cimclient->cc = cmciConnect(cim_host, NULL, DEFAULT_HTTP_CIMOM_PORT,
-                               cim_host_userid, cim_host_passwd, &status);
-	if (cimclient->cc == NULL) 
-	{
-		wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Connection to CIMOM failed: %s", (char *)status.msg->hdl);		
-	} 
+            cim_host_userid, cim_host_passwd, status);
+    if (cimclient->cc == NULL) 
+    {
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Connection to CIMOM failed: %s", (char *)status->msg->hdl);		
+    } 
+}
+
+CMPIConstClass * cim_get_class (CMCIClient *cc, char *class_name, CMPIStatus *status) 
+{
+    CMPIObjectPath * objectpath;    
+    CMPIConstClass * class;
+
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+
+    class = cc->ft->getClass(cc, objectpath, 0, NULL, status);
+
+    /* Print the results */
+    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "getClass() rc=%d, msg=%s",
+            status->rc, (status->msg)? (char *)status->msg->hdl : NULL);
+
+    return class;            
 }
 
 
 
 CMPIInstance * cim_get_instance (CMCIClient *cc, 
-					char *class_name, 
-					GList *keys ) 
+        char *class_name, 
+        GList *keys,
+        CMPIStatus *status) 
 {
-	CMPIInstance * instance;
+    CMPIInstance * instance;
     CMPIObjectPath * objectpath;    
-    CMPIStatus status;
-    
+
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
-    
+
     GList *node = keys;
     while (node) 
     {    	
-    		WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
-    		wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Adding key: %s", selector->key);
-                
-                if (!strcmp(selector->type, "uint64")) {
-                        CMPIUint64 uint64val = strtoull(selector->val, NULL, 0);
-                        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "add an uint64: %llu", uint64val);
-                        CMAddKey(objectpath, selector->key, &uint64val, CMPI_uint64);    	
-                } else {
-                        CMAddKey(objectpath, selector->key, selector->val, CMPI_chars);    	
-                }
-    		node = g_list_next (node);
+        WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Adding key: %s", selector->key);
+        CMAddKey(objectpath, selector->key, selector->val, CMPI_chars);    	
+        node = g_list_next (node);
     }
-    
-    instance = cc->ft->getInstance(cc, objectpath, 0, NULL, &status);
+    instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, status);
 
     /* Print the results */
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "getInstance() rc=%d, msg=%s",
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-            
-	return instance;            
-    
+            status->rc, (status->msg)? (char *)status->msg->hdl : NULL);
+
+    return instance;            
 }
 
 
 CMPIArray * cim_enum_instances (CMCIClient *cc, 
-					char *class_name ) 
+        char *class_name , CMPIStatus *status) 
 {
-	
+
     CMPIObjectPath * objectpath;    
-    CMPIStatus status;
     CMPIEnumeration * enumeration;
-    
+
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
-       
-    enumeration = cc->ft->enumInstances(cc, objectpath, 0, NULL, &status);
-    
+
+    enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeClassOrigin, NULL, status);
+
 
     /* Print the results */
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "enumInstances() rc=%d, msg=%s",
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-    
-    
+            status->rc, (status->msg)? (char *)status->msg->hdl : NULL);
+
+
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "toArray() rc=%d, msg=%s",
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-                  
-    if (status.rc) {
-	wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "CMCIClient enumInstances() failed");
-	return NULL;
+            status->rc, (status->msg)? (char *)status->msg->hdl : NULL);
+
+    if (status->rc) {
+        wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "CMCIClient enumInstances() failed");
+        return NULL;
     }
-    CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, &status ); 
+    CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, status ); 
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Total enumeration items: %lu", 
-    		enumArr->ft->getSize(enumArr, NULL ));
-	return enumArr;           
-    
+            enumArr->ft->getSize(enumArr, NULL ));
+    return enumArr;           
+
 }
 
-CMPIArray *cim_enum_instancenames (CMCIClient *cc, 
-					char *class_name ) 
+CMPIArray *cim_enum_instancenames (CMCIClient *cc, char *class_name , CMPIStatus *status) 
 {
-	
-    CMPIObjectPath * objectpath;    
-    CMPIStatus status;
-    CMPIEnumeration * enumeration;
-    
-    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
-       
-    enumeration = cc->ft->enumInstanceNames(cc, objectpath, &status);
-    
 
+    CMPIObjectPath * objectpath;    
+    CMPIEnumeration * enumeration;
+
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+
+    enumeration = cc->ft->enumInstanceNames(cc, objectpath, status);
     /* Print the results */
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "enumInstanceNames() rc=%d, msg=%s",
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-    
-    
-    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "toArray() rc=%d, msg=%s",
-            status.rc, (status.msg)? (char *)status.msg->hdl : NULL);
-                  
-    if (status.rc) {
-	wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "CMCIClient enumInstanceNames() failed");
-	return NULL;
+            status->rc, (status->msg)? (char *)status->msg->hdl : NULL);
+
+    if (status->rc) {
+        wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "CMCIClient enumInstanceNames() failed");
+        return NULL;
     }
-    CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, &status ); 
+    CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, status ); 
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Total enumeration items: %lu", 
-    		enumArr->ft->getSize(enumArr, NULL ));
-	return enumArr;           
-    
+            enumArr->ft->getSize(enumArr, NULL ));
+    return enumArr;           
+
 }
 
 
 CMPICount cim_enum_totalItems (CMPIArray * enumArr) 
 {
-	return enumArr->ft->getSize(enumArr, NULL );
+    return enumArr->ft->getSize(enumArr, NULL );
 }
 
 
 char* cim_get_property(CMPIInstance *instance, char *property)
 {
- 	CMPIStatus status;
- 	char *valuestr;
- 	wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Get Property from instance");
+    CMPIStatus status;
+    char *valuestr;
+    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Get Property from instance");
 
-        if (!instance) 
-        {
-                wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "instance is NULL");
-                return "";
-        }
+    if (!instance) 
+    {
+        wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "instance is NULL");
+        return "";
+    }
 
-	CMPIData data = instance->ft->getProperty(instance, property, &status);	
-	
-	if (CMIsArray(data)) 
-	{
-		//free(valuestr);
-		return "";
-	}
-	else 
-	{
-		valuestr = value2Chars(data.type, &data.value);
-		return valuestr;
-	}	
+    CMPIData data = instance->ft->getProperty(instance, property, &status);	
+
+    if (CMIsArray(data)) 
+    {
+        //free(valuestr);
+        return "";
+    }
+    else 
+    {
+        valuestr = value2Chars(data.type, &data.value);
+        return valuestr;
+    }	
 }
 
 char *cim_get_keyvalue(CMPIObjectPath *objpath, char *keyname)
 {
- 	CMPIStatus status;
- 	char *valuestr;
- 	wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Get key property from objpath");
+    CMPIStatus status;
+    char *valuestr;
+    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Get key property from objpath");
 
-        if (!objpath) {
-                wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "objpath is NULL");
-                return "";
-        }
+    if (!objpath) {
+        wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "objpath is NULL");
+        return "";
+    }
 
-	CMPIData data = objpath->ft->getKey(objpath, keyname, &status);	
-	
-	if (status.rc || CMIsArray(data)) 
-	{
-		return "";
-	}
-	else 
-	{
-		valuestr = value2Chars(data.type, &data.value);
-		return valuestr;
-	}	
+    CMPIData data = objpath->ft->getKey(objpath, keyname, &status);	
+
+    if (status.rc || CMIsArray(data)) 
+    {
+        return "";
+    }
+    else 
+    {
+        valuestr = value2Chars(data.type, &data.value);
+        return valuestr;
+    }	
 }
 

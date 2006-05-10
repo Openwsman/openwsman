@@ -61,54 +61,54 @@
 
 int WsManCatalog_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called");      
-	WsXmlDocH doc = NULL;
-	WsXmlNodeH itemsNode = NULL;
-	int retVal;
-	
-	SOAP_FW* fw = (SOAP_FW*)ws_context_get_runtime(cntx);
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called");      
+    WsXmlDocH doc = NULL;
+    WsXmlNodeH itemsNode = NULL;
+    int retVal;
+
+    SOAP_FW* fw = (SOAP_FW*)ws_context_get_runtime(cntx);
     WsManDispatcherInfo* dispInfo = (WsManDispatcherInfo*)fw->dispatcherData;
-	doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
-	
+    doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
+
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), 
-    		XML_NS_ENUMERATION, 
-        WSENUM_PULL_RESP,
-         NULL);       
-         
+            XML_NS_ENUMERATION, 
+            WSENUM_PULL_RESP,
+            NULL);       
+
     if ( pullnode != NULL )
     {
-		itemsNode = ws_xml_add_child(pullnode, 
-                                XML_NS_ENUMERATION, 
-                                WSENUM_ITEMS,
-                                NULL);     	
+        itemsNode = ws_xml_add_child(pullnode, 
+                XML_NS_ENUMERATION, 
+                WSENUM_ITEMS,
+                NULL);     	
     }   
-    
-      
-	GList *node = dispInfo->interfaces;
-	while (node) 
-	{
-		WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
-		wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Interface: %s", interface->wsmanResourceUri);				 		
-		retVal = wsmancat_create_resource(itemsNode, interface);									
-		node = g_list_next (node);
-	}
-	
-	if (doc != NULL )
-	{
-		enumInfo->pullResultPtr = doc;
-	} 
+
+
+    GList *node = dispInfo->interfaces;
+    while (node) 
+    {
+        WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
+        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Interface: %s", interface->wsmanResourceUri);				 		
+        retVal = wsmancat_create_resource(itemsNode, interface);									
+        node = g_list_next (node);
+    }
+
+    if (doc != NULL )
+    {
+        enumInfo->pullResultPtr = doc;
+    } 
     return 0;
 }
 
 int WsManCatalog_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called");      
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called");      
     return 0;
 }
 
 int WsManCatalog_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Release Endpoint Called");      
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Release Endpoint Called");      
     return 0;
 }
 
@@ -123,38 +123,38 @@ int WsManCatalog_Get_EP(SoapOpH op, void* appData)
     SOAP_FW* fw = (SOAP_FW*)ws_context_get_runtime(cntx);
     WsManDispatcherInfo* dispInfo = (WsManDispatcherInfo*)fw->dispatcherData;
 
-	char* key = wsman_get_selector(cntx, NULL, WSMANCAT_RESOURCE_URI, 0);
-	if (key)
-	{
-		GList *node = dispInfo->interfaces;
-		while (node) 
-		{
-			WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
-			wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,
-				"Interface: %s", interface->wsmanResourceUri);
-				
-			if (!strcmp(interface->wsmanResourceUri, key )) 
-			{
-				if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) )
-    				{    		
-    					WsXmlNodeH r = ws_xml_add_child(ws_xml_get_soap_body(doc), NULL, WSMANCAT_RESOURCE, NULL);
-					retVal = wsmancat_create_resource(r, interface);
-    				}
-    				break;			
-			}
-			node = g_list_next (node);
-		}	
-	}
+    char* key = wsman_get_selector(cntx, NULL, WSMANCAT_RESOURCE_URI, 0);
+    if (key)
+    {
+        GList *node = dispInfo->interfaces;
+        while (node) 
+        {
+            WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*) node->data;	
+            wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,
+                    "Interface: %s", interface->wsmanResourceUri);
 
-	if (!key || !retVal)
-	{
-		doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
-		doc = wsman_generate_fault(
-			cntx, 
-			doc, 
-			WSMAN_FAULT_INVALID_SELECTORS,
-			-1);
-	}
+            if (!strcmp(interface->wsmanResourceUri, key )) 
+            {
+                if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) )
+                {    		
+                    WsXmlNodeH r = ws_xml_add_child(ws_xml_get_soap_body(doc), NULL, WSMANCAT_RESOURCE, NULL);
+                    retVal = wsmancat_create_resource(r, interface);
+                }
+                break;			
+            }
+            node = g_list_next (node);
+        }	
+    }
+
+    if (!key || !retVal)
+    {
+        doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+        doc = wsman_generate_fault(
+                cntx, 
+                doc, 
+                WSMAN_FAULT_INVALID_SELECTORS,
+                -1);
+    }
 
     if ( doc )
     {
@@ -164,7 +164,7 @@ int WsManCatalog_Get_EP(SoapOpH op, void* appData)
     } 
     else 
     {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }
 
     return 0;
