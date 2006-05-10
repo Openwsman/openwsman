@@ -34,7 +34,7 @@
  */
 
 
-#include "interface_utils.h"
+#include "sfcc-interface_utils.h"
 
 GList * add_key(WsContextH cntx, GList *keys, char *name, char *type)
 {

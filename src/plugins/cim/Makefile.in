@@ -20,7 +20,7 @@ VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../../../..
+top_builddir = ../../..
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = @INSTALL@
 install_sh_DATA = $(install_sh) -c -m 644
@@ -36,7 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = src/plugins/namespaces/cim
+subdir = src/plugins/cim
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
@@ -129,7 +129,7 @@ LIBOBJS = @LIBOBJS@
 LIBS = \
     $(XML_LIBS) \
     $(GMODULE_LIBS) \
-    $(top_builddir)/src/plugins/cim/lib/libwsmanCimIfc.la
+    $(top_builddir)/src/lib/libwsmanCimIfc.la
 
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -240,9 +240,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/namespaces/cim/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/plugins/cim/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/plugins/namespaces/cim/Makefile
+	  $(AUTOMAKE) --gnu  src/plugins/cim/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

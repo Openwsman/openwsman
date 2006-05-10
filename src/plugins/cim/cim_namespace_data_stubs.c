@@ -54,7 +54,7 @@
 
 #include "wsman-debug.h"
 #include "sfcc-interface.h"
-#include "interface_utils.h"
+#include "sfcc-interface_utils.h"
 #include "cim_namespace_data.h"
 
 #include <cmci.h>
