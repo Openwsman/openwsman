@@ -13,6 +13,7 @@ LIBS = \
 
 wsman_SOURCES = wsman.c \
 		wsman-client-options.c \
+		wsman-client-options.h \
 		wsman.h
 		
 bin_PROGRAMS = \
