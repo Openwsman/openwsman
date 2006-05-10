@@ -213,7 +213,7 @@ AC_ARG_ENABLE(cim-plugins,
 ENABLED_PLUGINS="wsman "
 if test "$disable_cim_plugins" != "yes"; then
 AC_CHECK_LIB(cmpisfcc,  cmciConnect)
-ENABLED_PLUGINS="$ENABLED_PLUGINS cim namespaces"
+ENABLED_PLUGINS="$ENABLED_PLUGINS cim"
 fi
 
 AC_PATH_PROG(DOXYGEN, doxygen, no)
@@ -257,13 +257,7 @@ AC_OUTPUT([
         src/client/Makefile
         src/lib/Makefile
         src/plugins/Makefile
-        src/plugins/namespaces/Makefile
-        src/plugins/namespaces/cim/Makefile
         src/plugins/cim/Makefile
-        src/plugins/cim/ComputerSystem/Makefile
-        src/plugins/cim/IpmiLogRecord/Makefile
-        src/plugins/cim/IpmiSensor/Makefile
-        src/plugins/cim/lib/Makefile
         src/plugins/wsman/Makefile
         src/plugins/wsman/this/Makefile
         src/plugins/wsman/Catalog/Makefile

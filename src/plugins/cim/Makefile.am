@@ -13,7 +13,7 @@ INCLUDES = -I$(top_srcdir)/src/lib \
 LIBS = \
     $(XML_LIBS) \
     $(GMODULE_LIBS) \
-    $(top_builddir)/src/plugins/cim/lib/libwsmanCimIfc.la
+    $(top_builddir)/src/lib/libwsmanCimIfc.la
 
 plugin_LTLIBRARIES= libcim_namespace.la
 
