@@ -274,5 +274,4 @@ AC_OUTPUT([
         tests/Makefile
         tests/xml/Makefile
         tests/client/Makefile
-        tests/eventing/Makefile
 	])
