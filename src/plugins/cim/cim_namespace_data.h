@@ -21,6 +21,7 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
 int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 int CimResource_Get_EP(SoapOpH op, void* appData, WsmanStatus *status);
+int CimResource_Custom_EP(SoapOpH op, void* appData);
 
 SER_DECLARE_TYPE(CimResource);
 SER_DECLARE_EP_ARRAY(CimResource);

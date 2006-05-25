@@ -7,10 +7,12 @@ libwsman_this_la_SOURCES = \
 	wsman_this.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
+	   $(SOUP_CFLAGS) \
 	   $(GMODULE_CFLAGS)
 
 LIBS = \
     $(XML_LIBS) \
+	   $(SOUP_CFLAGS) \
     $(GMODULE_LIBS)
 
 plugin_LTLIBRARIES= libwsman_this.la

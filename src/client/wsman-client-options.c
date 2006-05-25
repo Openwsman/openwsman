@@ -34,7 +34,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 #include <glib.h>
 
 #include "ws_utilities.h"
@@ -56,13 +56,19 @@ static gchar *username = NULL;
 static gchar *password = NULL;
 static gchar *server = NULL;
 
-static gchar *get_action = NULL;
-static gchar *enum_action = NULL;
-static gchar *put_action = NULL;
-static gchar *create_action = NULL;
-static gchar *invoke_action_method = NULL;
-static gchar *invoke_action = NULL;
+static gchar *_action = NULL;
+static gchar *resource_uri = NULL;
+static gchar *invoke_method = NULL;
 static gchar **properties = NULL;
+
+WsActions action_data[] = 
+{ 
+ { "get", ACTION_TRANSFER_GET},
+ { "put", ACTION_TRANSFER_PUT},
+ { "enumerate", ACTION_ENUMERATION},
+ { "invoke", ACTION_INVOKE},
+ { NULL, 0},
+};
 
 gboolean wsman_parse_options(int argc, char **argv) 
 {
@@ -77,98 +83,79 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Port", "<port>" },                
-        { "action", 'a', 0, G_OPTION_ARG_STRING, &invoke_action_method, "Invoke Action (Works only with --invoke=...)", "<custom method>" },                
-        { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs" , "<key=val>" },
+        { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
+        { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
         { NULL }
     };
 
-    GOptionEntry action_options[] = 
-    {				
-        { "get", 0, 0, G_OPTION_ARG_STRING, &get_action, "Transfer Get", "<Resource URI>"  },
-        { "put", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Put", "<Resource URI>"  },
-        { "create", 0, 0, G_OPTION_ARG_STRING, &put_action, "Transfer Create", "<Resource URI>"  },
-        { "enumerate", 0, 0, G_OPTION_ARG_STRING, &enum_action, "Enumeration", "<Resource URI>"  },
-        { "invoke", 0, 0, G_OPTION_ARG_STRING, &invoke_action, "Invoke custom action", "<Resource URI>"  },
-        { NULL }
-    };
-
-    GOptionGroup *action_group;
     GOptionContext *opt_ctx;	
-    opt_ctx = g_option_context_new("WS-Management Client");    
-    action_group = g_option_group_new("actions", "Actions", "Supported Actions", NULL, NULL);
-    g_option_group_add_entries(action_group, action_options);
+    opt_ctx = g_option_context_new("<action> <Resource Uri>");    
 
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
-    g_option_context_add_group(opt_ctx, action_group);
 
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
 
-    if (error)
-    {
-        if (error->message)
-            printf ("%s\n", error->message);
+    if (argc > 2 ) {
+        _action = argv[1];
+		resource_uri = argv[2];
+	}
+    else {
+        fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
         return FALSE;
     }
+
+
+	if (error) {
+		if (error->message)
+			printf ("%s\n", error->message);
+		return FALSE;
+	}
 
     g_option_context_free(opt_ctx);
     return retval;
 }
 
-const char **
-wsman_options_get_argv (void)
-{
+const char ** wsman_options_get_argv (void) {
     return wsman_argv;
 }
 
 
-int
-wsman_options_get_debug_level (void)
-{
+int wsman_options_get_debug_level (void) {
     return debug_level;
 }
 
 
 
-int
-wsman_options_get_server_port (void)
-{
+int wsman_options_get_server_port (void) {
     return server_port;
 }
 
 
-char*
-wsman_options_get_cafile (void)
-{
+char* wsman_options_get_cafile (void) {
     return cafile;
 }        
 
-char*
-wsman_options_get_server (void)
-{
-    return server;
+char* wsman_options_get_server (void) {
+    if (server)
+        return server;
+    else
+        return "localhost";
 }   
 
-char*
-wsman_options_get_invoke_action (void)
-{
-    return invoke_action_method;
+char* wsman_options_get_invoke_method (void) {
+    return invoke_method;
 }   
 
-char*
-wsman_options_get_username (void)
-{
+char* wsman_options_get_username (void) {
     return username;
 }   
 
-char*
-wsman_options_get_password (void)
-{
+char* wsman_options_get_password (void) {
     return password;
 }  
 
-GList *
-wsman_options_get_properties (void)
+GList * wsman_options_get_properties (void)
 {
     int c = 0;
     
@@ -185,34 +172,22 @@ wsman_options_get_properties (void)
     return list;
 }   
 
-int
-wsman_options_get_action (void)
+int wsman_options_get_action (void)
 {
-    int op;
-    if (get_action != NULL)	
-        op = ACTION_TRANSFER_GET;			
-    else if (put_action != NULL)	
-        op = ACTION_TRANSFER_PUT;			
-    else if (enum_action != NULL)	
-        op = ACTION_ENUMERATION;						
-    else if (invoke_action != NULL)	
-        op = ACTION_INVOKE;						
-    else
-        op = 0;
+    int op = 0;
+    int i;
+    for(i = 0; action_data[i].action != NULL; i++)
+    {
+        if (strcmp(action_data[i].action, _action)  == 0 ) {
+            op = action_data[i].value;
+            break;
+        }
+    }
     return op;
 }   
 
-char*
-wsman_options_get_resource_uri (void)
+char* wsman_options_get_resource_uri (void)
 {	
-    char* resourceUri = NULL;
-    if (get_action != NULL)	
-        resourceUri = get_action;			
-    else if (put_action != NULL)	
-        resourceUri = put_action;					
-    else if (enum_action != NULL)	
-        resourceUri = enum_action;								
-    return resourceUri;
+    return resource_uri;
 }   
-
 

@@ -213,6 +213,8 @@ WsXmlDocH ws_xml_read_file(
 
 WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix);
 WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...);
+WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...);
+int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 /** @} */
 

@@ -32,6 +32,7 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
+#include "glib.h"
 
 #ifndef WS_UTILITIES_H_
 #define WS_UTILITIES_H_

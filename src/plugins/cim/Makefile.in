@@ -128,6 +128,7 @@ LIBGNUTLS_LIBS_STATIC = @LIBGNUTLS_LIBS_STATIC@
 LIBOBJS = @LIBOBJS@
 LIBS = \
     $(XML_LIBS) \
+    $(SOUP_LIBS) \
     $(GMODULE_LIBS) \
     $(top_builddir)/src/lib/libwsmanCimIfc.la
 
@@ -219,6 +220,7 @@ libcim_namespace_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/plugins/cim/lib \
 	   -I/usr/local/include/CimClientLib \
+	   $(SOUP_CFLAGS) \
 	   $(GMODULE_CFLAGS)
 
 plugin_LTLIBRARIES = libcim_namespace.la

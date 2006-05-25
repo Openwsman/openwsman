@@ -40,6 +40,11 @@
 #include <ctype.h>
 #include <glib.h>
 
+#include <libsoup/soup-address.h>
+#include <libsoup/soup-message.h>
+#include <libsoup/soup-server.h>
+#include <libsoup/soup-server-auth.h>
+#include <libsoup/soup-server-message.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
@@ -204,8 +209,7 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 
         ws_xml_duplicate_attr(node, srcNode);
 
-        if ( node )
-        {
+        if ( node ) {
             ws_xml_duplicate_children(node, srcNode);
         }
     }
@@ -716,22 +720,17 @@ WsXmlDocH ws_xml_read_file(
  * @param rootName Root node name
  * @return XML document
  */
-WsXmlDocH ws_xml_create_doc( 
-        SoapH soap, 
-        char* rootNsUri, 
-        char* rootName) 
+WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName) 
 {
     iWsDoc* wsDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1);
 
-    if ( wsDoc )
-    {       
+    if ( wsDoc ) {       
         wsDoc->fw = (SOAP_FW*)soap;
         if ( xml_parser_create_doc(wsDoc, rootName) != 0 )
         {
             soap_free(wsDoc);
             wsDoc = NULL;
-        }
-        else {
+        } else {
             if ( rootNsUri != NULL )
             {
                 WsXmlNodeH rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
@@ -1251,6 +1250,18 @@ WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char*
     return newNode;
 }
 
+WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
+{
+    va_list args;
+    char buf[4096];
+    va_start (args, format);
+    vsnprintf(buf,4096,format,args);
+    va_end(args);
+    WsXmlNodeH newNode = 
+        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL); 
+
+    return newNode;
+}
 
 WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
 {
@@ -1641,32 +1652,26 @@ int ws_xml_set_node_text(WsXmlNodeH node, char* text)
 
 // Utitlities
 
-// IsRootNode
 int is_root_node(WsXmlNodeH node)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(ws_xml_get_node_doc(node));
     return (root == node);
 }
 
-// IsXmlValTrue
 int is_xml_val_true(char* text)
 {
     int retVal = 0;
 
-    if ( text )
-    {
+    if ( text ) {
         char* ptr = text;
 
         while( isdigit(*ptr) )
             ptr++;
 
-        if ( *ptr )
-        {
+        if ( *ptr ) {
             if ( !stricmp(text, "true") || !stricmp(text, "yes") )
                 retVal = 1;
-        }
-        else
-        {
+        } else {
             if ( atoi(text) != 0 )
                 retVal = 1;
         }
@@ -1674,169 +1679,6 @@ int is_xml_val_true(char* text)
 
     return retVal;
 }
-
-
-// Dump XMl for debugging
-
-
-#if 0
-// WsDumpXmlStrings
-void ws_dump_xml_strings(FILE* f, char* str1, char* str2, char* str3, char* str4)
-{
-    if ( str1 )
-        fprintf(f, "%s", str1);
-
-    if ( str2 )
-        fprintf(f, "%s", str2);
-
-    if ( str3 )
-        fprintf(f, "%s", str3);
-
-    if ( str4 )
-        fprintf(f, "%s", str4);
-}
-
-// WsDumpIndent
-void ws_dump_indent(FILE* f, int indent)
-{
-    int count = 4 * indent;
-
-    fprintf(f, "\n");
-    while(count--)
-        fprintf(f, " ");
-}
-
-// WsDumpNodeAttrs
-int ws_dump_node_attrs(FILE* f, WsXmlNodeH node, int indent)
-{
-    int count = ws_xml_get_node_attr_count(node);
-    int i;
-
-    for(i = 0; i < count; i++)
-    {
-        WsXmlAttrH attr = ws_xml_get_node_attr(node, i);
-        char* prefix = ws_xml_get_attr_ns_prefix(attr);
-        char* val = ws_xml_get_attr_value(attr);
-        char* name = ws_xml_get_attr_name(attr);
-
-        char* quote = "\"";
-
-        if ( strchr(val, '\"') )
-            quote = "\'";
-
-        if ( i != 0 )
-            ws_dump_indent(f, indent);
-
-        if ( prefix )
-            ws_dump_xml_strings(f, " ", prefix, ":", name);
-        else
-            ws_dump_xml_strings(f, NULL, " ", name, NULL);
-
-        ws_dump_xml_strings(f, "=", quote, val, quote);
-    }
-
-    return count;
-}
-
-int ws_dump_node_ns_list(FILE* f, WsXmlNodeH node, int indent, int attrCount)
-{
-    int count = ws_xml_get_ns_count(node, 0);
-    int i;
-
-    for(i = 0; i < count; i++)
-    {
-        WsXmlNsH ns = ws_xml_get_ns(node, i); 
-        char* nsUri = ws_xml_get_ns_uri(ns);
-        char* prefix = ws_xml_get_ns_prefix(ns);
-
-        if ( i != 0 || attrCount != 0 )
-            ws_dump_indent(f, indent);
-
-        if ( prefix )
-            ws_dump_xml_strings(f, " xmlns", ":", prefix, NULL);
-        else
-            ws_dump_xml_strings(f, " xmlns", NULL, NULL, NULL);
-
-        ws_dump_xml_strings(f, "=\"", nsUri, "\"", NULL);
-    }
-
-    return count;
-}
-
-// WsDoDumpXmlNode
-void ws_do_dump_xml_node(WsXmlNodeH node, WsXmlDumpNodeTreeData* data)
-{
-    char* name = ws_xml_get_node_local_name(node);
-    char* nameNsPrefix = ws_xml_get_node_name_ns_prefix(node);
-    char* text = ws_xml_get_node_text(node);
-    int childCount = ws_xml_get_child_count(node);
-    int attrCount;
-    int nsCount;
-
-    ws_dump_indent(data->stream, data->indent);
-
-    if ( nameNsPrefix )
-        ws_dump_xml_strings(data->stream, "<", nameNsPrefix, ":", name);
-    else
-        ws_dump_xml_strings(data->stream, "<", name, NULL, NULL);
-
-    data->indent++;
-
-    attrCount = ws_dump_node_attrs(data->stream, node, data->indent);
-    nsCount = ws_dump_node_ns_list(data->stream, node, data->indent, attrCount);
-
-    data->indent--;
-
-    if (  !childCount && (!text || !*text) )
-    {
-        ws_dump_xml_strings(data->stream, " />", NULL, NULL, NULL);
-    }
-    else
-    {
-        ws_dump_xml_strings(data->stream, ">", NULL, NULL, NULL);
-
-        if ( !childCount )
-            ws_dump_xml_strings(data->stream, text, NULL, NULL, NULL);
-
-        if ( childCount )
-        {
-            int i;
-            data->indent++;
-            for(i = 0; i < childCount; i++)
-            {
-                ws_do_dump_xml_node(ws_xml_get_child(node, i, NULL, NULL), data);
-            }
-            data->indent--;
-            ws_dump_indent(data->stream, data->indent);
-        }
-
-        if ( nameNsPrefix )
-        {
-            ws_dump_xml_strings(data->stream, "</", nameNsPrefix, ":", name);
-            ws_dump_xml_strings(data->stream, ">", NULL, NULL, NULL);
-        }
-        else
-            ws_dump_xml_strings(data->stream, "</", name, ">", NULL);
-    }
-}
-
-// WsXmlDumpNodeTreeCallBack
-int ws_xml_dump_node_tree_callback(WsXmlNodeH node, void* _data)
-{
-    ws_do_dump_xml_node(node, (WsXmlDumpNodeTreeData*)_data);
-    return 0;
-}
-
-// WsXmlDumpNodeTree
-void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node, int bRecursive)
-{
-    WsXmlDumpNodeTreeData data;
-    data.indent = 0;
-    data.stream = f;
-    ws_xml_dump_node_tree_callback(node, &data);
-}
-
-#endif
 
 
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)
@@ -1856,6 +1698,13 @@ void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
 WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix) {
     return xml_parser_ns_add(node, uri, prefix );
 }
+
+
+
+int check_xpath(WsXmlNodeH node, char *xpath_expr) {
+    return xml_parser_check_xpath(node, xpath_expr);
+}
+
 
 
 /** @} */

@@ -58,8 +58,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
-#include <glib.h>
-
 
 #include "ws_utilities.h"
 #include "wsman-debug.h"

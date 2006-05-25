@@ -6,7 +6,6 @@ OWSMAN_INCLUDES = \
 	ws_errors.h \
 	wsman-debug.h \
 	wsman-faults.h \
-	ws_transport.h \
 	ws_utilities.h \
 	ws_xml_api.h \
 	xml_api_generic.h \
@@ -23,7 +22,6 @@ libwsman_la_SOURCES = \
 	ws_dispatcher.c \
 	ws_soap_api.c \
 	ws_utilities.c \
-	ws_transport.c \
 	wsman-debug.c \
 	wsman-faults.c \
 	wsman-client.c 
@@ -31,6 +29,7 @@ libwsman_la_SOURCES = \
 
 INCLUDES = -I$(top_srcdir) \
 	   $(XML_CFLAGS) \
+	   $(SOUP_CFLAGS) \
 	   $(GLIB_CFLAGS)
 
 cimifcincludedir = $(includedir)/openwsman/cim
@@ -44,12 +43,12 @@ libwsmanCimIfc_la_SOURCES = \
 
 LIBS = \
 	$(GLIB_LIBS)	\
+	$(SOUP_LIBS) \
         $(XML_LIBS)
 
 
 libwsman_la_LIBADD =       \
-        $(XML_LIBS)   \
-	$(GLIB_LIBS)	\
+			    $(LIBS)
 	-lpthread
 
 libwsman_la_LDFLAGS= -version-info 1:0

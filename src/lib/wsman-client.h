@@ -94,6 +94,10 @@ typedef struct _WsManClientFT
 	 * Transfer Create
 	 */	
 	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, GList *prop);
+	/**
+	 * Invoke custom method
+	 */	
+	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,  GList *prop);
         
 	 	 	 	 	 
 	
@@ -142,24 +146,11 @@ WsManClient *wsman_connect_with_ssl(
 		WsManClientStatus *rc);
 
 
-WsXmlDocH transfer_get(        
-        WsManClient *cl,
-        char *resourceUri);
-
-WsXmlDocH transfer_put(        
-        WsManClient *cl,
-        char *resourceUri,
-        GList *prop);
-
-WsXmlDocH transfer_create(        
-        WsManClient *cl,
-        char *resourceUri,
-        GList *prop);
-
-GList *enumerate(        
-        WsManClient *cl,
-        char *resourceUri,
-        int count);
+WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri); 
+WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop);
+WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, GList *prop);
+GList *enumerate(WsManClient *cl, char *resourceUri, int count);
+WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  GList *prop);
 
 WsXmlDocH wsman_make_enum_message(WsContextH soap,
         char* op,

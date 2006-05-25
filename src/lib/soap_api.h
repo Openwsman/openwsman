@@ -33,6 +33,11 @@
  * @author Eugene Yarmosh
  */
 
+#include <libsoup/soup-address.h>
+#include <libsoup/soup-message.h>
+#include <libsoup/soup-server.h>
+#include <libsoup/soup-server-auth.h>
+#include <libsoup/soup-server-message.h>
 
 #ifndef SOAP_API_H_
 #define SOAP_API_H_
@@ -214,23 +219,6 @@
 #define WS_CONTEXT_TYPE_FAULT		0x06
 
 
-struct __WsSoapDataBuffer {
-    char 	*body;
-    int		length;
-};
-typedef struct __WsSoapDataBuffer WsSoapDataBufferH;
-
-struct __WsSoapMessage {
-    WsSoapDataBufferH	*request;
-    DL_List         	*request_headers;
-    WsSoapDataBufferH	*response;
-    DL_List         	*response_headers;
-    int 				status;
-};
-typedef struct __WsSoapMessage WsSoapMessageH;
-
-
-
 
 struct __WsContext
 {
@@ -246,7 +234,7 @@ typedef struct __SoapDispatch* SoapDispatchH;
 
 typedef SoapDispatchH (*DispatcherCallback)(WsContextH, void*, WsXmlDocH);
 
-// this structure is similarly defined in WsXmlApi.h
+// this structure is similarly defined in ws_xml_api.h
 #ifndef _SoapH_Defined
 #define _SoapH_Defined
 struct __Soap
@@ -280,10 +268,6 @@ struct __SOAP_FW
 	void* parserData;
 	unsigned long uniqueIdCounter;
 	
-	void* addrWakeUp;
-
-	unsigned long wakeUpTime;
-
 	DL_List inboundFilterList;
 	DL_List outboundFilterList;
 	
@@ -436,6 +420,32 @@ struct __WsEnumerateInfo
 };
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
+
+typedef struct _WsmanStatus {
+    WsmanFaultCodeType rc;
+    WsmanFaultDetailType detail;
+    char *msg;
+} WsmanStatus;
+
+struct _WsmanDataBuffer {
+    char 	*body;
+    int		length;
+};
+typedef struct _WsmanDataBuffer WsmanDataBuffer;
+
+struct _WsmanMessage {
+    const char         *method;
+    WsmanStatus         status;
+    WsmanDataBuffer      request;
+    GHashTable         *request_headers;
+    WsmanDataBuffer      response;
+    WsXmlDocH           in_doc;
+};
+typedef struct _WsmanMessage WsmanMessage;
+
+
+
+
 typedef int (*WsEndPointEnumerate)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
@@ -448,6 +458,7 @@ struct _WsProperties {
     char *value;   
 };
 typedef struct _WsProperties WsProperties;
+
 
 
 /** *********************************** */
@@ -532,14 +543,13 @@ char *soap_get_op_action(SoapOpH op, int inbound);
 void soap_set_op_action(SoapOpH op, char *action, int inbound);
 unsigned long soap_get_op_flags(SoapOpH op);
 SoapH soap_get_op_soap(SoapOpH op);
-unsigned long soap_get_op_channel_id(SoapOpH op);
 char *soap_get_op_dest_url(SoapOpH op);
 void soap_mark_processed_op_header(SoapOpH h, WsXmlNodeH xmlNode);
 void soap_destroy_op(SoapOpH op);
 
 
 int outbound_addressing_filter(SoapOpH opHandle, void* data);
-int soap_submit_op(SoapOpH h, int channelId, char* destUrl )  ;
+int soap_submit_op(SoapOpH h)  ;
 void soap_start_dispatch(SoapDispatchH disp);
 
 WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc);
@@ -610,14 +620,6 @@ void wsmancat_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *interfa
 
 int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);				
 
-int send_on_new_channel(SOAP_FW* fw, 
-        char* buf,
-        int len,
-        char* sendToUrl, 
-         
-        char* msgIdToKeep, //TBD: ??? not used
-        int oneWay,
-        unsigned long tm);
         
  
 // ******************** 
@@ -639,6 +641,7 @@ int send_on_new_channel(SOAP_FW* fw,
 #define WS_DISP_TYPE_PULL_RAW			12
 #define WS_DISP_TYPE_GET_RAW				13
 #define WS_DISP_TYPE_GET_NAMESPACE				14
+#define WS_DISP_TYPE_CUSTOM_METHOD				15
 
 #define WS_DISP_TYPE_PRIVATE				0xfffe
 
@@ -675,6 +678,7 @@ int send_on_new_channel(SOAP_FW* fw,
 #define END_POINT_TRANSFER_PULL(t, ns)\
 	{ WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
+
 #define END_POINT_TRANSFER_PULL_RAW(t, ns)\
 	{ WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}	  
@@ -682,6 +686,10 @@ int send_on_new_channel(SOAP_FW* fw,
 #define END_POINT_PRIVATE_EP(t, a, m, ns)    \
         { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL, \
           t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
+
+#define END_POINT_CUSTOM_METHOD(t, ns)    \
+        { WS_DISP_TYPE_PRIVATE, NULL, NULL, NULL, NULL, \
+          t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
 
 #define END_POINT_LAST	{ 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
@@ -788,40 +796,12 @@ extern WsSelector t##_Get_Selectors[]
 
 
 
-#include "ws_transport.h"
-
-int do_submit_back_channel_response(SOAP_FW* fw,
-        unsigned long channelId,        
-        char* buf,
-        int len,
-        int httpErrorCode,
-        char* httpErrorMsg);
-        
-int add_output_chain_to_channel(SOAP_OUTPUT_CHAIN* chain, SOAP_CHANNEL* ch);        
-SOAP_CHANNEL* find_channel_by_id(unsigned long id, SOAP_FW* fw);        
-void add_chain_to_waiting_list(SOAP_FW* fw, SOAP_OUTPUT_CHAIN* chain);
-void free_xml_memory_callback(struct __SOAP_OUTPUT_CHAIN* chain, int reason);        
-void destroy_output_chain(struct __SOAP_OUTPUT_CHAIN* chain, int reason);
-//MakeOutputChain 
-SOAP_OUTPUT_CHAIN* make_output_chain(SOAP_FW* fw,        
-        unsigned long channelId,
-        void (*callbackProc)(struct __SOAP_OUTPUT_CHAIN*, int),
-        void* callbackData,
-        char* dataBuf,
-        int dataBufSize);
-        
-SOAP_OUTPUT_BUFFER* add_buffer_to_output_chain(SOAP_OUTPUT_CHAIN* chain,
-        char* dataBuf,
-        int size);
-WsXmlDocH soap_get_ch_doc(SOAP_CHANNEL* ch, SOAP_FW* fw);
-
 void soap_enter(SoapH soap);
 void soap_leave(SoapH soap);
-
 WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize);
-
 char *wsman_remove_query_string(char * resourceUri);
 void soap_destroy_fw(SoapH soap);
 
+void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char *details);
 
 #endif /*SOAP_API_H_*/

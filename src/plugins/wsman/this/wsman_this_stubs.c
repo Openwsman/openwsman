@@ -30,6 +30,7 @@ WsManThis g_WsManThis = { PACKAGE_NAME, PACKAGE_VERSION };
 
 WsManThis* WsManThis_Get_EP(WsContextH cntx)
 {
+
     return &g_WsManThis;
 }
 

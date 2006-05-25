@@ -58,39 +58,29 @@ typedef struct __SOAP_CALLBACK_ENTRY SOAP_CALLBACK_ENTRY;
 struct __SOAP_DISPATCH_ENTRY
 {
 	DL_Node node;
-	
 	int usageCount;
-
 	char* inboundAction;
 	char* outboundAction;
 	unsigned long flags;
 	SOAP_FW* fw;
-
 	SoapServiceCallback serviceCallback;
 	void* serviceData;
-
 	DL_List inboundFilterList;
 	DL_List outboundFilterList;
 };
 typedef struct __SOAP_DISPATCH_ENTRY SOAP_DISPATCH_ENTRY;
-
 
 struct __SOAP_OP_ENTRY
 {
 	SOAP_DISPATCH_ENTRY* dispatch;
 	unsigned long timeoutTicks;
 	unsigned long submittedTicks;
-	//DL_List* context;
 	WsContextH cntx;
 	DL_List processedHeaders;
 	WsXmlDocH inDoc;   // not deleted on destroy
 	WsXmlDocH outDoc;  // not deleted on destroy
-	unsigned long backchannelId;
-	char* backchannelUrl;		
-	WsSoapMessageH *message;	
 };
 typedef struct __SOAP_OP_ENTRY SOAP_OP_ENTRY;
-
 
 void wsman_generate_notunderstood_fault(
 	SOAP_OP_ENTRY* op, 
@@ -98,11 +88,8 @@ void wsman_generate_notunderstood_fault(
 	);
 char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc);
  
-void  dispatch_inbound_call(SOAP_CHANNEL *ch);
-
-
+void  dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg);
 void wsman_dispatcher_list( GList *interfaces );
-
 
 SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw,
         char* inboundAction, 
@@ -125,9 +112,9 @@ int is_valid_envelope(SOAP_FW *fw, WsXmlDocH doc);
 
 
 // Temp
-WsXmlDocH build_inbound_envelope(SOAP_FW* fw, SOAP_CHANNEL *ch);
-SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlDocH doc);
-SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, SOAP_CHANNEL *ch, WsXmlDocH doc);
+WsXmlDocH build_inbound_envelope(SOAP_FW* fw,  WsmanMessage *msg );
+SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
+SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
 SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc);
 
 WsXmlDocH build_soap_fault(SOAP_FW *fw, char *soapNsUri, char *faultNsUri, char *code, char *subCode, char *reason, char *detail);
@@ -151,9 +138,8 @@ WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op);
 int process_filters(SOAP_OP_ENTRY* op, int inbound);
 WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc);
 
-int process_inbound_operation(SOAP_OP_ENTRY* op);
+int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg);
 
-void build_soap_message_response(WsXmlDocH doc, WsSoapMessageH  *ws_message);
 
 
 /** @} */

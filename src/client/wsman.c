@@ -51,11 +51,7 @@
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
 
-
-
 #include "ws_utilities.h"
-
-
 #include "ws_xml_api.h"
 #include "ws_errors.h"
 #include "soap_api.h"
@@ -67,6 +63,7 @@
 #include "wsman-client-options.h"
 #include "wsman.h"
 
+void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
 
 static void
 debug_message_handler (const char *str, 
@@ -133,10 +130,7 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
 }
 
 void  
-wsman_client_handler(
-        WsManClient *cl, 
-        WsXmlDocH rqstDoc,
-        gpointer user_data) 
+wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 
 {
 
     SoupSession *session = NULL;
@@ -263,6 +257,10 @@ int main(int argc, char** argv)
 
     switch (op) 
     {
+    case  ACTION_INVOKE: 			
+        printf("ResourceUri: %s\n", resourceUri );
+        doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties());
+        break;
     case  ACTION_TRANSFER_CREATE: 			
         doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties());        		        		
         break;
@@ -274,7 +272,7 @@ int main(int argc, char** argv)
         break;
 
     case ACTION_ENUMERATION:
-        enumeration = cl->ft->enumerate(cl, resourceUri ,  -1);
+        enumeration = cl->ft->enumerate(cl, resourceUri , 200);
         while (enumeration) {
             WsXmlDocH enDoc = (WsXmlDocH)enumeration->data;
             if (enDoc)

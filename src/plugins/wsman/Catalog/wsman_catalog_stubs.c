@@ -159,7 +159,7 @@ int WsManCatalog_Get_EP(SoapOpH op, void* appData)
     if ( doc )
     {
         soap_set_op_doc(op, doc, 0);
-        soap_submit_op(op, soap_get_op_channel_id(op), NULL);
+        soap_submit_op(op);
         //ws_xml_destroy_doc(doc);
     } 
     else 

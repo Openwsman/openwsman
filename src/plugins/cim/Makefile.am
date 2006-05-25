@@ -8,10 +8,12 @@ libcim_namespace_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/plugins/cim/lib \
 	   -I/usr/local/include/CimClientLib \
+	   $(SOUP_CFLAGS) \
 	   $(GMODULE_CFLAGS)
 
 LIBS = \
     $(XML_LIBS) \
+    $(SOUP_LIBS) \
     $(GMODULE_LIBS) \
     $(top_builddir)/src/lib/libwsmanCimIfc.la
 

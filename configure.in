@@ -189,7 +189,8 @@ AC_ARG_ENABLE(more-warnings,
 if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-Wall -Wstrict-prototypes -Wmissing-declarations \
-		-Wmissing-prototypes -Wnested-externs -Wpointer-arith"
+		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
+                -Wunused"
 fi
 
 AC_ARG_ENABLE(warnings-as-errors,

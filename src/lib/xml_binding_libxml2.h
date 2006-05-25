@@ -81,5 +81,6 @@ void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf, int* ptrSize, char* enc
 void xml_parser_doc_dump(FILE* f, WsXmlDocH doc);
 void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node);
 
+int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr);
 
 #endif /*XML_BINDING_LIBXML2_H_*/

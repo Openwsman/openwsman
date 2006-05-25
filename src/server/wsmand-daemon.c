@@ -86,12 +86,9 @@ gboolean wsmand_parse_options(int argc, char **argv)
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");  	
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
-    if (error)
-    {
+    if (error) {
         if (error->message)
-        {
             printf ("%s\n", error->message);
-        }
         return FALSE;
     }
 
@@ -100,42 +97,36 @@ gboolean wsmand_parse_options(int argc, char **argv)
     return retval;    
 }
 
-const char **
-wsmand_options_get_argv (void)
+const char ** wsmand_options_get_argv (void)
 {
     return wsmand_argv;
 }
 
 
-gboolean
-wsmand_options_get_daemon_flag (void)
+gboolean wsmand_options_get_daemon_flag (void)
 {
     return daemon_flag;
 }
 
-gboolean
-wsmand_options_get_no_plugins_flag (void)
+gboolean wsmand_options_get_no_plugins_flag (void)
 {
     return no_plugin_flag;
 }
 
 
-int
-wsmand_options_get_debug_level (void)
+int wsmand_options_get_debug_level (void)
 {
     return debug_level;
 }
 
 
-int
-wsmand_options_get_syslog_level (void)
+int wsmand_options_get_syslog_level (void)
 {
     return syslog_level;
 }
 
 
-int
-wsmand_options_get_server_port (void)
+int wsmand_options_get_server_port (void)
 {
     return server_port;
 }

@@ -37,6 +37,11 @@
 #include "string.h"
 #include "stdio.h"
 #include <glib.h>
+#include <libsoup/soup-address.h>
+#include <libsoup/soup-message.h>
+#include <libsoup/soup-server.h>
+#include <libsoup/soup-server-auth.h>
+#include <libsoup/soup-server-message.h>
 
 #include <ctype.h>
 #include "assert.h"
@@ -48,7 +53,6 @@
 #include "soap_api.h"
 #include "xml_api_generic.h"
 
-#include "ws_transport.h"
 #include "ws_dispatcher.h"
 #include "ws_errors.h"
 #include "xml_serializer.h"

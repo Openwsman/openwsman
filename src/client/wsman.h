@@ -46,6 +46,5 @@
 
 #define MY_ENCODING "UTF-8"
 
-
                
 #endif // WSMAN_CLIENT_H

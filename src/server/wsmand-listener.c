@@ -32,6 +32,7 @@
  * @author Anas Nashif
  */
 
+#define _GNU_SOURCE
 #include "config.h"
 
 
@@ -65,7 +66,6 @@ extern void start_event_source(SoapH soap);
 
 
 #include "wsman-debug.h"
-#include "ws_transport.h"
 #include "wsmand-listener.h"
 #include "wsmand-plugins.h"
 #include "wsmand-daemon.h"
@@ -80,19 +80,15 @@ print_header (gpointer name, gpointer value, gpointer data)
 
 
 static gboolean
-server_auth_callback (
-        SoupServerAuthContext *auth_ctx, 
-        SoupServerAuth        *auth,
-        SoupMessage           *msg,
-        gpointer               data) 
+server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
+        SoupMessage  *msg, gpointer data) 
 {
     const char *username;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
 
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
-    if (auth) 
-    {
+    if (auth) {
         username = soup_server_auth_get_user (auth);		
         if ( !strcmp(username, "wsman") 
                 && soup_server_auth_check_passwd(auth, "secret" ) )
@@ -107,9 +103,9 @@ server_auth_callback (
 
 
 
-static void
-server_callback (SoupServerContext *context, SoupMessage *msg, gpointer data)
-{		
+static void server_callback (SoupServerContext *context, SoupMessage *msg, 
+        gpointer data) {		
+
     char *path;
 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Server Callback Called\n");
@@ -119,12 +115,8 @@ server_callback (SoupServerContext *context, SoupMessage *msg, gpointer data)
 
 
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
-
-
     if (msg->request.length)
-    {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Request: %.*s", msg->request.length, msg->request.body);
-    }
 
 
     if (soup_method_get_id (msg->method) != SOUP_METHOD_ID_POST)
@@ -133,79 +125,50 @@ server_callback (SoupServerContext *context, SoupMessage *msg, gpointer data)
         goto DONE;
     }   
 
-    if (path) 
-    {
-        if (strcmp(path, "/wsman"))\
-        {
+    if (path) {
+        if (strcmp(path, "/wsman")) {
             soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
             goto DONE;
         }
-    } 
-    else 
-    {
+    } else {
         path = g_strdup ("");
     }    
 
     SOAP_FW* fw = (SOAP_FW*)data;	
-    SOAP_CHANNEL* ch;
-    ch = make_soap_channel(
-            soap_fw_make_unique_id(fw),
-            NULL,
-            dispatch_inbound_call,
-            (SOAP_FW *)data,
-            SOAP_CHANNEL_DEF_INACTIVITY_TIMEOUT,
-            SOAP_CHANNEL_DEF_KEEP_ALIVE_TIMEOUT,
-            SOAP_CHANNEL_DEF_TCP_LISTENER_FLAGS
-            );
+    WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
+	wsman_msg->status.rc = WSMAN_RC_OK;
 
-    DL_AddTail(&fw->channelList, &ch->node);
-    ch->inputBuffer->bufSize = SOUP_MESSAGE (msg)->request.length;
-    ch->inputBuffer->buf = SOUP_MESSAGE (msg)->request.body;	
+    wsman_msg->request.body = (char *)msg->request.body;
+    wsman_msg->request.length = msg->request.length;
 
-
-    if ( ch->recvDispatchCallback )
-    {
-        ch->recvDispatchCallback(ch);
-    }
-
-
-    if (ch->FaultCodeType != WSMAN_FAULT_NONE )
-    {
+    // Call dispatcher
+    dispatch_inbound_call(fw, wsman_msg);
+    
+    if (wsman_msg->status.rc != WSMAN_RC_OK ) {
         char *buf;
         int  len;    		
-
-        wsman_generate_fault_buffer(fw->cntx, soap_get_ch_doc(ch, fw), 
-                ch->FaultCodeType , 
-                ch->FaultDetailType,
+        wsman_generate_fault_buffer(fw->cntx, wsman_msg->in_doc, 
+                wsman_msg->status.rc , 
+                wsman_msg->status.detail,
                 &buf, 
                 &len);
 
         msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
         msg->response.length = len;
-        msg->response.body = g_malloc (len);
-        msg->response.body = buf;   
+        //msg->response.body = g_malloc (len);
+        msg->response.body = strndup(buf, len);   
+        free(buf);
         soup_message_set_status (msg, SOUP_STATUS_INTERNAL_SERVER_ERROR);        		
-    } 
-    else 
-    {		 	
-        int bDone = 0;
-        DL_Node* node = DL_GetHead(&ch->outputList);
-        while(node && !bDone)
-        {
-            DL_Node* nextNode = DL_GetNext(node);
-            SOAP_OUTPUT_CHAIN* chain = (SOAP_OUTPUT_CHAIN*)node;	
-
-            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, 
-                    "Response: %s", chain->dataBuffer->dataBuf );
-
-            msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
-            msg->response.length = chain->dataBuffer->size;
-            msg->response.body = g_malloc (chain->dataBuffer->size);
-            msg->response.body = chain->dataBuffer->dataBuf;        
-            node = nextNode;
-        }
-        soup_message_set_status (msg, SOUP_STATUS_OK);
+    } else {		 	
+	// Set SoupMessage
+    	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
+    	msg->response.length = wsman_msg->response.length;
+    	msg->response.body = (char *)wsman_msg->response.body;
     }
+
+    if (wsman_msg->in_doc)
+        ws_xml_destroy_doc(wsman_msg->in_doc);
+    soup_message_set_status (msg, SOUP_STATUS_OK);
 
 
 DONE:
@@ -213,6 +176,7 @@ DONE:
     soup_server_message_set_encoding (SOUP_SERVER_MESSAGE (msg),
             SOUP_TRANSFER_CONTENT_LENGTH);
 
+    soap_free(wsman_msg);
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, 
             "Response (status) %d %s", msg->status_code, msg->reason_phrase);
 
@@ -242,7 +206,6 @@ WsContextH wsmand_start_listener(WsManListenerH *listener)
         list = g_list_append(list, p->interface);			
         node = g_list_next (node);
     }
-
     cntx = ws_create_runtime(list);                    	
     return cntx;
 }
@@ -254,7 +217,6 @@ int wsmand_start_server()
     SoupServer *server = NULL;
     // Authentication handler   	   	
     SoupServerAuthContext auth_ctx = { 0 };	
-
 
     WsManListenerH *listener = (WsManListenerH *)g_malloc0(sizeof(WsManListenerH) );	
     WsContextH cntx = wsmand_start_listener(listener);           
@@ -268,31 +230,26 @@ int wsmand_start_server()
     {
         auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
         auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 
-    }
-    else if (!strcmp(atype, "digest")) 
-    {
+    } else if (!strcmp(atype, "digest")) {
         auth_ctx.types |= SOUP_AUTH_TYPE_DIGEST;
         auth_ctx.digest_info.realm = AUTHENTICATION_REALM;
         auth_ctx.digest_info.allow_algorithms = SOUP_ALGORITHM_MD5;
         auth_ctx.digest_info.force_integrity = FALSE;		
     }
-
     auth_ctx.callback = server_auth_callback;   	   	
+
     // The server handler to deal with all requests
     if (wsmand_options_get_server_port() > 0) 
     {
         server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
-        if (!server) 
-        {
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-                "Unable to bind to server port %d", 
-                wsmand_options_get_server_port());
+        if (!server) {
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Unable to bind to server port %d", wsmand_options_get_server_port());
             return 1;
         }		
         soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);       	    
-
         wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting Server on port %d",  soup_server_get_port (server));
         soup_server_run_async (server);
+        g_object_unref (server);
     }
 
 #ifdef HAVE_SSL
@@ -316,6 +273,7 @@ int wsmand_start_server()
                 soup_server_get_port (ssl_server));
 
         soup_server_run_async (ssl_server);
+        g_object_unref (ssl_server);
     }
 #endif
 
@@ -337,6 +295,7 @@ int wsmand_start_server()
     //start_event_source(soap);
     // End of WS-Eventing test code
 
+    //ws_destroy_context(cntx);
     g_free(listener);
     wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Waiting for requests...");
     return 0;

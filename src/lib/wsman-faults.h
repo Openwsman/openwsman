@@ -40,7 +40,7 @@
 
 enum __WsmanFaultCodeType 
 {	
-    WSMAN_FAULT_NONE = 0,
+    WSMAN_RC_OK = 0,
     WSMAN_FAULT_ACCESS_DENIED,
     WSMAN_FAULT_AMBIGUOUS_SELECTORS,
     WSMAN_FAULT_ALREADY_EXISTS,
@@ -83,13 +83,14 @@ enum __WsmanFaultCodeType
     SOAP_FAULT_MUSTUNDERSTAND,
 
     // WSEN
-    WSEN_FAULT_INVALID_ENUMERATION_CONTEXT
+    WSEN_FAULT_INVALID_ENUMERATION_CONTEXT,
+    WSMAN_FAULT_UNKNOWN
 };
 typedef enum  __WsmanFaultCodeType WsmanFaultCodeType;
 
 enum __WsmanFaultDetailType 
 {
-    WSMAN_FAULT_NO_DETAILS = 0,
+    WSMAN_DETAIL_OK = 0,
     WSMAN_FAULT_DETAIL_ACK,
     WSMAN_FAULT_DETAIL_ACTION_MISMATCH,
     WSMAN_FAULT_DETAIL_ALREADY_EXISTS,
@@ -155,19 +156,13 @@ enum __WsmanFaultDetailType
     SOAP_FAULT_DETAIL_HEADER_NOT_UNDERSTOOD,
 
     // OpenWSMAN 
-    OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR
+    OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR,
+    OWSMAN_FAULT_NO_DETAILS
+
 
 
 };
 
 typedef enum __WsmanFaultDetailType WsmanFaultDetailType;
-
-
 void add_details_proc(WsXmlNodeH fault,  void* data);
-
-typedef struct _WsmanStatus {
-    WsmanFaultCodeType rc;
-    char *msg;
-} WsmanStatus;
-
 #endif /*WSMANFAULTS_H_*/

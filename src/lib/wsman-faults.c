@@ -38,6 +38,13 @@
 #include <ctype.h>
 #include <glib.h>
 
+
+#include <libsoup/soup-address.h>
+#include <libsoup/soup-message.h>
+#include <libsoup/soup-server.h>
+#include <libsoup/soup-server-auth.h>
+#include <libsoup/soup-server-message.h>
+
 #include "ws_utilities.h"
 #include "ws_xml_api.h"
 #include "soap_api.h"
@@ -49,8 +56,18 @@
 #include "wsman-debug.h"
 
 
-static 
-char *get_fault_details(WsmanFaultDetailType faultDetail)
+
+
+void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, 
+		WsmanFaultDetailType faultDetail, char *details) {
+    msg->status.rc = faultCode;
+    msg->status.detail = faultDetail;
+    if (details) msg->status.msg = details;
+    return;
+
+}
+
+static char *get_fault_details(WsmanFaultDetailType faultDetail)
 {
     char *descr;
     switch (faultDetail) 
@@ -212,6 +229,13 @@ WsXmlDocH wsman_generate_fault(
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Fault Code: %d", faultCode);
     switch (faultCode) 
     {
+    case WSA_FAULT_ACTION_NOT_SUPPORTED:
+        subCodeNs 	= XML_NS_ADDRESSING;
+        subCode		= "ActionNotSupported";
+        if (( reason = get_fault_details(faultDetail)) == NULL)
+            reason 		= "Action not supported.";
+
+        break;
     case WSMAN_FAULT_INVALID_SELECTORS:
         subCodeNs 	= XML_NS_WS_MAN;
         subCode		= "InvalidSelectors";
@@ -291,17 +315,12 @@ void add_details_proc(WsXmlNodeH fault,  void* data)
 
 
 
-void wsman_generate_fault_buffer
-(
- WsContextH cntx, 
- WsXmlDocH inDoc, 
- WsmanFaultCodeType faultCode, 
- WsmanFaultDetailType faultDetail,
- char **buf, 
- int* len)
+void wsman_generate_fault_buffer ( WsContextH cntx,  WsXmlDocH inDoc, 
+ 		WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char **buf,  int* len)
 {	
     WsXmlDocH doc = wsman_generate_fault(cntx, inDoc,faultCode, faultDetail);   
     ws_xml_dump_memory_enc(doc, buf, len, NULL);	
+    ws_xml_destroy_doc(doc);
     return;
 }
 
