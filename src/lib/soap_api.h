@@ -33,12 +33,6 @@
  * @author Eugene Yarmosh
  */
 
-#include <libsoup/soup-address.h>
-#include <libsoup/soup-message.h>
-#include <libsoup/soup-server.h>
-#include <libsoup/soup-server-auth.h>
-#include <libsoup/soup-server-message.h>
-
 #ifndef SOAP_API_H_
 #define SOAP_API_H_
 

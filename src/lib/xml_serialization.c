@@ -37,11 +37,6 @@
 #include "string.h"
 #include "stdio.h"
 #include <glib.h>
-#include <libsoup/soup-address.h>
-#include <libsoup/soup-message.h>
-#include <libsoup/soup-server.h>
-#include <libsoup/soup-server-auth.h>
-#include <libsoup/soup-server-message.h>
 
 #include <ctype.h>
 #include "assert.h"

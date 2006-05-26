@@ -29,21 +29,10 @@ libwsman_la_SOURCES = \
 
 INCLUDES = -I$(top_srcdir) \
 	   $(XML_CFLAGS) \
-	   $(SOUP_CFLAGS) \
 	   $(GLIB_CFLAGS)
-
-cimifcincludedir = $(includedir)/openwsman/cim
-cimifc_INCLUDES  = sfcc-interface_utils.h sfcc-interface.h
-
-libwsmanCimIfc_la_SOURCES = \
-	sfcc-interface.c \
-	sfcc-interface_utils.c \
-	sfcc-interface_utils.h \
-	sfcc-interface.h
 
 LIBS = \
 	$(GLIB_LIBS)	\
-	$(SOUP_LIBS) \
         $(XML_LIBS)
 
 
@@ -53,11 +42,4 @@ libwsman_la_LIBADD =       \
 
 libwsman_la_LDFLAGS= -version-info 1:0
 
-libwsmanCimIfc_la_LIBADD =       \
-	$(GLIB_LIBS) \
-       $(top_builddir)/src/lib/libwsman.la \
-	-lcmpisfcc
-
-libwsmanCimIfc_la_LDFLAGS= -version-info 1:0
-
-lib_LTLIBRARIES= libwsman.la libwsmanCimIfc.la
+lib_LTLIBRARIES= libwsman.la

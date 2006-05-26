@@ -41,12 +41,6 @@
 #include <ctype.h>
 #include <glib.h>
 
-#include <libsoup/soup-address.h>
-#include <libsoup/soup-message.h>
-#include <libsoup/soup-server.h>
-#include <libsoup/soup-server-auth.h>
-#include <libsoup/soup-server-message.h>
-
 #include "ws_utilities.h"
 #include "ws_xml_api.h"
 #include "soap_api.h"

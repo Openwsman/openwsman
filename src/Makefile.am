@@ -1,1 +1,1 @@
-SUBDIRS = lib plugins server client
+SUBDIRS = lib libcim  plugins server client
