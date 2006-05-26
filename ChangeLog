@@ -1,0 +1,9 @@
+0.07:
+    * Various fixes to generic CIM plugin
+    * Eliminated memory leaks in various location
+    * Removed obsolete code which was inherited from the reference implementation this project is based on
+    * Added support for custom methods: It is now possible to invoke custom methods (Extrinsic CIM operations).
+    * Capture errors and status codes from the CIM library as WS-Management faults
+    * Moved all CIM client library dependencies to the cim client interface library to be able to support other client libraries (i.e. OpenWBEM client interface ) in the future.
+    * Changed command line options for the client to accomodate new actions and custom methods.
+
