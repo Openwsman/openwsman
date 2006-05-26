@@ -522,7 +522,6 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
     soap_get_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
 
     if ( endPoint && ( retVal =  endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), &enumInfo, status)) ) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "endPoint error: %s", status->msg);        
         doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), status->rc, -1);   		    		              
     } else {
         doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);

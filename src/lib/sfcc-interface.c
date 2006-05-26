@@ -280,7 +280,7 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
 {
     CMPIObjectPath * objectpath;    
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
-    CMPIArgs            * argsin;
+    CMPIArgs * argsin;
     CMPIStatus sfcc_status;
 
     GList *node = keys;

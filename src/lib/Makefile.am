@@ -48,7 +48,7 @@ LIBS = \
 
 
 libwsman_la_LIBADD =       \
-			    $(LIBS)
+	$(LIBS)
 	-lpthread
 
 libwsman_la_LDFLAGS= -version-info 1:0
