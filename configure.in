@@ -207,7 +207,8 @@ if test "$os_win32" != yes; then
 fi
 
 have_sfcc=no
-disable_cim_plugins=yes
+disable_cim_plugins=no
+compile_cim=no
 ENABLED_PLUGINS="wsman "
 
 AC_ARG_ENABLE(cim-plugins,
@@ -219,8 +220,10 @@ AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc=yes])
 if test "$disable_cim_plugins" != "yes"; then
     if test "$have_sfcc" != "no"; then
         ENABLED_PLUGINS="$ENABLED_PLUGINS cim"
+        compile_cim=yes
     fi
 fi
+AM_CONDITIONAL(compile_LIBCIM, test "$compile_cim" == "yes")
 
 AC_PATH_PROG(DOXYGEN, doxygen, no)
 

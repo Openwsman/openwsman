@@ -1,1 +1,5 @@
-SUBDIRS = lib libcim  plugins server client
+if compile_LIBCIM
+LIBCIMDIR = libcim
+endif
+
+SUBDIRS = lib $(LIBCIMDIR)  plugins server client

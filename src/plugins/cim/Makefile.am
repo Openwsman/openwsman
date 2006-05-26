@@ -6,16 +6,14 @@ libcim_namespace_la_SOURCES = \
 	cim_namespace_data.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/plugins/cim/lib \
+	   -I$(top_srcdir)/src/libcim/sfcc \
 	   -I/usr/local/include/CimClientLib \
-	   $(SOUP_CFLAGS) \
 	   $(GMODULE_CFLAGS)
 
 LIBS = \
     $(XML_LIBS) \
-    $(SOUP_LIBS) \
     $(GMODULE_LIBS) \
-    $(top_builddir)/src/lib/libwsmanCimIfc.la
+    $(top_builddir)/src/libcim/sfcc/libwsmanCimIfc.la
 
 plugin_LTLIBRARIES= libcim_namespace.la
 

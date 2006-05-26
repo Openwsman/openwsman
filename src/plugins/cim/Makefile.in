@@ -128,9 +128,8 @@ LIBGNUTLS_LIBS_STATIC = @LIBGNUTLS_LIBS_STATIC@
 LIBOBJS = @LIBOBJS@
 LIBS = \
     $(XML_LIBS) \
-    $(SOUP_LIBS) \
     $(GMODULE_LIBS) \
-    $(top_builddir)/src/lib/libwsmanCimIfc.la
+    $(top_builddir)/src/libcim/sfcc/libwsmanCimIfc.la
 
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -189,6 +188,8 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
+compile_LIBCIM_FALSE = @compile_LIBCIM_FALSE@
+compile_LIBCIM_TRUE = @compile_LIBCIM_TRUE@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 host = @host@
@@ -218,9 +219,8 @@ libcim_namespace_la_SOURCES = \
 	cim_namespace_data.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/plugins/cim/lib \
+	   -I$(top_srcdir)/src/libcim/sfcc \
 	   -I/usr/local/include/CimClientLib \
-	   $(SOUP_CFLAGS) \
 	   $(GMODULE_CFLAGS)
 
 plugin_LTLIBRARIES = libcim_namespace.la
