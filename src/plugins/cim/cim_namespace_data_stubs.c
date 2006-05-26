@@ -57,10 +57,6 @@
 #include "sfcc-interface_utils.h"
 #include "cim_namespace_data.h"
 
-#include <cmci.h>
-#include <cimcdt.h>
-
-
 int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
     WsXmlDocH doc = NULL;
     WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );

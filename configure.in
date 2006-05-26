@@ -206,6 +206,8 @@ if test "$os_win32" != yes; then
 	CFLAGS="$CFLAGS -D_REENTRANT"
 fi
 
+
+CHECK_SFCC
 have_sfcc=no
 disable_cim_plugins=no
 compile_cim=no
