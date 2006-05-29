@@ -65,10 +65,94 @@
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
 
+
+
+
 static void
-debug_message_handler (const char *str, 
-			WsmanDebugLevel level, 
-			gpointer user_data)
+print_header (gpointer name, gpointer value, gpointer user_data)
+{
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+              "[%p]: > %s: %s",
+              user_data, (char *) name, (char *) value);
+} /* print_header */
+
+static void
+http_debug_pre_handler (SoupMessage *message, gpointer user_data)
+{
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Receiving response.", message);
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+              "[%p]: > %d %s",
+              message,
+              message->status_code,
+              message->reason_phrase);
+
+    soup_message_foreach_header (message->response_headers,
+                                 print_header, message);
+} /* http_debug_pre_handler */
+
+static void
+http_debug_post_handler (SoupMessage *message, gpointer user_data)
+{
+    if (message->response.length) {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+                  "[%p]: Response body:\n%.*s\n",
+                  message,
+                  (int) message->response.length,
+                  message->response.body);
+    }
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+              "[%p]: Transfer finished",
+              message);
+} /* http_debug_post_handler */
+
+
+static void
+http_debug_request_handler (SoupMessage *message, gpointer user_data)
+{
+    const SoupUri *uri = soup_message_get_uri (message);
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+              "[%p]: > %s %s%s%s HTTP/%s",
+              message,
+              message->method, uri->path,
+              uri->query ? "?" : "",
+              uri->query ? uri->query : "",
+               "1.1");
+
+    soup_message_foreach_header (message->request_headers,
+                                 print_header, message);
+
+    if (message->request.length) {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+                  "[%p]: Request body:\n%.*s\n",
+                  message,
+                  (int) message->request.length,
+                  message->request.body);
+    }
+
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Request sent.", message);
+}
+
+static void
+http_debug (SoupMessage *message)
+{
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Request queued", message);
+
+    soup_message_add_handler (message, SOUP_HANDLER_POST_REQUEST,
+                              http_debug_request_handler, NULL);
+    soup_message_add_handler (message, SOUP_HANDLER_PRE_BODY,
+                              http_debug_pre_handler, NULL);
+    soup_message_add_handler (message, SOUP_HANDLER_PRE_BODY,
+                              http_debug_post_handler, NULL);
+} /* http_debug */
+
+
+
+
+static void
+debug_message_handler (const char *str, WsmanDebugLevel level, gpointer user_data)
 {
     if (level <= wsman_options_get_debug_level ()) 
     {
@@ -150,15 +234,12 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
         session = soup_session_async_new ();    
     }
 
-    g_signal_connect (session, "authenticate",
-            G_CALLBACK (authenticate), cl);
-    g_signal_connect (session, "reauthenticate",
-            G_CALLBACK (reauthenticate), cl);
+    g_signal_connect (session, "authenticate", G_CALLBACK (authenticate), cl);
+    g_signal_connect (session, "reauthenticate", G_CALLBACK (reauthenticate), cl);
 
-    ;                                   
     msg = soup_message_new_from_uri (SOUP_METHOD_POST, soup_uri_new(wsc->data.endpoint));
-    if (!msg) 
-    {
+    http_debug (msg);
+    if (!msg) {
         fprintf (stderr, "Could not parse URI\n");
         return;
     }
@@ -166,28 +247,18 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
 
     // FIXME: define in header file and use real version
     soup_message_add_header(msg->request_headers, "User-Agent", "OpenWSMAN/0.01");
-
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
 
-    soup_message_set_request(msg, 
-            SOAP1_2_CONTENT_TYPE,
-            SOUP_BUFFER_SYSTEM_OWNED,
-            buf,
-            len);
+    soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED, buf, len);
 
     // Send the message...        
     soup_session_send_message (session, msg);
 
-    if (msg->status_code != SOUP_STATUS_UNAUTHORIZED &&
-            msg->status_code != SOUP_STATUS_OK) 
-    {
-        printf ("Connection to server failed: %s (%d)\n", 
-                msg->reason_phrase, 
-                msg->status_code);        
+    if (msg->status_code != SOUP_STATUS_UNAUTHORIZED && msg->status_code != SOUP_STATUS_OK) {
+        printf ("Connection to server failed: %s (%d)\n", msg->reason_phrase, msg->status_code);        
     }
 
-    if (msg->response.body) 
-    {    
+    if (msg->response.body) {    
         con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
         strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);		
     } 

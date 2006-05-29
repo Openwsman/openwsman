@@ -771,18 +771,10 @@ int ws_transfer_get(SoapOpH op, void* appData )
         doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Creating Response doc");
-        doc = ws_create_response_envelope(cntx, 
-                soap_get_op_doc(op, 1), 
-                NULL);
+        doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 
-        ws_serialize(cntx, 
-                ws_xml_get_soap_body(doc), 
-                data, 
-                typeInfo, 
-                NULL,
-                (char*)info->data, 
-                (char*)info->data,
-                1); 
+        ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo, 
+                NULL, (char*)info->data, (char*)info->data, 1); 
         ws_serializer_free_mem(cntx, data, typeInfo);
     }
 
@@ -798,6 +790,7 @@ int ws_transfer_get(SoapOpH op, void* appData )
 
     ws_serializer_free_all(cntx);
     ws_destroy_context(cntx);
+    soap_free(status);
 
     return 0;
 }

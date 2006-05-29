@@ -223,8 +223,7 @@ libcim_namespace_la_SOURCES = \
 
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libcim/sfcc \
-	   -I/usr/local/include/CimClientLib \
-	   $(GMODULE_CFLAGS)
+	   $(SFCC_INCLUDES)
 
 plugin_LTLIBRARIES = libcim_namespace.la
 libcim_namespace_la_LIBADD = \
@@ -505,6 +504,7 @@ uninstall-am: uninstall-info-am uninstall-pluginLTLIBRARIES
 	tags uninstall uninstall-am uninstall-info-am \
 	uninstall-pluginLTLIBRARIES
 
+	   $(GMODULE_CFLAGS)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
