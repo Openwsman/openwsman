@@ -21,7 +21,7 @@ typedef struct __CimClientInfo CimClientInfo;
 char* cim_get_property(CMPIInstance *instance, char *property);
 char *cim_get_keyvalue(CMPIObjectPath *objpath, char *keyname);
 
-CMPIInstance * cim_get_instance (CMCIClient *cc, char *class_name, GList *keys, WsmanStatus *status);
+void cim_get_instance (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body, WsmanStatus *status);
 CMPIConstClass * cim_get_class (CMCIClient *cc, char *class_name, WsmanStatus *status); 
 
 CMPICount cim_enum_totalItems (CMPIArray * enumArr);

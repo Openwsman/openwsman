@@ -305,13 +305,14 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
 }
 
 
-CMPIInstance * cim_get_instance (CMCIClient *cc, char *class_name, GList *keys, 
+void cim_get_instance (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body,
         WsmanStatus *status) 
 {
     CMPIInstance * instance;
     CMPIObjectPath * objectpath;    
     CMPIStatus sfcc_status;
 
+    char *class_name = resourceUri + sizeof(XML_NS_CIM_V2_9);
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
 
     GList *node = keys;
@@ -323,28 +324,31 @@ CMPIInstance * cim_get_instance (CMCIClient *cc, char *class_name, GList *keys,
         node = g_list_next (node);
     }
     instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &sfcc_status);
+    if (instance)
+        instance2xml(instance, body, resourceUri);
 
     /* Print the results */
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "getInstance() rc=%d, msg=%s",
             sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
     cim_to_wsman_status(sfcc_status, status);
+    if (instance) CMRelease(instance);
 
-    return instance;            
 }
+
 
 
 
 void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status) {
 
     switch (sfcc_status.rc) {
+    case CMPI_RC_OK:
+        status->rc = WSMAN_RC_OK;
+        break;
     case CMPI_RC_ERR_INVALID_CLASS:
         status->rc = WSA_FAULT_DESTINATION_UNREACHABLE;
         break;
     case CMPI_RC_ERR_FAILED:
         status->rc = WSMAN_FAULT_INTERNAL_ERROR;
-        break;
-    case CMPI_RC_OK:
-        status->rc = WSMAN_RC_OK;
         break;
     case CMPI_RC_ERR_METHOD_NOT_FOUND:
         status->rc = WSA_FAULT_ACTION_NOT_SUPPORTED;

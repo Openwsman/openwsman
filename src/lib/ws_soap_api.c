@@ -259,10 +259,8 @@ int wsman_register_interface(WsContextH cntx,
  * @param ep Endpoint
  * @param dispInfo Dispatcher information
  */
-int wsman_register_endpoint(WsContextH cntx, 
-        WsDispatchInterfaceInfo* wsInterface,
-        WsDispatchEndPointInfo* ep,
-        WsManDispatcherInfo* dispInfo)
+int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterface,
+        WsDispatchEndPointInfo* ep, WsManDispatcherInfo* dispInfo)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Registering Endpoint: %s, %s, %s, %s", 
             ep->inAction, 
@@ -309,12 +307,6 @@ int wsman_register_endpoint(WsContextH cntx,
         action = ep->inAction;
         callbackProc = (SoapServiceCallback)ep->serviceEndPoint;   
         break;        
-    case WS_DISP_TYPE_GET_NAMESPACE:
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Get Namespace");
-        action = ep->inAction;
-        callbackProc = (SoapServiceCallback)ep->serviceEndPoint;   
-        break;        
-
     case WS_DISP_TYPE_PUT:
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Put");
         action = ep->inAction;
@@ -355,8 +347,7 @@ int wsman_register_endpoint(WsContextH cntx,
         soap_start_dispatch(disp);
     }
 
-    if ( action && action != ep->inAction ) 
-    {
+    if ( action && action != ep->inAction ) {
         soap_free(action);
     }
 
@@ -411,7 +402,6 @@ SoapDispatchH soap_create_dispatch(SoapH soap,
 SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw, char* inboundAction, 
         char* outboundAction, char* role, SoapServiceCallback proc, void* data, unsigned long flags)
 {
-
     SOAP_DISPATCH_ENTRY* entry = 
         (SOAP_DISPATCH_ENTRY*)soap_alloc(sizeof(SOAP_DISPATCH_ENTRY), 1);
 
@@ -710,12 +700,8 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
     int retVal = 0;
     char* enumId = NULL;
 
-    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, 
-            soap_get_op_doc(op, 1),
-            cntxName,
-            sizeof(cntxName),
-            WSENUM_PULL,
-            &enumId);
+    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, soap_get_op_doc(op, 1), cntxName,
+            sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {        
         wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
@@ -1134,8 +1120,7 @@ SoapOpH soap_create_op(SoapH soap,
     SOAP_OP_ENTRY* entry = NULL;
 
     if ( (disp = (SOAP_DISPATCH_ENTRY*)soap_create_dispatch(soap, 
-                    inboundAction, outboundAction, // optional
-                    NULL, // reserved, must be NULL
+                    inboundAction, outboundAction, NULL, // reserved, must be NULL
                     callbackProc, callbackData, flags)) != NULL )
     {
         entry = create_op_entry((SOAP_FW*)soap, disp, timeout);

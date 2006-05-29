@@ -20,7 +20,7 @@ typedef struct __CimResource CimResource;
 int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
-int CimResource_Get_EP(SoapOpH op, void* appData, WsmanStatus *status);
+int CimResource_Get_EP(SoapOpH op, void* appData);
 int CimResource_Custom_EP(SoapOpH op, void* appData);
 
 SER_DECLARE_TYPE(CimResource);

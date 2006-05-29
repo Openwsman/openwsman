@@ -80,6 +80,7 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
         char *className = resourceUri + strlen(XML_NS_CIM_V2_9) + 1;
         char *methodName = action + strlen(resourceUri) + 1;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Class Name: %s, Method: %s" , className, methodName);
+        
         if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
             WsXmlNodeH method_node = ws_xml_add_empty_child_format(ws_xml_get_soap_body(doc), resourceUri , "%s_OUTPUT", methodName);       
             cim_invoke_method(cimclient.cc, className, keys, methodName, method_node,  status);
@@ -107,9 +108,10 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
 }
 
 
-int  CimResource_Get_EP(SoapOpH op, void* appData, WsmanStatus * status )
+int  CimResource_Get_EP(SoapOpH op, void* appData )
 {
     WsXmlDocH doc = NULL;
+    WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called");
 
     SoapH soap = soap_get_op_soap(op);
@@ -124,34 +126,25 @@ int  CimResource_Get_EP(SoapOpH op, void* appData, WsmanStatus * status )
         cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
         if (!cimclient.cc)
             return 1;		
-        char *className = resourceUri + sizeof(XML_NS_CIM_V2_9);
-        CMPIInstance *instance = cim_get_instance(cimclient.cc, className, keys, status);
-        
-        if (instance) 
-        {					
-            if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) )
-            {    		
-                WsXmlNodeH body = ws_xml_get_soap_body(doc);
-                instance2xml(instance, body, resourceUri);
-            }
-        } else {
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSA_FAULT_DESTINATION_UNREACHABLE, -1);
+        if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
+            WsXmlNodeH body = ws_xml_get_soap_body(doc);
+            cim_get_instance(cimclient.cc, resourceUri , keys, body, status);
         }
-        if (instance) CMRelease(instance);
+
+        if (status->rc != 0) {
+            ws_xml_destroy_doc(doc);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
+        }
+        
         if (cimclient.cc) CMRelease(cimclient.cc);
-    } 
-    else 
-    {
+    } else {
         doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
     } 
 
-    if ( doc )
-    {
+    if ( doc ) {
         soap_set_op_doc(op, doc, 0);
         soap_submit_op(op);
-    } 
-    else 
-    {
+    } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }
 

@@ -648,7 +648,7 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 
 #define END_POINT_TRANSFER_GET_RAW(t, ns)\
 	{ WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}	  
+	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
 
 #define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)\
 	{ WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,\

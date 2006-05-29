@@ -7,7 +7,7 @@ libcim_namespace_la_SOURCES = \
 
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libcim/sfcc \
-	   $(SFCC_INCLUDES)
+	   $(SFCC_INCLUDES) \
 	   $(GMODULE_CFLAGS)
 
 LIBS = \
