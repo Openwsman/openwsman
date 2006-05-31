@@ -114,7 +114,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         _action = argv[1];
         resource_uri = argv[2];
     } else {
-        if (argc == 1 && strcmp(argv[1], 'identify') != 0 ) {
+        if (argc == 1 && strcmp(argv[1], "identify") != 0 ) {
             _action = argv[1];
         }
         fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
