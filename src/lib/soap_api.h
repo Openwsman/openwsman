@@ -68,6 +68,7 @@
 
 
 #define DMTF_WSMAN_SPEC_1
+
 #ifdef DMTF_WSMAN_SPEC_1
 #define XML_NS_WS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
 #else
@@ -81,7 +82,13 @@
 
 
 #define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
+
+#ifdef DMTF_WSMAN_SPEC_1
 #define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
+#else
+#define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
+#endif
+
 #define XML_NS_ENUMERATION		"http://schemas.xmlsoap.org/ws/2004/09/enumeration"
 #define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
 #define XML_NS_WS_MAN_CAT		"http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
