@@ -412,16 +412,16 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
     WsXmlDocH rqstDoc = wsman_make_enum_message( wsc->wscntx, op, enumContext, 
             resourceUri, wsc->data.endpoint);
 
-#ifdef DMTF_SPEC_1
+#ifdef DMTF_WSMAN_SPEC_1
     if (estimate) {
         WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
         ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
     }
     if (optimize) {
-        WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
+        ws_xml_add_child(ws_xml_get_soap_body(rqstDoc), XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
     }
     if (max_elements) {
-        WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, max_elements);
+        ws_xml_add_child_format(ws_xml_get_soap_body(rqstDoc), XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, "%d", max_elements);
     }
 #endif
     if (strcmp(op, WSENUM_PULL) == 0 ) {

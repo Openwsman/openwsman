@@ -107,6 +107,7 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         gpointer data) {		
 
     char *path;
+    WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Server Callback Called\n");
     path = soup_uri_to_string (soup_message_get_uri (msg), TRUE);
@@ -133,9 +134,14 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         path = g_strdup ("");
     }    
 
+    char *ct = soup_message_get_header (msg->request_headers, "Content-Type");
+    if (ct && strncmp(ct, SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
+        soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
+        goto DONE;
+    }
+
     SOAP_FW* fw = (SOAP_FW*)data;	
-    WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
-	wsman_msg->status.rc = WSMAN_RC_OK;
+    wsman_msg->status.rc = WSMAN_RC_OK;
 
     wsman_msg->request.body = (char *)msg->request.body;
     wsman_msg->request.length = msg->request.length;
@@ -146,28 +152,33 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     if (wsman_msg->status.rc != WSMAN_RC_OK ) {
         char *buf;
         int  len;    		
-        wsman_generate_fault_buffer(fw->cntx, wsman_msg->in_doc, 
-                wsman_msg->status.rc , 
-                wsman_msg->status.detail,
-                &buf, 
-                &len);
+        if (wsman_msg->in_doc != NULL) {
+            wsman_generate_fault_buffer(fw->cntx, wsman_msg->in_doc, 
+                    wsman_msg->status.rc , 
+                    wsman_msg->status.detail,
+                    &buf, 
+                    &len);
+            msg->response.length = len;
+            msg->response.body = strndup(buf, len);   
+            free(buf);
+        } else {
+            msg->response.length = 0;
+            msg->response.body = NULL;
+        }
 
         msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
-        msg->response.length = len;
-        //msg->response.body = g_malloc (len);
-        msg->response.body = strndup(buf, len);   
-        free(buf);
         soup_message_set_status (msg, SOUP_STATUS_INTERNAL_SERVER_ERROR);        		
+        goto DONE;
     } else {		 	
 	// Set SoupMessage
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
     	msg->response.length = wsman_msg->response.length;
     	msg->response.body = (char *)wsman_msg->response.body;
+        soup_message_set_status (msg, SOUP_STATUS_OK);
     }
 
     if (wsman_msg->in_doc)
         ws_xml_destroy_doc(wsman_msg->in_doc);
-    soup_message_set_status (msg, SOUP_STATUS_OK);
 
 
 DONE:

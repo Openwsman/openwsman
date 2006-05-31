@@ -40,6 +40,7 @@
 #include "wsman-faults.h"
 
 #define SOAP1_2_CONTENT_TYPE "application/soap+xml; charset=utf-8"
+#define SOAP_CONTENT_TYPE "application/soap+xml"
 
 #define SOAP_SKIP_DEF_FILTERS			0x01
 #define SOAP_ACTION_PREFIX				0x02 // otherwise exact
@@ -66,7 +67,8 @@
 //#define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
 
 
-#ifdef DMTF_SPEC_1
+#define DMTF_WSMAN_SPEC_1
+#ifdef DMTF_WSMAN_SPEC_1
 #define XML_NS_WS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
 #else
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
@@ -165,8 +167,12 @@
 #define WSENUM_SOURCE_CANCELING	"SourceCanceling"
 
 
-
+#ifdef DMTF_WSMAN_SPEC_1
+#define XML_NS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
+#else
 #define XML_NS_MAN				"http://schemas.xmlsoap.org/ws/2005/06/management"
+#endif
+
 #define WSM_SYSTEM				"System"
 #define WSM_RESOURCE_URI			"ResourceURI"
 #define WSM_SELECTOR_SET			"SelectorSet"

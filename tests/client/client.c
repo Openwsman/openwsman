@@ -142,11 +142,8 @@ wsman_client_handler(
     
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
         
-    soup_message_set_request(msg, 
-            SOAP1_2_CONTENT_TYPE,
-            SOUP_BUFFER_SYSTEM_OWNED,
-            buf,
-            len);
+    soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED,
+            buf, len);
                    	                 
     // Send the message...        
     soup_session_send_message (session, msg);

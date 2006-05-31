@@ -504,6 +504,8 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
             if (ret) 
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Fault (process_inbound_operation error)");
         }
+    } else {
+        msg->in_doc = NULL;
     }
 }
 

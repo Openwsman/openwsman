@@ -212,6 +212,11 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
         }
     }
 
+    // Filter
+    //
+
+    check_xpath(itemsNode, NULL);
+
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
     else

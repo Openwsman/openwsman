@@ -207,11 +207,8 @@ void build_soap_version_fault(SOAP_FW* fw)
 
 
 
-WsXmlDocH wsman_generate_fault(
-        WsContextH cntx, 
-        WsXmlDocH inDoc, 
-        WsmanFaultCodeType faultCode, 
-        WsmanFaultDetailType faultDetail)
+WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc, 
+        WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail)
 {
     char *code = FAULT_SENDER_CODE;
     char *subCodeNs;
@@ -311,7 +308,7 @@ void add_details_proc(WsXmlNodeH fault,  void* data)
 void wsman_generate_fault_buffer ( WsContextH cntx,  WsXmlDocH inDoc, 
  		WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char **buf,  int* len)
 {	
-    WsXmlDocH doc = wsman_generate_fault(cntx, inDoc,faultCode, faultDetail);   
+    WsXmlDocH doc = wsman_generate_fault(cntx, inDoc, faultCode, faultDetail);   
     ws_xml_dump_memory_enc(doc, buf, len, NULL);	
     ws_xml_destroy_doc(doc);
     return;

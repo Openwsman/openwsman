@@ -52,6 +52,7 @@ static gint server_port =  -1;
 static gchar *cafile = NULL;
 static gint debug_level = -1;
 static gint enum_max_elements = 0;
+gboolean  enum_optimize = FALSE;
 
 static gchar *username = NULL;
 static gchar *password = NULL;
@@ -92,7 +93,7 @@ gboolean wsman_parse_options(int argc, char **argv)
     GOptionEntry enum_options[] = 
     {				
         { "max-elements", 'e', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull", "<max number of elements>"  },
-#ifdef DMTF_SPEC_1        
+#ifdef DMTF_WSMAN_SPEC_1        
         { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
 #endif
         { NULL }

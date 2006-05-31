@@ -865,15 +865,13 @@ int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr) {
         xmlDocSetRootElement(doc, rootNode);
     }    
     ws_xml_duplicate_tree((WsXmlNodeH)xmlDocGetRootElement(doc), node);
-    /*
-       if (rootNode) {
-       xml_parser_doc_dump(stderr, (WsXmlDocH) doc );
-       xmlFreeDoc(doc);
-       printf("bbbbbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
-       } else {
-       printf("dddxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
-       }
-       */
+    if (rootNode) {
+        xmlDocFormatDump(stdout, doc, 1);
+        xmlFreeDoc(doc);
+        printf("bbbbbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
+    } else {
+        printf("dddxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
+    }
 
     return 0;
 }

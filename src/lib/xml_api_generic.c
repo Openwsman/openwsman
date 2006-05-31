@@ -176,7 +176,6 @@ void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  * @param dstNode Destination XML node
  * @param srcNode Source XML node
  */
-// WsXmlDupChildren
 void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
     int i;
@@ -197,10 +196,8 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
     if ( srcNode && dstNode )
     {
-        WsXmlNodeH node = ws_xml_add_child(dstNode, 
-                ws_xml_get_node_name_ns(srcNode),
-                ws_xml_get_node_local_name(srcNode), 
-                ws_xml_get_node_text(srcNode)); 
+        WsXmlNodeH node = ws_xml_add_child(dstNode, ws_xml_get_node_name_ns(srcNode),
+                ws_xml_get_node_local_name(srcNode), ws_xml_get_node_text(srcNode)); 
 
         ws_xml_duplicate_attr(node, srcNode);
 
@@ -1697,7 +1694,8 @@ WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix) {
 
 
 int check_xpath(WsXmlNodeH node, char *xpath_expr) {
-    return xml_parser_check_xpath(node, xpath_expr);
+    //return xml_parser_check_xpath(node, xpath_expr);
+    return 0;
 }
 
 
