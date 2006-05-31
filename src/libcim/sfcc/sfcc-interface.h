@@ -48,6 +48,8 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
         GList *keys, char *method, WsXmlNodeH node,  WsmanStatus *status); 
 
 void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status);
+CMPIInstance * cim_get_instance_raw (CMCIClient *cc, char *class_name, GList *keys );
+CMPIArray * cim_enum_instances_raw (CMCIClient *cc, char *class_name );
 
 #endif /*SFCCINTERFACE_H_*/
 

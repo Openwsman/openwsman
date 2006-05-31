@@ -512,21 +512,12 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
         if ( doc )
         {
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            WsXmlNodeH node = ws_xml_add_child(body, 
-                    XML_NS_ENUMERATION, 
-                    WSENUM_ENUMERATE_RESP,
-                    NULL);
-            ws_serialize_str(soapCntx, 
-                    node, 
-                    enumId, 
-                    XML_NS_ENUMERATION, 
-                    WSENUM_ENUMERATION_CONTEXT);
+            WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
+            ws_serialize_str(soapCntx, node, enumId, 
+                    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
             // TBD: ??? expires
-            ws_set_context_val(soapCntx, 
-                    cntxName, 
-                    &enumInfo, 
-                    sizeof(enumInfo), 
-                    0);  
+            ws_set_context_val(soapCntx, cntxName, &enumInfo, 
+                    sizeof(enumInfo), 0);  
         }
     }
 
@@ -536,16 +527,13 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
         soap_submit_op(op);
         //ws_xml_destroy_doc(doc);
     }
+    soap_free(status);
 
     return retVal;
 }
 
-WsEnumerateInfo* get_enum_info(WsContextH cntx, 
-        WsXmlDocH doc, 
-        char* cntxName,
-        int cntxNameLen,
-        char* op,
-        char** enumIdPtr)
+WsEnumerateInfo* get_enum_info(WsContextH cntx, WsXmlDocH doc, char* cntxName, int cntxNameLen,
+        char* op, char** enumIdPtr)
 {
     WsEnumerateInfo* enumInfo = NULL;
     char* enumId = NULL;
@@ -554,11 +542,9 @@ WsEnumerateInfo* get_enum_info(WsContextH cntx,
     if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, op)) )
     {
         node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-        if ( node )
-        {
+        if ( node ) {
             enumId = ws_xml_get_node_text(node);
-            if ( enumIdPtr != NULL )
-            {
+            if ( enumIdPtr != NULL ) {
                 *enumIdPtr = enumId;
             }
         }
@@ -592,27 +578,20 @@ int ws_release_stub(SoapOpH op, void* appData)
     WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, soap_get_op_doc(op, 1), cntxName,
             sizeof(cntxName), WSENUM_RELEASE, NULL);
 
-    if ( enumInfo == NULL )
-    {
-        wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, 
-                -1);                
-    }
-    else
-    {
+    if ( enumInfo == NULL ) {
+        wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);                
+    } else {
         if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, status)) )
         {            
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "endPoint error");        		
             wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
                     WSMAN_FAULT_INTERNAL_ERROR, OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR);   	            
-        }
-        else
-        {
+        } else {
             doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
             ws_remove_context_val(soapCntx, cntxName); 
         }
     }        
-    if ( doc )
-    {
+    if ( doc ) {
         soap_set_op_doc(op, doc, 0);
         soap_submit_op(op);
         ws_xml_destroy_doc(doc);
@@ -710,8 +689,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
             wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
             ws_remove_context_val(soapCntx, cntxName); 	
         } else {
-            // Do actual work
-            //enumInfo->index++;
+            enumInfo->index++;
             if ( enumInfo->pullResultPtr )
             {
                 doc = 	enumInfo->pullResultPtr;
@@ -719,11 +697,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
                 WsXmlNodeH response = ws_xml_get_child(body, 0 , XML_NS_ENUMERATION,WSENUM_PULL_RESP);
 
                 if (enumInfo->index == enumInfo->totalItems) {
-                    ws_serialize_str(soapCntx, 
-                            response, 
-                            NULL, 
-                            XML_NS_ENUMERATION, 
-                            WSENUM_END_OF_SEQUENCE);          
+                    ws_serialize_str(soapCntx, response, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);          
                 }
             }
 
@@ -734,6 +708,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
         soap_submit_op(op);
         //ws_xml_destroy_doc(doc);
     }    
+    soap_free(status);
 
     return retVal;
 }
@@ -1392,7 +1367,6 @@ int soap_submit_op(SoapOpH h )
 #endif
         }
     }
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Document Submitted (%d)", retVal); 
     return retVal;
 }
 
@@ -1429,9 +1403,31 @@ void add_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* op)
     soap_fw_unlock(fw);
 }
 
+int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc) {
 
+    int max_elements = 0;
+    if ( doc == NULL )
+        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
-// WsManGetResourceUri
+    if ( doc ) {
+        WsXmlNodeH node = ws_xml_get_soap_body(doc);
+
+        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL)) )
+        {
+            node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_MAX_ELEMENTS);
+            if ( node ) {
+                char *text = ws_xml_get_node_text(node);
+                if (text != NULL)
+                    max_elements = atoi(text);
+            }
+        }
+    } else {
+        return 0;
+    }
+    return max_elements;
+
+}
+
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Entering wsman_get_resource_uri");
@@ -1449,7 +1445,6 @@ char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 }
 
 
-// WsManGetSystemUri
 char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
 {
     //SoapH soap = WsContextGetRuntime(cntx);
@@ -1626,33 +1621,26 @@ int outbound_addressing_filter(SoapOpH opHandle, void* data)
     SOAP_FW* fw = (SOAP_FW*)soap_get_op_soap(opHandle);
     WsXmlDocH inDoc = soap_get_op_doc(opHandle, 1);
     WsXmlDocH outDoc = soap_get_op_doc(opHandle, 0);
-    WsXmlNodeH outHeaders =
-        get_soap_header_element(fw, outDoc, NULL, NULL);
+    WsXmlNodeH outHeaders = get_soap_header_element(fw, outDoc, NULL, NULL);
 
     if ( outHeaders )
     {
         if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL )
         {
             char uuidBuf[100];
-
             soap_get_uuid(uuidBuf, sizeof(uuidBuf), 0);
             ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
+            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Adding message id: %s" , uuidBuf);
         }
 
         if ( inDoc != NULL )
         {
             WsXmlNodeH inMsgIdNode;
-            if ( (inMsgIdNode = get_soap_header_element(fw,
-                            inDoc,
-                            XML_NS_ADDRESSING,
-                            WSA_MESSAGE_ID)) != NULL
-                    &&
+            if ( (inMsgIdNode = get_soap_header_element(fw, inDoc, XML_NS_ADDRESSING,
+                            WSA_MESSAGE_ID)) != NULL && 
                     !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO) )
             {
-                ws_xml_add_child(outHeaders,
-                        XML_NS_ADDRESSING,
-                        WSA_RELATES_TO,
-                        ws_xml_get_node_text(inMsgIdNode));
+                ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
             }
         }
     }

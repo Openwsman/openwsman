@@ -51,6 +51,7 @@ static const char **wsman_argv = NULL;
 static gint server_port =  -1;
 static gchar *cafile = NULL;
 static gint debug_level = -1;
+static gint enum_max_elements = 0;
 
 static gchar *username = NULL;
 static gchar *password = NULL;
@@ -67,6 +68,7 @@ WsActions action_data[] =
  { "put", ACTION_TRANSFER_PUT},
  { "enumerate", ACTION_ENUMERATION},
  { "invoke", ACTION_INVOKE},
+ { "identify", ACTION_IDENTIFY},
  { NULL, 0},
 };
 
@@ -87,30 +89,44 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
         { NULL }
     };
+    GOptionEntry enum_options[] = 
+    {				
+        { "max-elements", 'e', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull", "<max number of elements>"  },
+#ifdef DMTF_SPEC_1        
+        { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
+#endif
+        { NULL }
+    };
+    GOptionGroup *enum_group;
 
     GOptionContext *opt_ctx;	
     opt_ctx = g_option_context_new("<action> <Resource Uri>");    
+    enum_group = g_option_group_new("enumeration", "Enumeration", "Enumeration Options", NULL, NULL);
+    g_option_group_add_entries(enum_group, enum_options);
 
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
+    g_option_context_add_group(opt_ctx, enum_group);
 
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
 
     if (argc > 2 ) {
         _action = argv[1];
-		resource_uri = argv[2];
-	}
-    else {
+        resource_uri = argv[2];
+    } else {
+        if (argc == 1 && strcmp(argv[1], 'identify') != 0 ) {
+            _action = argv[1];
+        }
         fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
         return FALSE;
     }
 
 
-	if (error) {
-		if (error->message)
-			printf ("%s\n", error->message);
-		return FALSE;
-	}
+    if (error) {
+        if (error->message)
+            printf ("%s\n", error->message);
+        return FALSE;
+    }
 
     g_option_context_free(opt_ctx);
     return retval;
@@ -189,5 +205,10 @@ int wsman_options_get_action (void)
 char* wsman_options_get_resource_uri (void)
 {	
     return resource_uri;
+}   
+
+int wsman_options_get_max_elements (void)
+{	
+    return enum_max_elements;
 }   
 

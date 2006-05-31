@@ -30,7 +30,6 @@
 
 /**
  * @author Anas Nashif
- * @author Eugene Yarmosh
  */
 
 #include "config.h"

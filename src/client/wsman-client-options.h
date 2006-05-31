@@ -14,6 +14,7 @@ gboolean wsman_parse_options(int argc, char **argv);
 
 int wsman_options_get_debug_level(void);
 int wsman_options_get_server_port(void);
+int wsman_options_get_max_elements(void);
 
 char *wsman_options_get_cafile(void);
 char *wsman_options_get_username(void);

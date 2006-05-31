@@ -148,6 +148,7 @@ int  CimResource_Get_EP(SoapOpH op, void* appData )
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }
 
+    soap_free(status);
     return 0;
 
 }
@@ -165,7 +166,7 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
         return 1;
     }
     cim_enum_instances (cimclient.cc, className , enumInfo,  status);
-    if (status->rc!=0) {
+    if (status && status->rc != 0) {
         return 1;
     }
     if (cimclient.cc) CMRelease(cimclient.cc);
@@ -189,6 +190,7 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Resource Uri: %s", resourceUri); 
 
+    int max = wsen_get_max_elements(cntx, NULL);
     doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_PULL_RESP, NULL);       
@@ -197,17 +199,23 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
         itemsNode = ws_xml_add_child(pullnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);     	
     }   
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Total items: %lu", enumInfo->totalItems );
-    if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) 
-    {
-        while (enumInfo->index < enumInfo->totalItems) {
+    if (max > 0 ) {
+        while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) {
             cim_getElementAt(enumInfo, itemsNode, resourceUri);
             enumInfo->index++;
+            max--;
         }
-    } else
-        enumInfo->pullResultPtr = NULL;
+        enumInfo->index--;
+    } else {
+        if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) {
+            cim_getElementAt(enumInfo, itemsNode, resourceUri);
+        }
+    }
 
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
+    else
+        enumInfo->pullResultPtr = NULL;
 
     ws_destroy_context(cntx);
     return 0;

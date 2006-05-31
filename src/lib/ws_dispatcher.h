@@ -139,7 +139,7 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound);
 WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc);
 
 int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg);
-
+int wsman_is_identify_request(WsXmlDocH doc);
 
 
 /** @} */

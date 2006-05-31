@@ -323,11 +323,16 @@ int main(int argc, char** argv)
     wsman_client_add_handler(wsman_client_handler, NULL);
     char *resourceUri = wsman_options_get_resource_uri();
     int op = wsman_options_get_action();
-    WsXmlDocH doc = NULL;
+    WsXmlDocH doc;
     GList *enumeration = NULL;
+    int done = 0;
+    char *enumContext;
 
     switch (op) 
     {
+    case  ACTION_IDENTIFY: 			
+        doc = cl->ft->identify(cl);
+        break;
     case  ACTION_INVOKE: 			
         printf("ResourceUri: %s\n", resourceUri );
         doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties());
@@ -341,25 +346,44 @@ int main(int argc, char** argv)
     case  ACTION_TRANSFER_GET: 			
         doc = cl->ft->get(cl, resourceUri);        		        		
         break;
-
     case ACTION_ENUMERATION:
-        enumeration = cl->ft->enumerate(cl, resourceUri , 200);
-        while (enumeration) {
-            WsXmlDocH enDoc = (WsXmlDocH)enumeration->data;
-            if (enDoc)
-                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enDoc));
-            enumeration = g_list_next(enumeration);
+
+        enumContext = cl->ft->wsenum_enumerate(cl, resourceUri, 0, 0, 0);
+        WsXmlNodeH cntxNode;
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "enumContext: %s", enumContext );
+        if (enumContext) {
+            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements()) )) {
+                WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
+                if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) {                		                		
+                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "no pull response" );
+                    break;
+                }
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+                if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE) ) {                		
+                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "End of sequence");
+                    break;
+                }
+                if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT)) ) {
+                    soap_free(enumContext);
+                    enumContext = soap_clone_string(ws_xml_get_node_text(cntxNode));
+                }                				
+                if ( enumContext == NULL || enumContext[0] == 0 ) {
+                    wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "No enumeration context");
+                    break;
+                }
+            }
         }
+        done = 1;
         break;
     default:
         fprintf(stderr, "Action not supported\n");    		
         retVal = 1;
     }    
 
-    if (doc) 
-    {
+    if (doc && !done) {
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     }    
+
     cl->ft->release(cl);        		        		
     soap_free(cntx);
 

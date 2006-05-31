@@ -64,8 +64,21 @@
 #define XML_NS_DEVRPROF			"http://schemas.xmlsoap.org/ws/2004/08/devprof"	
 #define XML_NS_MTD_EXCHANGE		"http://schemas.xmlsoap.org/ws/2004/09/mex"
 //#define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
+
+
+#ifdef DMTF_SPEC_1
+#define XML_NS_WS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
+#else
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
-#define XML_NS_SCHEMA_INSTANCE	"http://www.w3.org/2001/XMLSchema-instance"
+#endif
+
+
+
+#define XML_NS_WSMAN_ID                 "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
+#define WSMAN_IDENTIFY                  "Identify"
+
+
+#define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
 #define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
 #define XML_NS_ENUMERATION		"http://schemas.xmlsoap.org/ws/2004/09/enumeration"
 #define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
@@ -160,11 +173,13 @@
 #define WSM_SELECTOR				"Selector"
 #define WSM_NAME					"Name"
 #define WSM_REQUEST_TOTAL		"RequestTotalItemsCountEstimate"
-#define WSM_TOTAL_ITEMS_COUNT_ESTIMATE "TotalItemsCountEstimate"
+#define WSM_TOTAL_ESTIMATE              "TotalItemsCountEstimate"
+#define WSM_OPTIMIZE_ENUM              "OptimizeEnumeration"
+#define WSM_MAX_ELEMENTS              "MaxElements"
 
 #define WSM_MAX_ENVELOPE_SIZE	"MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT	"OperationTimeout"
-#define WSM_FAULT_SUBCODE		"FaultSubCode"
+#define WSM_FAULT_SUBCODE	"FaultSubCode"
 
 // Catalog
 
@@ -797,5 +812,6 @@ char *wsman_remove_query_string(char * resourceUri);
 void soap_destroy_fw(SoapH soap);
 
 void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char *details);
+int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
 #endif /*SOAP_API_H_*/

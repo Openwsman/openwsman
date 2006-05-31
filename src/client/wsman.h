@@ -42,6 +42,7 @@
 #define ACTION_PRIVATE_CATCH    4
 #define ACTION_INVOKE       5
 #define ACTION_TRANSFER_CREATE 	       6 
+#define ACTION_IDENTIFY 	       7
 
 
 #define MY_ENCODING "UTF-8"

@@ -113,7 +113,6 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"%s %s HTTP/1.%d", msg->method, path,
             soup_message_get_http_version (msg));
 
-
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     if (msg->request.length)
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Request: %.*s", msg->request.length, msg->request.body);
@@ -226,8 +225,7 @@ int wsmand_start_server()
     // By default, start with basic auth
     char *atype = wsmand_options_get_auth_type();
 
-    if (!strcmp(atype, "basic"))
-    {
+    if (!strcmp(atype, "basic")) {
         auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
         auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 
     } else if (!strcmp(atype, "digest")) {

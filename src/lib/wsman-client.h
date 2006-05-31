@@ -86,9 +86,19 @@ typedef struct _WsManClientFT
 	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri, GList *prop);
 	
 	/**
-	 * Transfer Enum
+	 * Enumerate
 	 */
-	GList *(*enumerate)(WsManClient* cl, char* resourceUri, int count);
+	char *(*wsenum_enumerate)(WsManClient* cl, char* resourceUri, int estimate, int optimize , int max_elements);
+
+	/**
+	 * Pull
+	 */
+	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, char *enumContext, int max_elements);
+        
+	/**
+	 * Release
+	 */
+	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri, char *enumContext);
 
 	/**
 	 * Transfer Create
@@ -98,6 +108,9 @@ typedef struct _WsManClientFT
 	 * Invoke custom method
 	 */	
 	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,  GList *prop);
+
+
+	WsXmlDocH (*identify)(WsManClient* cl);
         
 	 	 	 	 	 
 	
@@ -146,10 +159,13 @@ WsManClient *wsman_connect_with_ssl(
 		WsManClientStatus *rc);
 
 
+WsXmlDocH wsman_identify(WsManClient *cl);
 WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri); 
 WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop);
 WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, GList *prop);
-GList *enumerate(WsManClient *cl, char *resourceUri, int count);
+char *wsenum_enumerate(WsManClient *cl, char *resourceUri, int estimate, int optimize , int max_elements);
+WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , int max_elements);
+WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext );
 WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  GList *prop);
 
 WsXmlDocH wsman_make_enum_message(WsContextH soap,
@@ -158,12 +174,8 @@ WsXmlDocH wsman_make_enum_message(WsContextH soap,
         char* resourceUri,
         char* url);
 
-WsXmlDocH wsman_enum_send_get_response(
-        WsManClient *cl,
-        char* op,
-        char* enumContext,
-        char* resourceUri);
-
+WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumContext, char* resourceUri, 
+        int estimate, int optimize, int max_elements);
 
 WsManConnection *initClientConnection(WsManClientData *cld);
 

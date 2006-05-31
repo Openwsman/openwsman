@@ -158,15 +158,10 @@ char* get_soap_header_value(SOAP_FW* fw, WsXmlDocH doc, char* nsUri, char* name)
 // IsDuplicateMsgId
 int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
 {    
-    char* msgId = get_soap_header_value(fw, 
-            doc, 
-            XML_NS_ADDRESSING, 
-            WSA_MESSAGE_ID);
+    char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 
     int retVal = 0;
-
-    if ( msgId )
-    {
+    if ( msgId ) {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Checking Message ID: %s", msgId);
         DL_Node* node;
         soap_fw_lock(fw);
@@ -175,10 +170,8 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
         while( node != NULL )
         {
             // TBD ??? better comparison
-            if ( !strcmp(msgId, (char*)node->dataBuf) )
-            {              
-                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
-                        "Duplicate Message ID: %s", msgId);                         
+            if ( !strcmp(msgId, (char*)node->dataBuf) ) {              
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Duplicate Message ID: %s", msgId);                         
                 retVal = 1;
                 break;
             }
@@ -205,9 +198,7 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
             }
         }
         soap_fw_unlock(fw);
-    }
-    else
-    {       
+    } else {       
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "No MessageId found");
     }
     free(msgId);
@@ -233,22 +224,14 @@ WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc)
 
     if ( !strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) )
     {
-
         char* soapNsUri = ws_xml_get_node_name_ns(root);		      
         if ( (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0
-                    &&
-                    strcmp(soapNsUri, XML_NS_SOAP_1_1) != 0) )
+                    && strcmp(soapNsUri, XML_NS_SOAP_1_1) != 0) )
         {
-            // FIXME: Check for message id
-            // build_soap_version_fault(fw);
             fault_code = SOAP_FAULT_VERSION_MISMATCH;
-        }
-        else
-        {
+        } else {
             WsXmlNodeH node = ws_xml_get_soap_body(doc);
-
-            if ( node == NULL ) 
-            {
+            if ( node == NULL ) {
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Invalid envelope (no body)"); 
                 fault_code = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;               
             }
@@ -457,10 +440,13 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
         if ( op->dispatch->serviceCallback != NULL )
             retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
+        else
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "op is null");    	
 
         char* buf = NULL;
         int len;
         if (op->outDoc) {
+            //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
             ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
             msg->response.length = len;
             msg->response.body = strndup(buf, len);
@@ -477,10 +463,6 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
 }
 
 
-
-
-
-// GetRelatesToMsgId
 char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
 {
     char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_RELATES_TO);
@@ -506,7 +488,7 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
                     destroy_dispatch_entry(dispatch);
                 }
             } else {
-				wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "msg->status.rc=%d", msg->status.rc );
+		wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "msg->status.rc=%d", msg->status.rc );
                 if (!msg->status.rc) {
                     wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Fault (No dispatcher entry for this resourceUri)");            			
                     wsmand_set_fault(msg, WSA_FAULT_DESTINATION_UNREACHABLE, WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI, NULL);
@@ -522,13 +504,19 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
             if (ret) 
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Fault (process_inbound_operation error)");
         }
-        /*
-        if (inDoc!=NULL)
-            ws_xml_destroy_doc(inDoc);
-            */
     }
 }
 
+
+int wsman_is_identify_request(WsXmlDocH doc) {
+
+    WsXmlNodeH node = ws_xml_get_soap_body(doc);
+    node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMAN_IDENTIFY);
+    if (node)
+        return 1;
+    else
+        return 0;
+}
 
 /**
  * Buid Inbound Envelope
@@ -538,19 +526,26 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
  */
 WsXmlDocH build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
 {
+    int ret_val = 0;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Building inbound envelope");
     WsXmlDocH doc = NULL;   
     if ( (doc = ws_xml_read_memory((SoapH)fw,  msg->request.body, msg->request.length, NULL, 0)) != NULL )   
     {        
         WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
-        if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK ) {
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Envelope Discarded: Duplicate MessageID");
-            wsmand_set_fault(msg, WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
+
+        if (!wsman_is_identify_request(doc)) {
+            if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK ) {
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Envelope Discarded: Duplicate MessageID");
+                fault_code = WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER;
+                wsmand_set_fault(msg, WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
+            }
         }
+
         if (fault_code != WSMAN_RC_OK) {        		        		
             ws_xml_destroy_doc(doc);
             doc = NULL;            
         }        
+
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");
         wsmand_set_fault(msg, WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);

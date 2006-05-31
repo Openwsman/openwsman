@@ -1,1 +1,1 @@
-SUBDIRS = this
+SUBDIRS = this test test2
