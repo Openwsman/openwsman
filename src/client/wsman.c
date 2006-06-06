@@ -292,9 +292,7 @@ int main(int argc, char** argv)
     WsManClient *cl;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Certificate: %s", wsman_options_get_cafile());
     if (wsman_options_get_cafile() != NULL) {
-        cl = wsman_connect_with_ssl(
-                    cntx,
-                    wsman_options_get_server(),
+        cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     "https",
                     wsman_options_get_username(),
@@ -303,9 +301,7 @@ int main(int argc, char** argv)
                     NULL,
                     NULL);
     } else {
-        cl = wsman_connect(
-                    cntx,
-                    wsman_options_get_server(),
+        cl = wsman_connect( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     "http",
                     wsman_options_get_username(),
@@ -324,35 +320,82 @@ int main(int argc, char** argv)
     char *resourceUri = wsman_options_get_resource_uri();
     int op = wsman_options_get_action();
     WsXmlDocH doc;
-    GList *enumeration = NULL;
     int done = 0;
     char *enumContext;
+    WsXmlDocH rqstDoc;
+    actionOptions options;
+    int optimize_max_elements = 0;
+    if (wsman_options_get_dump_request()) {
+        options.flags |= FLAG_DUMP_REQUEST;
+    }
+    options.cim_ns = wsman_options_get_cim_namespace();
+
+
+    char *enumeration_mode;
 
     switch (op) 
     {
+    case  ACTION_TEST:
+        rqstDoc = ws_xml_read_file(ws_context_get_runtime(cntx), wsman_options_get_test_file(), "UTF-8", 0 );
+        doc = ws_send_get_response(cl, rqstDoc, 60000);
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
+
+        break;
     case  ACTION_IDENTIFY: 			
         doc = cl->ft->identify(cl);
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
         break;
     case  ACTION_INVOKE: 			
         printf("ResourceUri: %s\n", resourceUri );
         doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties());
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
         break;
     case  ACTION_TRANSFER_CREATE: 			
         doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties());        		        		
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
         break;
     case  ACTION_TRANSFER_PUT: 			
         doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties());        		        		
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
         break;
     case  ACTION_TRANSFER_GET: 			
         doc = cl->ft->get(cl, resourceUri);        		        		
+        if (doc) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+        }    
         break;
     case ACTION_ENUMERATION:
 
-        enumContext = cl->ft->wsenum_enumerate(cl, resourceUri, 0, 0, 0);
+        enumeration_mode = wsman_options_get_enum_mode();
+        if (enumeration_mode) {
+            if (strcmp(enumeration_mode, "epr") == 0 ) 
+                options.flags |= FLAG_ENUMERATION_ENUM_EPR;
+            else
+                options.flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
+        }
+        if (wsman_options_get_optimize_enum()) {
+            options.flags |= FLAG_ENUMERATION_OPTIMIZATION;
+            optimize_max_elements = wsman_options_get_max_elements();
+        }
+        if (wsman_options_get_estimate_enum())
+            options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
+        
+        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, resourceUri, optimize_max_elements, options);
+        enumContext = wsenum_get_enum_context(enum_response); 
         WsXmlNodeH cntxNode;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "enumContext: %s", enumContext );
         if (enumContext) {
-            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements()) )) {
+            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) {                		                		
                     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "no pull response" );
@@ -372,17 +415,15 @@ int main(int argc, char** argv)
                     break;
                 }
             }
-        }
-        done = 1;
+        } else {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enum_response));
+        }    
         break;
     default:
         fprintf(stderr, "Action not supported\n");    		
         retVal = 1;
     }    
 
-    if (doc && !done) {
-        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-    }    
 
     cl->ft->release(cl);        		        		
     soap_free(cntx);

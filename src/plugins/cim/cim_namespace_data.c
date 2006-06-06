@@ -55,11 +55,11 @@ SER_START_ITEMS("Catalog", CimResource)
 SER_END_ITEMS("Catalog", CimResource);
 
 SER_START_END_POINTS(CimResource)
-    END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_ENUMERATE(CimResource, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_PULL_RAW(CimResource, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_RELEASE(CimResource, XML_NS_CIM_V2_9),
-    END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_V2_9),
+    END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_ENUMERATE(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_PULL_RAW(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_RELEASE(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),
 SER_FINISH_END_POINTS(CimResource);
 
 
@@ -67,7 +67,7 @@ void get_endpoints(GModule *self, void **data)
 {
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
-    ifc->actionUriBase = XML_NS_CIM_V2_9;
+    ifc->actionUriBase = XML_NS_CIM_CLASS;
     ifc->version = PACKAGE_VERSION;
     ifc->vendor = "Intel Corp.";
     ifc->displayName = "CIM Resource";

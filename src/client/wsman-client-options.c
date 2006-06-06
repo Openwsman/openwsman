@@ -51,12 +51,18 @@ static const char **wsman_argv = NULL;
 static gint server_port =  -1;
 static gchar *cafile = NULL;
 static gint debug_level = -1;
+static gchar *test_case = NULL;
 static gint enum_max_elements = 0;
 gboolean  enum_optimize = FALSE;
+gboolean  enum_estimate = FALSE;
+gboolean  dump_request = FALSE;
+static gchar *enum_mode = NULL;
+//gboolean  dump_response = FALSE;
 
 static gchar *username = NULL;
 static gchar *password = NULL;
 static gchar *server = NULL;
+static gchar *cim_namespace = NULL;
 
 static gchar *_action = NULL;
 static gchar *resource_uri = NULL;
@@ -70,6 +76,7 @@ WsActions action_data[] =
  { "enumerate", ACTION_ENUMERATION},
  { "invoke", ACTION_INVOKE},
  { "identify", ACTION_IDENTIFY},
+ { "test", ACTION_TEST},
  { NULL, 0},
 };
 
@@ -90,24 +97,51 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
         { NULL }
     };
+
     GOptionEntry enum_options[] = 
     {				
-        { "max-elements", 'e', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull", "<max number of elements>"  },
 #ifdef DMTF_WSMAN_SPEC_1        
+        { "max-elements", 'm', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull/Optimized Enumeration", "<max number of elements>"  },
         { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
+        { "estimate-count", 'e', 0, G_OPTION_ARG_NONE, &enum_estimate, "Return estimation of total items", NULL  },
+        { "enum-mode", 'M', 0, G_OPTION_ARG_STRING, &enum_mode, "Enumeration Mode", "epr|objepr"  },
 #endif
         { NULL }
     };
+    
+    GOptionEntry cim_options[] = 
+    {				
+#ifdef DMTF_WSMAN_SPEC_1        
+        { "namespace", 'N', 0, G_OPTION_ARG_STRING, &cim_namespace, "CIM Namespace (default is root/cimv2)", "<namespace>"  },
+#endif
+        { NULL }
+    };
+
+    GOptionEntry test_options[] = 
+    {				
+        { "from-file", 'f', 0, G_OPTION_ARG_FILENAME, &test_case, "Send request from file", "<file name>"  },
+        { "print-request", 'R', 0, G_OPTION_ARG_NONE, &dump_request, "print request on stdout", NULL},
+        //{ "print-response", 'N', 0, G_OPTION_ARG_NONE, &dump_response, "print all responses to stdout", NULL},
+        { NULL }
+    };
+
     GOptionGroup *enum_group;
+    GOptionGroup *test_group;
+    GOptionGroup *cim_group;
 
     GOptionContext *opt_ctx;	
     opt_ctx = g_option_context_new("<action> <Resource Uri>");    
     enum_group = g_option_group_new("enumeration", "Enumeration", "Enumeration Options", NULL, NULL);
+    test_group = g_option_group_new("tests", "Tests", "Test Cases", NULL, NULL);
+    cim_group = g_option_group_new("cim", "CIM", "CIM Options", NULL, NULL);
     g_option_group_add_entries(enum_group, enum_options);
+    g_option_group_add_entries(test_group, test_options);
+    g_option_group_add_entries(cim_group, cim_options);
 
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
     g_option_context_add_group(opt_ctx, enum_group);
+    g_option_context_add_group(opt_ctx, test_group);
 
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
 
@@ -115,11 +149,16 @@ gboolean wsman_parse_options(int argc, char **argv)
         _action = argv[1];
         resource_uri = argv[2];
     } else {
-        if (argc == 1 && strcmp(argv[1], "identify") != 0 ) {
+
+        if (argv[1] && ( strcmp(argv[1], "identify") == 0 || strcmp(argv[1], "test") == 0 )) {
             _action = argv[1];
+            if (wsman_options_get_test_file() &&  strcmp(argv[1], "test") == 0 ) {
+                printf("running test case from file\n");
+            }
+        } else {
+            fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
+            return FALSE;
         }
-        fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
-        return FALSE;
     }
 
 
@@ -212,4 +251,28 @@ int wsman_options_get_max_elements (void)
 {	
     return enum_max_elements;
 }   
+gboolean wsman_options_get_optimize_enum (void)
+{	
+    return enum_optimize;
+}   
+gboolean wsman_options_get_estimate_enum (void)
+{	
+    return enum_estimate;
+}   
+gboolean wsman_options_get_dump_request (void)
+{	
+    return dump_request;
+}   
 
+char * wsman_options_get_test_file (void)
+{	
+    return test_case;
+}   
+char * wsman_options_get_enum_mode (void)
+{	
+    return enum_mode;
+}   
+char * wsman_options_get_cim_namespace (void)
+{	
+    return cim_namespace;
+}   

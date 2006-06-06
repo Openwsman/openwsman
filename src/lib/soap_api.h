@@ -39,81 +39,84 @@
 #include <pthread.h>
 #include "wsman-faults.h"
 
-#define SOAP1_2_CONTENT_TYPE "application/soap+xml; charset=utf-8"
-#define SOAP_CONTENT_TYPE "application/soap+xml"
 
-#define SOAP_SKIP_DEF_FILTERS			0x01
-#define SOAP_ACTION_PREFIX				0x02 // otherwise exact
+// #define DMTF_WSMAN_SPEC_1
 
-#define SOAP_ONE_WAY_OP					0x04
-#define SOAP_NO_RESP_OP					0x08
-#define SOAP_DONT_KEEP_INDOC			0x10
+#define SOAP1_2_CONTENT_TYPE            "application/soap+xml; charset=utf-8"
+#define SOAP_CONTENT_TYPE               "application/soap+xml"
 
-#define SOAP_CLIENT_RESPONSE			0x20 // internal use
-#define SOAP_CUSTOM_DISPATCHER			0x40 // internal use
+#define SOAP_SKIP_DEF_FILTERS		0x01
+#define SOAP_ACTION_PREFIX		0x02 // otherwise exact
+
+#define SOAP_ONE_WAY_OP			0x04
+#define SOAP_NO_RESP_OP			0x08
+#define SOAP_DONT_KEEP_INDOC		0x10
+
+#define SOAP_CLIENT_RESPONSE		0x20 // internal use
+#define SOAP_CUSTOM_DISPATCHER		0x40 // internal use
 
 
 #define XML_NS_SOAP_1_1                 "http://schemas.xmlsoap.org/soap/envelope"
 #define XML_NS_SOAP_1_2                 "http://www.w3.org/2003/05/soap-envelope"
 
 
+#define XML_NS_XML_NAMESPACES	        "http://www.w3.org/XML/1998/namespace"	
+#define XML_NS_ADDRESSING	        "http://schemas.xmlsoap.org/ws/2004/08/addressing"	
+#define XML_NS_DISCOVERY		"http://schemas.xmlsoap.org/ws/2004/10/discovery"	
+#define XML_NS_EVENTING		        "http://schemas.xmlsoap.org/ws/2004/08/eventing"	
+#define XML_NS_ENUMERATION	        "http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+#define XML_NS_TRANSFER		        "http://schemas.xmlsoap.org/ws/2004/09/transfer"
+#define XML_NS_XML_SCHEMA	        "http://www.w3.org/2001/XMLSchema"
+#define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
 
-#define XML_NS_XML_NAMESPACES	"http://www.w3.org/XML/1998/namespace"	
-#define XML_NS_ADDRESSING		"http://schemas.xmlsoap.org/ws/2004/08/addressing"	
-#define XML_NS_DISCOVERY			"http://schemas.xmlsoap.org/ws/2004/10/discovery"	
-#define XML_NS_EVENTING			"http://schemas.xmlsoap.org/ws/2004/08/eventing"	
-#define XML_NS_DEVRPROF			"http://schemas.xmlsoap.org/ws/2004/08/devprof"	
-#define XML_NS_MTD_EXCHANGE		"http://schemas.xmlsoap.org/ws/2004/09/mex"
-//#define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
+// CIM
+#ifdef DMTF_WSMAN_SPEC_1
+#define XML_NS_CIM_SCHEMA	        "http://schemas.dmtf.org/wbem/wscim/1/common"
+#define XML_NS_CIM_CLASS                "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
+#define XML_NS_CIM_BINDING              "http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd"
+
+#else // DMTF_WSMAN_SPEC_1
+#define XML_NS_CIM_SCHEMA               "http://schemas.dmtf.org/cimv2.9/CIM_Schema"
+#define XML_NS_CIM_CLASS		"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
+#endif
 
 
-#define DMTF_WSMAN_SPEC_1
+// WS-Management
 
 #ifdef DMTF_WSMAN_SPEC_1
-#define XML_NS_WS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
+#define XML_NS_WS_MAN                   "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
 #else
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
 #endif
 
 
+#define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
 #define XML_NS_WSMAN_ID                 "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
-#define WSMAN_IDENTIFY                  "Identify"
 
 
-#define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
 
-#ifdef DMTF_WSMAN_SPEC_1
-#define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
-#else
-#define XML_NS_CIM_V2_9			"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
-#endif
-
-#define XML_NS_ENUMERATION		"http://schemas.xmlsoap.org/ws/2004/09/enumeration"
-#define XML_NS_TRANSFER			"http://schemas.xmlsoap.org/ws/2004/09/transfer"
-#define XML_NS_WS_MAN_CAT		"http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
-#define XML_NS_CIM_SCHEMA		"http://schemas.dmtf.org/cimv2.9/CIM_Schema"
-#define XML_NS_XML_SCHEMA		"http://www.w3.org/2001/XMLSchema"
-#define XML_NS_XML_SCHEMA_INSTANCE		"http://www.w3.org/2001/XMLSchema-instance"
-
-// Testing
-#define XML_NS_DOEM_TEST              "http://intel.com/doem/ws/poc"
+#define WSMID_IDENTIFY                  "Identify"
+#define WSMID_IDENTIFY_RESPONSE         "IdentifyResponse"
+#define WSMID_PROTOCOL_VERSION          "ProtocolVersion"
+#define WSMID_PRODUCT_VENDOR            "ProductVendor"
+#define WSMID_PRODUCT_VERSION           "ProductVersion"
 
 
 #define XML_SCHEMA_NIL			"nil"
 
-#define PROCESSED_MSG_ID_MAX_SIZE		200
+#define PROCESSED_MSG_ID_MAX_SIZE	200
 
 #define WSA_TO_ANONYMOUS\
                 "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous"
-#define WSA_MESSAGE_ID				"MessageID"
-#define WSA_ADDRESS					"Address"
-#define WSA_EPR						"EndpointReference"
-#define WSA_ACTION					"Action"
-#define WSA_RELATES_TO				"RelatesTo"
-#define WSA_TO						"To"
-#define WSA_REPLY_TO				"ReplyTo"
-#define WSA_FAULT_TO				"FaultTo"
+#define WSA_MESSAGE_ID		        "MessageID"
+#define WSA_ADDRESS			"Address"
+#define WSA_EPR				"EndpointReference"
+#define WSA_ACTION			"Action"
+#define WSA_RELATES_TO		        "RelatesTo"
+#define WSA_TO				"To"
+#define WSA_REPLY_TO		        "ReplyTo"
+#define WSA_FAULT_TO			"FaultTo"
 #define WSA_REFERENCE_PROPERTIES	"ReferenceProperties"
 #define WSA_REFERENCE_PARAMETERS	"ReferenceParameters"
 #define WSA_ACTION_FAULT\
@@ -122,96 +125,94 @@
 
 
 #define SOAP_ENVELOPE			"Envelope"
-#define SOAP_HEADER				"Header"
-#define SOAP_BODY				"Body"
-#define SOAP_FAULT				"Fault"
-#define SOAP_CODE				"Code"
-#define SOAP_VALUE				"Value"
-#define SOAP_SUBCODE				"Subcode"
-#define SOAP_REASON				"Reason"
-#define SOAP_TEXT				"Text"
-#define SOAP_LANG				"lang"
-#define SOAP_DETAIL				"Detail"
+#define SOAP_HEADER			"Header"
+#define SOAP_BODY			"Body"
+#define SOAP_FAULT			"Fault"
+#define SOAP_CODE			"Code"
+#define SOAP_VALUE			"Value"
+#define SOAP_SUBCODE			"Subcode"
+#define SOAP_REASON			"Reason"
+#define SOAP_TEXT			"Text"
+#define SOAP_LANG			"lang"
+#define SOAP_DETAIL			"Detail"
 #define SOAP_FAULT_DETAIL		"FaultDetail"
 #define SOAP_MUST_UNDERSTAND		"mustUnderstand"
-#define SOAP_VERSION_MISMATCH	"VersionMismatch"
-#define SOAP_UPGRADE				"Upgrade"
-#define SOAP_SUPPORTED_ENVELOPE	"SupportedEnvelope"
+#define SOAP_VERSION_MISMATCH	        "VersionMismatch"
+#define SOAP_UPGRADE			"Upgrade"
+#define SOAP_SUPPORTED_ENVELOPE	        "SupportedEnvelope"
 
 
 #define TRANSFER_ACTION_PUT		"http://schemas.xmlsoap.org/ws/2004/09/transfer/Put"
 #define TRANSFER_ACTION_GET		"http://schemas.xmlsoap.org/ws/2004/09/transfer/Get"
-#define TRANSFER_GET				"Get"
-#define TRANSFER_PUT				"Put"
+#define TRANSFER_GET			"Get"
+#define TRANSFER_PUT			"Put"
 
-#define ENUM_ACTION_ENUMERATE	"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"
+#define ENUM_ACTION_ENUMERATE	        "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"
 #define ENUM_ACTION_RELEASE		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Release"
-#define ENUM_ACTION_PULL			"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull"
-#define WSENUM_ENUMERATE				"Enumerate"
-#define WSENUM_ENUMERATE_RESP	"EnumerateResponse"
+#define ENUM_ACTION_PULL		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull"
+#define WSENUM_ENUMERATE		"Enumerate"
+#define WSENUM_ENUMERATE_RESP	        "EnumerateResponse"
+#define WSENUM_PULL			"Pull"
+#define WSENUM_PULL_RESP		"PullResponse"
 #define WSENUM_END_TO			"EndTo"
 #define WSENUM_EXPIRES			"Expires"
 #define WSENUM_FILTER			"Filter"
 #define WSENUM_DIALECT			"Dialect"
 #define WSENUM_ENUMERATION_CONTEXT	"EnumerationContext"
-#define WSENUM_PULL				"Pull"
-#define WSENUM_PULL_RESP			"PullResponse"
 #define WSENUM_MAX_TIME			"MaxTime"
 #define WSENUM_MAX_ELEMENTS		"MaxElements"
-#define WSENUM_MAX_CHARACTERS	"MaxCharacters"
-#define WSENUM_ITEMS				"Items"
-#define WSENUM_END_OF_SEQUENCE	"EndOfSequence"
+#define WSENUM_MAX_CHARACTERS	        "MaxCharacters"
+#define WSENUM_ITEMS			"Items"
+#define WSENUM_END_OF_SEQUENCE	        "EndOfSequence"
 #define WSENUM_RELEASE			"Release"
 #define WSENUM_RELEASE_RESP		"ReleaseResponse"
-#define WSENUM_RENEW				"Renew"
+#define WSENUM_RENEW			"Renew"
 #define WSENUM_RENEW_RESP		"RenewResponse"
 #define WSENUM_GET_STATUS		"GetStatus"
-#define WSENUM_GET_STATUS_RESP	"GetStatusResponse"
-#define WSENUM_ENUMERATION_END	"EnumerationEnd"
+#define WSENUM_GET_STATUS_RESP	        "GetStatusResponse"
+#define WSENUM_ENUMERATION_END	        "EnumerationEnd"
 #define WSENUM_REASON			"Reason"
-#define WSENUM_CODE				"Code"
+#define WSENUM_CODE			"Code"
 #define WSENUM_SOURCE_SHUTTING_DOWN	"SourceShuttingDown"
-#define WSENUM_SOURCE_CANCELING	"SourceCanceling"
+#define WSENUM_SOURCE_CANCELING	        "SourceCanceling"
 
 
-#ifdef DMTF_WSMAN_SPEC_1
-#define XML_NS_MAN                  "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
-#else
-#define XML_NS_MAN				"http://schemas.xmlsoap.org/ws/2005/06/management"
-#endif
-
-#define WSM_SYSTEM				"System"
-#define WSM_RESOURCE_URI			"ResourceURI"
-#define WSM_SELECTOR_SET			"SelectorSet"
-#define WSM_SELECTOR				"Selector"
-#define WSM_NAME					"Name"
+#define WSM_SYSTEM			"System"
+#define WSM_RESOURCE_URI		"ResourceURI"
+#define WSM_SELECTOR_SET		"SelectorSet"
+#define WSM_SELECTOR			"Selector"
+#define WSM_NAME		        "Name"
 #define WSM_REQUEST_TOTAL		"RequestTotalItemsCountEstimate"
 #define WSM_TOTAL_ESTIMATE              "TotalItemsCountEstimate"
-#define WSM_OPTIMIZE_ENUM              "OptimizeEnumeration"
-#define WSM_MAX_ELEMENTS              "MaxElements"
+#define WSM_OPTIMIZE_ENUM               "OptimizeEnumeration"
+#define WSM_MAX_ELEMENTS                "MaxElements"
+#define WSM_ENUM_EPR                    "EnumerateEPR"
+#define WSM_ENUM_OBJ_AND_EPR            "EnumerateObjectAndEPR"
+#define WSM_ENUM_MODE                   "EnumerationMode"
+#define WSM_ITEM                        "Item"
 
-#define WSM_MAX_ENVELOPE_SIZE	"MaxEnvelopeSize"
-#define WSM_OPERATION_TIMEOUT	"OperationTimeout"
-#define WSM_FAULT_SUBCODE	"FaultSubCode"
+#define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
+#define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
+#define WSM_FAULT_SUBCODE	        "FaultSubCode"
 
 // Catalog
 
 #define WSMANCAT_RESOURCE		"Resource"
-#define WSMANCAT_RESOURCE_URI	"ResourceUri"
-#define WSMANCAT_VERSION			"Version"
+#define WSMANCAT_RESOURCE_URI	        "ResourceUri"
+#define WSMANCAT_VERSION		"Version"
 #define WSMANCAT_NOTES			"Notes"
 #define WSMANCAT_VENDOR			"Vendor"
-#define WSMANCAT_DISPLAY_NAME	"DisplayName"
+#define WSMANCAT_DISPLAY_NAME	        "DisplayName"
 #define WSMANCAT_KEYWORDS		"Keywords"
 #define WSMANCAT_ACCESS			"Access"
-#define WSMANCAT_RELATIONSHIPS	"Relationsships"
+#define WSMANCAT_RELATIONSHIPS	        "Relationsships"
 #define WSMANCAT_COMPLIANCE		"Compliance"
 #define WSMANCAT_OPERATION		"Operation"
-#define WSMANCAT_SELECTOR_SET	"SelectorSet"
+#define WSMANCAT_SELECTOR_SET	        "SelectorSet"
 #define WSMANCAT_SELECTOR		"Selector"
 #define WSMANCAT_OPTION_SET		"OptionSet"
 #define WSMANCAT_ACTION			"Action"
-#define WSMANCAT_SELECTOR_SET_REF "SelectorSetRef"
+#define WSMANCAT_SELECTOR_SET_REF       "SelectorSetRef"
 #define WSMANCAT_LOCATION		"Location"
 #define WSMANCAT_NAME			"Name"
 #define WSMANCAT_TYPE			"Type"
@@ -220,11 +221,9 @@
 
 
 #define WSFW_RESPONSE_STR		"Response"
-#define WSFW_INDOC				"indoc"
+#define WSFW_INDOC			"indoc"
 
 #define WSFW_ENUM_PREFIX		"_en."
-
-
 
 #define SOAP_MAX_RESENT_COUNT		10
 
@@ -237,9 +236,8 @@
 #define WS_CONTEXT_TYPE_ULONG		0x02
 #define WS_CONTEXT_TYPE_XMLDOC		0x03
 #define WS_CONTEXT_TYPE_XMLNODE		0x04
-#define WS_CONTEXT_TYPE_BLOB			0x05
+#define WS_CONTEXT_TYPE_BLOB		0x05
 #define WS_CONTEXT_TYPE_FAULT		0x06
-
 
 
 struct __WsContext
@@ -435,6 +433,7 @@ struct __WsEnumerateInfo
         unsigned long timeout;
         unsigned int totalItems;
         unsigned int maxItems;
+        unsigned char flags;
         int index;
         void* enumResults;
         void* pullResultPtr;
@@ -481,6 +480,19 @@ struct _WsProperties {
 };
 typedef struct _WsProperties WsProperties;
 
+
+#define FLAG_ENUMERATION_COUNT_ESTIMATION    1
+#define FLAG_ENUMERATION_OPTIMIZATION        2
+#define FLAG_ENUMERATION_ENUM_EPR            4
+#define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    8
+#define FLAG_DUMP_REQUEST                    16
+
+struct _actionOptions {
+    unsigned char       flags;
+    char *              filter;
+    char *              cim_ns;
+};
+typedef struct _actionOptions actionOptions;
 
 
 /** *********************************** */
@@ -826,5 +838,11 @@ void soap_destroy_fw(SoapH soap);
 
 void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char *details);
 int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
+void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo);
+int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
+char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
+void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
+
+
 
 #endif /*SOAP_API_H_*/

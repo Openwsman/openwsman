@@ -1,3 +1,10 @@
+0.09:
+    * Support DMTF draft specification (Work in Progress)
+    * Optimized enumeration
+    * EPR enumeration
+    * EPR And Object Enumeration
+    * Estimate Item Count in Enumeration
+    
 0.07:
     * Various fixes to generic CIM plugin
     * Eliminated memory leaks in various location

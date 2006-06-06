@@ -63,7 +63,7 @@ void path2xml(  WsXmlNodeH node, char *resourceUri, CMPIValue * val)
 
    ws_xml_add_child(node, XML_NS_ADDRESSING , "Address" , WSA_TO_ANONYMOUS);
    WsXmlNodeH refparam = ws_xml_add_child(node, XML_NS_ADDRESSING , "ReferenceParameters" , NULL);
-   ws_xml_add_child_format(refparam, XML_NS_WS_MAN , "ResourceUri" , "%s/%s", XML_NS_CIM_V2_9, (char *)classname->hdl);
+   ws_xml_add_child_format(refparam, XML_NS_WS_MAN , "ResourceUri" , "%s/%s", XML_NS_CIM_CLASS, (char *)classname->hdl);
    WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam, XML_NS_WS_MAN , "SelectorSet" , NULL);
 
    if (numkeys) {
@@ -121,7 +121,7 @@ void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUr
     {
         if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
             WsXmlNodeH nilnode = ws_xml_add_child(node, resourceUri, name , NULL);
-            ws_xml_add_node_attr(nilnode, XML_NS_XML_SCHEMA_INSTANCE, "nil", "true");
+            ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
             return;
         }
         CMPIArray *arr   = data.value.array;
@@ -147,7 +147,7 @@ void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUr
 
                 /*
                 if (strcmp(valuestr, "") == 0) {
-                    if (!ws_xml_add_node_attr(nilnode, XML_NS_XML_SCHEMA_INSTANCE, "nil", "true"))
+                    if (!ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true"))
                         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "setting nil prop failed");
                 }
                 */
@@ -155,7 +155,7 @@ void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUr
             }
         } else {
             WsXmlNodeH nilnode = ws_xml_add_child(node, resourceUri, name , NULL);
-            ws_xml_add_node_attr(nilnode, XML_NS_XML_SCHEMA_INSTANCE, "nil", "true");
+            ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
             
         }
     }
@@ -169,7 +169,32 @@ void cim_getElementAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *res
     return;
 }
 
+void cim_getEprAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri) {
 
+    CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
+    CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
+
+    CMPIInstance *instance = data.value.inst;
+    CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+    cim_add_epr(itemsNode, resourceUri, objectpath);
+    CMRelease(objectpath);
+    return;
+}
+
+void cim_getEprObjAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri) {
+
+    CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
+    CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
+
+    CMPIInstance *instance = data.value.inst;
+    CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+    WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM , NULL);
+    cim_add_epr(item, resourceUri, objectpath);
+    instance2xml(instance, item, resourceUri);
+
+    CMRelease(objectpath);
+    return;
+}
 
 void instance2xml( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
 {   
@@ -180,12 +205,12 @@ void instance2xml( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
    int numproperties = instance->ft->getPropertyCount(instance, NULL);
    int i;
     
-   char *className = resourceUri + sizeof(XML_NS_CIM_V2_9);
+   char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
 
    WsXmlNodeH r = ws_xml_add_child(body, NULL, className , NULL);
    if (!ws_xml_ns_add(r, resourceUri, "p" ))
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "namespace failed: %s", resourceUri);
-   if (!ws_xml_ns_add(r, XML_NS_XML_SCHEMA_INSTANCE, "xsi" ))
+   if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, "xsi" ))
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "namespace failed: %s", resourceUri);
        
    if (numproperties) 
@@ -197,29 +222,25 @@ void instance2xml( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
          CMRelease(propertyname);
       }
    }
+
+#ifndef DMTF_WSMAN_SPEC_1
    add_cim_location(r, resourceUri, objectpath );
+#endif
 
    if (classname) CMRelease(classname);
    if (namespace) CMRelease(namespace);
    if (objectpath) CMRelease(objectpath);
 }
 
-void add_cim_location ( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath)
-{
-    /*
-    CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
-    CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
-   if (namespace && namespace->hdl) printf("namespace=%s\n", (char *)namespace->hdl);
-      if (classname && classname->hdl) printf("classname=%s\n", (char *)classname->hdl);
-      */
+
+void cim_add_epr_details(WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath) {
    int numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
    char *cv = NULL;
    int i;
-   // cim:Location
-   WsXmlNodeH cimLocation = ws_xml_add_child(resource, XML_NS_CIM_V2_9, "Location" , NULL);
-   ws_xml_add_child(cimLocation, XML_NS_ADDRESSING , "Address" , WSA_TO_ANONYMOUS);
+    
+   ws_xml_add_child(resource , XML_NS_ADDRESSING , "Address" , WSA_TO_ANONYMOUS);
    
-   WsXmlNodeH refparam = ws_xml_add_child(cimLocation, XML_NS_ADDRESSING , "ReferenceParameters" , NULL);
+   WsXmlNodeH refparam = ws_xml_add_child(resource, XML_NS_ADDRESSING , "ReferenceParameters" , NULL);
    ws_xml_add_child_format(refparam, XML_NS_WS_MAN , "ResourceUri" , "%s", resourceUri );
    WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam, XML_NS_WS_MAN , "SelectorSet" , NULL);
 
@@ -244,6 +265,20 @@ void add_cim_location ( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath
          if(keyname) CMRelease(keyname);
       }
    }
+   return;
+}
+
+void cim_add_epr( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath)
+{
+   WsXmlNodeH epr = ws_xml_add_child(resource, XML_NS_ADDRESSING, WSA_EPR , NULL);
+   cim_add_epr_details(epr, resourceUri, objectpath );
+   return;
+}
+
+void add_cim_location ( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath)
+{
+   WsXmlNodeH cimLocation = ws_xml_add_child(resource, XML_NS_CIM_SCHEMA, "Location" , NULL);
+   cim_add_epr_details(cimLocation, resourceUri, objectpath );
    return;
 }
 
@@ -314,7 +349,7 @@ void cim_get_instance (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNode
     CMPIObjectPath * objectpath;    
     CMPIStatus sfcc_status;
 
-    char *class_name = resourceUri + sizeof(XML_NS_CIM_V2_9);
+    char *class_name = resourceUri + sizeof(XML_NS_CIM_CLASS);
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
 
     GList *node = keys;
@@ -453,6 +488,7 @@ void cim_enum_instances (CMCIClient *cc, char *class_name , WsEnumerateInfo* enu
     enumInfo->appEnumContext = enumeration;
 
     if (objectpath) CMRelease(objectpath);
+    //if (enumeration) CMRelease(enumeration);
     return;           
 }
 
@@ -533,14 +569,45 @@ char *cim_get_keyvalue(CMPIObjectPath *objpath, char *keyname)
 
     CMPIData data = objpath->ft->getKey(objpath, keyname, &status);	
 
-    if (status.rc || CMIsArray(data)) 
-    {
+    if (status.rc || CMIsArray(data)) {
         return "";
-    }
-    else 
-    {
+    } else {
         valuestr = value2Chars(data.type, &data.value);
         return valuestr;
     }	
 }
+
+void cim_get_enum_items(WsContextH cntx, WsXmlNodeH node, WsEnumerateInfo* enumInfo, char *namespace, int max) {
+    WsXmlNodeH itemsNode;
+    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Resource Uri: %s", resourceUri); 
+
+    if ( node != NULL ) {
+        itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Total items: %lu", enumInfo->totalItems );
+        if (max > 0 ) {
+            while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) {
+                if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
+                    cim_getEprAt(enumInfo, itemsNode, resourceUri);
+                else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
+                    cim_getEprObjAt(enumInfo, itemsNode, resourceUri);
+                else
+                    cim_getElementAt(enumInfo, itemsNode, resourceUri);
+                enumInfo->index++;
+                max--;
+            }
+            enumInfo->index--;
+        } else {
+            if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) {
+                if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
+                    cim_getEprAt(enumInfo, itemsNode, resourceUri);
+                else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
+                    cim_getEprObjAt(enumInfo, itemsNode, resourceUri);
+                else
+                    cim_getElementAt(enumInfo, itemsNode, resourceUri);
+            }
+        }
+    }   
+}
+
 

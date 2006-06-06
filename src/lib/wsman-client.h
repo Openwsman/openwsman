@@ -42,6 +42,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+
+
 struct _WsManClientEnc;
 typedef struct _WsManClientEnc WsManClientEnc;
 
@@ -88,17 +90,17 @@ typedef struct _WsManClientFT
 	/**
 	 * Enumerate
 	 */
-	char *(*wsenum_enumerate)(WsManClient* cl, char* resourceUri, int estimate, int optimize , int max_elements);
+	WsXmlDocH (*wsenum_enumerate)(WsManClient* cl, char* resourceUri, int max_elements, actionOptions options);
 
 	/**
 	 * Pull
 	 */
-	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, char *enumContext, int max_elements);
+	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, char *enumContext, int max_elements, actionOptions options);
         
 	/**
 	 * Release
 	 */
-	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri, char *enumContext);
+	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri, char *enumContext, actionOptions options);
 
 	/**
 	 * Transfer Create
@@ -163,19 +165,17 @@ WsXmlDocH wsman_identify(WsManClient *cl);
 WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri); 
 WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop);
 WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, GList *prop);
-char *wsenum_enumerate(WsManClient *cl, char *resourceUri, int estimate, int optimize , int max_elements);
-WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , int max_elements);
-WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext );
+WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri, int max_elements, actionOptions options);
+WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , int max_elements, actionOptions options);
+WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext , actionOptions options);
 WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  GList *prop);
 
-WsXmlDocH wsman_make_enum_message(WsContextH soap,
-        char* op,
-        char* enumContext,
+WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext,
         char* resourceUri,
         char* url);
 
 WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumContext, char* resourceUri, 
-        int estimate, int optimize, int max_elements);
+        int max_elements, actionOptions options);
 
 WsManConnection *initClientConnection(WsManClientData *cld);
 
@@ -183,14 +183,9 @@ typedef void (*WsmanClientFn) (WsManClient *cl,
                            	 WsXmlDocH rqstDoc,
                            	 gpointer user_data);
 
-void
-wsman_client (WsManClient *cl, 
-				WsXmlDocH rqstDoc
-                );
+void wsman_client (WsManClient *cl, WsXmlDocH rqstDoc);
 
-guint
-wsman_client_add_handler (WsmanClientFn fn,                     
-                      gpointer user_data);
+guint wsman_client_add_handler (WsmanClientFn fn, gpointer user_data);
 
 void
 wsman_client_remove_handler (guint id);
@@ -210,7 +205,8 @@ char* wsman_add_selector_from_uri(
 	WsXmlDocH doc, 
 	char *resourceUri);
 
-	
+
+char *wsenum_get_enum_context(WsXmlDocH doc);
 
 #ifdef __cplusplus
 }

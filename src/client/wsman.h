@@ -43,9 +43,7 @@
 #define ACTION_INVOKE       5
 #define ACTION_TRANSFER_CREATE 	       6 
 #define ACTION_IDENTIFY 	       7
+#define ACTION_TEST                     8
 
 
-#define MY_ENCODING "UTF-8"
-
-               
 #endif // WSMAN_CLIENT_H

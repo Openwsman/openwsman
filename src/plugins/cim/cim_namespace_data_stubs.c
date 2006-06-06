@@ -77,7 +77,7 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
             return 1;		
         }
 
-        char *className = resourceUri + strlen(XML_NS_CIM_V2_9) + 1;
+        char *className = resourceUri + strlen(XML_NS_CIM_CLASS) + 1;
         char *methodName = action + strlen(resourceUri) + 1;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Class Name: %s, Method: %s" , className, methodName);
         
@@ -158,7 +158,10 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    char *className = resourceUri + sizeof(XML_NS_CIM_V2_9);
+    char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
+    int max_elements = 0;
+    WsXmlDocH doc;
+    char *enum_mode;
 
     CimClientInfo cimclient;
     cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);
@@ -166,9 +169,32 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
         return 1;
     }
     cim_enum_instances (cimclient.cc, className , enumInfo,  status);
+
     if (status && status->rc != 0) {
         return 1;
     }
+
+    max_elements = wsman_is_optimization(cntx, NULL );
+    enum_mode = wsman_get_enum_mode(cntx, NULL); 
+    if (enum_mode)
+        wsman_set_enum_mode(enum_mode, enumInfo);
+
+    if (max_elements > 0) {
+        doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
+        WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
+            WSENUM_ENUMERATE_RESP , NULL);       
+        cim_get_enum_items(cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
+        if (doc != NULL ) {
+            enumInfo->pullResultPtr = doc;
+            int index2 = enumInfo->index + 1;
+            if (index2 == enumInfo->totalItems)  {
+                cim_release_enum_context(enumInfo);
+            }
+        }
+        else
+            enumInfo->pullResultPtr = NULL;
+    }
+   
     if (cimclient.cc) CMRelease(cimclient.cc);
     ws_destroy_context(cntx);
     return 0;
@@ -181,41 +207,21 @@ int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStat
     return 0;
 }
 
+
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called");      
     WsXmlDocH doc = NULL;
-    WsXmlNodeH itemsNode = NULL;
 
-    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Resource Uri: %s", resourceUri); 
 
-    int max = wsen_get_max_elements(cntx, NULL);
     doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_PULL_RESP, NULL);       
 
-    if ( pullnode != NULL ) {
-        itemsNode = ws_xml_add_child(pullnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);     	
-    }   
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Total items: %lu", enumInfo->totalItems );
-    if (max > 0 ) {
-        while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) {
-            cim_getElementAt(enumInfo, itemsNode, resourceUri);
-            enumInfo->index++;
-            max--;
-        }
-        enumInfo->index--;
-    } else {
-        if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) {
-            cim_getElementAt(enumInfo, itemsNode, resourceUri);
-        }
-    }
-
-    // Filter
-    //
-
-    check_xpath(itemsNode, NULL);
+    int max = wsen_get_max_elements(cntx, NULL);
+    cim_get_enum_items(cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
+    
+    //check_xpath(itemsNode, NULL);
 
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
@@ -225,7 +231,6 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
     ws_destroy_context(cntx);
     return 0;
 }
-
 
 
 

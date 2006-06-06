@@ -56,21 +56,14 @@
 
 
 
-
-
-//******************* functions to define for any binding ***********************
-
-// XmlParserInitialize
 void xml_parser_initialize(SoapH soap)
 {
 }
 
-// XmlParserDestroy
 void xml_parser_destroy(SoapH soap)
 {
 }
 
-// XmlParserDocToMemory
 void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize, 
         char* encoding)
 {
@@ -79,14 +72,12 @@ void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize,
                 ( xmlChar **) buf, ptrSize, (!encoding) ? "UTF-8" : encoding);
 }
 
-// XmlParserFreeMemory
 void xml_parser_free_memory(void* ptr)
 {
     if (ptr )
         xmlFree(ptr);
 }
 
-// XmlParserCreateDoc
 int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
 {
     int retVal = -1;

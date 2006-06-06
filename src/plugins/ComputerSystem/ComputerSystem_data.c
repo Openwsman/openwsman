@@ -98,10 +98,10 @@ START_TRANSFER_GET_SELECTORS(ComputerSystem)
 FINISH_TRANSFER_GET_SELECTORS(ComputerSystem);
 
 SER_START_END_POINTS(ComputerSystem)
-    END_POINT_TRANSFER_GET(ComputerSystem, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_ENUMERATE(ComputerSystem, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_PULL(ComputerSystem, XML_NS_CIM_V2_9),
-    END_POINT_TRANSFER_RELEASE(ComputerSystem, XML_NS_CIM_V2_9),
+    END_POINT_TRANSFER_GET(ComputerSystem, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_ENUMERATE(ComputerSystem, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_PULL(ComputerSystem, XML_NS_CIM_CLASS),
+    END_POINT_TRANSFER_RELEASE(ComputerSystem, XML_NS_CIM_CLASS),
 SER_FINISH_END_POINTS(ComputerSystem);
 
 
@@ -109,7 +109,7 @@ void get_endpoints(GModule *self, void **data)
 {
 	WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
-    ifc->actionUriBase = XML_NS_CIM_V2_9;
+    ifc->actionUriBase = XML_NS_CIM_CLASS;
     ifc->version = PACKAGE_VERSION;
     ifc->vendor = "Intel Corp.";
     ifc->displayName = "CIM_ComputerSystem";

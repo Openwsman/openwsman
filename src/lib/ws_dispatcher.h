@@ -140,6 +140,7 @@ WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc);
 
 int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg);
 int wsman_is_identify_request(WsXmlDocH doc);
+void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg);
 
 
 /** @} */

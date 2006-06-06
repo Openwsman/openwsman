@@ -422,6 +422,26 @@ void wsman_dispatcher_list( GList *interfaces )
     }		
 }
 
+
+
+void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg) {
+
+    WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(fw->cntx), NULL);
+    WsXmlNodeH identify = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_WSMAN_ID, WSMID_IDENTIFY_RESPONSE , NULL);
+    ws_xml_add_child(identify, XML_NS_WSMAN_ID, WSMID_PROTOCOL_VERSION , XML_NS_WS_MAN);
+    ws_xml_add_child(identify, XML_NS_WSMAN_ID, WSMID_PRODUCT_VENDOR , PACKAGE_NAME);
+    ws_xml_add_child(identify, XML_NS_WSMAN_ID, WSMID_PRODUCT_VERSION , PACKAGE_VERSION);
+    char *buf = NULL;
+    int len;
+    ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
+    msg->response.length = len;
+    msg->response.body = strndup(buf, len);
+
+    soap_free(buf);
+    ws_xml_destroy_doc(doc);
+    return;
+}
+
 int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
 {
     int retVal = 1;
@@ -473,13 +493,21 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
 
 void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg) 
 {   
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
     int ret;		
     WsXmlDocH inDoc = build_inbound_envelope( fw, msg);
-    SOAP_OP_ENTRY* op = NULL;	
-    if ( inDoc != NULL ) {
+
+    if (wsman_is_identify_request(inDoc)) {
         msg->in_doc = inDoc;
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
+        wsman_create_identify_response(fw, msg);
+        return;
+    }
+
+    SOAP_OP_ENTRY* op = NULL;	
+    if ( inDoc != NULL && msg->status.rc == WSMAN_RC_OK) 
+    {
         char* relatesTo = get_relates_to_message_id(fw, inDoc);
+
         if ( relatesTo == NULL || (op = find_response_entry(fw, relatesTo)) == NULL ) {        	
             SOAP_DISPATCH_ENTRY* dispatch;            
             if ( (dispatch = get_dispatch_entry(fw, inDoc)) != NULL ) {
@@ -504,8 +532,10 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
             if (ret) 
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Fault (process_inbound_operation error)");
         }
-    } else {
-        msg->in_doc = NULL;
+    }
+
+    if (inDoc != NULL) {
+        msg->in_doc = inDoc;
     }
 }
 
@@ -513,7 +543,7 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
 int wsman_is_identify_request(WsXmlDocH doc) {
 
     WsXmlNodeH node = ws_xml_get_soap_body(doc);
-    node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMAN_IDENTIFY);
+    node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMID_IDENTIFY);
     if (node)
         return 1;
     else
@@ -528,13 +558,11 @@ int wsman_is_identify_request(WsXmlDocH doc) {
  */
 WsXmlDocH build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
 {
-    int ret_val = 0;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Building inbound envelope");
     WsXmlDocH doc = NULL;   
     if ( (doc = ws_xml_read_memory((SoapH)fw,  msg->request.body, msg->request.length, NULL, 0)) != NULL )   
     {        
         WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
-
         if (!wsman_is_identify_request(doc)) {
             if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK ) {
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Envelope Discarded: Duplicate MessageID");
@@ -542,15 +570,10 @@ WsXmlDocH build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
                 wsmand_set_fault(msg, WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
             }
         }
-
-        if (fault_code != WSMAN_RC_OK) {        		        		
-            ws_xml_destroy_doc(doc);
-            doc = NULL;            
-        }        
-
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");
         wsmand_set_fault(msg, WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
+        ws_xml_destroy_doc(doc);
     }
     return doc;
 }

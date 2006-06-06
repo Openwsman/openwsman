@@ -695,11 +695,8 @@ WsXmlDocH ws_xml_read_memory(
 }
 
 
-WsXmlDocH ws_xml_read_file(
-        SoapH soap, 
-        char* filename, 
-        char* encoding, 
-        unsigned long options)
+WsXmlDocH ws_xml_read_file( SoapH soap, char* filename, 
+        char* encoding, unsigned long options)
 {
     return xml_parser_file_to_doc(soap, filename, encoding, options);
 }

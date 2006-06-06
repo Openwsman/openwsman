@@ -64,28 +64,20 @@ WsXmlNsData g_wsNsData[] =
     {XML_NS_ADDRESSING, "wsa"},
     {XML_NS_DISCOVERY, "wsd"},
     {XML_NS_EVENTING, "wse"},
-    {XML_NS_MTD_EXCHANGE, "mex"},
     {XML_NS_ENUMERATION, "wsen"},
-    {XML_NS_DEVRPROF, "dp"},
     {XML_NS_SCHEMA_INSTANCE, "xsi"},
-    {XML_NS_CIM_V2_9, "cim"},
+    {XML_NS_CIM_SCHEMA, "cim"},
     {XML_NS_WS_MAN_CAT, "cat"},
-    {XML_NS_CIM_SCHEMA, "cs"},
+    {XML_NS_WSMAN_ID, "wsmid"},
     {XML_NS_XML_SCHEMA, "xs"},
-    {XML_NS_WS_MAN, "w"},
+    {XML_NS_WS_MAN, "wsman"},
     {NULL, NULL}
 };
 
 
 
 
-
-
-// MakeSoapCallbackEntry
-SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc,
-        void* data,
-        DL_List* listToAdd)
-
+SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc, void* data, DL_List* listToAdd)
 {
     SOAP_CALLBACK_ENTRY* entry = 
         (SOAP_CALLBACK_ENTRY*)soap_alloc(sizeof(SOAP_CALLBACK_ENTRY), 1);
@@ -478,6 +470,19 @@ int ws_transfer_put(SoapOpH op, void* appData)
 }
 
 
+void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo) {
+    WsXmlNodeH header = ws_xml_get_soap_header( in_doc);
+    if (ws_xml_get_child(header,0 , XML_NS_WS_MAN, WSM_REQUEST_TOTAL) != NULL) {
+        if (out_doc) {
+            WsXmlNodeH response_header = ws_xml_get_soap_header( out_doc);
+            if (enumInfo->totalItems >= 0 )
+                ws_xml_add_child_format(response_header, XML_NS_WS_MAN, WSM_TOTAL_ESTIMATE, "%d", enumInfo->totalItems);
+        }
+    }
+    return;
+}
+    
+
 
 /**
  * Enumeration Stub for processing enumeration requests
@@ -508,16 +513,33 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
     if ( endPoint && ( retVal =  endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), &enumInfo, status)) ) {
         doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), status->rc, -1);   		    		              
     } else {
-        doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
+        
+        if ( enumInfo.pullResultPtr ) {
+            doc = enumInfo.pullResultPtr;
+            enumInfo.index++;
+        } else {
+            doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
+        }
+
         if ( doc )
         {
+            WsXmlNodeH resp_node;
+            wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, &enumInfo);
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
-            ws_serialize_str(soapCntx, node, enumId, 
-                    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-            // TBD: ??? expires
-            ws_set_context_val(soapCntx, cntxName, &enumInfo, 
-                    sizeof(enumInfo), 0);  
+            if ( enumInfo.pullResultPtr == NULL) {
+                resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
+            } else {
+                resp_node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+            }
+
+            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "index: %d, total: %d", enumInfo.index, enumInfo.totalItems);        		
+            if (enumInfo.index == enumInfo.totalItems) {
+                ws_serialize_str(soapCntx, resp_node, NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);          
+            } else {
+                ws_serialize_str(soapCntx, resp_node, enumId, 
+                        XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+                ws_set_context_val(soapCntx, cntxName, &enumInfo, sizeof(enumInfo), 0);  
+            }
         }
     }
 
@@ -630,6 +652,7 @@ int ws_pull_stub(SoapOpH op, void* appData)
             enumInfo->index++;
             if ( (doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL)) )
             {
+                wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, enumInfo);
                 WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), 
                         XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
                 if ( node != NULL )
@@ -693,6 +716,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
             if ( enumInfo->pullResultPtr )
             {
                 doc = 	enumInfo->pullResultPtr;
+                wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, enumInfo);
                 WsXmlNodeH body =   ws_xml_get_soap_body(doc);
                 WsXmlNodeH response = ws_xml_get_child(body, 0 , XML_NS_ENUMERATION,WSENUM_PULL_RESP);
 
@@ -1403,6 +1427,66 @@ void add_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* op)
     soap_fw_unlock(fw);
 }
 
+char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc) {
+    char *enum_mode = NULL;
+    if ( doc == NULL )
+        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+
+    if ( doc ) {
+        WsXmlNodeH node = ws_xml_get_soap_body(doc);
+
+        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE)) )
+        {
+            WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_ENUM_MODE);
+            if ( opt ) {
+                char *text = ws_xml_get_node_text(opt);
+                if (text != NULL)
+                    enum_mode = text;
+            }
+        }
+    } 
+    return enum_mode;
+}
+
+void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo) 
+{
+
+    if (strcmp(enum_mode, WSM_ENUM_EPR) == 0 )
+        enumInfo->flags |= FLAG_ENUMERATION_ENUM_EPR;
+    else if (strcmp(enum_mode, WSM_ENUM_OBJ_AND_EPR) == 0 )
+        enumInfo->flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
+
+    return;
+}
+
+
+int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc) {
+
+    int max_elements = 0;
+    if ( doc == NULL )
+        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+
+    if ( doc ) {
+        WsXmlNodeH node = ws_xml_get_soap_body(doc);
+
+        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE)) )
+        {
+            WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM);
+            if ( opt ) {
+                WsXmlNodeH max = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_MAX_ELEMENTS);
+                if (max) {
+                    char *text = ws_xml_get_node_text(max);
+                    if (text != NULL)
+                        max_elements = atoi(text);
+                } else {
+                    max_elements = 1;
+                }
+            }
+        }
+    } 
+    return max_elements;
+}
+
 int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc) {
 
     int max_elements = 0;
@@ -1438,7 +1522,7 @@ char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
     if ( doc )
     {
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_MAN, WSM_RESOURCE_URI);
+        WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
         val = (!node) ? NULL : ws_xml_get_node_text(node);
     }
     return val;
@@ -1449,7 +1533,7 @@ char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
 {
     //SoapH soap = WsContextGetRuntime(cntx);
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
-    WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_MAN, WSM_SYSTEM);
+    WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
     char* val = (!node) ? NULL : ws_xml_get_node_text(node);
     return val;
 }
@@ -1570,14 +1654,14 @@ char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc)
 WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, char* val)
 {
     WsXmlNodeH selector = NULL;
-    WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_MAN, WSM_SELECTOR_SET);
+    WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
 
-    if ( set || (set = ws_xml_add_child(baseNode, XML_NS_MAN, WSM_SELECTOR_SET, NULL)) )
+    if ( set || (set = ws_xml_add_child(baseNode, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL)) )
     {
-        if ( (selector = ws_xml_add_child(set, XML_NS_MAN, WSM_SELECTOR, val)) )
+        if ( (selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, val)) )
         {
             ws_xml_add_node_attr(selector, 
-                    NULL, //XML_NS_MAN, 
+                    NULL, //XML_NS_WS_MAN, 
                     WSM_NAME, 
                     name);
         }
@@ -1684,13 +1768,13 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx,
             ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
 
         if ( systemUri )
-            ws_serialize_str(cntx, header, systemUri, XML_NS_MAN, WSM_SYSTEM); 
+            ws_serialize_str(cntx, header, systemUri, XML_NS_WS_MAN, WSM_SYSTEM); 
 
         if ( toUri )
             ws_serialize_str(cntx, header, toUri, XML_NS_ADDRESSING, WSA_TO); 
 
         if ( resourceUri )
-            ws_serialize_str(cntx, header, resourceUri, XML_NS_MAN, WSM_RESOURCE_URI); 
+            ws_serialize_str(cntx, header, resourceUri, XML_NS_WS_MAN, WSM_RESOURCE_URI); 
 
 
 

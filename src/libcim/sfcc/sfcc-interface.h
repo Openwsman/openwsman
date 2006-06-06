@@ -50,6 +50,13 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
 void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status);
 CMPIInstance * cim_get_instance_raw (CMCIClient *cc, char *class_name, GList *keys );
 CMPIArray * cim_enum_instances_raw (CMCIClient *cc, char *class_name );
+void cim_get_enum_items(WsContextH cntx, WsXmlNodeH node, WsEnumerateInfo* enumInfo, char *namespace, int max);
+
+void cim_add_epr( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
+void cim_add_epr_details(WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
+
+void cim_getEprObjAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri);
+void cim_getEprAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri);
 
 #endif /*SFCCINTERFACE_H_*/
 

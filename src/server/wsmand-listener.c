@@ -83,11 +83,20 @@ static gboolean
 server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
         SoupMessage  *msg, gpointer data) 
 {
+    
     const char *username;
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
 
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
+    /*
+    WsXmlDocH inDoc = build_inbound_envelope( (SOAP_FW *)data, msg);
+    if (wsman_is_identify_request(inDoc)) {
+        wsman_create_identify_response( (SOAP_FW *)data, msg);
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Skipping authentication...");
+        return TRUE;
+    }
+    */
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
     if (auth) {
         username = soup_server_auth_get_user (auth);		
         if ( !strcmp(username, "wsman") 
@@ -134,7 +143,7 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         path = g_strdup ("");
     }    
 
-    char *ct = soup_message_get_header (msg->request_headers, "Content-Type");
+    char *ct = (char *)soup_message_get_header (msg->request_headers, "Content-Type");
     if (ct && strncmp(ct, SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
         soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
         goto DONE;
@@ -154,10 +163,7 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         int  len;    		
         if (wsman_msg->in_doc != NULL) {
             wsman_generate_fault_buffer(fw->cntx, wsman_msg->in_doc, 
-                    wsman_msg->status.rc , 
-                    wsman_msg->status.detail,
-                    &buf, 
-                    &len);
+                    wsman_msg->status.rc , wsman_msg->status.detail, &buf, &len);
             msg->response.length = len;
             msg->response.body = strndup(buf, len);   
             free(buf);
@@ -177,11 +183,11 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         soup_message_set_status (msg, SOUP_STATUS_OK);
     }
 
-    if (wsman_msg->in_doc)
-        ws_xml_destroy_doc(wsman_msg->in_doc);
 
 
 DONE:
+    if (wsman_msg->in_doc)
+        ws_xml_destroy_doc(wsman_msg->in_doc);
     g_free (path);
     soup_server_message_set_encoding (SOUP_SERVER_MESSAGE (msg),
             SOUP_TRANSFER_CONTENT_LENGTH);
