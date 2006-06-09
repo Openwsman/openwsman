@@ -273,15 +273,24 @@ daemonize (void)
 int
 main (int argc, char **argv)
 {
-	struct sigaction sig_action;
+    struct sigaction sig_action;
     GMainLoop *loop;
+    const char *config_file;
         
     
     g_type_init ();
     g_thread_init (NULL);
    
-	wsmand_parse_options(argc, argv);
-		
+    wsmand_parse_options(argc, argv);
+
+    config_file = wsmand_options_get_config_file ();
+    if (config_file && !g_file_test (config_file, G_FILE_TEST_EXISTS)) {
+        g_printerr ("Unable to find config file '%s'\n", config_file);
+        g_printerr ("wsmand aborting\n");
+
+        exit (-1);
+    }		
+
     daemonize ();		
 
     /* Set up SIGTERM and SIGQUIT handlers */

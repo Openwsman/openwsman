@@ -68,6 +68,8 @@ char *wsmand_options_get_ssl_key_file(void);
 char *wsmand_options_get_ssl_cert_file(void);
 char *wsmand_options_get_auth_type(void);
 
+const char *wsmand_options_get_config_file(void);
+
 const char **
 wsmand_options_get_argv (void);
 

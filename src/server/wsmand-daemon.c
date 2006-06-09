@@ -58,6 +58,8 @@ static gboolean no_plugin_flag = FALSE;
 static gint debug_level = -1;
 static gint syslog_level = -1;
 
+static char *config_file = NULL;
+
 
 
 gboolean wsmand_parse_options(int argc, char **argv) 
@@ -77,6 +79,8 @@ gboolean wsmand_parse_options(int argc, char **argv)
         { "debug", 		'd', 0 ,G_OPTION_ARG_INT, 	&debug_level, 	"Set the verbosity of debugging output.", "1-6" },
         { "syslog", 		's', 0, G_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
         { "auth-type", 		'a', 0, G_OPTION_ARG_STRING, 	&auth_type,  	"Authentication Types", "basic|digest" },
+        { "config-file",	'a', 0, G_OPTION_ARG_FILENAME, 	
+            &config_file,  	"Alternate configuration file", "<file>" },
 
         { NULL }
     };	
@@ -100,6 +104,23 @@ gboolean wsmand_parse_options(int argc, char **argv)
 const char ** wsmand_options_get_argv (void)
 {
     return wsmand_argv;
+}
+
+const char *
+wsmand_options_get_config_file (void) {
+    if (config_file != NULL && !g_path_is_absolute (config_file)) {
+        char cwd[PATH_MAX];
+        char *new_config_file;
+
+        getcwd (cwd, PATH_MAX);
+          
+        new_config_file = g_strconcat (cwd, "/", config_file, NULL);
+
+        g_free (config_file);
+        config_file = new_config_file;
+    }
+          
+    return config_file;
 }
 
 
@@ -285,6 +306,5 @@ wsmand_restart (void)
 {
     do_shutdown (TRUE);
 }
-
 
 
