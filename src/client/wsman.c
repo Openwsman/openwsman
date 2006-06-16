@@ -416,7 +416,8 @@ int main(int argc, char** argv)
                 }
             }
         } else {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enum_response));
+            if (enum_response)
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enum_response));
         }    
         break;
     default:
