@@ -328,6 +328,12 @@ int main(int argc, char** argv)
     if (wsman_options_get_dump_request()) {
         options.flags |= FLAG_DUMP_REQUEST;
     }
+    if (wsman_options_get_max_envelope_size()) {
+        options.max_envelope_size = wsman_options_get_max_envelope_size();
+    }
+    if (wsman_options_get_operation_timeout()) {
+        options.timeout = wsman_options_get_operation_timeout();
+    }
     options.cim_ns = wsman_options_get_cim_namespace();
 
 
@@ -369,7 +375,7 @@ int main(int argc, char** argv)
         }    
         break;
     case  ACTION_TRANSFER_GET: 			
-        doc = cl->ft->get(cl, resourceUri);        		        		
+        doc = cl->ft->get(cl, resourceUri, options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    

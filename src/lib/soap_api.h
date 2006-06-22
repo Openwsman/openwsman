@@ -92,7 +92,8 @@
 
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
-#define XML_NS_WSMAN_ID                 "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
+// #define XML_NS_WSMAN_ID              "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
+#define XML_NS_WSMAN_ID                 "http://dmtf.schema.org/wsmanIdentity/1.0/wsmanIdentity.xsd"
 
 
 
@@ -491,6 +492,8 @@ struct _actionOptions {
     unsigned char       flags;
     char *              filter;
     char *              cim_ns;
+    unsigned int        timeout;
+    unsigned int        max_envelope_size;
 };
 typedef struct _actionOptions actionOptions;
 

@@ -31,6 +31,10 @@ gboolean wsman_options_get_optimize_enum (void);
 gboolean wsman_options_get_dump_request (void);
 gboolean wsman_options_get_estimate_enum (void);
 
+
+unsigned long wsman_options_get_max_envelope_size (void);
+unsigned long wsman_options_get_operation_timeout (void);
+
 const char **
 wsman_options_get_argv (void);
 

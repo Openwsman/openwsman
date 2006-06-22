@@ -48,7 +48,7 @@
 
 static const char **wsman_argv = NULL;
 
-static gint server_port =  -1;
+static gint server_port =  80;
 static gchar *cafile = NULL;
 static gint debug_level = -1;
 static gchar *test_case = NULL;
@@ -61,8 +61,11 @@ static gchar *enum_mode = NULL;
 
 static gchar *username = NULL;
 static gchar *password = NULL;
-static gchar *server = NULL;
+static gchar *server = "localhost";
 static gchar *cim_namespace = NULL;
+
+static gulong operation_timeout = 0;
+static gulong max_envelope_size = 0;
 
 static gchar *_action = NULL;
 static gchar *resource_uri = NULL;
@@ -92,9 +95,11 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
-        { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Port", "<port>" },                
+        { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
+        { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<timeout in sec>" },       
+        { "max-envelope-size", 'e', 0, G_OPTION_ARG_INT, &max_envelope_size, "maximal envelope size" , "<size>" },       
         { NULL }
     };
 
@@ -176,17 +181,20 @@ const char ** wsman_options_get_argv (void) {
     return wsman_argv;
 }
 
-
 int wsman_options_get_debug_level (void) {
     return debug_level;
 }
-
-
 
 int wsman_options_get_server_port (void) {
     return server_port;
 }
 
+unsigned long wsman_options_get_max_envelope_size (void) {
+    return max_envelope_size;
+}
+unsigned long wsman_options_get_operation_timeout (void) {
+    return operation_timeout;
+}
 
 char* wsman_options_get_cafile (void) {
     return cafile;

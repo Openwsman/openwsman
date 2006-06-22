@@ -36,17 +36,12 @@
 #define WSMANCLIENT_H_
 
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-
-
 struct _WsManClientEnc;
 typedef struct _WsManClientEnc WsManClientEnc;
-
 
 struct _WsManClient;
 typedef struct _WsManClient WsManClient;
@@ -80,7 +75,7 @@ typedef struct _WsManClientFT
 	/**
 	 * Transfer Get
 	 */	
-	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri);
+	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri, actionOptions options);
         
 	/**
 	 * Transfer Put
@@ -162,7 +157,7 @@ WsManClient *wsman_connect_with_ssl(
 
 
 WsXmlDocH wsman_identify(WsManClient *cl);
-WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri); 
+WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri, actionOptions options); 
 WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop);
 WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, GList *prop);
 WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri, int max_elements, actionOptions options);
@@ -170,9 +165,7 @@ WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , in
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext , actionOptions options);
 WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  GList *prop);
 
-WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext,
-        char* resourceUri,
-        char* url);
+WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, char* resourceUri, char* url, actionOptions options);
 
 WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumContext, char* resourceUri, 
         int max_elements, actionOptions options);

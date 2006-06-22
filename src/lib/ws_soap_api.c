@@ -1735,14 +1735,8 @@ int outbound_addressing_filter(SoapOpH opHandle, void* data)
 
 
 // WsManBuildEnvelope
-WsXmlDocH wsman_build_envelope(WsContextH cntx, 
-        char* action, 
-        char* replyToUri,
-        char* systemUri, 
-        char* resourceUri,
-        char* toUri,
-        unsigned long maxTimeoutMSecs,
-        unsigned long maxEnvelopeSize)
+WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, char* systemUri, char* resourceUri,
+        char* toUri, unsigned long maxTimeoutMSecs, unsigned long maxEnvelopeSize)
 {
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
 
