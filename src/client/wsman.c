@@ -350,26 +350,26 @@ int main(int argc, char** argv)
 
         break;
     case  ACTION_IDENTIFY: 			
-        doc = cl->ft->identify(cl);
+        doc = cl->ft->identify(cl, options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
         break;
     case  ACTION_INVOKE: 			
         printf("ResourceUri: %s\n", resourceUri );
-        doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties());
+        doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties(), options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
         break;
     case  ACTION_TRANSFER_CREATE: 			
-        doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties());        		        		
+        doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties(), options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
         break;
     case  ACTION_TRANSFER_PUT: 			
-        doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties());        		        		
+        doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties(), options);        		        		
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    

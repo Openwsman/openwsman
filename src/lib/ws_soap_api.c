@@ -1106,14 +1106,9 @@ unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name)
 }
 
 
-SoapOpH soap_create_op(SoapH soap,
-        char* inboundAction, // optional
-        char* outboundAction,// optional
-        char* role,
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        unsigned long flags,
-        unsigned long timeout)
+SoapOpH soap_create_op(SoapH soap, char* inboundAction, char* outboundAction,// optional
+        char* role, SoapServiceCallback callbackProc, void* callbackData,
+        unsigned long flags, unsigned long timeout)
 {
     SOAP_DISPATCH_ENTRY* disp = NULL;
     SOAP_OP_ENTRY* entry = NULL;

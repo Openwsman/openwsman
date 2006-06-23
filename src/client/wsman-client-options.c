@@ -98,7 +98,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
-        { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<timeout in sec>" },       
+        { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<time in sec>" },       
         { "max-envelope-size", 'e', 0, G_OPTION_ARG_INT, &max_envelope_size, "maximal envelope size" , "<size>" },       
         { NULL }
     };
@@ -108,7 +108,7 @@ gboolean wsman_parse_options(int argc, char **argv)
 #ifdef DMTF_WSMAN_SPEC_1        
         { "max-elements", 'm', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull/Optimized Enumeration", "<max number of elements>"  },
         { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
-        { "estimate-count", 'e', 0, G_OPTION_ARG_NONE, &enum_estimate, "Return estimation of total items", NULL  },
+        { "estimate-count", 'E', 0, G_OPTION_ARG_NONE, &enum_estimate, "Return estimation of total items", NULL  },
         { "enum-mode", 'M', 0, G_OPTION_ARG_STRING, &enum_mode, "Enumeration Mode", "epr|objepr"  },
 #endif
         { NULL }

@@ -108,28 +108,28 @@ char* wsman_make_action(char* uri, char* opName) {
 
 
 
-WsXmlDocH transfer_create( WsManClient *cl, char *resourceUri, GList *prop) {   		      
+WsXmlDocH transfer_create( WsManClient *cl, char *resourceUri, GList *prop, actionOptions options) {
     return NULL;
 }
 
 
-WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop) {
+WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop, actionOptions options) {
     char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
     WsXmlDocH get_respDoc = NULL;
     WsXmlDocH respDoc = NULL;
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH get_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, 
-            wsman_remove_query_string(resourceUri), wsc->data.endpoint, 60000, 50000);	
+            wsman_remove_query_string(resourceUri), wsc->data.endpoint, options.timeout, options.max_envelope_size);	
     free(action);
     wsman_add_selector_from_uri(cl, get_rqstDoc, resourceUri);
-    get_respDoc = ws_send_get_response(cl, get_rqstDoc, 60000);
+    get_respDoc = ws_send_get_response(cl, get_rqstDoc, options.timeout);
 
     WsXmlNodeH get_body = ws_xml_get_soap_body(get_respDoc);
 
     action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
     WsXmlDocH put_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, wsman_remove_query_string(resourceUri),
-            wsc->data.endpoint, 60000, 50000);	
+            wsc->data.endpoint, options.timeout, options.max_envelope_size);	
 
     wsman_add_selector_from_uri(cl, put_rqstDoc, resourceUri);
     WsXmlNodeH put_body = ws_xml_get_soap_body(put_rqstDoc);
@@ -153,7 +153,7 @@ WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop) {
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(put_rqstDoc));
     }
     */
-    respDoc = ws_send_get_response(cl, put_rqstDoc, 60000);
+    respDoc = ws_send_get_response(cl, put_rqstDoc, options.timeout);
 
     ws_xml_destroy_doc(get_rqstDoc);
     ws_xml_destroy_doc(put_rqstDoc);
@@ -163,11 +163,10 @@ WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop) {
 }
 
 
-WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, GList *prop) {
+WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, GList *prop, actionOptions options) {
     WsXmlDocH respDoc = NULL;
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "ResourceUri= %s", wsman_remove_query_string(resourceUri));
 
     char *action = NULL;
     char *uri =  wsman_remove_query_string(resourceUri);
@@ -177,7 +176,7 @@ WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, GList *prop)
         action = wsman_make_action(uri , method );
         
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
-            uri , wsc->data.endpoint, 60000, 50000);	
+            uri , wsc->data.endpoint, options.timeout, options.max_envelope_size);	
 
     wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 
@@ -195,14 +194,14 @@ WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, GList *prop)
     }
     
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc));
-    respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+    respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
     ws_xml_destroy_doc(rqstDoc);
     if (action) free(action);
     return respDoc;
 
 }
 
-WsXmlDocH wsman_identify(WsManClient *cl) { 
+WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options) { 
     WsXmlDocH respDoc = NULL;
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(wsc->wscntx), NULL);
@@ -210,7 +209,7 @@ WsXmlDocH wsman_identify(WsManClient *cl) {
     ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_WSMAN_ID, WSMID_IDENTIFY , NULL);
     // Optional: add vendor specific content extension to node 
         
-    respDoc = ws_send_get_response(cl, doc, 60000);
+    respDoc = ws_send_get_response(cl, doc, options.timeout);
     ws_xml_destroy_doc(doc);
     return respDoc;
 }
@@ -225,7 +224,7 @@ WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri, actionOptions options
 
     wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 
-    respDoc = ws_send_get_response(cl, rqstDoc, 60000);
+    respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
     ws_xml_destroy_doc(rqstDoc);
     free(action);
     return respDoc;
@@ -325,8 +324,8 @@ static WsManClientFT clientFt = {
 
 
 
-WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, char* resourceUri, char* url, actionOptions options)
-{
+WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, 
+        char* resourceUri, char* url, actionOptions options) {
     char* action = wsman_make_action(XML_NS_ENUMERATION, op);
     WsXmlDocH doc = wsman_build_envelope(soap, action, WSA_TO_ANONYMOUS, NULL, resourceUri, url, options.timeout, options.max_envelope_size); 
             
