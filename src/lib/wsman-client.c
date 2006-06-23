@@ -63,6 +63,11 @@ typedef struct _WsmanClientHandler WsmanClientHandler;
 
 static GSList *handlers = NULL;
 
+
+
+
+
+
 char* wsman_add_selector_from_uri( WsManClient *cl, WsXmlDocH doc, 
         char *resourceUri)
 {
@@ -120,7 +125,7 @@ WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop, actionOp
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH get_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, 
-            wsman_remove_query_string(resourceUri), wsc->data.endpoint, options.timeout, options.max_envelope_size);	
+            wsman_remove_query_string(resourceUri), wsc->data.endpoint, options);
     free(action);
     wsman_add_selector_from_uri(cl, get_rqstDoc, resourceUri);
     get_respDoc = ws_send_get_response(cl, get_rqstDoc, options.timeout);
@@ -129,7 +134,7 @@ WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, GList *prop, actionOp
 
     action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
     WsXmlDocH put_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, wsman_remove_query_string(resourceUri),
-            wsc->data.endpoint, options.timeout, options.max_envelope_size);	
+            wsc->data.endpoint, options);
 
     wsman_add_selector_from_uri(cl, put_rqstDoc, resourceUri);
     WsXmlNodeH put_body = ws_xml_get_soap_body(put_rqstDoc);
@@ -176,7 +181,7 @@ WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, GList *prop,
         action = wsman_make_action(uri , method );
         
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
-            uri , wsc->data.endpoint, options.timeout, options.max_envelope_size);	
+            uri , wsc->data.endpoint, options );
 
     wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 
@@ -220,7 +225,8 @@ WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri, actionOptions options
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
-            wsman_remove_query_string(resourceUri), wsc->data.endpoint, options.timeout, options.max_envelope_size);	
+            wsman_remove_query_string(resourceUri), wsc->data.endpoint, 
+            options );
 
     wsman_add_selector_from_uri(cl, rqstDoc, resourceUri);
 
@@ -327,7 +333,7 @@ static WsManClientFT clientFt = {
 WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, 
         char* resourceUri, char* url, actionOptions options) {
     char* action = wsman_make_action(XML_NS_ENUMERATION, op);
-    WsXmlDocH doc = wsman_build_envelope(soap, action, WSA_TO_ANONYMOUS, NULL, resourceUri, url, options.timeout, options.max_envelope_size); 
+    WsXmlDocH doc = wsman_build_envelope(soap, action, WSA_TO_ANONYMOUS, NULL, resourceUri, url, options );
             
     if ( doc != NULL ) {
         WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, op, NULL);
@@ -348,9 +354,10 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH rqstDoc = wsman_make_enum_message( wsc->wscntx, op, enumContext, resourceUri, wsc->data.endpoint, options);
 
+
 #ifdef DMTF_WSMAN_SPEC_1
-    if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) == FLAG_ENUMERATION_COUNT_ESTIMATION) {
-        WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
+        if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) == FLAG_ENUMERATION_COUNT_ESTIMATION) {
+            WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
         ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
     }
 
@@ -369,6 +376,12 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
         }
     }
 #endif
+    if (options.filter)
+    {
+        WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(rqstDoc), 0 , NULL, NULL);
+        ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options.filter);
+    }
+
     if (strcmp(op, WSENUM_PULL) == 0 ) {
         if (max_elements) {
             WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(rqstDoc), 0 , NULL, NULL);

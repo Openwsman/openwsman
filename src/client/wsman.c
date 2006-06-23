@@ -334,6 +334,12 @@ int main(int argc, char** argv)
     if (wsman_options_get_operation_timeout()) {
         options.timeout = wsman_options_get_operation_timeout();
     }
+    if (wsman_options_get_fragment()) {
+        options.fragment = wsman_options_get_fragment();
+    }
+    if (wsman_options_get_filter()) {
+        options.filter = wsman_options_get_filter();
+    }
     options.cim_ns = wsman_options_get_cim_namespace();
 
 

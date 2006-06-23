@@ -63,6 +63,8 @@ static gchar *username = NULL;
 static gchar *password = NULL;
 static gchar *server = "localhost";
 static gchar *cim_namespace = NULL;
+static gchar *fragment = NULL;
+static gchar *wsm_filter = NULL;
 
 static gulong operation_timeout = 0;
 static gulong max_envelope_size = 0;
@@ -98,13 +100,22 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
+        { NULL }
+    };
+
+
+
+    GOptionEntry request_options[] = 
+    {				
         { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<time in sec>" },       
         { "max-envelope-size", 'e', 0, G_OPTION_ARG_INT, &max_envelope_size, "maximal envelope size" , "<size>" },       
+        { "fragment", 'F', 0, G_OPTION_ARG_STRING, &fragment, "Fragment (Supported Dialects: XPATH)" , "<fragment>" },       
         { NULL }
     };
 
     GOptionEntry enum_options[] = 
     {				
+        { "filter", 'x', 0, G_OPTION_ARG_STRING, &wsm_filter, "Filter (Supported Dialects: XPATH)" , "<filter>" },       
 #ifdef DMTF_WSMAN_SPEC_1        
         { "max-elements", 'm', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull/Optimized Enumeration", "<max number of elements>"  },
         { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
@@ -133,20 +144,25 @@ gboolean wsman_parse_options(int argc, char **argv)
     GOptionGroup *enum_group;
     GOptionGroup *test_group;
     GOptionGroup *cim_group;
+    GOptionGroup *req_flag_group;
 
     GOptionContext *opt_ctx;	
     opt_ctx = g_option_context_new("<action> <Resource Uri>");    
     enum_group = g_option_group_new("enumeration", "Enumeration", "Enumeration Options", NULL, NULL);
     test_group = g_option_group_new("tests", "Tests", "Test Cases", NULL, NULL);
     cim_group = g_option_group_new("cim", "CIM", "CIM Options", NULL, NULL);
+    req_flag_group = g_option_group_new("flags", "Flags", "Request Flags", NULL, NULL);
+
     g_option_group_add_entries(enum_group, enum_options);
     g_option_group_add_entries(test_group, test_options);
     g_option_group_add_entries(cim_group, cim_options);
+    g_option_group_add_entries(req_flag_group, request_options);
 
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
     g_option_context_add_group(opt_ctx, enum_group);
     g_option_context_add_group(opt_ctx, test_group);
+    g_option_context_add_group(opt_ctx, req_flag_group);
 
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
 
@@ -283,4 +299,12 @@ char * wsman_options_get_enum_mode (void)
 char * wsman_options_get_cim_namespace (void)
 {	
     return cim_namespace;
+}   
+char * wsman_options_get_fragment (void)
+{	
+    return fragment;
+}   
+char * wsman_options_get_filter (void)
+{	
+    return wsm_filter;
 }   

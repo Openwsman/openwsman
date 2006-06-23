@@ -30,6 +30,8 @@ char *wsman_options_get_cim_namespace (void);
 gboolean wsman_options_get_optimize_enum (void);
 gboolean wsman_options_get_dump_request (void);
 gboolean wsman_options_get_estimate_enum (void);
+char * wsman_options_get_fragment (void);
+char * wsman_options_get_filter (void);
 
 
 unsigned long wsman_options_get_max_envelope_size (void);

@@ -970,7 +970,6 @@ void* ws_deserialize(WsContextH cntx,
     return retPtr;
 }
 
-// EnForceMustUnderstandIfNeeded
 void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node)
 {
     if ( node && ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND) )
@@ -981,12 +980,8 @@ void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node)
     }
 }
 
-// WsSerializeStr
-int ws_serialize_str(WsContextH cntx, 
-        WsXmlNodeH parent, 
-        char* str, 
-        char* nameNs,
-        char* name)
+int ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str, 
+        char* nameNs, char* name)
 {
     WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, str);
     enforce_mustunderstand_if_needed(cntx, node);
@@ -994,7 +989,6 @@ int ws_serialize_str(WsContextH cntx,
 }
 
 
-// WsSerializeUint32
 int ws_serialize_uint32(WsContextH cntx, 
         WsXmlNodeH parent, 
         unsigned long val, 

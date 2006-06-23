@@ -1669,7 +1669,6 @@ WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, 
 WsXmlNodeH wsman_set_selector(WsContextH cntx, WsXmlDocH doc, char* name, char* val)
 {
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
-
     return wsman_add_selector(cntx, header, name, val);
 }
 
@@ -1731,15 +1730,14 @@ int outbound_addressing_filter(SoapOpH opHandle, void* data)
 
 // WsManBuildEnvelope
 WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, char* systemUri, char* resourceUri,
-        char* toUri, unsigned long maxTimeoutMSecs, unsigned long maxEnvelopeSize)
+        char* toUri, actionOptions options)
 {
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
 
     if ( doc )
     {
         WsXmlNodeH node;
-        unsigned long savedMustUnderstand = 
-            ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
+        unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         char uuidBuf[100];
 
@@ -1769,16 +1767,20 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, 
 
         ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 
-        if ( maxTimeoutMSecs )
+        if ( options.timeout )
         {
             char buf[20];
-            sprintf(buf, "PT%u.%uS", (unsigned int)maxTimeoutMSecs/1000, (unsigned int)maxTimeoutMSecs % 1000);
+            sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000, (unsigned int)options.timeout % 1000);
             ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
         }
 
-        if ( maxEnvelopeSize)
+        if ( options.max_envelope_size)
         {
-            ws_serialize_uint32(cntx, header, maxEnvelopeSize, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+            ws_serialize_uint32(cntx, header, options.max_envelope_size, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+        }
+        if ( options.fragment)
+        {
+            ws_serialize_str(cntx, header, options.fragment, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
         }
 
         ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);

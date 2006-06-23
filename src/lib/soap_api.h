@@ -92,8 +92,7 @@
 
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
-// #define XML_NS_WSMAN_ID              "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
-#define XML_NS_WSMAN_ID                 "http://dmtf.schema.org/wsmanIdentity/1.0/wsmanIdentity.xsd"
+#define XML_NS_WSMAN_ID                 "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
 
 
 
@@ -191,6 +190,8 @@
 #define WSM_ENUM_OBJ_AND_EPR            "EnumerateObjectAndEPR"
 #define WSM_ENUM_MODE                   "EnumerationMode"
 #define WSM_ITEM                        "Item"
+#define WSM_FRAGMENT_TRANSFER           "FragmentTransfer"
+#define WSM_XML_FRAGMENT                "XmlFragment"
 
 #define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
@@ -491,6 +492,7 @@ typedef struct _WsProperties WsProperties;
 struct _actionOptions {
     unsigned char       flags;
     char *              filter;
+    char *              fragment;
     char *              cim_ns;
     unsigned int        timeout;
     unsigned int        max_envelope_size;
@@ -499,14 +501,8 @@ typedef struct _actionOptions actionOptions;
 
 
 /** *********************************** */
-WsXmlDocH wsman_build_envelope(WsContextH cntx, 
-        char* action, 
-        char* replyToUri,
-        char* systemUri, 
-        char* resourceUri,
-        char* toUri,
-        unsigned long maxTimeoutMSecs,
-        unsigned long maxEnvelopeSize);
+WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri,
+        char* systemUri, char* resourceUri, char* toUri, actionOptions options);
 
 WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name);
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
