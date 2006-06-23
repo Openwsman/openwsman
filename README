@@ -1,5 +1,5 @@
 
-How to run openwsman from CVS?
+How to run openwsman from CVS? (Valid for version 0.09)
 ===============================
 
 After checking out the project from CVS run ./autoconfiscate in the TOP directory and 
@@ -11,9 +11,9 @@ After all packages are installed, compile everything and install. The server can
 a daemon, which would require root access; But it can be run in the foreground with debugging
 messages printed to stdout as well. This the help output when you run:
 
-% /usr/local/sbin/wsmand  --help
+wsmand --help
 Usage:
-  wsmand [OPTION...] WS-Management Server
+  lt-wsmand [OPTION...] WS-Management Server
 
 Help Options:
   -?, --help                         Show help options
@@ -27,7 +27,8 @@ Application Options:
   -n, --no-plugins                   Do not load any plugins
   -d, --debug=1-6                    Set the verbosity of debugging output.
   -s, --syslog=0-6                   Set the verbosity of syslog output.
-
+  -a, --auth-type=basic|digest       Authentication Types
+  --config-file=<file>               Alternate configuration file
 
 
 Some options are still not implemented. For testing what you need is there however.
@@ -44,34 +45,38 @@ should see all debug message on the screen and tha last message would be:
 
 On the client side, which has the following options:
 
-% /usr/local/bin/wsman --help-all
+wsman --help-all
 Usage:
-  wsman [OPTION...] WS-Management Client
+  lt-wsman [OPTION...] <action> <Resource Uri>
 
 Help Options:
-  -?, --help                     Show help options
-  --help-all                     Show all help options
-  --help-actions                 Supported Actions
+  -?, --help                         Show help options
+  --help-all                         Show all help options
+  --help-enumeration                 Enumeration Options
+  --help-tests                       Test Cases
 
-Actions
-  --get=<Resource URI>           Transfer Get
-  --put=<Resource URI>           Transfer Put
-  --enumerate=<Resource URI>     Enumeration
+Enumeration
+
+Tests
+  -f, --from-file=<file name>        Send request from file
+  -R, --print-request                print request on stdout
 
 Application Options:
-  -C, --cafile=<filename>        Certificate file
-  -u, --username=<username>      User name
-  -p, --password=<password>      Password
-  -h, --hostname=<hostname>      Host name
-  -P, --port=<port>              Port
-  -k, --prop=<key=val>           Properties with key value pairs
-
-
+  -d, --debug=1-6                    Set the verbosity of debugging output.
+  -c, --cafile=<filename>            Certificate file
+  -u, --username=<username>          User name
+  -p, --password=<password>          Password
+  -h, --hostname=<hostname>          Host name
+  -P, --port=<port>                  Server Port
+  -a, --method=<custom method>       Method (Works only with 'invoke')
+  -k, --prop=<key=val>               Properties with key value pairs (For 'put', 'invoke' and 'create')
+  -t, --timeout=<time in sec>        Operation timeout in seconds
+  -e, --max-envelope-size=<size>     maximal envelope size
 
 you can connect to the server with something like that:
 
 
-wsman --get  wsman:system/2005/06/this  -h <hostname> --port 8889 -u wsman --password secret
+wsman get  wsman:system/2005/06/this  -h <hostname> --port 8889 -u wsman --password secret
 
 
 User and password are both hardcoded in the server right now. User is "wsman" and password is "secret".
