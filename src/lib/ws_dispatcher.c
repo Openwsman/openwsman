@@ -47,6 +47,7 @@
 #include "xml_api_generic.h"
 
 #include "ws_dispatcher.h"
+#include "xml_serializer.h"
 #include "wsman-debug.h"
 #include "wsman-faults.h"
 
@@ -115,16 +116,11 @@ int is_wk_header(WsXmlNodeH header)
  * @param name Header element name
  * @return XML node 
  */
-// GetSoapHeaderElement
 WsXmlNodeH get_soap_header_element(SOAP_FW* fw, 
-        WsXmlDocH doc, 
-        char* nsUri, 
-        char* name)
+        WsXmlDocH doc, char* nsUri, char* name)
 {
     WsXmlNodeH node = ws_xml_get_soap_header(doc);
-
-    if ( node && name )
-    {
+    if ( node && name ) {
         node = ws_xml_find_in_tree(node, nsUri, name, 1);
     }
     return node;
@@ -155,7 +151,6 @@ char* get_soap_header_value(SOAP_FW* fw, WsXmlDocH doc, char* nsUri, char* name)
  * @param doc XML document
  * @return status
  */
-// IsDuplicateMsgId
 int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
 {    
     char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
@@ -216,7 +211,6 @@ int ws_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
  * @param doc XML document
  * @return status
  */
-// IsValidEnvelope
 WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc)
 {
     WsmanFaultCodeType fault_code = WSMAN_RC_OK;
@@ -241,9 +235,6 @@ WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc)
 }
 
 
-
-
-// FindResponseEntry
 SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id)
 {
     SOAP_OP_ENTRY* entry = NULL;
@@ -277,7 +268,6 @@ SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id)
     return entry;
 }
 
-// UnLinkResponseEntry
 int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry)
 {
     int retVal = 0;
@@ -308,8 +298,22 @@ int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry)
     return retVal;
 }
 
+int validate_control_headers(SOAP_OP_ENTRY* op) {
+    unsigned long size = 0;
+    WsXmlNodeH header = 
+        get_soap_header_element(op->dispatch->fw, op->inDoc, NULL, NULL);
+    if ( ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
+    {
+        size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+        if ( size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
+            wsman_generate_encoding_fault(op, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE);
+            return 1;
+        }
+    }
+    return 0;
+}
 
-// ValidateMustUnderstandHeaders
+
 WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op)
 {
     WsXmlNodeH child = NULL;
@@ -400,6 +404,10 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
             wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
             retVal = 1;
         }
+        if (validate_control_headers(op)) {
+            wsman_generate_encoding_fault(op, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE);
+            retVal = 1;
+        }
     }
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Filteres Processed: %d", retVal);
     return retVal;
@@ -445,16 +453,32 @@ void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg) {
 int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
 {
     int retVal = 1;
+    char* buf = NULL;
+    int len;
     if ( process_filters(op, 1) ) {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Inbound filter chain returned error");
+        /*
         ws_xml_destroy_doc(op->inDoc);
         op->inDoc = NULL;
+        */
         if ( (op->dispatch->flags & SOAP_CLIENT_RESPONSE) != 0 ) {
             retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
         } else {
-            retVal = soap_submit_op((SoapOpH)op);
+            //retVal = soap_submit_op((SoapOpH)op);
             //ws_xml_destroy_doc(op->outDoc);
             //destroy_op_entry(op);
+            if (op->outDoc) {
+                //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
+                ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
+                msg->response.length = len;
+                msg->response.body = strndup(buf, len);
+
+                ws_xml_destroy_doc(op->outDoc);
+                soap_free(buf);
+                destroy_op_entry(op);
+            } else {
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");
+            }
         }
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
@@ -463,20 +487,20 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
         else
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "op is null");    	
 
-        char* buf = NULL;
-        int len;
-        if (op->outDoc) {
-            //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
-            ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
-            msg->response.length = len;
-            msg->response.body = strndup(buf, len);
-            
-            ws_xml_destroy_doc(op->outDoc);
-            soap_free(buf);
-            destroy_op_entry(op);
-        } else
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");    	
-           
+        if ( (retVal = process_filters(op, 0)) == 0 ) {        	
+            if (op->outDoc) {
+                //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
+                ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
+                msg->response.length = len;
+                msg->response.body = strndup(buf, len);
+
+                ws_xml_destroy_doc(op->outDoc);
+                soap_free(buf);
+                destroy_op_entry(op);
+            } else {
+                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");
+            }
+        }
     }
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "retVal=%d", retVal );
     return retVal;
@@ -524,13 +548,12 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
             }
         }
 
-        if ( op == NULL ) {
-            //ws_xml_destroy_doc(inDoc);
-        } else {   
+        if ( op != NULL ) {
             op->inDoc = inDoc;
             ret = process_inbound_operation(op, msg);
-            if (ret) 
+            if (ret) {
                 wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Fault (process_inbound_operation error)");
+            }
         }
     }
 

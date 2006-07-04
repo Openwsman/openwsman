@@ -43,6 +43,7 @@
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include <libxml/xmlstring.h>
 
 #include "ws_utilities.h"
 
@@ -62,6 +63,10 @@ void xml_parser_initialize(SoapH soap)
 
 void xml_parser_destroy(SoapH soap)
 {
+}
+
+int xml_parser_utf8_strlen (char *buf) {
+    return xmlUTF8Strlen(BAD_CAST buf);
 }
 
 void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize, 
@@ -204,7 +209,6 @@ WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, uns
 
 }
 
-// XmlParserMemoryToDoc
 WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
 {	
     SOAP_FW* fw = (SOAP_FW*)soap;

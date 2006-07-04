@@ -72,6 +72,7 @@ extern void start_event_source(SoapH soap);
 
 
 
+
 static void
 print_header (gpointer name, gpointer value, gpointer data)
 {
@@ -177,6 +178,8 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         goto DONE;
     } else {		 	
 	// Set SoupMessage
+        //int envelope_size = xmlUTF8Strlen(BAD_CAST wsman_msg->response.body);
+        //printf("Envelope size: %d\n", envelope_size ); 
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
     	msg->response.length = wsman_msg->response.length;
     	msg->response.body = (char *)wsman_msg->response.body;

@@ -194,6 +194,7 @@
 #define WSM_XML_FRAGMENT                "XmlFragment"
 
 #define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
+#define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192
 #define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
 #define WSM_FAULT_SUBCODE	        "FaultSubCode"
 
@@ -457,11 +458,11 @@ struct _WsmanDataBuffer {
 typedef struct _WsmanDataBuffer WsmanDataBuffer;
 
 struct _WsmanMessage {
-    const char         *method;
+    const char          *method;
     WsmanStatus         status;
-    WsmanDataBuffer      request;
-    GHashTable         *request_headers;
-    WsmanDataBuffer      response;
+    WsmanDataBuffer     request;
+    GHashTable          *request_headers;
+    WsmanDataBuffer     response;
     WsXmlDocH           in_doc;
 };
 typedef struct _WsmanMessage WsmanMessage;
@@ -582,6 +583,7 @@ void soap_destroy_op(SoapOpH op);
 
 
 int outbound_addressing_filter(SoapOpH opHandle, void* data);
+int outbound_control_header_filter(SoapOpH opHandle, void* data);
 int soap_submit_op(SoapOpH h)  ;
 void soap_start_dispatch(SoapDispatchH disp);
 

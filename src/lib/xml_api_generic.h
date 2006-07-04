@@ -216,6 +216,8 @@ WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName
 WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...);
 int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
+int ws_xml_utf8_strlen(char *buf);
+
 /** @} */
 
 #endif /*XML_API_GENERIC_H_*/

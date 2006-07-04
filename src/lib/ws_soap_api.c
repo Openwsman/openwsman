@@ -119,8 +119,8 @@ SoapH ws_soap_initialize()
         soap_initialize_lock(fw);
     }	
     ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
-    // FIXME
     soap_add_defalt_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
+    soap_add_defalt_filter((SoapH)fw, outbound_control_header_filter, NULL, 0);
     return (SoapH)fw;
 }
 
@@ -1123,11 +1123,8 @@ SoapOpH soap_create_op(SoapH soap, char* inboundAction, char* outboundAction,// 
     return (SoapOpH)entry;
 }
 
-// SoapAddDispFilter
 int soap_add_disp_filter(SoapDispatchH disp,
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        int inbound)
+        SoapServiceCallback callbackProc, void* callbackData, int inbound)
 {
     SOAP_CALLBACK_ENTRY* entry = NULL;
     if ( disp )
@@ -1142,11 +1139,7 @@ int soap_add_disp_filter(SoapDispatchH disp,
 }
 
 
-// SoapAddOpFilter
-int soap_add_op_filter(SoapOpH op,
-        SoapServiceCallback proc,
-        void* data,
-        int inbound)
+int soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void* data, int inbound)
 {
     if ( op )
         return soap_add_disp_filter((SoapDispatchH)((SOAP_OP_ENTRY*)op)->dispatch, 
@@ -1163,7 +1156,6 @@ int soap_add_op_filter(SoapOpH op,
  * @param inbound Direction flag
  * @return XML Document
  */
-// SoapGetOpDoc
 WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound)
 {
     WsXmlDocH doc = NULL;
@@ -1358,8 +1350,9 @@ int soap_submit_op(SoapOpH h )
     SOAP_OP_ENTRY* op = (SOAP_OP_ENTRY*)h;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Submitting operation");
     if ( op ) {
-        if ( (retVal = process_filters(op, 0)) == 0 ) {        	
 #if 0
+        if ( (retVal = process_filters(op, 0)) == 0 ) {        	
+
             char* buf =	NULL;
             int len;
             ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
@@ -1376,15 +1369,15 @@ int soap_submit_op(SoapOpH h )
 
                 wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Sending Response");       
                 //int errCode = 0;
-                //char* errMsg = get_http_response_status(op->outDoc, &errCode);
                 //retVal = do_submit_back_channel_response ( op->dispatch->fw, channelId, buf, len, errCode, errMsg);
                 
             }
             if ( retVal ) { 
                 //ws_xml_free_memory(buf);
             }
-#endif
+
         }
+#endif
     }
     return retVal;
 }
@@ -1674,15 +1667,11 @@ WsXmlNodeH wsman_set_selector(WsContextH cntx, WsXmlDocH doc, char* name, char* 
 
 
 
-// SoapAddDefaltFilter
-int soap_add_defalt_filter(SoapH soap,
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        int inbound)
+int soap_add_defalt_filter(SoapH soap, SoapServiceCallback callbackProc,
+        void* callbackData, int inbound)
 {
     SOAP_CALLBACK_ENTRY* entry = NULL;
-    if ( soap )
-    {
+    if ( soap ) {
         DL_List* list = (!inbound) ?
             &((SOAP_FW*)soap)->outboundFilterList :
             &((SOAP_FW*)soap)->inboundFilterList;
@@ -1693,6 +1682,31 @@ int soap_add_defalt_filter(SoapH soap,
 }
 
 
+int outbound_control_header_filter(SoapOpH opHandle, void* data)
+{
+    unsigned long size = 0;
+    char *buf = NULL;
+    int len, envelope_size;
+    SOAP_FW* fw = (SOAP_FW*)soap_get_op_soap(opHandle);
+    WsXmlDocH inDoc = soap_get_op_doc(opHandle, 1);
+    WsXmlDocH outDoc = soap_get_op_doc(opHandle, 0);
+    WsXmlNodeH inHeaders = get_soap_header_element(fw, inDoc, NULL, NULL);
+
+    if ( inHeaders ) {
+        if ( ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
+        {
+            size = ws_deserialize_uint32(NULL, inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+            ws_xml_dump_memory_enc(outDoc, &buf, &len, "UTF-8");
+            envelope_size = ws_xml_utf8_strlen(buf);
+            if (envelope_size > size ) {
+                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Response message size exceeds what the client can handle, faulting: %d > %lu" ,
+                        envelope_size, size);
+                wsman_generate_encoding_fault(opHandle, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
+            }
+        }
+    }
+    return 0;
+}
 
 int outbound_addressing_filter(SoapOpH opHandle, void* data)
 {
@@ -1725,10 +1739,6 @@ int outbound_addressing_filter(SoapOpH opHandle, void* data)
     return 0;
 }
 
-
-
-
-// WsManBuildEnvelope
 WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, char* systemUri, char* resourceUri,
         char* toUri, actionOptions options)
 {
@@ -1790,21 +1800,6 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, 
     }
     return doc;
 }
-
-// GetHttpRespStatus
-char* get_http_response_status(WsXmlDocH doc, int* errCodePtr)
-{
-    char* errMsg = NULL;
-
-    *errCodePtr = 0;
-    if ( ws_xml_get_soap_fault(doc) != NULL )
-    {
-        errMsg = "Internal Server Error";
-        *errCodePtr = 500;
-    }
-    return errMsg;
-}
-
 
 
 int  wsmancat_create_resource(WsXmlNodeH resource, WsDispatchInterfaceInfo *interface)

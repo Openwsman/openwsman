@@ -70,6 +70,12 @@ static char *get_fault_details(WsmanFaultDetailType faultDetail)
             "The WS-Management service cannot process the request." \
             " The specified resource URI is missing or in an incorrect format.";
         break;
+    case WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE:
+        descr 	= "The requested maximal envelope size is lower than the allowed minimal size.";
+        break;
+    case WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED:
+        descr 	= "The response that the WS-Management service computed exceeds the maximum envelope size in the request.";
+        break;
     case OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR:
         descr = "Endpoint Failure";
         break;
@@ -262,6 +268,14 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
         if (( reason = get_fault_details(faultDetail)) == NULL)
             reason 		= "An invalid enumeration context was supplied with the message"; 			 		
         break; 		
+    case WSMAN_FAULT_ENCODING_LIMIT:
+        subCodeNs 	= XML_NS_WS_MAN;
+        subCode 	  	= "EncodingLimit";
+
+        if (( reason = get_fault_details(faultDetail)) == NULL)
+            reason 	= "Encoding Limit, No details..";
+
+        break; 		
     case WSA_FAULT_DESTINATION_UNREACHABLE:
         detail 		= "faultDetail/InvalidResourceURI";
         subCodeNs 	= XML_NS_ADDRESSING;
@@ -316,10 +330,7 @@ void wsman_generate_fault_buffer ( WsContextH cntx,  WsXmlDocH inDoc,
 
 
 
-void wsman_generate_notunderstood_fault(
-        SOAP_OP_ENTRY* op, 
-        WsXmlNodeH notUnderstoodHeader
-        ) 
+void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnderstoodHeader) 
 {
     WsXmlNodeH child;
     WsXmlNodeH header;
@@ -336,12 +347,21 @@ void wsman_generate_notunderstood_fault(
     header = ws_xml_get_soap_header(op->outDoc);
 
     child = ws_xml_add_child(header, XML_NS_SOAP_1_2, "NotUnderstood", NULL);
-    ws_xml_add_qname_attr(child, 
-            NULL, 
-            "qname", 
-            ws_xml_get_node_name_ns(notUnderstoodHeader),
+    ws_xml_add_qname_attr(child, NULL, "qname", ws_xml_get_node_name_ns(notUnderstoodHeader),
             ws_xml_get_node_local_name(notUnderstoodHeader));
 
+    return;
+}
+
+void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail ) 
+{
+    WsXmlNodeH child;
+    WsXmlNodeH header;
+
+    if (op->inDoc == NULL)
+        return;
+    op->outDoc = wsman_generate_fault(op->cntx, op->inDoc, WSMAN_FAULT_ENCODING_LIMIT,
+            faultDetail);
     return;
 }
 

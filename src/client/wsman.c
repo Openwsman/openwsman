@@ -310,8 +310,7 @@ int main(int argc, char** argv)
     }
 
 
-    if (cl == NULL)
-    {
+    if (cl == NULL) {
         fprintf(stderr, "Null Client\n");
     } 
 
@@ -324,6 +323,7 @@ int main(int argc, char** argv)
     char *enumContext;
     WsXmlDocH rqstDoc;
     actionOptions options;
+    bzero(&options, sizeof(options));
     int optimize_max_elements = 0;
     if (wsman_options_get_dump_request()) {
         options.flags |= FLAG_DUMP_REQUEST;
@@ -439,7 +439,8 @@ int main(int argc, char** argv)
 
 
     cl->ft->release(cl);        		        		
-    soap_free(cntx);
+    //soap_destroy_fw(cntx);
+    //soap_free(cntx);
 
     return retVal;
 

@@ -1006,7 +1006,6 @@ int ws_serialize_uint32(WsContextH cntx,
 }
 
 
-// WsDeSerializeStr
 char* ws_deserialize_str(WsContextH cntx, 
         WsXmlNodeH parent, 
         int index, 
@@ -1031,25 +1030,16 @@ char* ws_deserialize_str(WsContextH cntx,
     return str;
 }
 
-
-
-// WsDeSerializeUint32
 unsigned long ws_deserialize_uint32(WsContextH cntx, 
-        WsXmlNodeH parent, 
-        int index,
-        char* nameNs, 
-        char* name)
+        WsXmlNodeH parent, int index, char* nameNs, char* name)
 {
     unsigned long val = 0;
     WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
 
-    if ( node )
-    {
+    if ( node ) {
         val = ws_xml_get_node_ulong(node);
     }
-
     return val;
-
 }
 
 

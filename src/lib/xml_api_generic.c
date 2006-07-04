@@ -208,6 +208,11 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 }
 
 
+
+int ws_xml_utf8_strlen(char *buf) {
+    return xml_parser_utf8_strlen(buf);
+}
+
 /**
  * Dump XML docuemnt contents into a Text buffer
  * @param doc XML document
@@ -215,8 +220,6 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  * @param ptrSize the size of the buffer
  * @param encoding The encoding to be used
  */
-
-// WsXmlDumpMemoryEnc
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding)
 {
     xml_parser_doc_to_memory(doc, buf, ptrSize, encoding);
@@ -228,7 +231,6 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
  * @param dstHeader Destination header
  * @param epr The Endpoint Reference
  */
-// EprFromRequestToResponse
 void epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
 {
     WsXmlNodeH node = !epr ? NULL : ws_xml_get_child(epr, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
@@ -1469,8 +1471,7 @@ unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
 
     if ( text )
         val = atoi(text);
-
-    return 0;
+    return val;
 }
 
 
