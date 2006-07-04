@@ -406,12 +406,9 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
     //SOAP_FW* fw = (SOAP_FW*)soap;
     //WsContextH cntx = fw->cntx;
 
-    if ( rqstDoc )
-    {
+    if ( rqstDoc ) {
         doc = ws_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT); 
-    }
-    else
-    {
+    } else {
         SoapH soap = ((WS_CONTEXT*)cntx)->soap;
         doc = ws_xml_create_envelope(soap, NULL);
     }
@@ -438,15 +435,13 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
                 ws_xml_set_node_text(node, subCode);
         }
 
-        if ( reason )
-        {
+        if ( reason ) {
             node = ws_xml_add_child(fault, soapNs, SOAP_REASON, NULL);
             node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
             ws_xml_set_node_text(node, reason);
             ws_xml_add_node_attr(node, XML_NS_XML_NAMESPACES, SOAP_LANG, !lang ? "en" : lang);
         }
-        if ( addDetailProc ) 
-        {
+        if ( addDetailProc ) {
             addDetailProc(fault, addDetailProcData);
         }
 

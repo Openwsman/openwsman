@@ -306,7 +306,6 @@ int validate_control_headers(SOAP_OP_ENTRY* op) {
     {
         size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
         if ( size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
-            wsman_generate_encoding_fault(op, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE);
             return 1;
         }
     }
@@ -405,11 +404,14 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
             retVal = 1;
         }
         if (validate_control_headers(op)) {
+            
             wsman_generate_encoding_fault(op, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE);
             retVal = 1;
         }
     }
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Filteres Processed: %d", retVal);
+    if (retVal) {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Filteres Processed");
+    }
     return retVal;
 }
 

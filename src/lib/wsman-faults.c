@@ -292,15 +292,8 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
         break;
 
     }; 	 
-    WsXmlDocH fault = ws_xml_create_fault(cntx,
-            inDoc,
-            code,
-            subCodeNs,
-            subCode,
-            NULL,
-            reason,
-            add_details_proc,
-            detail);	                    
+    WsXmlDocH fault = ws_xml_create_fault(cntx, inDoc,
+            code, subCodeNs, subCode, NULL, reason, add_details_proc, detail);	                    
     return fault;                        
 }
 
