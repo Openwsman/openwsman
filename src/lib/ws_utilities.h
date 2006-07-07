@@ -38,6 +38,7 @@
 #define WS_UTILITIES_H_
 
 #define SIZE_OF_UUID_STRING     37
+#define MAX_QUERY_KEYS                          100
 
 
 

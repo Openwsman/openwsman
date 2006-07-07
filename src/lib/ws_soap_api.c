@@ -1701,7 +1701,7 @@ int outbound_control_header_filter(SoapOpH opHandle, void* data)
             if (envelope_size > size ) {
                 wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Response message size exceeds what the client can handle, faulting: %d > %lu" ,
                         envelope_size, size);
-                wsman_generate_encoding_fault(opHandle, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
+                wsman_generate_encoding_fault((SOAP_OP_ENTRY*) opHandle, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
             }
         }
     }

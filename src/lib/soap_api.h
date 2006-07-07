@@ -39,6 +39,8 @@
 #include <pthread.h>
 #include "wsman-faults.h"
 
+#define PROCESSED_MSG_ID_MAX_SIZE	        200
+#define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192
 
 // #define DMTF_WSMAN_SPEC_1
 
@@ -105,7 +107,6 @@
 
 #define XML_SCHEMA_NIL			"nil"
 
-#define PROCESSED_MSG_ID_MAX_SIZE	200
 
 #define WSA_TO_ANONYMOUS\
                 "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous"
@@ -194,7 +195,6 @@
 #define WSM_XML_FRAGMENT                "XmlFragment"
 
 #define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
-#define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192
 #define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
 #define WSM_FAULT_SUBCODE	        "FaultSubCode"
 
@@ -221,6 +221,9 @@
 #define WSMANCAT_TYPE			"Type"
 
 
+// Filter Dialects
+#define WSM_SELECTOR_FILTER             "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter"
+#define WSM_XPATH_FILTER                "http://www.w3.org/TR/1999/REC-xpath-19991116"
 
 
 #define WSFW_RESPONSE_STR		"Response"
@@ -489,6 +492,14 @@ typedef struct _WsProperties WsProperties;
 #define FLAG_ENUMERATION_ENUM_EPR            4
 #define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    8
 #define FLAG_DUMP_REQUEST                    16
+
+enum __WsmanFilterDialect
+{
+    WSMAN_FILTER_XPATH,
+    WSMAN_FILTER_SELECTOR
+};
+typedef enum __WsmanFilterDialect WsmanFilterDialect;
+
 
 struct _actionOptions {
     unsigned char       flags;

@@ -578,10 +578,6 @@ void soap_sleep(unsigned long tm)
 }
 
 
-#define MAX_QUERY_KEYS 100
-
-
-
 struct pair_t * parse_query(const char *string, int separator)
 {
     int i;

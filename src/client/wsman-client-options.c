@@ -65,6 +65,7 @@ static gchar *server = "localhost";
 static gchar *cim_namespace = NULL;
 static gchar *fragment = NULL;
 static gchar *wsm_filter = NULL;
+static gchar *wsm_dialect = NULL;
 
 static gulong operation_timeout = 0;
 static gulong max_envelope_size = 0;
@@ -107,6 +108,8 @@ gboolean wsman_parse_options(int argc, char **argv)
 
     GOptionEntry request_options[] = 
     {				
+        { "filter", 'x', 0, G_OPTION_ARG_STRING, &wsm_filter, "Filter" , "<filter>" }, 
+        { "dialect", 'x', 0, G_OPTION_ARG_STRING, &wsm_dialect, "Filter Dialect (Supported Dialects: XPATH, SelectorFilter)" , "<xpath|selector>" }, 
         { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<time in sec>" },       
         { "max-envelope-size", 'e', 0, G_OPTION_ARG_INT, &max_envelope_size, "maximal envelope size" , "<size>" },       
         { "fragment", 'F', 0, G_OPTION_ARG_STRING, &fragment, "Fragment (Supported Dialects: XPATH)" , "<fragment>" },       
@@ -115,7 +118,6 @@ gboolean wsman_parse_options(int argc, char **argv)
 
     GOptionEntry enum_options[] = 
     {				
-        { "filter", 'x', 0, G_OPTION_ARG_STRING, &wsm_filter, "Filter (Supported Dialects: XPATH)" , "<filter>" },       
 #ifdef DMTF_WSMAN_SPEC_1        
         { "max-elements", 'm', 0, G_OPTION_ARG_INT, &enum_max_elements, "Max Elements Per Pull/Optimized Enumeration", "<max number of elements>"  },
         { "optimize", 'o', 0, G_OPTION_ARG_NONE, &enum_optimize, "Optimize enumeration results", NULL  },
@@ -307,4 +309,8 @@ char * wsman_options_get_fragment (void)
 char * wsman_options_get_filter (void)
 {	
     return wsm_filter;
+}   
+char * wsman_options_get_dialect (void)
+{	
+    return wsm_dialect;
 }   

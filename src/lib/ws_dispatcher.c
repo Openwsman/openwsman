@@ -459,28 +459,16 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
     int len;
     if ( process_filters(op, 1) ) {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Inbound filter chain returned error");
-        /*
-        ws_xml_destroy_doc(op->inDoc);
-        op->inDoc = NULL;
-        */
-        if ( (op->dispatch->flags & SOAP_CLIENT_RESPONSE) != 0 ) {
-            retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
-        } else {
-            //retVal = soap_submit_op((SoapOpH)op);
-            //ws_xml_destroy_doc(op->outDoc);
-            //destroy_op_entry(op);
-            if (op->outDoc) {
-                //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
-                ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
-                msg->response.length = len;
-                msg->response.body = strndup(buf, len);
+        if (op->outDoc) {
+            ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
+            msg->response.length = len;
+            msg->response.body = strndup(buf, len);
 
-                ws_xml_destroy_doc(op->outDoc);
-                soap_free(buf);
-                destroy_op_entry(op);
-            } else {
-                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");
-            }
+            ws_xml_destroy_doc(op->outDoc);
+            soap_free(buf);
+            destroy_op_entry(op);
+        } else {
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");
         }
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Inbound operation");    	
@@ -491,7 +479,6 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
 
         if ( (retVal = process_filters(op, 0)) == 0 ) {        	
             if (op->outDoc) {
-                //ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(op->outDoc));
                 ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
                 msg->response.length = len;
                 msg->response.body = strndup(buf, len);

@@ -348,8 +348,6 @@ void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnders
 
 void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail ) 
 {
-    WsXmlNodeH child;
-    WsXmlNodeH header;
 
     if (op->inDoc == NULL)
         return;

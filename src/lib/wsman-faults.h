@@ -162,7 +162,7 @@ enum __WsmanFaultDetailType
 
 
 };
-
 typedef enum __WsmanFaultDetailType WsmanFaultDetailType;
+
 void add_details_proc(WsXmlNodeH fault,  void* data);
 #endif /*WSMANFAULTS_H_*/

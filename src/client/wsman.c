@@ -319,7 +319,6 @@ int main(int argc, char** argv)
     char *resourceUri = wsman_options_get_resource_uri();
     int op = wsman_options_get_action();
     WsXmlDocH doc;
-    int done = 0;
     char *enumContext;
     WsXmlDocH rqstDoc;
     actionOptions options;
