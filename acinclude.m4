@@ -1,3 +1,23 @@
+dnl ------------------------------------------------------------------------
+dnl Find a file (or one of more files in a list of dirs)
+dnl ------------------------------------------------------------------------
+dnl
+AC_DEFUN([AC_FIND_FILE],
+[
+$3=NO
+for i in $2;
+do
+  for j in $1;
+  do
+    echo "configure: __oline__: $i/$j" >&AC_FD_CC
+    if test -r "$i/$j"; then
+      echo "taking that" >&AC_FD_CC
+      $3=$i
+      break 2
+    fi
+  done
+done
+])
 
 AC_DEFUN([CHECK_SFCC],
 [
@@ -22,7 +42,7 @@ if test $want_SFCC = yes; then
 
                 SFCC_incdirs="/usr/include /usr/local/include /usr/sfcc/include /usr/local/sfcc/include $prefix/include"
                 SFCC_incdirs="$ac_SFCC_includes $SFCC_incdirs"
-                AC_FIND_FILE(CimClientLib/cimcClient.h, $SFCC_incdirs, SFCC_incdir)
+                AC_FIND_FILE([CimClientLib/cimcClient.h], $SFCC_incdirs, SFCC_incdir)
                 ac_SFCC_includes="$SFCC_incdir"
 
                 SFCC_libdirs="/usr/lib${libsuff} /usr/local/lib /usr/sfcc/lib /usr/local/sfcc/lib $prefix/lib $exec_prefix/lib"

@@ -850,7 +850,7 @@ void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
 int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr) {
 
     xmlDocPtr doc;
-    xmlNodePtr rootNode;
+    xmlNodePtr rootNode = NULL;
     if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL ||
             (rootNode = xmlNewNode(NULL, BAD_CAST "resource")) == NULL )
     {
@@ -863,9 +863,6 @@ int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr) {
     if (rootNode) {
         xmlDocFormatDump(stdout, doc, 1);
         xmlFreeDoc(doc);
-        printf("bbbbbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
-    } else {
-        printf("dddxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
     }
 
     return 0;

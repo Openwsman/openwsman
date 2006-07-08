@@ -11,6 +11,7 @@ LIBS = \
        $(SOUP_LIBS) \
        $(top_builddir)/src/lib/libwsman.la
 
+sbin_PROGRAMS = wsmand
 
 wsmand_SOURCES = \
 		 wsmand-listener.h \
@@ -21,7 +22,10 @@ wsmand_SOURCES = \
 		 wsmand-daemon.h \
 		 wsmand.c 
 
+#wsmand_LDADD =     \
+#		$(LINK_BEGIN) $(GMODULE_LIBS) $(SOUP_LIBS) $(LINK_END) $(SHARED_ONLY)
 
-sbin_PROGRAMS = \
-	wsmand
-   
+
+#wsmand: $(wsmand_OBJECTS) $(wsmand_DEPENDENCIES)
+#	@rm -f wsmand
+#	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $(wsmand_LDFLAGS) $(wsmand_OBJECTS) $(wsmand_LDADD) $(LIBS)	       

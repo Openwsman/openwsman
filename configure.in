@@ -108,70 +108,32 @@ dnl *********************************
 
 AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket))
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
-
 AC_CHECK_FUNCS(inet_pton inet_ntop inet_aton getaddrinfo getnameinfo)
-
 AC_CACHE_CHECK(IPv6 support, soup_cv_ipv6, [
 	AC_EGREP_HEADER(sockaddr_in6, netinet/in.h, soup_cv_ipv6=yes, soup_cv_ipv6=no)
 ])
 
-dnl **********************************
-dnl *** SSL Library check (GnuTLS) ***
-dnl **********************************
 
 AC_ARG_ENABLE(ssl, 
-	      [  --enable-ssl             Turn on Secure Sockets Layer support [default=yes]],,
-	      enable_ssl=auto)
-
-AC_ARG_ENABLE(ssl-link-static, 
-	      [  --enable-static-ssl      Link with SSL library statically [default=no]],
-	      [enable_static_ssl=yes])
-
-AC_ARG_ENABLE(libgpg-error,
-              [  --enable-libgpg-error    Work around broken libgcrypt-config scripts],
-              enable_libgpg_error=yes, enable_libgpg_error=no)
+              [  --enable-ssl             Turn on Secure Sockets Layer support [default=yes]],,
+              enable_ssl=auto)
 
 if test "$enable_ssl" != "no"; then
-	AM_PATH_LIBGNUTLS(1.0.0, have_ssl=yes, have_ssl=no)
+    AM_PATH_LIBGNUTLS(1.0.0, have_ssl=yes, have_ssl=no)
 
-	if test "$have_ssl" != "yes"; then
-		if test "$enable_ssl" = "auto"; then
-			AC_MSG_WARN(Disabling SSL support);
-			enable_ssl=no;
-		else
-			AC_MSG_ERROR(Could not configure SSL support);
-		fi
-	fi
+    if test "$have_ssl" != "yes"; then
+        if test "$enable_ssl" = "auto"; then
+            AC_MSG_WARN(Disabling SSL support);
+            enable_ssl=no;
+        else
+            AC_MSG_ERROR(Could not configure SSL support);
+        fi
+    fi
 fi
 
-LIBGNUTLS_LIBS_STATIC=""
 if test "$enable_ssl" != "no"; then
-	AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
-
-	libgpg_error_libs_static=""
-	libgpg_error_libs=""
-
-	if test "$enable_libgpg_error" = "yes"; then
-		AM_PATH_GPG_ERROR("0.4")
-		if test "$GPG_ERROR_LIBS" = ""; then
-			AC_MSG_ERROR([libgpg-error is needed])
-		fi
-		gpg_error_prefix=$($GPG_ERROR_CONFIG --prefix)
-		libgpg_error_libs_static="$gpg_error_prefix/lib/libgpg-error.a"
-		libgpg_error_libs="$GPG_ERROR_LIBS"
-	fi
-
-	if test "$enable_static_ssl" = "yes"; then
-		gnutls_libdir=`$LIBGNUTLS_CONFIG --exec-prefix`/lib
-		LIBGNUTLS_LIBS=""
-		LIBGNUTLS_LIBS_STATIC="$gnutls_libdir/libgnutls.a $gnutls_libdir/libgcrypt.a $libgpg_error_libs_static"
-	fi
+    AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
 fi
-
-AC_SUBST(LIBGNUTLS_CFLAGS)
-AC_SUBST(LIBGNUTLS_LIBS)
-AC_SUBST(LIBGNUTLS_LIBS_STATIC)
-
 
 dnl Subst PACKAGE_PLUGIN_DIR.
 packageplugindir=$libdir/${PACKAGE}/plugins
@@ -258,6 +220,23 @@ fi
 AM_CONDITIONAL(OWSMAN_DOXYGEN_DOCS_ENABLED, test x$enable_doxygen_docs = xyes)
 AC_MSG_RESULT(yes)
 
+
+###
+### static?
+###
+#AC_ARG_ENABLE(static-binary,
+#  [  --enable-static-binary  link as many libraries statically as possible])
+
+##if test "$enable_static_binary" = "yes"; then
+## LINK_BEGIN="-Wl,-Bstatic"
+##  LINK_END="-Wl,-Bdynamic"
+##else
+##  LINK_BEGIN=
+##  LINK_END=
+##fi
+##AC_SUBST(LINK_BEGIN)
+##AC_SUBST(LINK_END)
+##AC_SUBST(SHARED_ONLY)
 AC_SUBST(ENABLED_PLUGINS)
 
 dnl *************************
