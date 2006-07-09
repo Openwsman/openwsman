@@ -45,18 +45,22 @@
 #include "wsman-debug.h"
 #include "wsmand-daemon.h"
 
+#define DEFAULT_CONFIG_FILE SYSCONFDIR "/openwsman.conf"
 
 static const char **wsmand_argv = NULL;
 
 static gint server_port =  -1;
 static gint server_ssl_port = -1;
-static gchar *auth_type = NULL;
+static gboolean use_digest = FALSE;
 static gchar *ssl_key_file = NULL;
 static gchar *ssl_cert_file = NULL;
 static gboolean daemon_flag = FALSE;
 static gboolean no_plugin_flag = FALSE;
 static gint debug_level = -1;
+static gboolean foreground_debug = FALSE;
 static gint syslog_level = -1;
+static gchar *log_location = NULL;
+static gchar *digest_password_file = NULL;
 
 static char *config_file = NULL;
 
@@ -69,17 +73,10 @@ gboolean wsmand_parse_options(int argc, char **argv)
     GError *error = NULL;
 
     GOptionEntry options[] = {
-
-        { "ssl-cert-file", 	'c', 0, G_OPTION_ARG_FILENAME, 	&ssl_cert_file, "SSL certificate file", "<filename>"  },                          
-        { "ssl-key-file", 	'k', 0, G_OPTION_ARG_FILENAME,  &ssl_key_file, 	"SSL key file", "<filename>"  },
-        { "port", 		'p', 0, G_OPTION_ARG_INT,	&server_port, 	"Server Port", "<port>" },
-        { "ssl-port", 		'l', 0, G_OPTION_ARG_INT, 	&server_ssl_port,"SSL Port", "<port>" },    
-        { "daemon", 		'D', 0 ,G_OPTION_ARG_NONE, 	&daemon_flag, 	"Run as daemon", NULL },    
         { "no-plugins", 	'n', 0 ,G_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
-        { "debug", 		'd', 0 ,G_OPTION_ARG_INT, 	&debug_level, 	"Set the verbosity of debugging output.", "1-6" },
+        { "debug", 		'd', 0 ,G_OPTION_ARG_NONE, 	&foreground_debug, 	"Start daemon in foreground and turn on debugging", NULL },
         { "syslog", 		's', 0, G_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
-        { "auth-type", 		'a', 0, G_OPTION_ARG_STRING, 	&auth_type,  	"Authentication Types", "basic|digest" },
-        { "config-file",	'a', 0, G_OPTION_ARG_FILENAME, 	
+        { "config-file",	'c', 0, G_OPTION_ARG_FILENAME, 	
             &config_file,  	"Alternate configuration file", "<file>" },
 
         { NULL }
@@ -95,6 +92,10 @@ gboolean wsmand_parse_options(int argc, char **argv)
             printf ("%s\n", error->message);
         return FALSE;
     }
+    if (!wsmand_read_config()) {
+        fprintf(stderr, "Configuration file not found\n");
+        return FALSE;
+    }
 
     g_free(error);
     g_option_context_free(opt_ctx);
@@ -104,6 +105,49 @@ gboolean wsmand_parse_options(int argc, char **argv)
 const char ** wsmand_options_get_argv (void)
 {
     return wsmand_argv;
+}
+
+int wsmand_read_config (void)
+{
+    GKeyFile *cf;
+    char *filename;
+    filename = (char *)wsmand_options_get_config_file();
+    if (!filename) 
+        filename = DEFAULT_CONFIG_FILE;
+    cf = g_key_file_new ();
+    if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
+    {
+        if (g_key_file_has_group (cf, "server"))
+        {
+            if (g_key_file_has_key (cf, "server", "port", NULL))
+                server_port = g_key_file_get_integer (cf, "server", "port", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "ssl_port", NULL))
+                server_ssl_port = g_key_file_get_integer (cf, "server", "ssl_port", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "debug_level", NULL))
+                debug_level = g_key_file_get_integer (cf, "server", "debug_level", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "ssl_key_file", NULL))
+                ssl_key_file = g_key_file_get_string (cf, "server", "ssl_key_file", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "ssl_cert_file", NULL))
+                ssl_cert_file = g_key_file_get_string (cf, "server", "ssl_cert_file", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "use_digest", NULL))
+                use_digest = g_key_file_get_boolean (cf, "server", "use_digest", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "digest_password_file", NULL))
+                digest_password_file = g_key_file_get_string (cf, "server", "digest_password_file", NULL);
+            
+            if (g_key_file_has_key (cf, "server", "log_location", NULL))
+                log_location = g_key_file_get_string (cf, "server", "log_location", NULL);
+        }
+    } else {
+        return 0;
+    }
+    g_key_file_free (cf);
+    return 1;
 }
 
 const char *
@@ -119,7 +163,6 @@ wsmand_options_get_config_file (void) {
         g_free (config_file);
         config_file = new_config_file;
     }
-          
     return config_file;
 }
 
@@ -133,6 +176,15 @@ gboolean wsmand_options_get_no_plugins_flag (void)
 {
     return no_plugin_flag;
 }
+
+int wsmand_options_get_foreground_debug (void)
+{
+    if (foreground_debug)
+        return 6;
+    else
+        return -1;
+}
+
 
 
 int wsmand_options_get_debug_level (void)
@@ -173,13 +225,10 @@ wsmand_options_get_ssl_cert_file (void)
     return ssl_cert_file;
 }
 
-char*
-wsmand_options_get_auth_type (void)
+gboolean
+wsmand_options_get_digest (void)
 {
-	if (auth_type == NULL)
-		return "basic";
-	else
-		return auth_type;
+    return use_digest;
 }
 
 

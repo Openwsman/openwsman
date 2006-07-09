@@ -81,7 +81,7 @@ debug_message_handler (const char *str,
         log_pid = getpid ();
     }
 
-    if (level <= wsmand_options_get_debug_level ()) 
+    if (level <= wsmand_options_get_debug_level () || wsmand_options_get_foreground_debug() > 0 ) 
     {
         struct tm *tm;
         time_t now;
@@ -101,8 +101,7 @@ debug_message_handler (const char *str,
         g_free (log_msg);
     }
 
-    if (wsmand_options_get_daemon_flag () &&
-        level <= wsmand_options_get_syslog_level ()) 
+    if ( level <= wsmand_options_get_syslog_level ()) 
     {
         char *log_name = g_strdup_printf ("wsmand[%d]", log_pid);
 
@@ -149,7 +148,7 @@ sighup_handler (int sig_num)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "SIGHUP received; reloading data");
 
-    if (wsmand_options_get_daemon_flag ()) 
+    if (wsmand_options_get_debug_level () == 0) 
     {
         int fd;
 
@@ -210,7 +209,7 @@ daemonize (void)
     int fd;
     char *pid;
    
-    if (!wsmand_options_get_daemon_flag ())
+    if (wsmand_options_get_foreground_debug() > 0 )
     {
         return;
     }
@@ -281,7 +280,9 @@ main (int argc, char **argv)
     g_type_init ();
     g_thread_init (NULL);
    
-    wsmand_parse_options(argc, argv);
+    if (!wsmand_parse_options(argc, argv)) {
+        return 1;
+    }
 
     config_file = wsmand_options_get_config_file ();
     if (config_file && !g_file_test (config_file, G_FILE_TEST_EXISTS)) {

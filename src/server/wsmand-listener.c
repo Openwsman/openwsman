@@ -242,13 +242,10 @@ int wsmand_start_server()
     g_return_val_if_fail(cntx != NULL, 1 );            
     SoapH soap = ws_context_get_runtime(cntx);   	
 
-    // By default, start with basic auth
-    char *atype = wsmand_options_get_auth_type();
-
-    if (!strcmp(atype, "basic")) {
+    if (!wsmand_options_get_digest()) {
         auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
         auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 
-    } else if (!strcmp(atype, "digest")) {
+    } else {
         auth_ctx.types |= SOUP_AUTH_TYPE_DIGEST;
         auth_ctx.digest_info.realm = AUTHENTICATION_REALM;
         auth_ctx.digest_info.allow_algorithms = SOUP_ALGORITHM_MD5;

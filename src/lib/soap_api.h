@@ -42,7 +42,7 @@
 #define PROCESSED_MSG_ID_MAX_SIZE	        200
 #define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192
 
-// #define DMTF_WSMAN_SPEC_1
+#define DMTF_WSMAN_SPEC_1
 
 #define SOAP1_2_CONTENT_TYPE            "application/soap+xml; charset=utf-8"
 #define SOAP_CONTENT_TYPE               "application/soap+xml"

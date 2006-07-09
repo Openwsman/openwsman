@@ -4,7 +4,8 @@ INCLUDES = \
 	   $(GMODULE_CFLAGS) \
 	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
-	   -I$(top_srcdir)/src/lib
+	   -I$(top_srcdir)/src/lib \
+	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
 
 LIBS = \
        $(GMODULE_LIBS) \
