@@ -61,6 +61,7 @@ static gboolean foreground_debug = FALSE;
 static gint syslog_level = -1;
 static gchar *log_location = NULL;
 static gchar *digest_password_file = NULL;
+static gchar *basic_password_file = NULL;
 
 static char *config_file = NULL;
 
@@ -140,6 +141,9 @@ int wsmand_read_config (void)
             if (g_key_file_has_key (cf, "server", "digest_password_file", NULL))
                 digest_password_file = g_key_file_get_string (cf, "server", "digest_password_file", NULL);
             
+            if (g_key_file_has_key (cf, "server", "basic_password_file", NULL))
+                basic_password_file = g_key_file_get_string (cf, "server", "basic_password_file", NULL);
+            
             if (g_key_file_has_key (cf, "server", "log_location", NULL))
                 log_location = g_key_file_get_string (cf, "server", "log_location", NULL);
         }
@@ -166,6 +170,15 @@ wsmand_options_get_config_file (void) {
     return config_file;
 }
 
+char *wsmand_options_get_digest_password_file (void)
+{
+    return digest_password_file;
+}
+
+char *wsmand_options_get_basic_password_file (void)
+{
+    return basic_password_file;
+}
 
 gboolean wsmand_options_get_daemon_flag (void)
 {

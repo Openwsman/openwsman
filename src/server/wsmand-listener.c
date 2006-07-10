@@ -69,6 +69,8 @@ extern void start_event_source(SoapH soap);
 #include "wsmand-listener.h"
 #include "wsmand-plugins.h"
 #include "wsmand-daemon.h"
+#include "wsman-md5-utils.h"
+#include "wsmand-auth.h"
 
 
 
@@ -85,7 +87,7 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
         SoupMessage  *msg, gpointer data) 
 {
     
-    const char *username;
+    char *filename;
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
 
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
@@ -99,10 +101,19 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
     */
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
     if (auth) {
-        username = soup_server_auth_get_user (auth);		
-        if ( !strcmp(username, "wsman") 
-                && soup_server_auth_check_passwd(auth, "secret" ) )
-            return TRUE;		 
+        switch (auth->type) {
+        case SOUP_AUTH_TYPE_BASIC:
+            filename = wsmand_options_get_basic_password_file();
+            break;
+        case SOUP_AUTH_TYPE_DIGEST:
+            filename = wsmand_options_get_digest_password_file();
+            break;
+        }
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Autenticating against password file: %s", filename);
+        if (filename) {
+            if ( authorize_from_file(auth, filename ))
+                return TRUE;		 
+        }
     } 
 
     soup_message_add_header (msg->response_headers, "Content-Length", "0" );    			
@@ -315,6 +326,5 @@ int wsmand_start_server()
     wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Waiting for requests...");
     return 0;
 }
-
 
 

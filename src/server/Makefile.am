@@ -10,6 +10,7 @@ INCLUDES = \
 LIBS = \
        $(GMODULE_LIBS) \
        $(SOUP_LIBS) \
+       -lcrypt \
        $(top_builddir)/src/lib/libwsman.la
 
 sbin_PROGRAMS = wsmand
@@ -21,6 +22,8 @@ wsmand_SOURCES = \
 		 wsmand-plugins.c \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
+		 wsmand-auth.c \
+		 wsmand-auth.h \
 		 wsmand.c 
 
 #wsmand_LDADD =     \

@@ -67,6 +67,8 @@ int wsmand_options_get_server_ssl_port(void);
 char *wsmand_options_get_ssl_key_file(void);
 char *wsmand_options_get_ssl_cert_file(void);
 gboolean wsmand_options_get_digest(void);
+char *wsmand_options_get_digest_password_file (void);
+char *wsmand_options_get_basic_password_file (void);
 
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug (void);
