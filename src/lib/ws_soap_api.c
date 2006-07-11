@@ -1350,34 +1350,6 @@ int soap_submit_op(SoapOpH h )
     SOAP_OP_ENTRY* op = (SOAP_OP_ENTRY*)h;
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Submitting operation");
     if ( op ) {
-#if 0
-        if ( (retVal = process_filters(op, 0)) == 0 ) {        	
-
-            char* buf =	NULL;
-            int len;
-            ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
-
-            if ( buf != NULL ) {
-                /*
-                if ( !(op->dispatch->flags & SOAP_NO_RESP_OP) ) {
-                    char* msgId = ws_xml_find_text_in_doc(op->outDoc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
-                    if ( msgId != NULL )
-                        op->dispatch->inboundAction = soap_clone_string(msgId);
-                    add_response_entry(op->dispatch->fw, op);                                       
-                }
-                */
-
-                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Sending Response");       
-                //int errCode = 0;
-                //retVal = do_submit_back_channel_response ( op->dispatch->fw, channelId, buf, len, errCode, errMsg);
-                
-            }
-            if ( retVal ) { 
-                //ws_xml_free_memory(buf);
-            }
-
-        }
-#endif
     }
     return retVal;
 }
@@ -1390,12 +1362,8 @@ void soap_start_dispatch(SoapDispatchH disp)
 {
     if ( disp )
     {
-        //soap_fw_lock(((SOAP_DISPATCH_ENTRY*)disp)->fw);
-
         DL_AddTail(&((SOAP_DISPATCH_ENTRY*)disp)->fw->dispatchList, 
                 &((SOAP_DISPATCH_ENTRY*)disp)->node);
-
-        //soap_fw_unlock(((SOAP_DISPATCH_ENTRY*)disp)->fw);
     }
 }
 

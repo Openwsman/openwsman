@@ -352,9 +352,6 @@ WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op)
 }
 
 
-
-
-// ProcessFilterChain
 int process_filter_chain(SOAP_OP_ENTRY* op, DL_List* list) 
 {
     int retVal = 0;
@@ -506,8 +503,8 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
 
 void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg) 
 {   
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
     int ret;		
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Inbound call");
     WsXmlDocH inDoc = build_inbound_envelope( fw, msg);
 
     if (wsman_is_identify_request(inDoc)) {

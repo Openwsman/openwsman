@@ -472,9 +472,7 @@ void cim_enum_instances (CMCIClient *cc, char *class_name , WsEnumerateInfo* enu
         cim_to_wsman_status(sfcc_status, status);
         return;
     }
-    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "before array");
     CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
-    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "after array");
 
     cim_to_wsman_status(sfcc_status, status);
     if (!enumArr) {
@@ -509,7 +507,6 @@ CMPIArray *cim_enum_instancenames (CMCIClient *cc, char *class_name , WsmanStatu
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
 
     enumeration = cc->ft->enumInstanceNames(cc, objectpath, &sfcc_status);
-    /* Print the results */
     wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "enumInstanceNames() rc=%d, msg=%s",
             sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
 
