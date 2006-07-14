@@ -135,6 +135,9 @@ if test "$enable_ssl" != "no"; then
     AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
 fi
 
+
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${sysconfdir}/openwsman.conf"] , [Default config file])
+
 dnl Subst PACKAGE_PLUGIN_DIR.
 packageplugindir=$libdir/${PACKAGE}/plugins
 PACKAGE_PLUGIN_DIR="${packageplugindir}"
