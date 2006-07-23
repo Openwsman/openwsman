@@ -69,8 +69,7 @@ int xml_parser_utf8_strlen (char *buf) {
     return xmlUTF8Strlen(BAD_CAST buf);
 }
 
-void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize, 
-        char* encoding)
+void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize, char* encoding)
 {
     if ( doc && buf && ptrSize )
         xmlDocDumpMemoryEnc(((iWsDoc*)doc)->parserDoc, 
@@ -89,7 +88,7 @@ int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
     xmlDocPtr doc;
     xmlNodePtr rootNode;
 
-    if ( (doc = xmlNewDoc(NULL)) == NULL ||
+    if ( (doc = xmlNewDoc("1.0")) == NULL ||
             (rootNode = xmlNewNode(NULL, BAD_CAST rootName)) == NULL )
     {
         if ( doc )

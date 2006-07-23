@@ -158,11 +158,83 @@ enum __WsmanFaultDetailType
     // OpenWSMAN 
     OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR,
     OWSMAN_FAULT_NO_DETAILS
-
-
-
 };
 typedef enum __WsmanFaultDetailType WsmanFaultDetailType;
 
+
+typedef enum {
+    WSMAN_STATUS_NONE,
+
+    /* Transport Errors */
+    WSMAN_STATUS_CANCELLED                       = 1,
+    WSMAN_STATUS_CANT_RESOLVE,
+    WSMAN_STATUS_CANT_RESOLVE_PROXY,
+    WSMAN_STATUS_CANT_CONNECT,
+    WSMAN_STATUS_CANT_CONNECT_PROXY,
+    WSMAN_STATUS_SSL_FAILED,
+    WSMAN_STATUS_IO_ERROR,
+    WSMAN_STATUS_MALFORMED,
+    WSMAN_STATUS_TRY_AGAIN,
+
+    /* HTTP Status Codes */
+    WSMAN_STATUS_CONTINUE                        = 100,
+    WSMAN_STATUS_SWITCHING_PROTOCOLS             = 101,
+    WSMAN_STATUS_PROCESSING                      = 102, /* WebDAV */
+
+    WSMAN_STATUS_OK                              = 200,
+    WSMAN_STATUS_CREATED                         = 201,
+    WSMAN_STATUS_ACCEPTED                        = 202,
+    WSMAN_STATUS_NON_AUTHORITATIVE               = 203,
+    WSMAN_STATUS_NO_CONTENT                      = 204,
+    WSMAN_STATUS_RESET_CONTENT                   = 205,
+    WSMAN_STATUS_PARTIAL_CONTENT                 = 206,
+    WSMAN_STATUS_MULTI_STATUS                    = 207, /* WebDAV */
+
+    WSMAN_STATUS_MULTIPLE_CHOICES                = 300,
+    WSMAN_STATUS_MOVED_PERMANENTLY               = 301,
+    WSMAN_STATUS_FOUND                           = 302,
+    WSMAN_STATUS_MOVED_TEMPORARILY               = 302, /* RFC 2068 */
+    WSMAN_STATUS_SEE_OTHER                       = 303,
+    WSMAN_STATUS_NOT_MODIFIED                    = 304,
+    WSMAN_STATUS_USE_PROXY                       = 305,
+    WSMAN_STATUS_NOT_APPEARING_IN_THIS_PROTOCOL  = 306, /* (reserved) */
+    WSMAN_STATUS_TEMPORARY_REDIRECT              = 307,
+
+    WSMAN_STATUS_BAD_REQUEST                     = 400,
+    WSMAN_STATUS_UNAUTHORIZED                    = 401,
+    WSMAN_STATUS_PAYMENT_REQUIRED                = 402, /* (reserved) */
+    WSMAN_STATUS_FORBIDDEN                       = 403,
+    WSMAN_STATUS_NOT_FOUND                       = 404,
+    WSMAN_STATUS_METHOD_NOT_ALLOWED              = 405,
+    WSMAN_STATUS_NOT_ACCEPTABLE                  = 406,
+    WSMAN_STATUS_PROXY_AUTHENTICATION_REQUIRED   = 407,
+    WSMAN_STATUS_PROXY_UNAUTHORIZED              = WSMAN_STATUS_PROXY_AUTHENTICATION_REQUIRED,
+    WSMAN_STATUS_REQUEST_TIMEOUT                 = 408,
+    WSMAN_STATUS_CONFLICT                        = 409,
+    WSMAN_STATUS_GONE                            = 410,
+    WSMAN_STATUS_LENGTH_REQUIRED                 = 411,
+    WSMAN_STATUS_PRECONDITION_FAILED             = 412,
+    WSMAN_STATUS_REQUEST_ENTITY_TOO_LARGE        = 413,
+    WSMAN_STATUS_REQUEST_URI_TOO_LONG            = 414,
+    WSMAN_STATUS_UNSUPPORTED_MEDIA_TYPE          = 415,
+    WSMAN_STATUS_REQUESTED_RANGE_NOT_SATISFIABLE = 416,
+    WSMAN_STATUS_INVALID_RANGE                   = WSMAN_STATUS_REQUESTED_RANGE_NOT_SATISFIABLE,
+    WSMAN_STATUS_EXPECTATION_FAILED              = 417,
+    WSMAN_STATUS_UNPROCESSABLE_ENTITY            = 422, /* WebDAV */
+    WSMAN_STATUS_LOCKED                          = 423, /* WebDAV */
+    WSMAN_STATUS_FAILED_DEPENDENCY               = 424, /* WebDAV */
+
+    WSMAN_STATUS_INTERNAL_SERVER_ERROR           = 500,
+    WSMAN_STATUS_NOT_IMPLEMENTED                 = 501,
+    WSMAN_STATUS_BAD_GATEWAY                     = 502,
+    WSMAN_STATUS_SERVICE_UNAVAILABLE             = 503,
+    WSMAN_STATUS_GATEWAY_TIMEOUT                 = 504,
+    WSMAN_STATUS_HTTP_VERSION_NOT_SUPPORTED      = 505,
+    WSMAN_STATUS_INSUFFICIENT_STORAGE            = 507, /* WebDAV search */
+    WSMAN_STATUS_NOT_EXTENDED                    = 510  /* RFC 2774 */
+} WsmanKnownStatusCode;
+
+
 void add_details_proc(WsXmlNodeH fault,  void* data);
+int wsman_is_fault(WsXmlDocH doc);
 #endif /*WSMANFAULTS_H_*/

@@ -32,9 +32,11 @@
  * @author Anas Nashif
  */
 
+#include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <glib.h>
 
 #include "ws_utilities.h"
@@ -71,6 +73,8 @@ static gulong operation_timeout = 0;
 static gulong max_envelope_size = 0;
 
 static gchar *_action = NULL;
+static gchar *agent = NULL;
+static gchar *config_file = NULL;
 static gchar *resource_uri = NULL;
 static gchar *invoke_method = NULL;
 static gchar **properties = NULL;
@@ -101,6 +105,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
+        { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
         { NULL }
     };
 
@@ -191,8 +196,52 @@ gboolean wsman_parse_options(int argc, char **argv)
         return FALSE;
     }
 
+    if (!wsman_read_client_config()) {
+        fprintf(stderr, "Configuration file not found\n");
+        return FALSE;
+    }
+
+
     g_option_context_free(opt_ctx);
     return retval;
+}
+
+const char * wsman_options_get_config_file (void) {
+    if (config_file != NULL && !g_path_is_absolute (config_file)) {
+        char cwd[PATH_MAX];
+        char *new_config_file;
+
+        getcwd (cwd, PATH_MAX);
+          
+        new_config_file = g_strconcat (cwd, "/", config_file, NULL);
+
+        g_free (config_file);
+        config_file = new_config_file;
+    }
+    return config_file;
+}
+
+int wsman_read_client_config (void)
+{
+    GKeyFile *cf;
+    char *filename;
+    filename = (char *)wsman_options_get_config_file();
+    if (!filename) 
+        filename = DEFAULT_CONFIG_FILE;
+    cf = g_key_file_new ();
+    if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
+    {
+        if (g_key_file_has_group (cf, "client"))
+        {
+            
+            if (g_key_file_has_key (cf, "client", "agent", NULL))
+                agent = g_key_file_get_string (cf, "client", "agent", NULL);
+        }
+    } else {
+        return 0;
+    }
+    g_key_file_free (cf);
+    return 1;
 }
 
 const char ** wsman_options_get_argv (void) {
@@ -313,4 +362,11 @@ char * wsman_options_get_filter (void)
 char * wsman_options_get_dialect (void)
 {	
     return wsm_dialect;
+}   
+char * wsman_options_get_agent (void)
+{	
+    if (agent)
+        return agent;
+    else
+        return PACKAGE_NAME;
 }   

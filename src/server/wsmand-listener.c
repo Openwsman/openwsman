@@ -86,19 +86,20 @@ static gboolean
 server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
         SoupMessage  *msg, gpointer data) 
 {
-    
     char *filename;
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
-
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
-    /*
+    soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
+
+#if 0 
     WsXmlDocH inDoc = build_inbound_envelope( (SOAP_FW *)data, msg);
     if (wsman_is_identify_request(inDoc)) {
         wsman_create_identify_response( (SOAP_FW *)data, msg);
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Skipping authentication...");
         return TRUE;
     }
-    */
+#endif
+
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
     if (auth) {
         switch (auth->type) {
@@ -109,7 +110,6 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
             filename = wsmand_options_get_digest_password_file();
             break;
         }
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Autenticating against password file: %s", filename);
         if (filename) {
             if ( authorize_from_file(auth, filename ))
                 return TRUE;		 
@@ -121,13 +121,12 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
     return FALSE;
 }
 
-
-
-
 static void server_callback (SoupServerContext *context, SoupMessage *msg, 
         gpointer data) {		
 
     char *path;
+    char *content_type;
+    char *encoding;
     WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Server Callback Called\n");
@@ -136,9 +135,9 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
             soup_message_get_http_version (msg));
 
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
-    if (msg->request.length)
+    if (msg->request.length) {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Request: %.*s", msg->request.length, msg->request.body);
-
+    }
 
     if (soup_method_get_id (msg->method) != SOUP_METHOD_ID_POST)
     {
@@ -155,10 +154,13 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         path = g_strdup ("");
     }    
 
-    char *ct = (char *)soup_message_get_header (msg->request_headers, "Content-Type");
-    if (ct && strncmp(ct, SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
+    content_type = (char *)soup_message_get_header (msg->request_headers, "Content-Type");
+    if (content_type && strncmp(content_type, SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
         soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
         goto DONE;
+    } else {
+        encoding = strchr(content_type, '=') + 1;
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Encoding: %s", encoding);
     }
 
     SOAP_FW* fw = (SOAP_FW*)data;	
@@ -189,12 +191,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         goto DONE;
     } else {		 	
 	// Set SoupMessage
-        //int envelope_size = xmlUTF8Strlen(BAD_CAST wsman_msg->response.body);
-        //printf("Envelope size: %d\n", envelope_size ); 
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
     	msg->response.length = wsman_msg->response.length;
     	msg->response.body = (char *)wsman_msg->response.body;
-        soup_message_set_status (msg, SOUP_STATUS_OK);
+        soup_message_set_status (msg, wsman_msg->http_code);
     }
 
 

@@ -377,7 +377,6 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
     DL_List* list;
 
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Processing Filters");
-
     if ( !(op->dispatch->flags & SOAP_SKIP_DEF_FILTERS) )
     {
         list = (!inbound) ? &op->dispatch->fw->outboundFilterList :
@@ -474,8 +473,13 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
         else
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "op is null");    	
 
-        if ( (retVal = process_filters(op, 0)) == 0 ) {        	
+        if ( (retVal = process_filters(op, 0)) == 0 ) {
             if (op->outDoc) {
+                if (wsman_is_fault(op->outDoc)) {
+                    msg->http_code = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+                } else {
+                    msg->http_code = WSMAN_STATUS_OK;
+                }
                 ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
                 msg->response.length = len;
                 msg->response.body = strndup(buf, len);
@@ -498,7 +502,6 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc)
     char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_RELATES_TO);
     return msgId;
 }
-
 
 
 void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg) 

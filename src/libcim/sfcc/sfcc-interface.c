@@ -341,6 +341,107 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
     return;
 }
 
+void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body,
+        WsmanStatus *status) 
+{
+    CMPIInstance * instance;
+    CMPIObjectPath * objectpath;    
+    CMPIObjectPath * objectpath_final;    
+    CMPIObjectPath * objectpath1;    
+    CMPIStatus sfcc_status, rc;
+    CMPIEnumeration * enumeration;
+    CMPIString *yy;
+    GList *node = keys;
+    
+    char *class_name = resourceUri + sizeof(XML_NS_CIM_CLASS);
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+    objectpath1 = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+    /*
+     *  Enumerate all all instances of this class
+     */
+    enumeration = cc->ft->enumInstanceNames(cc, objectpath, &sfcc_status);
+    //enumeration = cc->ft->enumInstances(cc, objectpath,0 , NULL, &sfcc_status);
+    if (sfcc_status.rc != 0 ) {
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "enumInstances() rc=%d, msg=%s",
+            sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
+        cim_to_wsman_status(sfcc_status, status);
+        return;
+    }
+    /*
+     * Now create an object path with the keys
+     */
+    while (node) {    	
+        WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
+        CMAddKey(objectpath1, selector->key, selector->val, CMPI_chars);    	
+        node = g_list_next (node);
+    }
+    /*
+     * Create a string from the  object path
+     */
+    yy = CMObjectPathToString(objectpath1, NULL);
+
+    /*
+     * Go through all enumerated instances and change the class name to the superclass and compare strings.
+     * The matching string to the yy objectpath is the one we need. Get the instance of that objectpath we found.
+     */
+    int match = 0;
+    int invalid_key = 0;
+    int valid_keys = 0;
+    while (enumeration->ft->hasNext(enumeration, NULL)) {
+        CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+        CMPIObjectPath *op = CMClone(data.value.ref, NULL);
+        // Check keys:
+        
+        if (!valid_keys) {
+            node = g_list_first(keys);
+            while (node) {    	
+                WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
+                CMGetKey(op, selector->key, &rc);
+                if (rc.rc!=0)
+                    invalid_key = 1;
+                node = g_list_next (node);
+            }
+            if (invalid_key) {
+                status->rc = WSMAN_FAULT_INVALID_SELECTORS;
+                break;
+            }
+            valid_keys = 1;
+        }
+        
+        //CMPIObjectPath *op = CMGetObjectPath(data.value.inst, NULL);
+        CMSetClassName(op, class_name);
+        CMSetNameSpace(op, CIM_NAMESPACE);
+        CMPIString *xx = CMObjectPathToString(op, NULL);
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "%s", CMGetCharsPtr(xx, NULL) );
+        if (strcmp(CMGetCharsPtr(xx, NULL), CMGetCharsPtr(yy, NULL)) == 0 ) {
+            wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "match..." );
+            objectpath_final =  CMClone(data.value.ref, NULL);
+            CMSetNameSpace(objectpath_final, CIM_NAMESPACE);
+            match = 1;
+            break;
+        }
+        if (op) CMRelease(op);
+    }
+
+    if (objectpath_final && match) {
+        instance = cc->ft->getInstance(cc, objectpath_final, CMPI_FLAG_DeepInheritance, NULL, &sfcc_status);
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "getInstance() rc=%d, msg=%s",
+                sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
+        cim_to_wsman_status(sfcc_status, status);
+        if (sfcc_status.rc == 0 ) {
+            if (instance)
+                instance2xml(instance, body, resourceUri);
+            /* Print the results */
+        } 
+        if (objectpath_final) CMRelease(objectpath_final);
+        if (instance) CMRelease(instance);
+    }
+
+
+    if (objectpath) CMRelease(objectpath);
+    if (objectpath1) CMRelease(objectpath1);
+    if (enumeration) CMRelease(enumeration);
+}
 
 void cim_get_instance (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body,
         WsmanStatus *status) 
@@ -399,6 +500,8 @@ CMPIInstance * cim_get_instance_raw (CMCIClient *cc, char *class_name, GList *ke
 
     return instance;            
 }
+
+
 CMPIArray * cim_enum_instances_raw (CMCIClient *cc, char *class_name ) 
 {
 	
@@ -444,7 +547,25 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status) {
         break;
     case CMPI_RC_ERR_METHOD_NOT_FOUND:
         status->rc = WSA_FAULT_ACTION_NOT_SUPPORTED;
-        break;
+       break;
+    case CMPI_RC_ERR_NOT_FOUND:
+    case CMPI_RC_ERR_ACCESS_DENIED:
+    case CMPI_RC_ERR_INVALID_NAMESPACE:
+    case CMPI_RC_ERR_INVALID_PARAMETER:
+    case CMPI_RC_ERR_NOT_SUPPORTED:
+    case CMPI_RC_ERR_CLASS_HAS_CHILDREN:
+    case CMPI_RC_ERR_CLASS_HAS_INSTANCES:
+    case CMPI_RC_ERR_INVALID_SUPERCLASS:
+    case CMPI_RC_ERR_ALREADY_EXISTS:
+    case CMPI_RC_ERR_NO_SUCH_PROPERTY:
+    case CMPI_RC_ERR_TYPE_MISMATCH:
+    case CMPI_RC_ERR_QUERY_LANGUAGE_NOT_SUPPORTED:
+    case CMPI_RC_ERR_INVALID_QUERY:
+    case CMPI_RC_ERR_METHOD_NOT_AVAILABLE:
+    case CMPI_RC_DO_NOT_UNLOAD:
+    case CMPI_RC_NEVER_UNLOAD:
+    case CMPI_RC_ERROR_SYSTEM:
+    case CMPI_RC_ERROR:
     default:
         status->rc = WSMAN_FAULT_UNKNOWN;
     }

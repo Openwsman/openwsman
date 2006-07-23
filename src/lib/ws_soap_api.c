@@ -1159,17 +1159,14 @@ int soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void* data, int inb
 WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound)
 {
     WsXmlDocH doc = NULL;
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "entering soap_get_op_doc");
     if ( op )
     {
         SOAP_OP_ENTRY* e = (SOAP_OP_ENTRY*)op;
         doc = (!inbound) ? e->outDoc : e->inDoc;
     }        
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "leaving soap_get_op_doc");
     return doc;
 }
 
-// SoapDetachOpDoc
 WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound)
 {
     WsXmlDocH doc = NULL;
@@ -1187,7 +1184,6 @@ WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound)
     return doc;
 }
 
-// SoapSetOpDoc
 int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound)
 {
     int retVal = 1;
@@ -1202,7 +1198,6 @@ int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound)
     return retVal;
 }
 
-// SoapGetOpAction
 char* soap_get_op_action(SoapOpH op, int inbound)
 {
     char* action = NULL;
@@ -1216,7 +1211,6 @@ char* soap_get_op_action(SoapOpH op, int inbound)
     return action;
 }
 
-// SoapSetOpAction
 void soap_set_op_action(SoapOpH op, char* action, int inbound)
 {
     if ( op && action )
@@ -1236,7 +1230,6 @@ void soap_set_op_action(SoapOpH op, char* action, int inbound)
     }
 }
 
-// SoapGetOpFlags
 unsigned long soap_get_op_flags(SoapOpH op)
 {
     if ( op )
@@ -1246,7 +1239,6 @@ unsigned long soap_get_op_flags(SoapOpH op)
     return 0;
 }
 
-// SoapGetOpSoap
 SoapH soap_get_op_soap(SoapOpH op)
 {
     if ( op )
@@ -1254,7 +1246,6 @@ SoapH soap_get_op_soap(SoapOpH op)
 
     return NULL;
 }
-
 
 void soap_mark_processed_op_header(SoapOpH h, WsXmlNodeH xmlNode)
 {
@@ -1310,7 +1301,6 @@ void destroy_op_entry(SOAP_OP_ENTRY* entry)
 
 
 
-// DestroyDispatchEntry
 void destroy_dispatch_entry(SOAP_DISPATCH_ENTRY* entry)
 {
     if ( entry )

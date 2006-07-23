@@ -45,7 +45,6 @@
 #include "wsman-debug.h"
 #include "wsmand-daemon.h"
 
-#define DEFAULT_CONFIG_FILE SYSCONFDIR "/openwsman.conf"
 
 static const char **wsmand_argv = NULL;
 

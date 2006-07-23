@@ -390,8 +390,6 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
  * @param addDetailProcData Pointer to callback data
  * @return XML document of the fault
  */
-// WsXmlCreateFault
-
 WsXmlDocH ws_xml_create_fault(WsContextH cntx,
         WsXmlDocH rqstDoc,
         char* code,
@@ -476,9 +474,7 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 
         xml_parser_initialize(soap);
 
-        if ( (parserData->nsHolder = ws_xml_create_doc((SoapH)fw, 
-                        NULL, 
-                        "NsList")) != NULL )
+        if ( (parserData->nsHolder = ws_xml_create_doc((SoapH)fw, NULL, "NsList")) != NULL )
         {
             WsXmlNodeH node = ws_xml_get_doc_root(parserData->nsHolder);
             retVal = 0;
@@ -1669,7 +1665,6 @@ int is_xml_val_true(char* text)
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)
 {
     WsXmlDocH doc = xml_parser_get_doc(node);
-    //xml_parser_element_dump(f, doc, node);
     xml_parser_doc_dump(f, doc);
     return;
 }

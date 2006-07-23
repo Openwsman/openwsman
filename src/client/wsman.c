@@ -216,7 +216,6 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
 void  
 wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 
 {
-
     SoupSession *session = NULL;
     SoupMessage *msg= NULL;
 
@@ -243,12 +242,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
         fprintf (stderr, "Could not parse URI\n");
         return;
     }
-
-
-    // FIXME: define in header file and use real version
-    soup_message_add_header(msg->request_headers, "User-Agent", "OpenWSMAN/0.01");
+    soup_message_add_header(msg->request_headers, "User-Agent", wsman_options_get_agent());
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-
     soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED, buf, len);
 
     // Send the message...        

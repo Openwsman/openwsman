@@ -210,7 +210,14 @@ void build_soap_version_fault(SOAP_FW* fw)
 }   
 
 
-
+int wsman_is_fault(WsXmlDocH doc) {
+    WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), 
+           XML_NS_SOAP_1_2 , SOAP_FAULT, NULL);
+    if ( node != NULL )
+        return 1;
+    else
+        return 0;
+}
 
 
 WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc, 

@@ -136,7 +136,7 @@ if test "$enable_ssl" != "no"; then
 fi
 
 
-AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${sysconfdir}/openwsman.conf"] , [Default config file])
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${sysconfdir}/openwsman/openwsman.conf"] , [Default config file])
 
 dnl Subst PACKAGE_PLUGIN_DIR.
 packageplugindir=$libdir/${PACKAGE}/plugins

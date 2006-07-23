@@ -128,14 +128,13 @@ int  CimResource_Get_EP(SoapOpH op, void* appData )
             return 1;		
         if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            cim_get_instance(cimclient.cc, resourceUri , keys, body, status);
+            cim_get_instance_from_enum(cimclient.cc, resourceUri , keys, body, status);
         }
 
         if (status->rc != 0) {
             ws_xml_destroy_doc(doc);
             doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
         }
-        
         if (cimclient.cc) CMRelease(cimclient.cc);
     } else {
         doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);

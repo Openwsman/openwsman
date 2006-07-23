@@ -58,5 +58,7 @@ void cim_add_epr_details(WsXmlNodeH resource , char *resourceUri,  CMPIObjectPat
 void cim_getEprObjAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri);
 void cim_getEprAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *resourceUri);
 
+void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body, WsmanStatus *status);
+
 #endif /*SFCCINTERFACE_H_*/
 

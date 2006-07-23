@@ -95,6 +95,7 @@
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
 #define XML_NS_WSMAN_ID                 "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
+// http://schemas.dmtf.org/wbem/wsman/identify/1/wsmanidentity.xsd
 
 
 
@@ -467,6 +468,7 @@ struct _WsmanMessage {
     GHashTable          *request_headers;
     WsmanDataBuffer     response;
     WsXmlDocH           in_doc;
+    WsmanKnownStatusCode http_code;
 };
 typedef struct _WsmanMessage WsmanMessage;
 
