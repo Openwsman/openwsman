@@ -114,7 +114,7 @@ gboolean wsman_parse_options(int argc, char **argv)
     GOptionEntry request_options[] = 
     {				
         { "filter", 'x', 0, G_OPTION_ARG_STRING, &wsm_filter, "Filter" , "<filter>" }, 
-        { "dialect", 'x', 0, G_OPTION_ARG_STRING, &wsm_dialect, "Filter Dialect (Supported Dialects: XPATH, SelectorFilter)" , "<xpath|selector>" }, 
+        { "dialect", 'D', 0, G_OPTION_ARG_STRING, &wsm_dialect, "Filter Dialect" , "<dialect>" }, 
         { "timeout", 't', 0, G_OPTION_ARG_INT, &operation_timeout, "Operation timeout in seconds" , "<time in sec>" },       
         { "max-envelope-size", 'e', 0, G_OPTION_ARG_INT, &max_envelope_size, "maximal envelope size" , "<size>" },       
         { "fragment", 'F', 0, G_OPTION_ARG_STRING, &fragment, "Fragment (Supported Dialects: XPATH)" , "<fragment>" },       

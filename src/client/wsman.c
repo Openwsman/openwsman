@@ -334,6 +334,9 @@ int main(int argc, char** argv)
     if (wsman_options_get_filter()) {
         options.filter = wsman_options_get_filter();
     }
+    if (wsman_options_get_dialect()) {
+        options.dialect = wsman_options_get_dialect();
+    }
     options.cim_ns = wsman_options_get_cim_namespace();
 
 

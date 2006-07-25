@@ -506,6 +506,7 @@ typedef enum __WsmanFilterDialect WsmanFilterDialect;
 struct _actionOptions {
     unsigned char       flags;
     char *              filter;
+    char *              dialect;
     char *              fragment;
     char *              cim_ns;
     unsigned int        timeout;

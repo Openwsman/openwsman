@@ -1361,7 +1361,6 @@ WsXmlNodeH ws_xml_add_qname_child(WsXmlNodeH parent,
  * if namespaces has been changed after this function is called, itis caller's
  * responsibility to update QName fields accordingly
  */
-// WsXmlAddQNameAttr
 WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node, 
         char* nameNs,
         char* name,
@@ -1504,8 +1503,6 @@ char* make_qname(WsXmlNodeH node, char* uri, char* name)
 
 
 
-
-// ws_xml_get_attr_name
 char* ws_xml_get_attr_name(WsXmlAttrH attr)
 {
     char* name = NULL;
@@ -1514,7 +1511,6 @@ char* ws_xml_get_attr_name(WsXmlAttrH attr)
     return name;
 }
 
-// ws_xml_get_attr_ns
 char* ws_xml_get_attr_ns(WsXmlAttrH attr)
 {
     char* nsUri = NULL;
@@ -1525,7 +1521,6 @@ char* ws_xml_get_attr_ns(WsXmlAttrH attr)
     return nsUri;
 }
 
-// ws_xml_get_attr_nsPrefix
 char* ws_xml_get_attr_ns_prefix(WsXmlAttrH attr)
 {
     char* prefix = NULL;
@@ -1537,7 +1532,6 @@ char* ws_xml_get_attr_ns_prefix(WsXmlAttrH attr)
 }
 
 
-// ws_xml_get_attr_value
 char* ws_xml_get_attr_value(WsXmlAttrH attr)
 {
     char* val = NULL;
@@ -1549,7 +1543,6 @@ char* ws_xml_get_attr_value(WsXmlAttrH attr)
 }
 
 
-// WsXmlFindAttrValue
 char* ws_xml_find_attr_value(WsXmlNodeH node, char* ns, char* attrName)
 {
     char* val = NULL;
@@ -1561,7 +1554,6 @@ char* ws_xml_find_attr_value(WsXmlNodeH node, char* ns, char* attrName)
     return val;
 }
 
-// WsXmlFindAttrBool
 int ws_xml_find_attr_bool(WsXmlNodeH node, char* ns, char* attrName)
 {
     int retVal = 0;
@@ -1574,7 +1566,6 @@ int ws_xml_find_attr_bool(WsXmlNodeH node, char* ns, char* attrName)
 }
 
 
-// WsXmlFindAttrULong
 unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, char* ns, char* attrName)
 {
     unsigned long retVal = 0;
@@ -1590,7 +1581,6 @@ unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, char* ns, char* attrName)
 // if ns is not defined at the node or at any of its parents, it will be defined at the root
 // if namespaces has been changed after this function is called, itis caller's
 // responsibility to update QName fields accordingly
-// WsXmlSetNodeQNameVal
 int ws_xml_set_node_qname_val(WsXmlNodeH node, char* valNsUri, char* valName)
 {
     int retVal = -1;
@@ -1607,7 +1597,6 @@ int ws_xml_set_node_qname_val(WsXmlNodeH node, char* valNsUri, char* valName)
     return retVal;
 }
 
-// WsXmlGetNodeDoc
 WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node)
 {
     WsXmlDocH doc = NULL;
@@ -1619,7 +1608,6 @@ WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node)
 }
 
 
-// WsXmlSetNodeText
 int ws_xml_set_node_text(WsXmlNodeH node, char* text)
 {
     int retVal = -1;

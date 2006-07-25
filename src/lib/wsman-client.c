@@ -379,7 +379,10 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
     if (options.filter)
     {
         WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(rqstDoc), 0 , NULL, NULL);
-        ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options.filter);
+        WsXmlNodeH filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options.filter);
+        if (options.dialect) {
+            ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options.dialect);
+        }
     }
 
     if (strcmp(op, WSENUM_PULL) == 0 ) {
