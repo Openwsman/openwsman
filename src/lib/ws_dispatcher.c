@@ -427,9 +427,8 @@ void wsman_dispatcher_list( GList *interfaces )
 }
 
 
-
-void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg) {
-
+void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg) 
+{
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(fw->cntx), NULL);
     WsXmlNodeH identify = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_WSMAN_ID, WSMID_IDENTIFY_RESPONSE , NULL);
     ws_xml_add_child(identify, XML_NS_WSMAN_ID, WSMID_PROTOCOL_VERSION , XML_NS_WS_MAN);
@@ -453,6 +452,12 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
     int len;
     if ( process_filters(op, 1) ) {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Inbound filter chain returned error");
+        if (wsman_is_fault(op->outDoc)) {
+            msg->http_code = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+        } else {
+            msg->http_code = WSMAN_STATUS_OK;
+        }
+
         if (op->outDoc) {
             ws_xml_dump_memory_enc(op->outDoc, &buf, &len, "UTF-8");
             msg->response.length = len;
@@ -543,7 +548,6 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
             }
         }
     }
-
     if (inDoc != NULL) {
         msg->in_doc = inDoc;
     }

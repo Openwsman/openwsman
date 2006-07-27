@@ -71,7 +71,8 @@ static char *get_fault_details(WsmanFaultDetailType faultDetail)
             " The specified resource URI is missing or in an incorrect format.";
         break;
     case WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE:
-        descr 	= "The requested maximal envelope size is lower than the allowed minimal size.";
+        descr 	= "The WS-Management service cannot process the request because the envelope size in the request is too small.";
+                      
         break;
     case WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED:
         descr 	= "The response that the WS-Management service computed exceeds the maximum envelope size in the request.";
@@ -242,7 +243,7 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
         subCodeNs 	= XML_NS_WS_MAN;
         subCode		= "InvalidSelectors";
         if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "The selectors for the resource were not valid";
+            reason 		= "The WS-Management service cannot process the request because the selectors for the resource are not valid.";
 
         break;
 
@@ -354,7 +355,6 @@ void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnders
 
 void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail ) 
 {
-
     if (op->inDoc == NULL)
         return;
     op->outDoc = wsman_generate_fault(op->cntx, op->inDoc, WSMAN_FAULT_ENCODING_LIMIT,
