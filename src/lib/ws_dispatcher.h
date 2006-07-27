@@ -79,6 +79,7 @@ struct __SOAP_OP_ENTRY
 	DL_List processedHeaders;
 	WsXmlDocH inDoc;   // not deleted on destroy
 	WsXmlDocH outDoc;  // not deleted on destroy
+        WsmanMessage *data;
 };
 typedef struct __SOAP_OP_ENTRY SOAP_OP_ENTRY;
 
@@ -124,6 +125,7 @@ void destroy_op_entry(SOAP_OP_ENTRY* entry);
 
 SOAP_OP_ENTRY* create_op_entry(SOAP_FW* fw,
         SOAP_DISPATCH_ENTRY* dispatch,
+        WsmanMessage *data,
         unsigned long timeout);
 
 int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry);

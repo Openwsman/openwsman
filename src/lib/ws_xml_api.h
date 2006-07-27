@@ -98,6 +98,15 @@ typedef struct __WsXmlNsData WsXmlNsData;
 
 extern WsXmlNsData g_wsNsData[];
 
+struct __WsManDialectData
+{
+	char* uri;
+	char* name;
+};
+typedef struct __WsManDialectData WsManDialectData;
+
+extern WsXmlNsData g_wsNsData[];
+extern WsManDialectData g_wsDialectData[];
 
 
 typedef int (*WsXmlEnumCallback)(WsXmlNodeH, void*);

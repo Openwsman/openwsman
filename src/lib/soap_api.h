@@ -223,8 +223,9 @@
 
 
 // Filter Dialects
-#define WSM_SELECTOR_FILTER             "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter"
-#define WSM_XPATH_FILTER                "http://www.w3.org/TR/1999/REC-xpath-19991116"
+#define WSM_SELECTOR_FILTER_DIALECT     "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter"
+#define WSM_WQL_FILTER_DIALECT          "http://schemas.microsoft.com/wbem/wsman/1/WQL"
+#define WSM_XPATH_FILTER_DIALECT        "http://www.w3.org/TR/1999/REC-xpath-19991116"
 
 
 #define WSFW_RESPONSE_STR		"Response"
@@ -461,6 +462,13 @@ struct _WsmanDataBuffer {
 };
 typedef struct _WsmanDataBuffer WsmanDataBuffer;
 
+
+struct _WsmanAuth {
+    char *username;
+    char *password;
+};
+typedef struct _WsmanAuth WsmanAuth;
+
 struct _WsmanMessage {
     const char          *method;
     WsmanStatus         status;
@@ -469,6 +477,7 @@ struct _WsmanMessage {
     WsmanDataBuffer     response;
     WsXmlDocH           in_doc;
     WsmanKnownStatusCode http_code;
+    WsmanAuth           auth_data;
 };
 typedef struct _WsmanMessage WsmanMessage;
 

@@ -394,13 +394,11 @@ int process_filters(SOAP_OP_ENTRY* op, int inbound)
     if ( !retVal && inbound )
     {
         WsXmlNodeH notUnderstoodHeader;
-        if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 )
-        {        
+        if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 ) {        
             wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
             retVal = 1;
         }
         if (validate_control_headers(op)) {
-            
             wsman_generate_encoding_fault(op, WSMAN_FAULT_DETAIL_MAX_ENVELOPE_SIZE);
             retVal = 1;
         }
@@ -471,7 +469,7 @@ int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg)
         if ( op->dispatch->serviceCallback != NULL )
             retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
         else
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "op is null");    	
+            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "op service callback is null");    	
 
         if ( (retVal = process_filters(op, 0)) == 0 ) {
             if (op->outDoc) {
@@ -524,7 +522,7 @@ void dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg)
         if ( relatesTo == NULL || (op = find_response_entry(fw, relatesTo)) == NULL ) {        	
             SOAP_DISPATCH_ENTRY* dispatch;            
             if ( (dispatch = get_dispatch_entry(fw, inDoc)) != NULL ) {
-                if ( (op = create_op_entry(fw, dispatch, 0)) == NULL ) {
+                if ( (op = create_op_entry(fw, dispatch, msg, 0)) == NULL ) {
                     wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "create_op_entry() failed");
                     destroy_dispatch_entry(dispatch);
                 }

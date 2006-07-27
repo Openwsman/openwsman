@@ -168,6 +168,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
 
     wsman_msg->request.body = (char *)msg->request.body;
     wsman_msg->request.length = msg->request.length;
+    /*
+    wsman_msg->auth_data.username = soup_server_auth_get_user(context->auth);
+    wsman_msg->auth_data.password = context->auth->basic.passwd;
+    */
 
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);

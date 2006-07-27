@@ -155,12 +155,12 @@ int  CimResource_Get_EP(SoapOpH op, void* appData )
 
 int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
-    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
     int max_elements = 0;
     WsXmlDocH doc;
     char *enum_mode;
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
+    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+    char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
 
     CimClientInfo cimclient;
     cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);

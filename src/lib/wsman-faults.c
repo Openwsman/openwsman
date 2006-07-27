@@ -211,8 +211,7 @@ void build_soap_version_fault(SOAP_FW* fw)
 
 
 int wsman_is_fault(WsXmlDocH doc) {
-    WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), 
-           XML_NS_SOAP_1_2 , SOAP_FAULT, NULL);
+    WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),  0 , XML_NS_SOAP_1_2 , SOAP_FAULT);
     if ( node != NULL )
         return 1;
     else
