@@ -492,11 +492,9 @@ void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateI
  * @param appData Application data
  * @return status
  */
-
 int ws_enumerate_stub(SoapOpH op, void* appData)
 {
     WsmanStatus *status = soap_alloc(sizeof(WsmanStatus *), 0 );
-
     SoapH soap = soap_get_op_soap(op);
     WsContextH soapCntx = ws_get_soap_context(soap);
 
@@ -582,13 +580,9 @@ WsEnumerateInfo* get_enum_info(WsContextH cntx, WsXmlDocH doc, char* cntxName, i
                 cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
         enumInfo = (WsEnumerateInfo*)ws_get_context_val(cntx, cntxName, NULL);
     }
-
     return enumInfo;
 }
 
-
-
-//WsReleaseStub
 int ws_release_stub(SoapOpH op, void* appData)
 {
     WsmanStatus *status = soap_alloc(sizeof(WsmanStatus *), 0 );
@@ -708,10 +702,11 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
             sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {        
-        wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Invalid enumeration context...");
+        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
     } else {
         if ( (retVal = endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), enumInfo, status)) ) {             
-            wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
+            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
             ws_remove_context_val(soapCntx, cntxName); 	
         } else {
             enumInfo->index++;
@@ -732,10 +727,10 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
         soap_submit_op(op);
-        //ws_xml_destroy_doc(doc);
+    } else {
+        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "doc is null");
     }    
     soap_free(status);
-
     return retVal;
 }
 

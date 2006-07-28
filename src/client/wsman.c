@@ -404,13 +404,14 @@ int main(int argc, char** argv)
         WsXmlNodeH cntxNode;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "enumContext: %s", enumContext );
         if (enumContext) {
+            int counter = 1;
             while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) {                		                		
                     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "no pull response" );
                     break;
                 }
-                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
                 if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE) ) {                		
                     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "End of sequence");
                     break;
@@ -423,6 +424,12 @@ int main(int argc, char** argv)
                     wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "No enumeration context");
                     break;
                 }
+                /*
+                if (counter == 3 ) {
+                    enumContext = "xxxx";
+                }
+                */
+                counter++;
             }
         } else {
             if (enum_response)
