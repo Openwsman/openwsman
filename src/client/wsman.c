@@ -442,7 +442,10 @@ int main(int argc, char** argv)
     }    
 
 
-    cl->ft->release(cl);        		        		
+    cl->ft->release(cl);   
+        
+    if (doc)
+        ws_xml_destroy_doc(doc);
     //soap_destroy_fw(cntx);
     //soap_free(cntx);
 

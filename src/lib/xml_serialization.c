@@ -54,7 +54,6 @@
 #include "xml_serialization.h"
 #include "wsman-debug.h"
 
-// xml_serializer_alloc
 void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 {
     void* ptr = ws_serializer_alloc(data->cntx, size);
@@ -65,14 +64,12 @@ void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 }
 
 
-// SerializerFree
 int xml_serializer_free(XmlSerializationData* data, void* buf)
 {
     return ws_serializer_free(data->cntx, buf);
 }
 
 
-// MakeDstPtr
 XML_TYPE_PTR make_dst_ptr(XmlSerializationData* data, int size)
 {
     void* ptr = data->elementBuf;
@@ -90,7 +87,6 @@ XML_TYPE_PTR make_dst_ptr(XmlSerializationData* data, int size)
 }
 
 
-// SerialiserFreeScalarMem
 void xml_serializer_free_scalar_mem(XmlSerializationData* data)
 {
     if ( XML_IS_PTR(data->elementInfo) )
@@ -101,7 +97,6 @@ void xml_serializer_free_scalar_mem(XmlSerializationData* data)
 }
 
 
-//SerialzerAddChild
 WsXmlNodeH xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = (data->name) ? data->name : data->elementInfo->name;		
@@ -109,7 +104,6 @@ WsXmlNodeH xml_serializer_add_child(XmlSerializationData* data, char* value)
 }
 
 
-//SerialzerGetChild
 WsXmlNodeH xml_serializer_get_child(XmlSerializationData* data)
 {
     char* name = (data->name) ? data->name : data->elementInfo->name;
@@ -133,7 +127,6 @@ WsXmlNodeH xml_serializer_get_child(XmlSerializationData* data)
 }
 
 
-// DoSerializeUint
 int do_serialize_uint(XmlSerializationData* data, int valSize) 
 {
     WsXmlNodeH child;
@@ -209,10 +202,6 @@ error:
 }
 
 
-
-
-
-// DoSerializeUint8
 int do_serialize_uint8(XmlSerializationData* data)
 {
     return do_serialize_uint(data, sizeof(XML_TYPE_UINT8));
@@ -242,23 +231,18 @@ int do_serialize_string(XmlSerializationData* data)
     else
         if ( data->mode == XML_SMODE_SERIALIZE )
         {
-            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing string...");
             char* valPtr = *((char**)data->elementBuf); 
 
             if ( (child = xml_serializer_add_child(data, valPtr)) == NULL )
             {
                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-            }
-            else
-            {
+            } else {
                 if ( ws_xml_get_node_text(child) == NULL )
                 {
                     ws_xml_add_node_attr(child, XML_NS_SCHEMA_INSTANCE, XML_SCHEMA_NIL, "true");
                 }
             }
-        }
-        else
-        {
+        } else {
             if ( data->mode == XML_SMODE_DESERIALIZE )
             {
                 wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "De-serializing string...");
@@ -382,7 +366,6 @@ int do_serialize_char_array(XmlSerializationData* data)
 
 int do_serialize_bool(XmlSerializationData* data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing boolean...");
     int retVal = sizeof(XML_TYPE_BOOL);
 
     if ( data->mode == XML_SMODE_FREE_MEM )
@@ -449,7 +432,6 @@ int do_serialize_bool(XmlSerializationData* data)
     return retVal;
 }
 
-//get_adjusted_size
 int get_adjusted_size(int baseSize)
 {
     int size = baseSize;
@@ -461,7 +443,6 @@ int get_adjusted_size(int baseSize)
     return size;
 }
 
-// CalculateStrucSize
 int calculate_struct_size(XmlSerializationData* data,
         int elementCount, 
         XmlSerializerInfo* elementArray)
@@ -504,7 +485,6 @@ int calculate_struct_size(XmlSerializationData* data,
     return totalSize;
 }
 
-// DoSerializeFixedSizeArray
 int do_serialize_fixed_size_array(XmlSerializationData* data)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing fixed size array...");
@@ -580,7 +560,6 @@ int do_serialize_fixed_size_array(XmlSerializationData* data)
 
 
 
-//MakeDynSizeData
 XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
 {
     XmlSerializerInfo* elementInfo = (XmlSerializerInfo*)data->elementInfo->extData;
@@ -618,7 +597,6 @@ XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
 }
 
 
-//DoSerializeDynSizeArray
 int do_serialize_dyn_size_array(XmlSerializationData* data)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing dyn. size array...");
@@ -698,7 +676,6 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
     return retVal;
 }
 
-// DoSerializeStruct
 int do_serialize_struct(XmlSerializationData* data)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing Struct...");
@@ -833,7 +810,6 @@ int do_serialize_struct(XmlSerializationData* data)
 }
 
 
-//InitializeXmlSerializationData
 void initialize_xml_serialization_data(
         XmlSerializationData* data,
         WsContextH cntx,
@@ -861,7 +837,6 @@ void initialize_xml_serialization_data(
 
 
 
-// WsSerialize
 int ws_serialize(WsContextH cntx, 
         WsXmlNodeH xmlNode, 
         XML_TYPE_PTR dataPtr, 
@@ -917,15 +892,8 @@ int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo*
 }
 
 
-//WsDeSerialize
-void* ws_deserialize(WsContextH cntx, 
-        WsXmlNodeH xmlParent, 
-        XmlSerializerInfo* info,
-        char* name,
-        char* nameNs,
-        char* elementNs,
-        int index,
-        int output)
+void* ws_deserialize(WsContextH cntx, WsXmlNodeH xmlParent, XmlSerializerInfo* info,
+        char* name, char* nameNs, char* elementNs, int index, int output)
 {
     int elementCount = 0;
     int size;
@@ -933,14 +901,8 @@ void* ws_deserialize(WsContextH cntx,
     XmlSerializationData data;
     XmlSerializerInfo* elements = (XmlSerializerInfo*)info->extData;
 
-    initialize_xml_serialization_data(&data, 
-            cntx,
-            info, 
-            NULL, 
-            XML_SMODE_BINARY_SIZE,
-            nameNs,
-            elementNs,
-            xmlParent);
+    initialize_xml_serialization_data(&data, cntx, info, NULL, XML_SMODE_BINARY_SIZE,
+            nameNs, elementNs, xmlParent);
 
     data.index = index;
     data.name = name;
@@ -989,11 +951,8 @@ int ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str,
 }
 
 
-int ws_serialize_uint32(WsContextH cntx, 
-        WsXmlNodeH parent, 
-        unsigned long val, 
-        char* nameNs,
-        char* name)
+int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent, unsigned long val, 
+        char* nameNs, char* name)
 {
     WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
     if ( node )
@@ -1006,11 +965,8 @@ int ws_serialize_uint32(WsContextH cntx,
 }
 
 
-char* ws_deserialize_str(WsContextH cntx, 
-        WsXmlNodeH parent, 
-        int index, 
-        char* nameNs, 
-        char* name)
+char* ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index, 
+        char* nameNs, char* name)
 {
     char* str = NULL;
     WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
@@ -1035,7 +991,6 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
 {
     unsigned long val = 0;
     WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
-
     if ( node ) {
         val = ws_xml_get_node_ulong(node);
     }
@@ -1066,7 +1021,6 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
 }
 
 
-// DoSerializerFree
 int do_serializer_free(WsContextH cntx, void* ptr)
 {
     DL_Node* node = NULL;
@@ -1098,7 +1052,6 @@ int do_serializer_free(WsContextH cntx, void* ptr)
     return (node != NULL);
 }
 
-// WsSerializerFree
 int ws_serializer_free(WsContextH cntx, void* ptr)
 {
     int retVal = 0;
@@ -1112,7 +1065,6 @@ int ws_serializer_free(WsContextH cntx, void* ptr)
 
 
 
-// WsSerializerFreeAll
 void ws_serializer_free_all(WsContextH cntx)
 {
     do_serializer_free(cntx, NULL);

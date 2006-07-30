@@ -30,7 +30,6 @@
 
 /**
  * @author Anas Nashif
- * @author Eugene Yarmosh
  */
 
 #include "config.h"
@@ -220,8 +219,6 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
     int max = wsen_get_max_elements(cntx, NULL);
     cim_get_enum_items(cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
     
-    //check_xpath(itemsNode, NULL);
-
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
     else
@@ -232,5 +229,48 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
 }
 
 
+
+int  CimResource_Put_EP(SoapOpH op, void* appData )
+{
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put Endpoint Called");
+    WsXmlDocH doc = NULL;
+    WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
+    SoapH soap = soap_get_op_soap(op);
+    WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+    GList *keys = wsman_get_selector_list(cntx, NULL);
+    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+
+    if (keys)
+    {
+        CimClientInfo cimclient;
+        cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
+        if (!cimclient.cc)
+            return 1;		
+        if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
+            WsXmlNodeH body = ws_xml_get_soap_body(doc);
+            WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
+            cim_put_instance_from_enum(cimclient.cc, resourceUri , keys, in_body, body, status);
+        }
+
+        if (status->rc != 0) {
+            ws_xml_destroy_doc(doc);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
+        }
+        if (cimclient.cc) CMRelease(cimclient.cc);
+    } else {
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
+    } 
+
+    if ( doc ) {
+        soap_set_op_doc(op, doc, 0);
+        soap_submit_op(op);
+    } else {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
+    }
+
+    soap_free(status);
+    return 0;
+
+}
 
 

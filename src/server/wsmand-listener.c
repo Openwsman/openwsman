@@ -194,10 +194,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         soup_message_set_status (msg, SOUP_STATUS_INTERNAL_SERVER_ERROR);        		
         goto DONE;
     } else {		 	
-	// Set SoupMessage
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
     	msg->response.length = wsman_msg->response.length;
     	msg->response.body = (char *)wsman_msg->response.body;
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Response: %s", (char *)wsman_msg->response.body);
         soup_message_set_status (msg, wsman_msg->http_code);
     }
 

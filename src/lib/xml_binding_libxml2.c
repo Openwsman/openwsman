@@ -88,7 +88,7 @@ int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
     xmlDocPtr doc;
     xmlNodePtr rootNode;
 
-    if ( (doc = xmlNewDoc("1.0")) == NULL ||
+    if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL ||
             (rootNode = xmlNewNode(NULL, BAD_CAST rootName)) == NULL )
     {
         if ( doc )

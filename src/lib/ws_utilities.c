@@ -578,60 +578,29 @@ void soap_sleep(unsigned long tm)
 }
 
 
-struct pair_t * parse_query(const char *string, int separator)
+GHashTable* parse_query (char *query)
 {
-    int i;
-    char *p;
-    char *query_string;
-    size_t query_len;
-    struct pair_t *query;
-
-    if(!string)
-        return NULL;
-
-    if((query = (struct pair_t *)malloc(sizeof(struct pair_t)*MAX_QUERY_KEYS))
-            == NULL)
+    GHashTable *args;
+    gchar **vec, **l;
+    gchar *key, *val;
+    args = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    if (query && query[0])
     {
-        fprintf(stderr, "Could not malloc\n");
-        exit (1);
-    }
-
-    query_len = strlen(string);
-    if((query_string = malloc(query_len + 1)) == NULL)
-    {
-        fprintf(stderr, "Could not malloc\n");
-        exit (1);
-    }
-
-    memcpy(query_string, string, query_len + 1);
-
-    for(i = 0, p = query_string; i < MAX_QUERY_KEYS && *p; i++, p++) {
-        while(*p == ' ') p++;
-
-        query[i].name = p;
-        while(*p != '=' && *p != separator && *p) p++;
-        if(*p != '=') {
-            *p = 0;
-            query[i].value = NULL;
-            continue;
+        vec = g_strsplit (query, "&", 0);
+        for (l = vec; *l; l++) {
+            key = g_strdup (*l);
+            val = strchr (key, '=');
+            if(val) {
+                *val = 0;
+                val++;
+            }
+            g_hash_table_replace (args, key, val);
         }
-        *p++ = 0;
-
-        query[i].value = p;
-        while(*p != separator && *p) p++;
-        *p = 0;
+        g_strfreev (vec);
     }
-
-    query[i].name = NULL;
-
-    for(i = 0; query[i].name; i++) {
-        uri_unescape(query[i].name);
-        // FIXME
-        //uri_unescape(query[i].value);
-    }
-
-    return query;
+    return args;
 }
+
 
 int xdigit_to_int(int c)
 {

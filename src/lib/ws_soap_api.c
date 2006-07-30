@@ -41,6 +41,7 @@
 #include <ctype.h>
 #include <glib.h>
 
+#include <libxml/uri.h>
 
 #include "ws_utilities.h"
 #include "ws_xml_api.h"
@@ -301,6 +302,11 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
         action = ep->inAction;
         callbackProc = (SoapServiceCallback)ep->serviceEndPoint;   
         break;        
+    case WS_DISP_TYPE_PUT_RAW:
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Put Raw");
+        action = ep->inAction;
+        callbackProc = (SoapServiceCallback)ep->serviceEndPoint;   
+        break;        
     case WS_DISP_TYPE_PUT:
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Put");
         action = ep->inAction;
@@ -435,41 +441,24 @@ int ws_transfer_put(SoapOpH op, void* appData)
 
     if ( (retVal = endPoint(cntx, data, &outData, status)) )
     {
-        wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
-                WSMAN_FAULT_INVALID_SELECTORS, 
-                -1);
-    }
-    else
-    {
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
+    } else {
         doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Transfer Put 5");
-
         if ( outData ) {
-            ws_serialize(cntx, 
-                    ws_xml_get_soap_body(doc), 
-                    outData, 
-                    typeInfo, 
-                    NULL,
-                    (char*)info->data, 
-                    (char*)info->data,
-                    1); 
-
+            ws_serialize(cntx, ws_xml_get_soap_body(doc), outData, 
+                    typeInfo, NULL, (char*)info->data, (char*)info->data, 1); 
             ws_serializer_free_mem(cntx, outData, typeInfo);
         }
     }
-
-    if ( doc )
-    {
+    if ( doc ) {
         soap_set_op_doc(op, doc, 0);
         soap_submit_op(op);
-        //ws_xml_destroy_doc(doc);
     }
-
     ws_serializer_free_all(cntx);
-    //ws_destroy_context(cntx);
-
     return retVal;
 }
+
+
 
 
 void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo) {
@@ -597,12 +586,12 @@ int ws_release_stub(SoapOpH op, void* appData)
             sizeof(cntxName), WSENUM_RELEASE, NULL);
 
     if ( enumInfo == NULL ) {
-        wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);                
+        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);                
     } else {
         if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, status)) )
         {            
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "endPoint error");        		
-            wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
+            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
                     WSMAN_FAULT_INTERNAL_ERROR, OWSMAN_FAULT_DETAIL_ENDPOINT_ERROR);   	            
         } else {
             doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
@@ -638,11 +627,11 @@ int ws_pull_stub(SoapOpH op, void* appData)
             cntxName, sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {
-        wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
+        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
                 WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);                   
     } else {
         if ( (retVal = endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), enumInfo, status)) ) {             
-            wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
+            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_FAULT_INVALID_ENUMERATION_CONTEXT, -1);
             ws_remove_context_val(soapCntx, cntxName); 	
         } else {
             enumInfo->index++;
@@ -683,8 +672,6 @@ int ws_pull_stub(SoapOpH op, void* appData)
     return retVal;
 }
 
-
-
 int ws_pull_stub_raw(SoapOpH op, void* appData)
 {
     WsmanStatus *status = soap_alloc(sizeof(WsmanStatus *), 0 );
@@ -721,7 +708,6 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
                     ws_serialize_str(soapCntx, response, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);          
                 }
             }
-
         }
     }
     if ( doc ) {
@@ -1461,7 +1447,6 @@ char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 
 char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
 {
-    //SoapH soap = WsContextGetRuntime(cntx);
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
     WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
     char* val = (!node) ? NULL : ws_xml_get_node_text(node);
@@ -1472,19 +1457,14 @@ char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
 
 char *wsman_remove_query_string(char * resourceUri)
 {
-    const char *q = NULL;
-    if (resourceUri != NULL )
-        q = strchr(resourceUri, '?');
-
-    if (q)
-    {
-        int len =  q - resourceUri;
-        char *res = (char *)malloc(len+1);
-        res = strndup( resourceUri,  len);    
-        return res;
-    } else {
-        return resourceUri;
-    }
+    char *result;
+    xmlURIPtr uri;
+    uri = xmlParseURI((const char *)resourceUri);
+    uri->query = NULL;
+    result =  (char *)xmlSaveUri(uri);
+    if (uri)
+        xmlFreeURI(uri);
+    return result;
 }
 
 GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
@@ -1498,8 +1478,6 @@ GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
     {
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-
-
         if ( node )
         {
             WsXmlNodeH selector;
@@ -1580,8 +1558,7 @@ char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc)
     return val;
 }
 
-// WsManAddSelector
-WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, char* val)
+void  wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val)
 {
     WsXmlNodeH selector = NULL;
     WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
@@ -1590,21 +1567,12 @@ WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, 
     {
         if ( (selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, val)) )
         {
-            ws_xml_add_node_attr(selector, 
-                    NULL, //XML_NS_WS_MAN, 
-                    WSM_NAME, 
-                    name);
+            ws_xml_add_node_attr(selector, NULL,  WSM_NAME, name);
         }
     }
-
-    return selector;
+    return;
 }
 
-WsXmlNodeH wsman_set_selector(WsContextH cntx, WsXmlDocH doc, char* name, char* val)
-{
-    WsXmlNodeH header = ws_xml_get_soap_header(doc);
-    return wsman_add_selector(cntx, header, name, val);
-}
 
 
 int soap_add_defalt_filter(SoapH soap, SoapServiceCallback callbackProc,

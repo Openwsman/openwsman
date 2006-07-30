@@ -68,7 +68,6 @@
  * @return The XML node with the operation
  *
  */
-// WsXmlGetSoapOperation
 WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
 {
     WsXmlNodeH node = NULL;
@@ -118,7 +117,6 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char* soapVersion)
  * @param srcDoc the Source document
  * @return The new XML document
  */
-//WsXmlDupDoc
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
 {
     WsXmlDocH dst = NULL;
@@ -157,7 +155,6 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
  * @param dstNode Destination XML node
  * @param srcNode Source Node
  */
-// WsXmlDupAtts
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
     int i;
@@ -271,7 +268,6 @@ void epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
  * @param action the Response action
  * @return Response envelope
  */
-// WsCreateRespEnvelope
 WsXmlDocH ws_create_response_envelope(struct __WsContext* cntx, 
         WsXmlDocH rqstDoc, 
         char* action)
@@ -322,7 +318,6 @@ WsXmlDocH ws_create_response_envelope(struct __WsContext* cntx,
  * @param name Node name
  * @return found text 
  */
-// WsXmlFindTextInDoc
 char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
@@ -337,7 +332,6 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
  * @param bRecursive Recursive flag
  * @return found text 
  */
-// WsXmlFindTextInTree
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive)
 {
     WsXmlNodeH node = head;
@@ -355,7 +349,6 @@ char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRe
  * Free Memory
  * @param ptr Pointer to be freed
  */
-// WsXmlFreeMemory
 void ws_xml_free_memory(void* ptr)
 {
     xml_parser_free_memory(ptr);
@@ -366,7 +359,6 @@ void ws_xml_free_memory(void* ptr)
  * @param doc XML document
  * @return SOAP handle
  */
-// WsXmlGetDocSoapHandle
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 {
     SoapH soap = NULL;
@@ -459,7 +451,6 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-// WsXmlParserInitialize
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 {
     SOAP_FW* fw = (SOAP_FW*)soap;
@@ -527,8 +518,6 @@ void ws_xml_parser_destroy(SoapH soap)
  * @param doc XML document (Envelope)
  * @return XML node of the Header
  */
-
-// WsXmlGetSoapHeader
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
 {
     return ws_xml_get_soap_element(doc, SOAP_HEADER);
@@ -544,7 +533,6 @@ WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
  * @return 
  * 
  */
-// WsXmlEnumChildren
 int ws_xml_enum_children(WsXmlNodeH parent, 
         WsXmlEnumCallback callback, 
         void* data, 
@@ -570,7 +558,6 @@ int ws_xml_enum_children(WsXmlNodeH parent,
  * @param parent XML Node parent
  * @return Count of children in node
  */
-// ws_xml_get_childCount
 int ws_xml_get_child_count(WsXmlNodeH parent)
 {
     int count = 0;
@@ -589,7 +576,6 @@ int ws_xml_get_child_count(WsXmlNodeH parent)
  * @param data Callback data
  * @param bRecursive Recursive flag
  */
-// WsXmlEnumTree
 int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback, void* data, int bRecursive)
 {
     int retVal = 0;
@@ -609,7 +595,6 @@ int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback, void* data, int
  * @param node XML node
  * @return Namespace of node
  */
-// ws_xml_get_node_name_ns
 char* ws_xml_get_node_name_ns(WsXmlNodeH node)
 {
     char* uri = NULL;
@@ -625,7 +610,6 @@ char* ws_xml_get_node_name_ns(WsXmlNodeH node)
  * @param node XML node
  * @return Node local name
  */
-// ws_xml_get_node_local_name
 char* ws_xml_get_node_local_name(WsXmlNodeH node)
 {
     char* name = NULL;
@@ -643,14 +627,10 @@ char* ws_xml_get_node_local_name(WsXmlNodeH node)
 WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc)
 {
     WsXmlNodeH node = NULL;
-
     if ( doc != NULL )
         node = xml_parser_get_root(doc);
-
     return node;
 }
-
-
 
 /**
  * Get Node text
@@ -662,10 +642,8 @@ char* ws_xml_get_node_text(WsXmlNodeH node) {
     if ( node ) {
         text = xml_parser_node_query(node, XML_TEXT_VALUE);
     }
-
     return text;	
 }
-
 
 /**
  * Read memory buffer into an XMl document
@@ -676,7 +654,6 @@ char* ws_xml_get_node_text(WsXmlNodeH node) {
  * @param options Parser options
  * @return XML document
  */
-// WsXmlReadMemory
 WsXmlDocH ws_xml_read_memory(
         SoapH soap, 
         char* buf, 
@@ -744,7 +721,6 @@ WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName)
  * @return status
  * 
  */
-// WsXmlSetNodeName
 int ws_xml_set_node_name(WsXmlNodeH node, char* nsUri, char* name)
 {
     int retVal = -1;
@@ -770,8 +746,6 @@ int ws_xml_set_node_name(WsXmlNodeH node, char* nsUri, char* name)
  * Destroy XML document
  * @param doc XML document
  */
-
-// ws_xml_destroy_doc
 void ws_xml_destroy_doc(WsXmlDocH doc) {
     if ( doc )
     {
@@ -788,7 +762,6 @@ void ws_xml_destroy_doc(WsXmlDocH doc) {
  * @param _data Callback data
  * @return status
  */
-// FindInTreeCallback
 int find_in_tree_callback(WsXmlNodeH node, void* _data)
 {
     FindInTreeCallbackData* data = (FindInTreeCallbackData*)_data;
@@ -808,7 +781,6 @@ int find_in_tree_callback(WsXmlNodeH node, void* _data)
  * @param bRecursive Recursive flag
  * @return Result XML node
  */
-// WsXmlFindInTree
 WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, char* nsUri, char* localName, int bRecursive)
 {
     FindInTreeCallbackData data;
@@ -828,7 +800,6 @@ WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, char* nsUri, char* localName, in
  * @param doc XML document
  * @return Result XML node
  */
-// WsXmlGetSoapBody
 WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc)
 {
     return ws_xml_get_soap_element(doc, SOAP_BODY);
@@ -842,7 +813,6 @@ WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc)
  * @param name Node name
  * @return Result XML node
  */
-// GetSoapElement
 WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, char* name)
 {
     WsXmlNodeH node = NULL;
@@ -914,7 +884,6 @@ WsXmlNodeH ws_xml_get_child(WsXmlNodeH parent, int index, char* nsUri, char* loc
  * @return Returns 1 if node is QName
  * @brief Shortcats for QName manipulation name can be NULL, in this case just check namespace
  */
-// WsXmlIsNodeQName
 int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
 {
     int retVal = 0;
@@ -981,7 +950,6 @@ WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
  * @param doc XML document
  * @return XML node with envelope
  */
-// WsXmlGetSoapEnvelope
 WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
@@ -1000,8 +968,6 @@ WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc)
  * @param doc XML document
  * @return XML node with fault, if NULL is returned, then the document is not a fault
  */
-
-// WsXmlGetSoapFault
 WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
 {
     char* soapUri = ws_xml_get_node_name_ns(ws_xml_get_doc_root(doc));
@@ -1021,7 +987,6 @@ WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
  * @param node XML node
  * @return Node parent
  */
-// WsXmlGetNodeParent
 WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
 {
     WsXmlNodeH parent = NULL;
@@ -1040,8 +1005,6 @@ WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
  * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero) 
  * walks up the parent chain
  */
-
-// WsXmlNsEnum
 void ws_xml_ns_enum(WsXmlNodeH node, 
         WsXmlNsEnumCallback callback,
         void* data,
@@ -1066,8 +1029,6 @@ void ws_xml_ns_enum(WsXmlNodeH node,
  * (if bIncludeParents isn't zero) walks up the parent chain
  * returns prefix for the namespace and node where it defined
  */
-
-// WsXmlFindNs
 WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, char* nsUri, char* prefix, int bWalkUpTree)
 {
     WsXmlFindNsData data;
@@ -1090,7 +1051,6 @@ WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, char* nsUri, char* prefix, int bWalkUpT
  * @param _data Callback Data
  * @return status
  */
-// WsXmlFindNsCallback
 int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void* _data)
 {
     WsXmlFindNsData* data = (WsXmlFindNsData*)_data;
@@ -1110,7 +1070,6 @@ int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void* _data)
     return (data->ns != NULL);
 }
 
-// WsXmlGetNodeNameNsPrefix
 char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
 {
     char* prefix = NULL;
@@ -1120,7 +1079,6 @@ char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
 
 }
 
-// WsXmlGetNodeNameNsPrefix
 char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
 {
     char* uri = NULL;
@@ -1137,7 +1095,6 @@ char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
  * @param bWalkUpTree Tree Flag
  * @return Count
  */
-// WsXmlGetNsCount
 int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree)
 {
     int count = xml_parser_get_count(node, XML_COUNT_NS, bWalkUpTree);
@@ -1151,7 +1108,6 @@ int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree)
  * @param ns Namespace
  * @return Prefix of Namespace
  */
-// WsXmlGetNsPrefix
 char* ws_xml_get_ns_prefix(WsXmlNsH ns)
 {
     if ( ns )
@@ -1165,7 +1121,6 @@ char* ws_xml_get_ns_prefix(WsXmlNsH ns)
  * @param ns Namespace
  * @return URI of namespace, NULL of not found 
  */
-// WsXmlGetNsUri
 char* ws_xml_get_ns_uri(WsXmlNsH ns)
 {
     if ( ns )
@@ -1181,7 +1136,6 @@ char* ws_xml_get_ns_uri(WsXmlNsH ns)
  * @param index Index
  * @return Namespace
  */
-// WsXmlGetNs
 WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
 {
     if ( node )
@@ -1196,7 +1150,6 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
  * @param callback Namespace Enumeration callback
  * @param data Callback data 
  */
-// NsEnumAtNode
 int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
 {
     int retVal = 0;
@@ -1335,7 +1288,6 @@ WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDef
  * responsibility to update QName fields accordingly
  * 
  */
-// WsXmlAddQNameChild
 WsXmlNodeH ws_xml_add_qname_child(WsXmlNodeH parent, 
         char* nameNs,
         char* name,
@@ -1383,7 +1335,6 @@ WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
 }
 
 
-// ws_xml_get_node_attrCount
 int ws_xml_get_node_attr_count(WsXmlNodeH node)
 {
     int count = 0;
@@ -1395,7 +1346,6 @@ int ws_xml_get_node_attr_count(WsXmlNodeH node)
 }
 
 
-// WsXmlAddNodeAttr
 WsXmlAttrH ws_xml_add_node_attr(WsXmlNodeH node, char* nsUri, char* name, char* value)
 {
     WsXmlAttrH attr = NULL;
@@ -1407,7 +1357,6 @@ WsXmlAttrH ws_xml_add_node_attr(WsXmlNodeH node, char* nsUri, char* name, char* 
 }
 
 
-// WsXmlRemoveNodeAttr
 void ws_xml_remove_node_attr(WsXmlAttrH attr)
 {
     if ( attr )
@@ -1415,14 +1364,11 @@ void ws_xml_remove_node_attr(WsXmlAttrH attr)
 }
 
 
-// ws_xml_get_node_attr
 WsXmlAttrH ws_xml_get_node_attr(WsXmlNodeH node, int index)
 {
     return xml_parser_attr_get(node, index);
 }
 
-
-// WsXmlFindNodeAttr
 WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
 {
     WsXmlAttrH attr = NULL;
@@ -1453,7 +1399,6 @@ WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
 }
 
 
-// WsXmlGetNodeULong
 unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
 {
     unsigned long val = 0;
@@ -1465,7 +1410,6 @@ unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
 }
 
 
-// WsXmlSetNodeULong
 int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
 {
     int retVal = -1;

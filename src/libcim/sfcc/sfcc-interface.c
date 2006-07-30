@@ -41,6 +41,9 @@
 #include "ws_utilities.h"
 
 
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#include <libxml/xmlstring.h>
 
 #include "ws_errors.h"
 #include "ws_xml_api.h"
@@ -112,6 +115,152 @@ void class2xml( CMPIConstClass * class, WsXmlNodeH node, char *resourceUri )
    }  
 
    if (classname) CMRelease(classname);
+}
+
+
+
+
+void xml2property( CMPIInstance *instance, CMPIData data , char *name, char *value )
+{
+    CMPIType type = data.type;
+
+    if (type & CMPI_ARRAY) {
+    }
+    else if (type & CMPI_ENC) {
+
+        switch (type) {
+        case CMPI_instance:
+            break;
+
+        case CMPI_ref:
+            break;
+
+        case CMPI_args:
+            break;
+
+        case CMPI_filter:
+            break;
+
+        case CMPI_string:
+        case CMPI_numericString:
+        case CMPI_booleanString:
+        case CMPI_dateTimeString:
+        case CMPI_classNameString:
+            CMSetProperty(instance, name, value, CMPI_chars);
+            break;
+        case CMPI_dateTime:
+            break;
+        }
+
+    }
+    else if (type & CMPI_SIMPLE) {
+
+        int yes = 0;
+        switch (type) {
+        case CMPI_boolean:
+            if (strcmp(value, "true") == 0 )
+                yes = 1;
+            CMSetProperty(instance, name, (CMPIValue *)&yes, CMPI_boolean);
+            break;
+        case CMPI_char16:
+            CMSetProperty(instance, name, value, CMPI_chars);
+             break;
+        }
+
+    }
+    else if (type & CMPI_INTEGER) {
+
+        unsigned long tmp;
+        unsigned long long tmp_ll;
+        int val;
+        long val_l;
+        long long val_ll;
+        switch (type) {
+        case CMPI_uint8:
+            tmp = strtoul(value, NULL, 10);
+            CMSetProperty(instance, name, (CMPIValue *)&tmp, type);
+            break;
+        case CMPI_sint8:
+            val = atoi(value);
+            CMSetProperty(instance, name, (CMPIValue *)&val, type);
+            break;
+        case CMPI_uint16:
+            tmp = strtoul(value, NULL, 10);
+            CMSetProperty(instance, name, (CMPIValue *)&tmp, type);
+            break;
+        case CMPI_sint16:
+            val = atoi(value);
+            CMSetProperty(instance, name, (CMPIValue *)&val, type);
+            break;
+        case CMPI_uint32:
+            tmp = strtoul(value, NULL, 10);
+            CMSetProperty(instance, name, (CMPIValue *)&tmp, type);
+            break;
+        case CMPI_sint32:
+            val_l = atol(value);
+            CMSetProperty(instance, name, (CMPIValue *)&val_l, type);
+            break;
+        case CMPI_uint64:
+            tmp_ll = strtoull(value, NULL, 10);
+            CMSetProperty(instance, name, (CMPIValue *)&tmp, type);
+            break;
+        case CMPI_sint64:
+            val_ll = atoll(value);
+            CMSetProperty(instance, name, (CMPIValue *)&val_ll, type);
+            break;
+        }
+
+    }
+    else if (type & CMPI_REAL) {
+
+        switch (type) {
+        case CMPI_real32:
+            break;
+        case CMPI_real64:
+            break;
+        }
+
+    }
+
+    /*
+    char *valuestr = NULL;
+    if (CMIsArray(data)) 
+    {
+        if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
+            WsXmlNodeH nilnode = ws_xml_add_child(node, resourceUri, name , NULL);
+            ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
+            return;
+        }
+        CMPIArray *arr   = data.value.array;
+        CMPIType  eletyp = data.type & ~CMPI_ARRAY;
+        int j, n;
+        n = CMGetArrayCount(arr, NULL);
+        for (j = 0; j < n; ++j) {
+            CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
+            valuestr = value2Chars(eletyp, &ele.value);
+            ws_xml_add_child(node, resourceUri, name , valuestr);
+            free (valuestr);
+        }
+    } else {
+        if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
+            WsXmlNodeH nilnode = NULL, refpoint = NULL;
+
+            if (data.type ==  CMPI_ref) {
+                refpoint =  ws_xml_add_child(node, resourceUri, name , NULL);
+                path2xml(refpoint, resourceUri,  &data.value);
+            } else {
+                valuestr = value2Chars(data.type, &data.value);
+                nilnode = ws_xml_add_child(node, resourceUri, name , valuestr);
+
+                if (valuestr) free (valuestr);
+            }
+        } else {
+            WsXmlNodeH nilnode = ws_xml_add_child(node, resourceUri, name , NULL);
+            ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
+            
+        }
+    }
+    */
 }
 
 void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUri)
@@ -196,6 +345,42 @@ void cim_getEprObjAt(WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode, char *reso
     return;
 }
 
+
+void xml2instance( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
+{   
+   int i;
+   CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+   CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
+   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
+
+   int numproperties = instance->ft->getPropertyCount(instance, NULL);
+   wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "properties: %d", numproperties);
+   char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
+
+   WsXmlNodeH r = ws_xml_get_child(body, 0, resourceUri, className);
+       
+   if (numproperties) 
+   {
+      for (i=0; i<numproperties; i++) {
+         CMPIString * propertyname;
+         CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
+         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "property: %s", (char *)propertyname->hdl);
+         WsXmlNodeH child  = ws_xml_get_child(r, 0, resourceUri, (char *)propertyname->hdl);
+         char *value =  ws_xml_get_node_text(child);
+         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "property value: %s", value);
+         xml2property(instance, data, (char *)propertyname->hdl, value );
+         CMRelease(propertyname);
+      }
+   }
+
+   if (classname) CMRelease(classname);
+   if (namespace) CMRelease(namespace);
+   if (objectpath) CMRelease(objectpath);
+}
+
+
+
+
 void instance2xml( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
 {   
    CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
@@ -204,12 +389,13 @@ void instance2xml( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri)
 
    int numproperties = instance->ft->getPropertyCount(instance, NULL);
    int i;
-    
    char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
 
    WsXmlNodeH r = ws_xml_add_child(body, NULL, className , NULL);
-   if (!ws_xml_ns_add(r, resourceUri, "p" ))
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "namespace failed: %s", resourceUri);
+   WsXmlNsH ns = ws_xml_ns_add(r, resourceUri, "p" );
+   //FIXME
+   xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns );
+
    if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, "xsi" ))
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "namespace failed: %s", resourceUri);
        
@@ -340,6 +526,112 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
     if (argsin) CMRelease(argsin);
     return;
 }
+
+
+
+void cim_put_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH in_body, WsXmlNodeH body,
+        WsmanStatus *status) 
+{
+    CMPIInstance * instance;
+    CMPIObjectPath * objectpath;    
+    CMPIObjectPath * objectpath_final;    
+    CMPIObjectPath * objectpath1;    
+    CMPIStatus sfcc_status, rc;
+    CMPIEnumeration * enumeration;
+    CMPIString *yy;
+    GList *node = keys;
+    
+    char *class_name = resourceUri + sizeof(XML_NS_CIM_CLASS);
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+    objectpath1 = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+    /*
+     *  Enumerate all all instances of this class
+     */
+    enumeration = cc->ft->enumInstanceNames(cc, objectpath, &sfcc_status);
+    //enumeration = cc->ft->enumInstances(cc, objectpath,0 , NULL, &sfcc_status);
+    if (sfcc_status.rc != 0 ) {
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "enumInstances() rc=%d, msg=%s",
+            sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
+        cim_to_wsman_status(sfcc_status, status);
+        return;
+    }
+    /*
+     * Now create an object path with the keys
+     */
+    while (node) {    	
+        WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
+        CMAddKey(objectpath1, selector->key, selector->val, CMPI_chars);    	
+        node = g_list_next (node);
+    }
+    /*
+     * Create a string from the  object path
+     */
+    yy = CMObjectPathToString(objectpath1, NULL);
+
+    /*
+     * Go through all enumerated instances and change the class name to the superclass and compare strings.
+     * The matching string to the yy objectpath is the one we need. Get the instance of that objectpath we found.
+     */
+    int match = 0;
+    int invalid_key = 0;
+    int valid_keys = 0;
+    while (enumeration->ft->hasNext(enumeration, NULL)) {
+        CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+        CMPIObjectPath *op = CMClone(data.value.ref, NULL);
+        // Check keys:
+        
+        if (!valid_keys) {
+            node = g_list_first(keys);
+            while (node) {    	
+                WsSelectorInfo* selector = ( WsSelectorInfo*) node->data;
+                CMGetKey(op, selector->key, &rc);
+                if (rc.rc!=0)
+                    invalid_key = 1;
+                node = g_list_next (node);
+            }
+            if (invalid_key) {
+                status->rc = WSMAN_FAULT_INVALID_SELECTORS;
+                break;
+            }
+            valid_keys = 1;
+        }
+        
+        //CMPIObjectPath *op = CMGetObjectPath(data.value.inst, NULL);
+        CMSetClassName(op, class_name);
+        CMSetNameSpace(op, CIM_NAMESPACE);
+        CMPIString *xx = CMObjectPathToString(op, NULL);
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "%s", CMGetCharsPtr(xx, NULL) );
+        if (strcmp(CMGetCharsPtr(xx, NULL), CMGetCharsPtr(yy, NULL)) == 0 ) {
+            wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "match..." );
+            objectpath_final =  CMClone(data.value.ref, NULL);
+            CMSetNameSpace(objectpath_final, CIM_NAMESPACE);
+            match = 1;
+            break;
+        }
+        if (op) CMRelease(op);
+    }
+
+    if (objectpath_final && match) {
+        instance = cc->ft->getInstance(cc, objectpath_final, CMPI_FLAG_DeepInheritance, NULL, &sfcc_status);
+        xml2instance(instance, in_body, resourceUri);
+        sfcc_status = cc->ft->setInstance(cc, objectpath_final, instance,  0, NULL );
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "modifyInstance() rc=%d, msg=%s",
+                sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
+        cim_to_wsman_status(sfcc_status, status);
+        if (sfcc_status.rc == 0 ) {
+            if (instance)
+                instance2xml(instance, body, resourceUri);
+        } 
+        if (objectpath_final) CMRelease(objectpath_final);
+        if (instance) CMRelease(instance);
+    }
+
+
+    if (objectpath) CMRelease(objectpath);
+    if (objectpath1) CMRelease(objectpath1);
+    if (enumeration) CMRelease(enumeration);
+}
+
 
 void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH body,
         WsmanStatus *status) 

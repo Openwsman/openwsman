@@ -608,7 +608,6 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
     if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
     {        
         WsmanFaultCodeType fault_code = ws_is_valid_envelope(fw, doc);
-
         if  ( ws_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK )
         {            
             wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
@@ -620,9 +619,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
             ws_xml_destroy_doc(doc);
             doc = NULL;            
         }        
-    }
-    else 
-    {
+    } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
     }
     free(buf);

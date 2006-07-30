@@ -37,6 +37,10 @@ void cim_connect_to_cimom(
 
 
 
+void cim_put_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys, WsXmlNodeH in_body, WsXmlNodeH body,
+        WsmanStatus *status); 
+void xml2instance( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri);
+void xml2property( CMPIInstance *instance, CMPIData data , char *name , char *value);
 void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUri);
 void instance2xml( CMPIInstance *instance , WsXmlNodeH body, char  *resourceUri);
 extern char *value2Chars(CMPIType type, CMPIValue * value);

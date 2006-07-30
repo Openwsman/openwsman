@@ -88,7 +88,7 @@ struct pair_t {
 
 int xdigit_to_int(int c);
 void uri_unescape(char *ptr);
-struct pair_t * parse_query(const char *string, int separator);
+GHashTable * parse_query(char *string);
 
 /**/
 

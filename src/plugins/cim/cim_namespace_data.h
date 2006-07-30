@@ -22,6 +22,7 @@ int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStat
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 int CimResource_Get_EP(SoapOpH op, void* appData);
 int CimResource_Custom_EP(SoapOpH op, void* appData);
+int  CimResource_Put_EP(SoapOpH op, void* appData);
 
 SER_DECLARE_TYPE(CimResource);
 SER_DECLARE_EP_ARRAY(CimResource);
@@ -29,7 +30,5 @@ SER_DECLARE_EP_ARRAY(CimResource);
 void get_endpoints(GModule *self, void **data);
 int init (GModule *self, void **data );
 void cleanup( GModule *self, void *data );
-
-
 
 #endif // __WS_COMPUTER_SYSTEM_H__

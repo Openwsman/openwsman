@@ -534,9 +534,9 @@ char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
         
         
-WsXmlNodeH wsman_add_selector(WsContextH cntx, WsXmlNodeH baseNode, char* name, char* val);
+void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
-WsXmlNodeH wsman_set_selector(WsContextH cntx, WsXmlDocH doc, char* name, char* val);
+//void wsman_set_selector( WsXmlDocH doc, char* name, char* val);
 char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
@@ -700,6 +700,7 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 #define WS_DISP_TYPE_GET_RAW				13
 #define WS_DISP_TYPE_GET_NAMESPACE				14
 #define WS_DISP_TYPE_CUSTOM_METHOD				15
+#define WS_DISP_TYPE_PUT_RAW				16
 
 #define WS_DISP_TYPE_PRIVATE				0xfffe
 
@@ -713,6 +714,10 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 #define END_POINT_TRANSFER_GET_RAW(t, ns)\
 	{ WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
+
+#define END_POINT_TRANSFER_PUT_RAW(t, ns)\
+	{ WS_DISP_TYPE_PUT_RAW, NULL, NULL, TRANSFER_ACTION_PUT, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}	  
 
 #define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)\
 	{ WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,\

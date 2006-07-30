@@ -126,11 +126,11 @@ struct _WsManConnection {
 typedef struct _WsManConnection WsManConnection;
 
 struct _WsManClientEnc {
-   	WsManClient          	enc;
-	WsContextH		wscntx;
-   	WsManClientData      	data;
-   	WsManCredentialData  	certData;
-   	WsManConnection     	*connection;
+    WsManClient          	enc;
+    WsContextH		wscntx;
+    WsManClientData      	data;
+    WsManCredentialData  	certData;
+    WsManConnection     	*connection;
 };
 
 char* wsman_make_action(char* uri, char* opName);
@@ -193,10 +193,7 @@ WsXmlDocH ws_send_get_response(WsManClient *cl,
 int soap_submit_client_op(SoapOpH op, WsManClient *cl );        
 
 
-char* wsman_add_selector_from_uri(
-	WsManClient *cl, 
-	WsXmlDocH doc, 
-	char *resourceUri);
+void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
 
 
 char *wsenum_get_enum_context(WsXmlDocH doc);
