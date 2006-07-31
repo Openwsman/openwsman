@@ -439,6 +439,7 @@ void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg)
     ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
     msg->response.length = len;
     msg->response.body = strndup(buf, len);
+    msg->http_code = WSMAN_STATUS_OK;
 
     soap_free(buf);
     ws_xml_destroy_doc(doc);
