@@ -60,7 +60,7 @@ WsXmlNsData g_wsNsData[] =
     {XML_NS_SOAP_1_1, "s11"},
     {XML_NS_SOAP_1_2, "s"},
     //{XML_NS_SOAP_1_2, "SOAP-ENV"},
-    //{XML_NS_XML_NAMESPACES, "ns"},
+    // {XML_NS_XML_NAMESPACES, "ns"},
     {XML_NS_XML_NAMESPACES, "xml"}, // SUN stack requires the prefix to be xml
     {XML_NS_ADDRESSING, "wsa"},
     {XML_NS_DISCOVERY, "wsd"},
@@ -703,9 +703,12 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
                 wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, enumInfo);
                 WsXmlNodeH body =   ws_xml_get_soap_body(doc);
                 WsXmlNodeH response = ws_xml_get_child(body, 0 , XML_NS_ENUMERATION,WSENUM_PULL_RESP);
-
                 if (enumInfo->index == enumInfo->totalItems) {
                     ws_serialize_str(soapCntx, response, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);          
+                }
+                else if ( enumId ) {
+                    ws_serialize_str(soapCntx, response, enumId, 
+                            XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
                 }
             }
         }
@@ -1465,6 +1468,7 @@ char *wsman_remove_query_string(char * resourceUri)
     if (uri)
         xmlFreeURI(uri);
     return result;
+
 }
 
 GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)

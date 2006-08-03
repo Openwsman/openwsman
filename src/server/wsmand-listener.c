@@ -124,7 +124,7 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
 static void server_callback (SoupServerContext *context, SoupMessage *msg, 
         gpointer data) {		
 
-    char *path;
+    char *path, *default_path;
     char *content_type;
     char *encoding;
     WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
@@ -145,8 +145,11 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         goto DONE;
     }   
 
+
+    default_path = wsmand_options_get_service_path();
     if (path) {
-        if (strcmp(path, "/wsman")) {
+        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"incoming: %s, default", path, default_path);
+        if (strcmp(path, "/wsman") != 0 ) {
             soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
             goto DONE;
         }
@@ -203,9 +206,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
 
 
 
-DONE:
-    if (wsman_msg->in_doc)
+    if (wsman_msg->in_doc != NULL) {
         ws_xml_destroy_doc(wsman_msg->in_doc);
+    }
+DONE:
     g_free (path);
     soup_server_message_set_encoding (SOUP_SERVER_MESSAGE (msg),
             SOUP_TRANSFER_CONTENT_LENGTH);

@@ -415,18 +415,20 @@ WsManClient *wsman_connect(
 		WsContextH wscntxt,
 		const char *hostname,
 		const int port,
+		const char *path,
 		const char *scheme,
 		const char *username,
 		const char *password,
 		WsManClientStatus *rc)
 {
-    return wsman_connect_with_ssl(wscntxt, hostname, port, scheme, username, password, NULL, NULL, rc);
+    return wsman_connect_with_ssl(wscntxt, hostname, port, path, scheme, username, password, NULL, NULL, rc);
 }
 
 WsManClient *wsman_connect_with_ssl( 
 		WsContextH wscntxt,
 		const char *hostname,
 		const int port,
+		const char *path,
 		const char *scheme,
 		const char *username,
 		const char *password,
@@ -450,7 +452,11 @@ WsManClient *wsman_connect_with_ssl(
     else
         wsc->data.port = strcmp(wsc->data.scheme, "https") == 0 ?  8888 : 8889;
 
-    wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/%s", wsc->data.scheme  , hostname, port, "wsman");
+    if (path)
+        wsc->data.endpoint =  g_strdup_printf("%s://%s:%d%s", wsc->data.scheme  , hostname, port, path);
+    else
+        wsc->data.endpoint =  g_strdup_printf("%s://%s:%d/wsman", wsc->data.scheme  , hostname, port);
+
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Endpoint: %s", wsc->data.endpoint);
     wsc->certData.certFile = certFile ? strdup(certFile) : NULL;
     wsc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;

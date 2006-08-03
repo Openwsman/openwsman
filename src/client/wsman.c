@@ -289,6 +289,7 @@ int main(int argc, char** argv)
     if (wsman_options_get_cafile() != NULL) {
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
+                    wsman_options_get_path(),
                     "https",
                     wsman_options_get_username(),
                     wsman_options_get_password(),
@@ -298,6 +299,7 @@ int main(int argc, char** argv)
     } else {
         cl = wsman_connect( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
+                    wsman_options_get_path(),
                     "http",
                     wsman_options_get_username(),
                     wsman_options_get_password(),
@@ -408,7 +410,7 @@ int main(int argc, char** argv)
             while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
                 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-                if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) {                		                		
+                if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) { 
                     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "no pull response" );
                     break;
                 }
@@ -425,11 +427,12 @@ int main(int argc, char** argv)
                     break;
                 }
                 /*
-                if (counter == 3 ) {
+                if (counter == 1 ) {
                     enumContext = "xxxx";
                 }
-                */
                 counter++;
+                */
+                
             }
         } else {
             if (enum_response)
@@ -444,8 +447,10 @@ int main(int argc, char** argv)
 
     cl->ft->release(cl);   
         
+    /*
     if (doc)
         ws_xml_destroy_doc(doc);
+        */
     //soap_destroy_fw(cntx);
     //soap_free(cntx);
 

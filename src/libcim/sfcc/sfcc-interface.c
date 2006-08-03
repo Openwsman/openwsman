@@ -520,7 +520,7 @@ void cim_invoke_method (CMCIClient *cc, char *class_name,
             sfcc_status.rc, (sfcc_status.msg)? (char *)sfcc_status.msg->hdl : NULL);
 
     if (sfcc_status.rc == 0 )
-        property2xml( data, "ReturnCode" , r, NULL);
+        property2xml( data, "ReturnValue" , r, NULL);
     cim_to_wsman_status(sfcc_status, status);
     if (objectpath) CMRelease(objectpath);
     if (argsin) CMRelease(argsin);
@@ -699,18 +699,40 @@ void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys,
             }
             valid_keys = 1;
         }
+        unsigned int i, m, s;
+        char *v, *v2; 
         
         //CMPIObjectPath *op = CMGetObjectPath(data.value.inst, NULL);
         CMSetClassName(op, class_name);
         CMSetNameSpace(op, CIM_NAMESPACE);
         CMPIString *xx = CMObjectPathToString(op, NULL);
-        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "%s", CMGetCharsPtr(xx, NULL) );
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "xx %s", CMGetCharsPtr(xx, NULL) );
+        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "yy %s", CMGetCharsPtr(yy, NULL) );
         if (strcmp(CMGetCharsPtr(xx, NULL), CMGetCharsPtr(yy, NULL)) == 0 ) {
             wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "match..." );
             objectpath_final =  CMClone(data.value.ref, NULL);
             CMSetNameSpace(objectpath_final, CIM_NAMESPACE);
             match = 1;
             break;
+            /*
+        } else {
+            for (i = 0, m = op->ft->getKeyCount(op, NULL); i < m; i++) {
+                CMPIString *name;
+                CMPIData data = CMGetKeyAt(op, i, &name, NULL);
+                CMPIData data2 = objectpath1->ft->getKey(objectpath1, (char *)name, NULL);
+                if (strcmp(data.value, data2.value) == 0 ) {
+                    wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "match..." );
+                    objectpath_final =  CMClone(data.value.ref, NULL);
+                    CMSetNameSpace(objectpath_final, CIM_NAMESPACE);
+                    match = 1;
+                }
+                free(v);
+                free(v2);
+                CMRelease(name);
+                CMRelease(name);
+            };
+            */
+
         }
         if (op) CMRelease(op);
     }
@@ -727,7 +749,7 @@ void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys,
         } 
         if (objectpath_final) CMRelease(objectpath_final);
         if (instance) CMRelease(instance);
-    }
+    } 
 
 
     if (objectpath) CMRelease(objectpath);
@@ -841,6 +863,8 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status) {
         status->rc = WSA_FAULT_ACTION_NOT_SUPPORTED;
        break;
     case CMPI_RC_ERR_NOT_FOUND:
+        status->rc = WSA_FAULT_DESTINATION_UNREACHABLE;
+        break;
     case CMPI_RC_ERR_ACCESS_DENIED:
     case CMPI_RC_ERR_INVALID_NAMESPACE:
     case CMPI_RC_ERR_INVALID_PARAMETER:

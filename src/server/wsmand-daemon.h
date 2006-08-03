@@ -38,6 +38,8 @@
 
 #include <glib.h>
 
+#define DEFAULT_SERVICE_PATH "wsman"
+
 typedef void (*WsmandShutdownFn) (gpointer);
 
 /* At shutdown time, handlers are executed in the
@@ -76,6 +78,7 @@ int wsmand_options_get_foreground_debug (void);
 const char **
 wsmand_options_get_argv (void);
 int wsmand_read_config (void);
+char *wsmand_options_get_service_path (void);
 
 
 

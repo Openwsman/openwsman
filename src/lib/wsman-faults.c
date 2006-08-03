@@ -101,14 +101,8 @@ static char *get_fault_details(WsmanFaultDetailType faultDetail)
  * @param detail Fault Details
  * @return Fault XML document
  */
-// BuildSoapFault
-WsXmlDocH build_soap_fault(SOAP_FW* fw,
-        char* soapNsUri,
-        char* faultNsUri,
-        char* code,
-        char* subCode,
-        char* reason,
-        char* detail)
+WsXmlDocH build_soap_fault(SOAP_FW* fw, char* soapNsUri, char* faultNsUri, char* code,
+        char* subCode, char* reason, char* detail)
 {
     WsXmlDocH doc;
 
@@ -128,7 +122,6 @@ WsXmlDocH build_soap_fault(SOAP_FW* fw,
         ws_xml_define_ns(root, XML_NS_XML_NAMESPACES, NULL, 0);
         if ( strcmp(soapNsUri, faultNsUri) != 0 ) 
             ws_xml_define_ns(root, faultNsUri, NULL, 0);
-
         if ( body && (fault = ws_xml_add_child(body, soapNsUri, SOAP_FAULT, NULL)) )
         {
             if ( code != NULL 

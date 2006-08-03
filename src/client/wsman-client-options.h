@@ -36,6 +36,7 @@ char * wsman_options_get_dialect (void);
 char * wsman_options_get_agent (void);
 const char * wsman_options_get_config_file (void);
 int wsman_read_client_config (void);
+char * wsman_options_get_path (void);
 
 
 unsigned long wsman_options_get_max_envelope_size (void);

@@ -429,7 +429,7 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
             node = ws_xml_add_child(fault, soapNs, SOAP_REASON, NULL);
             node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
             ws_xml_set_node_text(node, reason);
-            ws_xml_add_node_attr(node, XML_NS_XML_NAMESPACES, SOAP_LANG, !lang ? "en" : lang);
+            //ws_xml_add_node_attr(node, XML_NS_XML_NAMESPACES, SOAP_LANG, !lang ? "en" : lang);
         }
         if ( addDetailProc ) {
             addDetailProc(fault, addDetailProcData);

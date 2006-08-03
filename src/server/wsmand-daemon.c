@@ -52,6 +52,7 @@ static gint server_port =  -1;
 static gint server_ssl_port = -1;
 static gboolean use_digest = FALSE;
 static gchar *ssl_key_file = NULL;
+static gchar *service_path = DEFAULT_SERVICE_PATH;
 static gchar *ssl_cert_file = NULL;
 static gboolean daemon_flag = FALSE;
 static gboolean no_plugin_flag = FALSE;
@@ -128,6 +129,9 @@ int wsmand_read_config (void)
             if (g_key_file_has_key (cf, "server", "debug_level", NULL))
                 debug_level = g_key_file_get_integer (cf, "server", "debug_level", NULL);
             
+            if (g_key_file_has_key (cf, "server", "service_path", NULL))
+                service_path = g_key_file_get_string (cf, "server", "service_path", NULL);
+            
             if (g_key_file_has_key (cf, "server", "ssl_key_file", NULL))
                 ssl_key_file = g_key_file_get_string (cf, "server", "ssl_key_file", NULL);
             
@@ -177,6 +181,12 @@ char *wsmand_options_get_digest_password_file (void)
 char *wsmand_options_get_basic_password_file (void)
 {
     return basic_password_file;
+}
+
+
+char *wsmand_options_get_service_path (void)
+{
+    return service_path;
 }
 
 gboolean wsmand_options_get_daemon_flag (void)

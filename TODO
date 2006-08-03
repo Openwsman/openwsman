@@ -1,5 +1,9 @@
+
+- Bugs
+    * uuid generation if no IP is configured fails
+    * parsing of resource uri with spaces
+
 - High Priority
-    * return requested item count in enumeration (per PullResponse)
     * PAM authentication
     * Authenticate with CIMOM using credintials of openwsman
     * Create Supprt
