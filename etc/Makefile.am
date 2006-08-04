@@ -1,8 +1,7 @@
-SUBDIRS = init sysconfig pam.d
+SUBDIRS = 
 
-openwsmanconf_DATA = openwsman.conf ssleay.cnf owsmangencert
-openwsmanconfdir = $(sysconfdir)/openwsman
+#openwsmanconf_DATA = openwsman.conf ssleay.cnf owsmangencert
+#openwsmanconfdir = $(sysconfdir)/openwsman
 
-EXTRA_DIST = openwsman.conf.sh owsmangencert.sh ssleay.cnf
+EXTRA_DIST = openwsman.conf owsmangencert.sh ssleay.cnf
 
-CLEANFILES = openwsman.conf owsmangencert
