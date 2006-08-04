@@ -217,6 +217,7 @@ WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* for
 int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int ws_xml_utf8_strlen(char *buf);
+void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc);
 
 /** @} */
 

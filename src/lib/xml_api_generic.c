@@ -205,6 +205,18 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 }
 
 
+/*
+void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc) 
+{
+    if (src && dst )
+    {
+        xmlNodePtr x = xmlDocCopyNode((xmlNodePtr)src, (xmlDocPtr)doc , 1 );
+        if (x)
+            xmlAddChild((xmlNodePtr ) dst, x );
+    }
+}
+*/
+
 
 int ws_xml_utf8_strlen(char *buf) {
     return xml_parser_utf8_strlen(buf);

@@ -101,7 +101,7 @@ gboolean wsman_parse_options(int argc, char **argv)
 	{ "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
         { "cafile", 'c', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
-        { "path", 'u', 0, G_OPTION_ARG_STRING, &url_path, "Path", "<path>" },
+        { "path", 'g', 0, G_OPTION_ARG_STRING, &url_path, "Path", "<path>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
