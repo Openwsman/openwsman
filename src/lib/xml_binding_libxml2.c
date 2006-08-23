@@ -56,6 +56,52 @@
 #include "xml_binding_libxml2.h"
 
 
+static void destroy_attr_private_data(void* data)
+{
+    if ( data )
+        xmlFree(data);
+}
+
+
+static void destroy_tree_private_data(xmlNode* node)
+{
+    while(node)
+    {
+        xmlAttrPtr attr = node->properties;
+
+        if ( node->_private )
+        {
+            destroy_node_private_data(node->_private);
+            node->_private = NULL;
+        }
+
+        while(attr)
+        {
+            if ( attr->_private )
+            {
+                destroy_attr_private_data(attr->_private);
+                attr->_private = NULL;
+            }
+            attr = attr->next;
+        }
+        destroy_tree_private_data(node->children);
+        node = node->next;
+    }
+}
+
+
+
+static void destroy_node_private_data(void* _data)
+{
+    iWsNode* data = (iWsNode*)_data;
+    if ( data )
+    {
+        // ??? TBD data->nsQNameList;
+        if ( data->valText )
+            xmlFree(data->valText);
+        soap_free(data);
+    }
+}
 
 void xml_parser_initialize(SoapH soap)
 {
@@ -103,55 +149,8 @@ int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
     return retVal;
 }
 
-void destroy_attr_private_data(void* data)
-{
-    if ( data )
-        xmlFree(data);
-}
 
 
-void destroy_tree_private_data(xmlNode* node)
-{
-    while(node)
-    {
-        xmlAttrPtr attr = node->properties;
-
-        if ( node->_private )
-        {
-            destroy_node_private_data(node->_private);
-            node->_private = NULL;
-        }
-
-        while(attr)
-        {
-            if ( attr->_private )
-            {
-                destroy_attr_private_data(attr->_private);
-                attr->_private = NULL;
-            }
-            attr = attr->next;
-        }
-        destroy_tree_private_data(node->children);
-        node = node->next;
-    }
-}
-
-
-
-void destroy_node_private_data(void* _data)
-{
-    iWsNode* data = (iWsNode*)_data;
-    if ( data )
-    {
-        // ??? TBD data->nsQNameList;
-        if ( data->valText )
-            xmlFree(data->valText);
-        soap_free(data);
-    }
-}
-
-
-// XmlParserDestroyDoc
 void xml_parser_destroy_doc(iWsDoc* wsDoc)
 {
     xmlDocPtr xmlDoc = (xmlDocPtr)wsDoc->parserDoc;
@@ -163,7 +162,6 @@ void xml_parser_destroy_doc(iWsDoc* wsDoc)
 }
 
 
-// XmlParserGetDoc
 WsXmlDocH xml_parser_get_doc(WsXmlNodeH node)
 {
     xmlDocPtr xmlDoc = ((xmlDocPtr)node)->doc;
@@ -171,7 +169,6 @@ WsXmlDocH xml_parser_get_doc(WsXmlNodeH node)
 }
 
 
-// XmlParserGetRoot
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc)
 {
     if ( ((iWsDoc*)doc)->parserDoc != NULL )
@@ -240,7 +237,6 @@ WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encodin
 }
 
 
-// XmlParserNodeQuery
 char* xml_parser_node_query(WsXmlNodeH node, int what)
 {
     char* ptr = NULL;
@@ -281,9 +277,6 @@ char* xml_parser_node_query(WsXmlNodeH node, int what)
 }
 
 
-
-
-// XmlParserNodeSet
 int xml_parser_node_set(WsXmlNodeH node, int what, char* str)
 {
     int retVal = -1;
@@ -333,8 +326,6 @@ int xml_parser_node_set(WsXmlNodeH node, int what, char* str)
 
 
 
-
-// XmlParserNodeGet
 WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which)
 {
     xmlNodePtr xmlNode = NULL;
@@ -399,8 +390,6 @@ WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which)
 }
 
 
-
-// XmlParserNsFind
 WsXmlNsH xml_parser_ns_find(WsXmlNodeH node, 
         char* uri, 
         char* prefix, 
@@ -455,8 +444,6 @@ WsXmlNsH xml_parser_ns_find(WsXmlNodeH node,
     return (WsXmlNsH)xmlNs;
 }
 
-
-// XmlParserNsQuery
 char* xml_parser_ns_query(WsXmlNsH ns, int what)
 {
     xmlNsPtr xmlNs = (xmlNsPtr)ns;
@@ -508,7 +495,6 @@ WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char* uri, char* prefix)
 }
 
 
-// XmlParserNsRemove
 int xml_parser_ns_remove(WsXmlNodeH node, char* nsUri)
 {
     int retVal = -1;
@@ -546,9 +532,6 @@ int xml_parser_ns_remove(WsXmlNodeH node, char* nsUri)
 
 
 
-
-
-// XmlParserNsGet
 WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
@@ -574,7 +557,6 @@ WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which)
 }
 
 
-// GetNsCountAtNode
 int get_ns_count_at_node(xmlNodePtr xmlNode)
 {
     int count = 0;
@@ -589,7 +571,6 @@ int get_ns_count_at_node(xmlNodePtr xmlNode)
 }
 
 
-// XmlParserGetCount
 int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree)
 {
     int count = 0;
@@ -633,7 +614,6 @@ int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree)
     return count;
 }
 
-// MakeNewXmlNode
 xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value) 
 {
     xmlNodePtr newNode = NULL;
@@ -654,7 +634,6 @@ xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value
 }
 
 
-// XmlParserNodeAdd
 WsXmlNodeH xml_parser_node_add(WsXmlNodeH base,
         int where, 
         char* nsUri, 
@@ -688,7 +667,6 @@ WsXmlNodeH xml_parser_node_add(WsXmlNodeH base,
 
 }
 
-// XmlParserNodeRemove
 int xml_parser_node_remove(WsXmlNodeH node)
 {
     destroy_node_private_data(((xmlNodePtr)node)->_private);
@@ -698,7 +676,6 @@ int xml_parser_node_remove(WsXmlNodeH node)
 }
 
 
-// XmlParserAttrAdd
 WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char* uri, char* name, char* value)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
@@ -726,7 +703,6 @@ WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char* uri, char* name, char* val
 
 
 
-// XmlParserAttrRemove
 int xml_parser_attr_remove(WsXmlAttrH attr)
 {
     xmlAttrPtr xmlAttr = (xmlAttrPtr)attr;
@@ -751,7 +727,6 @@ int xml_parser_attr_remove(WsXmlAttrH attr)
     return 0;
 }
 
-// XmlParserAttrQuery
 char* xml_parser_attr_query(WsXmlAttrH attr, int what)
 {
     char* ptr = NULL;
@@ -791,7 +766,6 @@ char* xml_parser_attr_query(WsXmlAttrH attr, int what)
 
 
 
-// XmlParserAttrGet
 WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
