@@ -55,6 +55,17 @@
 
 #include "xml_binding_libxml2.h"
 
+static void destroy_node_private_data(void* _data)
+{
+    iWsNode* data = (iWsNode*)_data;
+    if ( data )
+    {
+        // ??? TBD data->nsQNameList;
+        if ( data->valText )
+            xmlFree(data->valText);
+        soap_free(data);
+    }
+}
 
 static void destroy_attr_private_data(void* data)
 {
@@ -91,17 +102,6 @@ static void destroy_tree_private_data(xmlNode* node)
 
 
 
-static void destroy_node_private_data(void* _data)
-{
-    iWsNode* data = (iWsNode*)_data;
-    if ( data )
-    {
-        // ??? TBD data->nsQNameList;
-        if ( data->valText )
-            xmlFree(data->valText);
-        soap_free(data);
-    }
-}
 
 void xml_parser_initialize(SoapH soap)
 {

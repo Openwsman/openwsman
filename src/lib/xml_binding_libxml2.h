@@ -48,9 +48,6 @@ void xml_parser_initialize(SoapH soap);
 void xml_parser_destroy(SoapH soap);
 
 int xml_parser_create_doc(iWsDoc *wsDoc, char *rootName);
-void destroy_attr_private_data(void *data);
-void destroy_tree_private_data(xmlNode *node);
-void destroy_node_private_data(void *_data);
 void xml_parser_destroy_doc(iWsDoc *wsDoc);
 WsXmlDocH xml_parser_get_doc(WsXmlNodeH node);
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc);
