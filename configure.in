@@ -137,6 +137,7 @@ fi
 
 
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${sysconfdir}/openwsman/openwsman.conf"] , [Default config file])
+SYSCONFDIR=${sysconfdir}/openwsman
 
 dnl Subst PACKAGE_PLUGIN_DIR.
 packageplugindir=$libdir/${PACKAGE}/plugins
@@ -218,6 +219,7 @@ AC_SUBST(ENABLED_PLUGINS)
 dnl *************************
 dnl *** Output Everything ***
 dnl *************************
+AC_SUBST(SYSCONFDIR)
 
 AC_OUTPUT([
         Doxyfile
@@ -235,4 +237,5 @@ AC_OUTPUT([
         doc/specs/Makefile
         etc/Makefile
         openwsman.spec
+        etc/owsmangencert.sh
 	])

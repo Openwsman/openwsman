@@ -44,6 +44,11 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/plugins
 %{_libdir}/openwsman/plugins/*so*
+%dir /etc/openwsman
+%config /etc/openwsman/openwsman.conf
+/etc/openwsman/owsmangencert.sh
+/etc/openwsman/ssleay.cnf
+
 
 %files devel
 %{_includedir}/*
