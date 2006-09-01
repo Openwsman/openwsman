@@ -3,7 +3,7 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 0.1.1)
+AC_INIT(openwsman, 0.2.0)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -158,13 +158,6 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
                 -Wunused"
 fi
 
-AC_ARG_ENABLE(warnings-as-errors,
-	      [  --enable-warnings-as-errors  Make compiler warnings into errors],
-	      warnings_as_errors=yes)
-
-if test "$GCC" = "yes" -a "$warnings_as_errors" = "yes"; then
-	CFLAGS="$CFLAGS -Werror"
-fi
 
 if test "$os_win32" != yes; then
 	# Use reentrant functions (FIXME!)
@@ -174,27 +167,7 @@ fi
 
 CHECK_SFCC
 have_sfcc=no
-disable_cim_plugins=no
-compile_cim=no
-ENABLED_PLUGINS="wsman "
-
-AC_ARG_ENABLE(cim-plugins,
-	      [  --disable-cim-plugins  Disable CIM Plugins],
-	      disable_cim_plugins=yes)
-AC_ARG_ENABLE(old-cim-plugins,
-	      [  --enable-old-cim-plugins  Enable old CIM Plugins],
-	      [enable_old_cim_plugins=yes], [enable_old_cim_plugins=no])
-
 AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc=yes])
-
-if test "$disable_cim_plugins" != "yes"; then
-    if test "$have_sfcc" == "yes"; then
-        ENABLED_PLUGINS="$ENABLED_PLUGINS cim"
-        compile_cim=yes
-    fi
-fi
-AM_CONDITIONAL(compile_LIBCIM, test "$compile_cim" == "yes")
-AM_CONDITIONAL(compile_OLDCIMPLUGIN, test x$enable_old_cim_plugins == xyes)
 
 AC_PATH_PROG(DOXYGEN, doxygen, no)
 
@@ -261,4 +234,5 @@ AC_OUTPUT([
         doc/Makefile
         doc/specs/Makefile
         etc/Makefile
+        openwsman.spec
 	])

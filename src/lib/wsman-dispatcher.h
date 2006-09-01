@@ -93,6 +93,7 @@ char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc);
 void  dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg);
 void wsman_dispatcher_list( GList *interfaces );
 
+
 SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw,
         char* inboundAction, 
         char* outboundAction,
@@ -147,7 +148,7 @@ SoapDispatchH soap_create_dispatch(SoapH soap,
         unsigned long flags);
         
 
-SOAP_DISPATCH_ENTRY* wsman_dispatch_entry_new();
+SOAP_DISPATCH_ENTRY* wsman_dispatch_entry_new(void);
 
 
 /** @} */

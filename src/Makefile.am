@@ -1,5 +1,1 @@
-if compile_LIBCIM
-LIBCIMDIR = libcim
-endif
-
-SUBDIRS = lib $(LIBCIMDIR)  plugins server client
+SUBDIRS = lib libcim  plugins server client

@@ -1,0 +1,53 @@
+Name:           openwsman
+Version:        @PACKAGE_VERSION@
+Release:        1
+License:        BSD
+Url:            http://www.openwsman.org/
+Source:         %{name}-%{version}.tar.gz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Group:          Applications/Management
+BuildRequires:  curl-devel openssl-devel libsoup-devel sblim-sfcc-devel
+Summary:        Opensource Implementation of WS-Management
+
+
+%description
+Opensource Implementation of WS-Management
+
+
+%package devel
+Summary:        Openwsman Development files
+Group:          Applications/Management
+Requires:       openwsman
+%description devel
+Openwsman Development files
+
+
+
+%prep
+%setup
+
+%build
+%configure
+make
+
+%install
+make DESTDIR=%{buildroot} install
+
+%clean
+rm -rf "$RPM_BUILD_ROOT"
+
+%files
+%defattr(-,root,root)
+%{_libdir}/*.so*
+%{_bindir}/wsman
+%{_sbindir}/wsmand
+%dir %{_libdir}/openwsman
+%dir %{_libdir}/openwsman/plugins
+%{_libdir}/openwsman/plugins/*so*
+
+%files devel
+%{_includedir}/*
+%{_libdir}/*.a
+%{_libdir}/*.la
+%{_libdir}/openwsman/plugins/*.a
+%{_libdir}/openwsman/plugins/*.la
