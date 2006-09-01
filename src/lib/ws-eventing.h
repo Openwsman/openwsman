@@ -41,14 +41,14 @@
 #include <pthread.h>
 #include "glib.h"
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "ws_dispatcher.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-dispatcher.h"
 #include "wsman-client.h"
 
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
 
 
 #define WSE_RESPONSE_TIMEOUT			20000

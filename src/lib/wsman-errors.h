@@ -31,17 +31,15 @@
 /**
  * @author Anas Nashif
  */
- 
 
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef WSMAN_ERRORS_H
+#define WSMAN_ERRORS_H
+
+#define WS_ERR_INSUFFICIENT_RESOURCES		(-1)
+#define WS_ERR_INVALID_PARAMETER		(-2)
+#define WS_ERR_XML_PARSING			(-3)
+#define WS_ERR_XML_NODE_NOT_FOUND		(-4)
+#define WS_ERR_NOT_IMPLEMENTED			(-5)
 
 
-
-#define AUTHENTICATION_REALM "OPENWSMAN"
-
-
-
-int wsmand_start_server(void);
-
-#endif /*SERVER_H_*/
+#endif // WSMAN_ERRORS_H

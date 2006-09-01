@@ -75,7 +75,7 @@ gboolean authorize_from_file(SoupServerAuth *auth, char *filename)
         gboolean             authorized = FALSE;
         char            l[256], u[65], ha1[65], dom[65], passwd[65];
         char *username;
-        char *newpw;
+        char *newpw = NULL ;
                     
         username = (char *)soup_server_auth_get_user (auth); 
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Checking for user: %s", username);

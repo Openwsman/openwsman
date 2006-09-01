@@ -1,9 +1,9 @@
 plugindir = @PACKAGE_PLUGIN_DIR@
 
-libcim_namespace_la_SOURCES = \
-	cim_namespace_data.c \
-	cim_namespace_data_stubs.c \
-	cim_namespace_data.h
+libwsman_cim_plugin_la_SOURCES = \
+	cim_data.c \
+	cim_data_stubs.c \
+	cim_data.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libcim/sfcc \
@@ -15,11 +15,11 @@ LIBS = \
     $(GMODULE_LIBS) \
     $(top_builddir)/src/libcim/sfcc/libwsmanCimIfc.la
 
-plugin_LTLIBRARIES= libcim_namespace.la
+plugin_LTLIBRARIES= libwsman_cim_plugin.la
 
-libcim_namespace_la_LIBADD =       \
+libwsman_cim_plugin_la_LIBADD =       \
         $(XML_LIBS)   \
 	-lpthread
 
-libcim_namespace_la_LDFLAGS= -version-info 1:0
+libwsman_cim_plugin_la_LDFLAGS= -version-info 1:0
 

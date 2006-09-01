@@ -30,87 +30,83 @@
 
 /**
  * @author Anas Nashif
+ * @author Eugene Yarmosh
  */
- 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-#include <glib.h>
+#include "config.h"
+
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+#include "ctype.h"
 #include <gmodule.h>
 
-
 #include "wsman-util.h"
+
+#include "wsman-errors.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
-
-#include "wsman-xml.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
-#include "wsmand-listener.h"
-#include "wsmand-plugins.h"
+#include "identify.h"
+
+//
+// ************ Serialization type information for resource ************
+//
+// It creates an array of items with name StateDescription_TypeInfo 
+// It can be used in calls to WsSerialize and WsDeserialize 
+//
+SER_START_ITEMS("IdentifyResponse", wsmid_identify)
+SER_STR("ProtocolVersion", 1, 1), 
+SER_STR("ProductVendor", 1, 1),
+SER_STR("ProductVersion", 1, 1),
+SER_END_ITEMS("IdentifyResponse", wsmid_identify);
+
+
+// ************** Array of end points for resource ****************
+//
+// Must follow general convention xxx_EndPoints
+//
+
+SER_START_END_POINTS(wsmid_identify)
+END_POINT_IDENTIFY(wsmid_identify, XML_NS_WSMAN_ID ),
+SER_FINISH_END_POINTS(wsmid_identify);
 
 
 
-int
-main (int argc, char **argv)
+SER_START_NAMESPACES(wsmid_identify)
+    ADD_NAMESPACE( XML_NS_WSMAN_ID ),
+SER_FINISH_NAMESPACES(wsmid_identify);
+
+
+
+void get_endpoints(GModule *self, void **data) 
+{		 		
+	WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    ifc->flags = 0;
+    ifc->actionUriBase = NULL;
+    ifc->version = PACKAGE_VERSION;
+    ifc->vendor = "Openwsman Project";
+    ifc->displayName = "IdentifyResponse";
+    ifc->notes = "Return information about implementation";
+    ifc->compliance = XML_NS_WS_MAN;
+    ifc->wsmanResourceUri = NULL;
+    ifc->extraData = NULL;
+    ifc->namespaces = wsmid_identify_Namespaces;
+    ifc->endPoints = wsmid_identify_EndPoints;			
+}
+
+
+int init( GModule *self, void **data )
 {
-	GList *node;
-	GList *list=NULL;
-	
-	GList *node2;
-	DL_List list2;
-	
-	
-	WsManListenerH *listener = (WsManListenerH *)g_malloc0(sizeof(WsManListenerH) );
-	
-	wsman_plugins_load(listener);
-        memset(&list2, 0, sizeof(DL_List));
+    return 1;
+}
 
-	node = listener->plugins;	
-	while (node) {
-		
-		WsManPlugin *p = (WsManPlugin *)node->data;		
-		WsDispatchInterfaceInfo *g_Interface = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
-		p->get_endpoints(p->p_handle, g_Interface );
-		
-		g_return_val_if_fail(g_Interface != NULL , 1 );			
-		list = g_list_append(list, g_Interface);		
-
-		DL_MakeNode(&list2, g_Interface);
-		
-		node = g_list_next (node);
-	}
-		
-	g_return_val_if_fail(list != NULL , 1 );
-	
-	printf("GList\n");
-	node2 = list;
-	while (node2) {
-		WsDispatchInterfaceInfo *i = (WsDispatchInterfaceInfo *)node2->data;
-		printf("uri: %s\n", i->wsmanResourceUri);		
-		node2 = g_list_next (node2);				
-	}
-	printf("DL_List\n");
-	//DL_Node dl_node;
-	
-	DL_Node *dl_node = DL_GetHead(&list2);
-	while (dl_node != NULL) {
-		WsDispatchInterfaceInfo *i = (WsDispatchInterfaceInfo *)dl_node->dataBuf;
-                if (i->wsmanResourceUri)
-                        printf("uri: %s\n", i->wsmanResourceUri);	
-                else
-                        printf("warning: resource URI is NULL\n");
-		dl_node = DL_GetNext(dl_node);
-	}
-	
-	printf("count GList: %u\n",  g_list_length (list));
-	printf("count DL_List: %u\n",  DL_GetCount(&list2));
-	
-	
-	wsman_plugins_unload(listener);
-	return 0;	
+void
+cleanup( GModule *self, void *data )
+{
+	return;
 }
 
 

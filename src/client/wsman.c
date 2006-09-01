@@ -39,24 +39,16 @@
 #include <string.h>
 #include <unistd.h>
 
-
-#ifdef PRETTY_OUTPUT
-#include <libxslt/xslt.h>
-#include <libxslt/xsltInternals.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltutils.h>
-#endif
-
 #include <glib.h>
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "ws_errors.h"
-#include "soap_api.h"
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-errors.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
 
 #include "wsman-client.h"
 #include "wsman-debug.h"
@@ -64,8 +56,6 @@
 #include "wsman.h"
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
-
-
 
 
 static void
@@ -406,7 +396,6 @@ int main(int argc, char** argv)
         WsXmlNodeH cntxNode;
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "enumContext: %s", enumContext );
         if (enumContext) {
-            int counter = 1;
             while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
                 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));

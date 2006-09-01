@@ -38,23 +38,22 @@
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
-#include <gmodule.h>
 
-#include "ws_utilities.h"
-
+#include "wsman-util.h"
 
 
-#include "ws_errors.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
-#include "ws_dispatcher.h"
+
+#include "wsman-errors.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-dispatcher.h"
 
 #include "wsman-debug.h"
 #include "sfcc-interface.h"
 #include "sfcc-interface_utils.h"
-#include "cim_namespace_data.h"
+#include "cim_data.h"
 
 int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
     WsXmlDocH doc = NULL;
@@ -85,18 +84,17 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
             cim_invoke_method(cimclient.cc, className, keys, methodName, method_node,  status);
         }
         
-        if (status->rc != 0) {
+        if (status->fault_code != 0) {
             ws_xml_destroy_doc(doc);
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
             if (cimclient.cc) CMRelease(cimclient.cc);
         }
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
-        soap_submit_op(op);
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }
@@ -109,9 +107,9 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
 
 int  CimResource_Get_EP(SoapOpH op, void* appData )
 {
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called");
     WsXmlDocH doc = NULL;
     WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called");
 
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
@@ -120,7 +118,6 @@ int  CimResource_Get_EP(SoapOpH op, void* appData )
 
     if (keys)
     {
-        wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Number of keys defined: %d", g_list_length(keys));
         CimClientInfo cimclient;
         cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
         if (!cimclient.cc)
@@ -130,18 +127,17 @@ int  CimResource_Get_EP(SoapOpH op, void* appData )
             cim_get_instance_from_enum(cimclient.cc, resourceUri , keys, body, status);
         }
 
-        if (status->rc != 0) {
+        if (status->fault_code != 0) {
             ws_xml_destroy_doc(doc);
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
         }
         if (cimclient.cc) CMRelease(cimclient.cc);
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
-        soap_submit_op(op);
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }
@@ -168,7 +164,7 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
     }
     cim_enum_instances (cimclient.cc, className , enumInfo,  status);
 
-    if (status && status->rc != 0) {
+    if (status && status->fault_code != 0) {
         return 1;
     }
 
@@ -252,18 +248,17 @@ int  CimResource_Put_EP(SoapOpH op, void* appData )
             cim_put_instance_from_enum(cimclient.cc, resourceUri , keys, in_body, body, status);
         }
 
-        if (status->rc != 0) {
+        if (status->fault_code != 0) {
             ws_xml_destroy_doc(doc);
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->rc, -1);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
         }
         if (cimclient.cc) CMRelease(cimclient.cc);
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
-        soap_submit_op(op);
     } else {
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
     }

@@ -11,15 +11,16 @@ LIBS = \
        $(GMODULE_LIBS) \
        $(SOUP_LIBS) \
        -lcrypt \
-       $(top_builddir)/src/lib/libwsman.la
+       $(top_builddir)/src/lib/libwsman.la \
+       $(top_builddir)/src/lib/libwsman_utils.la \
+       $(top_builddir)/src/lib/libwsman_server.la
+
 
 sbin_PROGRAMS = wsmand
 
 wsmand_SOURCES = \
 		 wsmand-listener.h \
-		 wsmand-plugins.h \
 		 wsmand-listener.c \
-		 wsmand-plugins.c \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
 		 wsmand-auth.c \

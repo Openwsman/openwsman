@@ -30,18 +30,14 @@
 
 /**
  * @author Anas Nashif
+ * @author Eugene Yarmosh
  */
- 
 
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef WSMAN_CATALOG_H_
+#define WSMAN_CATALOG_H_
 
-
-
-#define AUTHENTICATION_REALM "OPENWSMAN"
+int  wsman_catalog_create_resource(WsXmlNodeH r, WsDispatchInterfaceInfo *interface);
+void wsman_catalog_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *interface);
 
 
-
-int wsmand_start_server(void);
-
-#endif /*SERVER_H_*/
+#endif

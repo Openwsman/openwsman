@@ -42,17 +42,18 @@
 #include "assert.h"
 
 
-#include "ws_utilities.h"
+#include "wsman-util.h"
 
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_api_generic.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
 
-#include "ws_dispatcher.h"
-#include "ws_errors.h"
-#include "xml_serializer.h"
-#include "xml_serialization.h"
+#include "wsman-dispatcher.h"
+#include "wsman-errors.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-xml-serialize.h"
 #include "wsman-debug.h"
+#include "wsman-soap-envelope.h"
 
 void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 {
@@ -432,7 +433,7 @@ int do_serialize_bool(XmlSerializationData* data)
     return retVal;
 }
 
-int get_adjusted_size(int baseSize)
+static int get_adjusted_size(int baseSize)
 {
     int size = baseSize;
     if ( XML_SADJUSTMENT > 1 )
@@ -443,7 +444,7 @@ int get_adjusted_size(int baseSize)
     return size;
 }
 
-int calculate_struct_size(XmlSerializationData* data,
+static int calculate_struct_size(XmlSerializationData* data,
         int elementCount, 
         XmlSerializerInfo* elementArray)
 {
@@ -1016,7 +1017,6 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
         }
         soap_fw_unlock(soap);
     }
-
     return ptr->buf;
 }
 

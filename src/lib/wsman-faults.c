@@ -38,32 +38,49 @@
 #include <ctype.h>
 #include <glib.h>
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "ws_dispatcher.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-dispatcher.h"
 
-#include "xml_api_generic.h"
-#include "xml_serializer.h" 
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h" 
+#include "wsman-soap-message.h"
 #include "wsman-faults.h"
 #include "wsman-debug.h"
 
 
 
-
-void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, 
-		WsmanFaultDetailType faultDetail, char *details) {
-    msg->status.rc = faultCode;
-    msg->status.detail = faultDetail;
-    if (details) msg->status.msg = details;
+static void add_details_proc(WsXmlNodeH fault,  void* data) 
+{
+    if (data == NULL)
+        return;
+    char* soapNs = ws_xml_get_node_name_ns(fault);
+    WsXmlNodeH node = ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);	
+    node = ws_xml_add_child(node, XML_NS_WS_MAN, SOAP_FAULT_DETAIL, NULL);
+    ws_xml_set_node_qname_val(node, XML_NS_WS_MAN, (char *)data);
     return;
-
 }
 
-static char *get_fault_details(WsmanFaultDetailType faultDetail)
+
+
+void 
+wsman_set_fault(       WsmanMessage *msg, 
+                        WsmanFaultCodeType fault_code, 
+		        WsmanFaultDetailType fault_detail_code, 
+                        const char *details) 
+{
+    msg->status.fault_code = fault_code;
+    msg->status.fault_detail_code = fault_detail_code;
+    if (details) msg->status.fault_msg = strdup(details);
+    return;
+}
+
+static char *
+get_fault_details(WsmanFaultDetailType fault_detail_code)
 {
     char *descr;
-    switch (faultDetail) 
+    switch (fault_detail_code) 
     {
     case WSMAN_FAULT_DETAIL_INVALID_RESOURCEURI:
         descr = 
@@ -88,123 +105,13 @@ static char *get_fault_details(WsmanFaultDetailType faultDetail)
 }
 
 
-
-
-/**
- * Build SOAP Fault
- * @param  fw SOAP Framework handle
- * @param soapNsUri SOAP Namespace URI
- * @param faultNsUri Fault Namespace URI
- * @param code Fault code
- * @param subCode Fault Subcode
- * @param reason Fault Reson
- * @param detail Fault Details
- * @return Fault XML document
- */
-WsXmlDocH build_soap_fault(SOAP_FW* fw, char* soapNsUri, char* faultNsUri, char* code,
-        char* subCode, char* reason, char* detail)
-{
-    WsXmlDocH doc;
-
-    if ( faultNsUri == NULL )
-        faultNsUri = soapNsUri;
-
-    if ( (doc = ws_xml_create_doc((SoapH)fw, soapNsUri, SOAP_ENVELOPE)) != NULL ) 
-    {
-        WsXmlNodeH node;
-        WsXmlNodeH fault;
-        WsXmlNodeH root = ws_xml_get_doc_root(doc);
-        //WsXmlNodeH header = WsXmlAddChild(root, soapNsUri, SOAP_HEADER, NULL);
-        WsXmlNodeH body = ws_xml_add_child(root, soapNsUri, SOAP_BODY, NULL);
-
-        ws_xml_define_ns(root, soapNsUri, NULL, 0);
-        ws_xml_define_ns(root, XML_NS_ADDRESSING, NULL, 0);
-        ws_xml_define_ns(root, XML_NS_XML_NAMESPACES, NULL, 0);
-        if ( strcmp(soapNsUri, faultNsUri) != 0 ) 
-            ws_xml_define_ns(root, faultNsUri, NULL, 0);
-        if ( body && (fault = ws_xml_add_child(body, soapNsUri, SOAP_FAULT, NULL)) )
-        {
-            if ( code != NULL 
-                    &&
-                    (node = ws_xml_add_child(fault, soapNsUri, SOAP_CODE, NULL)) != NULL )
-            {
-                ws_xml_add_qname_child(node, soapNsUri, SOAP_VALUE, soapNsUri, code); 
-
-                if ( subCode != NULL
-                        && 
-                        (node = ws_xml_add_child(node, soapNsUri, SOAP_SUBCODE, NULL)) != NULL )
-                {
-                    ws_xml_add_qname_child(node, soapNsUri, SOAP_VALUE, faultNsUri, subCode); 
-                }
-            }
-
-            if ( reason && (node = ws_xml_add_child(fault, soapNsUri, SOAP_REASON, NULL)) )
-            {
-                node = ws_xml_add_child(node, soapNsUri, SOAP_TEXT, reason);
-                ws_xml_add_node_attr(node, XML_NS_XML_NAMESPACES, SOAP_LANG, "en");
-            }
-
-            if ( detail )
-                ws_xml_add_child(fault, soapNsUri, SOAP_DETAIL, detail);
-        }
-    }
-
-    return doc;
+/*
+int wsman_is_fault_envelope( WsXmlDocH doc ) {
 }
+*/
 
 
-
-
-/**
- * Buid SOAP Version Mismtach Fault
- * @param  fw SOAP Framework handle
- * @todo Send fault back
- */     
-void build_soap_version_fault(SOAP_FW* fw)
-{
-    WsXmlDocH fault = build_soap_fault(fw, 
-            NULL, 
-            XML_NS_SOAP_1_2, 
-            "VersionMismatch", 
-            NULL, 
-            "Version Mismatch", 
-            NULL);
-
-    if ( fault != NULL )
-    {
-        WsXmlNodeH upgrade;
-        WsXmlNodeH h = ws_xml_get_soap_header(fault);
-
-        ws_xml_define_ns(ws_xml_get_doc_root(fault), XML_NS_SOAP_1_1, NULL, 0);
-
-        if ( (upgrade = ws_xml_add_child(h, XML_NS_SOAP_1_2, SOAP_UPGRADE, NULL)) )
-        {
-            WsXmlNodeH node;
-
-            if ( (node = ws_xml_add_child(upgrade, 
-                            XML_NS_SOAP_1_2, 
-                            SOAP_SUPPORTED_ENVELOPE, 
-                            NULL)) )
-            {
-                ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_2, SOAP_ENVELOPE);
-            }
-            if ( (node = ws_xml_add_child(upgrade, 
-                            XML_NS_SOAP_1_2, 
-                            SOAP_SUPPORTED_ENVELOPE, 
-                            NULL)) )
-            {
-                ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_1, SOAP_ENVELOPE);
-            }
-        }
-
-
-        // FIXME: Send fault
-        ws_xml_destroy_doc(fault);
-    }
-}   
-
-
-int wsman_is_fault(WsXmlDocH doc) {
+int wsman_is_fault_envelope( WsXmlDocH doc ) {
     WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),  0 , XML_NS_SOAP_1_2 , SOAP_FAULT);
     if ( node != NULL )
         return 1;
@@ -213,8 +120,12 @@ int wsman_is_fault(WsXmlDocH doc) {
 }
 
 
-WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc, 
-        WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail)
+WsXmlDocH wsman_generate_fault( 
+        WsContextH cntx, 
+        WsXmlDocH inDoc, 
+        WsmanFaultCodeType faultCode, 
+        WsmanFaultDetailType faultDetail,
+        char *fault_msg)
 {
     char *code = FAULT_SENDER_CODE;
     char *subCodeNs;
@@ -236,7 +147,7 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
         subCodeNs 	= XML_NS_WS_MAN;
         subCode		= "InvalidSelectors";
         if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "The WS-Management service cannot process the request because the selectors for the resource are not valid.";
+            reason 	= "The WS-Management service cannot process the request because the selectors for the resource are not valid.";
 
         break;
 
@@ -291,7 +202,10 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
         reason = NULL;
         break;
 
-    }; 	 
+    }; 
+    if (fault_msg!= NULL ) {
+        reason = fault_msg;
+    }
     WsXmlDocH fault = ws_xml_create_fault(cntx, inDoc,
             code, subCodeNs, subCode, NULL, reason, add_details_proc, detail);	                    
     return fault;                        
@@ -299,23 +213,18 @@ WsXmlDocH wsman_generate_fault( WsContextH cntx, WsXmlDocH inDoc,
 
 
 
-void add_details_proc(WsXmlNodeH fault,  void* data) 
-{
-    if (data == NULL)
-        return;
-    char* soapNs = ws_xml_get_node_name_ns(fault);
-    WsXmlNodeH node = ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);	
-    node = ws_xml_add_child(node, XML_NS_WS_MAN, SOAP_FAULT_DETAIL, NULL);
-    ws_xml_set_node_qname_val(node, XML_NS_WS_MAN, (char *)data);
-    return;
-}
 
-
-
-void wsman_generate_fault_buffer ( WsContextH cntx,  WsXmlDocH inDoc, 
- 		WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char **buf,  int* len)
+void wsman_generate_fault_buffer ( 
+        WsContextH cntx,
+        WsXmlDocH inDoc, 
+	WsmanFaultCodeType faultCode,
+        WsmanFaultDetailType faultDetail, 
+        char * fault_msg, 
+        char **buf,  
+        int* len)
 {	
-    WsXmlDocH doc = wsman_generate_fault(cntx, inDoc, faultCode, faultDetail);   
+    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Fault Code: %d", faultCode);
+    WsXmlDocH doc = wsman_generate_fault(cntx, inDoc, faultCode, faultDetail, fault_msg);   
     ws_xml_dump_memory_enc(doc, buf, len, NULL);	
     ws_xml_destroy_doc(doc);
     return;
@@ -323,7 +232,9 @@ void wsman_generate_fault_buffer ( WsContextH cntx,  WsXmlDocH inDoc,
 
 
 
-void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnderstoodHeader) 
+void wsman_generate_notunderstood_fault(
+        SOAP_OP_ENTRY* op, 
+        WsXmlNodeH notUnderstoodHeader) 
 {
     WsXmlNodeH child;
     WsXmlNodeH header;
@@ -333,7 +244,8 @@ void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnders
     op->outDoc = wsman_generate_fault(op->cntx,
             op->inDoc,
             SOAP_FAULT_MUSTUNDERSTAND,
-            SOAP_FAULT_DETAIL_HEADER_NOT_UNDERSTOOD
+            SOAP_FAULT_DETAIL_HEADER_NOT_UNDERSTOOD,
+            NULL
             );
 
 
@@ -346,13 +258,18 @@ void wsman_generate_notunderstood_fault( SOAP_OP_ENTRY* op, WsXmlNodeH notUnders
     return;
 }
 
+
 void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail ) 
 {
     if (op->inDoc == NULL)
         return;
     op->outDoc = wsman_generate_fault(op->cntx, op->inDoc, WSMAN_FAULT_ENCODING_LIMIT,
-            faultDetail);
+            faultDetail, NULL);
     return;
 }
 
+int wsman_fault_occured(WsmanMessage *msg) 
+{
+    return (msg->status.fault_code == WSMAN_RC_OK ) ?  0 : 1;
+}
 

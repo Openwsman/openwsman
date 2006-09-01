@@ -55,22 +55,23 @@
 #include <libsoup/soup-server-message.h>
 
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
 extern void start_event_source(SoapH soap);
 
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
-#include "ws_dispatcher.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-dispatcher.h"
 
 
 #include "wsman-debug.h"
 #include "wsmand-listener.h"
-#include "wsmand-plugins.h"
 #include "wsmand-daemon.h"
 #include "wsman-md5-utils.h"
 #include "wsmand-auth.h"
+#include "wsman-server.h"
+#include "wsman-plugins.h"
 
 
 
@@ -86,13 +87,13 @@ static gboolean
 server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
         SoupMessage  *msg, gpointer data) 
 {
-    char *filename;
+    char *filename = NULL;
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
     soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
 
 #if 0 
-    WsXmlDocH inDoc = build_inbound_envelope( (SOAP_FW *)data, msg);
+    WsXmlDocH inDoc = wsman_build_inbound_envelope( (SOAP_FW *)data, msg);
     if (wsman_is_identify_request(inDoc)) {
         wsman_create_identify_response( (SOAP_FW *)data, msg);
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Skipping authentication...");
@@ -127,9 +128,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     char *path, *default_path;
     char *content_type;
     char *encoding;
-    WsmanMessage *wsman_msg = soap_alloc(sizeof(WsmanMessage), 0 );
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Server Callback Called\n");
+    WsmanMessage *wsman_msg = wsman_soap_message_new();
+
+    // Check HTTP headers
     path = soup_uri_to_string (soup_message_get_uri (msg), TRUE);
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"%s %s HTTP/1.%d", msg->method, path,
             soup_message_get_http_version (msg));
@@ -139,16 +141,14 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Request: %.*s", msg->request.length, msg->request.body);
     }
 
-    if (soup_method_get_id (msg->method) != SOUP_METHOD_ID_POST)
-    {
+    // Check Method
+    if (soup_method_get_id (msg->method) != SOUP_METHOD_ID_POST) {
         soup_message_set_status (msg, SOUP_STATUS_NOT_IMPLEMENTED);
         goto DONE;
     }   
 
-
     default_path = wsmand_options_get_service_path();
     if (path) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"incoming: %s, default", path, default_path);
         if (strcmp(path, "/wsman") != 0 ) {
             soup_message_set_status (msg, SOUP_STATUS_BAD_REQUEST);
             goto DONE;
@@ -167,7 +167,7 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     }
 
     SOAP_FW* fw = (SOAP_FW*)data;	
-    wsman_msg->status.rc = WSMAN_RC_OK;
+    wsman_msg->status.fault_code = WSMAN_RC_OK;
 
     wsman_msg->request.body = (char *)msg->request.body;
     wsman_msg->request.length = msg->request.length;
@@ -179,12 +179,17 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);
     
-    if (wsman_msg->status.rc != WSMAN_RC_OK ) {
+    if ( wsman_fault_occured(wsman_msg) ) {
         char *buf;
         int  len;    		
         if (wsman_msg->in_doc != NULL) {
-            wsman_generate_fault_buffer(fw->cntx, wsman_msg->in_doc, 
-                    wsman_msg->status.rc , wsman_msg->status.detail, &buf, &len);
+            wsman_generate_fault_buffer(
+                    fw->cntx, 
+                    wsman_msg->in_doc, 
+                    wsman_msg->status.fault_code , 
+                    wsman_msg->status.fault_detail_code, 
+                    wsman_msg->status.fault_msg, 
+                    &buf, &len);
             msg->response.length = len;
             msg->response.body = strndup(buf, len);   
             free(buf);
@@ -221,34 +226,6 @@ DONE:
 }
 
 
-WsContextH wsmand_start_listener(WsManListenerH *listener)
-{	
-    GList *list = NULL;
-    WsContextH cntx = NULL;	  	
-
-    if (!wsmand_options_get_no_plugins_flag())
-        wsman_plugins_load(listener);
-
-    GList * node = listener->plugins;	
-
-    while (node) 
-    {		
-        WsManPlugin *p = (WsManPlugin *)node->data;		
-        p->interface = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
-
-        g_module_symbol(p->p_handle, "get_endpoints", (gpointer*)&p->get_endpoints);
-        p->get_endpoints(p->p_handle, p->interface );				
-
-        g_return_val_if_fail(p->interface != NULL , NULL );
-
-        list = g_list_append(list, p->interface);			
-        node = g_list_next (node);
-    }
-    cntx = ws_create_runtime(list);                    	
-    return cntx;
-}
-
-
 
 int wsmand_start_server() 
 {	
@@ -256,9 +233,10 @@ int wsmand_start_server()
     // Authentication handler   	   	
     SoupServerAuthContext auth_ctx = { 0 };	
 
-    WsManListenerH *listener = (WsManListenerH *)g_malloc0(sizeof(WsManListenerH) );	
-    WsContextH cntx = wsmand_start_listener(listener);           
+    WsManListenerH *listener = wsman_dispatch_list_new();
+    WsContextH cntx = wsman_init_plugins(listener);           
     g_return_val_if_fail(cntx != NULL, 1 );            
+
     SoapH soap = ws_context_get_runtime(cntx);   	
 
     if (!wsmand_options_get_digest()) {

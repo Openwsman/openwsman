@@ -44,17 +44,17 @@
 #include <glib.h>
 
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
 
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
-#include "ws_dispatcher.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-dispatcher.h"
 #include "wsman-debug.h"
 
-#include "wsmand-listener.h"
-#include "wsmand-plugins.h"
+#include "wsman-server.h"
+#include "wsman-plugins.h"
 
 
 
@@ -124,8 +124,8 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
     if (NULL != (self->p_handle = g_module_open(p_name, 0)))
     {
         if (                
-                g_module_symbol(self->p_handle, "get_endpoints", (gpointer*)&self->get_endpoints)
-                &&  g_module_symbol(self->p_handle, "init", (gpointer*)&self->init)
+                g_module_symbol(self->p_handle, "get_endpoints", (void *)&self->get_endpoints)
+                &&  g_module_symbol(self->p_handle, "init", (void *)&self->init)
            )
         {
             self->started = (*self->init)(self->p_handle, &self->data);

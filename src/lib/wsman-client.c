@@ -41,13 +41,14 @@
 #include <glib.h>
 
 
-#include "ws_utilities.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "ws_dispatcher.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-dispatcher.h"
+#include "wsman-soap-envelope.h"
 
-#include "xml_api_generic.h"
-#include "xml_serializer.h" 
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h" 
 #include <libxml/uri.h>
 #include "wsman-faults.h"
 #include "wsman-debug.h"
@@ -57,8 +58,8 @@
 
 struct _WsmanClientHandler {
     WsmanClientFn    	fn;   
-    gpointer     		user_data;
-    guint        		id;
+    gpointer  		user_data;
+    guint      		id;
 };
 typedef struct _WsmanClientHandler WsmanClientHandler;
 
@@ -72,7 +73,7 @@ static void wsman_set_selector(char* key, char* val, WsXmlDocH doc)
 
 void wsman_add_selector_from_uri(  WsXmlDocH doc, char *resourceUri)
 {
-    xmlURIPtr uri;
+    xmlURIPtr uri = NULL;
     GHashTable *query;
 
     if (resourceUri != NULL )	
@@ -98,7 +99,6 @@ char* wsman_make_action(char* uri, char* opName) {
         sprintf(ptr, "%s/%s", uri, opName);
     return ptr;
 }
-
 
 
 WsXmlDocH transfer_create( WsManClient *cl, char *resourceUri, GList *prop, actionOptions options) {
@@ -348,7 +348,6 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
     WsXmlDocH rqstDoc = wsman_make_enum_message( wsc->wscntx, op, enumContext, resourceUri, wsc->data.endpoint, options);
 
 
-#ifdef DMTF_WSMAN_SPEC_1
         if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) == FLAG_ENUMERATION_COUNT_ESTIMATION) {
             WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
         ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
@@ -368,7 +367,6 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
             ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE, WSM_ENUM_OBJ_AND_EPR);
         }
     }
-#endif
     if (options.filter)
     {
         WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(rqstDoc), 0 , NULL, NULL);
@@ -528,5 +526,48 @@ wsman_client (WsManClient *cl,
     }     
     return;
 }
+
+int soap_submit_client_op(SoapOpH op, WsManClient *cl )
+{	
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    SOAP_FW *fw = (SOAP_FW *)ws_context_get_runtime(wsc->wscntx);  
+    wsman_client(cl, ((SOAP_OP_ENTRY*)op)->outDoc);
+    char* response = wsc->connection->response;
+    if (response) {
+        char *buf = (char *)soap_alloc(  strlen(response) + 1, 1);
+        strncpy (buf, response, strlen(response));
+        WsmanMessage *msg = wsman_soap_message_new();
+        msg->response.body = strdup(buf);
+        msg->response.length = strlen(buf);
+        WsXmlDocH in_doc =  wsman_build_inbound_envelope(fw, msg);	
+        free(buf);
+        ((SOAP_OP_ENTRY*)op)->inDoc = in_doc;
+    } else {
+        ((SOAP_OP_ENTRY*)op)->inDoc = NULL;
+    }
+
+    return 0;
+}
+
+WsXmlDocH ws_send_get_response(WsManClient *cl, WsXmlDocH rqstDoc, unsigned long timeout)
+{
+    WsXmlDocH respDoc = NULL;
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    SoapH soap = ws_context_get_runtime(wsc->wscntx);
+
+    if ( rqstDoc != NULL && soap != NULL )
+    {
+        SoapOpH op;
+        op = soap_create_op(soap, NULL, NULL, NULL, NULL, NULL, 0, timeout);
+        if ( op != NULL ) {        		       		
+            soap_set_op_doc(op, rqstDoc, 0);
+            soap_submit_client_op(op, cl);
+            respDoc = soap_detach_op_doc(op, 1);
+            soap_destroy_op(op);            
+        }
+    }
+    return respDoc;
+}
+
 
 

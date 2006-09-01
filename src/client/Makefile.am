@@ -8,7 +8,9 @@ INCLUDES = \
 LIBS = \
        $(XML_LIBS) \
        $(SOUP_LIBS) \
-       $(top_builddir)/src/lib/libwsman.la
+       $(top_builddir)/src/lib/libwsman.la \
+       $(top_builddir)/src/lib/libwsman_client.la \
+       $(top_builddir)/src/lib/libwsman_utils.la
 
 
 wsman_SOURCES = wsman.c \

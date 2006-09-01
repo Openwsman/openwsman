@@ -38,20 +38,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <glib.h>
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-
-#include "ws_utilities.h"
-
-
-
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_api_generic.h"
-#include "xml_binding_libxml2.h"
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-binding.h"
 #include "wsman-debug.h"
 
 /**
@@ -60,6 +55,153 @@
  * 
  * @{
  */
+
+/**
+ * Create default namespace prefix
+ * @param node XML node
+ * @param uri Namespace URI
+ * @param buf Text buffer
+ * @param bufsize Buffer size
+ */
+void ws_xml_make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
+{
+    iWsDoc* doc = (iWsDoc*)xml_parser_get_doc(node);
+    WsXmlNsH ns;
+
+    if ( doc != NULL && (ns = ws_xml_find_wk_ns((SoapH)doc->fw, uri, NULL)) != NULL )
+        strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
+    else
+        if ( bufsize >= 12 )
+            sprintf(buf, "n%lu", ++doc->prefixIndex);
+        else
+            buf[0] = 0;
+}
+
+static int is_xml_val_true(char* text)
+{
+    int retVal = 0;
+
+    if ( text ) {
+        char* ptr = text;
+
+        while( isdigit(*ptr) )
+            ptr++;
+
+        if ( *ptr ) {
+            if ( !stricmp(text, "true") || !stricmp(text, "yes") )
+                retVal = 1;
+        } else {
+            if ( atoi(text) != 0 )
+                retVal = 1;
+        }
+    }
+
+    return retVal;
+}
+
+/**
+ * Enumerate namespaces in a node
+ * @param node XML node
+ * @param callback Namespace Enumeration callback
+ * @param data Callback data 
+ */
+static int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
+{
+    int retVal = 0;
+
+    if ( node )
+    {
+        int i;
+        WsXmlNsH ns;
+
+        for(i = 0; (ns = ws_xml_get_ns(node, i)) != NULL; i++)
+        {
+            if ( (retVal = callback(node, ns, data)) != 0 )
+                break;
+        }
+    }
+    return retVal;
+}
+
+
+static char* make_qname(WsXmlNodeH node, char* uri, char* name)
+{
+    char* buf = NULL; 
+    if ( name && uri && name )
+    {
+        int len = 1 + strlen(name);
+        WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1); 
+        char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
+
+        if ( prefix != NULL )
+            len += 1 + strlen(prefix);
+
+        if ( (buf = soap_alloc(len, 0)) != NULL )
+        {
+            if ( prefix != NULL )
+                sprintf(buf, "%s:%s", prefix, name);
+            else
+                strcpy(buf, name);
+        }
+    }
+    return buf;
+}
+
+
+/**
+ * Add QName attribute
+ * @param node Parent XML node
+ * @param nameNs Child Namespace 
+ * @param name Child Name
+ * @param valueNs Namespace for value
+ * @param value Child Value
+ * @return Child XML node
+ * @note 
+ * if namespaces has been changed after this function is called, itis caller's
+ * responsibility to update QName fields accordingly
+ */
+WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node, 
+        char* nameNs,
+        char* name,
+        char* valueNs,
+        char* value)
+{
+    WsXmlAttrH attr = NULL;
+
+    if ( name && node && valueNs && value )
+    {
+        char* buf = make_qname(node, valueNs, value);
+        if ( buf != NULL )
+        {
+            attr = ws_xml_add_node_attr(node, nameNs, name, buf);
+            soap_free(buf);
+        }
+    }
+
+    return attr;
+}
+
+/**
+ * Enumerate namespaces
+ * @param node XML node
+ * @param callback enumeration callback
+ * @param data Callback data
+ * @param bWalkUpTree Flag FIXME
+ * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero) 
+ * walks up the parent chain
+ */
+void ws_xml_ns_enum(WsXmlNodeH node, 
+        WsXmlNsEnumCallback callback,
+        void* data,
+        int bWalkUpTree) 
+{
+    while(node)
+    {
+        if ( ns_enum_at_node(node, callback, data) || !bWalkUpTree )
+            break;
+        node = ws_xml_get_node_parent(node);
+    }
+}
 
 
 /**
@@ -235,93 +377,7 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
 }
 
 
-/**
- * Change Endpoint Reference from request to response format
- * @param dstHeader Destination header
- * @param epr The Endpoint Reference
- */
-void epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
-{
-    WsXmlNodeH node = !epr ? NULL : ws_xml_get_child(epr, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
 
-    ws_xml_add_child(dstHeader, 
-            XML_NS_ADDRESSING, 
-            WSA_TO, 
-            !node ? WSA_TO_ANONYMOUS : ws_xml_get_node_text(node));
-
-    if ( epr )
-    {
-        int i;
-        WsXmlNodeH child;
-
-        if ( (node = ws_xml_get_child(epr, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES)) )
-        {
-            for(i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++)
-            {
-                ws_xml_duplicate_tree(dstHeader, child);
-            }
-        }
-
-        if ( (node = ws_xml_get_child(epr, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS)) )
-        {
-            for(i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++)
-            {
-                ws_xml_duplicate_tree(dstHeader, child);
-            }
-        }
-    }
-}
-
-
-/**
- * Create a response SOAP envelope
- * @param cntx Context
- * @param rqstDoc The XML document of the request
- * @param action the Response action
- * @return Response envelope
- */
-WsXmlDocH ws_create_response_envelope(struct __WsContext* cntx, 
-        WsXmlDocH rqstDoc, 
-        char* action)
-{
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Generating response envelope");
-    SoapH soap = ((WS_CONTEXT*)cntx)->soap;   
-    char* soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));   
-    WsXmlDocH doc = ws_xml_create_envelope(soap, soapNs);	
-    if ( doc )
-    {
-        WsXmlNodeH dstHeader = ws_xml_get_soap_header(doc);
-        WsXmlNodeH srcHeader = ws_xml_get_soap_header(rqstDoc);
-        WsXmlNodeH srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
-
-        epr_from_request_to_response(dstHeader, srcNode);
-
-        if ( action != NULL )
-            ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, action);
-        else
-            if ( (srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_ACTION)) != NULL )
-            {
-                if ( (action = ws_xml_get_node_text(srcNode)) != NULL )
-                {
-                    int len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
-                    char* tmp = (char*)soap_alloc(sizeof(char) * len, 0);
-                    if ( tmp )
-                    {
-                        sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);
-                        ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, tmp);
-                        soap_free(tmp);
-                    }
-                }
-            }
-
-        if ( (srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID)) != NULL )
-        {
-            ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_RELATES_TO, ws_xml_get_node_text(srcNode));
-        }
-    }
-	wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Generated response envelope");
-    return doc;
-}
 
 /**
  * Find a text in an XML document
@@ -374,10 +430,8 @@ void ws_xml_free_memory(void* ptr)
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 {
     SoapH soap = NULL;
-
     if ( doc )
         soap = (SoapH)((iWsDoc*)doc)->fw;
-
     return soap;
 }
 
@@ -573,10 +627,8 @@ int ws_xml_enum_children(WsXmlNodeH parent,
 int ws_xml_get_child_count(WsXmlNodeH parent)
 {
     int count = 0;
-
     if ( parent )
         count = xml_parser_get_count(parent, XML_COUNT_NODE, 0);
-
     return count;
 }
 
@@ -708,7 +760,7 @@ WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName)
                 WsXmlNsH ns;
                 char prefix[12];
 
-                make_default_prefix(rootNode, rootNsUri, prefix, sizeof(prefix));
+                ws_xml_make_default_prefix(rootNode, rootNsUri, prefix, sizeof(prefix));
 
                 if ( (ns = xml_parser_ns_add(rootNode, rootNsUri, prefix)) == NULL )
                 {
@@ -774,7 +826,7 @@ void ws_xml_destroy_doc(WsXmlDocH doc) {
  * @param _data Callback data
  * @return status
  */
-int find_in_tree_callback(WsXmlNodeH node, void* _data)
+static int find_in_tree_callback(WsXmlNodeH node, void* _data)
 {
     FindInTreeCallbackData* data = (FindInTreeCallbackData*)_data;
     int retVal = ws_xml_is_node_qname(node, data->ns, data->name);
@@ -919,26 +971,6 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
     return retVal;
 }
 
-/**
- * Create default namespace prefix
- * @param node XML node
- * @param uri Namespace URI
- * @param buf Text buffer
- * @param bufsize Buffer size
- */
-void make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
-{
-    iWsDoc* doc = (iWsDoc*)xml_parser_get_doc(node);
-    WsXmlNsH ns;
-
-    if ( doc != NULL && (ns = ws_xml_find_wk_ns((SoapH)doc->fw, uri, NULL)) != NULL )
-        strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
-    else
-        if ( bufsize >= 12 )
-            sprintf(buf, "n%lu", ++doc->prefixIndex);
-        else
-            buf[0] = 0;
-}
 
 
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
@@ -1008,27 +1040,6 @@ WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
     return parent;
 }
 
-/**
- * Enumerate namespaces
- * @param node XML node
- * @param callback enumeration callback
- * @param data Callback data
- * @param bWalkUpTree Flag FIXME
- * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero) 
- * walks up the parent chain
- */
-void ws_xml_ns_enum(WsXmlNodeH node, 
-        WsXmlNsEnumCallback callback,
-        void* data,
-        int bWalkUpTree) 
-{
-    while(node)
-    {
-        if ( ns_enum_at_node(node, callback, data) || !bWalkUpTree )
-            break;
-        node = ws_xml_get_node_parent(node);
-    }
-}
 
 /**
  * Find namespace in an XML node
@@ -1156,29 +1167,6 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
 }
 
 
-/**
- * Enumerate namespaces in a node
- * @param node XML node
- * @param callback Namespace Enumeration callback
- * @param data Callback data 
- */
-int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
-{
-    int retVal = 0;
-
-    if ( node )
-    {
-        int i;
-        WsXmlNsH ns;
-
-        for(i = 0; (ns = ws_xml_get_ns(node, i)) != NULL; i++)
-        {
-            if ( (retVal = callback(node, ns, data)) != 0 )
-                break;
-        }
-    }
-    return retVal;
-}
 
 
 /**
@@ -1231,7 +1219,7 @@ WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName
  * @param bDefault FIXME
  * @return 1 if Ok, 0 if not
  */
-int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
+static int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
 {
     int retVal = 0;
     char* curPrefix = xml_parser_ns_query(ns, XML_NS_PREFIX);
@@ -1279,7 +1267,7 @@ WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDef
             char buf[12];
             if ( !bDefault && nsPrefix == NULL )
             {
-                make_default_prefix(node, nsUri, buf, sizeof(buf));
+                ws_xml_make_default_prefix(node, nsUri, buf, sizeof(buf));
                 nsPrefix = buf;
             }
             ns = xml_parser_ns_add(node, nsUri, nsPrefix);
@@ -1312,38 +1300,6 @@ WsXmlNodeH ws_xml_add_qname_child(WsXmlNodeH parent,
         ws_xml_set_node_qname_val(node, valueNs, value);
     }
     return node;
-}
-/**
- * Add QName attribute
- * @param node Parent XML node
- * @param nameNs Child Namespace 
- * @param name Child Name
- * @param valueNs Namespace for value
- * @param value Child Value
- * @return Child XML node
- * @note 
- * if namespaces has been changed after this function is called, itis caller's
- * responsibility to update QName fields accordingly
- */
-WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node, 
-        char* nameNs,
-        char* name,
-        char* valueNs,
-        char* value)
-{
-    WsXmlAttrH attr = NULL;
-
-    if ( name && node && valueNs && value )
-    {
-        char* buf = make_qname(node, valueNs, value);
-        if ( buf != NULL )
-        {
-            attr = ws_xml_add_node_attr(node, nameNs, name, buf);
-            soap_free(buf);
-        }
-    }
-
-    return attr;
 }
 
 
@@ -1434,28 +1390,6 @@ int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
     return retVal;
 }
 
-char* make_qname(WsXmlNodeH node, char* uri, char* name)
-{
-    char* buf = NULL; 
-    if ( name && uri && name )
-    {
-        int len = 1 + strlen(name);
-        WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1); 
-        char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
-
-        if ( prefix != NULL )
-            len += 1 + strlen(prefix);
-
-        if ( (buf = soap_alloc(len, 0)) != NULL )
-        {
-            if ( prefix != NULL )
-                sprintf(buf, "%s:%s", prefix, name);
-            else
-                strcpy(buf, name);
-        }
-    }
-    return buf;
-}
 
 
 
@@ -1576,34 +1510,13 @@ int ws_xml_set_node_text(WsXmlNodeH node, char* text)
 
 
 // Utitlities
-
+/*
 int is_root_node(WsXmlNodeH node)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(ws_xml_get_node_doc(node));
     return (root == node);
 }
-
-int is_xml_val_true(char* text)
-{
-    int retVal = 0;
-
-    if ( text ) {
-        char* ptr = text;
-
-        while( isdigit(*ptr) )
-            ptr++;
-
-        if ( *ptr ) {
-            if ( !stricmp(text, "true") || !stricmp(text, "yes") )
-                retVal = 1;
-        } else {
-            if ( atoi(text) != 0 )
-                retVal = 1;
-        }
-    }
-
-    return retVal;
-}
+*/
 
 
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)

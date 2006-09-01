@@ -32,8 +32,8 @@
  * @author Anas Nashif
  */
 
-#ifndef WSMANFAULTS_H_
-#define WSMANFAULTS_H_
+#ifndef WSMAN_FAULTS_H_
+#define WSMAN_FAULTS_H_
 
 #define FAULT_SENDER_CODE "Sender"
 #define FAULT_RECEIVER_CODE "Receiver"
@@ -235,6 +235,4 @@ typedef enum {
 } WsmanKnownStatusCode;
 
 
-void add_details_proc(WsXmlNodeH fault,  void* data);
-int wsman_is_fault(WsXmlDocH doc);
-#endif /*WSMANFAULTS_H_*/
+#endif /*WSMAN_FAULTS_H_*/

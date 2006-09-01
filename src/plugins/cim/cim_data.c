@@ -40,19 +40,19 @@
 #include "ctype.h"
 #include <gmodule.h>
 
-#include "ws_utilities.h"
+#include "wsman-util.h"
 
-#include "ws_errors.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_serializer.h"
-#include "ws_dispatcher.h"
+#include "wsman-errors.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-dispatcher.h"
 
-#include "cim_namespace_data.h"
+#include "cim_data.h"
 
 
-SER_START_ITEMS("Catalog", CimResource)
-SER_END_ITEMS("Catalog", CimResource);
+SER_START_ITEMS("CIM", CimResource)
+SER_END_ITEMS("CIM", CimResource);
 
 SER_START_END_POINTS(CimResource)
     END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
@@ -63,19 +63,22 @@ SER_START_END_POINTS(CimResource)
     END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),
 SER_FINISH_END_POINTS(CimResource);
 
+SER_START_NAMESPACES(CimResource)
+    ADD_NAMESPACE( XML_NS_CIM_CLASS),
+SER_FINISH_NAMESPACES(CimResource);
 
 void get_endpoints(GModule *self, void **data)
 {
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
-    ifc->actionUriBase = XML_NS_CIM_CLASS;
+    ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;
-    ifc->vendor = "Intel Corp.";
+    ifc->vendor = "Openwsman Project";
     ifc->displayName = "CIM Resource";
     ifc->notes = "CIM Resource";
     ifc->compliance = XML_NS_WS_MAN;
-    ifc->wsmanSystemUri = NULL;
     ifc->wsmanResourceUri = NULL;
+    ifc->namespaces = CimResource_Namespaces;
     ifc->extraData = NULL;
     ifc->endPoints = CimResource_EndPoints;	    	   
     return;

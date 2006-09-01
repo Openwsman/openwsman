@@ -45,15 +45,20 @@
 #include <libxml/parser.h>
 #include <libxml/xmlstring.h>
 
-#include "ws_utilities.h"
+#include "wsman-util.h"
+
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-binding.h"
 
 
-#include "ws_xml_api.h"
+static void destroy_attr_private_data(void* data)
+{
+    if ( data )
+        xmlFree(data);
+}
 
-#include "soap_api.h"
-#include "xml_api_generic.h"
-
-#include "xml_binding_libxml2.h"
 
 static void destroy_node_private_data(void* _data)
 {
@@ -66,13 +71,6 @@ static void destroy_node_private_data(void* _data)
         soap_free(data);
     }
 }
-
-static void destroy_attr_private_data(void* data)
-{
-    if ( data )
-        xmlFree(data);
-}
-
 
 static void destroy_tree_private_data(xmlNode* node)
 {
@@ -99,7 +97,6 @@ static void destroy_tree_private_data(xmlNode* node)
         node = node->next;
     }
 }
-
 
 
 
@@ -434,7 +431,7 @@ WsXmlNsH xml_parser_ns_find(WsXmlNodeH node,
 
         if ( prefix == NULL )
         {
-            make_default_prefix((WsXmlNodeH)xmlRoot, uri, buf, sizeof(buf));
+            ws_xml_make_default_prefix((WsXmlNodeH)xmlRoot, uri, buf, sizeof(buf));
             prefix = buf;
         }
 

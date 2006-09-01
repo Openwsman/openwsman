@@ -3,7 +3,7 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 0.1.0)
+AC_INIT(openwsman, 0.1.1)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -257,11 +257,7 @@ AC_OUTPUT([
         src/libcim/sfcc/Makefile
         src/plugins/Makefile
         src/plugins/cim/Makefile
-        src/plugins/wsman/Makefile
-        src/plugins/wsman/this/Makefile
-        src/plugins/wsman/test/Makefile
-        src/plugins/wsman/test2/Makefile
-        src/plugins/ComputerSystem/Makefile
+        src/plugins/identify/Makefile
         doc/Makefile
         doc/specs/Makefile
         etc/Makefile

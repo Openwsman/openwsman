@@ -53,7 +53,6 @@ typedef char* XML_TYPE_STR;
 
 #define SER_ENUMERATOR_PREFIX	"_XmlSerializeEnum"
 
-#define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
 //#define SER_ALIGNMENT_MASK	0x000F
 
@@ -366,6 +365,11 @@ struct __XmlSerializerInfo t##_TypeItems[] = {
 #define SER_START_END_POINTS(t) WsDispatchEndPointInfo t##_EndPoints[] = {
 
 #define SER_FINISH_END_POINTS(t) END_POINT_LAST }
+
+
+#define SER_START_NAMESPACES(t) WsSupportedNamespaces t##_Namespaces[] = {
+
+#define SER_FINISH_NAMESPACES(t) NAMESPACE_LAST }
 
 #define SER_DECLARE_EP_ARRAY(t)\
 extern WsDispatchEndPointInfo t##_EndPoints[]

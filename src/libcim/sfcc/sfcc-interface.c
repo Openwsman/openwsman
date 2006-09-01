@@ -38,18 +38,18 @@
 #include <glib.h>
 #include <CimClientLib/cmci.h>
 #include <CimClientLib/native.h>
-#include "ws_utilities.h"
+#include "wsman-util.h"
 
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/xmlstring.h>
 
-#include "ws_errors.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_api_generic.h"
-#include "xml_serializer.h"
+#include "wsman-errors.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
 
 #include "sfcc-interface.h"
 #include "wsman-debug.h"
@@ -590,7 +590,7 @@ void cim_put_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys,
                 node = g_list_next (node);
             }
             if (invalid_key) {
-                status->rc = WSMAN_FAULT_INVALID_SELECTORS;
+                status->fault_code = WSMAN_FAULT_INVALID_SELECTORS;
                 break;
             }
             valid_keys = 1;
@@ -694,13 +694,11 @@ void cim_get_instance_from_enum (CMCIClient *cc, char *resourceUri, GList *keys,
                 node = g_list_next (node);
             }
             if (invalid_key) {
-                status->rc = WSMAN_FAULT_INVALID_SELECTORS;
+                status->fault_code = WSMAN_FAULT_INVALID_SELECTORS;
                 break;
             }
             valid_keys = 1;
         }
-        unsigned int i, m, s;
-        char *v, *v2; 
         
         //CMPIObjectPath *op = CMGetObjectPath(data.value.inst, NULL);
         CMSetClassName(op, class_name);
@@ -851,19 +849,19 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status) {
 
     switch (sfcc_status.rc) {
     case CMPI_RC_OK:
-        status->rc = WSMAN_RC_OK;
+        status->fault_code = WSMAN_RC_OK;
         break;
     case CMPI_RC_ERR_INVALID_CLASS:
-        status->rc = WSA_FAULT_DESTINATION_UNREACHABLE;
+        status->fault_code = WSA_FAULT_DESTINATION_UNREACHABLE;
         break;
     case CMPI_RC_ERR_FAILED:
-        status->rc = WSMAN_FAULT_INTERNAL_ERROR;
+        status->fault_code = WSMAN_FAULT_INTERNAL_ERROR;
         break;
     case CMPI_RC_ERR_METHOD_NOT_FOUND:
-        status->rc = WSA_FAULT_ACTION_NOT_SUPPORTED;
+        status->fault_code = WSA_FAULT_ACTION_NOT_SUPPORTED;
        break;
     case CMPI_RC_ERR_NOT_FOUND:
-        status->rc = WSA_FAULT_DESTINATION_UNREACHABLE;
+        status->fault_code = WSA_FAULT_DESTINATION_UNREACHABLE;
         break;
     case CMPI_RC_ERR_ACCESS_DENIED:
     case CMPI_RC_ERR_INVALID_NAMESPACE:
@@ -883,7 +881,7 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status) {
     case CMPI_RC_ERROR_SYSTEM:
     case CMPI_RC_ERROR:
     default:
-        status->rc = WSMAN_FAULT_UNKNOWN;
+        status->fault_code = WSMAN_FAULT_UNKNOWN;
     }
     /*
     if (sfcc_status.msg) {

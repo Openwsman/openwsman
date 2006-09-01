@@ -1,32 +1,47 @@
+AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
+
 wsmanincludedir = $(includedir)/openwsman
 wsmaninclude_HEADERS = $(OWSMAN_INCLUDES)
 OWSMAN_INCLUDES = \
-	soap_api.h \
-	ws_dispatcher.h \
-	ws_errors.h \
+	wsman-soap.h \
+	wsman-dispatcher.h \
+	wsman-errors.h \
 	wsman-debug.h \
 	wsman-faults.h \
-	ws_utilities.h \
-	ws_xml_api.h \
-	xml_api_generic.h \
-	xml_binding_libxml2.h \
-	xml_serialization.h \
-	xml_serializer.h \
+	wsman-util.h \
+	wsman-xml-api.h \
+	wsman-xml.h \
+	wsman-xml-binding.h \
+	wsman-xml-serialize.h \
+	wsman-xml-serializer.h \
 	wsman-client.h  \
+	wsman-soap-message.h \
 	wsman-md5-utils.h
+
+libwsman_utils_la_SOURCES = \
+	wsman-md5-utils.c \
+	wsman-util.c \
+	wsman-debug.c
 		      
+libwsman_client_la_SOURCES = \
+	wsman-client.c 
+	
+libwsman_catalog_la_SOURCES = \
+	wsman-catalog.c 
+
+libwsman_server_la_SOURCES = \
+	wsman-server.c  \
+	wsman-plugins.c
 
 libwsman_la_SOURCES = \
-	xml_binding_libxml2.c \
-	xml_api_generic.c \
-	xml_serialization.c \
-	ws_dispatcher.c \
-	ws_soap_api.c \
-	ws_utilities.c \
-	wsman-debug.c \
+	wsman-xml-binding.c \
+	wsman-xml.c \
+	wsman-dispatcher.c \
+	wsman-soap.c \
 	wsman-faults.c \
-	wsman-client.c \
-	wsman-md5-utils.c \
+	wsman-xml-serialize.c \
+	wsman-soap-envelope.c \
+	wsman-soap-message.c
 	$(OWSMAN_INCLUDES)
 
 INCLUDES = -I$(top_srcdir) \
@@ -38,10 +53,21 @@ LIBS = \
         $(XML_LIBS)
 
 
-libwsman_la_LIBADD =       \
-	$(LIBS)
+libwsman_la_LIBADD = $(LIBS) \
 	-lpthread
 
-libwsman_la_LDFLAGS= -version-info 1:0
+libwsman_client_la_LIBADD = $(LIBS)
+libwsman_utils_la_LIBADD = $(LIBS)
 
-lib_LTLIBRARIES= libwsman.la
+libwsman_la_LDFLAGS= -version-info 1:0
+libwsman_client_la_LDFLAGS= -version-info 1:0
+libwsman_utils_la_LDFLAGS= -version-info 1:0
+libwsman_server_la_LDFLAGS= -version-info 1:0
+libwsman_catalog_la_LDFLAGS= -version-info 1:0
+
+lib_LTLIBRARIES= \
+		 libwsman.la \
+		 libwsman_client.la \
+		 libwsman_utils.la \
+		 libwsman_catalog.la \
+		 libwsman_server.la

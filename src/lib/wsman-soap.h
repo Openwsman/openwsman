@@ -36,8 +36,6 @@
 #ifndef SOAP_API_H_
 #define SOAP_API_H_
 
-#include <pthread.h>
-#include "wsman-faults.h"
 
 #define PROCESSED_MSG_ID_MAX_SIZE	        200
 #define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192
@@ -247,6 +245,16 @@
 #define WS_CONTEXT_TYPE_BLOB		0x05
 #define WS_CONTEXT_TYPE_FAULT		0x06
 
+#include "wsman-faults.h"
+struct _WsmanStatus {
+    WsmanFaultCodeType fault_code;
+    WsmanFaultDetailType fault_detail_code;
+    char *fault_msg;
+};
+typedef struct _WsmanStatus WsmanStatus;
+
+#include "wsman-soap-message.h"
+
 
 struct __WsContext
 {
@@ -262,7 +270,7 @@ typedef struct __SoapDispatch* SoapDispatchH;
 
 typedef SoapDispatchH (*DispatcherCallback)(WsContextH, void*, WsXmlDocH);
 
-// this structure is similarly defined in ws_xml_api.h
+// this structure is similarly defined in wsman-xml-api.h
 #ifndef _SoapH_Defined
 #define _SoapH_Defined
 struct __Soap
@@ -307,16 +315,12 @@ struct __SOAP_FW
 
 	unsigned long lastResponseListScanTicks;
 	
-	DL_List sendWaitingList;
-	DL_List channelList;
-
 	// TBD: ??? Make it thread and pass as parameters
 	int resendCount;
 	unsigned long resentTimeout[SOAP_MAX_RESENT_COUNT];
 
 	DL_List WsSerializerAllocList;
 		
-	char *test;
 	void* dispatcherData;
 	DispatcherCallback dispatcherProc;
 };
@@ -397,6 +401,12 @@ struct __WsDispatchEndPointInfo
 };
 typedef struct __WsDispatchEndPointInfo WsDispatchEndPointInfo;
 
+struct __WsSupportedNamespaces
+{
+	char* ns;
+};
+typedef struct __WsSupportedNamespaces WsSupportedNamespaces;
+
 
 struct __WsDispatchInterfaceInfo
 {
@@ -407,9 +417,9 @@ struct __WsDispatchInterfaceInfo
 	char* displayName;
 	char* compliance;	
 	char* actionUriBase;
-	char* wsmanSystemUri;
 	char* wsmanResourceUri;
 	void* extraData;
+	WsSupportedNamespaces* namespaces;	
 	WsDispatchEndPointInfo* endPoints;	
 };
 typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
@@ -449,54 +459,11 @@ struct __WsEnumerateInfo
 };
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
-
-typedef struct _WsmanStatus {
-    WsmanFaultCodeType rc;
-    WsmanFaultDetailType detail;
-    char *msg;
-} WsmanStatus;
-
-struct _WsmanDataBuffer {
-    char 	*body;
-    int		length;
-};
-typedef struct _WsmanDataBuffer WsmanDataBuffer;
-
-
-struct _WsmanAuth {
-    char *username;
-    char *password;
-};
-typedef struct _WsmanAuth WsmanAuth;
-
-struct _WsmanMessage {
-    const char          *method;
-    WsmanStatus         status;
-    WsmanDataBuffer     request;
-    GHashTable          *request_headers;
-    WsmanDataBuffer     response;
-    WsXmlDocH           in_doc;
-    WsmanKnownStatusCode http_code;
-    WsmanAuth           auth_data;
-};
-typedef struct _WsmanMessage WsmanMessage;
-
-
-
-
 typedef int (*WsEndPointEnumerate)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointPut)(WsContextH, void*, void**, WsmanStatus*);
 typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
-
-
-struct _WsProperties {
-    char *key;
-    char *value;   
-};
-typedef struct _WsProperties WsProperties;
-
 
 #define FLAG_ENUMERATION_COUNT_ESTIMATION    1
 #define FLAG_ENUMERATION_OPTIMIZATION        2
@@ -525,8 +492,6 @@ typedef struct _actionOptions actionOptions;
 
 
 /** *********************************** */
-WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri,
-        char* systemUri, char* resourceUri, char* toUri, actionOptions options);
 
 WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name);
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
@@ -539,8 +504,6 @@ char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
 //void wsman_set_selector( WsXmlDocH doc, char* name, char* val);
 char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
-
-void ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, void* data);
 
 WS_CONTEXT_ENTRY* find_context_entry(WS_CONTEXT_ENTRY* start, char* name, int bPrefix);
 
@@ -564,18 +527,10 @@ int wsman_register_endpoint(WsContextH cntx,
         WsDispatchEndPointInfo* ep,
         WsManDispatcherInfo* dispInfo);
         
-SoapDispatchH soap_create_dispatch(SoapH soap, 
-        char* inboundAction,
-        char* outboundAction, // optional
-        char* role, // reserved, must be NULL
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        unsigned long flags);
-        
-
 
 
 int ws_transfer_put(SoapOpH op, void* appData);        
+int wsmid_identify_stub(SoapOpH op, void* appData);        
 int ws_enumerate_stub(SoapOpH op, void* appData);        
 int ws_transfer_get(SoapOpH op, void* appData);
 int ws_transfer_get_raw(SoapOpH op, void* appData);
@@ -607,11 +562,8 @@ void soap_destroy_op(SoapOpH op);
 
 int outbound_addressing_filter(SoapOpH opHandle, void* data);
 int outbound_control_header_filter(SoapOpH opHandle, void* data);
-int soap_submit_op(SoapOpH h)  ;
-void soap_start_dispatch(SoapDispatchH disp);
 
 WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc);
-
 
 WsContextH ws_get_soap_context(SoapH soap);
 
@@ -620,8 +572,6 @@ void ws_clear_context_entries(WsContextH hCntx);
 int ws_destroy_context(WsContextH hCntx);
 
 int ws_remove_context_val(WsContextH hCntx, char* name);
-
-// int ws_set_context_fault(WsContextH cntx, char* name, WsmanFaultCodeType val);
 
 int ws_set_context_val(WsContextH hCntx, char* name, void* val, int size, int bNoDup);
 int set_context_val(WsContextH hCntx, 
@@ -657,23 +607,23 @@ int soap_add_defalt_filter(SoapH soap,
 
 char* get_http_response_status(WsXmlDocH doc, int* errCodePtr);
 
+int wsman_fault_occured(WsmanMessage *msg);
 
 WsXmlDocH wsman_generate_fault(
 	WsContextH cntx,
 	WsXmlDocH inDoc, 
 	WsmanFaultCodeType faultCode, 
-	WsmanFaultDetailType faultDetail);
+	WsmanFaultDetailType faultDetail,
+        char *fault_msg);
 	
 void wsman_generate_fault_buffer(
 	WsContextH cntx, 
 	WsXmlDocH inDoc, 
 	WsmanFaultCodeType faultCode, 
 	WsmanFaultDetailType faultDetail, 
+        char *fault_msg,
 	char **buf, 
 	int* len);
-
-int  wsmancat_create_resource(WsXmlNodeH r, WsDispatchInterfaceInfo *interface);
-void wsmancat_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *interface);
 
 
 int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);				
@@ -685,27 +635,31 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 #define WS_DISP_TYPE_MASK				0xffff
 
 #define WS_DISP_TYPE_RAW_DOC				0
-#define WS_DISP_TYPE_GET					1
-#define WS_DISP_TYPE_PUT					2
+#define WS_DISP_TYPE_GET				1
+#define WS_DISP_TYPE_PUT				2
 #define WS_DISP_TYPE_CREATE				3
 #define WS_DISP_TYPE_DELETE				4
 
-#define WS_DISP_TYPE_ENUMERATE			5
+#define WS_DISP_TYPE_ENUMERATE		        	5
 #define WS_DISP_TYPE_PULL				6
 #define WS_DISP_TYPE_RELEASE				7
 #define WS_DISP_TYPE_UPDATE				8
-#define WS_DISP_TYPE_GETSTATUS			9
+#define WS_DISP_TYPE_GETSTATUS			        9
 #define WS_DISP_TYPE_COUNT				11
-#define WS_DISP_TYPE_PULL_RAW			12
+#define WS_DISP_TYPE_PULL_RAW			        12
 #define WS_DISP_TYPE_GET_RAW				13
-#define WS_DISP_TYPE_GET_NAMESPACE				14
-#define WS_DISP_TYPE_CUSTOM_METHOD				15
+#define WS_DISP_TYPE_GET_NAMESPACE			14
+#define WS_DISP_TYPE_CUSTOM_METHOD			15
 #define WS_DISP_TYPE_PUT_RAW				16
+#define WS_DISP_TYPE_IDENTIFY				17
 
 #define WS_DISP_TYPE_PRIVATE				0xfffe
 
 
 
+#define END_POINT_IDENTIFY(t, ns)\
+	{ WS_DISP_TYPE_IDENTIFY, NULL, NULL, NULL, NULL,\
+	  t##_TypeInfo, (WsProcType)t##_Identify_EP, ns, NULL}
 
 #define END_POINT_TRANSFER_GET(t, ns)\
 	{ WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
@@ -755,6 +709,10 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
           t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
 
 #define END_POINT_LAST	{ 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+#define NAMESPACE_LAST	{ NULL }
+
+#define ADD_NAMESPACE( ns)\
+        {ns}
 
 
 #define WS_STUB_0(T)\
@@ -861,17 +819,23 @@ extern WsSelector t##_Get_Selectors[]
 
 void soap_enter(SoapH soap);
 void soap_leave(SoapH soap);
-WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize);
 char *wsman_remove_query_string(char * resourceUri);
 void soap_destroy_fw(SoapH soap);
 
-void wsmand_set_fault(WsmanMessage *msg, WsmanFaultCodeType faultCode, WsmanFaultDetailType faultDetail, char *details);
 int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo);
 int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
 char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
 void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
 
+int wsman_is_fault_envelope(WsXmlDocH doc);
+
+void wsman_set_fault(WsmanMessage *msg, 
+            WsmanFaultCodeType fault_code, 
+            WsmanFaultDetailType fault_detail_code,
+            const char *details);
+
+int wsman_is_identify_request(WsXmlDocH doc);
 
 
 #endif /*SOAP_API_H_*/

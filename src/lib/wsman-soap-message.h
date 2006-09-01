@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
  *
@@ -29,29 +30,50 @@
  *******************************************************************************/
 
 /**
- * @author Haihao Xiang
  * @author Anas Nashif
- * @author Eugene Yarmosh
  */
 
-#ifndef __INTERFACE_UTILS_H__
-#define __INTERFACE_UTILS_H__
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <gmodule.h>
-
-#include "wsman-util.h"
-#include "wsman-xml-api.h"
-#include "wsman-soap.h"
-
-#include "wsman-debug.h"
+#ifndef WSMAN_SOAP_MESSAGE_H_
+#define WSMAN_SOAP_MESSAGE_H_
 
 
-GList *add_key(WsContextH cntx, GList *keys, char *name, char *type);
-GList *create_key_list(WsContextH cntx, WsSelector *selectors);
+#define FLAG_IDENTIFY_REQUEST    1
+
+struct _WsmanDataBuffer {
+    char 	*body;
+    size_t	length;
+};
+typedef struct _WsmanDataBuffer WsmanDataBuffer;
+
+struct _WsmanAuth {
+    char *username;
+    char *password;
+};
+typedef struct _WsmanAuth WsmanAuth;
 
 
-#endif /* __INTERFACE_UTILS_H__ */
+struct _WsmanMessage {
+    const char          *method;
+    WsmanStatus         status;
+    WsmanDataBuffer     request;
+    WsmanDataBuffer     response;
+    WsXmlDocH           in_doc;
+    WsmanKnownStatusCode http_code;
+    WsmanAuth           auth_data;
+    unsigned int        flags;
+};
+typedef struct _WsmanMessage WsmanMessage;
+
+
+struct _WsProperties {
+    char *key;
+    char *value;   
+};
+typedef struct _WsProperties WsProperties;
+
+
+void wsman_set_message_flags(WsmanMessage *msg, unsigned int flag);
+
+WsmanMessage *wsman_soap_message_new(void);
+
+#endif

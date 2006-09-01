@@ -46,10 +46,11 @@ typedef struct _WsManClientEnc WsManClientEnc;
 struct _WsManClient;
 typedef struct _WsManClient WsManClient;
 
-typedef struct _WsManStatus {
-      unsigned int rc;
-      char *msg;
+typedef struct _WsManClientStatus {
+    unsigned int rc;
+    char *msg;
 } WsManClientStatus;
+
 
 typedef struct clientData {
    char *hostName;
@@ -70,7 +71,7 @@ typedef struct credentialData {
 
 typedef struct _WsManClientFT 
 {
-         WsManClientStatus (*release)(WsManClient * cl);
+        WsManClientStatus (*release)(WsManClient * cl);
 
 	/**
 	 * Transfer Get
@@ -120,8 +121,8 @@ struct _WsManClient {
 };
 
 struct _WsManConnection {
-	char*	request;
-	char*	response;
+    char*	request;
+    char*	response;
 };
 typedef struct _WsManConnection WsManConnection;
 

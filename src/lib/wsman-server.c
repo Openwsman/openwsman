@@ -31,17 +31,64 @@
 /**
  * @author Anas Nashif
  */
- 
 
-#ifndef SERVER_H_
-#define SERVER_H_
+#include "config.h"
+
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <glib.h>
+
+
+#include "wsman-util.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-dispatcher.h"
+#include "wsman-soap-envelope.h"
+
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h" 
+#include <libxml/uri.h>
+#include "wsman-faults.h"
+#include "wsman-debug.h"
+#include "wsman-server.h"
+#include "wsman-plugins.h"
 
 
 
-#define AUTHENTICATION_REALM "OPENWSMAN"
+WsManListenerH *wsman_dispatch_list_new()
+{
+    WsManListenerH *list = (WsManListenerH *)g_malloc0(sizeof(WsManListenerH) );
+    return list;
+}
 
+WsContextH wsman_init_plugins(WsManListenerH *listener)
+{	
+    GList *list = NULL;
+    WsContextH cntx = NULL;	  	
 
+    /*
+    if (!wsmand_options_get_no_plugins_flag())
+    */
+    wsman_plugins_load(listener);
+    GList * node = listener->plugins;	
 
-int wsmand_start_server(void);
+    while (node) 
+    {		
+        WsManPlugin *p = (WsManPlugin *)node->data;		
+        p->interface = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
 
-#endif /*SERVER_H_*/
+        g_module_symbol(p->p_handle, "get_endpoints", (void*)&p->get_endpoints);
+        p->get_endpoints(p->p_handle, p->interface );				
+
+        g_return_val_if_fail(p->interface != NULL , NULL );
+
+        list = g_list_append(list, p->interface);			
+        node = g_list_next (node);
+    }
+    cntx = ws_create_runtime(list);                    	
+    return cntx;
+}
+

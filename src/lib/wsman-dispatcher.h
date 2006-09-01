@@ -34,8 +34,8 @@
  */
 
 
-#ifndef WS_DISPATCHER_H_
-#define WS_DISPATCHER_H_
+#ifndef WSMAN_DISPATCHER_H_
+#define WSMAN_DISPATCHER_H_
 
 
 
@@ -85,8 +85,9 @@ typedef struct __SOAP_OP_ENTRY SOAP_OP_ENTRY;
 
 void wsman_generate_notunderstood_fault(
 	SOAP_OP_ENTRY* op, 
-	WsXmlNodeH notUnderstoodHeader
+            WsXmlNodeH notUnderstoodHeader
 	);
+
 char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc);
  
 void  dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg);
@@ -106,20 +107,12 @@ SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc,
         DL_List* listToAdd);
 
 int is_wk_header(WsXmlNodeH header);
-WsXmlNodeH get_soap_header_element(SOAP_FW *fw, WsXmlDocH doc, char *nsUri, char *name);
-char *get_soap_header_value(SOAP_FW *fw, WsXmlDocH doc, char *nsUri, char *name);
-int ws_is_duplicate_message_id(SOAP_FW *fw, WsXmlDocH doc);
-int is_valid_envelope(SOAP_FW *fw, WsXmlDocH doc);
-
 
 // Temp
-WsXmlDocH build_inbound_envelope(SOAP_FW* fw,  WsmanMessage *msg );
 SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
 SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
 SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc);
 
-WsXmlDocH build_soap_fault(SOAP_FW *fw, char *soapNsUri, char *faultNsUri, char *code, char *subCode, char *reason, char *detail);
-void build_soap_version_fault(SOAP_FW *fw);
 
 void destroy_op_entry(SOAP_OP_ENTRY* entry);
 
@@ -138,13 +131,23 @@ int process_filter_chain(SOAP_OP_ENTRY* op, DL_List* list);
 
 WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op);
 int process_filters(SOAP_OP_ENTRY* op, int inbound);
-WsmanFaultCodeType ws_is_valid_envelope(SOAP_FW* fw, WsXmlDocH doc);
 
 int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg);
-int wsman_is_identify_request(WsXmlDocH doc);
 void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg);
 void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail);
 int validate_control_headers(SOAP_OP_ENTRY* op);
+
+void soap_start_dispatch(SoapDispatchH disp);
+SoapDispatchH soap_create_dispatch(SoapH soap, 
+        char* inboundAction,
+        char* outboundAction, // optional
+        char* role, // reserved, must be NULL
+        SoapServiceCallback callbackProc,
+        void* callbackData,
+        unsigned long flags);
+        
+
+SOAP_DISPATCH_ENTRY* wsman_dispatch_entry_new();
 
 
 /** @} */

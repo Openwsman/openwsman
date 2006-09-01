@@ -59,7 +59,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 
-#include "ws_utilities.h"
+#include "wsman-util.h"
 #include "wsman-debug.h"
 
 /*

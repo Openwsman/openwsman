@@ -39,12 +39,12 @@
 #include <unistd.h>
 #include <glib.h>
 
-#include "ws_utilities.h"
+#include "wsman-util.h"
 
 
-#include "ws_xml_api.h"
-#include "ws_errors.h"
-#include "soap_api.h"
+#include "wsman-xml-api.h"
+#include "wsman-errors.h"
+#include "wsman-soap.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
 

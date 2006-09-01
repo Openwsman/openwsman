@@ -68,7 +68,8 @@ typedef struct __XmlSerializationData XmlSerializationData;
 
 
 void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
-int get_adjusted_size(int baseSize);
+// int get_adjusted_size(int baseSize);
+// int calculate_struct_size(XmlSerializationData *data, int elementCount, XmlSerializerInfo *elementArray);
 
 int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
 
@@ -82,7 +83,6 @@ XML_TYPE_PTR make_dst_ptr(XmlSerializationData *data, int size);
 void xml_serializer_free_scalar_mem(XmlSerializationData *data);
 WsXmlNodeH xml_serializer_add_child(XmlSerializationData *data, char *value);
 WsXmlNodeH xml_serializer_get_child(XmlSerializationData *data);
-int calculate_struct_size(XmlSerializationData *data, int elementCount, XmlSerializerInfo *elementArray);
 XmlSerialiseDynamicSizeData *make_dyn_size_data(XmlSerializationData *data);
 
 void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cntx, XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode, char *nameNs, char *ns, WsXmlNodeH xmlNode);
