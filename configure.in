@@ -238,4 +238,6 @@ AC_OUTPUT([
         etc/Makefile
         openwsman.spec
         etc/owsmangencert.sh
+        etc/init/Makefile
+        etc/init/wsmand.sh
 	])

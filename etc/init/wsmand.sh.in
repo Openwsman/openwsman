@@ -17,7 +17,7 @@
 # processname: wsmand
 
 NAME=wsmand
-DAEMON=/usr/local/sbin/$NAME
+DAEMON=/usr/sbin/$NAME
 OPTIONS=
 PIDFILE=/var/run/$NAME.pid
 
@@ -34,7 +34,9 @@ lockfile=${SVIlock:-/var/lock/subsys/$NAME}
 
 [ -x $DAEMON ] || exit 0
 
-. /etc/sysconfig/openwsman
+if [ -f "/etc/sysconfig/openwsman" ]; then
+    . /etc/sysconfig/openwsman
+fi
 # See how we were called.
 . /etc/rc.status
 
@@ -44,7 +46,7 @@ rc_reset
 
 case "$1" in
     start)
-    if [ ! -f "/etc/openwsman/serverkey.pem" ]; then
+    if [ ! -f "@SYSCONFDR@/serverkey.pem" ]; then
         if [ -f "/etc/ssl/servercerts/servercert.pem" \
                 -a -f "/etc/ssl/servercerts/serverkey.pem" ]; then
             echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
@@ -55,7 +57,7 @@ case "$1" in
             if [ "x${FQDN}" = "x" ]; then
                 FQDN=localhost.localdomain
             fi
-cat << EOF | sh /etc/openwsman/owsmangencert > /dev/null 2>&1
+cat << EOF | sh @SYSCONFDIR@/owsmangencert.sh > /dev/null 2>&1
 --
 SomeState
 SomeCity
@@ -69,7 +71,7 @@ EOF
 
     # Start daemons.
     echo -n "Starting the $DESCRIPTIVE"
-    startproc -p $PIDFILE $DAEMON $OPENWSMAN_OPTIONS > /dev/null 2>&1
+    startproc -p $PIDFILE $DAEMON > /dev/null 2>&1
     rc_status -v
     touch $lockfile
     ;;

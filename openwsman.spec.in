@@ -32,9 +32,14 @@ make
 
 %install
 make DESTDIR=%{buildroot} install
+install -d $RPM_BUILD_ROOT/etc/init.d
+install etc/init/wsmand.sh $RPM_BUILD_ROOT/etc/init.d/wsmand
 
 %clean
 rm -rf "$RPM_BUILD_ROOT"
+
+%post
+ldconfig
 
 %files
 %defattr(-,root,root)
@@ -48,6 +53,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %config /etc/openwsman/openwsman.conf
 /etc/openwsman/owsmangencert.sh
 /etc/openwsman/ssleay.cnf
+/etc/init.d/wsmand
 
 
 %files devel

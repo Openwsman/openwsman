@@ -1,4 +1,4 @@
-SUBDIRS = 
+SUBDIRS =  init
 
 openwsmanconf_DATA = openwsman.conf ssleay.cnf owsmangencert.sh
 openwsmanconfdir = $(sysconfdir)/openwsman
