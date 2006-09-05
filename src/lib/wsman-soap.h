@@ -54,6 +54,7 @@
 
 #define SOAP_CLIENT_RESPONSE		0x20 // internal use
 #define SOAP_CUSTOM_DISPATCHER		0x40 // internal use
+#define SOAP_IDENTIFY_DISPATCH		0x80 // internal use
 
 
 #define XML_NS_SOAP_1_1                 "http://schemas.xmlsoap.org/soap/envelope"

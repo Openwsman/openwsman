@@ -263,9 +263,8 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
 
     case WS_DISP_TYPE_IDENTIFY:
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Identify");
-        action = NULL;
+        action = ep->inAction;
         callbackProc = wsmid_identify_stub;
-        flags |=  FLAG_IDENTIFY_REQUEST;
         break;
     case WS_DISP_TYPE_ENUMERATE:
         wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Registering endpoint for Enumerate");
@@ -1545,7 +1544,7 @@ int outbound_addressing_filter(SoapOpH opHandle, void* data)
 
     if ( outHeaders )
     {
-        if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL )
+        if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL && !wsman_is_identify_request(inDoc))
         {
             char uuidBuf[100];
             soap_get_uuid(uuidBuf, sizeof(uuidBuf), 0);

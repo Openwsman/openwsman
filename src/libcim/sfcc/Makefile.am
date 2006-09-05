@@ -21,7 +21,7 @@ LIBS = \
 libwsmanCimIfc_la_LIBADD =       \
 	$(GLIB_LIBS) \
        $(top_builddir)/src/lib/libwsman.la \
-	-lcimcClient  -lsfcUtil
+	-lcmpisfcc -lcimcClient  -lsfcUtil
 
 libwsmanCimIfc_la_LDFLAGS= -version-info 1:0
 

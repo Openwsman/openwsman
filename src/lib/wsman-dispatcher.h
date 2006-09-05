@@ -109,8 +109,6 @@ SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc,
 
 int is_wk_header(WsXmlNodeH header);
 
-// Temp
-SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
 SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
 SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc);
 

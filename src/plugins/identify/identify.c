@@ -83,7 +83,7 @@ SER_FINISH_NAMESPACES(wsmid_identify);
 
 void get_endpoints(GModule *self, void **data) 
 {		 		
-	WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;

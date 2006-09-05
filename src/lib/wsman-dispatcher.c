@@ -401,63 +401,13 @@ SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc) {
 
     if ( dispatch == NULL ) {    	
         wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Dispatcher Error");    	
+        /*
         if ( (dispatch = do_get_dispatch_entry(fw, doc)) == NULL )
             wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Dispatcher not defined"); 
+            */
     } else { 
         dispatch->usageCount++;
     }
-    return dispatch;
-}
-
-
-SOAP_DISPATCH_ENTRY* do_get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc)
-{
-    SOAP_DISPATCH_ENTRY* dispatch = NULL;
-    if ( fw )
-    {
-        char* action = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_ACTION);
-        if ( action != NULL || wsman_is_identify_request(doc) ) {
-            soap_fw_lock(fw);
-            dispatch = (SOAP_DISPATCH_ENTRY*)DL_GetHead(&fw->dispatchList);
-            while( dispatch != NULL )
-            {
-                if ( (dispatch->flags & FLAG_IDENTIFY_REQUEST) != 0  ) {
-                    dispatch->usageCount++;
-                    break;
-                }
-                char* dispatchAction = dispatch->inboundAction;
-                wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Dispatch entry for %s", dispatchAction);
-
-                if ( !(dispatch->flags & SOAP_CUSTOM_DISPATCHER) )
-                {                	
-                    if ( (dispatch->flags & SOAP_ACTION_PREFIX) != 0 )
-                    {
-                        if ( !strncmp(action, dispatchAction, strlen(dispatchAction)) ) {
-                            dispatch->usageCount++;
-                            break;
-                        }
-                    } else if ( (dispatch->flags & FLAG_IDENTIFY_REQUEST) != 0 ) {
-                        dispatch->usageCount++;
-                        break;
-                    } else {                    	
-                        if ( !strcmp(action, dispatchAction) )
-                        {
-                            dispatch->usageCount++;
-                            break;
-                        }
-                    }
-                }					
-                dispatch = (SOAP_DISPATCH_ENTRY*)DL_GetNext(&dispatch->node);
-            }
-
-            soap_fw_unlock(fw);
-
-            if ( dispatch == NULL )
-                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "No dispatch entry for %s", action); 
-            soap_free(action);
-        }
-    }
-
     return dispatch;
 }
 
@@ -497,7 +447,7 @@ SoapDispatchH wsman_dispatcher(
     } else {
         uri = wsman_get_resource_uri(cntx, doc);
         action = ws_addressing_get_action(cntx, doc);
-        if ( !uri || !action ) {
+        if ( (!uri || !action) &&  !wsman_is_identify_request(doc) ) {
             goto cleanup;
         }
     }
@@ -505,11 +455,18 @@ SoapDispatchH wsman_dispatcher(
     while( node != NULL )
     {            
         WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->data;
+        if ( wsman_is_identify_request(doc)) {
+            if ( ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID )) {
+                r = interface;
+                resUriMatch = 1;
+                break;                    
+            }
+        }
         /*
          * If Resource URI is null then most likely we are dealing with  a generic plugin
          * supporting a namespace with multiple Resource URIs (e.g. CIM)
          */
-        if (interface->wsmanResourceUri == NULL && ( ns = wsman_dispatcher_match_ns(interface, uri)) ) {
+        else if (interface->wsmanResourceUri == NULL && ( ns = wsman_dispatcher_match_ns(interface, uri)) ) {
             r = interface;
             resUriMatch = 1;
             break;                    
@@ -521,7 +478,10 @@ SoapDispatchH wsman_dispatcher(
         node = g_list_next (node);                            
     }
 
-    if ( r != NULL )
+    if ( wsman_is_identify_request(doc) && r != NULL) {
+        ep = &r->endPoints[0];      
+    }
+    else if ( r != NULL )
     {            	
         char* ptr = action;
         /*
