@@ -53,8 +53,8 @@
 #include <libxml/uri.h>
 #include "wsman-faults.h"
 #include "wsman-debug.h"
-#include "wsman-server.h"
 #include "wsman-plugins.h"
+#include "wsman-server.h"
 
 
 

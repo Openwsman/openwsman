@@ -39,7 +39,6 @@
 #include <gmodule.h>
 
 
-//GList* scan_files_in_dir (const char *dir, int (*select)(const struct dirent *));
 
 typedef	enum _WsManPluginError
 {
@@ -54,23 +53,21 @@ typedef struct _WsManPlugin
 {
     GModule *p_handle;
     gchar *p_name;
-    int  started;	/* Flag successfuly initialized */
+    int  started;	
     void *data;	/* user data */
-    /* Get plugin description */
-    //gchar	*(*get_description)(void);
-    /* Get the menu under whcih the plugin should go */
-    // glong	(*get_version)(void);
-    /* Init Module */
     gboolean (*init)( GModule *self, void **data);
     /* Clean-up */
     void (*cleanup)( GModule *self, void *data);
-    /* Activation */
-    //void (*activate)( GModule *self, void *data);
-
     void (*get_endpoints)( GModule *self, void *data);
-    WsDispatchInterfaceInfo *interface;
+    void *interface;
 
 } WsManPlugin;
+
+struct __WsManListenerH {
+       /* Plugins */
+       GList *plugins;	
+};
+typedef struct __WsManListenerH WsManListenerH;
 
 gboolean wsman_plugins_load(WsManListenerH *listener);
 gboolean wsman_plugins_unload(WsManListenerH *listener);

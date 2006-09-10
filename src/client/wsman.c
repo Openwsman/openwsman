@@ -142,24 +142,24 @@ http_debug (SoupMessage *message)
 
 
 static void
-debug_message_handler (const char *str, WsmanDebugLevel level, gpointer user_data)
+debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
 {
     if (level <= wsman_options_get_debug_level ()) 
     {
         struct tm *tm;
         time_t now;
         char timestr[128];
-        char *log_msg;
 
         time (&now);
         tm = localtime (&now);
         strftime (timestr, 128, "%b %e %T", tm);
 
+        /*
         log_msg = g_strdup_printf ("%s  %s\n",
                                    timestr, str);
+                                   */
        
-        fprintf (stderr, log_msg);
-        g_free (log_msg);
+        fprintf (stderr, "%s  %s\n", timestr, str);
     }
 
 }
@@ -176,8 +176,8 @@ authenticate (SoupSession *session,
     // printf("authenticating...\n");
     WsManClient *cl = data;
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    *username = g_strdup (wsc->data.user);
-    *password = g_strdup (wsc->data.pwd);
+    *username = strdup (wsc->data.user);
+    *password = strdup (wsc->data.pwd);
 }
 
 
@@ -257,7 +257,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
 static void
 initialize_logging (void)
 {    
-    wsman_debug_add_handler (debug_message_handler, WSMAN_DEBUG_LEVEL_ALWAYS, NULL);    
+    // wsman_debug_add_handler (debug_message_handler, WSMAN_DEBUG_LEVEL_ALWAYS, NULL);    
 
 } /* initialize_logging */
 

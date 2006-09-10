@@ -70,8 +70,8 @@ extern void start_event_source(SoapH soap);
 #include "wsmand-daemon.h"
 #include "wsman-md5-utils.h"
 #include "wsmand-auth.h"
-#include "wsman-server.h"
 #include "wsman-plugins.h"
+#include "wsman-server.h"
 
 
 

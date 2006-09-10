@@ -456,7 +456,7 @@ SoapDispatchH wsman_dispatcher(
     {            
         WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->data;
         if ( wsman_is_identify_request(doc)) {
-            if ( ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID )) {
+            if ( (ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID ) ) ) {
                 r = interface;
                 resUriMatch = 1;
                 break;                    

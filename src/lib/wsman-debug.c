@@ -32,66 +32,62 @@
  * @author Anas Nashif
  */
 
- 
-#include <glib.h>
-
-#include "wsman-debug.h"
-
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#include "wsman-util.h"
+#include "wsman-debug.h"
+#include <assert.h>
 
 
 struct _WsmanDebugHandler {
     WsmanDebugFn    	fn;
     WsmanDebugLevel 	level;
-    gpointer     		user_data;
-    guint        		id;
+    void     		*user_data;
+    unsigned int       	id;
 };
 typedef struct _WsmanDebugHandler WsmanDebugHandler;
 
-static GSList *handlers = NULL;
+static DL_List  handlers;
 
-guint
-wsman_debug_add_handler (WsmanDebugFn    fn,
-                      WsmanDebugLevel level,
-                      gpointer     user_data)
+unsigned int
+wsman_debug_add_handler (
+        WsmanDebugFn    fn,
+        WsmanDebugLevel level,
+        void      *user_data)
 {
     WsmanDebugHandler *handler;
-
-    g_assert (fn);
-
-    handler = g_new0 (WsmanDebugHandler, 1);
+    assert (fn);
+    handler = (WsmanDebugHandler *) soap_alloc (sizeof(WsmanDebugHandler), 1);
 
     handler->fn = fn;
     handler->level = level;
     handler->user_data = user_data;
 
-    if (handlers)
-        handler->id = ((WsmanDebugHandler *) handlers->data)->id + 1;
-    else
+    if (DL_GetCount(&handlers) > 0) {
+        handler->id = DL_GetCount(&handlers) + 1;
+    } else {
         handler->id = 1;
-
-    handlers = g_slist_prepend (handlers, handler);
-
+    }
+    DL_MakeNode(&handlers, handler);
+    printf("id: %d\n", handler->id );
     return handler->id;
 }
 
 void
-wsman_debug_remove_handler (guint id)
+wsman_debug_remove_handler (unsigned int id)
 {
-    GSList *iter;
-
-    iter = handlers;
+    DL_Node *iter;
+    iter = DL_GetHead(&handlers);
     while (iter) {
-        WsmanDebugHandler *handler = (WsmanDebugHandler *)iter->data;
+        WsmanDebugHandler *handler = (WsmanDebugHandler *)iter->dataBuf;
 
         if (handler->id == id) {
-            handlers = g_slist_remove_link (handlers, iter);
-            g_free (handler);
+            iter =  DL_RemoveNode ( iter);
+            free (handler);
             return;
         }
-
         iter = iter->next;
     }
 
@@ -99,17 +95,17 @@ wsman_debug_remove_handler (guint id)
 }
 
 const char *
-wsman_debug_helper (const char *format,
+wsman_debug_helper (
+        const char *format,
                  ...)
 {
     va_list args;
     static char *str = NULL;
+    size_t const initialSize = 4096;
 
-    if (str)
-        g_free (str);
-
+    str = soap_alloc(initialSize, 1 );
     va_start (args, format);
-    str = g_strdup_vprintf (format, args);
+    vsprintf (str, format, args);
     va_end (args);
 
     return str;
@@ -121,16 +117,18 @@ wsman_debug_full (WsmanDebugLevel  level,
                ...)
 {
     va_list args;
-    GSList *iter;
+    DL_Node *iter;
     char *str;
+    size_t const initialSize = 4096;
+    str = soap_alloc(initialSize, 1 );
 
     va_start (args, format);
-    str = g_strdup_vprintf (format, args);
+    vsprintf (str, format, args);
     va_end (args);
 
-    iter = handlers;
+    iter = DL_GetHead(&handlers);
     while (iter) {
-        WsmanDebugHandler *handler = (WsmanDebugHandler *)iter->data;
+        WsmanDebugHandler *handler = (WsmanDebugHandler *)iter->dataBuf;
 
         if ((handler->level == WSMAN_DEBUG_LEVEL_ALWAYS) ||
             (level <= handler->level))
@@ -139,5 +137,5 @@ wsman_debug_full (WsmanDebugLevel  level,
         iter = iter->next;
     }
 
-    g_free (str);
+    free (str);
 }

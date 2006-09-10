@@ -84,7 +84,10 @@ WsManDialectData g_wsDialectData[] =
 
 
 
-SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc, void* data, DL_List* listToAdd)
+SOAP_CALLBACK_ENTRY* make_soap_callback_entry(
+        SoapServiceCallback proc, 
+        void* data, 
+        DL_List* listToAdd)
 {
     SOAP_CALLBACK_ENTRY* entry = 
         (SOAP_CALLBACK_ENTRY*)soap_alloc(sizeof(SOAP_CALLBACK_ENTRY), 1);
@@ -249,8 +252,7 @@ int wsman_register_interface(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfa
 int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterface,
         WsDispatchEndPointInfo* ep, WsManDispatcherInfo* dispInfo)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Registering Endpoint: %s, %s, %s, %s", 
-            ep->inAction, ep->outAction, ep->respName, ep->rqstName);
+    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Registering Endpoint: %s", ep->inAction);
 
     SoapDispatchH disp = NULL;
     unsigned long flags = SOAP_CUSTOM_DISPATCHER;
@@ -1256,9 +1258,7 @@ void add_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* op)
 {
     wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Adding Response Entry");
     soap_fw_lock(fw);
-
     DL_MakeNode(&fw->responseList, op);
-
     soap_fw_unlock(fw);
 }
 

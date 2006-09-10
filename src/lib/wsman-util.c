@@ -281,9 +281,6 @@ void soap_free(void* ptr)
 }
 
 
-// DL List
-
-
 DL_Node* DL_MakeNode(DL_List* list, void* dataBuf)
 {
     DL_Node * node = soap_alloc(sizeof(DL_Node), 1);

@@ -33,8 +33,8 @@
  * @author Eugene Yarmosh
  */
 
-#ifndef SOAP_API_H_
-#define SOAP_API_H_
+#ifndef WSMAN_SOAP_H_
+#define WSMAN_SOAP_H_
 
 
 #define PROCESSED_MSG_ID_MAX_SIZE	        200

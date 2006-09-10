@@ -32,6 +32,8 @@
  * @author Anas Nashif
  */
 
+#ifndef WSMAN_PLUGINS_H_
+#define WSMAN_PLUGINS_H_
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -45,29 +47,22 @@
 
 
 #include "wsman-util.h"
-#include "wsman-xml-api.h"
-#include "wsman-soap.h"
-
-#include "wsman-xml.h"
-#include "wsman-xml-serializer.h"
-#include "wsman-dispatcher.h"
 #include "wsman-debug.h"
 
-#include "wsman-server.h"
 #include "wsman-plugins.h"
 
 
 
 static void
-free_string_list ( GList * pList )
+free_string_list ( GList * plugin_list )
 {
     int i ;
 
-    if( pList )
+    if( plugin_list )
     {
-        for (i = 0; i < g_list_length (pList); i++)
-            g_free (g_list_nth (pList, i)->data);
-        g_list_free (pList);
+        for (i = 0; i < g_list_length (plugin_list); i++)
+            g_free (g_list_nth (plugin_list, i)->data);
+        g_list_free (plugin_list);
     }
 }
 
@@ -132,9 +127,6 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
             if( !self->started )
             {
                 PluginError = PLUGIN_ERROR_INITFAILED;
-            }
-            else
-            {
             }
         } 
         else
@@ -283,4 +275,4 @@ gboolean wsman_plugins_unload(WsManListenerH *listener)
 
 
 
-
+#endif

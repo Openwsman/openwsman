@@ -73,13 +73,11 @@ static int log_pid = 0;
 
 static void
 debug_message_handler (const char *str, 
-						WsmanDebugLevel level, 
-						gpointer user_data)
+		WsmanDebugLevel level, 
+		void *user_data)
 {
     if (log_pid == 0)
-    {
         log_pid = getpid ();
-    }
 
     if (level <= wsmand_options_get_debug_level () || wsmand_options_get_foreground_debug() > 0 ) 
     {
