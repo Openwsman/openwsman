@@ -738,6 +738,7 @@ void ws_clear_context_entries(WsContextH hCntx)
     {
         hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
         if (!hash_isempty(h)) {
+            debug("destroying context: hash not empty");
             hash_free_nodes(h);
             hash_destroy(h);
         }
@@ -838,6 +839,7 @@ WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc)
 
 int ws_destroy_context(WsContextH hCntx)
 {
+    debug("destroying context");
     int retVal = 1;
     WS_CONTEXT* cntx = (WS_CONTEXT*)hCntx;
     if ( cntx && cntx->owner ) {

@@ -42,6 +42,6 @@
 
 
 
-int wsmand_start_server(void);
+WsManListenerH *wsmand_start_server(void);
 
 #endif /*SERVER_H_*/

@@ -63,6 +63,7 @@
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
+#include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
 
@@ -308,7 +309,8 @@ main (int argc, char **argv)
     sigaction (SIGHUP, &sig_action, NULL);
 
     // FIXME: initialize_logging ();
-    if (wsmand_start_server()) {
+    WsManListenerH *listener = NULL;
+    if ( (listener = wsmand_start_server()) == NULL) {
         return 1;
     }
 
@@ -316,7 +318,7 @@ main (int argc, char **argv)
     loop = g_main_loop_new (NULL, TRUE);
     g_main_loop_run (loop);
 
-  	//wsman_plugins_unload(listener);
+    wsman_plugins_unload(listener);
     return 0;
 }
 

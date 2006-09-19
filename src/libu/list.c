@@ -108,6 +108,7 @@ void list_destroy_nodes(list_t *list)
 	tmp = lnode->next;
 	lnode->next = NULL;
 	lnode->prev = NULL;
+        u_free(lnode->list_data);
 	lnode_destroy(lnode);
 	lnode = tmp;
     }

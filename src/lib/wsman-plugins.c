@@ -63,7 +63,8 @@ list_t *scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *
     } else {
         while (n--)
         {
-            lnode_t *node = lnode_create(u_strdup(namelist[n]->d_name));
+            char *tmp = u_strdup(namelist[n]->d_name);
+            lnode_t *node = lnode_create(tmp);
             list_append(files, node );
             debug("plugin file found: %s", namelist[n]->d_name );
             u_free(namelist[n]);
@@ -230,7 +231,8 @@ scan_plugins_in_directory (
                 plugin_free(plugin);
         }
     }
-    //free_string_list (files);
+    list_destroy_nodes(files);
+    list_destroy(files);
     return;
 }
 
@@ -245,7 +247,7 @@ int  wsman_plugins_unload(WsManListenerH *listener)
 {
 
     free_plugins(listener->plugins);
-    listener->plugins  = NULL;
+    list_destroy(listener->plugins);
     return 0;
 }
 

@@ -63,10 +63,10 @@ extern void start_event_source(SoapH soap);
 #include "wsman-dispatcher.h"
 
 
+#include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
 #include "wsmand-auth.h"
-#include "wsman-plugins.h"
 #include "wsman-server.h"
 
 
@@ -223,7 +223,8 @@ DONE:
 
 
 
-int wsmand_start_server() 
+WsManListenerH*
+wsmand_start_server() 
 {	
     SoupServer *server = NULL;
     // Authentication handler   	   	
@@ -304,9 +305,9 @@ int wsmand_start_server()
     // End of WS-Eventing test code
 
     //ws_destroy_context(cntx);
-    g_free(listener);
+    // g_free(listener);
     debug("Waiting for requests...");
-    return 0;
+    return listener;
 }
 
 
