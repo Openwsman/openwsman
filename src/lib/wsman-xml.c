@@ -42,12 +42,11 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-binding.h"
-#include "wsman-debug.h"
 
 /**
  * @defgroup XMLParserGeneric Generic XML Parser Interface
@@ -88,7 +87,7 @@ static int is_xml_val_true(char* text)
             ptr++;
 
         if ( *ptr ) {
-            if ( !stricmp(text, "true") || !stricmp(text, "yes") )
+            if ( !strcasecmp(text, "true") || !strcasecmp(text, "yes") )
                 retVal = 1;
         } else {
             if ( atoi(text) != 0 )
@@ -136,7 +135,7 @@ static char* make_qname(WsXmlNodeH node, char* uri, char* name)
         if ( prefix != NULL )
             len += 1 + strlen(prefix);
 
-        if ( (buf = soap_alloc(len, 0)) != NULL )
+        if ( (buf = u_malloc(len)) != NULL )
         {
             if ( prefix != NULL )
                 sprintf(buf, "%s:%s", prefix, name);
@@ -174,7 +173,7 @@ WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
         if ( buf != NULL )
         {
             attr = ws_xml_add_node_attr(node, nameNs, name, buf);
-            soap_free(buf);
+            u_free(buf);
         }
     }
 
@@ -448,7 +447,8 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
  * @param addDetailProcData Pointer to callback data
  * @return XML document of the fault
  */
-WsXmlDocH ws_xml_create_fault(WsContextH cntx,
+WsXmlDocH 
+ws_xml_create_fault(WsContextH cntx,
         WsXmlDocH rqstDoc,
         char* code,
         char* subCodeNs,
@@ -459,8 +459,6 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
         void* addDetailProcData)
 {
     WsXmlDocH doc = NULL;
-    //SOAP_FW* fw = (SOAP_FW*)soap;
-    //WsContextH cntx = fw->cntx;
 
     if ( rqstDoc ) {
         doc = ws_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT); 
@@ -501,10 +499,10 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
             addDetailProc(fault, addDetailProcData);
         }
 
-        soap_get_uuid(uuidBuf, sizeof(uuidBuf), 0);
+        generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
         ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
     } else {
-    		wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Doc is null!!");
+        debug("Doc is null!!");
     }
 
     return doc;
@@ -519,15 +517,15 @@ WsXmlDocH ws_xml_create_fault(WsContextH cntx,
  */
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 {
-    SOAP_FW* fw = (SOAP_FW*)soap;
+    env_t* fw = (env_t*)soap;
     int retVal = -1;
     WsXmlParserData* parserData = NULL;
 
     if ( fw != NULL 
             && 
-            (parserData = (WsXmlParserData*)soap_alloc(sizeof(WsXmlParserData), 1)) != NULL)
+            (parserData = (WsXmlParserData*)u_zalloc(sizeof(WsXmlParserData))) != NULL)
     {
-        soap_fw_lock(fw);
+        u_lock(fw);
 
         xml_parser_initialize(soap);
 
@@ -545,14 +543,14 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
                     ws_xml_define_ns(node, nsd->uri, nsd->prefix, 0);
                 }
             }
-            //soap_free(node);
+            //u_free(node);
         }
-        soap_fw_unlock(fw);
+        u_unlock(fw);
     }
 
     if ( retVal != 0 && parserData )
     {
-        soap_free(parserData);
+        u_free(parserData);
     }
 
     return retVal;
@@ -560,20 +558,20 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 
 void ws_xml_parser_destroy(SoapH soap)
 {
-    SOAP_FW* fw = (SOAP_FW*)soap;
+    env_t* fw = (env_t*)soap;
     if ( fw && fw->parserData )
     {
-        soap_fw_lock(fw);
+        u_lock(fw);
 
         ws_xml_destroy_doc(((WsXmlParserData*)fw->parserData)->nsHolder);
         //xmlCleanupParser();
         //xmlMemoryDump();
         xml_parser_destroy(soap);
 
-        soap_free(fw->parserData);
+        u_free(fw->parserData);
         fw->parserData = NULL;
 
-        soap_fw_unlock(fw);
+        u_unlock(fw);
     }
 }
 
@@ -745,13 +743,13 @@ WsXmlDocH ws_xml_read_file( SoapH soap, char* filename,
  */
 WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName) 
 {
-    iWsDoc* wsDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1);
+    iWsDoc* wsDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc));
 
     if ( wsDoc ) {       
-        wsDoc->fw = (SOAP_FW*)soap;
+        wsDoc->fw = (env_t*)soap;
         if ( xml_parser_create_doc(wsDoc, rootName) != 0 )
         {
-            soap_free(wsDoc);
+            u_free(wsDoc);
             wsDoc = NULL;
         } else {
             if ( rootNsUri != NULL )
@@ -814,7 +812,7 @@ void ws_xml_destroy_doc(WsXmlDocH doc) {
     if ( doc )
     {
         xml_parser_destroy_doc((iWsDoc*)doc);
-        soap_free(doc);
+        u_free(doc);
     }	
 }
 
@@ -975,7 +973,7 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
 
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
 {   
-    SOAP_FW* fw = (SOAP_FW*)soap;
+    env_t* fw = (env_t*)soap;
     WsXmlNsH ns = NULL;
     if ( fw )
     {
@@ -1481,7 +1479,7 @@ int ws_xml_set_node_qname_val(WsXmlNodeH node, char* valNsUri, char* valName)
         if ( buf != NULL )
         {
             retVal = ws_xml_set_node_text(node, buf);
-            soap_free(buf);
+            u_free(buf);
         }
     }
     return retVal;

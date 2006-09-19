@@ -1,1 +1,1 @@
-SUBDIRS = cim identify
+SUBDIRS = identify cim

@@ -28,9 +28,9 @@ wsmid_identify* wsmid_identify_Identify_EP (WsContextH cntx);
 SER_DECLARE_TYPE(wsmid_identify);
 SER_DECLARE_EP_ARRAY(wsmid_identify);
 
-void get_endpoints(GModule *self, void **data);
-int init (GModule *self, void **data );
-void cleanup( GModule *self, void *data );
+void get_endpoints(void *self, void **data);
+int init (void *self, void **data );
+void cleanup( void *self, void *data );
 
 
 #endif 

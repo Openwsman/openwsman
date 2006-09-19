@@ -71,7 +71,7 @@ typedef struct __WsXmlParserData WsXmlParserData;
 struct __internalWsDoc
 {
 	void* parserDoc;
-	SOAP_FW* fw;
+	env_t* fw;
 	unsigned long prefixIndex;
 };
 typedef struct __internalWsDoc iWsDoc;

@@ -32,14 +32,16 @@
  * @author Anas Nashif
  */
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+#include "wsman_config.h"
+#endif
 
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 
 
@@ -50,20 +52,19 @@
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
-#include "wsman-debug.h"
 #include "sfcc-interface.h"
 #include "sfcc-interface_utils.h"
 #include "cim_data.h"
 
 int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
     WsXmlDocH doc = NULL;
-    WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
+    WsmanStatus *status = (WsmanStatus *)u_malloc(sizeof(WsmanStatus *));
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Custom Method Endpoint Called");
+    debug( "Custom Method Endpoint Called");
 
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    GList *keys = wsman_get_selector_list(cntx, NULL);
+    hash_t *keys = wsman_get_selector_list(cntx, NULL);
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
     char *action = ws_addressing_get_action(cntx, NULL);
     CimClientInfo cimclient;
@@ -72,12 +73,12 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
     {
         cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
         if (!cimclient.cc) {
-            return 1;		
+            goto err;
         }
 
         char *className = resourceUri + strlen(XML_NS_CIM_CLASS) + 1;
         char *methodName = action + strlen(resourceUri) + 1;
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Class Name: %s, Method: %s" , className, methodName);
+        debug( "Class Name: %s, Method: %s" , className, methodName);
         
         if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
             WsXmlNodeH method_node = ws_xml_add_empty_child_format(ws_xml_get_soap_body(doc), resourceUri , "%s_OUTPUT", methodName);       
@@ -90,60 +91,71 @@ int  CimResource_Custom_EP(SoapOpH op, void* appData ) {
             if (cimclient.cc) CMRelease(cimclient.cc);
         }
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
+        debug( "Invalid doc" );
     }
     ws_destroy_context(cntx);
     if (status)
-        soap_free(status);
+        u_free(status);
+
+    u_free(resourceUri);
     return 0;
+err:
+    u_free(resourceUri);
+    return 1;
+
 }
 
 
 int  CimResource_Get_EP(SoapOpH op, void* appData )
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called");
+    debug( "Get Endpoint Called");
     WsXmlDocH doc = NULL;
-    WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
+    WsmanStatus status;
+    wsman_status_init(&status);
 
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    GList *keys = wsman_get_selector_list(cntx, NULL);
+    hash_t *keys = wsman_get_selector_list(cntx, NULL);
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
 
-    if (keys)
+    if (keys != NULL)
     {
         CimClientInfo cimclient;
-        cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
-        if (!cimclient.cc)
-            return 1;		
+        cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , &status);
+        if (!cimclient.cc) {
+            goto err;
+        }
         if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            cim_get_instance_from_enum(cimclient.cc, resourceUri , keys, body, status);
+            cim_get_instance_from_enum(cimclient.cc, resourceUri , keys, body, &status);
         }
 
-        if (status->fault_code != 0) {
+        if (status.fault_code != 0) {
             ws_xml_destroy_doc(doc);
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
         }
         if (cimclient.cc) CMRelease(cimclient.cc);
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
+        debug( "Invalid doc" );
     }
 
-    soap_free(status);
+    u_free(resourceUri);
     return 0;
+err:
+    u_free(resourceUri);
+    return 1;
 
 }
 
@@ -153,19 +165,19 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
     int max_elements = 0;
     WsXmlDocH doc;
     char *enum_mode;
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called"); 
+    debug( "Enumerate Endpoint Called"); 
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
     char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
 
     CimClientInfo cimclient;
     cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);
     if (!cimclient.cc) {
-        return 1;
+        goto err;
     }
     cim_enum_instances (cimclient.cc, className , enumInfo,  status);
 
     if (status && status->fault_code != 0) {
-        return 1;
+        goto err;
     }
 
     max_elements = wsman_is_optimization(cntx, NULL );
@@ -191,23 +203,28 @@ int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanSt
    
     if (cimclient.cc) CMRelease(cimclient.cc);
     ws_destroy_context(cntx);
+    u_free(resourceUri);
     return 0;
+err:
+    u_free(resourceUri);
+    return 1;
 }
 
 int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Release Endpoint Called");      
+    debug( "Release Endpoint Called");      
     cim_release_enum_context(enumInfo);
     return 0;
 }
 
 
-int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
+int
+CimResource_Pull_EP( WsContextH cntx,
+                     WsEnumerateInfo* enumInfo,
+                     WsmanStatus *status)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called");      
+    debug( "Pull Endpoint Called");      
     WsXmlDocH doc = NULL;
-
-
     doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_PULL_RESP, NULL);       
@@ -226,46 +243,53 @@ int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus 
 
 
 
-int  CimResource_Put_EP(SoapOpH op, void* appData )
+int
+CimResource_Put_EP( SoapOpH op,
+                    void* appData )
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put Endpoint Called");
+    debug( "Put Endpoint Called");
     WsXmlDocH doc = NULL;
-    WsmanStatus *status = (WsmanStatus *)soap_alloc(sizeof(WsmanStatus *), 0 );
+    WsmanStatus status;
+
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    GList *keys = wsman_get_selector_list(cntx, NULL);
+    hash_t *keys = wsman_get_selector_list(cntx, NULL);
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
 
     if (keys)
     {
         CimClientInfo cimclient;
-        cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , status);
-        if (!cimclient.cc)
-            return 1;		
-        if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
+        cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , &status);
+        if (!cimclient.cc) {
+            goto err;
+        }        
+        if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) 
+        { 
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
             WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
-            cim_put_instance_from_enum(cimclient.cc, resourceUri , keys, in_body, body, status);
+            cim_put_instance_from_enum(cimclient.cc, resourceUri , keys, in_body, body, &status);
         }
 
-        if (status->fault_code != 0) {
+        if (wsman_check_status(&status) != 0) {
             ws_xml_destroy_doc(doc);
-            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
+            doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
         }
         if (cimclient.cc) CMRelease(cimclient.cc);
     } else {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_FAULT_INVALID_SELECTORS, -1, NULL);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
     } 
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Invalid doc" );
+        debug( "Invalid doc" );
     }
 
-    soap_free(status);
+    u_free(resourceUri);
     return 0;
-
+err:
+    u_free(resourceUri);
+    return 1;
 }
 
 

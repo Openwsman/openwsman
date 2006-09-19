@@ -36,9 +36,6 @@
 #ifndef _WSMAN_PLUGINS_H
 #define _WSMAN_PLUGINS_H
 
-#include <gmodule.h>
-
-
 
 typedef	enum _WsManPluginError
 {
@@ -51,25 +48,25 @@ typedef	enum _WsManPluginError
 
 typedef struct _WsManPlugin
 {
-    GModule *p_handle;
-    gchar *p_name;
+    void *p_handle;
+    char *p_name;
     int  started;	
     void *data;	/* user data */
-    gboolean (*init)( GModule *self, void **data);
+    int  (*init)( void *self, void **data);
     /* Clean-up */
-    void (*cleanup)( GModule *self, void *data);
-    void (*get_endpoints)( GModule *self, void *data);
+    void (*cleanup)( void *self, void *data);
+    void (*get_endpoints)( void *self, void *data);
     void *interface;
 
 } WsManPlugin;
 
 struct __WsManListenerH {
        /* Plugins */
-       GList *plugins;	
+       list_t *plugins;	
 };
 typedef struct __WsManListenerH WsManListenerH;
 
-gboolean wsman_plugins_load(WsManListenerH *listener);
-gboolean wsman_plugins_unload(WsManListenerH *listener);
+int wsman_plugins_load(WsManListenerH *listener);
+int wsman_plugins_unload(WsManListenerH *listener);
 
 #endif /* _WSMAN_PLUGINS_H */

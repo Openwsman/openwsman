@@ -90,6 +90,7 @@
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
 #endif
 
+#define XML_NS_WSMAN_FAULT_DETAIL      "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail"
 
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
@@ -297,20 +298,26 @@ typedef struct __DispatchResponse DispatchResponse;
 
 
 typedef int (*SoapServiceCallback)(SoapOpH, void*);
+struct __callback_t
+{
+	lnode_t node; // dataBuf is passed to callback as data
+	SoapServiceCallback proc;
+};
+typedef struct __callback_t callback_t;
 
-struct __SOAP_FW
+struct __env_t
 {
         pthread_mutex_t lockData;  // do not move this field
 	int bExit;
 	void* parserData;
 	unsigned long uniqueIdCounter;
 	
-	DL_List inboundFilterList;
-	DL_List outboundFilterList;
+	list_t *inboundFilterList;
+	list_t *outboundFilterList;
 	
-	DL_List dispatchList;	
-	DL_List responseList;
-	DL_List processedMsgIdList;
+	list_t *dispatchList;	
+	list_t *responseList;
+	list_t *processedMsgIdList;
 
 	WsContextH cntx; // TBD claen up and initilaize it;
 
@@ -320,17 +327,17 @@ struct __SOAP_FW
 	int resendCount;
 	unsigned long resentTimeout[SOAP_MAX_RESENT_COUNT];
 
-	DL_List WsSerializerAllocList;
+	list_t  *WsSerializerAllocList;
 		
 	void* dispatcherData;
 	DispatcherCallback dispatcherProc;
 };
-typedef struct __SOAP_FW SOAP_FW;
+typedef struct __env_t env_t;
 
 
 struct _WS_CONTEXT_ENTRY
 {
-	DL_Node node;
+	lnode_t *node;
 	unsigned long size;
 	unsigned long options;
 	char* name;
@@ -340,11 +347,11 @@ typedef struct _WS_CONTEXT_ENTRY WS_CONTEXT_ENTRY;
 struct _WS_CONTEXT
 {
 	SoapH soap;
-	DL_List entries;
-	int bUserCreatedCtnx; // to prevent user from destroying cntx he hasn't created
+	hash_t *entries;
+	int owner; // to prevent user from destroying cntx he hasn't created
 	// the fields below are for optimization
-	WS_CONTEXT_ENTRY* lastEntry;
-	int lastGetNameIndex;
+	WS_CONTEXT_ENTRY* last_entry;
+	int last_get_name_idx;
 };
 typedef struct _WS_CONTEXT WS_CONTEXT;
 
@@ -362,6 +369,7 @@ typedef void (*WsProcType)(void);
 
 
 
+#if 0
 struct __PropertyInfo 
 {
 	char *key;
@@ -385,7 +393,7 @@ struct __WsSelector
 	char *description;	
 };
 typedef struct __WsSelector WsSelector;
-
+#endif
 
 
 struct __WsDispatchEndPointInfo
@@ -438,7 +446,7 @@ struct __WsManDispatcherInfo
 {
 	int interfaceCount;
 	int mapCount;
-	GList *interfaces;
+	void *interfaces;
 	DispatchToEpMap map[1];
 };
 typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
@@ -497,7 +505,7 @@ typedef struct _actionOptions actionOptions;
 WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name);
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
-GList * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
+hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
         
         
 void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
@@ -506,18 +514,18 @@ char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
 char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
-WS_CONTEXT_ENTRY* find_context_entry(WS_CONTEXT_ENTRY* start, char* name, int bPrefix);
+// WS_CONTEXT_ENTRY* find_context_entry(list_t *list, WS_CONTEXT_ENTRY* start, char* name, int bPrefix);
 
 void ws_initialize_context(WsContextH hCntx, SoapH soap);
 WsContextH ws_create_context(SoapH soap);
 SoapH ws_soap_initialize(void);
 SoapH ws_context_get_runtime(WsContextH hCntx);
 
-void* get_context_val(WsContextH hCntx, char* name, int* size, unsigned long type);
+void* get_context_val(WsContextH hCntx, char* name);
 void* ws_get_context_val(WsContextH cntx, char* name, int* size);
 unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name);
 
-WsContextH ws_create_runtime (GList *interfaces);
+WsContextH ws_create_runtime (list_t *interfaces);
 
 int wsman_register_interface(WsContextH cntx, 
         WsDispatchInterfaceInfo* wsInterface,
@@ -547,7 +555,16 @@ WsEnumerateInfo* get_enum_info(WsContextH cntx,
 
 
 
-SoapOpH soap_create_op(SoapH soap, char *inboundAction, char *outboundAction, char *role, SoapServiceCallback callbackProc, void *callbackData, unsigned long flags, unsigned long timeout);
+SoapOpH soap_create_op(SoapH soap, 
+                       char *inboundAction,
+                       char *outboundAction,
+                       char *role,
+                       SoapServiceCallback callbackProc,
+                       void *callbackData,
+                       unsigned long flags, 
+                       unsigned long timeout);
+
+
 int soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void *data, int inbound);
 WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound);
 WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound);
@@ -557,7 +574,6 @@ void soap_set_op_action(SoapOpH op, char *action, int inbound);
 unsigned long soap_get_op_flags(SoapOpH op);
 SoapH soap_get_op_soap(SoapOpH op);
 char *soap_get_op_dest_url(SoapOpH op);
-void soap_mark_processed_op_header(SoapOpH h, WsXmlNodeH xmlNode);
 void soap_destroy_op(SoapOpH op);
 
 
@@ -584,11 +600,11 @@ int set_context_val(WsContextH hCntx,
 int ws_set_context_xml_doc_val(WsContextH cntx, char* name, WsXmlDocH val);
 
 void destroy_context_entry(WS_CONTEXT_ENTRY* entry);
-WS_CONTEXT_ENTRY* create_context_entry(DL_List* list, 
+
+
+hnode_t* create_context_entry(hash_t* h, 
         char* name, 
-        void* val,
-        unsigned long size,
-        unsigned long flags);
+        void* val);
         
 int do_serializer_free(WsContextH cntx, void* ptr);
 int ws_serializer_free(WsContextH cntx, void* ptr);
@@ -601,7 +617,11 @@ int soap_add_disp_filter(SoapDispatchH disp,
 
 int ws_set_context_ulong_val(WsContextH cntx, char* name, unsigned long val);
 
-int soap_add_defalt_filter(SoapH soap,
+callback_t*
+make_callback_entry(SoapServiceCallback proc,
+                         void* data,
+                         list_t* list_to_add);
+int soap_add_filter(SoapH soap,
         SoapServiceCallback callbackProc,
         void* callbackData,
         int inbound);
@@ -838,5 +858,7 @@ void wsman_set_fault(WsmanMessage *msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
+void wsman_status_init(WsmanStatus* s);
+int wsman_check_status( WsmanStatus *s);
 
 #endif /*SOAP_API_H_*/

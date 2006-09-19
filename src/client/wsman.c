@@ -43,7 +43,7 @@
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-errors.h"
 #include "wsman-soap.h"
@@ -51,9 +51,10 @@
 #include "wsman-xml-serializer.h"
 
 #include "wsman-client.h"
-#include "wsman-debug.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
+
+int facility = LOG_DAEMON;
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
 
@@ -61,7 +62,7 @@ void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_dat
 static void
 print_header (gpointer name, gpointer value, gpointer user_data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+    debug(
               "[%p]: > %s: %s",
               user_data, (char *) name, (char *) value);
 } /* print_header */
@@ -69,9 +70,9 @@ print_header (gpointer name, gpointer value, gpointer user_data)
 static void
 http_debug_pre_handler (SoupMessage *message, gpointer user_data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Receiving response.", message);
+    debug( "[%p]: Receiving response.", message);
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+    debug(
               "[%p]: > %d %s",
               message,
               message->status_code,
@@ -85,14 +86,13 @@ static void
 http_debug_post_handler (SoupMessage *message, gpointer user_data)
 {
     if (message->response.length) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
-                  "[%p]: Response body:\n%.*s\n",
+        debug( "[%p]: Response body:\n%.*s\n",
                   message,
                   (int) message->response.length,
                   message->response.body);
     }
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+    debug(
               "[%p]: Transfer finished",
               message);
 } /* http_debug_post_handler */
@@ -103,7 +103,7 @@ http_debug_request_handler (SoupMessage *message, gpointer user_data)
 {
     const SoupUri *uri = soup_message_get_uri (message);
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+    debug(
               "[%p]: > %s %s%s%s HTTP/%s",
               message,
               message->method, uri->path,
@@ -115,20 +115,20 @@ http_debug_request_handler (SoupMessage *message, gpointer user_data)
                                  print_header, message);
 
     if (message->request.length) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,
+        debug(
                   "[%p]: Request body:\n%.*s\n",
                   message,
                   (int) message->request.length,
                   message->request.body);
     }
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Request sent.", message);
+    debug( "[%p]: Request sent.", message);
 }
 
 static void
 http_debug (SoupMessage *message)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "[%p]: Request queued", message);
+    debug( "[%p]: Request queued", message);
 
     soup_message_add_handler (message, SOUP_HANDLER_POST_REQUEST,
                               http_debug_request_handler, NULL);
@@ -140,7 +140,7 @@ http_debug (SoupMessage *message)
 
 
 
-
+#if 0
 static void
 debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
 {
@@ -163,6 +163,7 @@ debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
     }
 
 }
+#endif 
 
 static void
 authenticate (SoupSession *session, 
@@ -273,9 +274,8 @@ int main(int argc, char** argv)
     initialize_logging ();
     WsContextH cntx = ws_create_runtime(NULL);
 
-
     WsManClient *cl;
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Certificate: %s", wsman_options_get_cafile());
+    debug( "Certificate: %s", wsman_options_get_cafile());
     if (wsman_options_get_cafile() != NULL) {
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
@@ -394,25 +394,25 @@ int main(int argc, char** argv)
         WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, resourceUri, optimize_max_elements, options);
         enumContext = wsenum_get_enum_context(enum_response); 
         WsXmlNodeH cntxNode;
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "enumContext: %s", enumContext );
+        debug( "enumContext: %s", enumContext );
         if (enumContext) {
             while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
                 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
                 if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) { 
-                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "no pull response" );
+                    debug( "no pull response" );
                     break;
                 }
                 if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE) ) {                		
-                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "End of sequence");
+                    debug( "End of sequence");
                     break;
                 }
                 if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT)) ) {
-                    soap_free(enumContext);
-                    enumContext = soap_clone_string(ws_xml_get_node_text(cntxNode));
+                    u_free(enumContext);
+                    enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
                 }                				
                 if ( enumContext == NULL || enumContext[0] == 0 ) {
-                    wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "No enumeration context");
+                    debug( "No enumeration context");
                     break;
                 }
                 /*

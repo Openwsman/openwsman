@@ -36,13 +36,12 @@
 #include "stdlib.h"
 #include "string.h"
 #include "stdio.h"
-#include <glib.h>
 
 #include <ctype.h>
 #include "assert.h"
 
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -52,7 +51,6 @@
 #include "wsman-errors.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-xml-serialize.h"
-#include "wsman-debug.h"
 #include "wsman-soap-envelope.h"
 
 void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
@@ -246,7 +244,7 @@ int do_serialize_string(XmlSerializationData* data)
         } else {
             if ( data->mode == XML_SMODE_DESERIALIZE )
             {
-                wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "De-serializing string...");
+                debug( "De-serializing string...");
                 if ( (child = xml_serializer_get_child(data)) == NULL )
                 {
                     retVal = WS_ERR_XML_NODE_NOT_FOUND;
@@ -254,7 +252,7 @@ int do_serialize_string(XmlSerializationData* data)
                 else
                 {
                     char* src = ws_xml_get_node_text(child);
-                    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "string: %s", src);
+                    debug( "string: %s", src);
 
                     if ( src != NULL && *src != 0 )
                     {
@@ -291,7 +289,7 @@ int do_serialize_string(XmlSerializationData* data)
 
 int do_serialize_char_array(XmlSerializationData* data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing char array...");
+    debug( "Serializing char array...");
     WsXmlNodeH child;
     int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
     int retVal = sizeof(XML_TYPE_CHAR) * count;
@@ -488,7 +486,7 @@ static int calculate_struct_size(XmlSerializationData* data,
 
 int do_serialize_fixed_size_array(XmlSerializationData* data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing fixed size array...");
+    debug( "Serializing fixed size array...");
     int retVal;
     int savedIndex = data->index;
     int count;
@@ -600,7 +598,7 @@ XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
 
 int do_serialize_dyn_size_array(XmlSerializationData* data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing dyn. size array...");
+    debug( "Serializing dyn. size array...");
     int retVal = XML_IS_PTR(data->elementInfo) ? 
         sizeof(XML_TYPE_PTR) : sizeof(XmlSerialiseDynamicSizeData);
     void* savedBufPtr = data->elementBuf;
@@ -679,7 +677,7 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
 
 int do_serialize_struct(XmlSerializationData* data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Serializing Struct...");
+    debug( "Serializing Struct...");
     int i;
     int retVal = 0;
     int elementCount = 0;
@@ -821,7 +819,7 @@ void initialize_xml_serialization_data(
         char* ns,
         WsXmlNodeH xmlNode)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Initialize XML Serialization..."); 
+    debug( "Initialize XML Serialization..."); 
 
     memset(data, 0, sizeof(XmlSerializationData));
     data->cntx = cntx;
@@ -832,7 +830,7 @@ void initialize_xml_serialization_data(
     data->nameNs = nameNs;
     data->xmlNode = xmlNode;
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Finished initializing XML Serialization..."); 
+    debug( "Finished initializing XML Serialization..."); 
     return;
 }
 
@@ -863,7 +861,7 @@ int ws_serialize(WsContextH cntx,
     else
         data.skipFlag = SER_OUT;
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "About to process data...");
+    debug( "About to process data...");
     if (info->proc)
         retVal = info->proc(&data);
 
@@ -873,7 +871,7 @@ int ws_serialize(WsContextH cntx,
 
 int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo* info)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Freeing serializer memory...");
+    debug( "Freeing serializer memory...");
     int retVal;
     XmlSerializationData data;
     initialize_xml_serialization_data(&data, 
@@ -1006,16 +1004,19 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
 
     if ( soap != NULL
             &&
-            (ptr = (WsSerializerMemEntry*)soap_alloc(sizeof(WsSerializerMemEntry) + size, 0)) != NULL )
+            (ptr = (WsSerializerMemEntry*)u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL )
     {
         ptr->cntx = cntx;
-        soap_fw_lock(soap);
-        if ( DL_MakeNode(&((SOAP_FW*)soap)->WsSerializerAllocList, ptr) == NULL )
+        u_lock(soap);
+        lnode_t *node;
+        if ( ( node = lnode_create(ptr)) == NULL )
         {
-            soap_free(ptr);
+            u_free(ptr);
             ptr = NULL;
+        } else {
+            list_append(((env_t*)soap)->WsSerializerAllocList, node );
         }
-        soap_fw_unlock(soap);
+        u_unlock(soap);
     }
     return ptr->buf;
 }
@@ -1023,30 +1024,30 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
 
 int do_serializer_free(WsContextH cntx, void* ptr)
 {
-    DL_Node* node = NULL;
+    lnode_t* node = NULL;
     SoapH soap = ws_context_get_runtime(cntx);
 
     if ( soap && ptr != NULL )
     {
-        soap_fw_lock(soap);
+        u_lock(soap);
 
-        node = DL_GetHead(&((SOAP_FW*)soap)->WsSerializerAllocList);
+        node = list_first(((env_t*)soap)->WsSerializerAllocList);
 
         while( node != NULL )
         {
-            WsSerializerMemEntry* entry = (WsSerializerMemEntry*)node->dataBuf;
+            WsSerializerMemEntry* entry = (WsSerializerMemEntry*)node->list_data;
 
             if ( entry && entry->cntx == cntx && (!ptr || ptr == entry->buf) )
             {
-                DL_FreeNode(node);
+                lnode_destroy (node);
                 if ( ptr != NULL )
                     break;
             }
 
-            node = DL_GetNext(node);
+            node = list_next( ((env_t*)soap)->WsSerializerAllocList, node);
         }
 
-        soap_fw_unlock(soap);
+        u_unlock(soap);
     }
 
     return (node != NULL);

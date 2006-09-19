@@ -6,6 +6,7 @@ libwsman_cim_plugin_la_SOURCES = \
 	cim_data.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
+	   -I$(top_srcdir)/src/libu \
 	   -I$(top_srcdir)/src/libcim/sfcc \
 	   $(SFCC_INCLUDES) \
 	   $(GMODULE_CFLAGS)

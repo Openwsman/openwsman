@@ -38,18 +38,18 @@
 
 GList * add_key(WsContextH cntx, GList *keys, char *name, char *type)
 {
-	wsman_debug( WSMAN_DEBUG_LEVEL_DEBUG, "Adding Key: %s", name );
+	debug( "Adding Key: %s", name );
 	WsSelectorInfo *sel= malloc(sizeof(WsSelectorInfo));
 	if (!sel) 
 	{
-		wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "malloc failed");
+		debug( "malloc failed");
 		return NULL;
 	}
 	sel->key = name;
         sel->type = type ? type : "string";
 	if ( (sel->val = wsman_get_selector(cntx, NULL, name, 0)) == NULL)
 	{
-		wsman_debug(WSMAN_DEBUG_LEVEL_ERROR, "NULL Key");
+		debug( "NULL Key");
 		return NULL;
 	}
 	keys = g_list_append(keys, sel);

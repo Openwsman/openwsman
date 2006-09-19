@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <glib.h>
 
 #include <assert.h>
 
@@ -45,7 +44,7 @@
 #include <libxml/parser.h>
 #include <libxml/xmlstring.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -68,7 +67,7 @@ static void destroy_node_private_data(void* _data)
         // ??? TBD data->nsQNameList;
         if ( data->valText )
             xmlFree(data->valText);
-        soap_free(data);
+        u_free(data);
     }
 }
 
@@ -175,7 +174,7 @@ WsXmlNodeH xml_parser_get_root(WsXmlDocH doc)
 
 WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
 {
-    SOAP_FW* fw = (SOAP_FW*)soap;
+    env_t* fw = (env_t*)soap;
     WsXmlDocH soapDoc = NULL;
     if (fw)
     {
@@ -185,7 +184,7 @@ WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, uns
         if ( xmlDoc != NULL )
         {
             iWsDoc* iDoc;
-            if ( (iDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1)) == NULL )
+            if ( (iDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc))) == NULL )
             {
                 xmlFreeDoc(xmlDoc);
             }
@@ -204,7 +203,7 @@ WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, uns
 
 WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
 {	
-    SOAP_FW* fw = (SOAP_FW*)soap;
+    env_t* fw = (env_t*)soap;
     WsXmlDocH soapDoc = NULL;
 
     if ( buf && size && fw)
@@ -217,7 +216,7 @@ WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encodin
         if ( xmlDoc != NULL )
         {
             iWsDoc* iDoc;
-            if ( (iDoc = (iWsDoc*)soap_alloc(sizeof(iWsDoc), 1)) == NULL )
+            if ( (iDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc))) == NULL )
             {
                 xmlFreeDoc(xmlDoc);
             }
@@ -244,7 +243,7 @@ char* xml_parser_node_query(WsXmlNodeH node, int what)
     {
     case XML_TEXT_VALUE:
         if ( wsNode == NULL )
-            xmlNode->_private = wsNode = soap_alloc(sizeof(iWsNode), 1);
+            xmlNode->_private = wsNode = u_zalloc(sizeof(iWsNode));
 
         if ( wsNode != NULL )
         {
@@ -285,7 +284,7 @@ int xml_parser_node_set(WsXmlNodeH node, int what, char* str)
     {
     case XML_TEXT_VALUE:
         if ( wsNode == NULL )
-            xmlNode->_private = wsNode = soap_alloc(sizeof(iWsNode), 1);
+            xmlNode->_private = wsNode = u_zalloc(sizeof(iWsNode));
 
         if ( wsNode != NULL )
         {
@@ -624,7 +623,7 @@ xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value
         {
             if ( value != NULL )
                 xmlNodeSetContent(newNode, BAD_CAST  value);
-            newNode->_private = soap_alloc(sizeof(iWsNode), 1); 
+            newNode->_private = u_zalloc(sizeof(iWsNode)); 
         }
     }
     return newNode;

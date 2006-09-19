@@ -33,7 +33,7 @@
  */
  
  
-#include "config.h"
+#include "wsman_config.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -55,7 +55,7 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 
@@ -63,7 +63,6 @@
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
-#include "wsman-debug.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
 
@@ -71,6 +70,7 @@
 
 static int log_pid = 0;
 
+#if 0 
 static void
 debug_message_handler (const char *str, 
 		WsmanDebugLevel level, 
@@ -118,6 +118,7 @@ initialize_logging (void)
 
 } /* initialize_logging */
 
+#endif
 
 static void
 signal_handler (int sig_num)
@@ -133,7 +134,7 @@ signal_handler (int sig_num)
     else
         g_assert_not_reached ();
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,
+    debug(
               "Received %s... Shutting down.", sig_name);
     wsmand_shutdown ();
 } /* signal_handler */
@@ -144,7 +145,7 @@ signal_handler (int sig_num)
 static void
 sighup_handler (int sig_num)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "SIGHUP received; reloading data");
+    debug( "SIGHUP received; reloading data");
 
     if (wsmand_options_get_debug_level () == 0) 
     {
@@ -306,9 +307,8 @@ main (int argc, char **argv)
     sig_action.sa_flags = 0;
     sigaction (SIGHUP, &sig_action, NULL);
 
-    initialize_logging ();
-    if (wsmand_start_server()) 
-    {
+    // FIXME: initialize_logging ();
+    if (wsmand_start_server()) {
         return 1;
     }
 

@@ -41,17 +41,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <gmodule.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 
-#include "wsman-debug.h"
 
-
-GList *add_key(WsContextH cntx, GList *keys, char *name, char *type);
-GList *create_key_list(WsContextH cntx, WsSelector *selectors);
+// GList *add_key(WsContextH cntx, GList *keys, char *name, char *type);
+// GList *create_key_list(WsContextH cntx, WsSelector *selectors);
 
 
 #endif /* __INTERFACE_UTILS_H__ */

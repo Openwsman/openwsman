@@ -27,8 +27,8 @@ int  CimResource_Put_EP(SoapOpH op, void* appData);
 SER_DECLARE_TYPE(CimResource);
 SER_DECLARE_EP_ARRAY(CimResource);
 
-void get_endpoints(GModule *self, void **data);
-int init (GModule *self, void **data );
-void cleanup( GModule *self, void *data );
+void get_endpoints(void *self, void **data);
+int init (void *self, void **data );
+void cleanup( void *self, void *data );
 
 #endif // __WS_COMPUTER_SYSTEM_H__

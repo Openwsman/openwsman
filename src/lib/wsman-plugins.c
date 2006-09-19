@@ -36,56 +36,45 @@
 #define WSMAN_PLUGINS_H_
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <wsman_config.h>
 #endif
 
 #include "stdlib.h"
 #include "stdio.h"
 #include <string.h>
 #include <dirent.h>
-#include <glib.h>
 
-
-#include "wsman-util.h"
-#include "wsman-debug.h"
-
+#include <dlfcn.h>
+#include "u/libu.h"
 #include "wsman-plugins.h"
 
 
 
 static void
-free_string_list ( GList * plugin_list )
+free_string_list ( list_t * plugin_list )
 {
-    int i ;
-
-    if( plugin_list )
-    {
-        for (i = 0; i < g_list_length (plugin_list); i++)
-            g_free (g_list_nth (plugin_list, i)->data);
-        g_list_free (plugin_list);
-    }
+    list_destroy_nodes(plugin_list);
 }
 
 static 
-GList* scan_files_in_dir (const char *dir, int (*select)(const struct dirent *))
+list_t *scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
 {
     struct dirent **namelist;
-    GList *files = NULL;
     int n;
+    list_t *files = list_create(LISTCOUNT_T_MAX);
 
-    g_return_val_if_fail (dir != NULL, NULL);
     if (0 > (n = scandir (dir, &namelist, select, alphasort)))
     {
-        return NULL;
-    }
-    else
-    {
+        return files;
+    } else {
         while (n--)
         {
-            files = g_list_append (files, g_strdup (namelist[n]->d_name));
-            free(namelist[n]);
+            lnode_t *node = lnode_create(u_strdup(namelist[n]->d_name));
+            list_append(files, node );
+            debug("plugin file found: %s", namelist[n]->d_name );
+            u_free(namelist[n]);
         }
-        free(namelist);
+        u_free(namelist);
     }
     return files;
 }
@@ -93,44 +82,46 @@ GList* scan_files_in_dir (const char *dir, int (*select)(const struct dirent *))
 
 static WsManPlugin *plugin_new(void)
 {
-    WsManPlugin *self = g_new0(WsManPlugin, 1);
+    WsManPlugin *self = u_malloc(sizeof(WsManPlugin));
     return self ;
 }
 
 static void plugin_free(WsManPlugin *self)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "Un-loading plugins: %s", self->p_name ); 
-    g_return_if_fail(self);
+    debug( "Un-loading plugins: %s", self->p_name ); 
+
+    //g_return_if_fail(self);
+    //
     if( self->p_handle && self->cleanup )
         (*self->cleanup)( self->p_handle, self->data );
     if(self->p_name)
-        g_free(self->p_name);
+        u_free(self->p_name);
     if( self->p_handle )
-        g_module_close( self->p_handle );
-    g_free( self );
+        dlclose( self->p_handle );
+    u_free( self );
 }
 
-static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
+static WsManPluginError plugin_init(WsManPlugin *self, const char *p_name)
 {
     WsManPluginError PluginError = PLUGIN_ERROR_OK ;
+    /*
     g_return_val_if_fail(self, PLUGIN_ERROR_BADPARMS );
     g_return_val_if_fail(p_name && strlen(p_name), PLUGIN_ERROR_BADPARMS);
-    self->p_name = g_strdup(p_name) ;
-    if (NULL != (self->p_handle = g_module_open(p_name, 0)))
+    */
+    self->p_name = u_strdup(p_name) ;
+    if (NULL != (self->p_handle = dlopen(p_name, RTLD_LAZY)))
     {
-        if (                
-                g_module_symbol(self->p_handle, "get_endpoints", (void *)&self->get_endpoints)
-                &&  g_module_symbol(self->p_handle, "init", (void *)&self->init)
-           )
+        
+        if (  dlsym(self->p_handle, "get_endpoints")
+                &&  dlsym(self->p_handle, "init"))
         {
+            /*
             self->started = (*self->init)(self->p_handle, &self->data);
-            if( !self->started )
-            {
+            if( !self->started ) {
                 PluginError = PLUGIN_ERROR_INITFAILED;
             }
-        } 
-        else
-        {
+            */
+        } else {
             self->init			        = 0 ;
             self->started	                = 0 ;
             PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
@@ -143,134 +134,127 @@ static WsManPluginError plugin_init(WsManPlugin *self, const gchar *p_name)
     return PluginError ;
 }
 
-static gboolean
-load_plugin(WsManPlugin *self, const gchar *p_name)
+static int
+load_plugin(WsManPlugin *self, const char *p_name)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,  "Loading plugin: %s", p_name );
-    gboolean ok = FALSE;
+    debug("Loading plugin: %s", p_name );
+
+    int retv = -1;
     WsManPluginError err = plugin_init(self, p_name);
-    const gchar	*plugin_err = g_module_error();
+    const char	*plugin_err = dlerror();
     if( NULL == plugin_err )
         plugin_err = "";
     switch( err )
     {
     default:
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,  "Unable to load plugin %s. Error: %s", p_name, plugin_err );
+        debug(  "Unable to load plugin %s. Error: %s", p_name, plugin_err );
         break;
     case PLUGIN_ERROR_NOTLOADED:
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Unable to load plugin %s. Error: %s", p_name, plugin_err );
+        debug( "Unable to load plugin %s. Error: %s", p_name, plugin_err );
         break;
     case PLUGIN_ERROR_SYMBOLSNOTFOUND:
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Plugin protocol %s unknown Error:%s", p_name, plugin_err );
+        debug( "Plugin protocol %s unknown Error:%s", p_name, plugin_err );
         break;
     case PLUGIN_ERROR_INITFAILED:
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to start plugin %s", p_name );
+        debug("Unable to start plugin %s", p_name );
         break;
     case PLUGIN_ERROR_BADPARMS:
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Bad parameters to plugin %s. Error: %s", p_name, plugin_err );
+        debug( "Bad parameters to plugin %s. Error: %s", p_name, plugin_err );
         break;
     case PLUGIN_ERROR_OK:
-        ok = TRUE ;
+        retv = 0 ;
         break;
     }
-    if( !ok  )
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to load plugin %s.Error: %s", p_name, plugin_err);
-    return ok ;
+    if( retv < 0  )
+        debug("Unable to load plugin %s.Error: %s", p_name, plugin_err);
+    return retv ;
 }
 
 static void
-plugins_foreach_delete( gpointer data, gpointer user_data )
+plugins_foreach_delete( void  *data, void *user_data )
 {
     plugin_free((WsManPlugin *)data);
 }
 
 static void
-free_plugins(GList * plugin_list)
+free_plugins(list_t * plugin_list)
 {
     if( plugin_list )
     {
-        g_list_foreach( plugin_list, plugins_foreach_delete, NULL );
-        g_list_free (plugin_list);
+        // FIXME: g_list_foreach( plugin_list, plugins_foreach_delete, NULL );
+        // FIXME: g_list_free (plugin_list);
     }
 }
 
 static int
 select_all_files (const struct dirent *e)
 {
-    return TRUE; 
+    return 1; 
 }
 
-static GList *
-scan_plugins_in_directory (WsManListenerH *listener, 
-        const gchar *dir_name, 
-        GList *plugin_list)
+static void
+scan_plugins_in_directory (
+        WsManListenerH *listener, 
+        const char *dir_name, 
+        list_t *plugin_list)
 {
-    GList *files;
-    GList *node;
 
-    if (!g_module_supported ())
-        return NULL ;
 
+    /*
     g_return_val_if_fail (listener != NULL, plugin_list);
     g_return_val_if_fail (((NULL != dir_name) && strlen(dir_name)), plugin_list);
+    */
 
-    files = NULL;
+    list_t *files = scan_files_in_dir ( dir_name, select_all_files);
+    debug("found %lu files", list_count(files));
 
-    files = scan_files_in_dir (dir_name, select_all_files);
-
-    node = files;
-    while (node)
+    lnode_t *node = list_first(files);
+    while (node != NULL)
     {
         const char* entry_name;
-        gboolean ok = FALSE;
-
-        entry_name = (const char*) node->data;
-        node = g_list_next (node);
+        int retv = -1;
+        entry_name = (const char*) node->list_data;
+        node = list_next(files, node);
 
         if ((NULL != entry_name) && strlen (entry_name) > 3
                 && (0 == strcmp (&entry_name[strlen(entry_name)-3], ".so")))
         {
-            gchar *plugin_path = g_strdup_printf ("%s/%s", dir_name, entry_name);
+            char *plugin_path = u_strdup_printf ("%s/%s", dir_name, entry_name);
             WsManPlugin *plugin = plugin_new();
 
             if ((NULL != plugin) && (NULL != plugin_path))
             {
-                if (load_plugin(plugin, plugin_path))
+                if (load_plugin(plugin, plugin_path) == 0 )
                 {
-                    plugin_list = g_list_prepend (plugin_list, plugin);
-                    ok = TRUE ;
+                    lnode_t *plg = lnode_create (plugin);
+                    list_append (plugin_list, plg);
+                    retv = 0 ;
                 }
+            } else {
+                debug("Out of memory scanning for plugins.");
             }
-            else
-            {
-                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Out of memory scanning for plugins.");
-            }
-
-            g_free (plugin_path);
-
-            if (!ok && (NULL != plugin))
+            u_free (plugin_path);
+            if (retv != 0  && (NULL != plugin))
                 plugin_free(plugin);
         }
     }
-
-    free_string_list (files);
-
-    return plugin_list;
+    //free_string_list (files);
+    return;
 }
 
-gboolean wsman_plugins_load(WsManListenerH *listener)
+int wsman_plugins_load(WsManListenerH *listener)
 {   
-
-    listener->plugins = scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR, NULL);
-    return TRUE;
+    listener->plugins = list_create(LISTCOUNT_T_MAX);
+    scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR, listener->plugins);
+    return 0;
 }
 
-gboolean wsman_plugins_unload(WsManListenerH *listener)
+int  wsman_plugins_unload(WsManListenerH *listener)
 {
 
     free_plugins(listener->plugins);
     listener->plugins  = NULL;
-    return TRUE;
+    return 0;
 }
 
 

@@ -11,32 +11,23 @@ OWSMAN_INCLUDES = \
 	wsman-plugins.h \
 	wsman-dispatcher.h \
 	wsman-errors.h \
-	wsman-debug.h \
 	wsman-faults.h \
-	wsman-util.h \
 	wsman-xml-api.h \
 	wsman-xml.h \
 	wsman-xml-binding.h \
 	wsman-xml-serialize.h \
 	wsman-xml-serializer.h \
 	wsman-client.h  \
-	wsman-soap-message.h \
-	wsman-md5-utils.h
+	wsman-soap-message.h 
 
-libwsman_utils_la_SOURCES = \
-	wsman-md5-utils.c \
-	wsman-util.c \
-	wsman-debug.c
-		      
 libwsman_client_la_SOURCES = \
 	wsman-client.c 
 	
-libwsman_catalog_la_SOURCES = \
-	wsman-catalog.c 
+libwsman_catalog_la_SOURCES = 
 
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
-	wsman-plugins.c
+	wsman-plugins.c 
 
 libwsman_la_SOURCES = \
 	wsman-xml-binding.c \
@@ -50,29 +41,29 @@ libwsman_la_SOURCES = \
 	$(OWSMAN_INCLUDES)
 
 INCLUDES = -I$(top_srcdir) \
-	   $(XML_CFLAGS) \
-	   $(GLIB_CFLAGS)
+	   -I$(top_srcdir)/src/libu \
+	   $(XML_CFLAGS) 
 
 LIBS = \
-	$(GLIB_LIBS)	\
-        $(XML_LIBS)
+        $(XML_LIBS)  \
+       $(top_builddir)/src/libu/libwsman_utils.la 
+
+
 
 
 libwsman_la_LIBADD = $(LIBS) \
 	-lpthread
 
 libwsman_client_la_LIBADD = $(LIBS)
-libwsman_utils_la_LIBADD = $(LIBS)
+libwsman_server_la_LIBADD = -ldl
 
 libwsman_la_LDFLAGS= -version-info 1:0
 libwsman_client_la_LDFLAGS= -version-info 1:0
-libwsman_utils_la_LDFLAGS= -version-info 1:0
 libwsman_server_la_LDFLAGS= -version-info 1:0
 libwsman_catalog_la_LDFLAGS= -version-info 1:0
 
 lib_LTLIBRARIES= \
 		 libwsman.la \
 		 libwsman_client.la \
-		 libwsman_utils.la \
 		 libwsman_catalog.la \
 		 libwsman_server.la

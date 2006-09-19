@@ -32,14 +32,14 @@
  * @author Anas Nashif
  */
 
-#include <config.h>
+#include <wsman_config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <glib.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 
 #include "wsman-xml-api.h"
@@ -288,21 +288,21 @@ char* wsman_options_get_password (void) {
     return password;
 }  
 
-GList * wsman_options_get_properties (void)
+hash_t * wsman_options_get_properties (void)
 {
     int c = 0;
+    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
     
-    GList *list = NULL;
     while(properties != NULL && properties[c] != NULL)
     {
-        WsProperties *p =  malloc(sizeof(WsProperties));
-        char **cc = g_strsplit(properties[c], "=", 2 );
-        p->key = cc[0];
-        p->value = cc[1];
-        list=g_list_append(list, p);
+        char **cc; 
+        u_tokenize(properties[c], "=", cc, 100 );
+        if (!hash_alloc_insert(h, cc[0], cc[1])) {
+            debug("hash_alloc_insert failed");
+        }
         c++;
     }
-    return list;
+    return h;
 }   
 
 int wsman_options_get_action (void)

@@ -33,7 +33,7 @@
  */
 
 #define _GNU_SOURCE
-#include "config.h"
+#include "wsman_config.h"
 
 
 #include <stdlib.h> 
@@ -55,7 +55,7 @@
 #include <libsoup/soup-server-message.h>
 
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 extern void start_event_source(SoapH soap);
@@ -65,21 +65,20 @@ extern void start_event_source(SoapH soap);
 #include "wsman-dispatcher.h"
 
 
-#include "wsman-debug.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
-#include "wsman-md5-utils.h"
 #include "wsmand-auth.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
 
 
+int facility = LOG_DAEMON;
 
 
 static void
 print_header (gpointer name, gpointer value, gpointer data)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "%s: %s", (char *)name, (char *)value);
+    debug( "%s: %s", (char *)name, (char *)value);
 }
 
 
@@ -93,15 +92,15 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
     soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
 
 #if 0 
-    WsXmlDocH inDoc = wsman_build_inbound_envelope( (SOAP_FW *)data, msg);
-    if (wsman_is_identify_request(inDoc)) {
-        wsman_create_identify_response( (SOAP_FW *)data, msg);
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Skipping authentication...");
+    WsXmlDocH in_doc = wsman_build_inbound_envelope( (env_t *)data, msg);
+    if (wsman_is_identify_request(in_doc)) {
+        wsman_create_identify_response( (env_t *)data, msg);
+        debug( "Skipping authentication...");
         return TRUE;
     }
 #endif
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Authenticating...");
+    debug( "Authenticating...");
     if (auth) {
         switch (auth->type) {
         case SOUP_AUTH_TYPE_BASIC:
@@ -133,12 +132,12 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
 
     // Check HTTP headers
     path = soup_uri_to_string (soup_message_get_uri (msg), TRUE);
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"%s %s HTTP/1.%d", msg->method, path,
+    debug("%s %s HTTP/1.%d", msg->method, path,
             soup_message_get_http_version (msg));
 
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     if (msg->request.length) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Request: %.*s", msg->request.length, msg->request.body);
+        debug("Request: %.*s", msg->request.length, msg->request.body);
     }
 
     // Check Method
@@ -163,10 +162,10 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
         goto DONE;
     } else {
         encoding = strchr(content_type, '=') + 1;
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Encoding: %s", encoding);
+        debug("Encoding: %s", encoding);
     }
 
-    SOAP_FW* fw = (SOAP_FW*)data;	
+    env_t* fw = (env_t*)data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
 
     wsman_msg->request.body = (char *)msg->request.body;
@@ -205,7 +204,7 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
     	msg->response.length = wsman_msg->response.length;
     	msg->response.body = (char *)wsman_msg->response.body;
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG,"Response: %s", (char *)wsman_msg->response.body);
+        debug("Response: %s", (char *)wsman_msg->response.body);
         soup_message_set_status (msg, wsman_msg->http_code);
     }
 
@@ -219,9 +218,8 @@ DONE:
     soup_server_message_set_encoding (SOUP_SERVER_MESSAGE (msg),
             SOUP_TRANSFER_CONTENT_LENGTH);
 
-    soap_free(wsman_msg);
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, 
-            "Response (status) %d %s", msg->status_code, msg->reason_phrase);
+    u_free(wsman_msg);
+    debug( "Response (status) %d %s", msg->status_code, msg->reason_phrase);
 
 }
 
@@ -255,11 +253,11 @@ int wsmand_start_server()
     {
         server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
         if (!server) {
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Unable to bind to server port %d", wsmand_options_get_server_port());
+            debug( "Unable to bind to server port %d", wsmand_options_get_server_port());
             return 1;
         }		
-        soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);       	    
-        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting Server on port %d",  soup_server_get_port (server));
+        soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);       	    
+        debug("Starting Server on port %d",  soup_server_get_port (server));
         soup_server_run_async (server);
         g_object_unref (server);
     }
@@ -276,12 +274,12 @@ int wsmand_start_server()
 
         if (!ssl_server) 
         {
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR,"Unable to bind to SSL server port %d", wsmand_options_get_server_ssl_port());
+            debug("Unable to bind to SSL server port %d", wsmand_options_get_server_ssl_port());
             return 1;
         }
-        soup_server_add_handler (ssl_server , NULL, &auth_ctx, server_callback, NULL, (SOAP_FW *)soap);
+        soup_server_add_handler (ssl_server , NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);
 
-        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Starting SSL Server on port %d", 
+        debug("Starting SSL Server on port %d", 
                 soup_server_get_port (ssl_server));
 
         soup_server_run_async (ssl_server);
@@ -292,13 +290,13 @@ int wsmand_start_server()
 #ifdef HAVE_SSL
     if (server == NULL && ssl_server == NULL) {
         fprintf(stderr, "Can't start server.\n");
-        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Can't start server...");
+        debug("Can't start server...");
         return 1;   
     }
 #else
     if (server == NULL) {
         fprintf(stderr, "Can't start server.\n");
-        wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Can't start server...");
+        debug("Can't start server...");
         return 1;   
     }
 #endif
@@ -309,7 +307,7 @@ int wsmand_start_server()
 
     //ws_destroy_context(cntx);
     g_free(listener);
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE,"Waiting for requests...");
+    debug("Waiting for requests...");
     return 0;
 }
 

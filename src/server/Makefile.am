@@ -5,6 +5,7 @@ INCLUDES = \
 	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
+	   -I$(top_srcdir)/src/libu \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
 
 LIBS = \
@@ -12,7 +13,7 @@ LIBS = \
        $(SOUP_LIBS) \
        -lcrypt \
        $(top_builddir)/src/lib/libwsman.la \
-       $(top_builddir)/src/lib/libwsman_utils.la \
+       $(top_builddir)/src/libu/libwsman_utils.la \
        $(top_builddir)/src/lib/libwsman_server.la
 
 

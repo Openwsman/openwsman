@@ -38,10 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <glib.h>
-
-
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-dispatcher.h"
@@ -51,7 +48,6 @@
 #include "wsman-xml-serializer.h" 
 #include <libxml/uri.h>
 #include "wsman-faults.h"
-#include "wsman-debug.h"
 #include "wsman-catalog.h"
 
 int  wsman_catalog_create_resource(WsXmlNodeH resource, WsDispatchInterfaceInfo *interface)
@@ -59,7 +55,7 @@ int  wsman_catalog_create_resource(WsXmlNodeH resource, WsDispatchInterfaceInfo 
     WsXmlNodeH r;			
     WsXmlNodeH access;
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Generating Catalog Resource" );
+    debug( "Generating Catalog Resource" );
     r = ws_xml_add_child(resource, NULL, WSMANCAT_RESOURCE, NULL);
 
     ws_xml_define_ns(r, XML_NS_WS_MAN_CAT, NULL, 1);
@@ -95,7 +91,7 @@ int  wsman_catalog_create_resource(WsXmlNodeH resource, WsDispatchInterfaceInfo 
             interface->compliance);
 
     wsman_catalog_add_operations(access, interface );
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Generated Catalog Resource" );
+    debug( "Generated Catalog Resource" );
 
     if (r)
         return 1;    
@@ -162,7 +158,7 @@ void wsman_catalog_add_operations(WsXmlNodeH access, WsDispatchInterfaceInfo *in
                 set_created = 1;
             }
 
-            wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Adding Selector: %s", sel[j].name );
+            debug( "Adding Selector: %s", sel[j].name );
 
             child2 = ws_xml_add_child(child, 
                     NULL,

@@ -1,14 +1,13 @@
 
-#include "config.h"
+#include "wsman_config.h"
 
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
-#include "gmodule.h"
 
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 #include "wsman-errors.h"
 #include "wsman-xml-api.h"

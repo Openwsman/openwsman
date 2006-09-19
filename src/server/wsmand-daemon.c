@@ -33,7 +33,7 @@
  */
 
 
-#include <config.h>
+#include <wsman_config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -42,7 +42,7 @@
 #include <errno.h>
 
 #include "glib.h"
-#include "wsman-debug.h"
+#include "u/libu.h"
 #include "wsmand-daemon.h"
 
 
@@ -288,7 +288,7 @@ wsmand_shutdown_block (void)
 
     if (shutting_down)
     {
-        wsman_debug (WSMAN_DEBUG_LEVEL_WARNING,
+        debug(
                   "Attempting to block shut-down while shut-down is already in progress!");
     }
     ++shutdown_counter;
@@ -334,7 +334,7 @@ shutdown_idle_cb (gpointer user_data)
 
         errno = 0;
         if ((execv (argv[0], (char **) argv)) < 0) {
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Can not restart wsmand: %s",
+            debug( "Can not restart wsmand: %s",
                       strerror (errno));
             exit (EXIT_FAILURE);
         }
@@ -353,11 +353,10 @@ do_shutdown (gboolean restart)
         return;
     }
 
-    wsman_debug (WSMAN_DEBUG_LEVEL_MESSAGE, "Shutting down daemon...");
+    debug( "Shutting down daemon...");
 
     if (shutting_down) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_WARNING,
-                  "Shut-down request received while shut-down is already in progress!");
+        debug("Shut-down request received while shut-down is already in progress!");
         return;
     }
 

@@ -4,15 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <glib.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h"
 
-#include "wsman-debug.h"
 #include "wsman-faults.h"
 #include "wsman-soap-envelope.h"
 
@@ -80,12 +78,12 @@ WsXmlDocH ws_create_response_envelope(WsContextH cntx, WsXmlDocH rqstDoc, char* 
                 if ( (action = ws_xml_get_node_text(srcNode)) != NULL )
                 {
                     int len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
-                    char* tmp = (char*)soap_alloc(sizeof(char) * len, 0);
+                    char* tmp = (char*)u_malloc(sizeof(char) * len);
                     if ( tmp )
                     {
                         sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);
                         ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, tmp);
-                        soap_free(tmp);
+                        u_free(tmp);
                     }
                 }
             }
@@ -111,7 +109,7 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, 
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         char uuidBuf[100];
 
-        soap_get_uuid(uuidBuf, sizeof(uuidBuf), 0);
+        generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 
         ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
 
@@ -168,7 +166,7 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, 
  * @return XML document with Envelope
  */
     /*
-WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int inputBufferSize)
+WsXmlDocH wsman_build_inbound_envelope(env_t* fw, char *inputBuffer, int inputBufferSize)
 {
     WsXmlDocH doc = NULL;   
     char *buf = (char *)soap_alloc( inputBufferSize + 1, 1);
@@ -179,7 +177,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
         WsmanFaultCodeType fault_code = wsman_is_valid_envelope(fw, doc);
         if  ( wsman_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK )
         {            
-            wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, 
+            debug( 
                     "Envelope Discarded: Duplicate MessageID");    
         }   
 
@@ -189,7 +187,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
             doc = NULL;            
         }        
     } else {
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "Parse Error!");    		
+        debug( "Parse Error!");    		
     }
     free(buf);
     return doc;
@@ -204,7 +202,7 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, char *inputBuffer, int input
  * @param buf Message buffer
  * @return XML document with Envelope
  */
-WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
+WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg)
 {
     WsXmlDocH doc = NULL;   
     if ( (doc = ws_xml_read_memory((SoapH)fw, 
@@ -222,12 +220,12 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
                 && !wsman_fault_occured(msg) ) 
         {
             wsman_set_fault(msg, 
-                    WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 
-                    WSA_FAULT_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
+                    WSA_INVALID_MESSAGE_INFORMATION_HEADER, 
+                    WSA_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
         }
     } else {
         wsman_set_fault(msg, 
-                WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
+                WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
         ws_xml_destroy_doc(doc);
         doc = NULL;
     }
@@ -242,13 +240,13 @@ WsXmlDocH wsman_build_inbound_envelope(SOAP_FW* fw, WsmanMessage *msg)
  * @param name Header element name
  * @return Header value
  */
-char* get_soap_header_value(SOAP_FW* fw, WsXmlDocH doc, char* nsUri, char* name)
+char* get_soap_header_value(env_t* fw, WsXmlDocH doc, char* nsUri, char* name)
 {
     char* retVal = NULL;
     WsXmlNodeH node = get_soap_header_element(fw, doc, nsUri, name);
 
     if ( node != NULL )
-        retVal = soap_clone_string(ws_xml_get_node_text(node));
+        retVal = u_str_clone(ws_xml_get_node_text(node));
 
     return retVal;
 }
@@ -262,7 +260,7 @@ char* get_soap_header_value(SOAP_FW* fw, WsXmlDocH doc, char* nsUri, char* name)
  * @param name Header element name
  * @return XML node 
  */
-WsXmlNodeH get_soap_header_element(SOAP_FW* fw, 
+WsXmlNodeH get_soap_header_element(env_t* fw, 
         WsXmlDocH doc, char* nsUri, char* name)
 {
     WsXmlNodeH node = ws_xml_get_soap_header(doc);
@@ -284,7 +282,7 @@ WsXmlNodeH get_soap_header_element(SOAP_FW* fw,
  * @param detail Fault Details
  * @return Fault XML document
  */
-WsXmlDocH build_soap_fault(SOAP_FW* fw, char* soapNsUri, char* faultNsUri, char* code,
+WsXmlDocH build_soap_fault(env_t* fw, char* soapNsUri, char* faultNsUri, char* code,
         char* subCode, char* reason, char* detail)
 {
     WsXmlDocH doc;
@@ -343,7 +341,7 @@ WsXmlDocH build_soap_fault(SOAP_FW* fw, char* soapNsUri, char* faultNsUri, char*
  * @param  fw SOAP Framework handle
  * @todo Send fault back
  */     
-void build_soap_version_fault(SOAP_FW* fw)
+void build_soap_version_fault(env_t* fw)
 {
     WsXmlDocH fault = build_soap_fault(fw, 
             NULL, 
@@ -395,49 +393,47 @@ void build_soap_version_fault(SOAP_FW* fw)
  * @param doc XML document
  * @return status
  */
-int wsman_is_duplicate_message_id (SOAP_FW* fw, WsXmlDocH doc)
+int wsman_is_duplicate_message_id (env_t* fw, WsXmlDocH doc)
 {    
     char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 
     int retVal = 0;
     if ( msgId ) {
-        wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Checking Message ID: %s", msgId);
-        DL_Node* node;
-        soap_fw_lock(fw);
-        node = DL_GetHead(&fw->processedMsgIdList);
+        debug( "Checking Message ID: %s", msgId);
+        u_lock(fw);
+        lnode_t *node = list_first(fw->processedMsgIdList);
 
         while( node != NULL )
         {
-            if ( !strcmp(msgId, (char*)node->dataBuf) ) {              
-                wsman_debug (WSMAN_DEBUG_LEVEL_ERROR, "Duplicate Message ID: %s", msgId);                         
+            if ( !strcmp(msgId, (char*)node->list_data) ) {              
+                debug( "Duplicate Message ID: %s", msgId);                         
                 retVal = 1;
                 break;
             }
-            node = DL_GetNext(node);
+            node = list_next(fw->processedMsgIdList, node);
         }
 
         if ( !retVal )
         {
-            while( DL_GetCount(&fw->processedMsgIdList) 
-                    >= PROCESSED_MSG_ID_MAX_SIZE )
+            while( list_count(fw->processedMsgIdList) >= PROCESSED_MSG_ID_MAX_SIZE )
             {
-                node = DL_RemoveHead(&fw->processedMsgIdList);
-                soap_free(node->dataBuf);
-                soap_free(node);
+                node = list_del_first(fw->processedMsgIdList);
+                u_free(node->list_data);
+                u_free(node);
             }
 
-            if ( (node = DL_MakeNode(&fw->processedMsgIdList, NULL)) )
+            if ( (node = lnode_create( NULL)) )
             {
-                if ( (node->dataBuf = soap_clone_string(msgId)) == NULL )
-                {
-                    DL_RemoveNode(node);
-                    soap_free(node);
+                if ( (node->list_data = u_str_clone(msgId)) == NULL ) {
+                    u_free(node);
+                } else {
+                    list_append(fw->processedMsgIdList, node);
                 }
             }
         }
-        soap_fw_unlock(fw);
+        u_unlock(fw);
     } else {       
-        wsman_debug (WSMAN_DEBUG_LEVEL_ERROR , "No MessageId found");
+        debug( "No MessageId found");
     }
     free(msgId);
 
@@ -457,7 +453,7 @@ void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc)
 
     if ( strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) != 0) {
         wsman_set_fault(msg, 
-                WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 0, 
+                WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, 
                 "No Envelope");
         goto cleanup;
     }
@@ -469,7 +465,7 @@ void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc)
 
     if (  ws_xml_get_soap_body(doc) == NULL ) {
         wsman_set_fault(msg, 
-                WSA_FAULT_INVALID_MESSAGE_INFORMATION_HEADER, 0, "No Body");
+                WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, "No Body");
         goto cleanup;
     }
 cleanup:

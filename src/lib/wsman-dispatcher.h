@@ -46,55 +46,45 @@
  * @{
  */
 
-
-
-struct __SOAP_CALLBACK_ENTRY
+struct __dispatch_t
 {
-	DL_Node node; // dataBuf is passed to callback as data
-	SoapServiceCallback proc;
-};
-typedef struct __SOAP_CALLBACK_ENTRY SOAP_CALLBACK_ENTRY;
-
-struct __SOAP_DISPATCH_ENTRY
-{
-	DL_Node node;
+	lnode_t node;
 	int usageCount;
 	char* inboundAction;
 	char* outboundAction;
 	unsigned long flags;
-	SOAP_FW* fw;
+	env_t* fw;
 	SoapServiceCallback serviceCallback;
 	void* serviceData;
-	DL_List inboundFilterList;
-	DL_List outboundFilterList;
+	list_t *inboundFilterList;
+	list_t *outboundFilterList;
 };
-typedef struct __SOAP_DISPATCH_ENTRY SOAP_DISPATCH_ENTRY;
+typedef struct __dispatch_t dispatch_t;
 
-struct __SOAP_OP_ENTRY
+struct __op_t
 {
-	SOAP_DISPATCH_ENTRY* dispatch;
+	dispatch_t* dispatch;
 	unsigned long timeoutTicks;
 	unsigned long submittedTicks;
 	WsContextH cntx;
-	DL_List processedHeaders;
-	WsXmlDocH inDoc;   // not deleted on destroy
-	WsXmlDocH outDoc;  // not deleted on destroy
+	WsXmlDocH in_doc;   // not deleted on destroy
+	WsXmlDocH out_doc;  // not deleted on destroy
         WsmanMessage *data;
 };
-typedef struct __SOAP_OP_ENTRY SOAP_OP_ENTRY;
+typedef struct __op_t op_t;
 
-void wsman_generate_notunderstood_fault(
-	SOAP_OP_ENTRY* op, 
-            WsXmlNodeH notUnderstoodHeader
-	);
 
-char* get_relates_to_message_id(SOAP_FW* fw, WsXmlDocH doc);
+void 
+wsman_generate_notunderstood_fault( op_t* op, 
+                                    WsXmlNodeH notUnderstoodHeader);
+
+char* get_relates_to_message_id(env_t* fw, WsXmlDocH doc);
  
-void  dispatch_inbound_call(SOAP_FW *fw, WsmanMessage *msg);
-void wsman_dispatcher_list( GList *interfaces );
+void  dispatch_inbound_call(env_t *fw, WsmanMessage *msg);
+void wsman_dispatcher_list( list_t *interfaces );
 
 
-SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw,
+dispatch_t* create_dispatch_entry(env_t* fw,
         char* inboundAction, 
         char* outboundAction,
         char* role,
@@ -103,38 +93,35 @@ SOAP_DISPATCH_ENTRY* create_dispatch_entry(SOAP_FW* fw,
         unsigned long flags);
 
 
-SOAP_CALLBACK_ENTRY* make_soap_callback_entry(SoapServiceCallback proc,
-        void* data,
-        DL_List* listToAdd);
 
 int is_wk_header(WsXmlNodeH header);
 
-SOAP_DISPATCH_ENTRY* get_dispatch_entry(SOAP_FW* fw, WsXmlDocH doc);
+dispatch_t* get_dispatch_entry(env_t* fw, WsXmlDocH doc);
 SoapDispatchH wsman_dispatcher(WsContextH cntx, void* data, WsXmlDocH doc);
 
 
-void destroy_op_entry(SOAP_OP_ENTRY* entry);
+void destroy_op_entry(op_t* entry);
 
-SOAP_OP_ENTRY* create_op_entry(SOAP_FW* fw,
-        SOAP_DISPATCH_ENTRY* dispatch,
+op_t* create_op_entry(env_t* fw,
+        dispatch_t* dispatch,
         WsmanMessage *data,
         unsigned long timeout);
 
-int unlink_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* entry);
-SOAP_OP_ENTRY* find_response_entry(SOAP_FW* fw, char* id);
-void destroy_dispatch_entry(SOAP_DISPATCH_ENTRY* entry);  
+int unlink_response_entry(env_t* fw, op_t* entry);
+op_t* find_response_entry(env_t* fw, char* id);
+void destroy_dispatch_entry(dispatch_t* entry);  
      
-void add_response_entry(SOAP_FW* fw, SOAP_OP_ENTRY* op);
+void add_response_entry(env_t* fw, op_t* op);
 
-int process_filter_chain(SOAP_OP_ENTRY* op, DL_List* list);
+int process_filter_chain(op_t* op, list_t* list);
 
-WsXmlNodeH validate_mustunderstand_headers(SOAP_OP_ENTRY* op);
-int process_filters(SOAP_OP_ENTRY* op, int inbound);
+WsXmlNodeH validate_mustunderstand_headers(op_t* op);
+int process_filters(op_t* op, int inbound);
 
-int process_inbound_operation(SOAP_OP_ENTRY* op, WsmanMessage *msg);
-void wsman_create_identify_response(SOAP_FW *fw, WsmanMessage *msg);
-void wsman_generate_encoding_fault( SOAP_OP_ENTRY* op, WsmanFaultDetailType faultDetail);
-int validate_control_headers(SOAP_OP_ENTRY* op);
+int process_inbound_operation(op_t* op, WsmanMessage *msg);
+void wsman_create_identify_response(env_t *fw, WsmanMessage *msg);
+void wsman_generate_encoding_fault( op_t* op, WsmanFaultDetailType faultDetail);
+int validate_control_headers(op_t* op);
 
 void soap_start_dispatch(SoapDispatchH disp);
 SoapDispatchH soap_create_dispatch(SoapH soap, 
@@ -146,7 +133,7 @@ SoapDispatchH soap_create_dispatch(SoapH soap,
         unsigned long flags);
         
 
-SOAP_DISPATCH_ENTRY* wsman_dispatch_entry_new(void);
+dispatch_t* wsman_dispatch_entry_new(void);
 
 
 /** @} */

@@ -33,15 +33,14 @@
  * @author Eugene Yarmosh
  */
 
-#include "config.h"
+#include "wsman_config.h"
 
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
-#include <gmodule.h>
 
-#include "wsman-util.h"
+#include "u/libu.h"
 
 #include "wsman-errors.h"
 #include "wsman-xml-api.h"
@@ -81,7 +80,7 @@ SER_FINISH_NAMESPACES(wsmid_identify);
 
 
 
-void get_endpoints(GModule *self, void **data) 
+void get_endpoints(void *self, void **data) 
 {		 		
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
@@ -98,13 +97,13 @@ void get_endpoints(GModule *self, void **data)
 }
 
 
-int init( GModule *self, void **data )
+int init( void *self, void **data )
 {
     return 1;
 }
 
 void
-cleanup( GModule *self, void *data )
+cleanup( void  *self, void *data )
 {
 	return;
 }
