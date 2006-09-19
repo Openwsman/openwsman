@@ -53,7 +53,6 @@
 #include "wsman-dispatcher.h"
 
 #include "sfcc-interface.h"
-#include "sfcc-interface_utils.h"
 #include "cim_data.h"
 
 int  CimResource_Custom_EP(SoapOpH op, void* appData ) {

@@ -1,7 +1,6 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
 INCLUDES = \
-	   $(GMODULE_CFLAGS) \
 	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
@@ -9,7 +8,6 @@ INCLUDES = \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
 
 LIBS = \
-       $(GMODULE_LIBS) \
        $(SOUP_LIBS) \
        -lcrypt \
        $(top_builddir)/src/lib/libwsman.la \

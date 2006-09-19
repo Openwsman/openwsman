@@ -3,7 +3,7 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 0.2.0)
+AC_INIT(openwsman, 0.3.0)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -57,7 +57,6 @@ daemon
 
 # check for ssize_t
 AC_CHECK_TYPE(ssize_t, int)
-TYPE_SOCKLEN_T
 
 dnl ----------------------------------------------------------------------
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h sys/signal.h])

@@ -377,8 +377,6 @@ void build_soap_version_fault(env_t* fw)
                 ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_1, SOAP_ENVELOPE);
             }
         }
-
-
         // FIXME: Send fault
         ws_xml_destroy_doc(fault);
     }

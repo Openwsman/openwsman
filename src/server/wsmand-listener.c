@@ -44,8 +44,6 @@
 #include <unistd.h>
 
 #include <glib.h>
-#include <gmodule.h>
-
 
 
 #include <libsoup/soup-address.h>

@@ -4,7 +4,7 @@ INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu
 
-cimifc_INCLUDES  = sfcc-interface_utils.h sfcc-interface.h
+cimifc_INCLUDES  = sfcc-interface.h
 
 libwsmanCimIfc_la_SOURCES = \
 	sfcc-interface.c \

@@ -130,6 +130,7 @@ SoapH ws_soap_initialize()
 	fw->dispatchList = list_create(LISTCOUNT_T_MAX);
 	fw->responseList = list_create(LISTCOUNT_T_MAX);
 	fw->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
+        fw->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
         u_init_lock(fw);
     }	
     ws_xml_parser_initialize((SoapH)fw, g_wsNsData);

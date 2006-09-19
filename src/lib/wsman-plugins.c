@@ -50,12 +50,6 @@
 
 
 
-static void
-free_string_list ( list_t * plugin_list )
-{
-    list_destroy_nodes(plugin_list);
-}
-
 static 
 list_t *scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
 {
@@ -171,18 +165,16 @@ load_plugin(WsManPlugin *self, const char *p_name)
 }
 
 static void
-plugins_foreach_delete( void  *data, void *user_data )
-{
-    plugin_free((WsManPlugin *)data);
-}
-
-static void
 free_plugins(list_t * plugin_list)
 {
     if( plugin_list )
     {
-        // FIXME: g_list_foreach( plugin_list, plugins_foreach_delete, NULL );
-        // FIXME: g_list_free (plugin_list);
+        lnode_t *p = list_first(plugin_list);
+        while (p) {
+            WsManPlugin *plugin = (WsManPlugin *)p->list_data;
+            plugin_free(plugin);
+            p = list_next(plugin_list, p);
+        }
     }
 }
 
