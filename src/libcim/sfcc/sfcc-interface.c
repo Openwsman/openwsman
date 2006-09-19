@@ -169,6 +169,7 @@ CMPIObjectPath *  cim_get_op_from_enum(
             result_op =  CMClone(data.value.ref, NULL);
             CMSetNameSpace(result_op, CIM_NAMESPACE);
             match = 1;
+            if (op) CMRelease(op);
             break;
         }
         if (op) CMRelease(op);
