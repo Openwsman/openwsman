@@ -232,7 +232,7 @@ wsmand_start_server()
 
     WsManListenerH *listener = wsman_dispatch_list_new();
     WsContextH cntx = wsman_init_plugins(listener);           
-    g_return_val_if_fail(cntx != NULL, 1 );            
+    //g_return_val_if_fail(cntx != NULL, 1 );            
 
     SoapH soap = ws_context_get_runtime(cntx);   	
 
@@ -253,7 +253,7 @@ wsmand_start_server()
         server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
         if (!server) {
             debug( "Unable to bind to server port %d", wsmand_options_get_server_port());
-            return 1;
+            return NULL;
         }		
         soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);       	    
         debug("Starting Server on port %d",  soup_server_get_port (server));
@@ -274,7 +274,7 @@ wsmand_start_server()
         if (!ssl_server) 
         {
             debug("Unable to bind to SSL server port %d", wsmand_options_get_server_ssl_port());
-            return 1;
+            return NULL;
         }
         soup_server_add_handler (ssl_server , NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);
 
@@ -290,7 +290,7 @@ wsmand_start_server()
     if (server == NULL && ssl_server == NULL) {
         fprintf(stderr, "Can't start server.\n");
         debug("Can't start server...");
-        return 1;   
+        return NULL;   
     }
 #else
     if (server == NULL) {
