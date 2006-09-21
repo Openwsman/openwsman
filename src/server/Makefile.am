@@ -18,12 +18,12 @@ LIBS = \
 sbin_PROGRAMS = wsmand
 
 wsmand_SOURCES = \
-		 wsmand-listener.h \
-		 wsmand-listener.c \
+		 wsmand-libsoup-listener.h \
+		 wsmand-libsoup-listener.c \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
-		 wsmand-auth.c \
-		 wsmand-auth.h \
+		 wsmand-libsoup-auth.c \
+		 wsmand-libsoup-auth.h \
 		 wsmand.c 
 
 #wsmand_LDADD =     \
