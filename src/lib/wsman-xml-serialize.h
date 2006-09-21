@@ -74,7 +74,7 @@ void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
 int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
 
 void* ws_serializer_alloc(WsContextH cntx, int size);
-int do_serializer_free(WsContextH cntx, void* ptr);
+//int do_serializer_free(WsContextH cntx, void* ptr);
 int ws_serializer_free(WsContextH cntx, void* ptr);
 
 void *xml_serializer_alloc(XmlSerializationData *data, int size, int zeroInit);

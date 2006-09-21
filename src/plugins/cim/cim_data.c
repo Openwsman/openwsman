@@ -57,9 +57,9 @@ SER_END_ITEMS("CIM", CimResource);
 SER_START_END_POINTS(CimResource)
     END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
     END_POINT_TRANSFER_PUT_RAW(CimResource, XML_NS_CIM_CLASS),
-    END_POINT_TRANSFER_ENUMERATE(CimResource, XML_NS_CIM_CLASS),
-    END_POINT_TRANSFER_PULL_RAW(CimResource, XML_NS_CIM_CLASS),
-    END_POINT_TRANSFER_RELEASE(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_ENUMERATE(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_PULL_RAW(CimResource, XML_NS_CIM_CLASS),
+    END_POINT_RELEASE(CimResource, XML_NS_CIM_CLASS),
     END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),
 SER_FINISH_END_POINTS(CimResource);
 
@@ -67,9 +67,11 @@ SER_START_NAMESPACES(CimResource)
     ADD_NAMESPACE( XML_NS_CIM_CLASS),
 SER_FINISH_NAMESPACES(CimResource);
 
-void get_endpoints(void *self, void **data)
+void
+get_endpoints( void *self, 
+               void **data)
 {
-    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *)data;
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;

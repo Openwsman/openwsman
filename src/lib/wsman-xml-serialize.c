@@ -1022,7 +1022,9 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
 }
 
 
-int do_serializer_free(WsContextH cntx, void* ptr)
+static int 
+do_serializer_free(WsContextH cntx,
+                   void* ptr)
 {
     lnode_t* node = NULL;
     SoapH soap = ws_context_get_runtime(cntx);
@@ -1032,7 +1034,6 @@ int do_serializer_free(WsContextH cntx, void* ptr)
         u_lock(soap);
 
         node = list_first(((env_t*)soap)->WsSerializerAllocList);
-
         while( node != NULL )
         {
             WsSerializerMemEntry* entry = (WsSerializerMemEntry*)node->list_data;
@@ -1043,17 +1044,16 @@ int do_serializer_free(WsContextH cntx, void* ptr)
                 if ( ptr != NULL )
                     break;
             }
-
             node = list_next( ((env_t*)soap)->WsSerializerAllocList, node);
         }
-
         u_unlock(soap);
     }
-
     return (node != NULL);
 }
 
-int ws_serializer_free(WsContextH cntx, void* ptr)
+int
+ws_serializer_free( WsContextH cntx, 
+                    void* ptr)
 {
     int retVal = 0;
 
@@ -1063,10 +1063,8 @@ int ws_serializer_free(WsContextH cntx, void* ptr)
     return retVal;
 }
 
-
-
-
-void ws_serializer_free_all(WsContextH cntx)
+void
+ws_serializer_free_all(WsContextH cntx)
 {
     do_serializer_free(cntx, NULL);
 }

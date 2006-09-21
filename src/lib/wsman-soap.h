@@ -606,8 +606,8 @@ hnode_t* create_context_entry(hash_t* h,
         char* name, 
         void* val);
         
-int do_serializer_free(WsContextH cntx, void* ptr);
-int ws_serializer_free(WsContextH cntx, void* ptr);
+// int do_serializer_free(WsContextH cntx, void* ptr);
+// int ws_serializer_free(WsContextH cntx, void* ptr);
 
 void ws_serializer_free_all(WsContextH cntx);
 int soap_add_disp_filter(SoapDispatchH disp,
@@ -705,19 +705,19 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 
 
 
-#define END_POINT_TRANSFER_ENUMERATE(t, ns)\
+#define END_POINT_ENUMERATE(t, ns)\
 	{ WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
 
-#define END_POINT_TRANSFER_RELEASE(t, ns)\
+#define END_POINT_RELEASE(t, ns)\
 	{ WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Release_EP, ns, NULL}
 
-#define END_POINT_TRANSFER_PULL(t, ns)\
+#define END_POINT_PULL(t, ns)\
 	{ WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
 
-#define END_POINT_TRANSFER_PULL_RAW(t, ns)\
+#define END_POINT_PULL_RAW(t, ns)\
 	{ WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL,\
 	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}	  
 

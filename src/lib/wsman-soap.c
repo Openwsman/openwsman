@@ -101,7 +101,9 @@ make_callback_entry( SoapServiceCallback proc,
     return entry;
 }
 
-void ws_initialize_context(WsContextH hCntx, SoapH soap)
+void
+ws_initialize_context( WsContextH hCntx, 
+                       SoapH soap)
 {
     WS_CONTEXT* cntx = (WS_CONTEXT*)hCntx;
     cntx->entries = hash_create(HASHCOUNT_T_MAX, 0, 0);
@@ -110,7 +112,8 @@ void ws_initialize_context(WsContextH hCntx, SoapH soap)
     cntx->soap = soap;
 }
 
-WsContextH ws_create_context(SoapH soap)
+WsContextH 
+ws_create_context(SoapH soap)
 {
     WS_CONTEXT* cntx = (WS_CONTEXT*)u_zalloc(sizeof(WS_CONTEXT));
     if ( cntx ) {
@@ -119,7 +122,8 @@ WsContextH ws_create_context(SoapH soap)
     return (WsContextH)cntx;
 }
 
-SoapH ws_soap_initialize() 
+SoapH
+ws_soap_initialize() 
 {	
     env_t* fw = (env_t*)u_zalloc(sizeof(env_t));
     if ( fw ) {
@@ -354,7 +358,9 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
     return (disp == NULL);
 }
 
-int wsmid_identify_stub(SoapOpH op, void* appData) 
+int 
+wsmid_identify_stub(SoapOpH op, 
+                    void* appData) 
 {
     debug( "Identify called");
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
@@ -734,14 +740,15 @@ void destroy_context_entry(WS_CONTEXT_ENTRY* entry)
 
 void ws_clear_context_entries(WsContextH hCntx)
 {
-    if ( hCntx )
-    {
-        hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
-        if (!hash_isempty(h)) {
-            debug("destroying context: hash not empty");
-            hash_free_nodes(h);
-            hash_destroy(h);
-        }
+    if ( !hCntx ) {
+        return;
+    }
+    hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
+    debug("hash count: %d", hash_count(h));
+    if (!hash_isempty(h)) {
+        debug("destroying context: hash not empty");
+        hash_free_nodes(h);
+        hash_destroy(h);
     }
 }
 
@@ -813,7 +820,10 @@ int ws_set_context_val(WsContextH hCntx, char* name, void* val, int size, int bN
 
 
 
-int ws_set_context_ulong_val(WsContextH cntx, char* name, unsigned long val)
+int
+ws_set_context_ulong_val(WsContextH cntx, 
+                         char* name, 
+                         unsigned long val)
 {
     int retVal = set_context_val(cntx, name, &val, sizeof(unsigned long), 0, 
             WS_CONTEXT_TYPE_ULONG); 
@@ -821,14 +831,18 @@ int ws_set_context_ulong_val(WsContextH cntx, char* name, unsigned long val)
 }
 
 
-
-int ws_set_context_xml_doc_val(WsContextH cntx, char* name, WsXmlDocH val)
+int
+ws_set_context_xml_doc_val( WsContextH cntx, 
+                            char* name, 
+                            WsXmlDocH val)
 {
     int retVal = set_context_val(cntx, name, (void*)val, 0, 1, WS_CONTEXT_TYPE_XMLDOC); 
     return retVal;
 }
 
-WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc)
+WsContextH
+ws_create_ep_context(SoapH soap,
+                     WsXmlDocH doc)
 {
     WsContextH cntx = ws_create_context(soap);
     if ( cntx ) 
@@ -837,12 +851,14 @@ WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc)
 }
 
 
-int ws_destroy_context(WsContextH hCntx)
+int
+ws_destroy_context(WsContextH hCntx)
 {
-    debug("destroying context");
     int retVal = 1;
     WS_CONTEXT* cntx = (WS_CONTEXT*)hCntx;
+    debug("destroying context: %d", cntx->owner);
     if ( cntx && cntx->owner ) {
+        debug("destroying context 2");
         ws_clear_context_entries(hCntx);
         u_free(cntx);
         retVal = 0;
@@ -1071,7 +1087,6 @@ create_op_entry( env_t* fw,
     op_t* entry = (op_t*)u_zalloc(sizeof(op_t));
     if ( entry ) {
         entry->timeoutTicks = timeout;
-        // entry->submittedTicks = SoapGetTicks();
         entry->dispatch = dispatch;
         entry->cntx = ws_create_context((SoapH)fw);       
         entry->data = data;
@@ -1085,17 +1100,22 @@ destroy_op_entry(op_t* entry)
 {    
     if ( entry )
     {
+        debug("destroy op");
         env_t* fw = entry->dispatch->fw;
         if ( fw ) {
             u_lock(fw);
         }
 
-        if ( list_contains(fw->dispatchList, &entry->dispatch->node))
+        if ( list_contains(fw->dispatchList, &entry->dispatch->node)) {
             list_delete(fw->dispatchList, &entry->dispatch->node);
+        }
+        
         unlink_response_entry(fw, entry);
+        
         if ( fw ) {
             u_unlock(fw);
         }
+        
         destroy_dispatch_entry(entry->dispatch);
         ws_destroy_context(entry->cntx);
         u_free(entry);
