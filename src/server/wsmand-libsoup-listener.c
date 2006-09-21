@@ -35,7 +35,6 @@
 #define _GNU_SOURCE
 #include "wsman_config.h"
 
-
 #include <stdlib.h> 
 #include <stdio.h>
 #include <ctype.h>
@@ -66,7 +65,7 @@ extern void start_event_source(SoapH soap);
 #include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
-#include "wsmand-auth.h"
+#include "wsmand-libsoup-auth.h"
 #include "wsman-server.h"
 
 

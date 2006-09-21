@@ -10,7 +10,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <libsoup/soup-server-auth.h>
-#include <wsmand-auth.h>
+#include <wsmand-libsoup-auth.h>
 
 #include <crypt.h>
 #include <time.h>

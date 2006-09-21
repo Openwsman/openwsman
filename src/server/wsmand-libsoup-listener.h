@@ -33,13 +33,8 @@
  */
  
 
-#ifndef SERVER_H_
-#define SERVER_H_
-
-
-
-#define AUTHENTICATION_REALM "OPENWSMAN"
-
+#ifndef WSMAND_LIBSOUP_LISTENER_H_
+#define WSMAND_LIBSOUP_LISTENER_H_
 
 
 WsManListenerH *wsmand_start_server(void);
