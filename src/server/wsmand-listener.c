@@ -74,31 +74,25 @@ int facility = LOG_DAEMON;
 
 
 static void
-print_header (gpointer name, gpointer value, gpointer data)
+print_header ( gpointer name, 
+               gpointer value, 
+               gpointer data)
 {
     debug( "%s: %s", (char *)name, (char *)value);
 }
 
 
 static gboolean
-server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
-        SoupMessage  *msg, gpointer data) 
+server_auth_callback ( SoupServerAuthContext *auth_ctx, 
+                       SoupServerAuth *auth, 
+                       SoupMessage  *msg, 
+                       gpointer data) 
 {
     char *filename = NULL;
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
     soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
 
-#if 0 
-    WsXmlDocH in_doc = wsman_build_inbound_envelope( (env_t *)data, msg);
-    if (wsman_is_identify_request(in_doc)) {
-        wsman_create_identify_response( (env_t *)data, msg);
-        debug( "Skipping authentication...");
-        return TRUE;
-    }
-#endif
-
-    debug( "Authenticating...");
     if (auth) {
         switch (auth->type) {
         case SOUP_AUTH_TYPE_BASIC:
@@ -119,8 +113,10 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
     return FALSE;
 }
 
-static void server_callback (SoupServerContext *context, SoupMessage *msg, 
-        gpointer data) {		
+static void
+server_callback ( SoupServerContext *context,
+                  SoupMessage *msg, 
+                  gpointer data) {		
 
     char *path, *default_path;
     char *content_type;
@@ -168,10 +164,6 @@ static void server_callback (SoupServerContext *context, SoupMessage *msg,
 
     wsman_msg->request.body = (char *)msg->request.body;
     wsman_msg->request.length = msg->request.length;
-    /*
-    wsman_msg->auth_data.username = soup_server_auth_get_user(context->auth);
-    wsman_msg->auth_data.password = context->auth->basic.passwd;
-    */
 
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);
@@ -300,12 +292,6 @@ wsmand_start_server()
     }
 #endif
 
-    // WS-Eventing test code
-    //start_event_source(soap);
-    // End of WS-Eventing test code
-
-    //ws_destroy_context(cntx);
-    // g_free(listener);
     debug("Waiting for requests...");
     return listener;
 }
