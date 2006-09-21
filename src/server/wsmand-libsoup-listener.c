@@ -69,7 +69,6 @@ extern void start_event_source(SoapH soap);
 #include "wsman-server.h"
 
 
-int facility = LOG_DAEMON;
 
 
 static void

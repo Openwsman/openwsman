@@ -165,21 +165,7 @@ debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
 }
 #endif 
 
-static void
-authenticate (SoupSession *session, 
-        SoupMessage *msg,
-        const char *auth_type, 
-        const char *auth_realm,
-        char **username, 
-        char **password, 
-        gpointer data)
-{
-    // printf("authenticating...\n");
-    WsManClient *cl = data;
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    *username = strdup (wsc->data.user);
-    *password = strdup (wsc->data.pwd);
-}
+
 
 
 static void
@@ -203,6 +189,29 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
     *password = g_strdup_printf ("%s", pw);
 
 }
+
+static void
+authenticate (SoupSession *session, 
+        SoupMessage *msg,
+        const char *auth_type, 
+        const char *auth_realm,
+        char **username, 
+        char **password, 
+        gpointer data)
+{
+    // printf("authenticating...\n");
+    WsManClient *cl = data;
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    if (wsc->data.user && wsc->data.pwd) {
+        *username = strdup (wsc->data.user);
+        *password = strdup (wsc->data.pwd);
+        return;
+    }
+    reauthenticate(session, msg, auth_type, auth_realm,
+           username, password, NULL);
+}
+
+
 
 void  
 wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 

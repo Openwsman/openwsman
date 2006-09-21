@@ -18,13 +18,27 @@ LIBS = \
 sbin_PROGRAMS = wsmand
 
 wsmand_SOURCES = \
-		 wsmand-libsoup-listener.h \
-		 wsmand-libsoup-listener.c \
+		 wsmand-listener.h \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
-		 wsmand-libsoup-auth.c \
-		 wsmand-libsoup-auth.h \
 		 wsmand.c 
+
+if USE_SHTTPD
+wsmand_SOURCES += \
+                 shttpd.h \
+                 shttpd.c \
+		 wsmand-shttpd-listener.c \
+		 wsmand-shttpd-listener.h \
+		 wsmand-shttpd-auth.c \
+		 wsmand-shttpd-auth.h 
+else
+wsmand_SOURCES += \
+		 wsmand-libsoup-listener.c \
+		 wsmand-libsoup-listener.h \
+		 wsmand-libsoup-auth.c \
+		 wsmand-libsoup-auth.h 
+endif
+		
 
 #wsmand_LDADD =     \
 #		$(LINK_BEGIN) $(GMODULE_LIBS) $(SOUP_LIBS) $(LINK_END) $(SHARED_ONLY)

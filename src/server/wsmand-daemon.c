@@ -46,6 +46,8 @@
 #include "wsmand-daemon.h"
 
 
+int facility = LOG_DAEMON;
+
 static const char **wsmand_argv = NULL;
 
 static gint server_port =  -1;
@@ -115,6 +117,7 @@ int wsmand_read_config (void)
     filename = (char *)wsmand_options_get_config_file();
     if (!filename) 
         filename = DEFAULT_CONFIG_FILE;
+printf("Using conf file: %s\n", filename);
     cf = g_key_file_new ();
     if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
     {
@@ -288,8 +291,7 @@ wsmand_shutdown_block (void)
 
     if (shutting_down)
     {
-        debug(
-                  "Attempting to block shut-down while shut-down is already in progress!");
+        debug( "Attempting to block shut-down while shut-down is already in progress!");
     }
     ++shutdown_counter;
 }
@@ -311,6 +313,8 @@ shutdown_idle_cb (gpointer user_data)
     gboolean restart = GPOINTER_TO_INT (user_data);
     GSList *iter;    
 
+    debug ("shutdown_idle_cb started");
+                
     for (iter = shutdown_handlers; iter != NULL; iter = iter->next) {
         ShutdownHandler *handler = iter->data;
         
@@ -349,6 +353,7 @@ static void
 do_shutdown (gboolean restart)
 {
     if (shutdown_counter > 0) {
+        debug ("Shutting down pended");
         shutdown_pending = TRUE;
         return;
     }
@@ -362,7 +367,8 @@ do_shutdown (gboolean restart)
 
     shutting_down = TRUE;
 
-    g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
+//    g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
+        shutdown_idle_cb(GINT_TO_POINTER (restart));
 }
 
 void

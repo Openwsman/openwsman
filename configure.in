@@ -28,20 +28,24 @@ AC_ARG_WITH(libsoup,
             [AC_HELP_STRING([--with-libsoup],
                             [use libsoup for transport backend.])])
 AC_ARG_WITH(shttpd,
-            [AC_HELP_STRING([--with-builtin-httpd],
+            [AC_HELP_STRING([--with-shttpd],
                             [use builtin httpd server for transport backend.])])
 
 
 with_libsoup=yes
 if  test "$with_shttpd" = yes; then
+    AC_MSG_RESULT([Using built in transport backend])
    with_shttpd=yes
    with_libsoup=no
 fi 
 dnl libsoup wins
 if test "$with_shttpd" = "$with_libsoup"; then
+    AC_MSG_ERROR([Sorry, only one transport backend can be selected])
    with_libsoup=yes
    with_shttpd=no
 fi 
+AM_CONDITIONAL(USE_LIBSOUP, test "$with_libsoup" == "yes")
+AM_CONDITIONAL(USE_SHTTPD, test "$with_shttpd" == "yes")
 
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then
