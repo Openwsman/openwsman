@@ -38,14 +38,6 @@
 
 #define AUTHENTICATION_REALM "OPENWSMAN"
 
-
-#ifdef LIBSOUP_LISTENER
-#include "wsmand-libsoup-listener.h"
-#else
-#include "wsmand-shttpd-listener.h"
-#endif
-
-
 WsManListenerH *wsmand_start_server(void);
 
 #endif /*SERVER_H_*/

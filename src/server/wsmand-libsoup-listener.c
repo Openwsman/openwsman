@@ -65,7 +65,7 @@ extern void start_event_source(SoapH soap);
 #include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
-#include "wsmand-libsoup-auth.h"
+#include "wsmand-auth.h"
 #include "wsman-server.h"
 
 
@@ -87,25 +87,49 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx,
                        gpointer data) 
 {
     char *filename = NULL;
+    WSmanAuthDigest wsdig;
+    
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
     soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
 
-    if (auth) {
-        switch (auth->type) {
+    if (auth == NULL) {
+        goto NOTAUTHORIZED;
+    }
+    
+    switch (auth->type) {
         case SOUP_AUTH_TYPE_BASIC:
             filename = wsmand_options_get_basic_password_file();
+            if (filename != NULL) {
+                if (ws_authorize_basic(filename,
+                        (char *)soup_server_auth_get_user (auth),
+                        auth->basic.passwd)) {
+                    return TRUE;
+                }
+            }
             break;
         case SOUP_AUTH_TYPE_DIGEST:
             filename = wsmand_options_get_digest_password_file();
+            if (filename != NULL) {
+                wsdig.request_method = auth->digest.request_method;
+                wsdig.username       = (char *)soup_server_auth_get_user(auth);
+                wsdig.realm          = auth->digest.realm;
+                wsdig.digest_uri     = auth->digest.digest_uri;
+                wsdig.nonce          = auth->digest.nonce;
+                wsdig.cnonce         = auth->digest.cnonce;
+                wsdig.qop = auth->digest.integrity ? "auth-int" : "auth";
+                snprintf(wsdig.nonce_count, sizeof (wsdig.nonce_count),
+                                "%.8x", auth->digest.nonce_count);
+                wsdig.digest_response = auth->digest.digest_response;
+                
+                if (ws_authorize_digest(filename, &wsdig)) {
+                        return TRUE;
+                }
+            }           
             break;
-        }
-        if (filename) {
-            if ( authorize_from_file(auth, filename ))
-                return TRUE;		 
-        }
-    } 
+    }
 
+NOTAUTHORIZED:
     soup_message_add_header (msg->response_headers, "Content-Length", "0" );    			
     soup_message_add_header (msg->response_headers, "Connection", "close" );  
     return FALSE;
@@ -225,7 +249,7 @@ wsmand_start_server()
     //g_return_val_if_fail(cntx != NULL, 1 );            
 
     SoapH soap = ws_context_get_runtime(cntx);   	
-
+printf("wsmand_start_server started\n");
     if (!wsmand_options_get_digest()) {
         auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
         auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 

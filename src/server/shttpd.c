@@ -41,7 +41,7 @@
 #endif
 #endif
 
-#define	VERSION		"1.35"		/* Version			*/
+#define	SHTTPD_VERSION		"1.35"		/* Version			*/
 #ifndef CONFIG
 #define	CONFIG		"/usr/local/etc/shttpd.conf"	/* Configuration file		*/
 #endif /* CONFIG */
@@ -546,7 +546,7 @@ del_conn_from_ctx(struct shttpd_ctx *ctx, struct conn *c)
 const char *
 shttpd_version(void)
 {
-	return (VERSION);
+	return (SHTTPD_VERSION);
 }
 
 /*
@@ -1668,7 +1668,7 @@ senderr(struct conn *c, int status, const char *descr,
 	int	n;
 
 	c->shlength = n = Snprintf(msg, sizeof(msg),
-	    "HTTP/1.1 %d %s\r\n%s%s\r\n%d ",
+	    "HTTP/1.1 %d %s\r\nConnection: close\r\n%s%s\r\n%d ",
 	    status, descr, headers, headers[0] == '\0' ? "" : "\r\n", status);
 	va_start(ap, fmt);
 	n += vsnprintf(msg + n, sizeof(msg) - n, fmt, ap);
@@ -3740,7 +3740,7 @@ usage(const char *prog)
 	    "SHTTPD version %s (c) Sergey Lyubka\n"
 	    "usage: %s [OPTIONS] [config_file]\n"
 	    "Note: config line keyword for every option is in the "
-	    "round brackets\n", VERSION, prog);
+	    "round brackets\n", SHTTPD_VERSION, prog);
 	(void) fprintf(stderr, "-A <htpasswd_file> <realm> <user> <passwd>\n");
 
 	for (opt = options; opt->name != NULL; opt++)
@@ -4195,7 +4195,7 @@ show_settings_dialog(struct shttpd_ctx **ctxp)
 		WIDTH - 50, y, 45, 12, "Save");
 	add_control(&p, dia, 0x82, ID_STATIC,
 		WS_CHILD | WS_VISIBLE | WS_DISABLED,
-		5, y, WIDTH - 60, 12,"SHTTPD v." VERSION
+		5, y, WIDTH - 60, 12,"SHTTPD v." SHTTPD_VERSION
 		"      (http://shttpd.sourceforge.net)");
 	
 	dia->cy = ((nelems + 1)/2 + 1) * HEIGHT + 40;
@@ -4273,7 +4273,7 @@ run_gui(struct shttpd_ctx *ctx)
 	hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(ID_ICON));
 	cls.lpfnWndProc = (WNDPROC) WindowProc; 
 	cls.hIcon = hIcon;
-	cls.lpszClassName = "shttpd v." VERSION; 
+	cls.lpszClassName = "shttpd v." SHTTPD_VERSION; 
 
 	if (!RegisterClass(&cls)) 
 		elog(ERR_FATAL, "run_gui: RegisterClass: %d", ERRNO);
@@ -4336,7 +4336,7 @@ printf("main CONFIG = %s\n", CONFIG);
 	(void) signal(SIGINT, sigterm);
 
 	elog(ERR_INFO, "shttpd %s started on port %d, serving %s",
-	    VERSION, ctx->port, ctx->root);
+	    SHTTPD_VERSION, ctx->port, ctx->root);
 
 	while (exit_flag == 0)
 		shttpd_poll(ctx, 5000);

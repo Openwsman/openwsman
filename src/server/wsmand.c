@@ -273,7 +273,9 @@ int
 main (int argc, char **argv)
 {
     struct sigaction sig_action;
+#ifdef LIBSOUP_LISTENER
     GMainLoop *loop;
+#endif
     const char *config_file;
         
     
@@ -314,10 +316,10 @@ main (int argc, char **argv)
         return 1;
     }
 
-
-    loop = g_main_loop_new (NULL, TRUE);
-    g_main_loop_run (loop);
-
+#ifdef LIBSOUP_LISTENER
+   loop = g_main_loop_new (NULL, TRUE);
+   g_main_loop_run (loop);
+#endif
     wsman_plugins_unload(listener);
     return 0;
 }

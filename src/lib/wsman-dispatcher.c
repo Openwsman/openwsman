@@ -384,6 +384,7 @@ void dispatch_inbound_call(env_t *fw, WsmanMessage *msg)
     if (in_doc != NULL) {
         msg->in_doc = in_doc;
     }
+    debug( "Inbound call completed");
     return;
 }
 

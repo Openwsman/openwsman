@@ -62,7 +62,7 @@
 #include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
-#include "wsmand-shttpd-auth.h"
+#include "wsmand-auth.h"
 #include "wsman-server.h"
 #include "wsman-plugins.h"
 
@@ -154,8 +154,8 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
         wsdig.digest_uri     = dig->uri;
         wsdig.nonce          = dig->nonce;
         wsdig.cnonce         = dig->cnonce;
-//      wsdig.integrity        =
-//      wsdig.nonce_count    = dig->nc;
+        wsdig.qop            = dig->qop;
+        strncpy(wsdig.nonce_count, dig->nc, sizeof (wsdig.nonce_count));
         wsdig.digest_response = dig->resp;
 
         return ws_authorize_digest(filename, &wsdig);
@@ -270,9 +270,19 @@ static int server_callback (struct shttpd_arg_t *arg)
     wsman_msg->auth_data.username = soup_server_auth_get_user(context->auth);
     wsman_msg->auth_data.password = context->auth->basic.passwd;
     */
-
+{int i; char *p = wsman_msg->request.body;
+printf("   ****  wsman_msg->request.body ******\n");
+while(p - wsman_msg->request.body < wsman_msg->request.length) {
+        printf("%s\n", p);
+        p = strchr(p, '\0');
+        if (p == NULL) break;
+        p++;
+}
+printf("   ****  wsman_msg->request.body end ******\n");
+}
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);
+
     if (wsman_msg->request.body) {
         free(wsman_msg->request.body);
         wsman_msg->request.body = NULL;

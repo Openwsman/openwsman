@@ -21,22 +21,20 @@ wsmand_SOURCES = \
 		 wsmand-listener.h \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
+                 wsmand-auth.c \
+		 wsmand-auth.h \
 		 wsmand.c 
 
 if USE_SHTTPD
 wsmand_SOURCES += \
                  shttpd.h \
                  shttpd.c \
-		 wsmand-shttpd-listener.c \
-		 wsmand-shttpd-listener.h \
-		 wsmand-shttpd-auth.c \
-		 wsmand-shttpd-auth.h 
+		 wsmand-shttpd-listener.c
+
 else
 wsmand_SOURCES += \
-		 wsmand-libsoup-listener.c \
-		 wsmand-libsoup-listener.h \
-		 wsmand-libsoup-auth.c \
-		 wsmand-libsoup-auth.h 
+		 wsmand-libsoup-listener.c
+
 endif
 		
 

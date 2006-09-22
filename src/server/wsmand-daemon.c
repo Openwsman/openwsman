@@ -115,9 +115,10 @@ int wsmand_read_config (void)
     GKeyFile *cf;
     char *filename;
     filename = (char *)wsmand_options_get_config_file();
-    if (!filename) 
-        filename = DEFAULT_CONFIG_FILE;
+
+
 printf("Using conf file: %s\n", filename);
+
     cf = g_key_file_new ();
     if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
     {
@@ -162,11 +163,15 @@ printf("Using conf file: %s\n", filename);
 
 const char *
 wsmand_options_get_config_file (void) {
+    if (config_file == NULL) {
+         config_file = DEFAULT_CONFIG_FILE;
+    }
     if (config_file != NULL && !g_path_is_absolute (config_file)) {
         char cwd[PATH_MAX];
         char *new_config_file;
 
         getcwd (cwd, PATH_MAX);
+printf("cwd: %s\n", cwd);
           
         new_config_file = g_strconcat (cwd, "/", config_file, NULL);
 
@@ -367,8 +372,11 @@ do_shutdown (gboolean restart)
 
     shutting_down = TRUE;
 
-//    g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
+#ifdef LIBSOUP_LISTENER
+    g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
+#else
         shutdown_idle_cb(GINT_TO_POINTER (restart));
+#endif
 }
 
 void
