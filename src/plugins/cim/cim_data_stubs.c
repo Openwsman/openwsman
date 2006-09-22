@@ -159,14 +159,17 @@ err:
 }
 
 
-int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
+int
+CimResource_Enumerate_EP( WsContextH cntx,
+                          WsEnumerateInfo* enumInfo,
+                          WsmanStatus *status)
 {
     int max_elements = 0;
     WsXmlDocH doc;
     char *enum_mode;
-    debug( "Enumerate Endpoint Called"); 
     char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
+    char *className = strrchr(resourceUri, '/') + 1;
+    debug( "Enumerate Endpoint Called: %s", className); 
 
     CimClientInfo cimclient;
     cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);

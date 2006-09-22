@@ -1254,7 +1254,20 @@ int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc) {
 
 }
 
-char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
+
+
+char*
+wsman_get_class_name ( WsContextH cntx ) 
+{
+       char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+       char *className = strrchr(resourceUri, '/') + 1;
+       u_free(resouceUri);
+       return className;
+}
+
+char*
+wsman_get_resource_uri( WsContextH cntx, 
+                        WsXmlDocH doc
 {
     char* val = NULL;
     if ( doc == NULL )
