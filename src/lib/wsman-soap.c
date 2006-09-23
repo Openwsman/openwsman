@@ -1255,19 +1255,27 @@ int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc) {
 }
 
 
+char*
+wsman_get_method_name ( WsContextH cntx ) 
+{
+    char *m = ws_addressing_get_action(cntx, NULL);
+    char *className = u_strdup(strrchr(m, '/') + 1);
+    u_free(m);
+    return className;
+}
 
 char*
 wsman_get_class_name ( WsContextH cntx ) 
 {
-       char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-       char *className = strrchr(resourceUri, '/') + 1;
-       u_free(resouceUri);
-       return className;
+    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+    char *className = u_strdup(strrchr(resourceUri, '/') + 1);
+    u_free(resourceUri);
+    return className;
 }
 
 char*
 wsman_get_resource_uri( WsContextH cntx, 
-                        WsXmlDocH doc
+                        WsXmlDocH doc )
 {
     char* val = NULL;
     if ( doc == NULL )

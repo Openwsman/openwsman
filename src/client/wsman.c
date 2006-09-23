@@ -353,7 +353,6 @@ printf("wsman_connect\n");
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
-
         break;
     case  ACTION_IDENTIFY: 			
         doc = cl->ft->identify(cl, options);

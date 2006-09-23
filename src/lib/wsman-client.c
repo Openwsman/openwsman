@@ -67,9 +67,8 @@ typedef struct _WsmanClientHandler WsmanClientHandler;
 static list_t *handlers;
 
 void 
-wsman_add_selector_from_uri(
-        WsXmlDocH doc, 
-        char *resourceUri)
+wsman_add_selector_from_uri( WsXmlDocH doc, 
+                             char *resourceUri)
 {
     xmlURIPtr uri = NULL;
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
@@ -97,7 +96,10 @@ wsman_add_selector_from_uri(
 }
 
 
-char* wsman_make_action(char* uri, char* opName) {
+char*
+wsman_make_action( char* uri, 
+                   char* opName)
+{
     int len = strlen(uri) + strlen(opName) + 2;
     char* ptr = (char*)malloc(len);
     if ( ptr )
@@ -111,10 +113,9 @@ WsXmlDocH transfer_create( WsManClient *cl, char *resourceUri, hash_t *prop, act
 }
 
 WsXmlDocH 
-transfer_get(
-        WsManClient *cl,
-        char *resourceUri,
-        actionOptions options) 
+transfer_get( WsManClient *cl,
+              char *resourceUri,
+              actionOptions options) 
 {
     char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
     char *clean_uri = wsman_remove_query_string(resourceUri);
@@ -125,9 +126,8 @@ transfer_get(
             clean_uri , wsc->data.endpoint, options );
 
     wsman_add_selector_from_uri(rqstDoc, resourceUri);
-    //u_free(clean_uri);
-
     respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
+
     ws_xml_destroy_doc(rqstDoc);
     u_free(action);
     u_free(clean_uri);
@@ -135,7 +135,11 @@ transfer_get(
 
 }
 
-WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, hash_t *prop, actionOptions options) 
+WsXmlDocH
+transfer_put( WsManClient *cl,
+              char *resourceUri,
+              hash_t *prop,
+              actionOptions options) 
 {
     char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
     WsXmlDocH get_respDoc = NULL;
@@ -182,7 +186,13 @@ WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, hash_t *prop, actionO
 }
 
 
-WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, hash_t *prop, actionOptions options) {
+WsXmlDocH
+invoke( WsManClient *cl,
+        char *resourceUri,
+        char *method,
+        hash_t *prop,
+        actionOptions options)
+{
     WsXmlDocH respDoc = NULL;
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
@@ -220,7 +230,10 @@ WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *method, hash_t *prop
 
 }
 
-WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options) { 
+WsXmlDocH
+wsman_identify( WsManClient *cl,
+                actionOptions options)
+{
     WsXmlDocH respDoc = NULL;
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(wsc->wscntx), NULL);

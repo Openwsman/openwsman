@@ -247,6 +247,9 @@
 #define WS_CONTEXT_TYPE_BLOB		0x05
 #define WS_CONTEXT_TYPE_FAULT		0x06
 
+
+#define CIM_NAMESPACE_SELECTOR          "__cimnamespace"
+
 #include "wsman-faults.h"
 struct _WsmanStatus {
     WsmanFaultCodeType fault_code;
@@ -861,8 +864,9 @@ int wsman_is_identify_request(WsXmlDocH doc);
 void wsman_status_init(WsmanStatus* s);
 int wsman_check_status( WsmanStatus *s);
 
-char*
-wsman_get_class_name ( WsContextH cntx );
+char* wsman_get_class_name ( WsContextH cntx );
+
+char* wsman_get_method_name ( WsContextH cntx ); 
 
 
 #endif /*SOAP_API_H_*/
