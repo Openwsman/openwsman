@@ -911,7 +911,9 @@ void* ws_get_context_val(WsContextH cntx, char* name, int* size)
 }
 
 
-unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name)
+unsigned long
+ws_get_context_ulong_val( WsContextH cntx,
+                          char* name)
 {
     void* ptr = get_context_val(cntx, name);
     if ( ptr != NULL )
@@ -920,15 +922,14 @@ unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name)
 }
 
 
-SoapOpH soap_create_op(
-        SoapH soap, 
-        char* inboundAction, 
-        char* outboundAction,// optional
-        char* role, 
-        SoapServiceCallback callbackProc, 
-        void* callbackData,
-        unsigned long flags, 
-        unsigned long timeout)
+SoapOpH soap_create_op( SoapH soap, 
+                        char* inboundAction, 
+                        char* outboundAction,// optional
+                        char* role, 
+                        SoapServiceCallback callbackProc, 
+                        void* callbackData,
+                        unsigned long flags, 
+                        unsigned long timeout)
 {
     dispatch_t* disp = NULL;
     op_t* entry = NULL;
@@ -942,11 +943,11 @@ SoapOpH soap_create_op(
     return (SoapOpH)entry;
 }
 
-int soap_add_disp_filter(
-        SoapDispatchH disp,
-        SoapServiceCallback callbackProc, 
-        void* callbackData, 
-        int inbound)
+int
+soap_add_disp_filter( SoapDispatchH disp,
+                      SoapServiceCallback callbackProc,
+                      void* callbackData,
+                      int inbound)
 {
     callback_t* entry = NULL;
     if ( disp )
@@ -960,10 +961,11 @@ int soap_add_disp_filter(
 }
 
 
-int soap_add_op_filter(SoapOpH op, 
-        SoapServiceCallback proc, 
-        void* data, 
-        int inbound)
+int
+soap_add_op_filter( SoapOpH op,
+                    SoapServiceCallback proc,
+                    void* data,
+                    int inbound)
 {
     if ( op )
         return soap_add_disp_filter((SoapDispatchH)((op_t*)op)->dispatch, 
@@ -980,7 +982,9 @@ int soap_add_op_filter(SoapOpH op,
  * @param inbound Direction flag
  * @return XML Document
  */
-WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound)
+WsXmlDocH
+soap_get_op_doc( SoapOpH op,
+                 int inbound)
 {
     WsXmlDocH doc = NULL;
     if ( op )
@@ -992,7 +996,9 @@ WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound)
     return doc;
 }
 
-WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound)
+WsXmlDocH
+soap_detach_op_doc( SoapOpH op,
+                    int inbound)
 {
     WsXmlDocH doc = NULL;
     if ( op ) {
@@ -1009,7 +1015,10 @@ WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound)
     return doc;
 }
 
-int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound)
+int
+soap_set_op_doc( SoapOpH op,
+                 WsXmlDocH doc,
+                 int inbound)
 {
     int retVal = 1;
     if ( op ) {
@@ -1023,7 +1032,9 @@ int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound)
     return retVal;
 }
 
-char* soap_get_op_action(SoapOpH op, int inbound)
+char*
+soap_get_op_action( SoapOpH op,
+                    int inbound)
 {
     char* action = NULL;
     if ( op )
@@ -1036,7 +1047,10 @@ char* soap_get_op_action(SoapOpH op, int inbound)
     return action;
 }
 
-void soap_set_op_action(SoapOpH op, char* action, int inbound)
+void
+soap_set_op_action( SoapOpH op,
+                    char* action,
+                    int inbound)
 {
     if ( op && action )
     {
@@ -1154,13 +1168,16 @@ destroy_dispatch_entry(dispatch_t* entry)
 
 
 
-WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name)
+WsXmlDocH
+ws_get_context_xml_doc_val( WsContextH cntx,
+                            char* name)
 {
     return (WsXmlDocH)get_context_val(cntx, name);
 }
 
 
-void add_response_entry(env_t* fw, op_t* op)
+void
+add_response_entry(env_t* fw, op_t* op)
 {
     debug( "Adding Response Entry");
     u_lock(fw);
@@ -1169,7 +1186,9 @@ void add_response_entry(env_t* fw, op_t* op)
     u_unlock(fw);
 }
 
-char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc) {
+char* wsman_get_enum_mode( WsContextH cntx, 
+                           WsXmlDocH doc) 
+{
     char *enum_mode = NULL;
     if ( doc == NULL )
         doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
@@ -1190,9 +1209,10 @@ char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc) {
     return enum_mode;
 }
 
-void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo) 
+void
+wsman_set_enum_mode( char *enum_mode,
+                     WsEnumerateInfo *enumInfo) 
 {
-
     if (strcmp(enum_mode, WSM_ENUM_EPR) == 0 )
         enumInfo->flags |= FLAG_ENUMERATION_ENUM_EPR;
     else if (strcmp(enum_mode, WSM_ENUM_OBJ_AND_EPR) == 0 )
@@ -1202,8 +1222,10 @@ void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo)
 }
 
 
-int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc) {
-
+int
+wsman_is_optimization( WsContextH cntx,
+                       WsXmlDocH doc)
+{
     int max_elements = 0;
     if ( doc == NULL )
         doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
@@ -1229,8 +1251,10 @@ int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc) {
     return max_elements;
 }
 
-int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc) {
-
+int
+wsen_get_max_elements( WsContextH cntx,
+                       WsXmlDocH doc)
+{
     int max_elements = 0;
     if ( doc == NULL )
         doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
@@ -1291,7 +1315,9 @@ wsman_get_resource_uri( WsContextH cntx,
 }
 
 
-char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
+char*
+wsman_get_system_uri( WsContextH cntx,
+                      WsXmlDocH doc)
 {
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
     WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
@@ -1301,7 +1327,8 @@ char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc)
 
 
 
-char *wsman_remove_query_string(char * resourceUri)
+char*
+wsman_remove_query_string(char * resourceUri)
 {
     char *result;
     xmlURIPtr uri;
@@ -1313,7 +1340,9 @@ char *wsman_remove_query_string(char * resourceUri)
     return result;
 }
 
-hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
+hash_t*
+wsman_get_selector_list( WsContextH cntx,
+                         WsXmlDocH doc)
 {
     hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
     if ( doc == NULL )
@@ -1351,13 +1380,16 @@ hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
     return h;
 }
 
-char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index)
+char*
+wsman_get_selector( WsContextH cntx,
+                    WsXmlDocH doc,
+                    char* name, 
+                    int index)
 {
     char* val = NULL;
     if ( doc == NULL )
         doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
     if ( doc ) {
-        //SoapH soap = WsContextGetRuntime(cntx);
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         WsXmlNodeH node = ws_xml_get_child(header, index, XML_NS_WS_MAN, WSM_SELECTOR_SET);
 
@@ -1369,8 +1401,6 @@ char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index)
             while( (selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR)) )
             {
                 char* attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-                /*WsXmlAttrH attr = WsXmlGetNodeAttr(selector, 0);
-                  char* attrVal = WsXmlGetAttrValue(attr);*/
                 if ( attrVal == NULL )
                     attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
 
@@ -1400,7 +1430,10 @@ char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc)
     return val;
 }
 
-void  wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val)
+void
+wsman_add_selector( WsXmlNodeH baseNode,
+                    char* name,
+                    char* val)
 {
     WsXmlNodeH selector = NULL;
     WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);

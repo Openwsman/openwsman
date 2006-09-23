@@ -99,7 +99,9 @@ err:
 }
 
 
-int  CimResource_Get_EP(SoapOpH op, void* appData )
+int
+CimResource_Get_EP( SoapOpH op,
+                    void* appData )
 {
     debug( "Get Endpoint Called");
     WsXmlDocH doc = NULL;

@@ -125,7 +125,14 @@ transfer_get( WsManClient *cl,
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
             clean_uri , wsc->data.endpoint, options );
 
+
     wsman_add_selector_from_uri(rqstDoc, resourceUri);
+    if (options.cim_ns)
+        wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
+
+    if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc));
+    }
     respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
 
     ws_xml_destroy_doc(rqstDoc);
@@ -134,6 +141,23 @@ transfer_get( WsManClient *cl,
     return respDoc;
 
 }
+
+
+// FIXME
+void
+wsman_add_namespace_as_selector( WsXmlDocH doc, 
+                                 char *_namespace)
+{
+    WsXmlNodeH header = ws_xml_get_soap_header(doc);
+    WsXmlNodeH set = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+    debug("%p",  set);
+    if (set != NULL) {
+        //set = ws_xml_add_child(header, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
+    }
+    return;
+}
+
+
 
 WsXmlDocH
 transfer_put( WsManClient *cl,

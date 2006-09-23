@@ -63,6 +63,8 @@ cim_get_namespace_selector(hash_t *keys)
         namespace = (char *)hnode_get(hn);
     else
         namespace = CIM_NAMESPACE;
+    // get rid of the namepace selector
+    hash_delete(keys, hn);
     return namespace;
 }
 
@@ -179,9 +181,9 @@ CMPIObjectPath *  cim_get_op_from_enum(
     {
         CMPIData data = enumeration->ft->getNext(enumeration, NULL);
         CMPIObjectPath *op = CMClone(data.value.ref, NULL);
-        if (cim_verify_keys(op, keys, &statusPP) != 0 )
+        if (cim_verify_keys(op, keys, &statusPP) != 0 ) {
             continue;
-        else {
+        } else {
             result_op =  CMClone(data.value.ref, NULL);
             CMSetNameSpace(result_op, namespace);
             match = 1;

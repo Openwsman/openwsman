@@ -201,6 +201,7 @@ void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
 
 char *wsenum_get_enum_context(WsXmlDocH doc);
 void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
+void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
 #ifdef __cplusplus
 }

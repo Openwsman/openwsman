@@ -171,6 +171,7 @@ gboolean wsman_parse_options(int argc, char **argv)
     g_option_context_add_main_entries(opt_ctx, options, "wsman");
     g_option_context_add_group(opt_ctx, enum_group);
     g_option_context_add_group(opt_ctx, test_group);
+    g_option_context_add_group(opt_ctx, cim_group);
     g_option_context_add_group(opt_ctx, req_flag_group);
 
     retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
