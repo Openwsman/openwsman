@@ -8,8 +8,8 @@ libwsman_cim_plugin_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu \
 	   -I$(top_srcdir)/src/libcim/sfcc \
-	   $(SFCC_INCLUDES) \
-	   $(GMODULE_CFLAGS)
+	   -I$(top_srcdir)/src/libcim/include \
+	   $(SFCC_INCLUDES) 
 
 LIBS = \
     $(XML_LIBS) \

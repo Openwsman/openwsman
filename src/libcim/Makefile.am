@@ -1,1 +1,1 @@
-SUBDIRS = sfcc
+SUBDIRS = include sfcc 

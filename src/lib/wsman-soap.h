@@ -416,6 +416,7 @@ typedef struct __WsDispatchEndPointInfo WsDispatchEndPointInfo;
 struct __WsSupportedNamespaces
 {
 	char* ns;
+	char* class_prefix;
 };
 typedef struct __WsSupportedNamespaces WsSupportedNamespaces;
 
@@ -733,10 +734,9 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
           t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
 
 #define END_POINT_LAST	{ 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
-#define NAMESPACE_LAST	{ NULL }
-
-#define ADD_NAMESPACE( ns)\
-        {ns}
+#define NAMESPACE_LAST	{ NULL , NULL }
+#define ADD_NAMESPACE( ns , prefix )\
+        {ns, prefix }
 
 
 #define WS_STUB_0(T)\

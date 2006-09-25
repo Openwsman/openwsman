@@ -292,6 +292,7 @@ AC_OUTPUT([
         src/client/Makefile
         src/lib/Makefile
         src/libcim/Makefile
+        src/libcim/include/Makefile
         src/libcim/sfcc/Makefile
         src/plugins/Makefile
         src/plugins/cim/Makefile

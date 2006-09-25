@@ -38,7 +38,6 @@
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
-#include <gmodule.h>
 
 #include "u/libu.h"
 
@@ -63,8 +62,14 @@ SER_START_END_POINTS(CimResource)
     END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),
 SER_FINISH_END_POINTS(CimResource);
 
+
+
+// Should be set from config file
 SER_START_NAMESPACES(CimResource)
-    ADD_NAMESPACE( XML_NS_CIM_CLASS),
+    ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
+    ADD_NAMESPACE( XML_NS_SBLIM, "Linux"),
+    ADD_NAMESPACE( XML_NS_OPENWBEM, "OpenWBEM"),
+    ADD_NAMESPACE( XML_NS_OMC, "OMC"),
 SER_FINISH_NAMESPACES(CimResource);
 
 void
@@ -84,6 +89,11 @@ get_endpoints( void *self,
     ifc->extraData = NULL;
     ifc->endPoints = CimResource_EndPoints;	    	   
     return;
+}
+
+WsSupportedNamespaces* get_namespaces()
+{
+    return CimResource_Namespaces;
 }
 
 int init( void *self, void **data )

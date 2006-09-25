@@ -1284,7 +1284,7 @@ wsman_get_method_name ( WsContextH cntx )
 {
     char *m = ws_addressing_get_action(cntx, NULL);
     char *className = u_strdup(strrchr(m, '/') + 1);
-    u_free(m);
+    //u_free(m);
     return className;
 }
 

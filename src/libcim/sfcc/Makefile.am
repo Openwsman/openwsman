@@ -2,7 +2,8 @@ cimifcincludedir = $(includedir)/openwsman/cim
 INCLUDES = -I$(top_srcdir) \
 	   $(XML_CFLAGS) \
 	   -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/libu
+	   -I$(top_srcdir)/src/libu \
+	   -I$(top_srcdir)/src/libcim/include
 
 cimifc_INCLUDES  = sfcc-interface.h
 

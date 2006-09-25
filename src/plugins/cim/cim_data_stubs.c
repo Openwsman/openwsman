@@ -55,6 +55,67 @@
 #include "sfcc-interface.h"
 #include "cim_data.h"
 
+
+static CimClientInfo
+CimResource_Init(WsContextH cntx)
+{
+    CimClientInfo cimclient;
+    cimclient.namespaces =  get_namespaces();
+    cimclient.cc = NULL;
+    cimclient.selectors = wsman_get_selector_list(cntx, NULL);
+    cimclient.requested_class = wsman_get_class_name(cntx);
+    cimclient.method = wsman_get_method_name(cntx);
+    cimclient.cim_namespace = cim_get_namespace_selector(cimclient.selectors);
+    cimclient.resource_uri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+    return cimclient;
+}
+
+static void
+CimResource_destroy(CimClientInfo *cimclient) {
+    if (cimclient->resource_uri) u_free(cimclient->resource_uri);
+    if (cimclient->method) u_free(cimclient->method);
+    if (cimclient->requested_class) u_free(cimclient->requested_class);
+    return;
+}
+
+int
+CimResource_Get_EP( SoapOpH op,
+                    void* appData )
+{
+    debug( "Get Endpoint Called");
+    WsXmlDocH doc = NULL;
+    WsmanStatus status;
+    CimClientInfo cimclient;
+
+    wsman_status_init(&status);
+    SoapH soap = soap_get_op_soap(op);
+    WsXmlDocH in_doc = NULL;
+
+    in_doc = soap_get_op_doc(op, 1);
+    WsContextH cntx = ws_create_ep_context(soap, in_doc);
+    cimclient = CimResource_Init(cntx);
+    
+
+    if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
+        WsXmlNodeH body = ws_xml_get_soap_body(doc);
+        cim_get_instance_from_enum(&cimclient, cntx, body, &status);
+    }
+
+    if (status.fault_code != 0) {
+        ws_xml_destroy_doc(doc);
+        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, -1, NULL);
+    }
+
+    if ( doc ) {
+        soap_set_op_doc(op, doc, 0);
+    } else {
+        debug( "Invalid doc" );
+    }
+    
+    CimResource_destroy(&cimclient);
+    return 0;
+}
+
 int 
 CimResource_Custom_EP( SoapOpH op, 
                        void* appData )
@@ -63,25 +124,22 @@ CimResource_Custom_EP( SoapOpH op,
     WsXmlDocH doc = NULL;
     CimClientInfo cimclient;
     WsmanStatus status;
+    WsXmlDocH in_doc = NULL;
 
     wsman_status_init(&status);
     SoapH soap = soap_get_op_soap(op);
-    WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+    in_doc = soap_get_op_doc(op, 1); 
+    WsContextH cntx = ws_create_ep_context(soap, in_doc);
+    cimclient = CimResource_Init(cntx);
 
-    cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , &status);
-    if (!cimclient.cc) {
-        goto err;
-    }
-
-    if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
+    if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        cim_invoke_method(cimclient.cc, cntx, body, &status);
+        cim_invoke_method(&cimclient, cntx, body, &status);
     }
 
     if (status.fault_code != 0) {
         ws_xml_destroy_doc(doc);
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
-        if (cimclient.cc) CMRelease(cimclient.cc);
+        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, -1, NULL);
     }
 
     if ( doc ) {
@@ -93,54 +151,9 @@ CimResource_Custom_EP( SoapOpH op,
     ws_destroy_context(cntx);
 
     return 0;
-err:
-    return 1;
-
 }
 
 
-int
-CimResource_Get_EP( SoapOpH op,
-                    void* appData )
-{
-    debug( "Get Endpoint Called");
-    WsXmlDocH doc = NULL;
-    WsmanStatus status;
-    CimClientInfo cimclient;
-
-
-    wsman_status_init(&status);
-    SoapH soap = soap_get_op_soap(op);
-    WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    
-    cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);
-    if (!cimclient.cc) {
-        goto err;
-    }
-
-    if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) {    		
-        WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        cim_get_instance_from_enum(cimclient.cc, cntx, body, &status);
-    }
-
-    if (status.fault_code != 0) {
-        ws_xml_destroy_doc(doc);
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
-    }
-
-    if (cimclient.cc) CMRelease(cimclient.cc);
-
-    if ( doc ) {
-        soap_set_op_doc(op, doc, 0);
-    } else {
-        debug( "Invalid doc" );
-    }
-
-    return 0;
-err:
-    return 1;
-
-}
 
 
 int
@@ -151,15 +164,9 @@ CimResource_Enumerate_EP( WsContextH cntx,
     int max_elements = 0;
     WsXmlDocH doc;
     char *enum_mode;
-    char *className = wsman_get_class_name(cntx);
-    debug( "Enumerate Endpoint Called: %s", className); 
 
-    CimClientInfo cimclient;
-    cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , NULL);
-    if (!cimclient.cc) {
-        goto err;
-    }
-    cim_enum_instances (cimclient.cc, className , enumInfo,  status);
+    CimClientInfo cimclient = CimResource_Init(cntx);
+    cim_enum_instances (&cimclient, enumInfo,  status);
 
     if (status && status->fault_code != 0) {
         goto err;
@@ -186,13 +193,10 @@ CimResource_Enumerate_EP( WsContextH cntx,
             enumInfo->pullResultPtr = NULL;
     }
    
-    if (cimclient.cc) CMRelease(cimclient.cc);
     ws_destroy_context(cntx);
-    u_free(className);
     return 0;
 err:
     ws_destroy_context(cntx);
-    u_free(className);
     return 1;
 }
 
@@ -239,23 +243,19 @@ CimResource_Put_EP( SoapOpH op,
 
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    CimClientInfo cimclient;
-    cim_connect_to_cimom(&cimclient, "localhost", NULL, NULL , &status);
-    if (!cimclient.cc) {
-        goto err;
-    }        
+    CimClientInfo cimclient = CimResource_Init(cntx);
+
     if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) 
     { 
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
-        cim_put_instance_from_enum(cimclient.cc, cntx , in_body, body, &status);
+        cim_put_instance_from_enum(&cimclient, cntx , in_body, body, &status);
     }
 
     if (wsman_check_status(&status) != 0) {
         ws_xml_destroy_doc(doc);
         doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
     }
-    if (cimclient.cc) CMRelease(cimclient.cc);
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
@@ -264,8 +264,6 @@ CimResource_Put_EP( SoapOpH op,
     }
 
     return 0;
-err:
-    return 1;
 }
 
 

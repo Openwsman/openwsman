@@ -368,7 +368,6 @@ struct __XmlSerializerInfo t##_TypeItems[] = {
 
 
 #define SER_START_NAMESPACES(t) WsSupportedNamespaces t##_Namespaces[] = {
-
 #define SER_FINISH_NAMESPACES(t) NAMESPACE_LAST }
 
 #define SER_DECLARE_EP_ARRAY(t)\

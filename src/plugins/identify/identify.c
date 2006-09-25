@@ -75,7 +75,7 @@ SER_FINISH_END_POINTS(wsmid_identify);
 
 
 SER_START_NAMESPACES(wsmid_identify)
-    ADD_NAMESPACE( XML_NS_WSMAN_ID ),
+    ADD_NAMESPACE( XML_NS_WSMAN_ID, NULL ),
 SER_FINISH_NAMESPACES(wsmid_identify);
 
 
