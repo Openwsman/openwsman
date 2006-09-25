@@ -67,9 +67,6 @@ SER_FINISH_END_POINTS(CimResource);
 // Should be set from config file
 SER_START_NAMESPACES(CimResource)
     ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
-    ADD_NAMESPACE( XML_NS_SBLIM, "Linux"),
-    ADD_NAMESPACE( XML_NS_OPENWBEM, "OpenWBEM"),
-    ADD_NAMESPACE( XML_NS_OMC, "OMC"),
 SER_FINISH_NAMESPACES(CimResource);
 
 void

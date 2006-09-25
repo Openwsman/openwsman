@@ -7,10 +7,6 @@
 #define __CIM_DATA_H__
 
 
-#define XML_NS_SBLIM            "http://sblim.sf.net/wbem/wscim/1/cim-schema/2"
-#define XML_NS_OPENWBEM            "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2"
-#define XML_NS_OMC            "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2"
-
 
 // The resource is modeled as a struct
 struct __CimResource

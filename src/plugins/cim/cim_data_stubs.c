@@ -60,7 +60,6 @@ static CimClientInfo
 CimResource_Init(WsContextH cntx)
 {
     CimClientInfo cimclient;
-    cimclient.namespaces =  get_namespaces();
     cimclient.cc = NULL;
     cimclient.selectors = wsman_get_selector_list(cntx, NULL);
     cimclient.requested_class = wsman_get_class_name(cntx);
@@ -94,7 +93,6 @@ CimResource_Get_EP( SoapOpH op,
     in_doc = soap_get_op_doc(op, 1);
     WsContextH cntx = ws_create_ep_context(soap, in_doc);
     cimclient = CimResource_Init(cntx);
-    
 
     if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -181,7 +179,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
         doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
         WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_ENUMERATE_RESP , NULL);       
-        cim_get_enum_items(cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
+        cim_get_enum_items(&cimclient, cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
         if (doc != NULL ) {
             enumInfo->pullResultPtr = doc;
             int index2 = enumInfo->index + 1;
@@ -215,12 +213,13 @@ CimResource_Pull_EP( WsContextH cntx,
 {
     debug( "Pull Endpoint Called");      
     WsXmlDocH doc = NULL;
+    CimClientInfo cimclient = CimResource_Init(cntx);
     doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_PULL_RESP, NULL);       
 
     int max = wsen_get_max_elements(cntx, NULL);
-    cim_get_enum_items(cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
+    cim_get_enum_items(&cimclient, cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
     
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
