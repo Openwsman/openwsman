@@ -34,7 +34,7 @@
 
 
 
-
+#include <stdio.h>
 #include "u/base64.h"
 
 
@@ -43,7 +43,7 @@ static const char ETable[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 static char DTable[256];
 
 static void
-init_DTable()
+init_DTable(void)
 {
         static int inited = 0;
         int i;

@@ -23,7 +23,7 @@
 #include <stddef.h>
 #include <assert.h>
 #define LIST_IMPLEMENTATION
-#include "u/list.h"
+#include "u/libu.h"
 
 #define next list_next
 #define prev list_prev

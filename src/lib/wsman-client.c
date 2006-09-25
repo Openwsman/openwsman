@@ -183,6 +183,8 @@ transfer_put( WsManClient *cl,
             wsc->data.endpoint, options);
 
     wsman_add_selector_from_uri( put_rqstDoc, resourceUri);
+    if (options.cim_ns)
+        wsman_add_selector(ws_xml_get_soap_header(put_rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
 
     WsXmlNodeH put_body = ws_xml_get_soap_body(put_rqstDoc);
     ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0 , NULL, NULL));
@@ -232,7 +234,8 @@ invoke( WsManClient *cl,
             uri , wsc->data.endpoint, options );
 
     wsman_add_selector_from_uri( rqstDoc, resourceUri);
-
+    if (options.cim_ns)
+        wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
     
     WsXmlNodeH argsin;
     if (prop)
@@ -388,9 +391,11 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH rqstDoc = wsman_make_enum_message( wsc->wscntx, op, enumContext, resourceUri, wsc->data.endpoint, options);
 
+    if (options.cim_ns)
+        wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
 
-        if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) == FLAG_ENUMERATION_COUNT_ESTIMATION) {
-            WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
+    if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) == FLAG_ENUMERATION_COUNT_ESTIMATION) {
+        WsXmlNodeH header = ws_xml_get_soap_header(rqstDoc);
         ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
     }
 

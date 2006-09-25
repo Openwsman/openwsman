@@ -86,6 +86,8 @@ cim_find_namespace_for_class ( char *class)
             }
         }
     }
+    if (!ns)
+        ns = u_strdup_printf("%s/%s", XML_NS_CIM_CLASS, class);
     return ns;
 }
 
