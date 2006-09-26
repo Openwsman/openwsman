@@ -68,74 +68,6 @@
 
 
 
-#if 0
-static void
-print_header (gpointer name, gpointer value, gpointer data)
-{
-    debug( "%s: %s", (char *)name, (char *)value);
-}
-
-
-static gboolean
-server_auth_callback ( SoupServerAuthContext *auth_ctx, SoupServerAuth *auth,
-        SoupMessage  *msg, gpointer data) 
-{
-    gboolean authorized = FALSE;
-    char *filename = NULL;
-    soup_message_foreach_header (msg->request_headers, print_header, NULL);
-    soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
-    soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
-
-#if 0 
-    WsXmlDocH inDoc = wsman_build_inbound_envelope( (env_t *)data, msg);
-    if (wsman_is_identify_request(inDoc)) {
-        wsman_create_identify_response( (env_t *)data, msg);
-        debug( "Skipping authentication...");
-        return TRUE;
-    }
-#endif
-
-    debug( "Authenticating...");
-    if (auth) {
-        switch (auth->type) {
-        case SOUP_AUTH_TYPE_BASIC:
-            filename = wsmand_options_get_basic_password_file();
-            if (filename == NULL) {
-                break;
-            }
-            authorized = ws_authorize_basic(filename,
-                (char *)soup_server_auth_get_user (auth), auth->basic.passwd);
-            break;
-        case SOUP_AUTH_TYPE_DIGEST: {
-                WSmanAuthDigest digest;
-                digest.request_method = auth->digest.request_method;
-                digest.digest_uri = auth->digest.digest_uri;            
-                digest.username = auth->digest.user;            
-                digest.realm = auth->digest.realm;            
-                digest.integrity = auth->digest.integrity;            
-                digest.nonce_count = auth->digest.nonce_count;            
-                digest.nonce = auth->digest.nonce;            
-                digest.cnonce = auth->digest.cnonce;            
-                digest.digest_response = auth->digest.digest_response;
-                if (filename == NULL) {
-                        break;
-                }            
-                filename = wsmand_options_get_digest_password_file();
-                authorized = ws_authorize_digest(filename, &digest);
-            }
-            break;
-        }
-    } 
-
-    if (!authorized) {
-        soup_message_add_header (msg->response_headers, "Content-Length", "0" );
-        soup_message_add_header (msg->response_headers, "Connection", "close" );
-    }  
-    return authorized;
-}
-
-#endif
-
 
 
 static int
@@ -270,16 +202,7 @@ static int server_callback (struct shttpd_arg_t *arg)
     wsman_msg->auth_data.username = soup_server_auth_get_user(context->auth);
     wsman_msg->auth_data.password = context->auth->basic.passwd;
     */
-{int i; char *p = wsman_msg->request.body;
-printf("   ****  wsman_msg->request.body ******\n");
-while(p - wsman_msg->request.body < wsman_msg->request.length) {
-        printf("%s\n", p);
-        p = strchr(p, '\0');
-        if (p == NULL) break;
-        p++;
-}
-printf("   ****  wsman_msg->request.body end ******\n");
-}
+
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);
 
@@ -334,9 +257,8 @@ printf("   ****  wsman_msg->request.body end ******\n");
     }
 DONE:
 
-    if (wsman_msg) free(wsman_msg);
-    debug( 
-            "Response (status) %d", status, shttp_reason_phrase(status));
+    u_free(wsman_msg);
+    debug("Response (status) %d", status, shttp_reason_phrase(status));
             
     
     // Here we begin to create response
@@ -346,22 +268,31 @@ DONE:
                 n += snprintf(arg->buf + n, arg->buflen -n,
 	               "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n",
                         SOAP1_2_CONTENT_TYPE);
+                n += snprintf(arg->buf + n, arg->buflen -n,
+                       "Content-Type: application/soap+xml;charset=UTF-8");
                 break;
-       default:
+        default:
 	       n += snprintf(arg->buf + n, arg->buflen -n, "HTTP/1.1 %d %s\r\n",
                         status, shttp_reason_phrase(status));
         break;
     }
-//    n += snprintf(arg->buf + n, arg->buflen -n, "Server
+    n += snprintf(arg->buf + n, arg->buflen -n, "Server: %s/%s\r\n",
+                PACKAGE, VERSION);
+    if (shttp_msg->length > 0) {
+        n += snprintf(arg->buf + n, arg->buflen -n,
+             "Content-Length: %d\r\n", shttp_msg->length);
+    }        
+    n += snprintf(arg->buf + n, arg->buflen -n, "Connection: close\r\n");
 
     if (!shttp_msg || shttp_msg->length == 0) {
-        n += snprintf(arg->buf + n, arg->buflen -n, "\r\n\r\n");
+        n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
         arg->last = 1;
         if (shttp_msg) free(shttp_msg);
         return n;
     }
     
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
+    
     
 CONTINUE:
     k = arg->buflen - n;
@@ -385,8 +316,8 @@ CONTINUE:
     
     // here we can complete
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n\r\n");
-    free(shttp_msg->response);
-    free(shttp_msg);
+    u_free(shttp_msg->response);
+    u_free(shttp_msg);
     arg->last =1;
     arg->state = NULL;
     return n;
@@ -397,8 +328,7 @@ static void
 listener_shutdown_handler(gpointer p)
 {
         int *a = (int *)p;
-        debug(
-                "listener_shutdown_handler started");
+        debug("listener_shutdown_handler started");
         *a = 0;
 }
 
@@ -413,28 +343,6 @@ wsmand_start_server()
         return NULL;
     }
     SoapH soap = ws_context_get_runtime(cntx);    
-#if 0	
-    SoupServer *server = NULL;
-    // Authentication handler   	   	
-    SoupServerAuthContext auth_ctx = { 0 };	
-
-    WsManListenerH *listener = wsman_dispatch_list_new();
-    WsContextH cntx = wsman_init_plugins(listener);           
-    g_return_val_if_fail(cntx != NULL, 1 );            
-
-    SoapH soap = ws_context_get_runtime(cntx);   	
-
-    if (!wsmand_options_get_digest()) {
-        auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
-        auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 
-    } else {
-        auth_ctx.types |= SOUP_AUTH_TYPE_DIGEST;
-        auth_ctx.digest_info.realm = AUTHENTICATION_REALM;
-        auth_ctx.digest_info.allow_algorithms = SOUP_ALGORITHM_MD5;
-        auth_ctx.digest_info.force_integrity = FALSE;
-    }
-    auth_ctx.callback = server_auth_callback;
-#endif
 
     struct shttpd_ctx   *ctx;
     int sock;
@@ -449,6 +357,7 @@ wsmand_start_server()
     }
     ctx = shttpd_init(NULL,
         // "ssl_certificate", "/home/shttpd-1.35/shttpd.pem",
+          "auth_realm", AUTHENTICATION_REALM,
           "debug", "1",
           NULL);
     if (ctx == NULL) {
@@ -473,7 +382,7 @@ wsmand_start_server()
            shttpd_poll(ctx, 1000);
     }
     debug( "shttpd_poll loop canceled");
-    g_free(listener);
+    u_free(listener);
     return listener;
 }
 

@@ -283,12 +283,23 @@ struct conn {
 #define FLAG_FD_READABLE	256
 #define	FLAG_FD_WRITABLE	512
 #define	FLAG_CGI		1024
+#define	FLAG_HEADERS_PARSED	2048
 };
 
 #define	FLAG_IO_READY	(FLAG_SOCK_WRITABLE | FLAG_SOCK_READABLE | \
 		FLAG_FD_READABLE | FLAG_FD_WRITABLE)
 
 enum err_level	{ERR_DEBUG, ERR_INFO, ERR_FATAL};
+#ifdef OPENWSMAN
+#include "u/libu.h"
+
+#define elog(level, ...) \
+    do { \
+        u_log_debug(facility, 1, __VA_ARGS__); \
+        if (level == ERR_FATAL) exit(EXIT_FAILURE); \
+    } while (0)
+#endif
+
 enum hdr_type	{HDR_DATE, HDR_INT, HDR_STRING};
 
 /*
@@ -476,11 +487,15 @@ static const char	*config_file;	/* Configuration file */
  * Prototypes
  */
 static void	io_inc_tail(struct io *io, size_t n);
+#ifndef OPENWSMAN
 static void	elog(enum err_level, const char *fmt, ...);
+#endif
 static int	casecmp(register const char *s1, register const char *s2);
 static int	ncasecmp(register const char *, register const char *, size_t);
 static char	*mystrdup(const char *str);
+#ifndef OPENWSMAN
 static int	Open(const char *path, int flags, int mode);
+#endif
 static int	Stat(const char *path, struct stat *stp);
 static void	disconnect(struct conn *c);
 static int	writeremote(struct conn *c, const char *buf, size_t len);
@@ -492,15 +507,17 @@ static void	senderr(struct conn *c, int status, const char *descr,
                 	const char *headers, const char *fmt, ...);
 static int	montoi(const char *s);
 static time_t	datetosec(const char *s);
+#ifndef OPENWSMAN
 static void	get_dir(struct conn *c);
 static void	do_dir(struct conn *c);
 static void	get_file(struct conn *c);
 static void	do_get(struct conn *c);
+#endif
 static void	urldecode(char *from, char *to);
 static void	killdots(char *file);
 static char	*fetch(const char *src, char *dst, size_t len);
-static void	parse_headers(struct conn *c, char *s);
-static void	parse_request(struct conn *c, const char *s);
+static void     parse_headers(struct conn *c, char *s);
+static void	parse_request(struct conn *c);
 static int	useindex(struct conn *, char *path, size_t maxpath);
 static void	handle(struct conn *c);
 static void	serve(struct shttpd_ctx *,void *);
@@ -906,8 +923,8 @@ do_embedded(struct conn *c)
 				c->nposted += n;
 			}
 			c->remote.head = c->remote.tail = 0;
-			elog(ERR_DEBUG, "do_embedded: %u %u",
-			    c->cclength, c->nposted);
+			elog(ERR_DEBUG, "do_embedded 1: %u %u",
+			   c->cclength, c->nposted);
 		} else {
 			/* Buffer in POST data */
 			n = IO_DATALEN(&c->remote);
@@ -919,17 +936,19 @@ do_embedded(struct conn *c)
 				c->nposted += n;
 			}
 			c->remote.head = c->remote.tail = 0;
-			elog(ERR_DEBUG, "do_embedded: %u %u",
+			elog(ERR_DEBUG, "do_embedded 2: %u %u",
 			    c->cclength, c->nposted);
 		}
 
 		/* Return if not all POST data buffered */
-		if (c->nposted < c->cclength || c->cclength == 0)
+		if (c->nposted < c->cclength || c->cclength == 0) {
+                        elog(ERR_DEBUG,"do_embedded: c->nposted = %d; cclength = %d", c->nposted, c->cclength);
 			return;
-
+                }
 		/* Null-terminate query data */
 		c->query[c->cclength] = '\0';
 	}
+#if 0
 printf("         c->query body\n");
 char *b = c->query;
 int i, slen;
@@ -939,6 +958,7 @@ while (b < c->query + c->cclength) {
 	b += slen + 1;
 }
 printf("         end of c->query body\n");
+#endif
 
 	/* Now, when all POST data is read, we can call user callback */
 	c->local.head += url->func(&arg);
@@ -1215,6 +1235,8 @@ fix_directory_separators(char *path)
 }
 #endif	/* _WIN32 */
 
+
+#ifndef OPENWSMAN
 /*
  * Wrapper around open(), that takes care about directory separators
  */
@@ -1236,6 +1258,7 @@ Open(const char *path, int flags, int mode)
 
 	return (fd);
 }
+#endif
 
 /*
  * The wrapper around stat(), that takes care about directory separators
@@ -1334,6 +1357,8 @@ readdir(DIR *dir)
 }
 #endif /* _WIN32 */
 
+#ifndef OPENWSMAN
+
 /*
  * Log function
  */
@@ -1366,6 +1391,8 @@ elog(enum err_level level, const char *fmt, ...)
 	if (level == ERR_FATAL)
 		exit(EXIT_FAILURE);
 }
+
+#endif
 
 /*
  * Case-insensitive string comparison, a-la strcmp()
@@ -1510,7 +1537,7 @@ writeremote(struct conn *c, const char *buf, size_t len)
 	}
 	
 	elog(ERR_DEBUG, "writeremote: %d %d %u %u %u %d [%d: %s]",
-	    n, len, c->nsent, c->sclength, c->shlength,
+            n, len, c->nsent, c->sclength, c->shlength,
 	    c->remote.done, errno, strerror(errno));
 
 	return (n);
@@ -1740,6 +1767,8 @@ datetosec(const char *s)
 	return (mktime(&tm));
 }
 
+
+#ifndef OPENWSMAN
 /*
  * For a given PUT path, create all intermediate subdirectories
  * for given path. Return 0 if the path itself is a directory,
@@ -1869,6 +1898,7 @@ get_dir(struct conn *c)
 	} while (dp != NULL);
 }
 
+
 /*
  * Schedule GET for the directory
  */
@@ -1979,6 +2009,8 @@ do_get(struct conn *c)
 		c->local.done++;
 }
 
+#endif
+
 /*
  * Decode urlencoded string. from and to may point to the same location
  */
@@ -2087,7 +2119,13 @@ parse_headers(struct conn *c, char *s)
 		if ((s = strchr(s, '\n')) != NULL)
 			s++;
 	}
+        
+        return;
+                
 }
+
+
+#ifndef OPENWSMAN
 
 /*
  * I have snatched MD5 code from the links browser project,
@@ -2391,6 +2429,8 @@ md5(char *buf, ...)
 	bin2str(buf, hash, sizeof(hash));
 }
 
+#endif
+
 #ifndef EMBEDDED
 /*
  * Edit the passwords file.
@@ -2612,7 +2652,7 @@ authorize(struct conn *c, FILE *fp)
 	int		authorized = 0;
 	char		l[256], u[65], ha1[65], dom[65];
 	struct digest	di;
-printf("authorize : %s\n", c->auth);
+
 	if (c->auth && getauth(c, &di) && (c->user = mystrdup(di.user)) != NULL)
 		while (fgets(l, sizeof(l), fp) != NULL) {
 			if (sscanf(l, "%64[^:]:%64[^:]:%64s", u, dom, ha1) != 3)
@@ -2673,8 +2713,7 @@ checkauth(struct conn *c, const char *path)
 {
 	struct digest	di;
         char *p, *pp;
-        char *buf;
-        int n, l;
+        int  l;
         struct shttpd_ctx *ctx = c->ctx;
        
         if (!ctx->bauthf && !ctx->dauthf) {
@@ -2730,8 +2769,8 @@ checkauth(struct conn *c, const char *path)
         if (p == NULL) {
                 return 0;
         }
-        *p = 0;
-                
+        *p++ = 0;
+ 
         return ctx->bauthf(pp, p);
         
 }
@@ -3007,6 +3046,8 @@ addenv(char **env, int *len, char **penv, const char *fmt, const char *val)
 	}
 }
 
+
+#ifndef OPENWSMAN
 /*
  * Prepare the environment for the CGI program, and start CGI program.
  */
@@ -3185,6 +3226,8 @@ iscgi(struct shttpd_ctx *ctx, const char *path)
 }
 #endif /* NO_CGI */
 
+
+
 /*
  * For given directory path, substitute it to valid index file.
  * Return 0 if index file has been found, -1 if not found
@@ -3224,6 +3267,9 @@ useindex(struct conn *c, char *path, size_t maxpath)
 	return (-1);
 }
 
+#endif
+
+
 static void
 send_authorization_request(struct conn *c)
 {
@@ -3241,6 +3287,8 @@ send_authorization_request(struct conn *c)
 	senderr(c, 401, "Unauthorized", buf, "Authorization required");
 }
 
+
+#ifndef OPENWSMAN
 /*
  * Try to open requested file, return 0 if OK, -1 if error.
  * If the file is given arguments using PATH_INFO mechanism,
@@ -3272,14 +3320,19 @@ get_path_info(struct conn *c, char *path)
 	return (-1);
 }
 
+#endif
+
 /*
  * Handle request
  */
 static void
 handle(struct conn *c)
 {
-	char			path[FILENAME_MAX + IO_MAX], buf[1024];
+	char			path[FILENAME_MAX + IO_MAX];
+#ifndef OPENWSMAN
+        char                    buf[1024];
 	FILE			*fp = NULL;
+#endif
 	struct mountpoint	*mp;
 	struct userurl		*userurl;
 
@@ -3396,9 +3449,12 @@ handle(struct conn *c)
  * Parse HTTP request
  */
 static void
-parse_request(struct conn *c, const char *s)
+parse_request(struct conn *c)
 {
 	char	fmt[32];
+        char    *s = c->remote.buf;
+        
+
 
 	(void) snprintf(fmt, sizeof(fmt), "%%%us %%%us %%%us",
 	    (unsigned) sizeof(c->method) - 1, (unsigned) sizeof(c->uri) - 1,
@@ -3426,13 +3482,14 @@ parse_request(struct conn *c, const char *s)
 	}
 
 	/* XXX senderr() should set c->local.done flag! */
-	if (c->local.done == 0) {
-		(void) strcpy(c->saved, s);	/* Save whole request */
-		(void) strcpy(c->ouri, c->uri);	/* Save unmodified URI */
-		parse_headers(c, strchr(s, '\n') + 1);
-		handle(c);
-		c->flags |= FLAG_PARSED;
-	}
+	if (c->local.done != 0) {
+                return;
+        }
+        (void) strcpy(c->saved, s);	/* Save whole request */
+	(void) strcpy(c->ouri, c->uri);	/* Save unmodified URI */
+	parse_headers(c, strchr(s, '\n') + 1);                      
+        handle(c);
+	c->flags |= FLAG_PARSED;
 }
 
 /*
@@ -3473,25 +3530,12 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 		else if (c->reqlen == 0 && IO_SPACELEN(&c->remote) <= 1)
 			senderr(c, 400, "Bad Request", "","Request is too big");
 		else if (c->reqlen > 0) {
-char *b = c->remote.buf; int i, ln;
-printf("    Remout buf\n");
-while (b < c->remote.buf + c->remote.head) {
-	printf("%s\n", b);
-	b += strlen(b) + 1;
-}
-printf("     End of Remout buf head\n");
-b = c->remote.buf + c->remote.head;
-while (b < c->remote.buf + c->remote.tail) {
-	printf("%s\n", b);
-	b += strlen(b) + 1;
-}
-printf("     End of Remout buf\n");
-			parse_request(c, c->remote.buf);
+			parse_request(c);
 		}
 	}
 
 	/* Read from the local endpoint */
-	if (c->io && (c->flags & (FLAG_FD_READABLE | FLAG_FD_WRITABLE))) {
+	if (c->io && (c->flags & (FLAG_FD_READABLE | FLAG_SOCK_READABLE))) {
 		c->io(c);
 		c->expire += EXPIRE_TIME;
 	}
@@ -3570,11 +3614,10 @@ do_accept(struct shttpd_ctx *ctx, void *ptr)
 {
 	int		sock;
 	struct usa	sa;
-printf("do_accept started\n");
+        
 	sa.len = sizeof(sa.u.sin);
 
-	sock = inetd ? fileno(stdin) : accept((int) ptr, &sa.u.sa, &sa.len);
-printf("sock = %d\n", sock);	
+	sock = inetd ? fileno(stdin) : accept((int) ptr, &sa.u.sa, &sa.len);	
 	if (sock == -1)
 		elog(ERR_INFO, "do_accept(%d): %s", (int) ptr, strerror(ERRNO));
 	else
@@ -3649,9 +3692,10 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 			MERGEFD(c->sock, &read_set);
 
 		/* If there is data in local buffer, add to write set */
-		if (IO_DATALEN(&c->local))
+		if (IO_DATALEN(&c->local)) {
+                        elog(ERR_DEBUG, "sock %d ready to write from %d to %d", c->local.tail, c->local.head);
 			MERGEFD(c->sock, &write_set);
-
+                }
 		/* If not selectable, continue */
 		if (c->flags & FLAG_ALWAYS_READY) {
 			msec = 0;
@@ -3691,14 +3735,17 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 			elog(ERR_DEBUG, "%d readable", c->sock);
 			c->flags |= FLAG_SOCK_READABLE;
 		}
-		if (FD_ISSET(c->sock, &write_set))
+		if (FD_ISSET(c->sock, &write_set)) {
 			c->flags |= FLAG_SOCK_WRITABLE;
+                }
+#if 0
 		if (IO_SPACELEN(&c->local) && ((c->flags & FLAG_ALWAYS_READY) ||
 		    (c->fd != -1 && FD_ISSET(c->fd, &read_set))))
 			c->flags |= FLAG_FD_READABLE;
 		if (IO_DATALEN(&c->remote) && ((c->flags & FLAG_ALWAYS_READY) ||
 		    (c->fd != -1 && FD_ISSET(c->fd, &write_set))))
 			c->flags |= FLAG_FD_WRITABLE;
+#endif
 	}
 
 	/* Loop through all connections, handle if IO ready */
@@ -3845,7 +3892,6 @@ do_init(const char *config_file, int argc, char *argv[])
 	{WSADATA data;	WSAStartup(MAKEWORD(2,2), &data);}
 #endif /* _WIN32 */
 
-printf("using port %d\n", ctx->port);
 
 	elog(ERR_DEBUG, "do_init: initialized context %p", ctx);
 
@@ -4294,7 +4340,6 @@ int
 main(int argc, char *argv[])
 {
 	struct shttpd_ctx	*ctx;
-printf("main CONFIG = %s\n", CONFIG);
 	current_time = time(NULL);
 	config_file = CONFIG;
 	if (argc > 1 && argv[argc - 2][0] != '-' && argv[argc - 1][0] != '-')

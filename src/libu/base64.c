@@ -151,7 +151,7 @@ ws_base64_decode(const char *from, int len, char *to)
                 o[2] = (b[2] << 6) | b[3];
                 i = a[2] == '=' ? 1 : (a[3] == '=' ? 2 : 3);        
                 for (j = 0; j < i; j ++) {
-                        *(to + n + j) = o[j]; printf("%c", o[j]);
+                        *(to + n + j) = o[j];
                 }
                 n += i;
                 s += 4;
