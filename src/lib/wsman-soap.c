@@ -70,6 +70,7 @@ WsXmlNsData g_wsNsData[] =
     {XML_NS_WSMAN_ID, "wsmid"},
     {XML_NS_XML_SCHEMA, "xs"},
     {XML_NS_WS_MAN, "wsman"},
+    {XML_NS_CIM_BINDING, "wsmb"},
     {NULL, NULL}
 };
 

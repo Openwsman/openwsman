@@ -62,7 +62,11 @@
  * @param buf Text buffer
  * @param bufsize Buffer size
  */
-void ws_xml_make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsize)
+void
+ws_xml_make_default_prefix ( WsXmlNodeH node, 
+                             char* uri, 
+                             char* buf, 
+                             int bufsize)
 {
     iWsDoc* doc = (iWsDoc*)xml_parser_get_doc(node);
     WsXmlNsH ns;
@@ -515,7 +519,9 @@ ws_xml_create_fault(WsContextH cntx,
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
+int 
+ws_xml_parser_initialize( SoapH soap, 
+                          WsXmlNsData nsData[])
 {
     env_t* fw = (env_t*)soap;
     int retVal = -1;
@@ -543,7 +549,6 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
                     ws_xml_define_ns(node, nsd->uri, nsd->prefix, 0);
                 }
             }
-            //u_free(node);
         }
         u_unlock(fw);
     }
@@ -556,21 +561,17 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
     return retVal;
 }
 
-void ws_xml_parser_destroy(SoapH soap)
+void 
+ws_xml_parser_destroy(SoapH soap)
 {
     env_t* fw = (env_t*)soap;
     if ( fw && fw->parserData )
     {
         u_lock(fw);
-
         ws_xml_destroy_doc(((WsXmlParserData*)fw->parserData)->nsHolder);
-        //xmlCleanupParser();
-        //xmlMemoryDump();
         xml_parser_destroy(soap);
-
         u_free(fw->parserData);
         fw->parserData = NULL;
-
         u_unlock(fw);
     }
 }
@@ -971,7 +972,10 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
 
 
 
-WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char* uri, char* prefix)
+WsXmlNsH
+ws_xml_find_wk_ns( SoapH soap, 
+                   char* uri, 
+                   char* prefix)
 {   
     env_t* fw = (env_t*)soap;
     WsXmlNsH ns = NULL;

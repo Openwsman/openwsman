@@ -407,11 +407,24 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
                 ws_xml_add_child_format(node , XML_NS_WS_MAN, WSENUM_MAX_ELEMENTS, "%d", max_elements);
             }
         }
-        if ((options.flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR) {
+        if ((options.flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR) 
+        {
             ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE, WSM_ENUM_EPR);
-        } else if ((options.flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) {
+        } 
+        else if ((options.flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) 
+        {
             ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE, WSM_ENUM_OBJ_AND_EPR);
         }
+
+        if ((options.flags & FLAG_IncludeSubClassProperties) == FLAG_IncludeSubClassProperties) 
+        {
+            ws_xml_add_child(node, XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE, WSMB_INCLUDE_SUBCLASS_PROP);
+        } 
+        else if ((options.flags & FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties) 
+        {
+            ws_xml_add_child(node, XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE, WSMB_EXCLUDE_SUBCLASS_PROP);
+        }
+
     }
     if (options.filter)
     {

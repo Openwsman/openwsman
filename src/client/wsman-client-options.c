@@ -59,6 +59,7 @@ gboolean  enum_optimize = FALSE;
 gboolean  enum_estimate = FALSE;
 gboolean  dump_request = FALSE;
 static gchar *enum_mode = NULL;
+static gchar *binding_enum_mode = NULL;
 //gboolean  dump_response = FALSE;
 
 static gchar *username = NULL;
@@ -138,6 +139,7 @@ gboolean wsman_parse_options(int argc, char **argv)
     {				
 #ifdef DMTF_WSMAN_SPEC_1        
         { "namespace", 'N', 0, G_OPTION_ARG_STRING, &cim_namespace, "CIM Namespace (default is root/cimv2)", "<namespace>"  },
+        { "binding-enum-mode", 'B', 0, G_OPTION_ARG_STRING, &binding_enum_mode, "CIM binding Enumeration Mode", "none|include|exclude"  },
 #endif
         { NULL }
     };
@@ -349,6 +351,10 @@ char * wsman_options_get_test_file (void)
 char * wsman_options_get_enum_mode (void)
 {	
     return enum_mode;
+}   
+char * wsman_options_get_binding_enum_mode (void)
+{	
+    return binding_enum_mode;
 }   
 char * wsman_options_get_cim_namespace (void)
 {	

@@ -26,6 +26,7 @@ char *wsman_options_get_resource_uri(void);
 hash_t *wsman_options_get_properties (void);
 char *wsman_options_get_invoke_method (void);
 char *wsman_options_get_enum_mode (void);
+char *wsman_options_get_binding_enum_mode (void);
 char *wsman_options_get_cim_namespace (void);
 gboolean wsman_options_get_optimize_enum (void);
 gboolean wsman_options_get_dump_request (void);

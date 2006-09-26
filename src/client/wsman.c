@@ -72,8 +72,7 @@ http_debug_pre_handler (SoupMessage *message, gpointer user_data)
 {
     debug( "[%p]: Receiving response.", message);
 
-    debug(
-              "[%p]: > %d %s",
+    debug( "[%p]: > %d %s",
               message,
               message->status_code,
               message->reason_phrase);
@@ -92,8 +91,7 @@ http_debug_post_handler (SoupMessage *message, gpointer user_data)
                   message->response.body);
     }
 
-    debug(
-              "[%p]: Transfer finished",
+    debug( "[%p]: Transfer finished",
               message);
 } /* http_debug_post_handler */
 
@@ -183,10 +181,10 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
 
     if (strchr(user, '\n'))
         (*(strchr(user, '\n'))) = '\0';
-    *username = g_strdup_printf ("%s", user);
+    *username = u_strdup_printf ("%s", user);
 
     pw = getpass("Password: ");
-    *password = g_strdup_printf ("%s", pw);
+    *password = u_strdup_printf ("%s", pw);
 
 }
 
@@ -322,6 +320,8 @@ printf("wsman_connect\n");
     actionOptions options;
     bzero(&options, sizeof(options));
     int optimize_max_elements = 0;
+
+
     if (wsman_options_get_dump_request()) {
         options.flags |= FLAG_DUMP_REQUEST;
     }
@@ -344,6 +344,7 @@ printf("wsman_connect\n");
 
 
     char *enumeration_mode;
+    char *binding_enumeration_mode;
 
     switch (op) 
     {
@@ -387,12 +388,21 @@ printf("wsman_connect\n");
     case ACTION_ENUMERATION:
 
         enumeration_mode = wsman_options_get_enum_mode();
+        binding_enumeration_mode = wsman_options_get_binding_enum_mode();
         if (enumeration_mode) {
             if (strcmp(enumeration_mode, "epr") == 0 ) 
                 options.flags |= FLAG_ENUMERATION_ENUM_EPR;
             else
                 options.flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
         }
+
+        if (binding_enumeration_mode) {
+            if (strcmp(binding_enumeration_mode, "include") == 0 ) 
+                options.flags |= FLAG_IncludeSubClassProperties;
+            else if (strcmp(binding_enumeration_mode, "exclude") == 0 ) 
+                options.flags |= FLAG_ExcludeSubClassProperties;
+        }
+
         if (wsman_options_get_optimize_enum()) {
             options.flags |= FLAG_ENUMERATION_OPTIMIZATION;
             optimize_max_elements = wsman_options_get_max_elements();

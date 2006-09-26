@@ -90,7 +90,7 @@
 #define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
 #endif
 
-#define XML_NS_WSMAN_FAULT_DETAIL      "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail"
+#define XML_NS_WSMAN_FAULT_DETAIL       "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail"
 
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
 
@@ -198,6 +198,14 @@
 #define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
 #define WSM_FAULT_SUBCODE	        "FaultSubCode"
+
+
+
+
+// WSMB - Binding
+#define WSMB_POLYMORPHISM_MODE          "PolymorphismMode"
+#define WSMB_INCLUDE_SUBCLASS_PROP      "IncludeSubClassProperties"
+#define WSMB_EXCLUDE_SUBCLASS_PROP      "ExcludeSubClassProperties"
 
 // Catalog
 
@@ -483,6 +491,8 @@ typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 #define FLAG_ENUMERATION_ENUM_EPR            4
 #define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    8
 #define FLAG_DUMP_REQUEST                    16
+#define FLAG_IncludeSubClassProperties       32
+#define FLAG_ExcludeSubClassProperties       64
 
 enum __WsmanFilterDialect
 {

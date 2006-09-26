@@ -61,7 +61,7 @@
 
 
 static char * 
-cim_find_namespace_for_class ( char *class) 
+cim_find_namespace_for_class ( CimClientInfo *client, char *class) 
 {
 
     // FIXME: This should be read from a configuration file
@@ -73,13 +73,20 @@ cim_find_namespace_for_class ( char *class)
         { XML_NS_OMC, "OMC" },
         {NULL, NULL}
     };
+
     int i;
     char *ns = NULL;
     char *sub;
+
+    debug("%s", client->method );
+    if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
+            ( strcmp(client->method, TRANSFER_GET) == 0 ||  strcmp(client->method, TRANSFER_PUT) == 0  )) {
+        ns = u_strdup(client->resource_uri);
+        return ns;
+    }
     if ( class ) {
         for(i = 0; _namespaces[i].ns != NULL; i++)
         {
-            debug("NAMESPACE: %s",  _namespaces[i].ns );
             if (_namespaces[i].ns != NULL && ( sub = strstr(class, _namespaces[i].class_prefix))) {
                 ns = u_strdup_printf("%s/%s", _namespaces[i].ns, class);
                 break;
@@ -106,9 +113,8 @@ cim_get_namespace_selector(hash_t *keys)
 }
 
 static void 
-cim_add_keys(
-        CMPIObjectPath * objectpath,
-        hash_t *keys)
+cim_add_keys( CMPIObjectPath * objectpath,
+              hash_t *keys)
 {
     hscan_t hs;
     hnode_t *hn;
@@ -119,10 +125,9 @@ cim_add_keys(
 }
 
 static int
-cim_verify_keys(
-        CMPIObjectPath * objectpath,
-        hash_t *keys,
-        WsmanStatus *statusP)
+cim_verify_keys( CMPIObjectPath * objectpath,
+                 hash_t *keys,
+                 WsmanStatus *statusP)
 {
     debug("verify selectors");
     CMPIStatus rc;
@@ -191,16 +196,17 @@ instance2xml( CimClientInfo *client,
               WsXmlNodeH body)
 {   
    int i;
+   char *new_ns = NULL;
    CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
    CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
    CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
 
    int numproperties = instance->ft->getPropertyCount(instance, NULL);
 
-   WsXmlNodeH r = ws_xml_add_child(body, NULL, (char *)classname->hdl , NULL);
+   new_ns = cim_find_namespace_for_class(client, (char *)classname->hdl);
+   char *final_class = u_strdup(strrchr(new_ns, '/') + 1);
+   WsXmlNodeH r = ws_xml_add_child(body, NULL, final_class , NULL);
    
-   char *new_ns = cim_find_namespace_for_class((char *)classname->hdl);
-   debug("namespace: %s", new_ns);
    WsXmlNsH ns = ws_xml_ns_add(r, new_ns, "p" );
    
    //FIXME
@@ -804,17 +810,18 @@ cim_get_instance_from_enum ( CimClientInfo *client,
     CMPIObjectPath * objectpath;
     CMPIStatus rc;
     WsmanStatus statusP;
-    client->cc = (CMCIClient *)cim_connect_to_cimom( "localhost", NULL, NULL , status);
-    if (!client->cc) {
-        return;
+    CMCIClient * cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
+    client->cc = cc;
+    if (!cc) {
+        goto cleanup;
     }
     wsman_status_init(&statusP);
 
     if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
     {
-        instance = ((CMCIClient *)client->cc)->ft->getInstance(client->cc, objectpath, CMPI_FLAG_IncludeClassOrigin , NULL, &rc);
+        instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_IncludeClassOrigin , NULL, &rc);
         if (rc.rc == 0 ) {
-            if (instance)
+            if (instance) 
                 instance2xml(client, instance, body);
         } else {
             cim_to_wsman_status(rc, status);
@@ -830,7 +837,8 @@ cim_get_instance_from_enum ( CimClientInfo *client,
     debug("fault: %d %d",  status->fault_code, status->fault_detail_code );
 
     if (objectpath) CMRelease(objectpath);
-    if ((CMCIClient *)client->cc) CMRelease((CMCIClient *)client->cc);
+cleanup:
+    if (cc) CMRelease(cc);
     return;
 }
 
