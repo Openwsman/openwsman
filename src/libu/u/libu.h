@@ -44,5 +44,6 @@
 #include <u/md5.h>
 #include <u/list.h>
 #include <u/base64.h>
+#include <u/iniparser.h>
 
 #endif /* !_U_LIBU_H_ */

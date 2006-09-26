@@ -69,10 +69,9 @@ static char *config_file = NULL;
 
 
 
-gboolean wsmand_parse_options(int argc, char **argv) 
+int wsmand_parse_options(int argc, char **argv) 
 {
     GOptionContext *opt_ctx;
-    gboolean retval = FALSE;
     GError *error = NULL;
 
     GOptionEntry options[] = {
@@ -89,20 +88,16 @@ gboolean wsmand_parse_options(int argc, char **argv)
     opt_ctx = g_option_context_new("WS-Management Server");
     g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
     g_option_context_add_main_entries(opt_ctx, options, "wsman");  	
-    retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
+    gboolean retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
     if (error) {
         if (error->message)
             printf ("%s\n", error->message);
-        return FALSE;
-    }
-    if (!wsmand_read_config()) {
-        fprintf(stderr, "Configuration file not found\n");
-        return FALSE;
+        retval = 0;
     }
 
-    g_free(error);
+    u_free(error);
     g_option_context_free(opt_ctx);
-    return retval;    
+    return retval;
 }
 
 const char ** wsmand_options_get_argv (void)
@@ -110,54 +105,23 @@ const char ** wsmand_options_get_argv (void)
     return wsmand_argv;
 }
 
-int wsmand_read_config (void)
+int wsmand_read_config (dictionary *ini)
 {
-    GKeyFile *cf;
-    char *filename;
-    filename = (char *)wsmand_options_get_config_file();
-
-
-printf("Using conf file: %s\n", filename);
-
-    cf = g_key_file_new ();
-    if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
+    if (iniparser_find_entry(ini, "server"))
     {
-        if (g_key_file_has_group (cf, "server"))
-        {
-            if (g_key_file_has_key (cf, "server", "port", NULL))
-                server_port = g_key_file_get_integer (cf, "server", "port", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "ssl_port", NULL))
-                server_ssl_port = g_key_file_get_integer (cf, "server", "ssl_port", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "debug_level", NULL))
-                debug_level = g_key_file_get_integer (cf, "server", "debug_level", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "service_path", NULL))
-                service_path = g_key_file_get_string (cf, "server", "service_path", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "ssl_key_file", NULL))
-                ssl_key_file = g_key_file_get_string (cf, "server", "ssl_key_file", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "ssl_cert_file", NULL))
-                ssl_cert_file = g_key_file_get_string (cf, "server", "ssl_cert_file", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "use_digest", NULL))
-                use_digest = g_key_file_get_boolean (cf, "server", "use_digest", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "digest_password_file", NULL))
-                digest_password_file = g_key_file_get_string (cf, "server", "digest_password_file", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "basic_password_file", NULL))
-                basic_password_file = g_key_file_get_string (cf, "server", "basic_password_file", NULL);
-            
-            if (g_key_file_has_key (cf, "server", "log_location", NULL))
-                log_location = g_key_file_get_string (cf, "server", "log_location", NULL);
-        }
+        server_port = iniparser_getint (ini, "server:port", -1);
+        server_ssl_port =  iniparser_getint(ini, "server::ssl_port",-1);
+        debug_level = iniparser_getint (ini, "server:debug_level", 0);
+        service_path = iniparser_getstr (ini, "server:service_path");
+        ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
+        ssl_cert_file = iniparser_getstr (ini, "server:ssl_cert_file");
+        use_digest = iniparser_getboolean (ini, "server:use_digest", 0);
+        digest_password_file = iniparser_getstr (ini, "server:digest_password_file");
+        basic_password_file = iniparser_getstr (ini, "server:basic_password_file");
+        log_location = iniparser_getstr (ini, "server:log_location");
     } else {
         return 0;
     }
-    g_key_file_free (cf);
     return 1;
 }
 
@@ -175,7 +139,7 @@ printf("cwd: %s\n", cwd);
           
         new_config_file = g_strconcat (cwd, "/", config_file, NULL);
 
-        g_free (config_file);
+        u_free (config_file);
         config_file = new_config_file;
     }
     return config_file;
@@ -326,7 +290,7 @@ shutdown_idle_cb (gpointer user_data)
         if (handler && handler->fn) 
             handler->fn (handler->user_data);
 
-        g_free (handler);
+        u_free (handler);
     }
 
     g_slist_free (shutdown_handlers);

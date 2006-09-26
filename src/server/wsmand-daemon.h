@@ -77,7 +77,7 @@ int wsmand_options_get_foreground_debug (void);
 
 const char **
 wsmand_options_get_argv (void);
-int wsmand_read_config (void);
+int wsmand_read_config (dictionary *ini);
 char *wsmand_options_get_service_path (void);
 
 

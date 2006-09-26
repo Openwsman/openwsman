@@ -273,26 +273,30 @@ int
 main (int argc, char **argv)
 {
     struct sigaction sig_action;
+    dictionary       *ini;
+    char *filename;
+
 #ifdef LIBSOUP_LISTENER
     GMainLoop *loop;
 #endif
-    const char *config_file;
         
     
     g_type_init ();
-    g_thread_init (NULL);
-   
+    g_thread_init (NULL); 
     if (!wsmand_parse_options(argc, argv)) {
         return 1;
     }
 
-    config_file = wsmand_options_get_config_file ();
-    if (config_file && !g_file_test (config_file, G_FILE_TEST_EXISTS)) {
-        g_printerr ("Unable to find config file '%s'\n", config_file);
-        g_printerr ("wsmand aborting\n");
-
-        exit (-1);
-    }		
+    filename = (char *)wsmand_options_get_config_file();
+    ini = iniparser_load(filename);
+    printf("Using conf file: %s\n", filename);
+    if (ini==NULL) {
+        fprintf(stderr, "cannot parse file [%s]", filename);
+        return 1;
+    } else if (!wsmand_read_config(ini)) {
+        fprintf(stderr, "Configuration file not found\n");
+        return 1;
+    }
 
     daemonize ();		
 
@@ -321,6 +325,7 @@ main (int argc, char **argv)
    g_main_loop_run (loop);
 #endif
     wsman_plugins_unload(listener);
+    iniparser_freedict(ini);
     return 0;
 }
 
