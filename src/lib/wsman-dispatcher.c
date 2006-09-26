@@ -410,6 +410,9 @@ wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r, char *uri )
     int i;
     char *ns = NULL;
     die_if(r == NULL);
+    if (r->namespaces == NULL) {
+        return NULL;
+    }
     if ( uri ) {
         for(i = 0; r->namespaces[i].ns != NULL; i++) {
             if ( r->namespaces[i].ns != NULL && strstr(uri, r->namespaces[i].ns) ) {
