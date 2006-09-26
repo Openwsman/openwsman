@@ -1,18 +1,26 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
-INCLUDES = \
-	   $(SOUP_CFLAGS) \
+INCLUDES =  $(GOBJECT_CFLAGS) \
+	    $(GTHREAD_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
+if USE_LIBSOUP
+INCLUDES += $(SOUP_CFLAGS) 
+endif
 
-LIBS = \
-       $(SOUP_LIBS) \
+LIBS = $(GOBJECT_LIBS) \
+       $(GTHREAD_LIBS) \
        -lcrypt \
        $(top_builddir)/src/lib/libwsman.la \
        $(top_builddir)/src/libu/libwsman_utils.la \
        $(top_builddir)/src/lib/libwsman_server.la
+
+if USE_LIBSOUP
+LIBS += $(SOUP_LIBS)
+endif
+
 
 
 sbin_PROGRAMS = wsmand
