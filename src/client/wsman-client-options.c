@@ -182,7 +182,6 @@ gboolean wsman_parse_options(int argc, char **argv)
         _action = argv[1];
         resource_uri = argv[2];
     } else {
-
         if (argv[1] && ( strcmp(argv[1], "identify") == 0 || strcmp(argv[1], "test") == 0 )) {
             _action = argv[1];
             if (wsman_options_get_test_file() &&  strcmp(argv[1], "test") == 0 ) {
@@ -200,52 +199,21 @@ gboolean wsman_parse_options(int argc, char **argv)
             printf ("%s\n", error->message);
         return FALSE;
     }
-
-    if (!wsman_read_client_config()) {
-        fprintf(stderr, "Configuration file not found\n");
-        return FALSE;
-    }
-
-
     g_option_context_free(opt_ctx);
     return retval;
 }
 
 const char * wsman_options_get_config_file (void) {
-    if (config_file != NULL && !g_path_is_absolute (config_file)) {
-        char cwd[PATH_MAX];
-        char *new_config_file;
-
-        getcwd (cwd, PATH_MAX);
-          
-        new_config_file = g_strconcat (cwd, "/", config_file, NULL);
-
-        g_free (config_file);
-        config_file = new_config_file;
-    }
     return config_file;
 }
 
-int wsman_read_client_config (void)
+int wsman_read_client_config (dictionary *ini)
 {
-    GKeyFile *cf;
-    char *filename;
-    filename = (char *)wsman_options_get_config_file();
-    if (!filename) 
-        filename = DEFAULT_CONFIG_FILE;
-    cf = g_key_file_new ();
-    if (g_key_file_load_from_file (cf, filename, G_KEY_FILE_NONE, NULL))
-    {
-        if (g_key_file_has_group (cf, "client"))
-        {
-            
-            if (g_key_file_has_key (cf, "client", "agent", NULL))
-                agent = g_key_file_get_string (cf, "client", "agent", NULL);
-        }
+    if (iniparser_find_entry(ini, "client")) {
+        agent = iniparser_getstr(ini, "client:agent");
     } else {
         return 0;
     }
-    g_key_file_free (cf);
     return 1;
 }
 

@@ -272,11 +272,28 @@ initialize_logging (void)
 int main(int argc, char** argv)
 {     
     int retVal = 0;   
+    char *filename;
+    dictionary       *ini;
 
     g_type_init ();
     g_thread_init (NULL);
     if (!wsman_parse_options(argc, argv))
         return 1;
+
+    filename = (char *)wsman_options_get_config_file();
+    if (!filename)  {
+        filename = DEFAULT_CONFIG_FILE;
+    }
+
+    ini = iniparser_load(filename);
+    printf("Using conf file: %s\n", filename);
+    if (ini==NULL) {
+        fprintf(stderr, "cannot parse file [%s]", filename);
+        return 1;
+    } else if (!wsman_read_client_config(ini)) {
+        fprintf(stderr, "Configuration file not found\n");
+        return 1;
+    }
 
     initialize_logging ();
     WsContextH cntx = ws_create_runtime(NULL);
@@ -284,7 +301,7 @@ int main(int argc, char** argv)
     WsManClient *cl;
     debug( "Certificate: %s", wsman_options_get_cafile());
     if (wsman_options_get_cafile() != NULL) {
- printf("wsman_connect_with_ssl\n");
+    printf("wsman_connect_with_ssl\n");
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),
@@ -295,7 +312,7 @@ int main(int argc, char** argv)
                     NULL,
                     NULL);
     } else {
-printf("wsman_connect\n");
+    printf("wsman_connect\n");
         cl = wsman_connect( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),
@@ -458,10 +475,11 @@ printf("wsman_connect\n");
     /*
     if (doc)
         ws_xml_destroy_doc(doc);
-        */
-    //soap_destroy_fw(cntx);
-    //soap_free(cntx);
+    soap_destroy_fw(cntx);
+    soap_free(cntx);
+    */
 
+    iniparser_freedict(ini);
     return retVal;
 
 }

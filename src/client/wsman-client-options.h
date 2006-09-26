@@ -36,7 +36,7 @@ char * wsman_options_get_filter (void);
 char * wsman_options_get_dialect (void);
 char * wsman_options_get_agent (void);
 const char * wsman_options_get_config_file (void);
-int wsman_read_client_config (void);
+int wsman_read_client_config (dictionary *ini);
 char * wsman_options_get_path (void);
 
 
