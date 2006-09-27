@@ -292,5 +292,6 @@ dictionary * iniparser_load(char * ininame);
  */
 /*--------------------------------------------------------------------------*/
 void iniparser_freedict(dictionary * d);
+hash_t *iniparser_getsec(dictionary * d, char *sec);
 
 #endif

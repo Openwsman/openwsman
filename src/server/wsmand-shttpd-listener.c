@@ -73,26 +73,26 @@
 static int
 digest_auth_callback(char *realm, char *method, struct digest *dig)
 {
-        WSmanAuthDigest wsdig;
-        char *filename = wsmand_options_get_digest_password_file();
-        
-        if (filename == NULL) {
-                debug( "Could not get digest password file name");
-                return 0;
-        }       
-        wsdig.request_method = method;
-        wsdig.username       = dig->user;
-        wsdig.realm          = realm;
-        wsdig.digest_uri     = dig->uri;
-        wsdig.nonce          = dig->nonce;
-        wsdig.cnonce         = dig->cnonce;
-        wsdig.qop            = dig->qop;
-        strncpy(wsdig.nonce_count, dig->nc, sizeof (wsdig.nonce_count));
-        wsdig.digest_response = dig->resp;
+    WSmanAuthDigest wsdig;
+    char *filename = wsmand_options_get_digest_password_file();
 
-        return ws_authorize_digest(filename, &wsdig);
+    if (filename == NULL) {
+        debug( "Could not get digest password file name");
+        return 0;
+    }       
+    wsdig.request_method = method;
+    wsdig.username       = dig->user;
+    wsdig.realm          = realm;
+    wsdig.digest_uri     = dig->uri;
+    wsdig.nonce          = dig->nonce;
+    wsdig.cnonce         = dig->cnonce;
+    wsdig.qop            = dig->qop;
+    strncpy(wsdig.nonce_count, dig->nc, sizeof (wsdig.nonce_count));
+    wsdig.digest_response = dig->resp;
+
+    return ws_authorize_digest(filename, &wsdig);
 }
-        
+
         
 
 static int

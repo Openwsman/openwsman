@@ -95,11 +95,12 @@ WsSupportedNamespaces* get_namespaces()
 
 int init( void *self, void **data )
 {
+    //debug("self config: %s",  (char *)data );
     return 1;
 }
 
 void cleanup( void *self, void *data )
 {
-	return;
+    return;
 }
 

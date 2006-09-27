@@ -1,5 +1,5 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
-SUBDIRS = . u test
+SUBDIRS = . u
 
 wsmanuincludedir = $(includedir)/openwsman/u
 wsmanuinclude_HEADERS = libu_conf.h
