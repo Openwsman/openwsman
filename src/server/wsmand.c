@@ -70,7 +70,7 @@
 
 
 static int log_pid = 0;
-
+#if 0
 static void
 debug_message_handler (const char *str, 
 		      WsmanDebugLevel level, 
@@ -118,6 +118,7 @@ initialize_logging (void)
 
 } /* initialize_logging */
 
+#endif
 
 static void
 signal_handler (int sig_num)
