@@ -147,7 +147,7 @@ int u_log_set_hook(u_log_hook_t hook, void *arg, u_log_hook_t *old, void**parg);
 #define info(...) u_log_info(facility, 0, __VA_ARGS__)
 
 /** \brief same as u_log_debug but using the facility global variable */
-#define debug(...) u_log_debug(facility, 1, __VA_ARGS__)
+#define _debug(...) u_log_debug(facility, 1, __VA_ARGS__)
 
 /** \brief write a log message to stderr */
 #define console(...) \

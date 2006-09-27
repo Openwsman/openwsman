@@ -46,5 +46,6 @@
 #include <u/base64.h>
 #include <u/strlib.h>
 #include <u/iniparser.h>
+#include <u/debug.h>
 
 #endif /* !_U_LIBU_H_ */

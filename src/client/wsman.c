@@ -62,8 +62,7 @@ void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_dat
 static void
 print_header (gpointer name, gpointer value, gpointer user_data)
 {
-    debug(
-              "[%p]: > %s: %s",
+    debug( "[%p]: > %s: %s",
               user_data, (char *) name, (char *) value);
 } /* print_header */
 
@@ -113,8 +112,7 @@ http_debug_request_handler (SoupMessage *message, gpointer user_data)
                                  print_header, message);
 
     if (message->request.length) {
-        debug(
-                  "[%p]: Request body:\n%.*s\n",
+        debug( "[%p]: Request body:\n%.*s\n",
                   message,
                   (int) message->request.length,
                   message->request.body);
@@ -138,9 +136,8 @@ http_debug (SoupMessage *message)
 
 
 
-#if 0
 static void
-debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
+debug_message_handler (const char *str, debug_level_e level, void  *user_data)
 {
     if (level <= wsman_options_get_debug_level ()) 
     {
@@ -161,7 +158,6 @@ debug_message_handler (const char *str, WsmanDebugLevel level, void  *user_data)
     }
 
 }
-#endif 
 
 
 
@@ -265,7 +261,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
 static void
 initialize_logging (void)
 {    
-    // wsman_debug_add_handler (debug_message_handler, WSMAN_DEBUG_LEVEL_ALWAYS, NULL);    
+    debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
 
 } /* initialize_logging */
 

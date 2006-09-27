@@ -70,10 +70,10 @@
 
 
 static int log_pid = 0;
-#if 0
+
 static void
 debug_message_handler (const char *str, 
-		      WsmanDebugLevel level, 
+		      debug_level_e level, 
 		      void *user_data)
 {
     if (log_pid == 0)
@@ -90,15 +90,15 @@ debug_message_handler (const char *str,
         tm = localtime (&now);
         strftime (timestr, 128, "%b %e %T", tm);
 
-        log_msg = g_strdup_printf ("%s [%d] %s\n",
+        log_msg = u_strdup_printf ("%s [%d] %s\n",
                                    timestr, log_pid, str);
        
         write (STDERR_FILENO, log_msg, strlen (log_msg));
         fsync (STDERR_FILENO);
 
-        g_free (log_msg);
+        u_free (log_msg);
     }
-
+#if 0
     if ( level <= wsmand_options_get_syslog_level ()) 
     {
         char *log_name = g_strdup_printf ("wsmand[%d]", log_pid);
@@ -108,17 +108,17 @@ debug_message_handler (const char *str,
         closelog ();
         g_free (log_name);
     }
+#endif
 }
 
 
 static void
 initialize_logging (void)
 {    
-    wsman_debug_add_handler (debug_message_handler, WSMAN_DEBUG_LEVEL_ALWAYS, NULL);    
+    debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
 
 } /* initialize_logging */
 
-#endif
 
 static void
 signal_handler (int sig_num)
@@ -315,7 +315,7 @@ main (int argc, char **argv)
     sig_action.sa_flags = 0;
     sigaction (SIGHUP, &sig_action, NULL);
 
-    // FIXME: initialize_logging ();
+    initialize_logging ();
     WsManListenerH *listener = NULL;
     if ( (listener = wsmand_start_server()) == NULL) {
         return 1;
