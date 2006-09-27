@@ -71,11 +71,10 @@
 
 static int log_pid = 0;
 
-#if 0 
 static void
 debug_message_handler (const char *str, 
-		WsmanDebugLevel level, 
-		void *user_data)
+		      WsmanDebugLevel level, 
+		      void *user_data)
 {
     if (log_pid == 0)
         log_pid = getpid ();
@@ -119,7 +118,6 @@ initialize_logging (void)
 
 } /* initialize_logging */
 
-#endif
 
 static void
 signal_handler (int sig_num)
@@ -135,8 +133,7 @@ signal_handler (int sig_num)
     else
         g_assert_not_reached ();
 
-    debug(
-              "Received %s... Shutting down.", sig_name);
+    debug( "Received %s... Shutting down.", sig_name);
     wsmand_shutdown ();
 } /* signal_handler */
 
@@ -282,8 +279,11 @@ main (int argc, char **argv)
         
     
     g_type_init ();
+#ifdef LIBSOUP_LISTENER
     g_thread_init (NULL); 
-    if (!wsmand_parse_options(argc, argv)) {
+#endif
+    if (!wsmand_parse_options(argc, argv)) 
+    {
         return 1;
     }
 
