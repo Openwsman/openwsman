@@ -1,6 +1,7 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
-INCLUDES =  $(GOBJECT_CFLAGS) \
+INCLUDES =  \
+	    $(GOBJECT_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu \
@@ -11,7 +12,8 @@ INCLUDES += $(SOUP_CFLAGS)  \
 
 endif
 
-LIBS = $(GOBJECT_LIBS) \
+LIBS = \
+       $(GOBJECT_LIBS) \
        -lcrypt \
        $(top_builddir)/src/lib/libwsman.la \
        $(top_builddir)/src/libu/libwsman_utils.la \

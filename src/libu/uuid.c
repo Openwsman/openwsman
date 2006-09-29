@@ -21,7 +21,8 @@
 
 #include "u/uuid.h"
 
-static long mac_addr_sys ( u_char *addr)
+static long
+mac_addr_sys (u_char *addr)
 {
     struct ifreq ifr;
     struct ifreq *IFR;
@@ -63,7 +64,10 @@ static long mac_addr_sys ( u_char *addr)
     return 0;
 }
 
-int generate_uuid (char* buf, int size, int bNoPrefix) 
+int 
+generate_uuid ( char* buf, 
+                int size, 
+                int bNoPrefix) 
 {
 
     static int clock_sequence = 1;
@@ -109,12 +113,6 @@ int generate_uuid (char* buf, int size, int bNoPrefix)
     uuid[9] = timeHigh >> 8 | 0x10;                 // time high/version high bits
     *(short int*)(uuid+10) = (short int)timeMid;
     *(int*)(uuid+12) = timeLow;
-
-    // sha1 the uuid above, to mix things up
-    //icrypto_sha1_calc( uuid, 16, sha1uuid );
-
-    // convert these bytes into chars at output
-
 
     if ( !bNoPrefix )
     {

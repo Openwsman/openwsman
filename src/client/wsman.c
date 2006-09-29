@@ -42,7 +42,7 @@
 #include <glib.h>
 #include "wsman_config.h"
 
-#if 1
+#if LIBSOUP_CLIENT
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
 #endif
@@ -65,7 +65,7 @@
 
 int facility = LOG_DAEMON;
 
-void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
+void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 #ifdef LIBSOUP_CLIENT
 
@@ -219,7 +219,7 @@ authenticate (SoupSession *session,
 
 
 void  
-wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 
+wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
 {
     SoupSession *session = NULL;
     SoupMessage *msg= NULL;
@@ -321,7 +321,7 @@ printf("write_handler: recieved %d bytes\n", len);
 
 
 void  
-wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 
+wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
 {
 #define curl_err(str)  printf("Error = %d; %s\n", r, str)
 
@@ -485,7 +485,9 @@ int main(int argc, char** argv)
     dictionary       *ini;
 
     g_type_init ();
+#ifdef LIBSOUP_CLIENT
     g_thread_init (NULL);
+#endif
     if (!wsman_parse_options(argc, argv))
         return 1;
 
