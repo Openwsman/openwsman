@@ -235,6 +235,30 @@ instance2xml( CimClientInfo *client,
    if (new_ns) u_free(new_ns);
 }
 
+static CMPIConstClass*
+cim_get_class (CimClientInfo *client,
+               char *class, 
+               WsmanStatus *status) 
+{
+    CMPIObjectPath * objectpath;    
+    CMPIConstClass * _class;
+    CMPIStatus rc;
+    CMCIClient* cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
+    if (!cc) {
+        return NULL;
+    }
+    client->cc = (CMCIClient *)cc;
+
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class,  NULL);
+    _class = cc->ft->getClass(cc, objectpath, 0, NULL, &rc);
+
+    /* Print the results */
+    debug( "getClass() rc=%d, msg=%s",
+            rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+    cim_to_wsman_status(rc, status);
+    return _class;            
+}
+
 
 static CMPIObjectPath *  
 cim_get_op_from_enum( CimClientInfo *client,
@@ -361,6 +385,10 @@ path2xml(WsXmlNodeH node,
    if (classname) CMRelease(classname);
    if (namespace) CMRelease(namespace);
 }
+
+
+
+
 
 void
 class2xml( CMPIConstClass* class,
@@ -775,17 +803,11 @@ cim_invoke_method (CimClientInfo *client,
         return;
     }
 
-    hash_t *keys = wsman_get_selector_list(cntx, NULL);
-
-    class = wsman_get_class_name(cntx);
-    method = wsman_get_method_name(cntx);
-    namespace = cim_get_namespace_selector(keys);
     objectpath = newCMPIObjectPath(namespace, class, NULL);
-    resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    cim_add_keys(objectpath, keys);
+    cim_add_keys(objectpath, client->selectors);
 
     argsin = newCMPIArgs(NULL);
-    CMPIData data = cc->ft->invokeMethod( cc, objectpath, method, argsin, NULL, &rc);
+    CMPIData data = cc->ft->invokeMethod( cc, objectpath, client->method, argsin, NULL, &rc);
     debug( "invokeMethod() rc=%d, msg=%s",
             rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
@@ -895,21 +917,15 @@ cim_get_instance (CimClientInfo *client,
     CMPIInstance * instance;
     CMPIObjectPath * objectpath;    
     CMPIStatus rc;
-    char *resourceUri, *class, *namespace;
 
     CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
     if (!cc) {
         return;
     }
 
-    hash_t *keys = wsman_get_selector_list(cntx, NULL);
-    resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    class = wsman_get_class_name(cntx);
-    namespace = cim_get_namespace_selector(keys);
+    objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
 
-    objectpath = newCMPIObjectPath(namespace, class, NULL);
-
-    cim_add_keys(objectpath, keys);
+    cim_add_keys(objectpath, client->selectors);
     instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
     if (instance)
         instance2xml(client, instance, body);

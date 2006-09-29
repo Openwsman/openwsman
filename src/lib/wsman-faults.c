@@ -231,14 +231,14 @@ wsman_generate_fault( WsContextH cntx,
 
 
 
-void wsman_generate_fault_buffer ( 
-        WsContextH cntx,
-        WsXmlDocH in_doc, 
-	WsmanFaultCodeType faultCode,
-        WsmanFaultDetailType faultDetail, 
-        char * fault_msg, 
-        char **buf,  
-        int* len)
+void
+wsman_generate_fault_buffer ( WsContextH cntx, 
+                              WsXmlDocH in_doc, 
+                              WsmanFaultCodeType faultCode, 
+                              WsmanFaultDetailType faultDetail, 
+                              char * fault_msg, 
+                              char **buf,  
+                              int* len)
 {	
     debug( "Fault Code: %d", faultCode);
     WsXmlDocH doc = wsman_generate_fault(cntx, in_doc, faultCode, faultDetail, fault_msg);   
@@ -250,9 +250,8 @@ void wsman_generate_fault_buffer (
 
 
 void 
-wsman_generate_notunderstood_fault(
-        op_t* op, 
-        WsXmlNodeH notUnderstoodHeader) 
+wsman_generate_notunderstood_fault( op_t* op, 
+                                    WsXmlNodeH notUnderstoodHeader) 
 {
     WsXmlNodeH child;
     WsXmlNodeH header;
@@ -278,9 +277,8 @@ wsman_generate_notunderstood_fault(
 
 
 void 
-wsman_generate_encoding_fault( 
-        op_t* op, 
-        WsmanFaultDetailType faultDetail ) 
+wsman_generate_encoding_fault( op_t* op, 
+                               WsmanFaultDetailType faultDetail ) 
 {
     if (op->in_doc == NULL)
         return;

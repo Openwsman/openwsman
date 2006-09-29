@@ -56,7 +56,10 @@ cleanup:
  * @param action the Response action
  * @return Response envelope
  */
-WsXmlDocH ws_create_response_envelope(WsContextH cntx, WsXmlDocH rqstDoc, char* action)
+WsXmlDocH
+ws_create_response_envelope( WsContextH cntx, 
+                             WsXmlDocH rqstDoc, 
+                             char* action)
 {
     SoapH soap = ((WS_CONTEXT*)cntx)->soap;   
     char* soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));   

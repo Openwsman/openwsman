@@ -424,6 +424,10 @@ WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumCont
         {
             ws_xml_add_child(node, XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE, WSMB_EXCLUDE_SUBCLASS_PROP);
         }
+        else if ((options.flags & FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) 
+        {
+            ws_xml_add_child(node, XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE, "None");
+        }
 
     }
     if (options.filter)

@@ -386,11 +386,12 @@ WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which)
 }
 
 
-WsXmlNsH xml_parser_ns_find(WsXmlNodeH node, 
-        char* uri, 
-        char* prefix, 
-        int bWalkUpTree,
-        int bAddAtRootIfNotFound)
+WsXmlNsH 
+xml_parser_ns_find(WsXmlNodeH node, 
+                   char* uri, 
+                   char* prefix, 
+                   int bWalkUpTree, 
+                   int bAddAtRootIfNotFound)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
     xmlNsPtr xmlNs = NULL;
@@ -433,14 +434,13 @@ WsXmlNsH xml_parser_ns_find(WsXmlNodeH node,
             ws_xml_make_default_prefix((WsXmlNodeH)xmlRoot, uri, buf, sizeof(buf));
             prefix = buf;
         }
-
         xmlNs = (xmlNsPtr)xml_parser_ns_add((WsXmlNodeH)xmlRoot, uri, prefix);
     }
-
     return (WsXmlNsH)xmlNs;
 }
 
-char* xml_parser_ns_query(WsXmlNsH ns, int what)
+char*
+xml_parser_ns_query(WsXmlNsH ns, int what)
 {
     xmlNsPtr xmlNs = (xmlNsPtr)ns;
     char* ptr = NULL;
@@ -461,10 +461,12 @@ char* xml_parser_ns_query(WsXmlNsH ns, int what)
 }
 
 
-WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char* uri, char* prefix)
+WsXmlNsH
+xml_parser_ns_add( WsXmlNodeH node, 
+                   char* uri, 
+                   char* prefix)
 {
     xmlNsPtr xmlNs = NULL;
-
     if ( node && uri )
     {
         if ( (xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 0, 0)) != NULL )
@@ -486,7 +488,6 @@ WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char* uri, char* prefix)
             xmlNs = xmlNewNs((xmlNodePtr)node, BAD_CAST uri, BAD_CAST prefix);
         }
     }
-
     return (WsXmlNsH)xmlNs;
 }
 
@@ -610,13 +611,16 @@ int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree)
     return count;
 }
 
-xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value) 
+static xmlNodePtr
+make_new_xml_node( xmlNodePtr base, 
+                   char* uri, 
+                   char* name, 
+                   char* value) 
 {
     xmlNodePtr newNode = NULL;
     xmlNsPtr ns = NULL;
 
-    if ( uri == NULL 
-            ||
+    if ( uri == NULL || 
             (ns = (xmlNsPtr)xml_parser_ns_find((WsXmlNodeH)base, uri, NULL, 1, 1)) != NULL )
     {
         if ( (newNode = xmlNewNode(ns, BAD_CAST name)) != NULL )
@@ -630,19 +634,17 @@ xmlNodePtr make_new_xml_node(xmlNodePtr base, char* uri, char* name, char* value
 }
 
 
-WsXmlNodeH xml_parser_node_add(WsXmlNodeH base,
-        int where, 
-        char* nsUri, 
-        char* localName, 
-        char* value)
+WsXmlNodeH
+xml_parser_node_add(WsXmlNodeH base, 
+                    int where, 
+                    char* nsUri, 
+                    char* localName, 
+                    char* value)
 {
     xmlNodePtr xmlBase = (xmlNodePtr)base;
     xmlNodePtr newNode = 
         make_new_xml_node((where != XML_ELEMENT_NEXT && where != XML_ELEMENT_PREV) 
-                ? xmlBase : xmlBase->parent, 
-                nsUri, 
-                localName, 
-                value); 
+                ? xmlBase : xmlBase->parent, nsUri, localName, value); 
     if ( newNode )
     {
         switch(where)
@@ -672,7 +674,11 @@ int xml_parser_node_remove(WsXmlNodeH node)
 }
 
 
-WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char* uri, char* name, char* value)
+WsXmlAttrH 
+xml_parser_attr_add( WsXmlNodeH node, 
+                     char* uri, 
+                     char* name, 
+                     char* value)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
     xmlNsPtr xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 1, 1);

@@ -109,7 +109,6 @@ typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
 
 
-WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc);
 
 
 WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
@@ -142,7 +141,7 @@ WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc);
 WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node);
 void ws_xml_ns_enum(WsXmlNodeH node, WsXmlNsEnumCallback callback, void *data, int bWalkUpTree);
 WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, char *nsUri, char *prefix, int bWalkUpTree);
-int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void *_data);
+// int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void *_data);
 int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree);
 char *ws_xml_get_ns_prefix(WsXmlNsH ns);
 char *ws_xml_get_ns_uri(WsXmlNsH ns);
@@ -175,16 +174,19 @@ void ws_xml_make_default_prefix(WsXmlNodeH node, char* uri, char* buf, int bufsi
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node);
 void ws_xml_dump_doc(FILE* f, WsXmlDocH doc );
 
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name);
+/* char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name); 
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive);
+
+*/
 void ws_xml_free_memory(void* ptr);
 
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
 
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
-
+/*
 WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc);
-
+WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc);
+*/
 void ws_xml_parser_destroy(SoapH soap);
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
@@ -204,6 +206,7 @@ int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int ws_xml_utf8_strlen(char *buf);
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc);
+void ws_xml_set_node_lang(WsXmlNodeH node, char* lang);
 
 /** @} */
 

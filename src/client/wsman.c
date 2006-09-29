@@ -414,6 +414,8 @@ int main(int argc, char** argv)
                 options.flags |= FLAG_IncludeSubClassProperties;
             else if (strcmp(binding_enumeration_mode, "exclude") == 0 ) 
                 options.flags |= FLAG_ExcludeSubClassProperties;
+            else if (strcmp(binding_enumeration_mode, "none") == 0 ) 
+                options.flags |= FLAG_POLYMORPHISM_NONE;
         }
 
         if (wsman_options_get_optimize_enum()) {

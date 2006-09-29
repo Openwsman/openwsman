@@ -59,9 +59,7 @@
 WsXmlNsData g_wsNsData[] =
 {
     {XML_NS_SOAP_1_2, "s"},
-    {XML_NS_XML_NAMESPACES, "xml"}, // SUN stack requires the prefix to be xml
     {XML_NS_ADDRESSING, "wsa"},
-    {XML_NS_DISCOVERY, "wsd"},
     {XML_NS_EVENTING, "wse"},
     {XML_NS_ENUMERATION, "wsen"},
     {XML_NS_SCHEMA_INSTANCE, "xsi"},

@@ -80,7 +80,8 @@ ws_xml_make_default_prefix ( WsXmlNodeH node,
             buf[0] = 0;
 }
 
-static int is_xml_val_true(char* text)
+static int
+is_xml_val_true( char* text )
 {
     int retVal = 0;
 
@@ -108,7 +109,10 @@ static int is_xml_val_true(char* text)
  * @param callback Namespace Enumeration callback
  * @param data Callback data 
  */
-static int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* data)
+static int 
+ns_enum_at_node( WsXmlNodeH node, 
+                 WsXmlNsEnumCallback callback, 
+                 void* data)
 {
     int retVal = 0;
 
@@ -127,7 +131,10 @@ static int ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void* 
 }
 
 
-static char* make_qname(WsXmlNodeH node, char* uri, char* name)
+static char*
+make_qname( WsXmlNodeH node, 
+            char* uri, 
+            char* name)
 {
     char* buf = NULL; 
     if ( name && uri && name )
@@ -194,9 +201,9 @@ WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
  * walks up the parent chain
  */
 void ws_xml_ns_enum(WsXmlNodeH node, 
-        WsXmlNsEnumCallback callback,
-        void* data,
-        int bWalkUpTree) 
+                    WsXmlNsEnumCallback callback,
+                    void* data,
+                    int bWalkUpTree) 
 {
     while(node)
     {
@@ -213,6 +220,8 @@ void ws_xml_ns_enum(WsXmlNodeH node,
  * @return The XML node with the operation
  *
  */
+
+/*
 WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
 {
     WsXmlNodeH node = NULL;
@@ -223,6 +232,7 @@ WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
 
     return node;
 }
+*/
 
 /**
  * Create an empty envelope with a <b>Header</b> and a <b>Body</b> 
@@ -389,11 +399,13 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
  * @param name Node name
  * @return found text 
  */
+/*
 char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
     return ws_xml_find_text_in_tree(root, nsUri, name, 1);
 }
+*/
 
 /**
  * Find a text in a XML tree
@@ -403,6 +415,7 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
  * @param bRecursive Recursive flag
  * @return found text 
  */
+/*
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive)
 {
     WsXmlNodeH node = head;
@@ -415,6 +428,7 @@ char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRe
 
     return NULL;
 }
+*/
 
 /**
  * Free Memory
@@ -498,6 +512,7 @@ ws_xml_create_fault(WsContextH cntx,
             node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
             ws_xml_set_node_text(node, reason);
             //ws_xml_add_node_attr(node, XML_NS_XML_NAMESPACES, SOAP_LANG, !lang ? "en" : lang);
+            ws_xml_set_node_lang(node, !lang ? "en" : lang );
         }
         if ( addDetailProc ) {
             addDetailProc(fault, addDetailProcData);
@@ -1014,6 +1029,7 @@ WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc)
  * @param doc XML document
  * @return XML node with fault, if NULL is returned, then the document is not a fault
  */
+/*
 WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
 {
     char* soapUri = ws_xml_get_node_name_ns(ws_xml_get_doc_root(doc));
@@ -1024,6 +1040,7 @@ WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
 
     return node;
 }
+*/
 
 
 
@@ -1042,33 +1059,6 @@ WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
     return parent;
 }
 
-
-/**
- * Find namespace in an XML node
- * @param node XML node
- * @param nsUri Namespace URI
- * @param prefix Prefix
- * @param bWalkUpTree Flag FIXME
- * @brief
- * Looks up nsUri defined at the node and optionally
- * (if bIncludeParents isn't zero) walks up the parent chain
- * returns prefix for the namespace and node where it defined
- */
-WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, char* nsUri, char* prefix, int bWalkUpTree)
-{
-    WsXmlFindNsData data;
-
-    data.node = NULL;
-    data.ns = NULL;
-    data.nsUri = nsUri;
-    data.prefix = prefix;
-
-    if ( (nsUri || prefix) && node )
-        ws_xml_ns_enum(node, ws_xml_find_ns_callback, &data, bWalkUpTree);
-
-    return data.ns;
-}
-
 /**
  * Callback for finding Namespaces
  * @param node XML node
@@ -1076,11 +1066,15 @@ WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, char* nsUri, char* prefix, int bWalkUpT
  * @param _data Callback Data
  * @return status
  */
-int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void* _data)
+static int
+ws_xml_find_ns_callback( WsXmlNodeH node, 
+                         WsXmlNsH ns, 
+                         void* _data)
 {
     WsXmlFindNsData* data = (WsXmlFindNsData*)_data;
     char* curUri = ws_xml_get_ns_uri(ns);
     char* curPrefix = ws_xml_get_ns_prefix(ns);
+    // debug("uri: %s prefix: %s", curUri, curPrefix );
 
     if ( (data->nsUri != NULL && !strcmp(curUri, data->nsUri))
             ||
@@ -1095,7 +1089,40 @@ int ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void* _data)
     return (data->ns != NULL);
 }
 
-char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
+
+/**
+ * Find namespace in an XML node
+ * @param node XML node
+ * @param nsUri Namespace URI
+ * @param prefix Prefix
+ * @param bWalkUpTree Flag FIXME
+ * @brief
+ * Looks up nsUri defined at the node and optionally
+ * (if bIncludeParents isn't zero) walks up the parent chain
+ * returns prefix for the namespace and node where it defined
+ */
+WsXmlNsH 
+ws_xml_find_ns( WsXmlNodeH node, 
+                char* nsUri, 
+                char* prefix, 
+                int bWalkUpTree)
+{
+    WsXmlFindNsData data;
+
+    data.node = NULL;
+    data.ns = NULL;
+    data.nsUri = nsUri;
+    data.prefix = prefix;
+
+    if ( (nsUri || prefix) && node )
+        ws_xml_ns_enum(node, ws_xml_find_ns_callback, &data, bWalkUpTree);
+
+    return data.ns;
+}
+
+
+char*
+ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
 {
     char* prefix = NULL;
     if ( node )
@@ -1104,7 +1131,8 @@ char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
 
 }
 
-char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
+char*
+ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
 {
     char* uri = NULL;
     if ( node )
@@ -1120,7 +1148,9 @@ char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
  * @param bWalkUpTree Tree Flag
  * @return Count
  */
-int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree)
+int
+ws_xml_get_ns_count( WsXmlNodeH node, 
+                     int bWalkUpTree)
 {
     int count = xml_parser_get_count(node, XML_COUNT_NS, bWalkUpTree);
 
@@ -1133,7 +1163,8 @@ int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree)
  * @param ns Namespace
  * @return Prefix of Namespace
  */
-char* ws_xml_get_ns_prefix(WsXmlNsH ns)
+char* 
+ws_xml_get_ns_prefix(WsXmlNsH ns)
 {
     if ( ns )
         return xml_parser_ns_query(ns, XML_NS_PREFIX);
@@ -1146,7 +1177,8 @@ char* ws_xml_get_ns_prefix(WsXmlNsH ns)
  * @param ns Namespace
  * @return URI of namespace, NULL of not found 
  */
-char* ws_xml_get_ns_uri(WsXmlNsH ns)
+char*
+ws_xml_get_ns_uri(WsXmlNsH ns)
 {
     if ( ns )
         return xml_parser_ns_query(ns, XML_NS_URI);
@@ -1316,10 +1348,13 @@ int ws_xml_get_node_attr_count(WsXmlNodeH node)
 }
 
 
-WsXmlAttrH ws_xml_add_node_attr(WsXmlNodeH node, char* nsUri, char* name, char* value)
+WsXmlAttrH
+ws_xml_add_node_attr( WsXmlNodeH node, 
+                      char* nsUri, 
+                      char* name, 
+                      char* value)
 {
     WsXmlAttrH attr = NULL;
-
     if ( node && name )
         attr = xml_parser_attr_add(node, nsUri, name, value);
 
@@ -1351,7 +1386,7 @@ WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
             char* curNsUri = ws_xml_get_attr_ns(attr);
             char* curName = ws_xml_get_attr_name(attr);
 
-            if (         (attrNs == curNsUri)
+            if ((attrNs == curNsUri)
                     ||
                     (attrNs != NULL
                      &&
@@ -1510,6 +1545,11 @@ int ws_xml_set_node_text(WsXmlNodeH node, char* text)
     return retVal;
 }
 
+void ws_xml_set_node_lang(WsXmlNodeH node, char* lang)
+{
+    xmlNodeSetLang((xmlNodePtr )node, BAD_CAST lang);
+}
+
 
 // Utitlities
 /*
@@ -1534,7 +1574,11 @@ void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
 }
 
 
-WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix) {
+WsXmlNsH 
+ws_xml_ns_add( WsXmlNodeH node, 
+               char* uri, 
+               char* prefix)
+{
     return xml_parser_ns_add(node, uri, prefix );
 }
 

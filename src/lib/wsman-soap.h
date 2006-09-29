@@ -493,6 +493,7 @@ typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 #define FLAG_DUMP_REQUEST                    16
 #define FLAG_IncludeSubClassProperties       32
 #define FLAG_ExcludeSubClassProperties       64
+#define FLAG_POLYMORPHISM_NONE               128
 
 enum __WsmanFilterDialect
 {
