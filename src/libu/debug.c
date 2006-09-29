@@ -108,7 +108,11 @@ debug_full (debug_level_e  level,
 {
     va_list args;
     char *str;
-
+    
+    if (handlers == NULL) {
+        return;
+    }
+    
     va_start (args, format);
     str = u_strdup_vprintf (format, args);
     va_end (args);

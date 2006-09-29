@@ -40,8 +40,17 @@
 #include <unistd.h>
 
 #include <glib.h>
+#include "wsman_config.h"
+
+#if 1
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
+#endif
+
+#ifdef LIBCURL_CLIENT
+#include <curl/curl.h>
+#include <curl/easy.h>
+#endif
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -58,6 +67,7 @@ int facility = LOG_DAEMON;
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data);
 
+#ifdef LIBSOUP_CLIENT
 
 static void
 print_header (gpointer name, gpointer value, gpointer user_data)
@@ -136,6 +146,7 @@ http_debug (SoupMessage *message)
 
 
 
+
 static void
 debug_message_handler (const char *str, debug_level_e level, void  *user_data)
 {
@@ -161,7 +172,6 @@ debug_message_handler (const char *str, debug_level_e level, void  *user_data)
 
 
 
-
 static void
 reauthenticate (SoupSession *session, SoupMessage *msg,
         const char *auth_type, const char *auth_realm,
@@ -183,6 +193,7 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
     *password = u_strdup_printf ("%s", pw);
 
 }
+
 
 static void
 authenticate (SoupSession *session, 
@@ -249,7 +260,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
 
     if (msg->response.body) {    
         con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
-        strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);		
+        strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);        
     } 
 
     g_object_unref (session);
@@ -258,10 +269,212 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data)
     return;
 }
 
+
+#endif
+
+#ifdef LIBCURL_CLIENT
+
+
+static void
+reauthenticate(char **username, char **password)
+{
+    char *pw;
+    char user[21];
+
+    fprintf(stderr,"Authentication failed, please retry\n");
+    printf("User name: ");
+    fflush(stdout); 
+    fgets(user, 20, stdin);
+
+    if (strchr(user, '\n'))
+        (*(strchr(user, '\n'))) = '\0';
+    *username = u_strdup_printf ("%s", user);
+
+    pw = getpass("Password: ");
+    *password = u_strdup_printf ("%s", pw);
+
+}
+
+typedef struct {
+    char *buf;
+    size_t len;
+    size_t ind;
+} transfer_ctx_t;
+
+static size_t
+write_handler( void *ptr, size_t size, size_t nmemb, void *data)
+{
+    transfer_ctx_t *ctx = data;
+    size_t len;
+   
+    len = size * nmemb;
+    if (len >= ctx->len - ctx->ind) {
+        len = ctx->len - ctx->ind -1;
+    }
+    memcpy(ctx->buf + ctx->ind, ptr, len);
+    ctx->ind += len;
+    ctx->buf[ctx->ind] = 0;
+printf("write_handler: recieved %d bytes\n", len);
+    return len;
+}
+
+
+
+void  
+wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, gpointer user_data) 
+{
+#define curl_err(str)  printf("Error = %d; %s\n", r, str)
+
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+    WsManConnection *con = wsc->connection;
+    long flags;
+    CURL *curl = NULL;
+    CURLcode r;
+    char *upwd = NULL;
+    char *usag = NULL;
+    struct curl_slist *headers=NULL;
+    char *buf = NULL;
+    int len;
+    static char wbuf[32000];  // XXX must be fixed
+    transfer_ctx_t tr_data = {wbuf, 32000, 0};
+    long http_code;
+    
+    if (wsman_options_get_cafile() != NULL) {
+        flags = CURL_GLOBAL_SSL;
+    } else {
+        flags = CURL_GLOBAL_NOTHING;
+    }
+    r =curl_global_init(flags);
+    if (r != 0) {
+        curl_err("Could not initialize curl globals");
+        goto DONE;
+    }
+    
+    curl = curl_easy_init();
+    if (curl == NULL) {
+        curl_err("Could not init easy curl");
+        goto DONE;
+    }
+    
+    r = curl_easy_setopt(curl, CURLOPT_URL, wsc->data.endpoint);
+    if (r != 0) {
+        curl_err("Could notcurl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint)");
+        goto DONE;
+    }
+   
+    r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    if (r != 0) {
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)"); 
+        goto DONE;
+    }
+    
+    r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
+    if (r != 0) {
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)"); 
+        goto DONE;
+    }
+    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
+    if (r != 0) {
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)"); 
+        goto DONE;
+    }    
+    headers = curl_slist_append(headers,
+        "Content-Type: application/soap+xml;charset=UTF-8");    
+    usag = malloc(12 + strlen(wsman_options_get_agent()) + 1);
+    if (usag == NULL) {
+        curl_err("Could not malloc memory");
+        goto DONE;
+    }
+
+    sprintf(usag, "User-Agent: %s", wsman_options_get_agent());
+    headers = curl_slist_append(headers, usag);
+
+    r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    if (r != 0) {
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)"); 
+        goto DONE;
+    }
+        
+    ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
+    r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
+    if (r != 0) {
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)"); 
+        goto DONE;
+    }
+    
+    while (1) {
+        if (wsc->data.user && wsc->data.pwd) {
+            u_free(upwd);
+            upwd = NULL;
+            upwd = malloc(strlen(wsc->data.user) +
+                strlen(wsc->data.pwd) + 2);
+            if (!upwd) {
+                curl_err("Could not malloc memory");
+                goto DONE;
+            }
+            sprintf(upwd, "%s:%s", wsc->data.user, wsc->data.pwd);
+            r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
+            if (r != 0) {
+                curl_err("Could not curl_easy_setopt(curl, CURLOPT_USERPWD, ..)"); 
+                goto DONE;
+            }
+        }
+        r = curl_easy_perform(curl);
+        if (r != CURLE_OK) {
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)"); 
+            goto DONE;
+        }
+        r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+        if (r != 0) {
+            curl_err("Could not curl_easy_setopt(curl, CURLINFO_RESPONSE_CODE, ..)"); 
+            goto DONE;
+        }
+
+        if (http_code != 401) {
+            // not authorization required or bad authorization
+            break;
+        }
+        reauthenticate(&wsc->data.user, &wsc->data.pwd);
+        tr_data.ind = 0;
+    }
+    
+    
+    if (http_code != 200) {
+        fprintf (stderr,
+            "Connection to server failed: response code %ld\n", http_code);
+        goto DONE;        
+    }
+    
+    if (tr_data.ind == 0) {
+        // No data transfered
+        goto DONE;
+    }
+    
+    con->response = (char *)malloc(tr_data.ind + 1);
+    memcpy(con->response, wbuf, tr_data.ind);
+    con->response[tr_data.ind] = 0;
+    // printf("con->response[%s]\n",  con->response);
+DONE:
+    curl_slist_free_all(headers);
+    u_free(usag);
+    u_free(upwd);
+    if (curl) {
+        curl_global_cleanup();
+    }
+    
+    return;   
+   
+}
+    
+#endif
+
+
 static void
 initialize_logging (void)
-{    
-    debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
+{
+#ifdef LIBSOUP_CLIENT    
+    debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
+#endif    
 
 } /* initialize_logging */
 
@@ -297,7 +510,6 @@ int main(int argc, char** argv)
     WsManClient *cl;
     debug( "Certificate: %s", wsman_options_get_cafile());
     if (wsman_options_get_cafile() != NULL) {
-    printf("wsman_connect_with_ssl\n");
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),
@@ -308,7 +520,6 @@ int main(int argc, char** argv)
                     NULL,
                     NULL);
     } else {
-    printf("wsman_connect\n");
         cl = wsman_connect( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),

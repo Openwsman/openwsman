@@ -9,8 +9,8 @@ struct _WsActions
 };
 typedef struct _WsActions WsActions;
 
-
-gboolean wsman_parse_options(int argc, char **argv);
+ 
+ int wsman_parse_options(int argc, char **argv);
 
 int wsman_options_get_debug_level(void);
 int wsman_options_get_server_port(void);
@@ -28,9 +28,9 @@ char *wsman_options_get_invoke_method (void);
 char *wsman_options_get_enum_mode (void);
 char *wsman_options_get_binding_enum_mode (void);
 char *wsman_options_get_cim_namespace (void);
-gboolean wsman_options_get_optimize_enum (void);
-gboolean wsman_options_get_dump_request (void);
-gboolean wsman_options_get_estimate_enum (void);
+int wsman_options_get_optimize_enum (void);
+int wsman_options_get_dump_request (void);
+int wsman_options_get_estimate_enum (void);
 char * wsman_options_get_fragment (void);
 char * wsman_options_get_filter (void);
 char * wsman_options_get_dialect (void);

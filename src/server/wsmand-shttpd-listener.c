@@ -278,7 +278,7 @@ DONE:
     }
     n += snprintf(arg->buf + n, arg->buflen -n, "Server: %s/%s\r\n",
                 PACKAGE, VERSION);
-    if (shttp_msg->length > 0) {
+    if (shttp_msg && shttp_msg->length > 0) {
         n += snprintf(arg->buf + n, arg->buflen -n,
              "Content-Length: %d\r\n", shttp_msg->length);
     }        

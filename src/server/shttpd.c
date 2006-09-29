@@ -3488,7 +3488,7 @@ parse_request(struct conn *c)
         (void) strcpy(c->saved, s);	/* Save whole request */
 	(void) strcpy(c->ouri, c->uri);	/* Save unmodified URI */
 	parse_headers(c, strchr(s, '\n') + 1);                      
-        handle(c);
+    handle(c);
 	c->flags |= FLAG_PARSED;
 }
 
@@ -3535,7 +3535,8 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 	}
 
 	/* Read from the local endpoint */
-	if (c->io && (c->flags & (FLAG_FD_READABLE | FLAG_SOCK_READABLE))) {
+	if (!(c->flags & FLAG_FINISHED) && c->io &&
+                (c->flags & (FLAG_FD_READABLE | FLAG_SOCK_READABLE))) {
 		c->io(c);
 		c->expire += EXPIRE_TIME;
 	}

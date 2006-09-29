@@ -5,7 +5,7 @@ INCLUDES =  $(GOBJECT_CFLAGS) \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
-if USE_LIBSOUP
+if USE_LIBSOUP_SERV
 INCLUDES += $(SOUP_CFLAGS)  \
 	    $(GTHREAD_CFLAGS)
 
@@ -17,7 +17,7 @@ LIBS = $(GOBJECT_LIBS) \
        $(top_builddir)/src/libu/libwsman_utils.la \
        $(top_builddir)/src/lib/libwsman_server.la
 
-if USE_LIBSOUP
+if USE_LIBSOUP_SERV
 LIBS += $(SOUP_LIBS)  \
        $(GTHREAD_LIBS)
 endif

@@ -604,6 +604,9 @@ int list_is_sorted(list_t *list, int compare(const void *, const void *))
 
 int list_isempty(list_t *list)
 {
+    if (list == NULL) {
+        return 1;
+    }
     return list->nodecount == 0;
 }
 
@@ -614,6 +617,9 @@ int list_isempty(list_t *list)
 
 int list_isfull(list_t *list)
 {
+    if (list == NULL) {
+        return 0;
+    }
     return list->nodecount == list->maxcount;
 }
 
@@ -650,8 +656,12 @@ void list_prepend(list_t *list, lnode_t *node)
 
 lnode_t *list_first(list_t *list)
 {
-    if (list->nilnode.next == &list->nilnode)
-	return NULL;
+    if (list == NULL) {
+        return NULL;
+    }
+    if (list->nilnode.next == &list->nilnode) {
+	   return NULL;
+    }
     return list->nilnode.next;
 }
 
