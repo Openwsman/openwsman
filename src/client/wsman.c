@@ -442,8 +442,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     
     if (http_code != 200) {
         fprintf (stderr,
-            "Connection to server failed: response code %ld\n", http_code);
-        goto DONE;        
+            "Connection to server failed: response code %ld\n", http_code);        
     }
     
     if (tr_data.ind == 0) {
