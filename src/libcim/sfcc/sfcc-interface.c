@@ -267,7 +267,7 @@ cim_get_op_from_enum( CimClientInfo *client,
     CMPIStatus rc;
     int match = 0;
     CMPIEnumeration * enumeration;
-    CMPIObjectPath * result_op;
+    CMPIObjectPath * result_op = NULL;
     WsmanStatus statusPP;
 
     CMPIObjectPath * objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
@@ -799,13 +799,12 @@ cim_invoke_method (CimClientInfo *client,
     CMPIObjectPath * objectpath;    
     CMPIArgs * argsin;
     CMPIStatus rc;
-    char *class, *method, *namespace, *resourceUri;
     CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
     if (!cc) {
         return;
     }
 
-    objectpath = newCMPIObjectPath(namespace, class, NULL);
+    objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
     cim_add_keys(objectpath, client->selectors);
 
     argsin = newCMPIArgs(NULL);
@@ -813,7 +812,7 @@ cim_invoke_method (CimClientInfo *client,
     debug( "invokeMethod() rc=%d, msg=%s",
             rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
-    WsXmlNodeH method_node = ws_xml_add_empty_child_format(body, resourceUri , "%s_OUTPUT", method);
+    WsXmlNodeH method_node = ws_xml_add_empty_child_format(body, client->resource_uri , "%s_OUTPUT", client->method);
     if (rc.rc == 0 ) 
         property2xml( data, "ReturnValue" , method_node, NULL);
 

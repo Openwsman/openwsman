@@ -61,6 +61,7 @@ CimResource_Init(WsContextH cntx)
 {
     CimClientInfo cimclient;
     cimclient.cc = NULL;
+    //cimclient.namespaces = NULL;
     cimclient.selectors = wsman_get_selector_list(cntx, NULL);
     cimclient.requested_class = wsman_get_class_name(cntx);
     cimclient.method = wsman_get_method_name(cntx);
