@@ -64,6 +64,6 @@ void syslog(int priority, const char *fmt, ...)
 #else /* ifndef HAVE_SYSLOG */
 #include <syslog.h>
 #include <stdarg.h>
-void syslog(int priority, const char *fmt, ...);
-void vsyslog(int priority, const char *fmt, va_list args);
+// void syslog(int priority, const char *fmt, ...);
+// void vsyslog(int priority, const char *fmt, va_list args);
 #endif 
