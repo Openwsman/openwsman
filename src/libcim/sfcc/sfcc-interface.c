@@ -593,12 +593,14 @@ property2xml( CMPIData data,
         CMPIArray *arr   = data.value.array;
         CMPIType  eletyp = data.type & ~CMPI_ARRAY;
         int j, n;
-        n = CMGetArrayCount(arr, NULL);
-        for (j = 0; j < n; ++j) {
-            CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
-            valuestr = value2Chars(eletyp, &ele.value);
-            ws_xml_add_child(node, resourceUri, name , valuestr);
-            free (valuestr);
+        if (arr != NULL) {
+            n = CMGetArrayCount(arr, NULL);
+            for (j = 0; j < n; ++j) {
+                CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
+                valuestr = value2Chars(eletyp, &ele.value);
+                ws_xml_add_child(node, resourceUri, name , valuestr);
+                free (valuestr);
+            }
         }
     } else {
         if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
