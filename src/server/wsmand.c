@@ -79,7 +79,8 @@ debug_message_handler (const char *str,
     if (log_pid == 0)
         log_pid = getpid ();
 
-    if (level <= wsmand_options_get_debug_level () || wsmand_options_get_foreground_debug() > 0 ) 
+    if (level <= wsmand_options_get_debug_level () 
+            || wsmand_options_get_foreground_debug() > 0 ) 
     {
         struct tm *tm;
         time_t now;
