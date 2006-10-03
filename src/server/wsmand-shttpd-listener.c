@@ -347,23 +347,32 @@ wsmand_start_server()
     struct shttpd_ctx   *ctx;
     int sock;
     int port;
-    
     static int continue_working = 1;
-    
-    
+
     port = wsmand_options_get_server_port();
     if (port == 0) {
         port = 9001;
     }
-    ctx = shttpd_init(NULL,
-        // "ssl_certificate", "/home/shttpd-1.35/shttpd.pem",
-          "auth_realm", AUTHENTICATION_REALM,
-          "debug", "1",
-          NULL);
+    if (wsmand_options_get_ssl_cert_file() && wsmand_options_get_ssl_key_file()) {
+        debug("Using SSL");
+    	ctx = shttpd_init(NULL,
+         	"ssl_certificate", wsmand_options_get_ssl_cert_file(),
+            "ssl_priv_key", wsmand_options_get_ssl_key_file(),
+        	"auth_realm", AUTHENTICATION_REALM,
+        	"debug", wsmand_options_get_debug_level() > 0 ? "1" : "0",
+        	NULL);
+	} else {
+    	ctx = shttpd_init(NULL,
+        	"auth_realm", AUTHENTICATION_REALM,
+        	"debug", wsmand_options_get_debug_level() > 0 ? "1" : "0",
+        	NULL);
+	}
+
     if (ctx == NULL) {
-         return NULL;
+        debug("Could not create shttpd context");
+        return NULL;
     }
-    
+
     shttpd_register_url(ctx, "/wsman", server_callback, (void *) soap);
     debug( "     Working on port %d", port);
 
@@ -375,9 +384,9 @@ wsmand_start_server()
     }   
     sock = shttpd_open_port(port);
     shttpd_listen(ctx, sock);
-    
+
     wsmand_shutdown_add_handler(listener_shutdown_handler, &continue_working);
-    
+
     while (continue_working) {
            shttpd_poll(ctx, 1000);
     }

@@ -81,6 +81,9 @@ static gchar *invoke_method = NULL;
 static gchar *url_path = NULL;
 static gchar **properties = NULL;
 
+static gchar *proxy = NULL;
+static gchar *proxy_upwd = NULL;
+
 WsActions action_data[] = 
 { 
  { "get", ACTION_TRANSFER_GET},
@@ -99,16 +102,19 @@ gboolean wsman_parse_options(int argc, char **argv)
     GError *error = NULL;
 
     GOptionEntry options[] = {						
-	{ "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
+	    { "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
         { "cafile", 'c', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
         { "path", 'g', 0, G_OPTION_ARG_STRING, &url_path, "Path", "<path>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
-        { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" },                
+        { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" }, 
+        { "proxy", 'x', 0, G_OPTION_ARG_STRING, &proxy, "Proxy name", "<proxy>" },
+        { "proxyauth", 'y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },               
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
         { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
+
         { NULL }
     };
 
@@ -257,7 +263,15 @@ char* wsman_options_get_username (void) {
 
 char* wsman_options_get_password (void) {
     return password;
-}  
+}
+ 
+char*  wsman_options_get_proxy(void) {
+    return proxy;
+}
+
+char*  wsman_options_get_proxyauth(void) {
+    return proxy_upwd;
+}
 
 hash_t * wsman_options_get_properties (void)
 {

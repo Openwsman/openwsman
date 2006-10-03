@@ -135,7 +135,6 @@ wsmand_options_get_config_file (void) {
         char *new_config_file;
 
         getcwd (cwd, PATH_MAX);
-printf("cwd: %s\n", cwd);
           
         new_config_file = g_strconcat (cwd, "/", config_file, NULL);
 

@@ -324,7 +324,8 @@ printf("write_handler: recieved %d bytes\n", len);
 void  
 wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
 {
-#define curl_err(str)  printf("Error = %d; %s\n", r, str)
+#define curl_err(str)  printf("Error = %d (%s); %s\n", r, curl_easy_strerror(r), str); \
+                       http_code = 400
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
@@ -339,6 +340,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     static char wbuf[32000];  // XXX must be fixed
     transfer_ctx_t tr_data = {wbuf, 32000, 0};
     long http_code;
+    char    *proxy;
+    char *proxyauth;
     
     if (wsman_options_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
@@ -362,7 +365,24 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         curl_err("Could notcurl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint)");
         goto DONE;
     }
-   
+    
+    proxy = wsman_options_get_proxy();
+    if (proxy) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXY, proxy);
+        if (r != 0) {
+            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
+            goto DONE;
+        }
+    }  
+    proxyauth = wsman_options_get_proxyauth();
+    if (proxy) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, proxyauth);
+        if (r != 0) {
+            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
+            goto DONE;
+        }
+    }
+        
     r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)"); 
@@ -395,7 +415,18 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)"); 
         goto DONE;
     }
-        
+
+    if (wsman_options_get_cafile() != NULL) {
+        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsman_options_get_cafile());    
+        if (r != 0) {
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)"); 
+            goto DONE;
+        }
+        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsman_options_get_cafile());    
+        if (r != 0) {
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)"); 
+            goto DONE;
+        }    }
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
     if (r != 0) {
@@ -440,11 +471,6 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     }
     
     
-    if (http_code != 200) {
-        fprintf (stderr,
-            "Connection to server failed: response code %ld\n", http_code);        
-    }
-    
     if (tr_data.ind == 0) {
         // No data transfered
         goto DONE;
@@ -455,6 +481,10 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     con->response[tr_data.ind] = 0;
     // printf("con->response[%s]\n",  con->response);
 DONE:
+    if (http_code != 200) {
+        fprintf (stderr,
+            "Connection to server failed: response code %ld\n", http_code);        
+    }
     curl_slist_free_all(headers);
     u_free(usag);
     u_free(upwd);

@@ -121,7 +121,7 @@ typedef struct DIR {
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
-#define	SSL_LIB				"libssl.so"
+#define	SSL_LIB				"/usr/lib/libssl.so"
 #define	DIRSEP				'/'
 #define	O_BINARY			0
 #define	closesocket(a)			close(a)
@@ -295,7 +295,7 @@ enum err_level	{ERR_DEBUG, ERR_INFO, ERR_FATAL};
 
 #define elog(level, ...) \
     do { \
-        u_log_debug(facility, 1, __VA_ARGS__); \
+        debug( __VA_ARGS__ ); \
         if (level == ERR_FATAL) exit(EXIT_FAILURE); \
     } while (0)
 #endif
@@ -447,7 +447,7 @@ struct shttpd_ctx {
 	char		*uid;			/* Run as user */
 	int		port;			/* Listening port */
 	int		dirlist;		/* Directory listing */
-	int		debug;			/* Debug flag */
+	int		_debug;			/* Debug flag */
 	int		gui;			/* Show GUI flag */
 #ifdef OPENWSMAN
         shttpd_bauth_callback_t         bauthf; /* basic authorization callback */
@@ -476,7 +476,7 @@ struct opt {
  * Global variables
  */
 static time_t		current_time;	/* No need to keep per-context time */
-static int		debug;		/* Show debug messages */
+static int		_debug;		/* Show _debug messages */
 static int		exit_flag;	/* Exit flag */
 static int		inetd;		/* Inetd flag */
 #ifndef EMBEDDED
@@ -595,10 +595,10 @@ set_int(struct shttpd_ctx *ctx, void *ptr, const char *string)
 }
 
 static void
-set_debug(struct shttpd_ctx *ctx, void *ptr, const char *string)
+set__debug(struct shttpd_ctx *ctx, void *ptr, const char *string)
 {
 	ctx = ptr = NULL;
-	debug = atoi(string);
+	_debug = atoi(string);
 }
 
 static void
@@ -724,8 +724,9 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 
 	arg = NULL;	/* Unused */
 	/* Load SSL library dynamically */
-	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL)
+	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL) {
 		elog(ERR_FATAL, "set_ssl: cannot load %s", SSL_LIB);
+    }
 
 	for (fp = ssl_sw; fp->name != NULL; fp++)
 		if ((fp->ptr.value_void = dlsym(lib, fp->name)) == NULL)
@@ -737,12 +738,20 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
 		elog(ERR_FATAL, "SSL_CTX_new error");
 	else if (SSL_CTX_use_certificate_file(CTX, pem, SSL_FILETYPE_PEM) == 0)
-		elog(ERR_FATAL, "cannot open %s", pem);
-	else if (SSL_CTX_use_PrivateKey_file(CTX, pem, SSL_FILETYPE_PEM) == 0)
-		elog(ERR_FATAL, "cannot open %s", pem);
+		elog(ERR_FATAL, "cannot open certificate %s", pem);
 	ctx->ssl_ctx = CTX;
 }
 
+static void
+set_ssl_priv_key(struct shttpd_ctx *ctx, void *arg, const char *pem)
+{
+    if (ctx->ssl_ctx == NULL) {
+        elog(ERR_FATAL, "SSL_CTX is not created");
+    }
+    if (SSL_CTX_use_PrivateKey_file(ctx->ssl_ctx, pem, SSL_FILETYPE_PEM) == 0) {
+        elog(ERR_FATAL, "cannot open private key %s", pem);
+    }
+}
 /*
  * Setup aliases. Passed string must be in format
  * "directory1=url1,directory2=url2,..."
@@ -834,10 +843,12 @@ static struct opt options[] = {
 		0, "file", "builtin", NULL, OPT_FLAG_FILE	},
 	{'P', "global_htpasswd", "Global passwords file", set_str,
 		OFS(pass), "file", NULL, NULL, OPT_FLAG_FILE	},
-	{'v', "debug", "Debug mode", set_debug,
+	{'v', "debug", "Debug mode", set__debug,
 		0, BOOL_OPT, "0", NULL, OPT_FLAG_BOOL	},
 	{'s', "ssl_certificate", "SSL certificate file", set_ssl,
 		OFS(ssl_ctx), "pem_file", NULL, NULL, OPT_FLAG_FILE},
+    {'k', "ssl_priv_key", "SSL pivate key file", set_ssl_priv_key,
+        OFS(ssl_ctx), "pem_file", NULL, NULL, OPT_FLAG_FILE},
 	{'U', "put_auth", "PUT,DELETE auth file",set_str,
 		OFS(put_auth), "file", NULL, NULL, OPT_FLAG_FILE},
 	{'V', "cgi_envvar", "CGI envir variables", set_envvars,
@@ -1367,7 +1378,7 @@ elog(enum err_level level, const char *fmt, ...)
 {
 	va_list		ap;
 
-	if (inetd || (debug == 0 && level == ERR_DEBUG))
+	if (inetd || (_debug == 0 && level == ERR_DEBUG))
 		return;
 
 	(void) fprintf(stderr, "%lu ", (unsigned long) current_time);
@@ -1493,7 +1504,7 @@ handshake(struct conn *c)
 			c->flags |= FLAG_FINISHED;
 		elog(ERR_INFO, "handshake: SSL_accept error %d", n);
 	} else {
-		elog(ERR_DEBUG, "handshake: SSL accepted");
+		elog(ERR_DEBUG, "handshake: SSL accepted. sock %d", c->sock);
 		c->flags |= FLAG_SSLACCEPTED;
 	}
 }
@@ -1551,20 +1562,22 @@ readremote(struct conn *c, char *buf, size_t len)
 {
 	static int	in;
 	int		n = -1;
-	if (c->ssl && !(c->flags & FLAG_SSLACCEPTED))
-		handshake(c);
-	else if (c->ssl) {
+	if (c->ssl) {
+        if (!(c->flags & FLAG_SSLACCEPTED)) {
+		  handshake(c);
+        }
 		n = SSL_read(c->ssl, buf, len);
-if (n < 0) perror("SSL read ");
-	} else
+if (n < 0) perror("SSL read "); else printf("SSL_read: %d bytes recieved\n", n);
+	} else {
 		n = recv(c->sock, buf, len, 0);
-
+    }
 	if (n > 0)
 		INCREMENT_KB(n, in, c->ctx->kb_in);
 
-	if (n == 0 || (n < 0 && ERRNO != EWOULDBLOCK))
+	if (n == 0 || (n < 0 && 
+        ((ERRNO != EWOULDBLOCK) && (ERRNO != 29))))
 		c->remote.done = 1;
-
+printf("readremote return %d; errno = %d\n", n, ERRNO);
 	return (n);
 }
 
@@ -3694,9 +3707,11 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 
 		/* If there is data in local buffer, add to write set */
 		if (IO_DATALEN(&c->local)) {
-                        elog(ERR_DEBUG, "sock %d ready to write from %d to %d", c->local.tail, c->local.head);
+                        elog(ERR_DEBUG, "sock %d ready to write from %d to %d",
+                            c->sock, c->local.tail, c->local.head);
 			MERGEFD(c->sock, &write_set);
-                }
+        }
+#if 0
 		/* If not selectable, continue */
 		if (c->flags & FLAG_ALWAYS_READY) {
 			msec = 0;
@@ -3709,6 +3724,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 			if (IO_DATALEN(&c->remote) && c->fd != -1)
 				MERGEFD(c->fd, &write_set);
 		}
+#endif
 	}
 
 	tv.tv_sec = msec / 1000;
