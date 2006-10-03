@@ -353,7 +353,8 @@ wsmand_start_server()
     if (port == 0) {
         port = 9001;
     }
-    if (wsmand_options_get_ssl_cert_file() && wsmand_options_get_ssl_key_file()) {
+    if (wsmand_options_get_ssl_cert_file() && wsmand_options_get_ssl_key_file()
+            && wsmand_options_get_server_ssl_port() > 0) {
         debug("Using SSL");
     	ctx = shttpd_init(NULL,
          	"ssl_certificate", wsmand_options_get_ssl_cert_file(),
@@ -361,6 +362,7 @@ wsmand_start_server()
         	"auth_realm", AUTHENTICATION_REALM,
         	"debug", wsmand_options_get_debug_level() > 0 ? "1" : "0",
         	NULL);
+            port = wsmand_options_get_server_ssl_port();
 	} else {
     	ctx = shttpd_init(NULL,
         	"auth_realm", AUTHENTICATION_REALM,
