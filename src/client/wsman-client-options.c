@@ -251,7 +251,7 @@ char* wsman_options_get_server (void) {
         return server;
     else
         return "localhost";
-}   
+}
 
 char* wsman_options_get_invoke_method (void) {
     return invoke_method;

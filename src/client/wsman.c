@@ -433,7 +433,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)"); 
         goto DONE;
     }
-    
+
     while (1) {
         if (wsc->data.user && wsc->data.pwd) {
             u_free(upwd);

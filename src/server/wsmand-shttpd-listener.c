@@ -313,7 +313,7 @@ CONTINUE:
         shttp_msg->ind = shttp_msg->length;
         return n;
     }
-    
+
     // here we can complete
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n\r\n");
     u_free(shttp_msg->response);

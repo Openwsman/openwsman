@@ -9,7 +9,8 @@ struct _WsActions
 };
 typedef struct _WsActions WsActions;
 
- 
+
+
  int wsman_parse_options(int argc, char **argv);
 
 int wsman_options_get_debug_level(void);
