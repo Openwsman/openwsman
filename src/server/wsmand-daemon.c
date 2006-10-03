@@ -110,7 +110,7 @@ int wsmand_read_config (dictionary *ini)
     if (iniparser_find_entry(ini, "server"))
     {
         server_port = iniparser_getint (ini, "server:port", -1);
-        server_ssl_port =  iniparser_getint(ini, "server::ssl_port",-1);
+        server_ssl_port =  iniparser_getint(ini, "server:ssl_port",-1);
         debug_level = iniparser_getint (ini, "server:debug_level", 0);
         service_path = iniparser_getstr (ini, "server:service_path");
         ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");

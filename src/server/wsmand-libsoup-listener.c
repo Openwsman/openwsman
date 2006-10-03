@@ -277,7 +277,9 @@ wsmand_start_server()
 
 #ifdef HAVE_SSL
     SoupServer *ssl_server = NULL;
-    if (wsmand_options_get_ssl_key_file() && wsmand_options_get_ssl_cert_file() && wsmand_options_get_server_ssl_port() > 0)  
+    if (wsmand_options_get_ssl_key_file() 
+            && wsmand_options_get_ssl_cert_file() 
+            && wsmand_options_get_server_ssl_port() > 0)  
     {
         ssl_server = soup_server_new (
                 SOUP_SERVER_PORT, wsmand_options_get_server_ssl_port(),
