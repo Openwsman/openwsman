@@ -229,7 +229,7 @@ wsman_client_handler( WsManClient *cl,
 
     char *buf = NULL;
     int len;
-
+printf("wsman_client_handler   soap\n");
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
 
@@ -240,6 +240,7 @@ wsman_client_handler( WsManClient *cl,
     } else {
         session = soup_session_async_new ();    
     }
+printf("wsman_client_handler   soap 1; session = %p\n", session);
 
     g_signal_connect (session, "authenticate", G_CALLBACK (authenticate), cl);
     g_signal_connect (session, "reauthenticate", G_CALLBACK (reauthenticate), cl);
@@ -253,15 +254,17 @@ wsman_client_handler( WsManClient *cl,
     soup_message_add_header(msg->request_headers, "User-Agent", wsman_options_get_agent());
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED, buf, len);
-
+printf("wsman_client_handler   soap; send message\n");
     // Send the message...        
     soup_session_send_message (session, msg);
-
+printf("Http status = %d\n", msg->status_code);
     if (msg->status_code != SOUP_STATUS_UNAUTHORIZED && msg->status_code != SOUP_STATUS_OK) {
         printf ("Connection to server failed: %s (%d)\n", msg->reason_phrase, msg->status_code);        
     }
-
-    if (msg->response.body) {    
+if (msg->status_code == SOUP_STATUS_UNAUTHORIZED) {
+printf("Authorization required\n");
+}
+    if (msg->response.body) {
         con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
         strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);        
     } 

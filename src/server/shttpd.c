@@ -283,7 +283,7 @@ struct conn {
 #define FLAG_FD_READABLE	256
 #define	FLAG_FD_WRITABLE	512
 #define	FLAG_CGI		1024
-#define	FLAG_HEADERS_PARSED	2048
+#define	FLAG_KEEP_CONNECTION	2048
 };
 
 #define	FLAG_IO_READY	(FLAG_SOCK_WRITABLE | FLAG_SOCK_READABLE | \
@@ -353,6 +353,7 @@ static struct ssl_func {
 	{"SSL_library_init",		{0}},
 	{"SSL_CTX_use_PrivateKey_file",	{0}},
 	{"SSL_CTX_use_certificate_file",{0}},
+    {"SSL_pending",{0}},
 	{NULL,				{0}}
 };
 #define	FUNC(x)	ssl_sw[x].ptr.value_func
@@ -372,6 +373,7 @@ static struct ssl_func {
 		const char *, int)) FUNC(11))((x), (y), (z))
 #define	SSL_CTX_use_certificate_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(12))((x), (y), (z))
+#define SSL_pending(x) (* (int (*)(SSL *)) FUNC(13))(x)
 
 /*
  * Mount points (Alias)
@@ -1449,9 +1451,66 @@ mystrdup(const char *str)
 /*
  * Disconnect from remote side, free resources
  */
+
+
+static void
+free_parsed_data(struct conn *c)
+{
+    /* If parse_headers() allocated any data, free it */
+    if (c->useragent) {
+        free(c->useragent);
+        c->useragent = NULL;
+    }
+    if (c->user) {
+        free(c->user);
+        c->user = NULL;
+    }
+    if (c->cookie) {
+        free(c->cookie);
+        c->cookie = NULL;
+    }
+    if (c->ctype) {
+        free(c->ctype);
+        c->ctype = NULL;
+    }
+    if (c->referer) {
+        free(c->referer);
+        c->referer = NULL;
+    }
+    if (c->location) {
+        free(c->location);
+        c->location = NULL;
+    }
+    if (c->auth) {
+        free(c->auth);
+        c->auth = NULL;
+    }
+    if (c->path) {
+        free(c->path);
+        c->path = NULL;
+    }
+    if (c->query) {
+        free(c->query);
+        c->query = NULL;
+    }
+    if (c->range) {
+        free(c->range);
+        c->range = NULL;
+    }
+
+    if (c->query) {
+        free(c->query);
+        c->query = NULL;
+    }
+    c->cclength = 0;
+}
+
+
+
 static void
 disconnect(struct conn *c)
 {
+
 	elog(ERR_DEBUG, "disconnecting %p", c);
 
 	del_conn_from_ctx(c->ctx, c);
@@ -1463,17 +1522,7 @@ disconnect(struct conn *c)
 	if (inetd)
 		exit_flag++;
 
-	/* If parse_headers() allocated any data, free it */
-	if (c->useragent)	free(c->useragent);
-	if (c->user)		free(c->user);
-	if (c->cookie)		free(c->cookie);
-	if (c->ctype)		free(c->ctype);
-	if (c->referer)		free(c->referer);
-	if (c->location)	free(c->location);
-	if (c->auth)		free(c->auth);
-	if (c->path)		free(c->path);
-	if (c->query)		free(c->query);
-	if (c->range)		free(c->range);
+	free_parsed_data(c);
 
 	/* Free resources */
 	if (c->fd != -1) {
@@ -1562,22 +1611,30 @@ readremote(struct conn *c, char *buf, size_t len)
 {
 	static int	in;
 	int		n = -1;
+    int ssl_err;
 	if (c->ssl) {
         if (!(c->flags & FLAG_SSLACCEPTED)) {
 		  handshake(c);
         }
+        if (c->flags & FLAG_FINISHED) {
+            return -1;
+        }
 		n = SSL_read(c->ssl, buf, len);
-if (n < 0) perror("SSL read "); else printf("SSL_read: %d bytes recieved\n", n);
+        if (n < 0) {
+            ssl_err = SSL_get_error(c->ssl, n);
+            if (ssl_err == SSL_ERROR_WANT_READ) {
+                return -1;
+            }
+        }
 	} else {
 		n = recv(c->sock, buf, len, 0);
     }
 	if (n > 0)
 		INCREMENT_KB(n, in, c->ctx->kb_in);
 
-	if (n == 0 || (n < 0 && 
-        ((ERRNO != EWOULDBLOCK) && (ERRNO != 29))))
+	if (n == 0 || (n < 0 &&
+        ((ERRNO != EWOULDBLOCK))))
 		c->remote.done = 1;
-printf("readremote return %d; errno = %d\n", n, ERRNO);
 	return (n);
 }
 
@@ -1709,7 +1766,7 @@ senderr(struct conn *c, int status, const char *descr,
 	int	n;
 
 	c->shlength = n = Snprintf(msg, sizeof(msg),
-	    "HTTP/1.1 %d %s\r\nConnection: close\r\n%s%s\r\n%d ",
+	   "HTTP/1.1 %d %s\r\nConnection: close\r\n%s%s\r\n%d ",
 	    status, descr, headers, headers[0] == '\0' ? "" : "\r\n", status);
 	va_start(ap, fmt);
 	n += vsnprintf(msg + n, sizeof(msg) - n, fmt, ap);
@@ -3299,6 +3356,7 @@ send_authorization_request(struct conn *c)
 	        "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->realm);
         }
 	senderr(c, 401, "Unauthorized", buf, "Authorization required");
+//    c->flags |= FLAG_KEEP_CONNECTION;
 }
 
 
@@ -3466,9 +3524,8 @@ static void
 parse_request(struct conn *c)
 {
 	char	fmt[32];
-        char    *s = c->remote.buf;
+    char    *s = c->remote.buf;
         
-
 
 	(void) snprintf(fmt, sizeof(fmt), "%%%us %%%us %%%us",
 	    (unsigned) sizeof(c->method) - 1, (unsigned) sizeof(c->uri) - 1,
@@ -3536,14 +3593,18 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 		elog(ERR_DEBUG, "serve: readremote returned %d", n);
 	}
 
+    if (c->flags & FLAG_FINISHED) {
+        return;
+    }
+
 	/* Try to parse the request from remote endpoint */
 	if (!(c->flags & FLAG_PARSED)) {
 		c->reqlen = getreqlen(c->remote.buf, c->remote.head);
-		if (c->reqlen == -1)
+		if (c->reqlen == -1) {
 			senderr(c, 400, "Bad Request", "", "Bad request");
-		else if (c->reqlen == 0 && IO_SPACELEN(&c->remote) <= 1)
+		} else if (c->reqlen == 0 && IO_SPACELEN(&c->remote) <= 1) {
 			senderr(c, 400, "Bad Request", "","Request is too big");
-		else if (c->reqlen > 0) {
+		} else if (c->reqlen > 0) {
 			parse_request(c);
 		}
 	}
@@ -3564,8 +3625,9 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 	}
 
 	if ((c->remote.done && c->remote.head == 0) ||
-	    (c->local.done && c->local.head == 0))
-		c->flags |= FLAG_FINISHED;
+	    (c->local.done && c->local.head == 0)) {
+		  c->flags |= FLAG_FINISHED;
+    }
 #if 0
 	elog(ERR_DEBUG, "serve: exit %p: local %d.%d.%d, remote %d.%d.%d", c,
 	    c->local.done, c->local.head, c->local.tail,
