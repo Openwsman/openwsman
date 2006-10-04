@@ -363,5 +363,5 @@ char * wsman_options_get_agent (void)
     if (agent)
         return agent;
     else
-        return PACKAGE_NAME;
+        return PACKAGE_STRING;
 }   
