@@ -46,6 +46,13 @@ AM_CONDITIONAL(USE_LIBSOUP_SERV, test "$with_libsoup_serv" == "yes")
 AM_CONDITIONAL(USE_SHTTPD, test "$with_shttpd" == "yes")
 
 
+with_client=yes
+without_client=no
+AC_ARG_WITH(client,
+            [AC_HELP_STRING([--with-client],
+                            [compile client.])])
+
+
 AC_ARG_WITH(libcurl,
             [AC_HELP_STRING([--with-libcurl],
                             [use libcurl for client transport backend.])])
@@ -66,6 +73,7 @@ if test "$with_libcurl" = "$with_libsoup_client"; then
 fi 
 AM_CONDITIONAL(USE_LIBSOUP_CLIENT, test "$with_libsoup_client" == "yes")
 AM_CONDITIONAL(USE_LIBCURL, test "$with_libcurl" == "yes")
+AM_CONDITIONAL(COMPILE_CLIENT, test "$without_client" == "no")
 
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then

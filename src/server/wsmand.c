@@ -50,10 +50,13 @@
 
 #include <syslog.h>
 #include <time.h>
+#include <assert.h>
 
 
+#ifdef LIBSOUP_LISTENER
 #include <glib.h>
 #include <glib-object.h>
+#endif
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -133,7 +136,7 @@ signal_handler (int sig_num)
     else if (sig_num == SIGINT)
         sig_name = "SIGINT";
     else
-        g_assert_not_reached ();
+        assert(1 == 1);
 
     debug( "Received %s... Shutting down.", sig_name);
     wsmand_shutdown ();
@@ -156,12 +159,12 @@ sighup_handler (int sig_num)
         fd = open ("/var/log/wsmand.log",
                    O_WRONLY | O_CREAT | O_APPEND,
                    S_IRUSR | S_IWUSR);
-        g_assert (fd == STDOUT_FILENO);
+        assert (fd == STDOUT_FILENO);
 
         close (STDERR_FILENO);
 
         fd = dup (fd); /* dup fd to stderr */
-        g_assert (fd == STDERR_FILENO);
+        assert (fd == STDERR_FILENO);
     }
        
 } /* sighup_handler */
@@ -216,8 +219,7 @@ daemonize (void)
     fork_rv = fork ();
     if (fork_rv < 0)
     {
-        g_printerr ("wsmand: fork failed!\n");
-        exit (-1);
+        fprintf(stderr, "wsmand: fork failed!\n");
     }
 
     /* The parent process exits. */
@@ -239,7 +241,7 @@ daemonize (void)
         close (i);
 
     fd = open ("/dev/null", O_RDWR); /* open /dev/null as stdin */
-    g_assert (fd == STDIN_FILENO);
+    assert (fd == STDIN_FILENO);
 
 
 
@@ -248,16 +250,16 @@ daemonize (void)
     fd = open ("/var/log/wsmand.log",
                O_WRONLY | O_CREAT | O_APPEND,
                S_IRUSR | S_IWUSR);
-    g_assert (fd == STDOUT_FILENO);
+    assert (fd == STDOUT_FILENO);
 
     fd = dup (fd); /* dup fd to stderr */
-    g_assert (fd == STDERR_FILENO);
+    assert (fd == STDERR_FILENO);
 
     /* Open /var/run/wsmand.pid and write out our PID */
     fd = open ("/var/run/wsmand.pid", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    pid = g_strdup_printf ("%d", getpid ());
+    pid = u_strdup_printf ("%d", getpid ());
     rc_write (fd, pid, strlen (pid));
-    g_free (pid);
+    u_free (pid);
     close (fd);
 
     // TODO
@@ -277,11 +279,7 @@ main (int argc, char **argv)
 
 #ifdef LIBSOUP_LISTENER
     GMainLoop *loop;
-#endif
-        
-    
     g_type_init ();
-#ifdef LIBSOUP_LISTENER
     g_thread_init (NULL); 
 #endif
     if (!wsmand_parse_options(argc, argv)) 

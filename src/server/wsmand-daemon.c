@@ -40,6 +40,7 @@
 #include <string.h>
 
 #include <errno.h>
+#include <assert.h>
 
 #include "glib.h"
 #include "u/libu.h"
@@ -228,34 +229,39 @@ wsmand_options_get_digest (void)
 typedef struct _ShutdownHandler ShutdownHandler;
 struct _ShutdownHandler {
     WsmandShutdownFn fn;
-    gpointer user_data;
+    void* user_data;
 };
 
-static GSList *shutdown_handlers = NULL;
+static list_t *shutdown_handlers = NULL;
 static int shutdown_counter = 0;
-static gboolean shutdown_pending = FALSE;
-static gboolean shutting_down = FALSE;
+static int shutdown_pending = 0;
+static int shutting_down = 0;
 
 void
-wsmand_shutdown_add_handler (WsmandShutdownFn fn,
-                          gpointer      user_data)
+wsmand_shutdown_add_handler(WsmandShutdownFn fn,
+                            void*     user_data)
 {
     ShutdownHandler *handler;
 
-    g_return_if_fail (fn != NULL);
+    if (fn == NULL) return;
 
-    handler = g_new0 (ShutdownHandler, 1);
+    handler = u_zalloc (sizeof(ShutdownHandler));
     handler->fn = fn;
     handler->user_data = user_data;
 
-    shutdown_handlers = g_slist_prepend (shutdown_handlers,
-                                         handler);
+    lnode_t *n = lnode_create(handler);
+
+    if (!shutdown_handlers)
+        shutdown_handlers = list_create(LISTCOUNT_T_MAX);
+
+    list_prepend(shutdown_handlers, n );
 }
 
 void
 wsmand_shutdown_block (void)
 {
-    g_return_if_fail (shutdown_counter >= 0);
+    if (shutdown_counter < 0)
+        return;
 
     if (shutting_down)
     {
@@ -267,7 +273,7 @@ wsmand_shutdown_block (void)
 void
 wsmand_shutdown_allow (void)
 {
-    g_return_if_fail (shutdown_counter > 0);
+    if (shutdown_counter <= 0) return;
     --shutdown_counter;
 
     if (shutdown_counter == 0 && shutdown_pending) {
@@ -275,24 +281,27 @@ wsmand_shutdown_allow (void)
     }
 }
 
-static gboolean
+static int
 shutdown_idle_cb (gpointer user_data)
 {
     gboolean restart = GPOINTER_TO_INT (user_data);
-    GSList *iter;    
+
+    lnode_t *n = list_first(shutdown_handlers);
 
     debug ("shutdown_idle_cb started");
                 
-    for (iter = shutdown_handlers; iter != NULL; iter = iter->next) {
-        ShutdownHandler *handler = iter->data;
+    while (n) {
+        ShutdownHandler *handler = n->list_data;
         
         if (handler && handler->fn) 
             handler->fn (handler->user_data);
 
         u_free (handler);
+        n = list_next(shutdown_handlers, n);
     }
 
-    g_slist_free (shutdown_handlers);
+    //list_destroy_nodes (shutdown_handlers);
+    // list_destroy (shutdown_handlers);
 
     if (!restart) {
         /* We should be quitting the main loop (which will cause us to
@@ -313,8 +322,8 @@ shutdown_idle_cb (gpointer user_data)
     }
 
     /* We should never reach here... */
-    g_assert_not_reached ();
-    return FALSE;
+    assert (1 == 1);
+    return 0;
 }
 
 static void
