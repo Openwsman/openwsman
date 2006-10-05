@@ -43,6 +43,7 @@
 #include <glib.h>
 #include "wsman_config.h"
 
+
 #if LIBSOUP_CLIENT
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
@@ -67,6 +68,24 @@
 int facility = LOG_DAEMON;
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+
+static void
+debug_message_handler (const char *str, debug_level_e level, void  *user_data)
+{
+    if (level <= wsman_options_get_debug_level ()) 
+    {
+        struct tm *tm;
+        time_t now;
+        char timestr[128];
+
+        time (&now);
+        tm = localtime (&now);
+        strftime (timestr, 128, "%b %e %T", tm);
+        fprintf (stderr, "%s  %s\n", timestr, str);
+    }
+
+}
+
 
 #ifdef LIBSOUP_CLIENT
 
@@ -146,30 +165,6 @@ http_debug (SoupMessage *message)
 } /* http_debug */
 
 
-
-
-static void
-debug_message_handler (const char *str, debug_level_e level, void  *user_data)
-{
-    if (level <= wsman_options_get_debug_level ()) 
-    {
-        struct tm *tm;
-        time_t now;
-        char timestr[128];
-
-        time (&now);
-        tm = localtime (&now);
-        strftime (timestr, 128, "%b %e %T", tm);
-
-        /*
-        log_msg = g_strdup_printf ("%s  %s\n",
-                                   timestr, str);
-                                   */
-       
-        fprintf (stderr, "%s  %s\n", timestr, str);
-    }
-
-}
 
 
 static void
@@ -573,9 +568,7 @@ DONE:
 static void
 initialize_logging (void)
 {
-#ifdef LIBSOUP_CLIENT    
     debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-#endif    
 
 } /* initialize_logging */
 
