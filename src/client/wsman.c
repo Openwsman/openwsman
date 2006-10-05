@@ -172,7 +172,6 @@ debug_message_handler (const char *str, debug_level_e level, void  *user_data)
 }
 
 
-
 static void
 reauthenticate (SoupSession *session, SoupMessage *msg,
         const char *auth_type, const char *auth_realm,
@@ -196,6 +195,7 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
 }
 
 
+
 static void
 authenticate (SoupSession *session, 
         SoupMessage *msg,
@@ -205,12 +205,11 @@ authenticate (SoupSession *session,
         char **password, 
         gpointer data)
 {
-    // printf("authenticating...\n");
     WsManClient *cl = data;
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     if (wsc->data.user && wsc->data.pwd) {
-        *username = strdup (wsc->data.user);
-        *password = strdup (wsc->data.pwd);
+        *username = u_strdup (wsc->data.user);
+        *password = u_strdup (wsc->data.pwd);
         return;
     }
     reauthenticate(session, msg, auth_type, auth_realm,

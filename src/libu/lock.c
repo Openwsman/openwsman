@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <pthread.h>
-#include <u/locking.h>
+#include <u/lock.h>
 
 
 void u_init_lock(void *data)

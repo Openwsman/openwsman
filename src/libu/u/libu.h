@@ -20,7 +20,7 @@
 #include <u/uri.h>
 #include <u/os.h>
 /* always include net.h even if NO_NET is set */
-#include <u/net.h>
+// #include <u/net.h>
 #ifndef NO_ENV
 #include <u/env.h>
 #endif
@@ -38,7 +38,7 @@
 
 #include <u/hash.h>
 #include <u/uuid.h>
-#include <u/locking.h>
+#include <u/lock.h>
 #include <u/strings.h>
 #include <u/url2.h>
 #include <u/md5.h>
