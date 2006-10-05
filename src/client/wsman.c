@@ -219,7 +219,9 @@ authenticate (SoupSession *session,
 
 
 void  
-wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
+wsman_client_handler( WsManClient *cl, 
+                      WsXmlDocH rqstDoc, 
+                      void* user_data) 
 {
     SoupSession *session = NULL;
     SoupMessage *msg= NULL;
@@ -581,7 +583,7 @@ int main(int argc, char** argv)
 {     
     int retVal = 0;   
     char *filename;
-    dictionary       *ini;
+    dictionary       *ini = NULL;
 
     g_type_init ();
 #ifdef LIBSOUP_CLIENT
@@ -591,18 +593,16 @@ int main(int argc, char** argv)
         return 1;
 
     filename = (char *)wsman_options_get_config_file();
-    if (!filename)  {
-        filename = DEFAULT_CONFIG_FILE;
-    }
-
-    ini = iniparser_load(filename);
-    printf("Using conf file: %s\n", filename);
-    if (ini==NULL) {
-        fprintf(stderr, "cannot parse file [%s]", filename);
-        return 1;
-    } else if (!wsman_read_client_config(ini)) {
-        fprintf(stderr, "Configuration file not found\n");
-        return 1;
+    if (filename)  {
+        ini = iniparser_load(filename);
+        printf("Using conf file: %s\n", filename);
+        if (ini==NULL) {
+            fprintf(stderr, "cannot parse file [%s]", filename);
+            return 1;
+        } else if (!wsman_read_client_config(ini)) {
+            fprintf(stderr, "Configuration file not found\n");
+            return 1;
+        }
     }
 
     initialize_logging ();
@@ -789,7 +789,8 @@ int main(int argc, char** argv)
     soap_free(cntx);
     */
 
-    iniparser_freedict(ini);
+    if (ini)
+        iniparser_freedict(ini);
     return retVal;
 
 }
