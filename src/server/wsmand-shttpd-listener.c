@@ -378,12 +378,14 @@ wsmand_start_server()
     shttpd_register_url(ctx, "/wsman", server_callback, (void *) soap);
     debug( "     Working on port %d", port);
 
-    if (wsmand_options_get_digest()) {
-        debug( "Using Digest Authorization - not implemented now");
-    } else {
+    if (wsmand_options_get_digest_password_file()) {
+       shttpd_register_dauth_callback(ctx, digest_auth_callback);
+        debug( "Using Digest Authorization");
+    }
+    if (wsmand_options_get_basic_password_file()) {
         shttpd_register_bauth_callback(ctx, basic_auth_callback);
         debug( "Using Basic Authorization");
-    }   
+    }
     sock = shttpd_open_port(port);
     shttpd_listen(ctx, sock);
 

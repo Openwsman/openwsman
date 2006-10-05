@@ -2585,7 +2585,6 @@ shttpd_register_bauth_callback(struct shttpd_ctx *ctx,
                             shttpd_bauth_callback_t bauthf)
 {
         ctx->bauthf = bauthf;
-        ctx->dauthf = NULL;
 }
 
 void
@@ -2593,7 +2592,6 @@ shttpd_register_dauth_callback(struct shttpd_ctx *ctx,
                             shttpd_dauth_callback_t dauthf)
 {
         ctx->dauthf = dauthf;
-        ctx->bauthf = NULL;
 }
 
 #endif /* OPENWSMAN */
@@ -2771,9 +2769,9 @@ checkauth(struct conn *c, const char *path)
 	return (authorized);
 }
 
+
+
 #else  /*OPENWSMAN */
-
-
 
 
 /*
@@ -2786,14 +2784,14 @@ checkauth(struct conn *c, const char *path)
         char *p, *pp;
         int  l;
         struct shttpd_ctx *ctx = c->ctx;
-       
+
         if (!ctx->bauthf && !ctx->dauthf) {
                 return 1;
         }
         if (c->auth == NULL) {
                 return 0;
         }
-        
+
         if (ncasecmp(c->auth, "Digest ", 7) == 0) {
                 if (ctx->dauthf == NULL) {
                         return 0;
@@ -2803,7 +2801,7 @@ checkauth(struct conn *c, const char *path)
                 }
                 return ctx->dauthf(ctx->realm, c->method, &di);
         }
-        
+
         if (ncasecmp(c->auth, "Basic ", 6) != 0) {
                 return 0;
         }
@@ -2811,7 +2809,7 @@ checkauth(struct conn *c, const char *path)
         if (ctx->bauthf == NULL) {
               return 0;
         }
-            
+
         p = c->auth + 5;
         while ((*p == ' ') || (*p == '\t')) {
                 p++;
@@ -3345,16 +3343,18 @@ static void
 send_authorization_request(struct conn *c)
 {
 	char	buf[512];
+    int n = 0;
 
 	
-        if (c->ctx->dauthf) {
-            (void) Snprintf(buf, sizeof(buf),
+    if (c->ctx->dauthf) {
+        n = Snprintf(buf, sizeof(buf),
 	        "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
 	        "nonce=\"%lu\"", c->ctx->realm, (unsigned long) current_time);
-        } else {
-            (void) Snprintf(buf, sizeof(buf),
-	        "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->realm);
         }
+    if (c->ctx->bauthf) {
+        (void) Snprintf(buf + n, sizeof(buf) - n,
+	        "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->realm);
+    }
 	senderr(c, 401, "Unauthorized", buf, "Authorization required");
 //    c->flags |= FLAG_KEEP_CONNECTION;
 }

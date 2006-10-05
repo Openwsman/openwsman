@@ -220,9 +220,7 @@ authenticate (SoupSession *session,
 
 
 void  
-wsman_client_handler( WsManClient *cl, 
-                      WsXmlDocH rqstDoc, 
-                      void* user_data) 
+wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
 {
     SoupSession *session = NULL;
     SoupMessage *msg= NULL;
@@ -281,13 +279,64 @@ printf("Authorization required\n");
 #ifdef LIBCURL_CLIENT
 
 
-static void
-reauthenticate(char **username, char **password)
+static long
+reauthenticate(long auth_avail, char **username, char **password)
 {
     char *pw;
     char user[21];
+    char auth[4];
+    long choosen_auth = auth_avail;
 
-    fprintf(stderr,"Authentication failed, please retry\n");
+    fprintf(stdout,"Authentication failed, please retry\n");
+    if (choosen_auth == CURLAUTH_BASIC) {
+        printf("BASIC authentication is used\n");
+        choosen_auth = CURLAUTH_BASIC;
+        goto REQUEST_PASSWORD;
+    }
+    if (choosen_auth == CURLAUTH_DIGEST) {
+        printf("DIGEST authentication is used\n");
+        goto REQUEST_PASSWORD;
+    }
+    if (choosen_auth == CURLAUTH_NTLM) {
+        printf("NTLM authentication is used\n");
+        goto REQUEST_PASSWORD;
+    }
+    choosen_auth = 0;
+    while(1) {
+ //       while(fgets(auth, 1, stdin) != NULL) printf("%c", auth[0]);
+        printf("Server supports the following authentication types:");
+        if (auth_avail & CURLAUTH_BASIC) {
+            printf(" Basic(b)");
+        }
+        if (auth_avail & CURLAUTH_DIGEST) {
+            printf(" DIGEST(d)");
+        }
+        if (auth_avail & CURLAUTH_NTLM) {
+            printf(" NTLM(n)");
+        }
+        printf("\nChoose the one: ");
+        fflush(stdout);
+        auth[0] = 0;
+        fgets(auth, 4, stdin);
+        if (auth[0] == 'b' && auth_avail & CURLAUTH_BASIC) {
+            choosen_auth = CURLAUTH_BASIC;
+            break;
+        }
+        if (auth[0] == 'd' && auth_avail & CURLAUTH_DIGEST) {
+            choosen_auth = CURLAUTH_DIGEST;
+            break;
+        }
+        if (auth[0] == 'n' && auth_avail & CURLAUTH_NTLM) {
+            choosen_auth = CURLAUTH_NTLM;
+            break;
+        }
+        if (auth[0] = 0) {
+            return 0;
+        }
+        printf("Wrong authentication type. Repeate once more\n");
+    }
+REQUEST_PASSWORD:
+//    while(fgets(auth, 1, stdin) != NULL) printf("%c", auth[0]);
     printf("User name: ");
     fflush(stdout); 
     fgets(user, 20, stdin);
@@ -299,6 +348,11 @@ reauthenticate(char **username, char **password)
     pw = getpass("Password: ");
     *password = u_strdup_printf ("%s", pw);
 
+    if (strlen(*username) == 0) {
+        debug("No username. Authorization canceled");
+        return 0;
+    }
+    return choosen_auth;
 }
 
 typedef struct {
@@ -320,7 +374,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
     memcpy(ctx->buf + ctx->ind, ptr, len);
     ctx->ind += len;
     ctx->buf[ctx->ind] = 0;
-printf("write_handler: recieved %d bytes\n", len);
+    debug("write_handler: recieved %d bytes\n", len);
     return len;
 }
 
@@ -387,13 +441,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             goto DONE;
         }
     }
-        
-    r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC)"); 
-        goto DONE;
-    }
-    
+
     r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)"); 
@@ -403,7 +451,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)"); 
         goto DONE;
-    }    
+    }
     headers = curl_slist_append(headers,
         "Content-Type: application/soap+xml;charset=UTF-8");    
     usag = malloc(12 + strlen(wsman_options_get_agent()) + 1);
@@ -431,7 +479,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         if (r != 0) {
             curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)"); 
             goto DONE;
-        }    }
+        }
+    }
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
     if (r != 0) {
@@ -440,7 +489,13 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     }
 
     while (1) {
+        long auth_avail = CURLAUTH_BASIC;
         if (wsc->data.user && wsc->data.pwd) {
+            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_avail);
+            if (r != 0) {
+                curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed"); 
+                goto DONE;
+            }
             u_free(upwd);
             upwd = NULL;
             upwd = malloc(strlen(wsc->data.user) +
@@ -452,35 +507,45 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             sprintf(upwd, "%s:%s", wsc->data.user, wsc->data.pwd);
             r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
             if (r != 0) {
-                curl_err("Could not curl_easy_setopt(curl, CURLOPT_USERPWD, ..)"); 
+                curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
                 goto DONE;
             }
         }
         r = curl_easy_perform(curl);
         if (r != CURLE_OK) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)"); 
+            curl_err("curl_easy_setopt(CURLOPT_POSTFIELDS) failed"); 
             goto DONE;
         }
         r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLINFO_RESPONSE_CODE, ..)"); 
+            curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed"); 
             goto DONE;
         }
 
         if (http_code != 401) {
-            // not authorization required or bad authorization
             break;
         }
-        reauthenticate(&wsc->data.user, &wsc->data.pwd);
+        // we are here because of authorization required
+        r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
+        if (r != 0) {
+            curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
+            goto DONE;
+        }
+        auth_avail = reauthenticate(auth_avail, &wsc->data.user,
+                            &wsc->data.pwd);
         tr_data.ind = 0;
+        if (auth_avail == 0) {
+            // user wants to cancel authorization
+            curl_err("User didn't provide authorization data"); 
+            goto DONE;
+        }
     }
-    
-    
+
     if (tr_data.ind == 0) {
         // No data transfered
         goto DONE;
     }
-    
+
     con->response = (char *)malloc(tr_data.ind + 1);
     memcpy(con->response, wbuf, tr_data.ind);
     con->response[tr_data.ind] = 0;
@@ -517,7 +582,7 @@ int main(int argc, char** argv)
 {     
     int retVal = 0;   
     char *filename;
-    dictionary       *ini = NULL;
+    dictionary       *ini;
 
     g_type_init ();
 #ifdef LIBSOUP_CLIENT
@@ -527,16 +592,18 @@ int main(int argc, char** argv)
         return 1;
 
     filename = (char *)wsman_options_get_config_file();
-    if (filename)  {
-        ini = iniparser_load(filename);
-        printf("Using conf file: %s\n", filename);
-        if (ini==NULL) {
-            fprintf(stderr, "cannot parse file [%s]", filename);
-            return 1;
-        } else if (!wsman_read_client_config(ini)) {
-            fprintf(stderr, "Configuration file not found\n");
-            return 1;
-        }
+    if (!filename)  {
+        filename = DEFAULT_CONFIG_FILE;
+    }
+
+    ini = iniparser_load(filename);
+    printf("Using conf file: %s\n", filename);
+    if (ini==NULL) {
+        fprintf(stderr, "cannot parse file [%s]", filename);
+        return 1;
+    } else if (!wsman_read_client_config(ini)) {
+        fprintf(stderr, "Configuration file not found\n");
+        return 1;
     }
 
     initialize_logging ();
@@ -723,8 +790,7 @@ int main(int argc, char** argv)
     soap_free(cntx);
     */
 
-    if (ini)
-        iniparser_freedict(ini);
+    iniparser_freedict(ini);
     return retVal;
 
 }
