@@ -3350,7 +3350,10 @@ send_authorization_request(struct conn *c)
         n = Snprintf(buf, sizeof(buf),
 	        "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
 	        "nonce=\"%lu\"", c->ctx->realm, (unsigned long) current_time);
+        if (c->ctx->bauthf) {
+            n += Snprintf(buf +n, sizeof(buf) - n, "\r\n");
         }
+    }
     if (c->ctx->bauthf) {
         (void) Snprintf(buf + n, sizeof(buf) - n,
 	        "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->realm);

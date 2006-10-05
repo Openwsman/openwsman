@@ -10,6 +10,13 @@ struct _WsActions
 typedef struct _WsActions WsActions;
 
 
+// Possible authentication methods
+#define AUTH_BASIC      0
+#define AUTH_DIGEST     1
+#define AUTH_NTLM       2
+#define AUTH_MAX        3
+
+
 
  int wsman_parse_options(int argc, char **argv);
 
@@ -42,6 +49,8 @@ const char * wsman_options_get_config_file (void);
 int wsman_read_client_config (dictionary *ini);
 char * wsman_options_get_path (void);
 char * wsman_options_get_auth_method (void);
+int wsman_is_auth_method(int method);
+
 
 
 unsigned long wsman_options_get_max_envelope_size (void);

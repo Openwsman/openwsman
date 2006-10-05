@@ -234,7 +234,6 @@ printf("wsman_client_handler   soap\n");
     } else {
         session = soup_session_async_new ();    
     }
-printf("wsman_client_handler   soap 1; session = %p\n", session);
 
     g_signal_connect (session, "authenticate", G_CALLBACK (authenticate), cl);
     g_signal_connect (session, "reauthenticate", G_CALLBACK (reauthenticate), cl);
@@ -248,16 +247,14 @@ printf("wsman_client_handler   soap 1; session = %p\n", session);
     soup_message_add_header(msg->request_headers, "User-Agent", wsman_options_get_agent());
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED, buf, len);
-printf("wsman_client_handler   soap; send message\n");
+
     // Send the message...        
     soup_session_send_message (session, msg);
-printf("Http status = %d\n", msg->status_code);
+
     if (msg->status_code != SOUP_STATUS_UNAUTHORIZED && msg->status_code != SOUP_STATUS_OK) {
         printf ("Connection to server failed: %s (%d)\n", msg->reason_phrase, msg->status_code);        
     }
-if (msg->status_code == SOUP_STATUS_UNAUTHORIZED) {
-printf("Authorization required\n");
-}
+
     if (msg->response.body) {
         con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
         strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);        
@@ -280,59 +277,35 @@ reauthenticate(long auth_avail, char **username, char **password)
 {
     char *pw;
     char user[21];
-    char auth[4];
-    long choosen_auth = auth_avail;
+    long choosen_auth = 0;
 
-    fprintf(stdout,"Authentication failed, please retry\n");
-    if (choosen_auth == CURLAUTH_BASIC) {
+    if (auth_avail & CURLAUTH_DIGEST &&
+            wsman_is_auth_method(AUTH_DIGEST)) {
+        choosen_auth = CURLAUTH_DIGEST;
+        printf("DIGEST authentication is used\n");
+        goto REQUEST_PASSWORD;
+    }
+    if (auth_avail & CURLAUTH_NTLM &&
+            wsman_is_auth_method(AUTH_NTLM)) {
+        choosen_auth = CURLAUTH_NTLM;
+        printf("NTLM authentication is used\n");
+        goto REQUEST_PASSWORD;
+    }
+    if (auth_avail & CURLAUTH_BASIC &&
+            wsman_is_auth_method(AUTH_BASIC)) {
         printf("BASIC authentication is used\n");
         choosen_auth = CURLAUTH_BASIC;
         goto REQUEST_PASSWORD;
     }
-    if (choosen_auth == CURLAUTH_DIGEST) {
-        printf("DIGEST authentication is used\n");
-        goto REQUEST_PASSWORD;
-    }
-    if (choosen_auth == CURLAUTH_NTLM) {
-        printf("NTLM authentication is used\n");
-        goto REQUEST_PASSWORD;
-    }
-    choosen_auth = 0;
-    while(1) {
- //       while(fgets(auth, 1, stdin) != NULL) printf("%c", auth[0]);
-        printf("Server supports the following authentication types:");
-        if (auth_avail & CURLAUTH_BASIC) {
-            printf(" Basic(b)");
-        }
-        if (auth_avail & CURLAUTH_DIGEST) {
-            printf(" DIGEST(d)");
-        }
-        if (auth_avail & CURLAUTH_NTLM) {
-            printf(" NTLM(n)");
-        }
-        printf("\nChoose the one: ");
-        fflush(stdout);
-        auth[0] = 0;
-        fgets(auth, 4, stdin);
-        if (auth[0] == 'b' && auth_avail & CURLAUTH_BASIC) {
-            choosen_auth = CURLAUTH_BASIC;
-            break;
-        }
-        if (auth[0] == 'd' && auth_avail & CURLAUTH_DIGEST) {
-            choosen_auth = CURLAUTH_DIGEST;
-            break;
-        }
-        if (auth[0] == 'n' && auth_avail & CURLAUTH_NTLM) {
-            choosen_auth = CURLAUTH_NTLM;
-            break;
-        }
-        if (auth[0] = 0) {
-            return 0;
-        }
-        printf("Wrong authentication type. Repeate once more\n");
-    }
+
+    printf("Client does not support acceptable by server "
+                "authentication types\n");
+    return 0;
+
+
 REQUEST_PASSWORD:
-//    while(fgets(auth, 1, stdin) != NULL) printf("%c", auth[0]);
+    fprintf(stdout,"Authentication failed, please retry\n");
+
     printf("User name: ");
     fflush(stdout); 
     fgets(user, 20, stdin);
@@ -362,7 +335,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 {
     transfer_ctx_t *ctx = data;
     size_t len;
-   
+
     len = size * nmemb;
     if (len >= ctx->len - ctx->ind) {
         len = ctx->len - ctx->ind -1;
@@ -397,7 +370,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     long http_code;
     char    *proxy;
     char *proxyauth;
-    
+    long auth_avail = CURLAUTH_BASIC;
+
     if (wsman_options_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
     } else {
@@ -408,19 +382,19 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         curl_err("Could not initialize curl globals");
         goto DONE;
     }
-    
+
     curl = curl_easy_init();
     if (curl == NULL) {
         curl_err("Could not init easy curl");
         goto DONE;
     }
-    
+
     r = curl_easy_setopt(curl, CURLOPT_URL, wsc->data.endpoint);
     if (r != 0) {
         curl_err("Could notcurl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint)");
         goto DONE;
     }
-    
+
     proxy = wsman_options_get_proxy();
     if (proxy) {
         r = curl_easy_setopt(curl, CURLOPT_PROXY, proxy);
@@ -485,7 +459,6 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     }
 
     while (1) {
-        long auth_avail = CURLAUTH_BASIC;
         if (wsc->data.user && wsc->data.pwd) {
             r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_avail);
             if (r != 0) {
@@ -557,11 +530,11 @@ DONE:
     if (curl) {
         curl_global_cleanup();
     }
-    
-    return;   
-   
+
+    return;
+
 }
-    
+
 #endif
 
 
@@ -569,7 +542,6 @@ static void
 initialize_logging (void)
 {
     debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-
 } /* initialize_logging */
 
 int main(int argc, char** argv)
@@ -578,8 +550,8 @@ int main(int argc, char** argv)
     char *filename;
     dictionary       *ini = NULL;
 
-    g_type_init ();
 #ifdef LIBSOUP_CLIENT
+    g_type_init ();
     g_thread_init (NULL);
 #endif
     if (!wsman_parse_options(argc, argv))

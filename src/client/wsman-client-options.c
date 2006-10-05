@@ -48,6 +48,13 @@
 #include "wsman-client-options.h"
 #include "wsman.h"
 
+static char *auth_methods[] = {
+     "basic",
+     "digest",
+     "ntlm",
+     NULL,
+};
+
 static const char **wsman_argv = NULL;
 
 static gint server_port =  80;
@@ -80,7 +87,7 @@ static gchar *resource_uri = NULL;
 static gchar *invoke_method = NULL;
 static gchar *url_path = NULL;
 static gchar **properties = NULL;
-static gchar authentication_method = NULL;
+static gchar *authentication_method = NULL;
 
 static gchar *proxy = NULL;
 static gchar *proxy_upwd = NULL;
@@ -102,19 +109,20 @@ gboolean wsman_parse_options(int argc, char **argv)
     gboolean retval = FALSE;
     GError *error = NULL;
 
-    GOptionEntry options[] = {						
+    GOptionEntry options[] = {
 	    { "debug",'d', 0 ,G_OPTION_ARG_INT,&debug_level,"Set the verbosity of debugging output.", "1-6" },
-        { "cafile", 'c', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },                          
+        { "cafile", 'c', 0, G_OPTION_ARG_FILENAME, &cafile, "Certificate file", "<filename>"  },
         { "username", 'u', 0, G_OPTION_ARG_STRING, &username, "User name", "<username>" },
         { "path", 'g', 0, G_OPTION_ARG_STRING, &url_path, "Path", "<path>" },
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" }, 
         { "proxy", 'x', 0, G_OPTION_ARG_STRING, &proxy, "Proxy name", "<proxy>" },
-        { "proxyauth", 'y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },               
-        { "auth", 'y', 0, G_OPTION_ARG_STRING, &authentication_method, "Authentication Method", "<basic|digest>" },               
-        { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
-        { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
+        { "proxyauth", 'y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },
+        { "auth", 'y', 0, G_OPTION_ARG_STRING, &authentication_method, "Authentication Method", "<basic|digest>" },
+        { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },
+        { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties,
+                    "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },
         { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
 
         { NULL }
@@ -371,4 +379,17 @@ char * wsman_options_get_agent (void)
 char * wsman_options_get_auth_method (void)
 {	
     return authentication_method;
-}   
+}
+
+int wsman_is_auth_method(int method)
+{
+    if (authentication_method == NULL) {
+        return 1;
+    }
+    if (method >= AUTH_MAX) {
+        return 0;
+    }
+    return (!strncasecmp(authentication_method, auth_methods[method],
+            strlen(authentication_method)));
+}
+
