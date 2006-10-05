@@ -80,6 +80,7 @@ static gchar *resource_uri = NULL;
 static gchar *invoke_method = NULL;
 static gchar *url_path = NULL;
 static gchar **properties = NULL;
+static gchar authentication_method = NULL;
 
 static gchar *proxy = NULL;
 static gchar *proxy_upwd = NULL;
@@ -111,6 +112,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" }, 
         { "proxy", 'x', 0, G_OPTION_ARG_STRING, &proxy, "Proxy name", "<proxy>" },
         { "proxyauth", 'y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },               
+        { "auth", 'y', 0, G_OPTION_ARG_STRING, &authentication_method, "Authentication Method", "<basic|digest>" },               
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },                
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties, "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },       
         { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
@@ -217,6 +219,7 @@ int wsman_read_client_config (dictionary *ini)
 {
     if (iniparser_find_entry(ini, "client")) {
         agent = iniparser_getstr(ini, "client:agent");
+        authentication_method = authentication_method? authentication_method: iniparser_getstr(ini, "client:authentication_method");
     } else {
         return 0;
     }
@@ -364,4 +367,8 @@ char * wsman_options_get_agent (void)
         return agent;
     else
         return PACKAGE_STRING;
+}   
+char * wsman_options_get_auth_method (void)
+{	
+    return authentication_method;
 }   

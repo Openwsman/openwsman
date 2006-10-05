@@ -41,6 +41,7 @@ char * wsman_options_get_agent (void);
 const char * wsman_options_get_config_file (void);
 int wsman_read_client_config (dictionary *ini);
 char * wsman_options_get_path (void);
+char * wsman_options_get_auth_method (void);
 
 
 unsigned long wsman_options_get_max_envelope_size (void);
