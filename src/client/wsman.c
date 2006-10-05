@@ -273,7 +273,7 @@ printf("wsman_client_handler   soap\n");
 
 
 static long
-reauthenticate(long auth_avail, char **username, char **password)
+reauthenticate(long auth_set, long auth_avail, char **username, char **password)
 {
     char *pw;
     char user[21];
@@ -304,6 +304,10 @@ reauthenticate(long auth_avail, char **username, char **password)
 
 
 REQUEST_PASSWORD:
+    if (auth_set == 0 ** *username && *password) {
+        // use username and password from command line 
+        return choosen_auth;
+    }
     fprintf(stdout,"Authentication failed, please retry\n");
 
     printf("User name: ");
@@ -370,7 +374,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     long http_code;
     char    *proxy;
     char *proxyauth;
-    long auth_avail = CURLAUTH_BASIC;
+    long auth_avail = 0;
+    long auth_set = 0;
 
     if (wsman_options_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
@@ -459,14 +464,13 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     }
 
     while (1) {
-        if (wsc->data.user && wsc->data.pwd) {
-            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_avail);
+        if (wsc->data.user && wsc->data.pwd && auth_set) {
+            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
             if (r != 0) {
                 curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed"); 
                 goto DONE;
             }
             u_free(upwd);
-            upwd = NULL;
             upwd = malloc(strlen(wsc->data.user) +
                 strlen(wsc->data.pwd) + 2);
             if (!upwd) {
@@ -500,10 +504,10 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
             goto DONE;
         }
-        auth_avail = reauthenticate(auth_avail, &wsc->data.user,
+        auth_set = reauthenticate(auth_set, auth_avail, &wsc->data.user,
                             &wsc->data.pwd);
         tr_data.ind = 0;
-        if (auth_avail == 0) {
+        if (auth_set == 0) {
             // user wants to cancel authorization
             curl_err("User didn't provide authorization data"); 
             goto DONE;
