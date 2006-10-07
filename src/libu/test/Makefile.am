@@ -8,6 +8,8 @@ LIBS = -lpthread \
 
 test_list_SOURCES = test_list.c
 test_string_SOURCES = test_string.c
+test_md5_SOURCES = test_md5.c
 
 noinst_PROGRAMS =  test_list \
-		   test_string
+		   test_string \
+		   test_md5 

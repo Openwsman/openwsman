@@ -379,3 +379,18 @@ md5_finish(md5_state_t *pms, md5_byte_t digest[16])
     for (i = 0; i < 16; ++i)
 	digest[i] = (md5_byte_t)(pms->abcd[i >> 2] >> ((i & 3) << 3));
 }
+
+
+char *md52char(md5_byte_t digest[16])
+{
+    char ctbl[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+    static char str[33];
+    int i;
+
+    for(i=0;i<16;i++){
+        str[2*i]=ctbl[(digest[i]>>4)&0xf];
+        str[2*i+1]=ctbl[digest[i]&0xf];
+    }
+    str[33]='\0';
+    return str;
+}

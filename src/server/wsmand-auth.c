@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "glib.h"
 #include "u/libu.h"
 #include <wsmand-auth.h>
 
@@ -15,10 +14,11 @@
 
 static int 
 check_digest_ha1 (WSmanAuthDigest *digest,
-	     gchar                *ha1)
+	          char *ha1)
 {
 	md5_state_t ctx;
-	char hex_a2[33], o[33];
+	md5_byte_t hex_a2[16];
+        md5_byte_t o[16];
 
 
 	/* compute A2 */
@@ -36,7 +36,7 @@ check_digest_ha1 (WSmanAuthDigest *digest,
 	}
 
 	/* hexify A2 */
-	md5_finish (&ctx, (md5_byte_t *)hex_a2);
+	md5_finish (&ctx, hex_a2);
 
 	/* compute KD */
 	md5_init (&ctx);
@@ -58,10 +58,11 @@ check_digest_ha1 (WSmanAuthDigest *digest,
 	md5_append (&ctx, (const md5_byte_t *)":", 1);
 
 	md5_append (&ctx, (const md5_byte_t *)hex_a2, 32);
-	md5_finish (&ctx, (md5_byte_t *)o);
+	md5_finish (&ctx, o);
 
-        debug( "expected: %s, actual: %s", digest->digest_response, o);
-	return strcmp (o, digest->digest_response) == 0;
+        char *resp = md52char(o);
+        debug( "expected: %s, actual: %s", digest->digest_response, resp);
+	return strcmp (resp, digest->digest_response) == 0;
 }
 
 
@@ -85,6 +86,7 @@ ws_authorize_digest(char *filename, WSmanAuthDigest *digest)
                 }
                 debug( "user: %s, realm: %s, ha1: %s", u, dom, ha1);
                 if (!strcmp(digest->username, u) && !strcmp(digest->realm , dom)) {
+                    debug("check response");
                     authorized = check_digest_ha1(digest, ha1);
                     break;
                 }
