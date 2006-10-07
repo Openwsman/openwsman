@@ -40,7 +40,7 @@ check_digest_ha1 (WSmanAuthDigest *digest,
 
 	/* compute KD */
 	md5_init (&ctx);
-	md5_append (&ctx, (const md5_byte_t *)ha1, 32);
+	md5_append (&ctx, (const md5_byte_t *)ha1, strlen(ha1));
 	md5_append (&ctx, (const md5_byte_t *)":", 1);
 	md5_append (&ctx, (const md5_byte_t *)digest->nonce, strlen (digest->nonce));
 	md5_append (&ctx, (const md5_byte_t *)":", 1);
@@ -57,7 +57,7 @@ check_digest_ha1 (WSmanAuthDigest *digest,
                 strlen (digest->qop));
 	md5_append (&ctx, (const md5_byte_t *)":", 1);
 
-	md5_append (&ctx, (const md5_byte_t *)hex_a2, 32);
+	md5_append (&ctx,  (const md5_byte_t *)md52char(hex_a2), strlen(md52char(hex_a2)));
 	md5_finish (&ctx, o);
 
         char *resp = md52char(o);
