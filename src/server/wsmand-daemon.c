@@ -65,6 +65,8 @@ static gint syslog_level = -1;
 static gchar *log_location = NULL;
 static gchar *digest_password_file = NULL;
 static gchar *basic_password_file = NULL;
+static gint max_threads = 1;
+static gint min_threads = 4;
 
 static char *config_file = NULL;
 
@@ -113,13 +115,15 @@ int wsmand_read_config (dictionary *ini)
         server_port = iniparser_getint (ini, "server:port", -1);
         server_ssl_port =  iniparser_getint(ini, "server:ssl_port",-1);
         debug_level = iniparser_getint (ini, "server:debug_level", 0);
-        service_path = iniparser_getstr (ini, "server:service_path");
+        service_path = iniparser_getstring (ini, "server:service_path", "/wsman");
         ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
         ssl_cert_file = iniparser_getstr (ini, "server:ssl_cert_file");
         use_digest = iniparser_getboolean (ini, "server:use_digest", 0);
         digest_password_file = iniparser_getstr (ini, "server:digest_password_file");
         basic_password_file = iniparser_getstr (ini, "server:basic_password_file");
         log_location = iniparser_getstr (ini, "server:log_location");
+        min_threads  = iniparser_getint(ini, "server:min_threads", 1);
+        max_threads  = iniparser_getint(ini, "server:max_threads", 4);
     } else {
         return 0;
     }
@@ -223,6 +227,16 @@ gboolean
 wsmand_options_get_digest (void)
 {
     return use_digest;
+}
+
+int wsmand_options_get_min_threads (void)
+{
+    return min_threads;
+}
+
+int wsmand_options_get_max_threads (void)
+{
+    return max_threads;
 }
 
 

@@ -289,7 +289,7 @@ main (int argc, char **argv)
 
     filename = (char *)wsmand_options_get_config_file();
     ini = iniparser_load(filename);
-    printf("Using conf file: %s\n", filename);
+    debug("Using conf file: %s", filename);
     if (ini==NULL) {
         fprintf(stderr, "cannot parse file [%s]", filename);
         return 1;

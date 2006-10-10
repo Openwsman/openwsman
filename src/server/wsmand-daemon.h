@@ -71,6 +71,10 @@ char *wsmand_options_get_ssl_cert_file(void);
 gboolean wsmand_options_get_digest(void);
 char *wsmand_options_get_digest_password_file (void);
 char *wsmand_options_get_basic_password_file (void);
+char *wsmand_options_get_service_path (void);
+int wsmand_options_get_min_threads (void);
+int wsmand_options_get_max_threads (void);
+
 
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug (void);
@@ -78,7 +82,7 @@ int wsmand_options_get_foreground_debug (void);
 const char **
 wsmand_options_get_argv (void);
 int wsmand_read_config (dictionary *ini);
-char *wsmand_options_get_service_path (void);
+
 
 
 

@@ -223,7 +223,7 @@ wsman_client_handler( WsManClient *cl,
 
     char *buf = NULL;
     int len;
-printf("wsman_client_handler   soap\n");
+
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
 
@@ -407,7 +407,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
             goto DONE;
         }
-    }  
+    }
     proxyauth = wsman_options_get_proxyauth();
     if (proxy) {
         r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, proxyauth);
@@ -419,12 +419,12 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
 
     r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
     if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)"); 
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
         goto DONE;
     }
     r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
     if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)"); 
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
         goto DONE;
     }
     headers = curl_slist_append(headers,
@@ -440,26 +440,26 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
 
     r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)"); 
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)");
         goto DONE;
     }
 
     if (wsman_options_get_cafile() != NULL) {
-        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsman_options_get_cafile());    
+        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsman_options_get_cafile());
         if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)"); 
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
             goto DONE;
         }
-        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsman_options_get_cafile());    
+        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsman_options_get_cafile());
         if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)"); 
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
             goto DONE;
         }
     }
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
     if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)"); 
+        curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
         goto DONE;
     }
 
@@ -467,7 +467,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         if (wsc->data.user && wsc->data.pwd && auth_set) {
             r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
             if (r != 0) {
-                curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed"); 
+                curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
                 goto DONE;
             }
             u_free(upwd);
@@ -491,7 +491,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         }
         r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         if (r != 0) {
-            curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed"); 
+            curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
             goto DONE;
         }
 
@@ -509,7 +509,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         tr_data.ind = 0;
         if (auth_set == 0) {
             // user wants to cancel authorization
-            curl_err("User didn't provide authorization data"); 
+            curl_err("User didn't provide authorization data");
             goto DONE;
         }
     }
@@ -522,11 +522,11 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     con->response = (char *)malloc(tr_data.ind + 1);
     memcpy(con->response, wbuf, tr_data.ind);
     con->response[tr_data.ind] = 0;
-    // printf("con->response[%s]\n",  con->response);
+
 DONE:
     if (http_code != 200) {
         fprintf (stderr,
-            "Connection to server failed: response code %ld\n", http_code);        
+            "Connection to server failed: response code %ld\n", http_code);
     }
     curl_slist_free_all(headers);
     u_free(usag);
@@ -549,8 +549,8 @@ initialize_logging (void)
 } /* initialize_logging */
 
 int main(int argc, char** argv)
-{     
-    int retVal = 0;   
+{
+    int retVal = 0;
     char *filename;
     dictionary       *ini = NULL;
 
@@ -602,7 +602,7 @@ int main(int argc, char** argv)
 
     if (cl == NULL) {
         fprintf(stderr, "Null Client\n");
-    } 
+    }
 
 
     wsman_client_add_handler(wsman_client_handler, NULL);
@@ -643,37 +643,42 @@ int main(int argc, char** argv)
     switch (op) 
     {
     case  ACTION_TEST:
-        rqstDoc = ws_xml_read_file(ws_context_get_runtime(cntx), wsman_options_get_test_file(), "UTF-8", 0 );
+        rqstDoc = ws_xml_read_file(ws_context_get_runtime(cntx),
+                        wsman_options_get_test_file(), "UTF-8", 0 );
         doc = ws_send_get_response(cl, rqstDoc, 60000);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
         break;
-    case  ACTION_IDENTIFY: 			
+    case  ACTION_IDENTIFY:
         doc = cl->ft->identify(cl, options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
         }    
         break;
-    case  ACTION_INVOKE: 			
-        doc = cl->ft->invoke(cl, resourceUri, wsman_options_get_invoke_method(), wsman_options_get_properties(), options);
+    case  ACTION_INVOKE:
+        doc = cl->ft->invoke(cl, resourceUri,
+                wsman_options_get_invoke_method(),
+                wsman_options_get_properties(), options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-        }    
+        }
         break;
-    case  ACTION_TRANSFER_CREATE: 			
-        doc = cl->ft->create(cl, resourceUri, wsman_options_get_properties(), options);
+    case  ACTION_TRANSFER_CREATE:
+        doc = cl->ft->create(cl, resourceUri,
+                wsman_options_get_properties(), options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-        }    
+        }
         break;
-    case  ACTION_TRANSFER_PUT: 			
-        doc = cl->ft->put(cl, resourceUri, wsman_options_get_properties(), options);        		        		
+    case  ACTION_TRANSFER_PUT:
+        doc = cl->ft->put(cl, resourceUri,
+                wsman_options_get_properties(), options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-        }    
+        }
         break;
-    case  ACTION_TRANSFER_GET: 			
+    case  ACTION_TRANSFER_GET:
         doc = cl->ft->get(cl, resourceUri, options);
         if (doc) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
@@ -705,27 +710,33 @@ int main(int argc, char** argv)
         }
         if (wsman_options_get_estimate_enum())
             options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
-        
-        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, resourceUri, optimize_max_elements, options);
+
+        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
+                resourceUri, optimize_max_elements, options);
         enumContext = wsenum_get_enum_context(enum_response); 
         WsXmlNodeH cntxNode;
         debug( "enumContext: %s", enumContext );
         if (enumContext) {
-            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext, wsman_options_get_max_elements(), options) )) {
-                WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc), 0, NULL, NULL);
+            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext,
+                                wsman_options_get_max_elements(), options) )) {
+                WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
+                        0, NULL, NULL);
                 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-                if ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP) != 0 ) { 
+                if ( strcmp(ws_xml_get_node_local_name(node),
+                                                WSENUM_PULL_RESP) != 0 ) {
                     debug( "no pull response" );
                     break;
                 }
-                if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE) ) {                		
+                if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+                                                WSENUM_END_OF_SEQUENCE) ) {
                     debug( "End of sequence");
                     break;
                 }
-                if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT)) ) {
+                if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+                                            WSENUM_ENUMERATION_CONTEXT)) ) {
                     u_free(enumContext);
                     enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
-                }                				
+                }
                 if ( enumContext == NULL || enumContext[0] == 0 ) {
                     debug( "No enumeration context");
                     break;
@@ -736,21 +747,19 @@ int main(int argc, char** argv)
                 }
                 counter++;
                 */
-                
             }
         } else {
             if (enum_response)
-                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(enum_response));
-        }    
+                ws_xml_dump_node_tree(stdout,
+                        ws_xml_get_doc_root(enum_response));
+        }
         break;
     default:
-        fprintf(stderr, "Action not supported\n");    		
+        fprintf(stderr, "Action not supported\n");
         retVal = 1;
-    }    
-
+    }
 
     cl->ft->release(cl);   
-        
     /*
     if (doc)
         ws_xml_destroy_doc(doc);
