@@ -482,7 +482,7 @@ wsmand_start_server()
 
     if (wsmand_options_get_ssl_cert_file() &&
                 wsmand_options_get_ssl_key_file() &&
-                wsmand_options_get_server_ssl_port()) {
+                (wsmand_options_get_server_ssl_port() > 0)) {
         port = wsmand_options_get_server_ssl_port();
         debug("Using SSL");
     } else {
