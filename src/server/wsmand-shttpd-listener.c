@@ -351,7 +351,8 @@ create_shttpd_context(SoapH soap)
 {
     struct shttpd_ctx   *ctx;
     if (wsmand_options_get_ssl_cert_file() &&
-                wsmand_options_get_ssl_key_file()) {
+                wsmand_options_get_ssl_key_file() &&
+                (wsmand_options_get_server_ssl_port() > 0)) {
         debug("Using SSL");
         ctx = shttpd_init(NULL,
             "ssl_certificate", wsmand_options_get_ssl_cert_file(),
