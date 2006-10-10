@@ -355,10 +355,12 @@ int process_inbound_operation(op_t* op, WsmanMessage *msg)
 
 
 
-void dispatch_inbound_call(env_t *fw, WsmanMessage *msg) 
+void
+dispatch_inbound_call(env_t *fw,
+                      WsmanMessage *msg) 
 {   
     int ret;		
-    debug( "Inbound call");
+    debug( "Inbound call...");
     WsXmlDocH in_doc = wsman_build_inbound_envelope( fw, msg);
 
     op_t* op = NULL;	
@@ -370,8 +372,7 @@ void dispatch_inbound_call(env_t *fw, WsmanMessage *msg)
                 destroy_dispatch_entry(dispatch);
             }
         } else if (!wsman_fault_occured(msg)) {
-                wsman_set_fault(msg, 
-                        WSA_DESTINATION_UNREACHABLE, 
+                wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE, 
                         WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
         }
 
@@ -390,22 +391,26 @@ void dispatch_inbound_call(env_t *fw, WsmanMessage *msg)
 
 
 
-dispatch_t* get_dispatch_entry(env_t* fw, WsXmlDocH doc) {
+dispatch_t* 
+get_dispatch_entry( env_t* fw, 
+                    WsXmlDocH doc)
+{
     dispatch_t* dispatch = NULL;
-    if ( fw->dispatcherProc ) {    	    
+    if ( fw->dispatcherProc ) {
         dispatch = (dispatch_t*) fw->dispatcherProc(fw->cntx, fw->dispatcherData, doc);
     }
 
-    if ( dispatch == NULL ) {    	
-        warning( "Dispatcher Error");    	
+    if ( dispatch == NULL ) {
+        warning( "Dispatcher Error");
     } else { 
         dispatch->usageCount++;
     }
     return dispatch;
 }
 
-static char * 
-wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r, char *uri ) 
+static char *
+wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r, 
+                           char *uri )
 {
     int i;
     char *ns = NULL;
@@ -424,10 +429,10 @@ wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r, char *uri )
     return ns;
 }
 
-SoapDispatchH wsman_dispatcher(
-        WsContextH cntx, 
-        void* data, 
-        WsXmlDocH doc) 
+SoapDispatchH 
+wsman_dispatcher( WsContextH cntx, 
+                  void* data, 
+                  WsXmlDocH doc) 
 {
     SoapDispatchH disp = NULL;
     char *uri = NULL, *action;

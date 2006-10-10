@@ -32,8 +32,6 @@
  * @author Anas Nashif
  */
 
-#ifndef WSMAN_PLUGINS_H_
-#define WSMAN_PLUGINS_H_
 
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
@@ -50,8 +48,8 @@
 
 
 
-static 
-list_t *scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
+static list_t*
+scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
 {
     struct dirent **namelist;
     int n;
@@ -75,13 +73,15 @@ list_t *scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *
 }
 
 
-static WsManPlugin *plugin_new(void)
+static WsManPlugin*
+plugin_new(void)
 {
     WsManPlugin *self = u_malloc(sizeof(WsManPlugin));
     return self ;
 }
 
-static void plugin_free(WsManPlugin *self)
+static void
+plugin_free(WsManPlugin *self)
 {
     debug( "Un-loading plugins: %s", self->p_name ); 
 
@@ -96,7 +96,8 @@ static void plugin_free(WsManPlugin *self)
     u_free( self );
 }
 
-static WsManPluginError plugin_init(WsManPlugin *self, const char *p_name)
+static WsManPluginError 
+plugin_init(WsManPlugin *self, const char *p_name)
 {
     WsManPluginError PluginError = PLUGIN_ERROR_OK ;
     /*
@@ -186,10 +187,9 @@ select_all_files (const struct dirent *e)
 }
 
 static void
-scan_plugins_in_directory (
-        WsManListenerH *listener, 
-        const char *dir_name, 
-        list_t *plugin_list)
+scan_plugins_in_directory ( WsManListenerH *listener, 
+                            const char *dir_name, 
+                            list_t *plugin_list)
 {
 
 
@@ -236,21 +236,19 @@ scan_plugins_in_directory (
     return;
 }
 
-int wsman_plugins_load(WsManListenerH *listener)
+int
+wsman_plugins_load(WsManListenerH *listener)
 {   
     listener->plugins = list_create(LISTCOUNT_T_MAX);
     scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR, listener->plugins);
     return 0;
 }
 
-int  wsman_plugins_unload(WsManListenerH *listener)
+int 
+wsman_plugins_unload(WsManListenerH *listener)
 {
 
     free_plugins(listener->plugins);
     list_destroy(listener->plugins);
     return 0;
 }
-
-
-
-#endif
