@@ -480,7 +480,15 @@ wsmand_start_server()
     int lsn;
     int port;
 
-    port = wsmand_options_get_server_port();
+
+    if (wsmand_options_get_ssl_cert_file() &&
+                wsmand_options_get_ssl_key_file() &&
+                wsmand_options_get_server_ssl_port()) {
+        port = wsmand_options_get_server_ssl_port();
+        debug("Using SSL");
+    } else {
+        port = wsmand_options_get_server_port();
+    }
     if (port == 0) {
         port = 9001;
     }
