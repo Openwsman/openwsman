@@ -455,6 +455,13 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
             goto DONE;
         }
+        if (wsman_options_get_no_verify_peer()) {
+              r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+            if (r != 0) {
+                curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
+                goto DONE;
+            }
+        }
     }
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
@@ -486,7 +493,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
         }
         r = curl_easy_perform(curl);
         if (r != CURLE_OK) {
-            curl_err("curl_easy_setopt(CURLOPT_POSTFIELDS) failed"); 
+            curl_err("curl_easy_perform failed"); 
             goto DONE;
         }
         r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);

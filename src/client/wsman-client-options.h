@@ -50,6 +50,7 @@ int wsman_read_client_config (dictionary *ini);
 char * wsman_options_get_path (void);
 char * wsman_options_get_auth_method (void);
 int wsman_is_auth_method(int method);
+int wsman_options_get_no_verify_peer (void);
 
 
 

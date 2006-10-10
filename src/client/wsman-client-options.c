@@ -88,7 +88,7 @@ static gchar *invoke_method = NULL;
 static gchar *url_path = NULL;
 static gchar **properties = NULL;
 static gchar *authentication_method = NULL;
-
+static gboolean no_verify_peer = FALSE;
 static gchar *proxy = NULL;
 static gchar *proxy_upwd = NULL;
 
@@ -117,13 +117,14 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password", "<password>" },
         { "hostname", 'h', 0, G_OPTION_ARG_STRING, &server, "Host name", "<hostname>" },
         { "port", 'P', 0, G_OPTION_ARG_INT, &server_port, "Server Port", "<port>" }, 
-        { "proxy", 'x', 0, G_OPTION_ARG_STRING, &proxy, "Proxy name", "<proxy>" },
-        { "proxyauth", 'y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },
+        { "proxy", 'X', 0, G_OPTION_ARG_STRING, &proxy, "Proxy name", "<proxy>" },
+        { "proxyauth", 'Y', 0, G_OPTION_ARG_STRING, &proxy_upwd, "Proxy user:pwd", "<proxyauth>" },
         { "auth", 'y', 0, G_OPTION_ARG_STRING, &authentication_method, "Authentication Method", "<basic|digest>" },
         { "method", 'a', 0, G_OPTION_ARG_STRING, &invoke_method, "Method (Works only with 'invoke')", "<custom method>" },
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties,
                     "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },
         { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
+        { "noverifypeer",  'V', 0, G_OPTION_ARG_NONE,  &no_verify_peer,   "Not to verify peer certificate", NULL },
 
         { NULL }
     };
@@ -380,6 +381,12 @@ char * wsman_options_get_auth_method (void)
 {	
     return authentication_method;
 }
+
+int wsman_options_get_no_verify_peer (void)
+{
+    return no_verify_peer;
+}
+
 
 int wsman_is_auth_method(int method)
 {
