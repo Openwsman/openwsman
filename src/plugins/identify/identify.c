@@ -108,4 +108,8 @@ cleanup( void  *self, void *data )
 	return;
 }
 
+void set_config( void *self, dictionary *config )
+{
+    return;
+}
 

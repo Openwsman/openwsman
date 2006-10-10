@@ -48,29 +48,26 @@
 
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h" 
-#include <libxml/uri.h>
 #include "wsman-faults.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
 
 
 
-WsManListenerH *wsman_dispatch_list_new()
+WsManListenerH*
+wsman_dispatch_list_new()
 {
     WsManListenerH *list = (WsManListenerH *)u_malloc(sizeof(WsManListenerH) );
     return list;
 }
 
-WsContextH wsman_init_plugins(WsManListenerH *listener)
+WsContextH
+wsman_init_plugins(WsManListenerH *listener)
 {	
     list_t *list = list_create(LISTCOUNT_T_MAX);
     WsContextH cntx = NULL;	  	
-
-    /*
-    if (!wsmand_options_get_no_plugins_flag())
-    */
     wsman_plugins_load(listener);
-    lnode_t *node = list_first(listener->plugins);	
+    lnode_t *node = list_first(listener->plugins);
 
     while (node) 
     {		
@@ -78,13 +75,16 @@ WsContextH wsman_init_plugins(WsManListenerH *listener)
         p->interface = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
 
         p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
-        p->get_endpoints(p->p_handle, p->interface );				
+        p->set_config = dlsym(p->p_handle, "set_config");
+        p->get_endpoints(p->p_handle, p->interface );
+        if (listener->config)
+            p->set_config(p->p_handle, listener->config);
 
         lnode_t *i = lnode_create(p->interface);
-        list_append(list, i);			
+        list_append(list, i);
         node = list_next(listener->plugins, node );
     }
-    cntx = ws_create_runtime(list);                    	
+    cntx = ws_create_runtime(list);
     return cntx;
 }
 

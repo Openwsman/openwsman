@@ -46,9 +46,11 @@
 #include "wsman-soap.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
+#include "cim-interface.h"
 
 #include "cim_data.h"
 
+static char *cim_namespace = NULL;
 
 SER_START_ITEMS("CIM", CimResource)
 SER_END_ITEMS("CIM", CimResource);
@@ -77,6 +79,7 @@ get_endpoints( void *self,
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;
+    ifc->config_id = "cim";
     ifc->vendor = "Openwsman Project";
     ifc->displayName = "CIM Resource";
     ifc->notes = "CIM Resource";
@@ -102,5 +105,24 @@ int init( void *self, void **data )
 void cleanup( void *self, void *data )
 {
     return;
+}
+
+void set_config( void *self, dictionary *config )
+{
+    debug("reading configuration file options");
+    if (config)
+    {
+        cim_namespace = iniparser_getstr (config, "cim:default_cim_namespace");
+        debug("cim namespace: %s", cim_namespace);
+    }
+    return;
+}
+
+char *get_cim_namespace()
+{
+    if (cim_namespace)
+        return cim_namespace;
+    else
+        return CIM_NAMESPACE;
 }
 

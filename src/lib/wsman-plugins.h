@@ -56,13 +56,13 @@ typedef struct _WsManPlugin
     /* Clean-up */
     void (*cleanup)( void *self, void *data);
     void (*get_endpoints)( void *self, void *data);
+    void (*set_config)( void *self, dictionary *config);
     void *interface;
-
 } WsManPlugin;
 
 struct __WsManListenerH {
-       /* Plugins */
        list_t *plugins;	
+       dictionary *config;
 };
 typedef struct __WsManListenerH WsManListenerH;
 

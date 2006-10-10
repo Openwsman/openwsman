@@ -31,6 +31,8 @@ SER_DECLARE_EP_ARRAY(CimResource);
 void get_endpoints(void *self, void **data);
 int init (void *self, void **data );
 void cleanup( void *self, void *data );
+void set_config( void *self, dictionary *config );
 WsSupportedNamespaces* get_namespaces(void);
+char *get_cim_namespace(void);
 
 #endif // __CIM_DATA_H__

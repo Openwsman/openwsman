@@ -31,6 +31,6 @@ SER_DECLARE_EP_ARRAY(wsmid_identify);
 void get_endpoints(void *self, void **data);
 int init (void *self, void **data );
 void cleanup( void *self, void *data );
-
+void set_config( void *self, dictionary *config );
 
 #endif 

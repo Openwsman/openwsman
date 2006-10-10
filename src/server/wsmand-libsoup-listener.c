@@ -238,14 +238,15 @@ DONE:
 
 
 WsManListenerH*
-wsmand_start_server() 
+wsmand_start_server(dictionary *ini) 
 {	
     SoupServer *server = NULL;
     // Authentication handler   	   	
     SoupServerAuthContext auth_ctx = { 0 };	
 
     WsManListenerH *listener = wsman_dispatch_list_new();
-    WsContextH cntx = wsman_init_plugins(listener);           
+    listener->config = config;
+    WsContextH cntx = wsman_init_plugins(listener);
     //g_return_val_if_fail(cntx != NULL, 1 );            
 
     SoapH soap = ws_context_get_runtime(cntx);   	

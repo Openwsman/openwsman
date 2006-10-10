@@ -415,7 +415,7 @@ static void service_connection(void *arg)
     SoapH soap = (SoapH)arg;
 //    struct timespec timespec;
 
-    debug("shhtpd thread %d started. num_threads = %d",
+    debug("shttpd thread %d started. num_threads = %d",
                 pthread_self(), num_threads);
     pthread_mutex_lock(&shttpd_mutex);
     while (continue_working) {
@@ -444,7 +444,7 @@ static void service_connection(void *arg)
         pthread_mutex_lock(&shttpd_mutex);
     }
     num_threads--;
-    debug("shhtpd thread %d completed. num_threads = %d",
+    debug("shttpd thread %d completed. num_threads = %d",
                 pthread_self(), num_threads);
     if (num_threads == 0 && continue_working == 0) {
         debug("last thread completed");
@@ -456,9 +456,10 @@ static void service_connection(void *arg)
 #endif
 
 WsManListenerH*
-wsmand_start_server() 
+wsmand_start_server(dictionary *ini) 
 {
     WsManListenerH *listener = wsman_dispatch_list_new();
+    listener->config = ini;
     WsContextH cntx = wsman_init_plugins(listener);
 #ifdef MULTITHREADED_SERVER
     int r;

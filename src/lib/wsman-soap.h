@@ -432,6 +432,7 @@ typedef struct __WsSupportedNamespaces WsSupportedNamespaces;
 struct __WsDispatchInterfaceInfo
 {
 	unsigned long flags;
+	char* config_id;
 	char* version;
 	char* notes;
 	char* vendor;

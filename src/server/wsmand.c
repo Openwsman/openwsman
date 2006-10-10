@@ -282,8 +282,7 @@ main (int argc, char **argv)
     g_type_init ();
     g_thread_init (NULL); 
 #endif
-    if (!wsmand_parse_options(argc, argv)) 
-    {
+    if (!wsmand_parse_options(argc, argv)) {
         return 1;
     }
 
@@ -316,7 +315,7 @@ main (int argc, char **argv)
 
     initialize_logging ();
     WsManListenerH *listener = NULL;
-    if ( (listener = wsmand_start_server()) == NULL) {
+    if ( (listener = wsmand_start_server(ini)) == NULL) {
         return 1;
     }
 

@@ -101,14 +101,13 @@ cim_find_namespace_for_class ( CimClientInfo *client, char *class)
 char*
 cim_get_namespace_selector(hash_t *keys) 
 {
-    char *cim_namespace;
+    char *cim_namespace= NULL;
     hnode_t *hn = hash_lookup(keys, (char *)CIM_NAMESPACE_SELECTOR );
     if (hn) {
         cim_namespace = (char *)hnode_get(hn);
         hash_delete(keys, hn);
+        debug("CIM Namespace: %s", cim_namespace);
     }
-    else
-        cim_namespace = CIM_NAMESPACE;
     return cim_namespace;
 }
 

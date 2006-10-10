@@ -38,6 +38,6 @@
 
 #define AUTHENTICATION_REALM "OPENWSMAN"
 
-WsManListenerH *wsmand_start_server(void);
+WsManListenerH *wsmand_start_server(dictionary *ini);
 
 #endif /*SERVER_H_*/
