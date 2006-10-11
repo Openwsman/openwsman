@@ -16,6 +16,6 @@ typedef struct {
 
 
 int ws_authorize_digest(char *filename, WSmanAuthDigest *digest);
-int ws_authorize_basic(char *filename, char *username, const char *password);
+int ws_authorize_basic(char *username, const char *password);
 
 #endif

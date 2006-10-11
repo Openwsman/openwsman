@@ -96,14 +96,20 @@ ws_authorize_digest(char *filename, WSmanAuthDigest *digest)
 }         
         
 int
-ws_authorize_basic(char *filename, char *username, const char *password)
-{        
+ws_authorize_basic(char *username, const char *password)
+{
+        char *filename = wsmand_options_get_basic_password_file();
         int             authorized = 0;
         char            l[256], u[65], passwd[65];
         char *newpw = NULL ;
-         
-        debug( "Checking for user: %s", username);
-        
+
+        debug( "Checking basic for user: %s; password %s",
+                            username, password);
+        if (filename == NULL) {
+            debug("Could not get password file name");
+            return 0;
+        }
+
         if ((username == NULL) || (password == NULL)) {
                 return 0;
         }
@@ -125,7 +131,7 @@ ws_authorize_basic(char *filename, char *username, const char *password)
                     break;
                 }
        }
-       
+
        return authorized;
 }       
 

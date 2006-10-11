@@ -113,16 +113,7 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
 static int
 basic_auth_callback(char *username, char *password)
 {
-        char *filename = wsmand_options_get_basic_password_file();
-        
-        if (filename == NULL) {
-                debug(
-                     "Could not get password file name");
-                return 0;
-        }
-        debug( "username : [%s] ; passwd [%s]",
-                        username, password);
-        return ws_authorize_basic(filename, username, password);
+        return ws_authorize_basic(username, password);
 }
 
 
@@ -494,7 +485,12 @@ wsmand_start_server(dictionary *ini)
         port = 9001;
     }
     debug( "     Working on port %d", port);
-
+    if (wsmand_options_get_digest_password_file()) {
+        debug( "Using Digest Authorization");
+    }
+    if (wsmand_options_get_basic_password_file()) {
+        debug( "Using builtin Basic Authorization");
+    }
     wsmand_shutdown_add_handler(listener_shutdown_handler, &continue_working);
 
     lsn = shttpd_open_port(port);
