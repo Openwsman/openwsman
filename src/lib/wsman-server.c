@@ -76,12 +76,25 @@ wsman_init_plugins(WsManListenerH *listener)
 
         p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
         p->set_config = dlsym(p->p_handle, "set_config");
-        p->get_endpoints(p->p_handle, p->interface );
-        if (listener->config)
+        if ( p->get_endpoints )
+            p->get_endpoints(p->p_handle, p->interface );
+        if (listener->config &&  p->set_config) {
             p->set_config(p->p_handle, listener->config);
+        } else {
+            debug("no configuration available for plugin: %s",p->p_name);
+        }
 
-        lnode_t *i = lnode_create(p->interface);
-        list_append(list, i);
+        if (p->interface) {
+            debug("Plugin version: %s", ((WsDispatchInterfaceInfo *)p->interface)->version );
+            if (strcmp(PACKAGE_VERSION, ((WsDispatchInterfaceInfo *)p->interface)->version ) == 0 ) {
+                lnode_t *i = lnode_create(p->interface);
+                list_append(list, i);
+            } else {
+                debug("Plugin is not compatible with version of the software or plugin is invalid");
+            }
+        } else {
+            debug("invalid plugins");
+        }
         node = list_next(listener->plugins, node );
     }
     cntx = ws_create_runtime(list);
