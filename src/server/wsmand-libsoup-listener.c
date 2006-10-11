@@ -88,7 +88,7 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx,
 {
     char *filename = NULL;
     WSmanAuthDigest wsdig;
-    
+
     soup_message_foreach_header (msg->request_headers, print_header, NULL);
     soup_message_add_header (msg->response_headers, "Server", PACKAGE"/"VERSION );
     soup_message_add_header (msg->response_headers, "Content-Type", "application/soap+xml;charset=UTF-8"); 
@@ -96,16 +96,12 @@ server_auth_callback ( SoupServerAuthContext *auth_ctx,
     if (auth == NULL) {
         goto NOTAUTHORIZED;
     }
-    
+
     switch (auth->type) {
         case SOUP_AUTH_TYPE_BASIC:
-            filename = wsmand_options_get_basic_password_file();
-            if (filename != NULL) {
-                if (ws_authorize_basic(filename,
-                        (char *)soup_server_auth_get_user (auth),
+            if (ws_authorize_basic((char *)soup_server_auth_get_user (auth),
                         auth->basic.passwd)) {
                     return TRUE;
-                }
             }
             break;
         case SOUP_AUTH_TYPE_DIGEST:
@@ -245,7 +241,7 @@ wsmand_start_server(dictionary *ini)
     SoupServerAuthContext auth_ctx = { 0 };	
 
     WsManListenerH *listener = wsman_dispatch_list_new();
-    listener->config = config;
+    listener->config = ini;
     WsContextH cntx = wsman_init_plugins(listener);
     //g_return_val_if_fail(cntx != NULL, 1 );            
 
