@@ -10,7 +10,7 @@
 struct __CimClientInfo 
 {
 	void *cc;
-        WsSupportedNamespaces namespaces;
+        hash_t          *namespaces;
         hash_t          *selectors;
         char*           cim_namespace;
         char*           resource_uri;

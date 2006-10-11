@@ -53,30 +53,18 @@
 #include "sfcc-interface.h"
 #include "cim-interface.h"
 
-#define XML_NS_SBLIM            "http://sblim.sf.net/wbem/wscim/1/cim-schema/2"
-#define XML_NS_OPENWBEM            "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2"
-#define XML_NS_OMC            "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2"
 
 
 
 
 static char * 
-cim_find_namespace_for_class ( CimClientInfo *client, char *class) 
+cim_find_namespace_for_class ( CimClientInfo *client,
+                               char *class) 
 {
-
-    // FIXME: This should be read from a configuration file
-    WsSupportedNamespaces _namespaces[] =
-    {
-        { XML_NS_CIM_CLASS, "CIM" },
-        { XML_NS_SBLIM, "Linux"},
-        { XML_NS_OPENWBEM, "OpenWBEM"},
-        { XML_NS_OMC, "OMC" },
-        {NULL, NULL}
-    };
-
-    int i;
     char *ns = NULL;
     char *sub;
+    hscan_t hs;
+    hnode_t *hn;
 
     debug("%s", client->method );
     if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
@@ -84,11 +72,11 @@ cim_find_namespace_for_class ( CimClientInfo *client, char *class)
         ns = u_strdup(client->resource_uri);
         return ns;
     }
-    if ( class ) {
-        for(i = 0; _namespaces[i].ns != NULL; i++)
-        {
-            if (_namespaces[i].ns != NULL && ( sub = strstr(class, _namespaces[i].class_prefix))) {
-                ns = u_strdup_printf("%s/%s", _namespaces[i].ns, class);
+    if ( class && client->namespaces) {
+        hash_scan_begin(&hs, client->namespaces);
+        while ((hn = hash_scan_next(&hs))) {    	
+            if ( (sub = strstr(class,  (char*) hnode_getkey(hn)))) {
+                ns = u_strdup_printf("%s/%s", (char*) hnode_get(hn), class);
                 break;
             }
         }

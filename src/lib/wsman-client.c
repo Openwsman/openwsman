@@ -77,7 +77,7 @@ wsman_add_selector_from_uri( WsXmlDocH doc,
         uri = xmlParseURI((const char *)resourceUri);
 
     if (uri->query != NULL  ) {
-        hash_t * query = parse_query(uri->query);
+        hash_t * query = parse_query(uri->query, "&");
         hnode_t *hn;
         hscan_t hs;
         hash_scan_begin(&hs, query);

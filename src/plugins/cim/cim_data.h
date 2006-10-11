@@ -32,7 +32,7 @@ void get_endpoints(void *self, void **data);
 int init (void *self, void **data );
 void cleanup( void *self, void *data );
 void set_config( void *self, dictionary *config );
-WsSupportedNamespaces* get_namespaces(void);
 char *get_cim_namespace(void);
+hash_t* get_vendor_namespaces(void);
 
 #endif // __CIM_DATA_H__

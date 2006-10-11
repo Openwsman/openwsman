@@ -51,6 +51,7 @@
 #include "cim_data.h"
 
 static char *cim_namespace = NULL;
+hash_t *vendor_namespaces = NULL;
 
 SER_START_ITEMS("CIM", CimResource)
 SER_END_ITEMS("CIM", CimResource);
@@ -91,14 +92,8 @@ get_endpoints( void *self,
     return;
 }
 
-WsSupportedNamespaces* get_namespaces()
-{
-    return CimResource_Namespaces;
-}
-
 int init( void *self, void **data )
 {
-    //debug("self config: %s",  (char *)data );
     return 1;
 }
 
@@ -113,12 +108,24 @@ void set_config( void *self, dictionary *config )
     if (config)
     {
         cim_namespace = iniparser_getstr (config, "cim:default_cim_namespace");
+        char *namespaces = iniparser_getstr (config, "cim:vendor_namespaces");
+        if (namespaces)
+        {
+            vendor_namespaces = parse_query(namespaces, ",");
+        }
         debug("cim namespace: %s", cim_namespace);
     }
     return;
 }
 
-char *get_cim_namespace()
+hash_t*
+get_vendor_namespaces()
+{
+    return vendor_namespaces;
+}
+
+char*
+get_cim_namespace()
 {
     if (cim_namespace)
         return cim_namespace;

@@ -4,7 +4,7 @@
 
 #define MAXTOKENS 64
 
-hash_t *parse_query(char *query)
+hash_t *parse_query(char *query, const char *sep )
 {
     char *pp, *tok, *src, *q = NULL;
     char *key, *val;
@@ -14,7 +14,7 @@ hash_t *parse_query(char *query)
     hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
     /* foreach name=value pair... */
-    for(src = query; (tok = strtok_r(src, "&", &pp)) != NULL; src = NULL)
+    for(src = query; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL)
     {
         /* dup the string so we can modify it */
         key = u_strdup(tok);
