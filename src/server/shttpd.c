@@ -121,7 +121,8 @@ typedef struct DIR {
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
-#define	SSL_LIB				"/usr/lib/libssl.so"
+//#define	SSL_LIB				"/usr/lib/libssl.so"
+#define SSL_LIB             "libssl.so"
 #define	DIRSEP				'/'
 #define	O_BINARY			0
 #define	closesocket(a)			close(a)

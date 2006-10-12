@@ -356,7 +356,8 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 void  
 wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
 {
-#define curl_err(str)  printf("Error = %d (%s); %s\n", r, curl_easy_strerror(r), str); \
+#define curl_err(str)  debug("Error = %d (%s); %s", \
+                            r, curl_easy_strerror(r), str); \
                        http_code = 400
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
@@ -376,6 +377,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     char *proxyauth;
     long auth_avail = 0;
     long auth_set = 0;
+    char *str;
 
     if (wsman_options_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
@@ -490,6 +492,9 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
                 curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
                 goto DONE;
             }
+        }
+        if (wsman_options_get_debug_level() >= DEBUG_LEVEL_MESSAGE) {
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         }
         r = curl_easy_perform(curl);
         if (r != CURLE_OK) {

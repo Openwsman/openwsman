@@ -272,8 +272,6 @@ DONE:
                 n += snprintf(arg->buf + n, arg->buflen -n,
 	               "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n",
                         SOAP1_2_CONTENT_TYPE);
-                n += snprintf(arg->buf + n, arg->buflen -n,
-                       "Content-Type: application/soap+xml;charset=UTF-8");
                 break;
         default:
 	       n += snprintf(arg->buf + n, arg->buflen -n, "HTTP/1.1 %d %s\r\n",
