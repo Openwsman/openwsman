@@ -90,10 +90,10 @@ wsman_init_plugins(WsManListenerH *listener)
                 lnode_t *i = lnode_create(p->interface);
                 list_append(list, i);
             } else {
-                debug("Plugin is not compatible with version of the software or plugin is invalid");
+                error("Plugin is not compatible with version of the software or plugin is invalid");
             }
         } else {
-            debug("invalid plugins");
+            error("invalid plugins");
         }
         node = list_next(listener->plugins, node );
     }

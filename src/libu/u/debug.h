@@ -95,6 +95,12 @@ debug_helper (const char *format,
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
                 debug_helper (format))
+#define error( format...) \
+        debug_full(DEBUG_LEVEL_ERROR, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, \
+                debug_helper (format))
+#define message( format...) \
+        debug_full(DEBUG_LEVEL_MESSAGE, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
+                debug_helper (format))
 
 #ifdef __cplusplus
 }

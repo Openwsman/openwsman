@@ -38,8 +38,6 @@
 #include "u/libu.h"
 
 
-
-
 static list_t *handlers = NULL;
 
 unsigned int

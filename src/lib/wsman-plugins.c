@@ -64,7 +64,7 @@ scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
             char *tmp = u_strdup(namelist[n]->d_name);
             lnode_t *node = lnode_create(tmp);
             list_append(files, node );
-            debug("plugin file found: %s", namelist[n]->d_name );
+            //debug("plugin file found: %s", namelist[n]->d_name );
             u_free(namelist[n]);
         }
         u_free(namelist);
@@ -83,7 +83,7 @@ plugin_new(void)
 static void
 plugin_free(WsManPlugin *self)
 {
-    debug( "Un-loading plugins: %s", self->p_name ); 
+    message( "Un-loading plugins: %s", self->p_name ); 
 
     //g_return_if_fail(self);
     //
@@ -133,7 +133,7 @@ plugin_init(WsManPlugin *self, const char *p_name)
 static int
 load_plugin(WsManPlugin *self, const char *p_name)
 {
-    debug("Loading plugin: %s", p_name );
+    message("Loading plugin: %s", p_name );
 
     int retv = -1;
     WsManPluginError err = plugin_init(self, p_name);
@@ -199,7 +199,7 @@ scan_plugins_in_directory ( WsManListenerH *listener,
     */
 
     list_t *files = scan_files_in_dir ( dir_name, select_all_files);
-    debug("found %lu files", list_count(files));
+    //debug("found %lu files", list_count(files));
 
     lnode_t *node = list_first(files);
     while (node != NULL)
@@ -224,7 +224,7 @@ scan_plugins_in_directory ( WsManListenerH *listener,
                     retv = 0 ;
                 }
             } else {
-                debug("Out of memory scanning for plugins.");
+                error("Out of memory scanning for plugins.");
             }
             u_free (plugin_path);
             if (retv != 0  && (NULL != plugin))
