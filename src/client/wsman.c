@@ -298,8 +298,8 @@ reauthenticate(long auth_set, long auth_avail, char **username, char **password)
         goto REQUEST_PASSWORD;
     }
 
-    printf("Client does not support acceptable by server "
-                "authentication types\n");
+    printf("Client does not support authentication type "
+           " acceptable by server\n");
     return 0;
 
 

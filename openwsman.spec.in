@@ -22,7 +22,6 @@ Requires:       openwsman
 Openwsman Development files
 
 
-
 %prep
 %setup
 
@@ -32,14 +31,11 @@ make
 
 %install
 make DESTDIR=%{buildroot} install
-install -d $RPM_BUILD_ROOT/etc/init.d
-install etc/init/wsmand.sh $RPM_BUILD_ROOT/etc/init.d/wsmand
+install -c -m 644 etc/openwsman.conf $RPM_BUILD_ROOT/etc/openwsman
+install -c -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT/etc/openwsman
 
 %clean
 rm -rf "$RPM_BUILD_ROOT"
-
-%post
-ldconfig
 
 %files
 %defattr(-,root,root)
@@ -53,7 +49,6 @@ ldconfig
 %config /etc/openwsman/openwsman.conf
 /etc/openwsman/owsmangencert.sh
 /etc/openwsman/ssleay.cnf
-/etc/init.d/wsmand
 
 
 %files devel
@@ -63,3 +58,4 @@ ldconfig
 %{_libdir}/*.la
 %{_libdir}/openwsman/plugins/*.a
 %{_libdir}/openwsman/plugins/*.la
+
