@@ -879,6 +879,7 @@ int wsman_check_status( WsmanStatus *s);
 char* wsman_get_class_name ( WsContextH cntx );
 
 char* wsman_get_method_name ( WsContextH cntx ); 
+hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );
 
 
 #endif /*SOAP_API_H_*/

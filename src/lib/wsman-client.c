@@ -247,7 +247,10 @@ invoke( WsManClient *cl,
         ws_xml_add_child(argsin, NULL, (char*) hnode_getkey(hn) ,  (char*) hnode_get(hn)  );
     }
     
-    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc));
+    if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+        if (rqstDoc)
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc));
+    }
     respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
     ws_xml_destroy_doc(rqstDoc);
     if (action) 
@@ -287,8 +290,12 @@ char *wsenum_get_enum_context(WsXmlDocH doc) {
     return enumContext;
 }
 
-WsXmlDocH wsenum_enumerate( WsManClient* cl, char *resourceUri, int max_elements , actionOptions options) {
-    debug( "Enumerate");
+WsXmlDocH
+wsenum_enumerate( WsManClient* cl,
+                  char *resourceUri,
+                  int max_elements , 
+                  actionOptions options) {
+    debug( "Enumerate...");
 
     WsXmlDocH respDoc = wsman_enum_send_get_response(cl, WSENUM_ENUMERATE, NULL, resourceUri, max_elements, options);
     if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {

@@ -282,18 +282,18 @@ reauthenticate(long auth_set, long auth_avail, char **username, char **password)
     if (auth_avail & CURLAUTH_DIGEST &&
             wsman_is_auth_method(AUTH_DIGEST)) {
         choosen_auth = CURLAUTH_DIGEST;
-        printf("DIGEST authentication is used\n");
+        message("DIGEST authentication is used\n");
         goto REQUEST_PASSWORD;
     }
     if (auth_avail & CURLAUTH_NTLM &&
             wsman_is_auth_method(AUTH_NTLM)) {
         choosen_auth = CURLAUTH_NTLM;
-        printf("NTLM authentication is used\n");
+        message("NTLM authentication is used\n");
         goto REQUEST_PASSWORD;
     }
     if (auth_avail & CURLAUTH_BASIC &&
             wsman_is_auth_method(AUTH_BASIC)) {
-        printf("BASIC authentication is used\n");
+        message("BASIC authentication is used\n");
         choosen_auth = CURLAUTH_BASIC;
         goto REQUEST_PASSWORD;
     }

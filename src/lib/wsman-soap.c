@@ -206,7 +206,7 @@ ws_create_runtime (list_t *interfaces)
                             ( WsDispatchInterfaceInfo*) node->list_data,
                             dispInfo) != 0 )
                 {
-                    debug( "Interface registeration failed");
+                    error( "Interface registeration failed");
                     u_free(dispInfo);
                     soap = NULL;                   
                 }                                               
@@ -1282,9 +1282,8 @@ char*
 wsman_get_method_name ( WsContextH cntx ) 
 {
     char *m = ws_addressing_get_action(cntx, NULL);
-    char *className = u_strdup(strrchr(m, '/') + 1);
-    //u_free(m);
-    return className;
+    char *method = u_strdup(strrchr(m, '/') + 1);
+    return method;
 }
 
 char*
@@ -1339,6 +1338,36 @@ wsman_remove_query_string(char * resourceUri)
     return result;
 }
 
+
+hash_t*
+wsman_get_method_args ( WsContextH cntx, char *resource_uri ) 
+{
+    char *input = NULL;
+    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+    WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+    if ( doc ) {
+        WsXmlNodeH body = ws_xml_get_soap_body(doc);
+        input = u_strdup_printf("%s_INPUT", wsman_get_method_name (cntx) );
+        WsXmlNodeH in_node = ws_xml_get_child(body, 0, resource_uri, input);
+        if (in_node) {
+            debug("INPUT found");
+            WsXmlNodeH arg;
+            int index = 0;
+            while( (arg = ws_xml_get_child(in_node, index++, NULL, NULL)) )
+            {
+                char *key = ws_xml_get_node_local_name(arg);
+                debug( "Argument: %s=%s", key, ws_xml_get_node_text(arg));
+                if (!hash_alloc_insert(h, key, ws_xml_get_node_text(arg))) {
+                    error("hash_alloc_insert failed");
+                }
+            }
+        }
+    } else {
+        error("xml document is null");
+    }
+    return h;
+}
+
 hash_t*
 wsman_get_selector_list( WsContextH cntx,
                          WsXmlDocH doc)
@@ -1362,20 +1391,18 @@ wsman_get_selector_list( WsContextH cntx,
                 if ( attrVal == NULL )
                     attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
 
-                debug( "Selector: %s", attrVal);
+                debug( "Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
                 if ( attrVal )
                 {
                     if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
-                        debug("hash_alloc_insert failed");
+                        error("hash_alloc_insert failed");
                     }
                 }
-
             }
         }
     } else {
-        debug( "doc is null");
+        error( "doc is null");
     }
-
     return h;
 }
 

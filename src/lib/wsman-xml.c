@@ -926,7 +926,11 @@ WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, char* name)
  * @param localName Local name of the node
  * @return Result XML node
  */
-WsXmlNodeH ws_xml_get_child(WsXmlNodeH parent, int index, char* nsUri, char* localName)
+WsXmlNodeH
+ws_xml_get_child( WsXmlNodeH parent, 
+                  int index,
+                  char* nsUri,
+                  char* localName)
 {
     WsXmlNodeH node = NULL;
 
@@ -968,20 +972,13 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
     if ( node )
     {
         char* nodeNsUri = ws_xml_get_node_name_ns(node);
-
-        if (     ( nsUri == nodeNsUri )
-                ||
-                (nsUri != NULL 
-                 && 
-                 nodeNsUri != NULL 
-                 &&
-                 !strcmp(nodeNsUri, nsUri)) )
+        if (  ( nsUri == nodeNsUri ) ||
+                (nsUri != NULL && nodeNsUri != NULL && !strcmp(nodeNsUri, nsUri)) )
         {
             if ( name == NULL || !strcmp(name, ws_xml_get_node_local_name(node)) )
                 retVal = 1;
         }
     }
-
     return retVal;
 }
 
