@@ -100,7 +100,7 @@ int wsmand_parse_options(int argc, char **argv)
 
     u_error_free(error);
     u_option_context_free(opt_ctx);
-    return retVal;
+    return retval;
 }
 
 const char ** wsmand_options_get_argv (void)
