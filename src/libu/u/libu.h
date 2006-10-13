@@ -47,5 +47,8 @@
 #include <u/strlib.h>
 #include <u/iniparser.h>
 #include <u/debug.h>
+#include <u/uerr.h>
+#include <u/ulist.h>
+#include <u/uoption.h>
 
 #endif /* !_U_LIBU_H_ */

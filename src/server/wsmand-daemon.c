@@ -74,32 +74,32 @@ static char *config_file = NULL;
 
 int wsmand_parse_options(int argc, char **argv) 
 {
-    GOptionContext *opt_ctx;
-    GError *error = NULL;
+    u_option_context_t *opt_ctx;
+    u_error_t *error = NULL;
 
-    GOptionEntry options[] = {
-        { "no-plugins", 	'n', 0 ,G_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
-        { "debug", 		'd', 0 ,G_OPTION_ARG_NONE, 	&foreground_debug, 	"Start daemon in foreground and turn on debugging", NULL },
-        { "syslog", 		's', 0, G_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
-        { "config-file",	'c', 0, G_OPTION_ARG_FILENAME, 	
+    u_option_entry_t options[] = {
+        { "no-plugins", 	'n', U_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
+        { "debug", 		'd', U_OPTION_ARG_NONE, 	&foreground_debug, 	"Start daemon in foreground and turn on debugging", NULL },
+        { "syslog", 		's', U_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
+        { "config-file",	'c', U_OPTION_ARG_STRING, 	
             &config_file,  	"Alternate configuration file", "<file>" },
 
         { NULL }
     };	
 
     wsmand_argv = (const char **)argv;
-    opt_ctx = g_option_context_new("WS-Management Server");
-    g_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
-    g_option_context_add_main_entries(opt_ctx, options, "wsman");  	
-    gboolean retval = g_option_context_parse(opt_ctx, &argc, &argv, &error);
+    opt_ctx = u_option_context_new("WS-Management Server");
+    u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
+    u_option_context_add_main_entries(opt_ctx, options, "wsman");  	
+    char retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
     if (error) {
         if (error->message)
             printf ("%s\n", error->message);
         retval = 0;
     }
 
-    u_free(error);
-    g_option_context_free(opt_ctx);
+    u_error_free(error);
+    u_option_context_free(opt_ctx);
     return retval;
 }
 

@@ -44,6 +44,7 @@ extern "C" {
 #define U_PCLOSE(pp) do {if (pp) { pclose(pp); pp = NULL; }} while (0)
 #define u_unused_args(...) u_use_unused_args(NULL, __VA_ARGS__)
 
+int isstrdigit(char *str);
 int u_isnl(int c);
 void u_trim(char *s);
 int u_isblank(int c);

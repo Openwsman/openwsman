@@ -23,6 +23,18 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/memory.h>
 
+int isstrdigit(char *str)
+{
+	if (str == NULL || *str == '\0')
+		return 0;
+	while (*str != '\0') {
+		if (!isdigit(*str))
+			return 0;
+		str++;
+	}
+	return 1;
+}
+
 /**
  *  \defgroup misc Miscellaneous
  *  \{
