@@ -188,7 +188,7 @@ static int server_callback (struct shttpd_arg_t *arg)
         goto DONE;
     }
     encoding = strchr(content_type, '=') + 1;
-     debug("Encoding: %s", encoding);
+    debug("Encoding: %s", encoding);
 
 
     env_t* fw = (env_t*)arg->user_data;	
@@ -282,6 +282,9 @@ DONE:
                 PACKAGE, VERSION);
     if (shttp_msg && shttp_msg->length > 0) {
         n += snprintf(arg->buf + n, arg->buflen -n,
+                "Content-Type: %s\r\n",
+                SOAP1_2_CONTENT_TYPE);
+        n += snprintf(arg->buf + n, arg->buflen -n,
              "Content-Length: %d\r\n", shttp_msg->length);
     }
     n += snprintf(arg->buf + n, arg->buflen -n, "Connection: close\r\n");
@@ -317,6 +320,7 @@ CONTINUE:
 
     // here we can complete
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n\r\n");
+    debug("%s", arg->buf);
     u_free(shttp_msg->response);
     u_free(shttp_msg);
     arg->last =1;
