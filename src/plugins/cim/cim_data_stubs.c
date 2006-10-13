@@ -72,6 +72,7 @@ CimResource_Init(WsContextH cntx)
     else
          cimclient.cim_namespace = get_cim_namespace();
     cimclient.resource_uri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
+    cimclient.method_args = wsman_get_method_args(cntx, cimclient.resource_uri );
     return cimclient;
 }
 
@@ -151,7 +152,7 @@ CimResource_Custom_EP( SoapOpH op,
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else {
-        debug( "Invalid doc" );
+        error( "Invalid doc" );
     }
 
     ws_destroy_context(cntx);

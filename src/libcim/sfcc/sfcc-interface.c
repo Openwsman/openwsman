@@ -55,6 +55,17 @@
 
 
 
+static void 
+cim_add_args( CMPIArgs *argsin,
+              hash_t *args)
+{
+    hscan_t hs;
+    hnode_t *hn;
+    hash_scan_begin(&hs, args);
+    while ((hn = hash_scan_next(&hs))) {    	
+        CMAddArg(argsin,  (char*) hnode_getkey(hn), (char*) hnode_get(hn) , CMPI_chars);  
+    }
+}
 
 
 static char * 
@@ -784,7 +795,7 @@ cim_invoke_method (CimClientInfo *client,
                    WsmanStatus *status) 
 {
     CMPIObjectPath * objectpath;    
-    CMPIArgs * argsin;
+    CMPIArgs *argsin, *argsout;
     CMPIStatus rc;
     CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
     if (!cc) {
@@ -794,12 +805,19 @@ cim_invoke_method (CimClientInfo *client,
     objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
     cim_add_keys(objectpath, client->selectors);
 
+    // FIXME, bug #27
     argsin = newCMPIArgs(NULL);
-    CMPIData data = cc->ft->invokeMethod( cc, objectpath, client->method, argsin, NULL, &rc);
+    //cim_add_args(argsin, client->method_args);
+
+    argsout = newCMPIArgs(NULL);
+    CMPIData data = cc->ft->invokeMethod( cc, objectpath,
+            client->method, argsin, argsout, &rc);
+
     debug( "invokeMethod() rc=%d, msg=%s",
             rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
-    WsXmlNodeH method_node = ws_xml_add_empty_child_format(body, client->resource_uri , "%s_OUTPUT", client->method);
+    WsXmlNodeH method_node = ws_xml_add_empty_child_format(body, 
+            client->resource_uri , "%s_OUTPUT", client->method);
     if (rc.rc == 0 ) 
         property2xml( data, "ReturnValue" , method_node, NULL);
 

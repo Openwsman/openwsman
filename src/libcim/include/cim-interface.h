@@ -15,6 +15,7 @@ struct __CimClientInfo
         char*           cim_namespace;
         char*           resource_uri;
         char*           method;
+        hash_t          *method_args;
         char*           requested_class;
             
 };
