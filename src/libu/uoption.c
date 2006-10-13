@@ -401,6 +401,7 @@ char u_option_context_parse(u_option_context_t *ctx,
 	int		nd = 0;
 	size_t		nlen;
 	int		i,	j;
+	char		retval = 0;
 
 	u_option_entry_t	*found;
 	struct tmp_buf		*tmp_data;
@@ -511,13 +512,14 @@ char u_option_context_parse(u_option_context_t *ctx,
 				}
 			}
 			get_tmp_data(tmp_data, nd);
+			retval = 1;
 		}
 		for (i = 1; i < *argc; i++)
 			u_free(largv[i]);
 		*argc = noopt + 1;
 		u_free(tmp_data);
 
-	return 0;
+	return retval;
 }
 
 
