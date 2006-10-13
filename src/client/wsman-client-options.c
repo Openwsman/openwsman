@@ -292,8 +292,9 @@ hash_t * wsman_options_get_properties (void)
     
     while(properties != NULL && properties[c] != NULL)
     {
-        char **cc; 
-        u_tokenize(properties[c], "=", cc, 100 );
+        char *cc[3]; 
+        u_tokenize1(cc, 2, properties[c], '=');
+        printf("key=%s, value=%s", cc[0], cc[1]);
         if (!hash_alloc_insert(h, cc[0], cc[1])) {
             debug("hash_alloc_insert failed");
         }

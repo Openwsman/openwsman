@@ -190,6 +190,34 @@ int u_tokenize (char *wlist, const char *delim, char **tokv, size_t tokv_sz)
     return 0;
 }
 
+
+size_t
+u_tokenize1(char **result, size_t reslen, char *str, char delim)
+{
+    char           *p, *n;
+    size_t          i = 0;
+
+    if (!str)
+        return 0;
+    for (n = str; *n == ' '; n++);
+    p = n;
+    for (i = 0; *n != '\0';) {
+        if (i == reslen)
+            return i;
+        if (*n == delim) {
+            *n = '\0';
+            if (strlen(p))
+                result[i++] = p;
+            p = ++n;
+        } else
+            n++;
+    }
+    if (strlen(p))
+        result[i++] = p;
+    return i;           /* number of tokens */
+}
+
+
 /**
  * \brief   snprintf-like function that returns 0 on success and ~0 on error
  *
