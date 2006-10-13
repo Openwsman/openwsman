@@ -807,7 +807,7 @@ cim_invoke_method (CimClientInfo *client,
 
     // FIXME, bug #27
     argsin = newCMPIArgs(NULL);
-    //cim_add_args(argsin, client->method_args);
+    cim_add_args(argsin, client->method_args);
 
     argsout = newCMPIArgs(NULL);
     CMPIData data = cc->ft->invokeMethod( cc, objectpath,
