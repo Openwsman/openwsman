@@ -44,7 +44,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <glib.h>
 
 
 #include "u/libu.h"
@@ -179,7 +178,7 @@ static int server_callback (struct shttpd_arg_t *arg)
             goto DONE;
         }
     } else {
-        path = g_strdup ("");
+        path = u_strdup ("");
     }
 
     content_type = shttpd_get_header(arg, "Content-Type");
@@ -331,7 +330,7 @@ CONTINUE:
 
 
 static void
-listener_shutdown_handler(gpointer p)
+listener_shutdown_handler(void* p)
 {
         int *a = (int *)p;
         debug("listener_shutdown_handler started");

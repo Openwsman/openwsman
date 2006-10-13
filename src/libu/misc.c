@@ -23,17 +23,6 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/memory.h>
 
-int isstrdigit(char *str)
-{
-	if (str == NULL || *str == '\0')
-		return 0;
-	while (*str != '\0') {
-		if (!isdigit(*str))
-			return 0;
-		str++;
-	}
-	return 1;
-}
 
 /**
  *  \defgroup misc Miscellaneous
@@ -302,6 +291,40 @@ int u_data_is_bin (char *data, size_t sz)
 
     return 0;
 }
+
+
+/* Added for openwsman */
+
+int isstrdigit(char *str)
+{
+    if (str == NULL || *str == '\0')
+        return 0;
+    while (*str != '\0') {
+        if (!isdigit(*str))
+            return 0;
+        str++;
+    }
+    return 1;
+}
+
+int u_path_is_absolute (const char *filename)
+{
+    int ret = 0;
+
+#ifdef WIN32
+    if (filename[1] == ':') ret = 1; 
+#endif
+
+    /* we'll count as absolute paths specified using "." */
+    if (*filename == '.' || *filename == '/') {
+        ret = 1;
+    }
+    return ret;
+}
+
+
+
+
 
 /**
  *      \}

@@ -171,7 +171,7 @@ sighup_handler (int sig_num)
 
 
 
-static gboolean
+static int
 rc_write (int fd, const char *buf, size_t count)
 {
     size_t bytes_remaining = count;
@@ -290,7 +290,7 @@ main (int argc, char **argv)
     ini = iniparser_load(filename);
     debug("Using conf file: %s", filename);
     if (ini==NULL) {
-        fprintf(stderr, "cannot parse file [%s]", filename);
+        fprintf(stderr, "Cannot parse file [%s]\n", filename);
         return 1;
     } else if (!wsmand_read_config(ini)) {
         fprintf(stderr, "Configuration file not found\n");

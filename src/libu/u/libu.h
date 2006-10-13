@@ -51,4 +51,16 @@
 #include <u/ulist.h>
 #include <u/uoption.h>
 
+
+#ifndef TRUE
+#define TRUE    1
+#endif  /* TRUE */
+
+#ifndef FALSE
+#define FALSE    0
+#endif  /* FALSE */ 
+
+
+
+
 #endif /* !_U_LIBU_H_ */

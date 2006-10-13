@@ -59,8 +59,11 @@ int u_snprintf(char *str, size_t size, const char *fmt, ...);
 int u_path_snprintf(char *str, size_t size, char sep, const char *fmt, ...);
 void u_use_unused_args(char *dummy, ...);
 int u_data_is_bin (char *data, size_t sz);
-size_t
-u_tokenize1(char **result, size_t reslen, char *str, char delim);
+
+
+/* openwsman */
+size_t u_tokenize1(char **result, size_t reslen, char *str, char delim);
+int u_path_is_absolute (const char *filename);
 
 #ifdef __cplusplus
 }

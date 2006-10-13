@@ -36,16 +36,14 @@
 #ifndef __WSMAND_DAEMON_H__
 #define __WSMAND_DAEMON_H__
 
-#include <glib.h>
 
 #define DEFAULT_SERVICE_PATH "wsman"
 
-typedef void (*WsmandShutdownFn) (gpointer);
+typedef void (*WsmandShutdownFn) (void *);
 
 /* At shutdown time, handlers are executed in the
    reverse of the order in which they are added. */
-void wsmand_shutdown_add_handler (WsmandShutdownFn fn,
-                               gpointer      user_data);
+void wsmand_shutdown_add_handler (WsmandShutdownFn fn, void*  user_data);
 
 void wsmand_shutdown_block (void);
 
@@ -58,17 +56,17 @@ void wsmand_shutdown (void);
 void wsmand_restart  (void);
 
 
-gboolean wsmand_parse_options(int argc, char **argv);
+int wsmand_parse_options(int argc, char **argv);
 
-gboolean wsmand_options_get_daemon_flag(void);
-gboolean wsmand_options_get_no_plugins_flag(void);
+int wsmand_options_get_daemon_flag(void);
+int wsmand_options_get_no_plugins_flag(void);
 int wsmand_options_get_debug_level(void);
 int wsmand_options_get_syslog_level(void);
 int wsmand_options_get_server_port(void);
 int wsmand_options_get_server_ssl_port(void);
 char *wsmand_options_get_ssl_key_file(void);
 char *wsmand_options_get_ssl_cert_file(void);
-gboolean wsmand_options_get_digest(void);
+int wsmand_options_get_digest(void);
 char *wsmand_options_get_digest_password_file (void);
 char *wsmand_options_get_basic_password_file (void);
 char *wsmand_options_get_service_path (void);

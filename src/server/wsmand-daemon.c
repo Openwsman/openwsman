@@ -42,31 +42,33 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "glib.h"
 #include "u/libu.h"
 #include "wsmand-daemon.h"
 
+#ifdef LIBSOUP_LISTENER
+#include <glib.h>
+#endif
 
 int facility = LOG_DAEMON;
 
 static const char **wsmand_argv = NULL;
 
-static gint server_port =  -1;
-static gint server_ssl_port = -1;
-static gboolean use_digest = FALSE;
-static gchar *ssl_key_file = NULL;
-static gchar *service_path = DEFAULT_SERVICE_PATH;
-static gchar *ssl_cert_file = NULL;
-static gboolean daemon_flag = FALSE;
-static gboolean no_plugin_flag = FALSE;
-static gint debug_level = -1;
-static gboolean foreground_debug = FALSE;
-static gint syslog_level = -1;
-static gchar *log_location = NULL;
-static gchar *digest_password_file = NULL;
-static gchar *basic_password_file = NULL;
-static gint max_threads = 1;
-static gint min_threads = 4;
+static int server_port =  -1;
+static int server_ssl_port = -1;
+static int use_digest = 0;
+static char *ssl_key_file = NULL;
+static char *service_path = DEFAULT_SERVICE_PATH;
+static char *ssl_cert_file = NULL;
+static int daemon_flag = 0;
+static int no_plugin_flag = 0;
+static int debug_level = -1;
+static int foreground_debug = 0;
+static int syslog_level = -1;
+static char *log_location = NULL;
+static char *digest_password_file = NULL;
+static char *basic_password_file = NULL;
+static int max_threads = 1;
+static int min_threads = 4;
 
 static char *config_file = NULL;
 
@@ -131,20 +133,16 @@ int wsmand_read_config (dictionary *ini)
 }
 
 const char *
-wsmand_options_get_config_file (void) {
+wsmand_options_get_config_file (void)
+{
     if (config_file == NULL) {
          config_file = DEFAULT_CONFIG_FILE;
     }
-    if (config_file != NULL && !g_path_is_absolute (config_file)) {
+    if (config_file != NULL && !u_path_is_absolute (config_file)) {
         char cwd[PATH_MAX];
-        char *new_config_file;
-
         getcwd (cwd, PATH_MAX);
           
-        new_config_file = g_strconcat (cwd, "/", config_file, NULL);
-
-        u_free (config_file);
-        config_file = new_config_file;
+        config_file = u_strdup_printf ("%s/%s", cwd, config_file);
     }
     return config_file;
 }
@@ -165,12 +163,12 @@ char *wsmand_options_get_service_path (void)
     return service_path;
 }
 
-gboolean wsmand_options_get_daemon_flag (void)
+int wsmand_options_get_daemon_flag (void)
 {
     return daemon_flag;
 }
 
-gboolean wsmand_options_get_no_plugins_flag (void)
+int wsmand_options_get_no_plugins_flag (void)
 {
     return no_plugin_flag;
 }
@@ -223,8 +221,7 @@ wsmand_options_get_ssl_cert_file (void)
     return ssl_cert_file;
 }
 
-gboolean
-wsmand_options_get_digest (void)
+int wsmand_options_get_digest (void)
 {
     return use_digest;
 }
@@ -296,9 +293,9 @@ wsmand_shutdown_allow (void)
 }
 
 static int
-shutdown_idle_cb (gpointer user_data)
+shutdown_idle_cb (void* user_data)
 {
-    gboolean restart = GPOINTER_TO_INT (user_data);
+    int restart = (int )user_data;
 
     lnode_t *n = list_first(shutdown_handlers);
 
@@ -341,7 +338,7 @@ shutdown_idle_cb (gpointer user_data)
 }
 
 static void
-do_shutdown (gboolean restart)
+do_shutdown (int restart)
 {
     if (shutdown_counter > 0) {
         debug ("Shutting down pended");
@@ -361,7 +358,7 @@ do_shutdown (gboolean restart)
 #ifdef LIBSOUP_LISTENER
     g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
 #else
-        shutdown_idle_cb(GINT_TO_POINTER (restart));
+    shutdown_idle_cb((void *) (restart));
 #endif
 }
 
