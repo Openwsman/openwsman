@@ -821,9 +821,21 @@ cim_invoke_method (CimClientInfo *client,
     if (rc.rc == 0 ) 
         property2xml( data, "ReturnValue" , method_node, NULL);
 
+    if (argsout) {
+        int count = CMGetArgCount(argsout, NULL);
+        int i = 0;
+        for (i=0; i<count; i++) {
+            CMPIString * argname;
+            CMPIData data = CMGetArgAt(argsout, i, &argname, NULL);
+            property2xml( data, (char *)argname->hdl , method_node, NULL );
+            CMRelease(argname);
+        }
+    }
+
     cim_to_wsman_status(rc, status);
     if (objectpath) CMRelease(objectpath);
     if (argsin) CMRelease(argsin);
+    if (argsout) CMRelease(argsout);
     if (cc) CMRelease(cc);
     return;
 }

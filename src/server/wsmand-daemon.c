@@ -345,7 +345,6 @@ do_shutdown (int restart)
         shutdown_pending = TRUE;
         return;
     }
-
     debug( "Shutting down daemon...");
 
     if (shutting_down) {
