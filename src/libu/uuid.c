@@ -67,7 +67,7 @@ mac_addr_sys (u_char *addr)
 int 
 generate_uuid ( char* buf, 
                 int size, 
-                int bNoPrefix) 
+                int no_prefix) 
 {
 
     static int clock_sequence = 1;
@@ -82,7 +82,7 @@ generate_uuid ( char* buf,
     struct timeval tv;
     int max_length = SIZE_OF_UUID_STRING;
 
-    if ( !bNoPrefix ) max_length += 5;      // space for "uuid:"
+    if ( !no_prefix ) max_length += 5;      // space for "uuid:"
     if ( size < max_length )
         return 0;
 
@@ -100,12 +100,14 @@ generate_uuid ( char* buf,
     clock_sequence++;
 
     // get mac address
-    if ( mac_addr_sys( mac ) < 0 )
-        return 0;
-
-    // now assemble UUID from fragments above
-    for( i = 0; i < 6; i++ )
-        uuid[i] = mac[i];                       // mac address
+    if ( mac_addr_sys( mac ) == 0 )
+    {
+        for( i = 0; i < 6; i++ )
+            uuid[i] = mac[i];                       // mac address
+    } else {
+        for( i = 0; i < 6; i++ )
+            uuid[i] = clock_sequence & 0xff;        // just in case we do not have a mac
+    }
 
     uuid[6] = clock_sequence & 0xff;                // clock seq. low
     uuid[7] = 0x80 | ((clock_sequence >> 8) & 0x3f);// clock seq. high and variant
@@ -114,7 +116,7 @@ generate_uuid ( char* buf,
     *(short int*)(uuid+10) = (short int)timeMid;
     *(int*)(uuid+12) = timeLow;
 
-    if ( !bNoPrefix )
+    if ( !no_prefix )
     {
         sprintf( ptr, "uuid:" );
         ptr += 5;

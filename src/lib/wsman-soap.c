@@ -1362,6 +1362,7 @@ wsman_get_method_args ( WsContextH cntx, char *resource_uri )
                 }
             }
         }
+        u_free(input);
     } else {
         error("xml document is null");
     }

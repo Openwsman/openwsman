@@ -82,6 +82,18 @@ CimResource_destroy(CimClientInfo *cimclient)
     if (cimclient->resource_uri) u_free(cimclient->resource_uri);
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
+    if (cimclient->method_args) {
+        hash_free(cimclient->method_args);
+        hash_destroy(cimclient->method_args);
+    }
+    if (cimclient->selectors) {
+        hash_free(cimclient->selectors);
+        hash_destroy(cimclient->selectors);
+    }
+    if (cimclient->namespaces) {
+        hash_free(cimclient->namespaces);
+        hash_destroy(cimclient->namespaces);
+    }
     return;
 }
 
@@ -201,9 +213,9 @@ CimResource_Enumerate_EP( WsContextH cntx,
     }
    
     ws_destroy_context(cntx);
+    CimResource_destroy(&cimclient);
     return 0;
 err:
-    ws_destroy_context(cntx);
     return 1;
 }
 
@@ -235,6 +247,7 @@ CimResource_Pull_EP( WsContextH cntx,
     else
         enumInfo->pullResultPtr = NULL;
 
+    CimResource_destroy(&cimclient);
     ws_destroy_context(cntx);
     return 0;
 }
