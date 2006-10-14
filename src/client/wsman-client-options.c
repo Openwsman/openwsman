@@ -83,6 +83,7 @@ static gulong max_envelope_size = 0;
 static gchar *_action = NULL;
 static gchar *agent = NULL;
 static gchar *config_file = NULL;
+static gchar *output_file = NULL;
 static gchar *resource_uri = NULL;
 static gchar *invoke_method = NULL;
 static gchar *url_path = NULL;
@@ -124,6 +125,7 @@ gboolean wsman_parse_options(int argc, char **argv)
         { "prop", 'k', 0, G_OPTION_ARG_STRING_ARRAY, &properties,
                     "Properties with key value pairs (For 'put', 'invoke' and 'create')" , "<key=val>" },
         { "config-file",	'C', 0, G_OPTION_ARG_FILENAME, 	&config_file,  	"Alternate configuration file", "<file>" },
+        { "out-file",	'O', 0, G_OPTION_ARG_FILENAME, 	&output_file,  	"Write output to file", "<file>" },
         { "noverifypeer",  'V', 0, G_OPTION_ARG_NONE,  &no_verify_peer,   "Not to verify peer certificate", NULL },
 
         { NULL }
@@ -220,6 +222,10 @@ gboolean wsman_parse_options(int argc, char **argv)
     return retval;
 }
 
+const char * wsman_options_get_output_file (void)
+{
+    return output_file;
+}
 const char * wsman_options_get_config_file (void) {
     return config_file;
 }

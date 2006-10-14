@@ -57,8 +57,8 @@ int wsman_options_get_no_verify_peer (void);
 unsigned long wsman_options_get_max_envelope_size (void);
 unsigned long wsman_options_get_operation_timeout (void);
 
-const char **
-wsman_options_get_argv (void);
+const char ** wsman_options_get_argv (void);
+const char * wsman_options_get_output_file (void);
 
 
 #endif /*WSMANCLIENTOPTIONS_H_*/

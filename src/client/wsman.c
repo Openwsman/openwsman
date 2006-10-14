@@ -377,7 +377,6 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     char *proxyauth;
     long auth_avail = 0;
     long auth_set = 0;
-    char *str;
 
     if (wsman_options_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
@@ -554,6 +553,25 @@ DONE:
 #endif
 
 
+static void wsman_output(WsXmlDocH doc)
+{
+    FILE *f;
+    const char *filename = wsman_options_get_output_file();
+    if (filename) {
+        f  = fopen(filename , "w+");
+        if (f == NULL)
+            error("Could not open file for writing");
+        else
+        ws_xml_dump_node_tree(f, ws_xml_get_doc_root(doc));
+    } else {
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+    }
+        
+    return;
+}
+
+
+
 static void
 initialize_logging (void)
 {
@@ -659,13 +677,13 @@ int main(int argc, char** argv)
                         wsman_options_get_test_file(), "UTF-8", 0 );
         doc = ws_send_get_response(cl, rqstDoc, 60000);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }    
         break;
     case  ACTION_IDENTIFY:
         doc = cl->ft->identify(cl, options);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }    
         break;
     case  ACTION_INVOKE:
@@ -673,27 +691,27 @@ int main(int argc, char** argv)
                 wsman_options_get_invoke_method(),
                 wsman_options_get_properties(), options);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }
         break;
     case  ACTION_TRANSFER_CREATE:
         doc = cl->ft->create(cl, resourceUri,
                 wsman_options_get_properties(), options);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }
         break;
     case  ACTION_TRANSFER_PUT:
         doc = cl->ft->put(cl, resourceUri,
                 wsman_options_get_properties(), options);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }
         break;
     case  ACTION_TRANSFER_GET:
         doc = cl->ft->get(cl, resourceUri, options);
         if (doc) {
-            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            wsman_output(doc);
         }    
         break;
     case ACTION_ENUMERATION:
@@ -733,7 +751,7 @@ int main(int argc, char** argv)
                                 wsman_options_get_max_elements(), options) )) {
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
                         0, NULL, NULL);
-                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+                wsman_output(doc);
                 if ( strcmp(ws_xml_get_node_local_name(node),
                                                 WSENUM_PULL_RESP) != 0 ) {
                     debug( "no pull response" );
@@ -750,7 +768,7 @@ int main(int argc, char** argv)
                     enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
                 }
                 if ( enumContext == NULL || enumContext[0] == 0 ) {
-                    debug( "No enumeration context");
+                    error( "No enumeration context");
                     break;
                 }
                 /*
