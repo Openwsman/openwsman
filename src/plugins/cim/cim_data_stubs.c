@@ -82,6 +82,7 @@ CimResource_destroy(CimClientInfo *cimclient)
     if (cimclient->resource_uri) u_free(cimclient->resource_uri);
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
+    /*
     if (cimclient->method_args) {
         hash_free(cimclient->method_args);
         hash_destroy(cimclient->method_args);
@@ -94,6 +95,7 @@ CimResource_destroy(CimClientInfo *cimclient)
         hash_free(cimclient->namespaces);
         hash_destroy(cimclient->namespaces);
     }
+    */
     return;
 }
 
