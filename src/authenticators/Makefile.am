@@ -1,0 +1,1 @@
+SUBDIRS = pam file
