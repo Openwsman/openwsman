@@ -45,13 +45,17 @@
 #include "u/libu.h"
 #include "wsmand-daemon.h"
 
+
 #ifdef LIBSOUP_LISTENER
 #include <glib.h>
 #endif
 
+#define DEFAULT_BASIC_AUTH  "libwsman_file_auth.so"
+
 int facility = LOG_DAEMON;
 
 static const char **wsmand_argv = NULL;
+
 
 static int server_port =  -1;
 static int server_ssl_port = -1;
@@ -67,8 +71,11 @@ static int syslog_level = -1;
 static char *log_location = NULL;
 static char *digest_password_file = NULL;
 static char *basic_password_file = NULL;
+static char *basic_authenticator_arg = NULL;
+static char *basic_authenticator = DEFAULT_BASIC_AUTH;
 static int max_threads = 1;
 static int min_threads = 4;
+
 
 static char *config_file = NULL;
 
@@ -112,23 +119,27 @@ const char ** wsmand_options_get_argv (void)
 
 int wsmand_read_config (dictionary *ini)
 {
-    if (iniparser_find_entry(ini, "server"))
-    {
-        server_port = iniparser_getint (ini, "server:port", -1);
-        server_ssl_port =  iniparser_getint(ini, "server:ssl_port",-1);
-        debug_level = iniparser_getint (ini, "server:debug_level", 0);
-        service_path = iniparser_getstring (ini, "server:service_path", "/wsman");
-        ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
-        ssl_cert_file = iniparser_getstr (ini, "server:ssl_cert_file");
-        use_digest = iniparser_getboolean (ini, "server:use_digest", 0);
-        digest_password_file = iniparser_getstr (ini, "server:digest_password_file");
-        basic_password_file = iniparser_getstr (ini, "server:basic_password_file");
-        log_location = iniparser_getstr (ini, "server:log_location");
-        min_threads  = iniparser_getint(ini, "server:min_threads", 1);
-        max_threads  = iniparser_getint(ini, "server:max_threads", 4);
-    } else {
+    if (!iniparser_find_entry(ini, "server")) {
         return 0;
     }
+
+    server_port = iniparser_getint (ini, "server:port", -1);
+    server_ssl_port =  iniparser_getint(ini, "server:ssl_port",-1);
+    debug_level = iniparser_getint (ini, "server:debug_level", 0);
+    service_path = iniparser_getstring (ini, "server:service_path", "/wsman");
+    ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
+    ssl_cert_file = iniparser_getstr (ini, "server:ssl_cert_file");
+    use_digest = iniparser_getboolean (ini, "server:use_digest", 0);
+    digest_password_file = iniparser_getstr (ini,
+                            "server:digest_password_file");
+    basic_password_file = iniparser_getstr (ini, "server:basic_password_file");
+    basic_authenticator = iniparser_getstr (ini, "server:basic_authenticator");
+    basic_authenticator_arg = iniparser_getstr (ini,
+                            "server:basic_authenticator_arg");
+    log_location = iniparser_getstr (ini, "server:log_location");
+    min_threads  = iniparser_getint(ini, "server:min_threads", 1);
+    max_threads  = iniparser_getint(ini, "server:max_threads", 4);
+
     return 1;
 }
 
@@ -236,6 +247,23 @@ int wsmand_options_get_max_threads (void)
     return max_threads;
 }
 
+int wsmand_is_default_basic_authenticator()
+{
+    return !strcmp(basic_authenticator, DEFAULT_BASIC_AUTH);
+}
+char *wsmand_default_basic_authenticator()
+{
+    return DEFAULT_BASIC_AUTH;
+}
+
+char *wsmand_option_get_basic_authenticator() {
+    return basic_authenticator;
+}
+
+char *wsmand_option_get_basic_authenticator_arg()
+{
+    return basic_authenticator_arg;
+}
 
 typedef struct _ShutdownHandler ShutdownHandler;
 struct _ShutdownHandler {

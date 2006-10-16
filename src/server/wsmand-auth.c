@@ -93,8 +93,10 @@ ws_authorize_digest(char *filename, WSmanAuthDigest *digest)
         }
 
         return (authorized);
-}         
-        
+}
+
+#ifdef LIBSOUP_LISTENER
+
 int
 ws_authorize_basic(char *username, const char *password)
 {
@@ -132,6 +134,13 @@ ws_authorize_basic(char *username, const char *password)
                 }
        }
 
+       fclose(fp);
+
        return authorized;
-}       
+}
+
+#endif
+
+
+
 

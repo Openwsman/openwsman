@@ -72,7 +72,9 @@ char *wsmand_options_get_basic_password_file (void);
 char *wsmand_options_get_service_path (void);
 int wsmand_options_get_min_threads (void);
 int wsmand_options_get_max_threads (void);
-
+char *wsmand_default_basic_authenticator(void);
+char *wsmand_option_get_basic_authenticator(void);
+char *wsmand_option_get_basic_authenticator_arg(void);
 
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug (void);

@@ -247,6 +247,13 @@ packageplugindir=$libdir/${PACKAGE}/plugins
 PACKAGE_PLUGIN_DIR="${packageplugindir}"
 AC_SUBST(PACKAGE_PLUGIN_DIR)
 
+dnl Subst PACKAGE_AUTH_DIR.
+packageauthdir=$libdir/${PACKAGE}/authenticators
+PACKAGE_AUTH_DIR="${packageauthdir}"
+AC_SUBST(PACKAGE_AUTH_DIR)
+
+
+
 dnl *************************************
 dnl *** Warnings to show if using GCC ***
 dnl *************************************
@@ -337,6 +344,9 @@ AC_OUTPUT([
         src/plugins/Makefile
         src/plugins/cim/Makefile
         src/plugins/identify/Makefile
+        src/authenticators/Makefile
+        src/authenticators/file/Makefile
+        src/authenticators/pam/Makefile
         src/libu/Makefile
         src/libu/u/Makefile
         src/libu/test/Makefile

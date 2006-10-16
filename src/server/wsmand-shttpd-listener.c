@@ -43,6 +43,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 
 
@@ -82,6 +83,7 @@ static int                  idle_threads = 0;
 #endif
 
 static int continue_working = 1;
+static int (*basic_auth_callback)(char *, char *) = NULL;
 
 
 static int
@@ -108,13 +110,13 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
 }
 
 
-
+#if 0
 static int
 basic_auth_callback(char *username, char *password)
 {
         return ws_authorize_basic(username, password);
 }
-
+#endif
 
 
 static char *
@@ -269,8 +271,7 @@ DONE:
     switch (status) {
         case WSMAN_STATUS_OK:
                 n += snprintf(arg->buf + n, arg->buflen -n,
-	               "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n",
-                        SOAP1_2_CONTENT_TYPE);
+	               "HTTP/1.1 200 OK\r\n");
                 break;
         default:
 	       n += snprintf(arg->buf + n, arg->buflen -n, "HTTP/1.1 %d %s\r\n",
@@ -369,9 +370,12 @@ create_shttpd_context(SoapH soap)
        shttpd_register_dauth_callback(ctx, digest_auth_callback);
         debug( "Using Digest Authorization");
     }
-    if (wsmand_options_get_basic_password_file()) {
+    if (basic_auth_callback) {
         shttpd_register_bauth_callback(ctx, basic_auth_callback);
-        debug( "Using Basic Authorization");
+        debug( "Using Basic Authorization %s",
+            wsmand_option_get_basic_authenticator() ?
+            wsmand_option_get_basic_authenticator() :
+            wsmand_default_basic_authenticator());
     }
 
     return ctx;
@@ -400,7 +404,7 @@ static void handle_socket(int sock,  SoapH soap)
 }
 
 
-static void service_connection(void *arg)
+static void *service_connection(void *arg)
 {
     lnode_t *node;
     int sock;
@@ -443,9 +447,76 @@ static void service_connection(void *arg)
         pthread_cond_broadcast(&shttpd_cond);
     }
     pthread_mutex_unlock(&shttpd_mutex);
+
+    return NULL;
 }
 
 #endif
+
+
+static int
+initialize_basic_authenticator(void)
+{
+    char *auth;
+    char *arg;
+    void *hnd;
+    int (*init)(char *);
+    char *name;
+    int should_return = 0;
+    int res = 0;
+
+    if (wsmand_options_get_basic_password_file() != NULL) {
+        if ((wsmand_option_get_basic_authenticator() &&
+                (strcmp(wsmand_default_basic_authenticator(),
+                wsmand_option_get_basic_authenticator()))) ||
+                wsmand_option_get_basic_authenticator_arg()) {
+            fprintf(stderr,
+                    "basic authentication is ambigious in config file\n");
+            return 1;
+        }
+        auth = wsmand_default_basic_authenticator();
+        arg  = wsmand_options_get_basic_password_file();
+    } else {
+        auth = wsmand_option_get_basic_authenticator();
+        arg  = wsmand_option_get_basic_authenticator_arg();
+    }
+
+    if (auth == NULL) {
+        // No basic authenticationame 
+        return 0;
+    }
+
+    if (auth[0] == '/') {
+        name = auth;
+    } else {
+        name = u_strdup_printf("%s/%s", PACKAGE_AUTH_DIR, auth);
+        should_return = 1;
+    }
+
+    hnd = dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
+    if (hnd == NULL) {
+        fprintf(stderr, "Could not dlopen %s\n", name);
+        res = 1;
+        goto DONE;
+    }
+    basic_auth_callback = dlsym(hnd, "authorize");
+    if (basic_auth_callback == NULL) {
+        fprintf(stderr, "Could not resolve authorize() in %s\n", name);
+        res = 1;
+        goto DONE;
+    }
+
+    init = dlsym(hnd, "initialize");
+    if (init != NULL) {
+        res = init(arg);
+    }
+DONE:
+    if (should_return) {
+        u_free(name);
+    }
+    return res;
+}
+
 
 WsManListenerH*
 wsmand_start_server(dictionary *ini) 
@@ -470,6 +541,10 @@ wsmand_start_server(dictionary *ini)
     }
     SoapH soap = ws_context_get_runtime(cntx);
 
+    if (initialize_basic_authenticator()) {
+        return NULL;
+    }
+
     int lsn;
     int port;
 
@@ -489,9 +564,13 @@ wsmand_start_server(dictionary *ini)
     if (wsmand_options_get_digest_password_file()) {
         debug( "Using Digest Authorization");
     }
-    if (wsmand_options_get_basic_password_file()) {
-        debug( "Using builtin Basic Authorization");
+    if (basic_auth_callback) {
+        debug( "Using Basic Authorization %s",
+            wsmand_option_get_basic_authenticator() ?
+            wsmand_option_get_basic_authenticator() :
+            wsmand_default_basic_authenticator());
     }
+
     wsmand_shutdown_add_handler(listener_shutdown_handler, &continue_working);
 
     lsn = shttpd_open_port(port);

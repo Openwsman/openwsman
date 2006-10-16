@@ -1,6 +1,6 @@
 
-#ifndef WSMAND_SHTTPD_AUTH_H_
-#define WSMAND_SHTTPD_AUTH_H_
+#ifndef WSMAND_AUTH_H_
+#define WSMAND_AUTH_H_
 
 typedef struct {
         const char *request_method;
@@ -16,6 +16,8 @@ typedef struct {
 
 
 int ws_authorize_digest(char *filename, WSmanAuthDigest *digest);
+#ifdef LIBSOUP_LISTENER
 int ws_authorize_basic(char *username, const char *password);
+#endif
 
 #endif
