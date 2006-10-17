@@ -1,0 +1,2 @@
+./src/client/wsman enumerate  http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_InitdService --username  wsman -p secret    -h <host>  --port 8889
+./src/client/wsman enumerate  http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem --username  wsman -p secret    -h <host>  --port 8889
