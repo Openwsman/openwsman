@@ -203,6 +203,9 @@ char *wsenum_get_enum_context(WsXmlDocH doc);
 void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
 void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
+
+long long get_transfer_time(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

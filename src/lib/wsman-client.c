@@ -534,7 +534,6 @@ WsManClient *wsman_connect_with_ssl(
 }
 
 
-
 unsigned int
 wsman_client_add_handler (
         WsmanClientFn    fn,                     
@@ -546,7 +545,7 @@ wsman_client_add_handler (
 
     handler = u_zalloc (sizeof(WsmanClientHandler));
 
-    handler->fn = fn;    
+    handler->fn = fn;
     handler->user_data = user_data;
 
     if (handlers != NULL) {
@@ -581,15 +580,29 @@ wsman_client_remove_handler (unsigned int id)
     }
 }
 
+static long long transfer_time = 0;
+long long
+get_transfer_time()
+{
+    return transfer_time;
+}
+
 void
 wsman_client (WsManClient *cl, 
 	WsXmlDocH rqstDoc)
 {    	
     lnode_t *iter = list_first(handlers);
+    struct timeval tv0, tv1;
+    long long t0, t1;
     while (iter) 
     {
-        WsmanClientHandler *handler = (WsmanClientHandler *)iter->list_data;       
-       	handler->fn (cl, rqstDoc, handler->user_data);       	       	
+        WsmanClientHandler *handler = (WsmanClientHandler *)iter->list_data;
+        gettimeofday(&tv0, NULL);
+       	handler->fn (cl, rqstDoc, handler->user_data);
+        gettimeofday(&tv1, NULL);
+        t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
+        t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
+        transfer_time += t1 -t0;
         iter = list_next(handlers, iter);
     }     
     return;

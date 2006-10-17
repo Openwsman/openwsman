@@ -36,14 +36,25 @@
 
 
 
-#define ACTION_TRANSFER_GET 	1
-#define ACTION_TRANSFER_PUT	2
-#define ACTION_ENUMERATION 	3
-#define ACTION_PRIVATE_CATCH    4
-#define ACTION_INVOKE       5
-#define ACTION_TRANSFER_CREATE 	       6 
-#define ACTION_IDENTIFY 	       7
-#define ACTION_TEST                     8
+#define ACTION_TRANSFER_GET        1
+#define ACTION_TRANSFER_PUT        2
+#define ACTION_ENUMERATION         3
+#define ACTION_PRIVATE_CATCH       4
+#define ACTION_INVOKE              5
+#define ACTION_TRANSFER_CREATE     6
+#define ACTION_IDENTIFY            7
+#define ACTION_TEST                8
 
+typedef enum {
+    WS_NO_AUTH,
+    WS_BASIC_AUTH,
+    WS_DIGEST_AUTH,
+    WS_NTLM_AUTH,
+} ws_auth_type_t;
+
+typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
+extern void ws_set_auth_request_func(ws_auth_request_func_t *);
+
+extern char *get_auth_name(ws_auth_type_t auth);
 
 #endif // WSMAN_CLIENT_H

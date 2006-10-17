@@ -65,6 +65,55 @@
 #include "wsman-client-options.h"
 #include "wsman.h"
 
+static void
+request_usr_pwd(ws_auth_type_t auth,
+                char **username,
+                char **password);
+
+static ws_auth_request_func_t request_func = &request_usr_pwd;
+
+
+static void
+request_usr_pwd(ws_auth_type_t auth,
+                char **username,
+                char **password)
+{
+    char *pw;
+    char user[21];
+
+    fprintf(stdout,"Authentication failed, please retry\n");
+    fprintf(stdout, "%s authentication is used\n", get_auth_name(auth));
+    printf("User name: ");
+    fflush(stdout); 
+    fgets(user, 20, stdin);
+
+    if (strchr(user, '\n'))
+        (*(strchr(user, '\n'))) = '\0';
+    *username = u_strdup_printf ("%s", user);
+
+    pw = getpass("Password: ");
+    *password = u_strdup_printf ("%s", pw);
+}
+
+
+
+char *get_auth_name(ws_auth_type_t auth)
+{
+    switch (auth) {
+        case WS_NO_AUTH :    return "No Auth";
+        case WS_BASIC_AUTH:  return "Basic";
+        case WS_DIGEST_AUTH: return "Digest";
+        case WS_NTLM_AUTH:   return "NTLM";
+    }
+    return "Unknown";
+}
+
+void ws_set_auth_request_func(ws_auth_request_func_t *f)
+{
+    request_func = f;
+}
+
+
 int facility = LOG_DAEMON;
 
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
@@ -275,25 +324,24 @@ wsman_client_handler( WsManClient *cl,
 static long
 reauthenticate(long auth_set, long auth_avail, char **username, char **password)
 {
-    char *pw;
-    char user[21];
     long choosen_auth = 0;
+    ws_auth_type_t ws_auth = WS_NO_AUTH;
 
     if (auth_avail & CURLAUTH_DIGEST &&
             wsman_is_auth_method(AUTH_DIGEST)) {
         choosen_auth = CURLAUTH_DIGEST;
-        message("DIGEST authentication is used\n");
+        ws_auth = WS_DIGEST_AUTH;
         goto REQUEST_PASSWORD;
     }
     if (auth_avail & CURLAUTH_NTLM &&
             wsman_is_auth_method(AUTH_NTLM)) {
         choosen_auth = CURLAUTH_NTLM;
-        message("NTLM authentication is used\n");
+        ws_auth = WS_NTLM_AUTH;
         goto REQUEST_PASSWORD;
     }
     if (auth_avail & CURLAUTH_BASIC &&
             wsman_is_auth_method(AUTH_BASIC)) {
-        message("BASIC authentication is used\n");
+        ws_auth = WS_BASIC_AUTH;
         choosen_auth = CURLAUTH_BASIC;
         goto REQUEST_PASSWORD;
     }
@@ -304,22 +352,13 @@ reauthenticate(long auth_set, long auth_avail, char **username, char **password)
 
 
 REQUEST_PASSWORD:
-    if (auth_set == 0 ** *username && *password) {
-        // use username and password from command line 
+    message("%s authorization is used", get_auth_name(ws_auth));
+    if (auth_set == 0 && *username && *password) {
+        // use username and password from command line
         return choosen_auth;
     }
-    fprintf(stdout,"Authentication failed, please retry\n");
 
-    printf("User name: ");
-    fflush(stdout); 
-    fgets(user, 20, stdin);
-
-    if (strchr(user, '\n'))
-        (*(strchr(user, '\n'))) = '\0';
-    *username = u_strdup_printf ("%s", user);
-
-    pw = getpass("Password: ");
-    *password = u_strdup_printf ("%s", pw);
+    request_func(ws_auth, username, password);
 
     if (strlen(*username) == 0) {
         debug("No username. Authorization canceled");
@@ -383,7 +422,7 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
     } else {
         flags = CURL_GLOBAL_NOTHING;
     }
-    r =curl_global_init(flags);
+    r = curl_global_init(flags);
     if (r != 0) {
         curl_err("Could not initialize curl globals");
         goto DONE;
@@ -524,6 +563,8 @@ wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data)
             goto DONE;
         }
     }
+
+    
 
     if (tr_data.ind == 0) {
         // No data transfered
@@ -799,6 +840,7 @@ int main(int argc, char** argv)
 
     if (ini)
         iniparser_freedict(ini);
+    //printf("     ******   Transfer Time = %ull usecs ******\n", get_transfer_time());
     return retVal;
 
 }
