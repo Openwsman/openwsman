@@ -234,6 +234,7 @@ int wsman_read_client_config (dictionary *ini)
 {
     if (iniparser_find_entry(ini, "client")) {
         agent = iniparser_getstr(ini, "client:agent");
+        server_port = iniparser_getint(ini, "client:port", 80);
         authentication_method = authentication_method? authentication_method: iniparser_getstr(ini, "client:authentication_method");
     } else {
         return 0;
