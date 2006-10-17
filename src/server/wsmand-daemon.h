@@ -38,6 +38,7 @@
 
 
 #define DEFAULT_SERVICE_PATH "wsman"
+#define DEFAULT_PID_PATH "/var/run/wsmand.pid"
 
 typedef void (*WsmandShutdownFn) (void *);
 
@@ -75,6 +76,7 @@ int wsmand_options_get_max_threads (void);
 char *wsmand_default_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator_arg(void);
+char* wsmand_options_get_pid_file (void);
 
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug (void);

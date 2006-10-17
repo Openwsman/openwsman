@@ -63,6 +63,7 @@ static int use_digest = 0;
 static char *ssl_key_file = NULL;
 static char *service_path = DEFAULT_SERVICE_PATH;
 static char *ssl_cert_file = NULL;
+static char *pid_file = DEFAULT_PID_PATH;
 static int daemon_flag = 0;
 static int no_plugin_flag = 0;
 static int debug_level = -1;
@@ -90,8 +91,8 @@ int wsmand_parse_options(int argc, char **argv)
         { "no-plugins", 	'n', U_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
         { "debug", 		'd', U_OPTION_ARG_NONE, 	&foreground_debug, 	"Start daemon in foreground and turn on debugging", NULL },
         { "syslog", 		's', U_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
-        { "config-file",	'c', U_OPTION_ARG_STRING, 	
-            &config_file,  	"Alternate configuration file", "<file>" },
+        { "config-file",	'c', U_OPTION_ARG_STRING, 	&config_file,  	"Alternate configuration file", "<file>" },
+        { "pid-file",	        'p', U_OPTION_ARG_STRING, 	&pid_file,  	"PID file", "<file>" },
 
         { NULL }
     };	
@@ -241,6 +242,14 @@ int wsmand_options_get_min_threads (void)
 {
     return min_threads;
 }
+
+
+char*
+wsmand_options_get_pid_file (void)
+{
+    return pid_file;
+}
+
 
 int wsmand_options_get_max_threads (void)
 {

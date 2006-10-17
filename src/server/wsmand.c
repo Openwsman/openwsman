@@ -102,17 +102,15 @@ debug_message_handler (const char *str,
 
         u_free (log_msg);
     }
-#if 0
     if ( level <= wsmand_options_get_syslog_level ()) 
     {
-        char *log_name = g_strdup_printf ("wsmand[%d]", log_pid);
+        char *log_name = u_strdup_printf ("wsmand[%d]", log_pid);
 
         openlog (log_name, 0, LOG_DAEMON);
         syslog (LOG_INFO, "%s", str);
         closelog ();
-        g_free (log_name);
+        u_free (log_name);
     }
-#endif
 }
 
 
@@ -222,15 +220,12 @@ daemonize (void)
         fprintf(stderr, "wsmand: fork failed!\n");
     }
 
-    /* The parent process exits. */
     if (fork_rv > 0)
     {
         exit (0);
     }
 
-    /* Clear out the PID, just in case we are daemonizing late. */
     log_pid = 0;
-    /* A daemon should always be in its own process group. */
     setsid ();
 
     /* Change our CWD to / */
@@ -255,8 +250,7 @@ daemonize (void)
     fd = dup (fd); /* dup fd to stderr */
     assert (fd == STDERR_FILENO);
 
-    /* Open /var/run/wsmand.pid and write out our PID */
-    fd = open ("/var/run/wsmand.pid", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open (wsmand_options_get_pid_file(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     pid = u_strdup_printf ("%d", getpid ());
     rc_write (fd, pid, strlen (pid));
     u_free (pid);
