@@ -40,11 +40,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <glib.h>
 #include "wsman_config.h"
 
 
 #if LIBSOUP_CLIENT
+#include <glib.h>
 #include "libsoup/soup.h"
 #include "libsoup/soup-session.h"
 #endif

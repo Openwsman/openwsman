@@ -1,7 +1,6 @@
 AM_CFLAGS = @CFLAGS@
 
 INCLUDES = \
-	    $(GOBJECT_CFLAGS) \
 	   $(XML_CFLAGS) \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
@@ -9,6 +8,7 @@ INCLUDES = \
        
 if USE_LIBSOUP_CLIENT
 INCLUDES += $(SOUP_CFLAGS) \
+	    $(GOBJECT_CFLAGS) \
 	    $(GTHREAD_CFLAGS)
 endif
 if USE_LIBCURL
@@ -18,12 +18,12 @@ endif
 
 LIBS = \
        $(XML_LIBS) \
-       $(GOBJECT_LIBS) \
        $(top_builddir)/src/lib/libwsman.la \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/libu/libwsman_utils.la
 if USE_LIBSOUP_CLIENT
 LIBS += $(SOUP_LIBS) \
+       $(GOBJECT_LIBS) \
        $(GTHREAD_LIBS)
     
 endif
