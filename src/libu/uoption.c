@@ -45,6 +45,221 @@ struct tmp_buf {
 	u_option_entry_t	*entry;
 };
 
+typedef struct tmp_help_buf {
+	char		*part1;
+	char		*part2;
+} tmp_help_buf_t;
+
+typedef struct help_buf {
+	tmp_help_buf_t	*buf;
+	unsigned int	num;
+	size_t		maxlen;
+} help_buf_t;
+
+static void put_to_help_buf(help_buf_t *help_buf,
+			    char count,
+			    const char *format, ...)
+{
+	va_list			ap;
+	tmp_help_buf_t		*buf = &(help_buf->buf[help_buf->num]);
+
+	buf->part2 = NULL;
+	va_start(ap, format);
+	buf->part1 = u_strdup_vprintf(format, ap);
+	va_end(ap);
+	if (count)
+		help_buf->maxlen = (strlen(buf->part1) > help_buf->maxlen) ?
+				strlen(buf->part1) : help_buf->maxlen;
+	help_buf->num += 1;
+}
+
+static void print_help_buf(help_buf_t *help_buf)
+{
+	unsigned int		i,	j;
+	size_t			align;
+	tmp_help_buf_t		*buf = help_buf->buf;
+
+	for (i = 0; i < help_buf->num; i++) {
+		printf("%s", buf[i].part1);
+		if (buf[i].part2) {
+			align = (help_buf->maxlen > 50) ?
+				help_buf->maxlen + 5 - strlen(buf[i].part1) :
+				50 - strlen(buf[i].part1);
+			for (j = 0; j < align; j++) {
+				printf(" ");
+			}
+			printf("%s", buf[i].part2);
+		}
+		printf("\n");
+	}
+}
+
+static void free_help_buf(help_buf_t *help_buf)
+{
+	unsigned int		i;
+	tmp_help_buf_t		*buf = help_buf->buf;
+
+	for (i = 0; i < help_buf->num; i++) {
+		u_free(buf[i].part1);
+		if (buf[i].part2)
+			u_free(buf[i].part2);
+	}
+}
+
+static void print_help_header(u_option_context_t *ctx, help_buf_t *help_buf)
+{
+	u_list_t		*list;
+	u_option_group_t	*grp;
+	tmp_help_buf_t		*buf = help_buf->buf;
+
+	put_to_help_buf(help_buf, 0, "Usage:");
+	put_to_help_buf(help_buf, 0, "  %s [Option...] %s",
+			ctx->prog_name, ctx->usage);
+	put_to_help_buf(help_buf, 0, "");
+	put_to_help_buf(help_buf, 0, "Help Options");
+	put_to_help_buf(help_buf, 1, "  -?, --help");
+
+	list = u_list_first(ctx->groups);
+	if (list && list->next) {
+		put_to_help_buf(help_buf, 1, "  --help-all");
+		buf[help_buf->num - 1].part2 = u_strdup("Show help options");
+	}
+	list = u_list_next(list);
+	while (list) {
+		grp = (u_option_group_t *)list->data;
+		put_to_help_buf(help_buf, 1, "  --help-%s", grp->name);
+		if (grp->help_descr) {
+			buf[help_buf->num - 1].part2 =
+					u_strdup(grp->help_descr);
+		}
+		list = u_list_next(list);
+	}
+	put_to_help_buf(help_buf, 0, "");
+	
+}
+
+static void print_help_group(u_option_group_t *group, help_buf_t *help_buf)
+{
+	unsigned int		i;
+	tmp_help_buf_t		*buf = help_buf->buf;
+
+	if (group->ismain) {
+		put_to_help_buf(help_buf, 0, "Application Options");
+	} else {
+		if (group->descr)
+			put_to_help_buf(help_buf, 0, "%s", group->descr);
+		else
+			put_to_help_buf(help_buf, 0, "%s", group->name);
+	}
+
+	for (i = 0; i < group->num_entries; i++) {
+		if (group->entries[i].short_name &&
+				group->entries[i].arg_descr) {
+			put_to_help_buf(help_buf, 1, "  -%c, --%s=%s",
+					group->entries[i].short_name,
+					group->entries[i].name,
+					group->entries[i].arg_descr);
+		} else if (group->entries[i].short_name) {
+			put_to_help_buf(help_buf, 1, "  -%c, --%s",
+					group->entries[i].short_name,
+					group->entries[i].name);
+		} else if (group->entries[i].arg_descr){
+			put_to_help_buf(help_buf, 1, "  --%s=%s",
+					group->entries[i].name,
+					group->entries[i].arg_descr);
+		} else {
+			put_to_help_buf(help_buf, 1, "  --%s",
+					group->entries[i].name);
+		}
+			if (group->entries[i].descr) {
+				buf[help_buf->num - 1].part2 =
+					u_strdup_printf("%s",
+						group->entries[i].descr);
+			}
+	}
+	put_to_help_buf(help_buf, 0, "");
+}
+
+static void print_short_help(u_option_context_t *ctx)
+{
+	help_buf_t		help_buf;
+	tmp_help_buf_t		buf[1024];
+
+	help_buf.buf = buf;
+	help_buf.maxlen = 0;
+	help_buf.num = 0;
+
+	ctx->groups = u_list_first(ctx->groups);
+	print_help_header(ctx, &help_buf);
+	print_help_group((u_option_group_t *)ctx->groups->data, &help_buf);
+
+	print_help_buf(&help_buf);
+	free_help_buf(&help_buf);
+
+	exit (0);
+}
+
+static void print_long_help(u_option_context_t *ctx, char *hoption)
+{
+	u_list_t		*list;
+	u_option_group_t	*grp;
+	char			*help_str;
+	help_buf_t		help_buf;
+	tmp_help_buf_t		buf[1024];
+
+	help_buf.buf = buf;
+	help_buf.maxlen = 0;
+	help_buf.num = 0;
+
+	ctx->groups = u_list_first(ctx->groups);
+	list = u_list_next(ctx->groups);
+	while (list) {
+		grp = (u_option_group_t *)list->data;
+		help_str = u_strdup_printf("help-%s", grp->name);
+		if (!strncmp(hoption, help_str, strlen(help_str))) {
+			u_free(help_str);
+			break;
+		}
+		u_free(help_str);
+		list = u_list_next(list);
+	}
+
+	if (!list) {
+		if (!strncmp(hoption, "help-all", strlen("help-all")) &&
+				strlen(hoption) == strlen("help-all")) {
+			grp = (u_option_group_t *)ctx->groups->data;
+		} else if (!strncmp(hoption, "help", strlen("help")) &&
+				strlen(hoption) == strlen("help")) {
+			grp = NULL;
+		} else {
+			return;
+		}
+	}
+
+	print_help_header(ctx, &help_buf);
+
+	if (grp == NULL) {
+		grp = (u_option_group_t *)ctx->groups->data;
+		print_help_group(grp, &help_buf);
+	} else if (grp == (u_option_group_t *)ctx->groups->data) {
+		list = u_list_next(ctx->groups);
+		while (list) {
+			grp = (u_option_group_t *)list->data;
+			print_help_group(grp, &help_buf);
+			list = u_list_next(list);
+		}
+		grp = (u_option_group_t *)ctx->groups->data;
+		print_help_group(grp, &help_buf);
+	} else {
+		print_help_group(grp, &help_buf);
+	}
+
+	print_help_buf(&help_buf);
+	free_help_buf(&help_buf);
+
+	exit (0);
+}
+
 static unsigned int context_get_number_entries(u_option_context_t *ctx)
 {
 	u_list_t		*list;
@@ -55,7 +270,7 @@ static unsigned int context_get_number_entries(u_option_context_t *ctx)
 		return 0;
 	}
 
-	list = ctx->groups;
+	list = u_list_first(ctx->groups);
 	while (list) {
 		grp = (u_option_group_t *)list->data;
 		num_entr += grp->num_entries;
@@ -195,7 +410,13 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 		return NULL;
 	}
 
-	list = ctx->groups;
+	if (!strncmp(option, "help", strlen("help"))) {
+		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
+			print_long_help(ctx, option);
+		}
+	}
+
+	list = u_list_first(ctx->groups);
 	while (list) {
 		grp = (u_option_group_t *)list->data;
 
@@ -226,7 +447,13 @@ static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 		return NULL;
 	}
 
-	list = ctx->groups;
+	if (option == '?') {
+		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
+			print_short_help(ctx);
+		}
+	}
+
+	list = u_list_first(ctx->groups);
 	while (list) {
 		grp = (u_option_group_t *)list->data;
 
@@ -251,7 +478,7 @@ u_option_group_t* u_option_group_new(const char *name,
 {
 	u_option_group_t	*grp;
 
-	grp = (u_option_group_t *) u_zalloc(sizeof(u_option_group_t));
+	grp = u_zalloc(sizeof(u_option_group_t));
 
 	if (name) {
 		grp->name = strdup(name);
@@ -322,15 +549,19 @@ void u_option_context_free(u_option_context_t *ctx)
 	if (!ctx)
 		return;
 
-	list = ctx->groups;
-	while (list) {
+	ctx->groups = u_list_first(ctx->groups);
+	while (ctx->groups) {
+		list = ctx->groups;
 		u_option_group_free((u_option_group_t *)list->data);
-		list = list->next;
+		ctx->groups = u_list_delete_link(list, list);
+		u_list_free(list);
 	}
-	u_list_remove_all(ctx->groups);
 
 	if (ctx->usage)
 		u_free(ctx->usage);
+
+	if (ctx->prog_name)
+		u_free(ctx->prog_name);
 
 	u_free(ctx);
 }
@@ -356,6 +587,7 @@ void u_option_context_add_main_entries(u_option_context_t *ctx,
 
 	grp = u_option_group_new(name, NULL, NULL);
 	u_option_group_add_entries(grp, options);
+	grp->ismain = 1;
 	ctx->groups = u_list_prepend(ctx->groups, (void *)grp);
 }
 
@@ -408,6 +640,18 @@ char u_option_context_parse(u_option_context_t *ctx,
 
 	if (!ctx)
 		return 0;
+
+	optptr = (*argv)[0];
+	while (*optptr != '\0') {
+		if (*optptr == '/')
+			argptr = optptr;
+		optptr++;
+	}
+	if (argptr) {
+		ctx->prog_name = u_strdup(argptr + 1);
+	} else {
+		ctx->prog_name = u_strdup((*argv)[0]);
+	}
 
 	for (i = 1; i < *argc; i++) {
 		largv[i] = strdup((*argv)[i]);
@@ -506,7 +750,6 @@ char u_option_context_parse(u_option_context_t *ctx,
 				for (j = 0; j < noopt; j++) {
 					if (!strcmp((*argv)[i], tmp_argv[j])) {
 						(*argv)[j + 1] = (*argv)[i];
-						(*argv)[i] = NULL;
 						break;
 					}
 				}
@@ -521,5 +764,3 @@ char u_option_context_parse(u_option_context_t *ctx,
 
 	return retval;
 }
-
-

@@ -51,10 +51,16 @@ u_list_t* u_list_alloc(void);
 void u_list_free(u_list_t *list);
 u_list_t* u_list_first(u_list_t *list);
 u_list_t* u_list_last(u_list_t *list);
+u_list_t* u_list_next(u_list_t *list);
+u_list_t* u_list_previous(u_list_t *list);
 u_list_t* u_list_append(u_list_t *list, void *data);
 u_list_t* u_list_prepend(u_list_t *list, void *data);
-u_list_t* u_list_remove(u_list_t *list, void *data);
-void u_list_remove_all(u_list_t *list);
+u_list_t* u_list_find(u_list_t *list, void *data);
+unsigned int u_list_position(u_list_t *list, u_list_t *link);
+u_list_t* u_list_remove_link(u_list_t *list, u_list_t *link);
+u_list_t* u_list_delete_link(u_list_t *list, u_list_t *link);
+unsigned int u_list_length(u_list_t *list);
+u_list_t* u_list_concat(u_list_t *list1, u_list_t *list2);
 
 #ifdef __cplusplus
 }

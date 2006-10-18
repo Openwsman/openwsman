@@ -71,6 +71,7 @@ typedef struct u_option_group {
 	char			*help_descr;
 	u_option_entry_t	*entries;
 	unsigned int		num_entries;
+	char			ismain;
 } u_option_group_t;
 
 u_option_group_t* u_option_group_new(const char *name,
@@ -91,6 +92,7 @@ typedef struct u_option_context {
 	char			*usage;
 	u_list_t		*groups;
 	unsigned int		mode;
+	char			*prog_name;
 } u_option_context_t;
 
 u_option_context_t* u_option_context_new(const char *usage);

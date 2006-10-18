@@ -41,7 +41,8 @@ u_list_t* u_list_alloc(void)
 
 void u_list_free(u_list_t *list)
 {
-	u_free(list);
+	if (list)
+		u_free(list);
 }
 
 u_list_t* u_list_first(u_list_t *list)
@@ -60,69 +61,146 @@ u_list_t* u_list_last(u_list_t *list)
 	return list;
 }
 
+u_list_t* u_list_next(u_list_t *list)
+{
+	if (list)
+		list = list->next;
+
+	return list;
+}
+
+u_list_t* u_list_previous(u_list_t *list)
+{
+	if (list)
+		list = list->prev;
+
+	return list;
+}
+
 u_list_t* u_list_append(u_list_t *list, void *data)
 {
-	u_list_t	*new,	*last;
+	u_list_t	*new;
 
 	new = u_list_alloc();
-	last = u_list_last(list);
-	if (last) {
-		last->next = new;
+	list = u_list_last(list);
+	if (list) {
+		list->next = new;
 	}
-	new->prev = last;
+	new->prev = list;
 	new->data = data;
 
-	return new;
+	return u_list_first(new);
 }
 
 u_list_t* u_list_prepend(u_list_t *list, void *data)
 {
-	u_list_t	*new,	*first;
+	u_list_t	*new;
 
 	new = u_list_alloc();
-	first = u_list_first(list);
-	if (first) {
-		first->prev = new;
+	list = u_list_first(list);
+	if (list) {
+		list->prev = new;
 	}
-	new->next = first;
+	new->next = list;
 	new->data = data;
 
 	return new;
 }
 
-u_list_t* u_list_remove(u_list_t *list, void *data)
+u_list_t* u_list_find(u_list_t *list, void *data)
 {
-	u_list_t	*tmp = NULL;
-
 	list = u_list_first(list);
 	while (list) {
-		if (list->data == data) {
-			if (list->next) {
-				(list->next)->prev = list->prev;
-				tmp = list->next;
-			}
-			if (list->prev) {
-				(list->prev)->next = list->next;
-				tmp = list->prev;
-			}
-
-			u_list_free(list);
+		if (list->data == data)
 			break;
-		}
 		list = list->next;
 	}
 
-	return u_list_first(tmp);
-}	
+	return list;
+}
 
-void u_list_remove_all(u_list_t *list)
+unsigned int u_list_position(u_list_t *list, u_list_t *link)
 {
-	u_list_t	*prev;
+	unsigned int	ind;
+
+	list = u_list_first(list);
+	for (ind = 0; list; ind++) {
+		if (list == link)
+			break;
+		list = list->next;
+	}
+
+	return (list) ? ind : -1;
+}
+
+u_list_t* u_list_remove_link(u_list_t *list, u_list_t *link)
+{
+	if (u_list_position(list, link) == -1) {
+		if (link)
+			link->prev = link->next = NULL;
+		return u_list_first(list);
+	}
+
+	list = NULL;
+	if (link->prev) {
+		(link->prev)->next = link->next;
+		list = link->prev;
+		link->prev = NULL;
+	}
+	if (link->next) {
+		(link->next)->prev = link->prev;
+		list = link->next;
+		link->next = NULL;
+	}
+
+	return u_list_first(list);
+}
+
+u_list_t* u_list_delete_link(u_list_t *list, u_list_t *link)
+{
+	list = u_list_remove_link(list, link);
+
+	if (link && link->data) {
+		u_free(link->data);
+		link->data = NULL;
+	}
+
+	return list;
+}
+
+unsigned int u_list_length(u_list_t *list)
+{
+	unsigned int	length = 0;
 
 	list = u_list_first(list);
 	while (list) {
-		prev = list;
-		list = list->next;
-		u_free(prev);
+		length++;
+		list = u_list_next(list);
 	}
+
+	return length;
+}
+
+u_list_t* u_list_concat(u_list_t *list1, u_list_t *list2)
+{
+	if (!list1) {
+		if (list2) {
+			list2->next = list2->prev = NULL;
+		}
+		return u_list_first(list2);
+	}
+	if (!list2) {
+		if (list1) {
+			list1->next = list1->prev = NULL;
+		}
+		return u_list_first(list1);
+	}
+
+	list2 = u_list_first(list2);
+	list1 = u_list_last(list1);
+
+	list1->next = list2;
+	list2->prev = list1;
+
+	return u_list_first(list1);
 }
