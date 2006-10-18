@@ -53,7 +53,7 @@ typedef enum {
 } ws_auth_type_t;
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
-extern void ws_set_auth_request_func(ws_auth_request_func_t *);
+extern void ws_set_auth_request_func(ws_auth_request_func_t);
 
 extern char *get_auth_name(ws_auth_type_t auth);
 

@@ -7,6 +7,7 @@
 
 #include "u/libu.h"
 #include <wsmand-auth.h>
+#include "wsmand-daemon.h"
 
 #include <crypt.h>
 #include <time.h>

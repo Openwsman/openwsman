@@ -498,8 +498,8 @@ static int	ncasecmp(register const char *, register const char *, size_t);
 static char	*mystrdup(const char *str);
 #ifndef OPENWSMAN
 static int	Open(const char *path, int flags, int mode);
-#endif
 static int	Stat(const char *path, struct stat *stp);
+#endif
 static void	disconnect(struct conn *c);
 static int	writeremote(struct conn *c, const char *buf, size_t len);
 static int	readremote(struct conn *c, char *buf, size_t len);
@@ -521,7 +521,9 @@ static void	killdots(char *file);
 static char	*fetch(const char *src, char *dst, size_t len);
 static void     parse_headers(struct conn *c, char *s);
 static void	parse_request(struct conn *c);
+#ifndef OPENWSMAN
 static int	useindex(struct conn *, char *path, size_t maxpath);
+#endif
 static void	handle(struct conn *c);
 static void	serve(struct shttpd_ctx *,void *);
 static void	mystrlcpy(register char *, register const char *, size_t);
@@ -1274,6 +1276,9 @@ Open(const char *path, int flags, int mode)
 }
 #endif
 
+
+#ifndef OPENWSMAN
+
 /*
  * The wrapper around stat(), that takes care about directory separators
  */
@@ -1293,7 +1298,7 @@ Stat(const char *path, struct stat *stp)
 
 	return (stat(path, stp));
 }
-
+#endif //OPENWSMAN
 #if defined(_WIN32) && !defined(__GNUC__)
 /*
  * POSIX directory management (limited implementation, enough for shttpd)
@@ -2930,6 +2935,9 @@ spawn_stdio_thread(int sock, HANDLE hPipe, LPTHREAD_START_ROUTINE func)
 }
 #endif /* _WIN32 */
 
+
+#ifndef OPENWSMAN
+
 /*
  * UNIX socketpair() implementation. Why? Because Windows does not have it.
  * Return 0 on success, -1 on error.
@@ -2981,6 +2989,8 @@ mysocketpair(int sp[2])
 
 	return (ret);
 }
+
+
 
 /*
  * Spawn CGI program. Pass prepared environment to it.
@@ -3100,6 +3110,7 @@ redirect(struct conn *c, char *interp, char *prog, char *envblk, char **envp)
 #endif /* _WIN32 */
 }
 
+
 static void
 addenv(char **env, int *len, char **penv, const char *fmt, const char *val)
 {
@@ -3116,8 +3127,6 @@ addenv(char **env, int *len, char **penv, const char *fmt, const char *val)
 	}
 }
 
-
-#ifndef OPENWSMAN
 /*
  * Prepare the environment for the CGI program, and start CGI program.
  */
@@ -3297,7 +3306,7 @@ iscgi(struct shttpd_ctx *ctx, const char *path)
 #endif /* NO_CGI */
 
 
-
+#ifndef OPENWSMAN
 /*
  * For given directory path, substitute it to valid index file.
  * Return 0 if index file has been found, -1 if not found
@@ -3336,7 +3345,7 @@ useindex(struct conn *c, char *path, size_t maxpath)
 
 	return (-1);
 }
-
+#endif // OPENWSMAN
 #endif
 
 

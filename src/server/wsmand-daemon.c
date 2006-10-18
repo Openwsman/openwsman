@@ -256,10 +256,7 @@ int wsmand_options_get_max_threads (void)
     return max_threads;
 }
 
-int wsmand_is_default_basic_authenticator()
-{
-    return !strcmp(basic_authenticator, DEFAULT_BASIC_AUTH);
-}
+
 char *wsmand_default_basic_authenticator()
 {
     return DEFAULT_BASIC_AUTH;

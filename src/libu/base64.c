@@ -87,7 +87,7 @@ void
 ws_base64_encode(const char *from, int len, char *to)
 {
 	int n, i;
-	char	in[3];
+	char	in[3] = {0};
 	char	out[4];
 	const char *s = from;
 

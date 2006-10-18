@@ -108,7 +108,7 @@ char *get_auth_name(ws_auth_type_t auth)
     return "Unknown";
 }
 
-void ws_set_auth_request_func(ws_auth_request_func_t *f)
+void ws_set_auth_request_func(ws_auth_request_func_t f)
 {
     request_func = f;
 }

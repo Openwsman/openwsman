@@ -1,7 +1,7 @@
 #include <u/libu.h>
 
 int facility = LOG_DAEMON;
-main()
+int main(int argc, char **argv)
 {
     static const char *const test[7] = {
         "", /*d41d8cd98f00b204e9800998ecf8427e*/

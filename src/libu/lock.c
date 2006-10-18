@@ -39,6 +39,8 @@
 #include <pthread.h>
 #include <u/lock.h>
 
+extern int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
+
 
 void u_init_lock(void *data)
 {

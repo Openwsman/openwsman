@@ -95,7 +95,7 @@ hash_t *iniparser_getsec(dictionary * d, char *sec)
     char * sval;
     hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0 );
 
-    if (d==NULL) return -1 ;
+    if (d==NULL) return NULL;
     for (i=0 ; i<d->size ; i++) {
         if (d->key[i]==NULL)
             continue ;

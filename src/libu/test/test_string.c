@@ -24,10 +24,10 @@ main(int argc, char *argv[])
     u_uri_t *uri = u_malloc(sizeof(u_uri_t));
 
     for (i = 0; abs_tests[i].uri_string != NULL ; i++) {
-        console("%s", abs_tests[i].uri_string );
+        (void) console("%s", abs_tests[i].uri_string );
         u_uri_parse(abs_tests[i].uri_string, &uri);
-        console("%s", uri->host);
-        console("%s", uri->path);
+        (void) console("%s", uri->host);
+        (void) console("%s", uri->path);
        
         u_string  = u_strdup( abs_tests[i].uri_string );
         end = strchr (u_string, '#');
@@ -37,13 +37,13 @@ main(int argc, char *argv[])
 
         char *query = NULL;
         if (question) {
-            console("%s", question);
-            console("%s", end);
+            (void) console("%s", question);
+            (void) console("%s", end);
             if (question[1]) {
                 query = u_strndup (question + 1, end - (question + 1));
             }
         }
-        console("%s", query);
+        (void) console("%s", query);
 
         hash_t *h = parse_query(query, "&");
         hnode_t *hn;

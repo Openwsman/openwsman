@@ -232,7 +232,7 @@ instance2xml( CimClientInfo *client,
    if (objectpath) CMRelease(objectpath);
    if (new_ns) u_free(new_ns);
 }
-
+#if 0
 static CMPIConstClass*
 cim_get_class (CimClientInfo *client,
                char *class, 
@@ -256,7 +256,7 @@ cim_get_class (CimClientInfo *client,
     cim_to_wsman_status(rc, status);
     return _class;            
 }
-
+#endif
 
 static CMPIObjectPath *  
 cim_get_op_from_enum( CimClientInfo *client,

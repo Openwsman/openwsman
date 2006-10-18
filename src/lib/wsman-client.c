@@ -237,7 +237,7 @@ invoke( WsManClient *cl,
     if (options.cim_ns)
         wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
     
-    WsXmlNodeH argsin;
+    WsXmlNodeH argsin = NULL;
     if (prop)
         argsin = ws_xml_add_empty_child_format(ws_xml_get_soap_body(rqstDoc), uri , "%s_INPUT", method);
     hscan_t hs;

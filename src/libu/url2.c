@@ -8,10 +8,11 @@ hash_t *parse_query(char *query, const char *sep )
 {
     char *pp, *tok, *src, *q = NULL;
     char *key, *val;
+    hash_t *h = NULL;
 
-    q = u_strdup(query);
     dbg_err_if(query == NULL);
-    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+    q = u_strdup(query);
+    h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
     /* foreach name=value pair... */
     for(src = query; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL)

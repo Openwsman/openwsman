@@ -237,7 +237,7 @@ extern "C" {
 #else /* disable debugging */
     #include <ctype.h>
     /* this will be used just to avoid empty-if (and similar) warnings */
-    #define dbg_nop()                   isspace(0)
+    #define dbg_nop()
     #define dbg(...)                    dbg_nop()
     #define dbg_err(...)                do { goto err; } while(0)
     #define dbg_ifb(expr)               if( (expr) )
