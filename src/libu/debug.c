@@ -90,8 +90,10 @@ debug_helper (const char *format,
     va_list args;
     static char *str = NULL;
 
+    /*
     if (str)
         u_free (str);
+        */
 
     va_start (args, format);
     str = u_strdup_vprintf (format, args);

@@ -1041,6 +1041,7 @@ do_serializer_free(WsContextH cntx,
             if ( entry && entry->cntx == cntx && (!ptr || ptr == entry->buf) )
             {
                 lnode_destroy (node);
+                list_delete(((env_t*)soap)->WsSerializerAllocList, node);
                 if ( ptr != NULL )
                     break;
             }

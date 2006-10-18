@@ -188,19 +188,10 @@ select_all_files (const struct dirent *e)
 
 static void
 scan_plugins_in_directory ( WsManListenerH *listener, 
-                            const char *dir_name, 
-                            list_t *plugin_list)
+                            const char *dir_name)
 {
-
-
-    /*
-    g_return_val_if_fail (listener != NULL, plugin_list);
-    g_return_val_if_fail (((NULL != dir_name) && strlen(dir_name)), plugin_list);
-    */
-
+    listener->plugins = list_create(LISTCOUNT_T_MAX);
     list_t *files = scan_files_in_dir ( dir_name, select_all_files);
-    //debug("found %lu files", list_count(files));
-
     lnode_t *node = list_first(files);
     while (node != NULL)
     {
@@ -220,7 +211,7 @@ scan_plugins_in_directory ( WsManListenerH *listener,
                 if (load_plugin(plugin, plugin_path) == 0 )
                 {
                     lnode_t *plg = lnode_create (plugin);
-                    list_append (plugin_list, plg);
+                    list_append (listener->plugins, plg);
                     retv = 0 ;
                 }
             } else {
@@ -239,8 +230,7 @@ scan_plugins_in_directory ( WsManListenerH *listener,
 int
 wsman_plugins_load(WsManListenerH *listener)
 {   
-    listener->plugins = list_create(LISTCOUNT_T_MAX);
-    scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR, listener->plugins);
+    scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR);
     return 0;
 }
 
