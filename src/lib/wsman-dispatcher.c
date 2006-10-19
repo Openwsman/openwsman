@@ -323,13 +323,13 @@ int process_inbound_operation(op_t* op, WsmanMessage *msg)
             u_free(buf);
             destroy_op_entry(op);
         } else {
-            debug( "doc is null");
+            error( "doc is null");
         }
     } else {
         if ( op->dispatch->serviceCallback != NULL )
             retVal = op->dispatch->serviceCallback((SoapOpH)op, op->dispatch->serviceData);
         else
-            debug( "op service callback is null");    	
+            error( "op service callback is null");    	
 
         if ( (retVal = process_filters(op, 0)) == 0 ) {
             if (op->out_doc) {
@@ -346,7 +346,7 @@ int process_inbound_operation(op_t* op, WsmanMessage *msg)
                 u_free(buf);
                 destroy_op_entry(op);
             } else {
-                debug( "doc is null");
+                error( "doc is null");
             }
         }
     }

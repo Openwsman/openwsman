@@ -59,18 +59,20 @@
 static CimClientInfo
 CimResource_Init(WsContextH cntx)
 {
-    char *_tmp;
+    char *_tmp = NULL;
     CimClientInfo cimclient;
     cimclient.cc = NULL;
     cimclient.namespaces = get_vendor_namespaces();
     cimclient.selectors = wsman_get_selector_list(cntx, NULL);
     cimclient.requested_class = wsman_get_class_name(cntx);
     cimclient.method = wsman_get_method_name(cntx);
-    _tmp = cim_get_namespace_selector(cimclient.selectors);
+    if (cimclient.selectors) {
+        _tmp = cim_get_namespace_selector(cimclient.selectors);
+    }
     if (_tmp)
         cimclient.cim_namespace = _tmp;
     else
-         cimclient.cim_namespace = get_cim_namespace();
+        cimclient.cim_namespace = get_cim_namespace();
     cimclient.resource_uri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
     cimclient.method_args = wsman_get_method_args(cntx, cimclient.resource_uri );
     return cimclient;
@@ -82,20 +84,18 @@ CimResource_destroy(CimClientInfo *cimclient)
     if (cimclient->resource_uri) u_free(cimclient->resource_uri);
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
-    /*
     if (cimclient->method_args) {
         hash_free(cimclient->method_args);
-        hash_destroy(cimclient->method_args);
+        //hash_destroy(cimclient->method_args);
     }
     if (cimclient->selectors) {
         hash_free(cimclient->selectors);
-        hash_destroy(cimclient->selectors);
+        //hash_destroy(cimclient->selectors);
     }
     if (cimclient->namespaces) {
         hash_free(cimclient->namespaces);
-        hash_destroy(cimclient->namespaces);
+        //hash_destroy(cimclient->namespaces);
     }
-    */
     return;
 }
 
@@ -170,6 +170,7 @@ CimResource_Custom_EP( SoapOpH op,
     }
 
     ws_destroy_context(cntx);
+    CimResource_destroy(&cimclient);
 
     return 0;
 }
@@ -248,6 +249,12 @@ CimResource_Pull_EP( WsContextH cntx,
         enumInfo->pullResultPtr = doc;
     else
         enumInfo->pullResultPtr = NULL;
+
+    if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) {
+        cim_release_enum_context(enumInfo);
+    }
+
+
 
     CimResource_destroy(&cimclient);
     ws_destroy_context(cntx);

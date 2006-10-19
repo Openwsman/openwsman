@@ -445,7 +445,9 @@ int ws_transfer_put(SoapOpH op, void* appData)
  * @param appData Application data
  * @return status
  */
-int ws_enumerate_stub(SoapOpH op, void* appData)
+int
+ws_enumerate_stub( SoapOpH op,
+                   void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
     SoapH soap = soap_get_op_soap(op);
@@ -463,10 +465,10 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
     generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
 
     if ( endPoint && ( retVal =  
-                endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), &enumInfo, status)) ) {
+                endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), &enumInfo, status)) ) 
+    {
         doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
     } else {
-        
         if ( enumInfo.pullResultPtr ) {
             doc = enumInfo.pullResultPtr;
             enumInfo.index++;
@@ -504,8 +506,13 @@ int ws_enumerate_stub(SoapOpH op, void* appData)
     return retVal;
 }
 
-WsEnumerateInfo* get_enum_info(WsContextH cntx, WsXmlDocH doc, char* cntxName, int cntxNameLen,
-        char* op, char** enumIdPtr)
+WsEnumerateInfo*
+get_enum_info( WsContextH cntx,
+               WsXmlDocH doc, 
+               char* cntxName, 
+               int cntxNameLen,
+               char* op, 
+               char** enumIdPtr)
 {
     WsEnumerateInfo* enumInfo = NULL;
     char* enumId = NULL;
@@ -521,6 +528,7 @@ WsEnumerateInfo* get_enum_info(WsContextH cntx, WsXmlDocH doc, char* cntxName, i
             }
         }
     }
+    debug("enum context: %s", enumId );
 
     if ( enumId != NULL )
     {
@@ -528,12 +536,19 @@ WsEnumerateInfo* get_enum_info(WsContextH cntx, WsXmlDocH doc, char* cntxName, i
         strncpy(&cntxName[sizeof(WSFW_ENUM_PREFIX) - 1],
                 enumId,
                 cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
+        debug("enum context: %s", cntxName );
         enumInfo = (WsEnumerateInfo*)ws_get_context_val(cntx, cntxName, NULL);
+        if (!enumInfo)
+            error("enumInfo is null");
     }
     return enumInfo;
 }
 
-int ws_release_stub(SoapOpH op, void* appData)
+
+
+int
+ws_release_stub( SoapOpH op,
+                 void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
     SoapH soap = soap_get_op_soap(op);
@@ -551,7 +566,7 @@ int ws_release_stub(SoapOpH op, void* appData)
     } else {
         if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, status)) )
         {            
-            debug( "endPoint error");        		
+            error( "endPoint error");        		
             doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
                     WSMAN_INTERNAL_ERROR, OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);   	            
         } else {
@@ -631,7 +646,9 @@ int ws_pull_stub(SoapOpH op, void* appData)
     return retVal;
 }
 
-int ws_pull_stub_raw(SoapOpH op, void* appData)
+int 
+ws_pull_stub_raw( SoapOpH op,
+                  void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
     WsXmlDocH doc = NULL;
@@ -648,7 +665,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
             sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {        
-        debug( "Invalid enumeration context...");
+        error( "Invalid enumeration context...");
         doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
     } else {
         if ( (retVal = endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), enumInfo, status)) ) {             
@@ -675,7 +692,7 @@ int ws_pull_stub_raw(SoapOpH op, void* appData)
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else {
-        debug( "doc is null");
+        error( "doc is null");
     }    
     u_free(status);
     return retVal;
@@ -744,11 +761,13 @@ void ws_clear_context_entries(WsContextH hCntx)
     }
     hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
     debug("hash count: %d", hash_count(h));
+    hash_free(h);
+    /*
     if (!hash_isempty(h)) {
         debug("destroying context: hash not empty");
-        hash_free_nodes(h);
-        hash_destroy(h);
+        hash_free(h);
     }
+    */
 }
 
 int
@@ -804,7 +823,7 @@ set_context_val( WsContextH hCntx,
     } 
     else 
     {
-        debug( "error setting context value.");
+        error( "error setting context value.");
     }
     return retVal;
 }
@@ -855,9 +874,7 @@ ws_destroy_context(WsContextH hCntx)
 {
     int retVal = 1;
     WS_CONTEXT* cntx = (WS_CONTEXT*)hCntx;
-    debug("destroying context: %d", cntx->owner);
     if ( cntx && cntx->owner ) {
-        debug("destroying context 2");
         ws_clear_context_entries(hCntx);
         u_free(cntx);
         retVal = 0;
@@ -1347,7 +1364,8 @@ wsman_get_method_args ( WsContextH cntx, char *resource_uri )
     WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
     if ( doc ) {
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        input = u_strdup_printf("%s_INPUT", wsman_get_method_name (cntx) );
+        char *mn = wsman_get_method_name (cntx);
+        input = u_strdup_printf("%s_INPUT", mn );
         WsXmlNodeH in_node = ws_xml_get_child(body, 0, resource_uri, input);
         if (in_node) {
             debug("INPUT found");
@@ -1362,11 +1380,16 @@ wsman_get_method_args ( WsContextH cntx, char *resource_uri )
                 }
             }
         }
+        u_free(mn);
         u_free(input);
     } else {
         error("xml document is null");
     }
-    return h;
+    if (!hash_isempty(h))
+        return h;
+
+    hash_destroy(h);
+    return NULL;
 }
 
 hash_t*
@@ -1385,7 +1408,6 @@ wsman_get_selector_list( WsContextH cntx,
         {
             WsXmlNodeH selector;
             int index = 0;
-
             while( (selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR)) )
             {
                 char* attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
@@ -1404,7 +1426,11 @@ wsman_get_selector_list( WsContextH cntx,
     } else {
         error( "doc is null");
     }
-    return h;
+    if (!hash_isempty(h))
+        return h;
+
+    hash_destroy(h);
+    return NULL;
 }
 
 char*

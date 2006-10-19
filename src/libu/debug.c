@@ -90,10 +90,8 @@ debug_helper (const char *format,
     va_list args;
     static char *str = NULL;
 
-    /*
-    if (str)
+    if (str != NULL)
         u_free (str);
-        */
 
     va_start (args, format);
     str = u_strdup_vprintf (format, args);
@@ -120,7 +118,6 @@ debug_full (debug_level_e  level,
     lnode_t *iter = list_first(handlers);
     while (iter) {
         debug_handler_t *handler = (debug_handler_t *)iter->list_data;
-
         if ((handler->level == DEBUG_LEVEL_ALWAYS) ||
             (level <= handler->level))
             handler->fn (str, level, handler->user_data);
@@ -129,3 +126,5 @@ debug_full (debug_level_e  level,
     }
     u_free (str);
 }
+
+

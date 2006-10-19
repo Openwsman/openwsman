@@ -204,6 +204,8 @@ instance2xml( CimClientInfo *client,
    new_ns = cim_find_namespace_for_class(client, (char *)classname->hdl);
    char *final_class = u_strdup(strrchr(new_ns, '/') + 1);
    WsXmlNodeH r = ws_xml_add_child(body, NULL, final_class , NULL);
+
+   u_free(final_class);
    
    WsXmlNsH ns = ws_xml_ns_add(r, new_ns, "p" );
    
@@ -1017,6 +1019,10 @@ cim_release_enum_context( WsEnumerateInfo* enumInfo )
 {
     if (enumInfo->appEnumContext) {
         CMPIEnumeration * enumeration = (CMPIEnumeration *)enumInfo->appEnumContext;
+        /*
+        CMPIArray * array = (CMPIArray *)enumInfo->enumResults;
+        if (array) CMRelease(array);
+        */
         if (enumeration) CMRelease(enumeration);
     }
 }

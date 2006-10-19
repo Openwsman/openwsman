@@ -44,8 +44,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
-
 typedef enum {
     DEBUG_LEVEL_ALWAYS   = -1,
     DEBUG_LEVEL_NONE     = 0,
@@ -61,9 +59,6 @@ typedef enum {
 typedef void (*debug_fn) (const char *message,
                            debug_level_e level,
                            void* user_data);
-    
-
-
 struct _debug_handler_t {
     debug_fn   	         fn;
     debug_level_e 	level;
@@ -79,18 +74,10 @@ debug_add_handler (debug_fn fn,
                       void* user_data);
 
 void debug_remove_handler (unsigned int id);
-
 const char * debug_helper (const char *format, ...);
-
-void
-debug_full (debug_level_e  level,
-               const char   *format,
-               ...);
+void debug_full (debug_level_e  level, const char   *format, ...);
 
 
-const char *
-debug_helper (const char *format,
-                 ...);
 
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
