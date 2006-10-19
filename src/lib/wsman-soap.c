@@ -759,14 +759,7 @@ void ws_clear_context_entries(WsContextH hCntx)
         return;
     }
     hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
-    debug("hash count: %d", (int )hash_count(h));
     hash_free(h);
-    /*
-    if (!hash_isempty(h)) {
-        debug("destroying context: hash not empty");
-        hash_free(h);
-    }
-    */
 }
 
 int
@@ -887,9 +880,9 @@ create_context_entry(hash_t* h,
                      char* name, 
                      void* val)
 {
-    char *key = u_str_clone(name);
+    const char *key = u_strdup(name);
     hnode_t *hn = hnode_create(val);
-    hash_insert(h, hn , key);
+    hash_insert(h, hn , (const void *)key);
     return hn;
 }
 
