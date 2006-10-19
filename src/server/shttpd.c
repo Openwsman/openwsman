@@ -399,7 +399,7 @@ struct envvar {
  */
 struct userurl {
 	struct userurl		*next;
-	const char		*url;
+	char		*url;
 #ifdef EMBEDDED
 	shttpd_callback_t	func;
 #endif /* EMBEDDED */
@@ -3999,6 +3999,7 @@ shttpd_fini(struct shttpd_ctx *ctx)
 {
 	struct mimetype	*p, *tmp;
 	struct conn	*c, *nc;
+    struct userurl *u, *u1;
 
 	/* TODO: Free configuration */
 
@@ -4015,6 +4016,43 @@ shttpd_fini(struct shttpd_ctx *ctx)
 		nc = c->next;
 		disconnect(c);
 	}
+
+    /* Free allocated userurls */
+    for (u = ctx->urls; u != NULL; u = u1) {
+        u1 = u->next;
+        free(u->url);
+        free(u);
+    }
+
+    if (ctx->index) {
+        free(ctx->index);
+        ctx->index = NULL;
+    }
+    if (ctx->ext) {
+        free(ctx->ext);
+        ctx->ext = NULL;
+    }
+    if (ctx->interp) {
+        free(ctx->interp);
+       ctx->interp = NULL;
+    }
+    if (ctx->realm) {
+        free(ctx->realm);
+        ctx->realm = NULL;
+    }
+
+    if (ctx->pass) {
+        free(ctx->pass);
+        ctx->pass = NULL;
+    }
+    if (ctx->put_auth) {
+        free(ctx->put_auth);
+        ctx->put_auth = NULL;
+    }
+    if (ctx->uid) {
+        free(ctx->uid);
+        ctx->uid = NULL;
+    }
 
 	if (ctx->accesslog)	(void) fclose(ctx->accesslog);
 	free(ctx);
