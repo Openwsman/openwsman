@@ -288,8 +288,9 @@ static char fill_tmp_data(struct tmp_buf *data,
 			  u_error_t **error)
 {
 	unsigned int	nd;
-	unsigned int	count,	val;
+	unsigned int	count;
 	char		**pptr;
+	long int	val;
 
 	for (nd = 0; nd < *filled; nd++) {
 		if (data[nd].entry == entry) {
