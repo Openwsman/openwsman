@@ -322,7 +322,7 @@ cim_enum_instances (CimClientInfo *client,
     CMPIStatus rc;
     CMCIClient* cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
     if (!cc) {
-        return;
+        goto cleanup;
     }
     client->cc = (CMCIClient *)cc;
 
@@ -334,20 +334,21 @@ cim_enum_instances (CimClientInfo *client,
     if (rc.rc) {
         debug( "CMCIClient enumInstances() failed");
         cim_to_wsman_status(rc, status);
-        return;
+        goto cleanup;
     }
     CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
 
     cim_to_wsman_status(rc, status);
     if (!enumArr) {
-        return;
+        goto cleanup;
     }
 
     enumInfo->totalItems = cim_enum_totalItems(enumArr);
-    debug( "Total items: %lu", enumInfo->totalItems );
+    debug( "Total items: %d", enumInfo->totalItems );
     enumInfo->enumResults = enumArr;
     enumInfo->appEnumContext = enumeration;
 
+cleanup:
     if (cc) CMRelease(cc);
     if (objectpath) CMRelease(objectpath);
     return;           
@@ -359,12 +360,13 @@ path2xml(WsXmlNodeH node,
          char *resourceUri,
          CMPIValue * val)
 {
+   int i;
+   char *cv = NULL;
+
    CMPIObjectPath *objectpath = val->ref;
    CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
    CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
    int numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
-   int i;
-   char *cv = NULL;
 
    ws_xml_add_child(node, XML_NS_ADDRESSING , "Address" , WSA_TO_ANONYMOUS);
    WsXmlNodeH refparam = ws_xml_add_child(node, XML_NS_ADDRESSING , "ReferenceParameters" , NULL);
@@ -1052,8 +1054,7 @@ cim_enum_instancenames (CimClientInfo *client,
         return NULL;
     }
     CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
-    debug( "Total enumeration items: %lu", 
-            enumArr->ft->getSize(enumArr, NULL ));
+    debug( "Total enumeration items: %d", enumArr->ft->getSize(enumArr, NULL ));
     cim_to_wsman_status(rc, status);
     return enumArr;           
 }
@@ -1119,7 +1120,7 @@ cim_get_enum_items(CimClientInfo *client,
     WsXmlNodeH itemsNode;
     if ( node != NULL ) {
         itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
-        debug( "Total items: %lu", enumInfo->totalItems );
+        debug( "Total items: %d", enumInfo->totalItems );
         if (max > 0 ) {
             while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) {
                 if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )

@@ -87,7 +87,6 @@ wsman_add_selector_from_uri( WsXmlDocH doc,
                     (char*) hnode_get(hn));
             debug("key=%s value=%s", (char*) hnode_getkey(hn) , (char*) hnode_get(hn));
         }
-        debug("%d", hash_count(query) );
         hash_free_nodes(query);
         hash_destroy(query);
     }

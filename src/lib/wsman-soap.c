@@ -196,7 +196,7 @@ ws_create_runtime (list_t *interfaces)
             u_free(soap);
             soap = NULL;
         } else {     
-            debug( "Registering %d plugins", list_count(interfaces) );	
+            debug( "Registering %d plugins", (int )list_count(interfaces) );	
             dispInfo->interfaceCount = list_count(interfaces);
             dispInfo->interfaces = interfaces;
             lnode_t *node = list_first(interfaces);        	
@@ -334,8 +334,7 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
         break;        
 
     default:
-        debug(
-                "unknown dispatch type %i", ep->flags & WS_DISP_TYPE_MASK);
+        debug("unknown dispatch type %lu", ep->flags & WS_DISP_TYPE_MASK);
         break;
     }
 
@@ -760,7 +759,7 @@ void ws_clear_context_entries(WsContextH hCntx)
         return;
     }
     hash_t* h = ((WS_CONTEXT*)hCntx)->entries;
-    debug("hash count: %d", hash_count(h));
+    debug("hash count: %d", (int )hash_count(h));
     hash_free(h);
     /*
     if (!hash_isempty(h)) {
