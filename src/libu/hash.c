@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #define HASH_IMPLEMENTATION
@@ -746,12 +747,11 @@ static hnode_t *hnode_alloc(void *context)
 
 static void hnode_free(hnode_t *node, void *context)
 {
-    /*
-    char *val = hnode_get(node);
+    //char *val = hnode_get(node);
     const char *key = hnode_getkey(node);
+    //printf("freeing: %s\n", key );
     if (key) free((void *) key);
-    if (val) free(val);
-    */
+    //if (val) free(val);
     free(node);
 }
 
