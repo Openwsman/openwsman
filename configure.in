@@ -222,6 +222,7 @@ AC_ARG_ENABLE(ssl,
               enable_ssl=auto)
 
 if test "$enable_ssl" != "no"; then
+    PKG_CHECK_MODULES(OPENSSL, openssl , have_ssl="yes", have_ssl="no")
     if test "$have_ssl" != "yes"; then
         if test "$enable_ssl" = "auto"; then
             AC_MSG_WARN(Disabling SSL support);
