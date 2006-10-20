@@ -40,6 +40,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+
 struct _WsManClientEnc;
 typedef struct _WsManClientEnc WsManClientEnc;
 

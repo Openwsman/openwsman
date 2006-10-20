@@ -43,17 +43,6 @@
 #include "wsman_config.h"
 
 
-#if LIBSOUP_CLIENT
-#include <glib.h>
-#include "libsoup/soup.h"
-#include "libsoup/soup-session.h"
-#endif
-
-#ifdef LIBCURL_CLIENT
-#include <curl/curl.h>
-#include <curl/easy.h>
-#endif
-
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-errors.h"
@@ -64,534 +53,9 @@
 #include "wsman-client.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
+#include "wsman-client-transport.h"
 
-static void
-request_usr_pwd(ws_auth_type_t auth,
-                char **username,
-                char **password);
 
-static ws_auth_request_func_t request_func = &request_usr_pwd;
-
-
-static void
-request_usr_pwd(ws_auth_type_t auth,
-                char **username,
-                char **password)
-{
-    char *pw;
-    char user[21];
-
-    fprintf(stdout,"Authentication failed, please retry\n");
-    fprintf(stdout, "%s authentication is used\n", get_auth_name(auth));
-    printf("User name: ");
-    fflush(stdout); 
-    fgets(user, 20, stdin);
-
-    if (strchr(user, '\n'))
-        (*(strchr(user, '\n'))) = '\0';
-    *username = u_strdup_printf ("%s", user);
-
-    pw = getpass("Password: ");
-    *password = u_strdup_printf ("%s", pw);
-}
-
-
-
-char *get_auth_name(ws_auth_type_t auth)
-{
-    switch (auth) {
-        case WS_NO_AUTH :    return "No Auth";
-        case WS_BASIC_AUTH:  return "Basic";
-        case WS_DIGEST_AUTH: return "Digest";
-        case WS_NTLM_AUTH:   return "NTLM";
-    }
-    return "Unknown";
-}
-
-void ws_set_auth_request_func(ws_auth_request_func_t f)
-{
-    request_func = f;
-}
-
-
-int facility = LOG_DAEMON;
-
-void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
-
-static void
-debug_message_handler (const char *str, debug_level_e level, void  *user_data)
-{
-    if (level <= wsman_options_get_debug_level ()) 
-    {
-        struct tm *tm;
-        time_t now;
-        char timestr[128];
-
-        time (&now);
-        tm = localtime (&now);
-        strftime (timestr, 128, "%b %e %T", tm);
-        fprintf (stderr, "%s  %s\n", timestr, str);
-    }
-
-}
-
-
-#ifdef LIBSOUP_CLIENT
-
-static void
-print_header (gpointer name, gpointer value, gpointer user_data)
-{
-    debug( "[%p]: > %s: %s",
-              user_data, (char *) name, (char *) value);
-} /* print_header */
-
-static void
-http_debug_pre_handler (SoupMessage *message, gpointer user_data)
-{
-    debug( "[%p]: Receiving response.", message);
-
-    debug( "[%p]: > %d %s",
-              message,
-              message->status_code,
-              message->reason_phrase);
-
-    soup_message_foreach_header (message->response_headers,
-                                 print_header, message);
-} /* http_debug_pre_handler */
-
-static void
-http_debug_post_handler (SoupMessage *message, gpointer user_data)
-{
-    if (message->response.length) {
-        debug( "[%p]: Response body:\n%.*s\n",
-                  message,
-                  (int) message->response.length,
-                  message->response.body);
-    }
-
-    debug( "[%p]: Transfer finished",
-              message);
-} /* http_debug_post_handler */
-
-
-static void
-http_debug_request_handler (SoupMessage *message, gpointer user_data)
-{
-    const SoupUri *uri = soup_message_get_uri (message);
-
-    debug(
-              "[%p]: > %s %s%s%s HTTP/%s",
-              message,
-              message->method, uri->path,
-              uri->query ? "?" : "",
-              uri->query ? uri->query : "",
-               "1.1");
-
-    soup_message_foreach_header (message->request_headers,
-                                 print_header, message);
-
-    if (message->request.length) {
-        debug( "[%p]: Request body:\n%.*s\n",
-                  message,
-                  (int) message->request.length,
-                  message->request.body);
-    }
-
-    debug( "[%p]: Request sent.", message);
-}
-
-static void
-http_debug (SoupMessage *message)
-{
-    debug( "[%p]: Request queued", message);
-
-    soup_message_add_handler (message, SOUP_HANDLER_POST_REQUEST,
-                              http_debug_request_handler, NULL);
-    soup_message_add_handler (message, SOUP_HANDLER_PRE_BODY,
-                              http_debug_pre_handler, NULL);
-    soup_message_add_handler (message, SOUP_HANDLER_PRE_BODY,
-                              http_debug_post_handler, NULL);
-} /* http_debug */
-
-
-
-
-static void
-reauthenticate (SoupSession *session, SoupMessage *msg,
-        const char *auth_type, const char *auth_realm,
-        char **username, char **password, gpointer data)
-{
-    char *pw;
-    char user[21];
-
-    fprintf(stderr,"Authentication failed, please retry\n");
-    printf("User name: ");
-    fflush(stdout); 
-    fgets(user, 20, stdin);
-
-    if (strchr(user, '\n'))
-        (*(strchr(user, '\n'))) = '\0';
-    *username = u_strdup_printf ("%s", user);
-
-    pw = getpass("Password: ");
-    *password = u_strdup_printf ("%s", pw);
-
-}
-
-
-
-static void
-authenticate (SoupSession *session, 
-        SoupMessage *msg,
-        const char *auth_type, 
-        const char *auth_realm,
-        char **username, 
-        char **password, 
-        gpointer data)
-{
-    WsManClient *cl = data;
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    if (wsc->data.user && wsc->data.pwd) {
-        *username = u_strdup (wsc->data.user);
-        *password = u_strdup (wsc->data.pwd);
-        return;
-    }
-    reauthenticate(session, msg, auth_type, auth_realm,
-           username, password, NULL);
-}
-
-
-
-void  
-wsman_client_handler( WsManClient *cl, 
-                      WsXmlDocH rqstDoc, 
-                      void* user_data) 
-{
-    SoupSession *session = NULL;
-    SoupMessage *msg= NULL;
-
-    char *buf = NULL;
-    int len;
-
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    WsManConnection *con = wsc->connection;
-
-    if (wsman_options_get_cafile() != NULL) {
-        session = soup_session_async_new_with_options (
-            SOUP_SESSION_SSL_CA_FILE, wsman_options_get_cafile(),
-            NULL);
-    } else {
-        session = soup_session_async_new ();    
-    }
-
-    g_signal_connect (session, "authenticate", G_CALLBACK (authenticate), cl);
-    g_signal_connect (session, "reauthenticate", G_CALLBACK (reauthenticate), cl);
-
-    msg = soup_message_new_from_uri (SOUP_METHOD_POST, soup_uri_new(wsc->data.endpoint));
-    http_debug (msg);
-    if (!msg) {
-        fprintf (stderr, "Could not parse URI\n");
-        return;
-    }
-    soup_message_add_header(msg->request_headers, "User-Agent", wsman_options_get_agent());
-    ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-    soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE, SOUP_BUFFER_SYSTEM_OWNED, buf, len);
-
-    // Send the message...        
-    soup_session_send_message (session, msg);
-
-    if (msg->status_code != SOUP_STATUS_UNAUTHORIZED && msg->status_code != SOUP_STATUS_OK) {
-        printf ("Connection to server failed: %s (%d)\n", msg->reason_phrase, msg->status_code);        
-    }
-
-    if (msg->response.body) {
-        con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);
-        strncpy (con->response, SOUP_MESSAGE (msg)->response.body, SOUP_MESSAGE (msg)->response.length);        
-    } 
-
-    g_object_unref (session);
-    g_object_unref (msg);
-
-    return;
-}
-
-
-#endif
-
-#ifdef LIBCURL_CLIENT
-
-
-static long
-reauthenticate(long auth_set, long auth_avail, char **username, char **password)
-{
-    long choosen_auth = 0;
-    ws_auth_type_t ws_auth = WS_NO_AUTH;
-
-    if (auth_avail & CURLAUTH_DIGEST &&
-            wsman_is_auth_method(AUTH_DIGEST)) {
-        choosen_auth = CURLAUTH_DIGEST;
-        ws_auth = WS_DIGEST_AUTH;
-        goto REQUEST_PASSWORD;
-    }
-    if (auth_avail & CURLAUTH_NTLM &&
-            wsman_is_auth_method(AUTH_NTLM)) {
-        choosen_auth = CURLAUTH_NTLM;
-        ws_auth = WS_NTLM_AUTH;
-        goto REQUEST_PASSWORD;
-    }
-    if (auth_avail & CURLAUTH_BASIC &&
-            wsman_is_auth_method(AUTH_BASIC)) {
-        ws_auth = WS_BASIC_AUTH;
-        choosen_auth = CURLAUTH_BASIC;
-        goto REQUEST_PASSWORD;
-    }
-
-    printf("Client does not support authentication type "
-           " acceptable by server\n");
-    return 0;
-
-
-REQUEST_PASSWORD:
-    message("%s authorization is used", get_auth_name(ws_auth));
-    if (auth_set == 0 && *username && *password) {
-        // use username and password from command line
-        return choosen_auth;
-    }
-
-    request_func(ws_auth, username, password);
-
-    if (strlen(*username) == 0) {
-        debug("No username. Authorization canceled");
-        return 0;
-    }
-    return choosen_auth;
-}
-
-typedef struct {
-    char *buf;
-    size_t len;
-    size_t ind;
-} transfer_ctx_t;
-
-static size_t
-write_handler( void *ptr, size_t size, size_t nmemb, void *data)
-{
-    transfer_ctx_t *ctx = data;
-    size_t len;
-
-    len = size * nmemb;
-    if (len >= ctx->len - ctx->ind) {
-        len = ctx->len - ctx->ind -1;
-    }
-    memcpy(ctx->buf + ctx->ind, ptr, len);
-    ctx->ind += len;
-    ctx->buf[ctx->ind] = 0;
-    debug("write_handler: recieved %d bytes\n", len);
-    return len;
-}
-
-
-
-void  
-wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data) 
-{
-#define curl_err(str)  debug("Error = %d (%s); %s", \
-                            r, curl_easy_strerror(r), str); \
-                       http_code = 400
-
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    WsManConnection *con = wsc->connection;
-    long flags;
-    CURL *curl = NULL;
-    CURLcode r;
-    char *upwd = NULL;
-    char *usag = NULL;
-    struct curl_slist *headers=NULL;
-    char *buf = NULL;
-    int len;
-    static char wbuf[32000];  // XXX must be fixed
-    transfer_ctx_t tr_data = {wbuf, 32000, 0};
-    long http_code;
-    char    *proxy;
-    char *proxyauth;
-    long auth_avail = 0;
-    long auth_set = 0;
-
-    if (wsman_options_get_cafile() != NULL) {
-        flags = CURL_GLOBAL_SSL;
-    } else {
-        flags = CURL_GLOBAL_NOTHING;
-    }
-    r = curl_global_init(flags);
-    if (r != 0) {
-        curl_err("Could not initialize curl globals");
-        goto DONE;
-    }
-
-    curl = curl_easy_init();
-    if (curl == NULL) {
-        curl_err("Could not init easy curl");
-        goto DONE;
-    }
-
-    r = curl_easy_setopt(curl, CURLOPT_URL, wsc->data.endpoint);
-    if (r != 0) {
-        curl_err("Could notcurl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint)");
-        goto DONE;
-    }
-
-    proxy = wsman_options_get_proxy();
-    if (proxy) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXY, proxy);
-        if (r != 0) {
-            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
-            goto DONE;
-        }
-    }
-    proxyauth = wsman_options_get_proxyauth();
-    if (proxy) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, proxyauth);
-        if (r != 0) {
-            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
-            goto DONE;
-        }
-    }
-
-    r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
-    if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
-        goto DONE;
-    }
-    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
-    if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
-        goto DONE;
-    }
-    headers = curl_slist_append(headers,
-        "Content-Type: application/soap+xml;charset=UTF-8");    
-    usag = malloc(12 + strlen(wsman_options_get_agent()) + 1);
-    if (usag == NULL) {
-        curl_err("Could not malloc memory");
-        goto DONE;
-    }
-
-    sprintf(usag, "User-Agent: %s", wsman_options_get_agent());
-    headers = curl_slist_append(headers, usag);
-
-    r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)");
-        goto DONE;
-    }
-
-    if (wsman_options_get_cafile() != NULL) {
-        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsman_options_get_cafile());
-        if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
-            goto DONE;
-        }
-        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsman_options_get_cafile());
-        if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
-            goto DONE;
-        }
-        if (wsman_options_get_no_verify_peer()) {
-              r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-            if (r != 0) {
-                curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
-                goto DONE;
-            }
-        }
-    }
-    ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-    r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
-    if (r != 0) {
-        curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
-        goto DONE;
-    }
-
-    while (1) {
-        if (wsc->data.user && wsc->data.pwd && auth_set) {
-            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
-            if (r != 0) {
-                curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
-                goto DONE;
-            }
-            u_free(upwd);
-            upwd = malloc(strlen(wsc->data.user) +
-                strlen(wsc->data.pwd) + 2);
-            if (!upwd) {
-                curl_err("Could not malloc memory");
-                goto DONE;
-            }
-            sprintf(upwd, "%s:%s", wsc->data.user, wsc->data.pwd);
-            r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
-            if (r != 0) {
-                curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
-                goto DONE;
-            }
-        }
-        if (wsman_options_get_debug_level() >= DEBUG_LEVEL_MESSAGE) {
-            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-        }
-        r = curl_easy_perform(curl);
-        if (r != CURLE_OK) {
-            curl_err("curl_easy_perform failed"); 
-            goto DONE;
-        }
-        r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        if (r != 0) {
-            curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
-            goto DONE;
-        }
-
-        if (http_code != 401) {
-            break;
-        }
-        // we are here because of authorization required
-        r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
-        if (r != 0) {
-            curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
-            goto DONE;
-        }
-        auth_set = reauthenticate(auth_set, auth_avail, &wsc->data.user,
-                            &wsc->data.pwd);
-        tr_data.ind = 0;
-        if (auth_set == 0) {
-            // user wants to cancel authorization
-            curl_err("User didn't provide authorization data");
-            goto DONE;
-        }
-    }
-
-    
-
-    if (tr_data.ind == 0) {
-        // No data transfered
-        goto DONE;
-    }
-
-    con->response = (char *)malloc(tr_data.ind + 1);
-    memcpy(con->response, wbuf, tr_data.ind);
-    con->response[tr_data.ind] = 0;
-
-DONE:
-    if (http_code != 200) {
-        fprintf (stderr,
-            "Connection to server failed: response code %ld\n", http_code);
-    }
-    curl_slist_free_all(headers);
-    u_free(usag);
-    u_free(upwd);
-    if (curl) {
-        curl_global_cleanup();
-    }
-
-    return;
-
-}
-
-#endif
 
 
 static void wsman_output(WsXmlDocH doc)
@@ -611,7 +75,25 @@ static void wsman_output(WsXmlDocH doc)
     return;
 }
 
+int facility = LOG_DAEMON;
 
+
+static void
+debug_message_handler (const char *str, debug_level_e level, void  *user_data)
+{
+    if (level <= wsman_options_get_debug_level ()) 
+    {
+        struct tm *tm;
+        time_t now;
+        char timestr[128];
+
+        time (&now);
+        tm = localtime (&now);
+        strftime (timestr, 128, "%b %e %T", tm);
+        fprintf (stderr, "%s  %s\n", timestr, str);
+    }
+
+}
 
 static void
 initialize_logging (void)
@@ -619,16 +101,15 @@ initialize_logging (void)
     debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
 } /* initialize_logging */
 
+
+
 int main(int argc, char** argv)
 {
     int retVal = 0;
     char *filename;
     dictionary       *ini = NULL;
 
-#ifdef LIBSOUP_CLIENT
-    g_type_init ();
-    g_thread_init (NULL);
-#endif
+
     if (!wsman_parse_options(argc, argv))
         return 1;
 
@@ -646,6 +127,8 @@ int main(int argc, char** argv)
     }
 
     initialize_logging ();
+    wsman_client_transport_init(NULL);
+
     WsContextH cntx = ws_create_runtime(NULL);
 
     WsManClient *cl;
@@ -719,13 +202,13 @@ int main(int argc, char** argv)
         doc = ws_send_get_response(cl, rqstDoc, 60000);
         if (doc) {
             wsman_output(doc);
-        }    
+        }
         break;
     case  ACTION_IDENTIFY:
         doc = cl->ft->identify(cl, options);
         if (doc) {
             wsman_output(doc);
-        }    
+        }
         break;
     case  ACTION_INVOKE:
         doc = cl->ft->invoke(cl, resourceUri,
@@ -753,7 +236,7 @@ int main(int argc, char** argv)
         doc = cl->ft->get(cl, resourceUri, options);
         if (doc) {
             wsman_output(doc);
-        }    
+        }
         break;
     case ACTION_ENUMERATION:
 

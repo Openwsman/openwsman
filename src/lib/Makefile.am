@@ -18,7 +18,8 @@ OWSMAN_INCLUDES = \
 	wsman-xml-serialize.h \
 	wsman-xml-serializer.h \
 	wsman-client.h  \
-	wsman-soap-message.h 
+	wsman-soap-message.h \
+	wsman-client-transport.h
 
 libwsman_client_la_SOURCES = \
 	wsman-client.c 
@@ -39,6 +40,26 @@ libwsman_la_SOURCES = \
 	wsman-soap-envelope.c \
 	wsman-soap-message.c
 	$(OWSMAN_INCLUDES)
+
+
+if USE_LIBCURL
+libwsman_curl_client_transport_la_SOURCES = \
+		wsman-client-transport.c \
+		wsman-curl-client-transport.c
+libwsman_curl_client_transport_la_LIBADD = $(CURL_LIBS)
+libwsman_curl_client_transport_la_LDFLAGS= -version-info 1:0
+endif
+
+if USE_LIBSOUP_CLIENT
+libwsman_soup_client_transport_la_SOURCES = \
+		wsman-client-transport.c \
+		wsman-soup-client-transport.c
+libwsman_soup_client_transport_la_LIBADD = $(SOUP_LIBS) \
+       $(GOBJECT_LIBS) \
+       $(GTHREAD_LIBS)
+libwsman_soup_client_transport_la_LDFLAGS= -version-info 1:0
+endif
+
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/libu \
@@ -62,8 +83,36 @@ libwsman_client_la_LDFLAGS= -version-info 1:0
 libwsman_server_la_LDFLAGS= -version-info 1:0
 libwsman_catalog_la_LDFLAGS= -version-info 1:0
 
-lib_LTLIBRARIES= \
+tmp_lib= \
 		 libwsman.la \
 		 libwsman_client.la \
 		 libwsman_catalog.la \
 		 libwsman_server.la
+
+
+if USE_LIBCURL
+lib_LTLIBRARIES = \
+	libwsman_curl_client_transport.la \
+	$(tmp_lib)
+
+endif
+
+if USE_LIBSOUP_CLIENT
+lib_LTLIBRARIES = \
+	libwsman_soup_client_transport.la \
+	$(tmp_lib)
+INCLUDES += $(SOUP_CFLAGS) \
+	    $(GOBJECT_CFLAGS) \
+	    $(GTHREAD_CFLAGS)
+endif
+
+if USE_LIBCURL
+libwsman_client_la_LIBADD += \
+		$(top_builddir)/src/lib/libwsman_curl_client_transport.la
+endif
+
+if USE_LIBSOUP_CLIENT
+libwsman_client_la_LIBADD += \
+		$(top_builddir)/src/lib/libwsman_soup_client_transport.la
+endif
+

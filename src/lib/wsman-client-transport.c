@@ -30,19 +30,71 @@
 
 /**
  * @author Anas Nashif
+ * @author Vadim Revyakin
  */
-#ifndef WSMAN_CLIENT_H
-#define WSMAN_CLIENT_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "wsman-client-transport.h"
+#include "../client/wsman-client-options.h"
+#include "u/libu.h"
 
 
 
-#define ACTION_TRANSFER_GET        1
-#define ACTION_TRANSFER_PUT        2
-#define ACTION_ENUMERATION         3
-#define ACTION_PRIVATE_CATCH       4
-#define ACTION_INVOKE              5
-#define ACTION_TRANSFER_CREATE     6
-#define ACTION_IDENTIFY            7
-#define ACTION_TEST                8
+static void
+request_usr_pwd(ws_auth_type_t auth,
+                char **username,
+                char **password);
 
-#endif // WSMAN_CLIENT_H
+ws_auth_request_func_t request_func = &request_usr_pwd;
+
+
+static void
+request_usr_pwd(ws_auth_type_t auth,
+                char **username,
+                char **password)
+{
+    char *pw;
+    char user[21];
+
+    fprintf(stdout,"Authentication failed, please retry\n");
+    fprintf(stdout, "%s authentication is used\n",
+                ws_client_transport_get_auth_name(auth));
+    printf("User name: ");
+    fflush(stdout); 
+    fgets(user, 20, stdin);
+
+    if (strchr(user, '\n'))
+        (*(strchr(user, '\n'))) = '\0';
+    *username = u_strdup_printf ("%s", user);
+
+    pw = getpass("Password: ");
+    *password = u_strdup_printf ("%s", pw);
+}
+
+
+
+char *ws_client_transport_get_auth_name(ws_auth_type_t auth)
+{
+    switch (auth) {
+        case WS_NO_AUTH :    return "No Auth";
+        case WS_BASIC_AUTH:  return "Basic";
+        case WS_DIGEST_AUTH: return "Digest";
+        case WS_NTLM_AUTH:   return "NTLM";
+    }
+    return "Unknown";
+}
+
+void ws_client_transport_set_auth_request_func(ws_auth_request_func_t f)
+{
+    request_func = f;
+}
+
+
+
+
+
+
