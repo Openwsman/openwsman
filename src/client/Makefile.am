@@ -21,6 +21,7 @@ LIBS = \
        $(top_builddir)/src/lib/libwsman.la \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/libu/libwsman_utils.la
+
 if USE_LIBSOUP_CLIENT
 LIBS += $(SOUP_LIBS) \
        $(GOBJECT_LIBS) \

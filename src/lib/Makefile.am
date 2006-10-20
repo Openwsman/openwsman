@@ -83,7 +83,7 @@ libwsman_client_la_LDFLAGS= -version-info 1:0
 libwsman_server_la_LDFLAGS= -version-info 1:0
 libwsman_catalog_la_LDFLAGS= -version-info 1:0
 
-tmp_lib= \
+lib_LTLIBRARIES = \
 		 libwsman.la \
 		 libwsman_client.la \
 		 libwsman_catalog.la \
@@ -91,28 +91,17 @@ tmp_lib= \
 
 
 if USE_LIBCURL
-lib_LTLIBRARIES = \
-	libwsman_curl_client_transport.la \
-	$(tmp_lib)
+lib_LTLIBRARIES += libwsman_curl_client_transport.la 
+libwsman_client_la_LIBADD += libwsman_curl_client_transport.la
 
 endif
 
 if USE_LIBSOUP_CLIENT
-lib_LTLIBRARIES = \
-	libwsman_soup_client_transport.la \
-	$(tmp_lib)
+lib_LTLIBRARIES += libwsman_soup_client_transport.la 
 INCLUDES += $(SOUP_CFLAGS) \
 	    $(GOBJECT_CFLAGS) \
 	    $(GTHREAD_CFLAGS)
-endif
 
-if USE_LIBCURL
-libwsman_client_la_LIBADD += \
-		$(top_builddir)/src/lib/libwsman_curl_client_transport.la
-endif
-
-if USE_LIBSOUP_CLIENT
-libwsman_client_la_LIBADD += \
-		$(top_builddir)/src/lib/libwsman_soup_client_transport.la
+libwsman_client_la_LIBADD +=  libwsman_soup_client_transport.la
 endif
 
