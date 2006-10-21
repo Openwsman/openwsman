@@ -333,10 +333,10 @@ int main(int argc, char** argv)
 	/*
     if (doc)
         ws_xml_destroy_doc(doc);
-	*/
+	
 	if (cntx)
 		soap_destroy_fw((SoapH )cntx);
-
+	*/
 
     if (ini)
         iniparser_freedict(ini);

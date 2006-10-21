@@ -316,7 +316,8 @@ DONE:
     curl_slist_free_all(headers);
     u_free(usag);
     u_free(upwd);
-    if (curl) {
+    if (curl) {		
+		curl_easy_cleanup(curl);
         curl_global_cleanup();
     }
 
