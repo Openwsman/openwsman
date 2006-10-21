@@ -98,19 +98,28 @@ static void
 initialize_logging (void)
 {
     debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-} /* initialize_logging */
+} 
 
 
 
 int main(int argc, char** argv)
 {
     int retVal = 0;
+	int op;
     char *filename;
     dictionary       *ini = NULL;
 	WsManClient *cl;
+    WsXmlDocH doc;
+    char *enumContext;
+    WsXmlDocH rqstDoc;
+    actionOptions options;
+    bzero(&options, sizeof(options));
+    int optimize_max_elements = 0;	
+    char *enumeration_mode, *binding_enumeration_mode, *resourceUri;
+	
 
     if (!wsman_parse_options(argc, argv))
-        return 1;
+        exit(EXIT_FAILURE);
 
     filename = (char *)wsman_options_get_config_file();
     if (filename)  {
@@ -118,10 +127,10 @@ int main(int argc, char** argv)
         printf("Using conf file: %s\n", filename);
         if (ini==NULL) {
             fprintf(stderr, "cannot parse file [%s]", filename);
-            return 1;
+            exit(EXIT_FAILURE);
         } else if (!wsman_read_client_config(ini)) {
             fprintf(stderr, "Configuration file not found\n");
-            return 1;
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -131,7 +140,8 @@ int main(int argc, char** argv)
     
     debug( "Certificate: %s", wsman_options_get_cafile());
 
-    if (wsman_options_get_cafile() != NULL) {
+    if (wsman_options_get_cafile() != NULL)
+	{
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),
@@ -159,15 +169,8 @@ int main(int argc, char** argv)
 
 
     wsman_client_add_handler(wsman_client_handler, NULL);
-    char *resourceUri = wsman_options_get_resource_uri();
-    int op = wsman_options_get_action();
-    WsXmlDocH doc;
-    char *enumContext;
-    WsXmlDocH rqstDoc;
-    actionOptions options;
-    bzero(&options, sizeof(options));
-    int optimize_max_elements = 0;
-
+    resourceUri = wsman_options_get_resource_uri();
+    op = wsman_options_get_action();
 
     if (wsman_options_get_dump_request()) {
         options.flags |= FLAG_DUMP_REQUEST;
@@ -190,8 +193,6 @@ int main(int argc, char** argv)
     options.cim_ns = wsman_options_get_cim_namespace();
 
 
-    char *enumeration_mode;
-    char *binding_enumeration_mode;
 
     switch (op) 
     {
@@ -241,9 +242,7 @@ int main(int argc, char** argv)
         if (doc) {
             wsman_output(doc);
 			ws_xml_destroy_doc(doc);
-        }
-	
-	
+        }		
         break;
     case ACTION_ENUMERATION:
 
