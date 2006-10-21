@@ -4,15 +4,11 @@
 #ifndef _LIBU_OS_H_
 #define _LIBU_OS_H_
 #include "libu_conf.h"
-#include <u/syslog.h>
-#include <u/strtok_r.h>
+
+#include <syslog.h>
 #include <u/unlink.h>
-#include <u/getpid.h>
 #include <u/fnmatch.h>
-#include <u/timegm.h>
-#include <u/strsep.h>
-#include <u/gettimeofday.h>
-#include <u/daemon.h>
+
 
 #ifdef OS_WIN
 #include <windows.h>

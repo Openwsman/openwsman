@@ -24,9 +24,6 @@
 #ifndef NO_ENV
 #include <u/env.h>
 #endif
-#ifndef NO_HMAP
-#include <u/hmap.h>
-#endif
 #ifndef NO_CONFIG
 #include <u/config.h>
 #endif

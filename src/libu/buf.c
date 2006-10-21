@@ -11,6 +11,7 @@ static const char rcsid[] =
 #include <u/libu.h>
 #include <u/buf.h>
 
+
 struct u_buf_s
 {
     char *data;
