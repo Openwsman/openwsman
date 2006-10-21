@@ -121,7 +121,6 @@ debug_full (debug_level_e  level,
         if ((handler->level == DEBUG_LEVEL_ALWAYS) ||
             (level <= handler->level))
             handler->fn (str, level, handler->user_data);
-
         iter = list_next(handlers, iter);
     }
     u_free (str);

@@ -24,7 +24,8 @@ void wsman_set_message_flags(
 }
 
 
-WsmanMessage *wsman_soap_message_new()
+WsmanMessage*
+wsman_soap_message_new()
 {
     WsmanMessage *wsman_msg = u_zalloc(sizeof(WsmanMessage));
     wsman_msg->response.body = NULL;
@@ -35,6 +36,19 @@ WsmanMessage *wsman_soap_message_new()
     wsman_msg->status.fault_detail_code = 0;
     wsman_msg->status.fault_msg = NULL;
     return wsman_msg;
+};
+
+void
+wsman_soap_message_destroy(WsmanMessage* wsman_msg)
+{
+    if (wsman_msg->response.body)
+        u_free(wsman_msg->response.body);
+
+    if (wsman_msg->request.body)
+        u_free(wsman_msg->request.body);
+
+    if (wsman_msg->status.fault_msg)
+        u_free(wsman_msg->status.fault_msg);
 };
 
 

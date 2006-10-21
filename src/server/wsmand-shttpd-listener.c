@@ -254,10 +254,6 @@ static int server_callback (struct shttpd_arg_t *arg)
         status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
     }
 
-    debug("Response: %s", (char *)wsman_msg->response.body);
-
-
-
     if (wsman_msg->in_doc != NULL) {
         ws_xml_destroy_doc(wsman_msg->in_doc);
     }
@@ -346,7 +342,7 @@ create_shttpd_context(SoapH soap)
     if (wsmand_options_get_ssl_cert_file() &&
                 wsmand_options_get_ssl_key_file() &&
                 (wsmand_options_get_server_ssl_port() > 0)) {
-        debug("Using SSL");
+        message("Using SSL");
         ctx = shttpd_init(NULL,
             "ssl_certificate", wsmand_options_get_ssl_cert_file(),
             "ssl_priv_key", wsmand_options_get_ssl_key_file(),
@@ -553,19 +549,19 @@ wsmand_start_server(dictionary *ini)
                 wsmand_options_get_ssl_key_file() &&
                 (wsmand_options_get_server_ssl_port() > 0)) {
         port = wsmand_options_get_server_ssl_port();
-        debug("Using SSL");
+        message("Using SSL");
     } else {
         port = wsmand_options_get_server_port();
     }
     if (port == 0) {
         port = 9001;
     }
-    debug( "     Working on port %d", port);
+    message( "     Working on port %d", port);
     if (wsmand_options_get_digest_password_file()) {
-        debug( "Using Digest Authorization");
+        message( "Using Digest Authorization");
     }
     if (basic_auth_callback) {
-        debug( "Using Basic Authorization %s",
+        message( "Using Basic Authorization %s",
             wsmand_option_get_basic_authenticator() ?
             wsmand_option_get_basic_authenticator() :
             wsmand_default_basic_authenticator());
@@ -655,7 +651,7 @@ wsmand_start_server(dictionary *ini)
         if (node) {
             lnode_destroy(node);
         } else {
-            debug("Coundn't find node in a list");
+            error("Coundn't find node in a list");
         }
 
         pthread_mutex_unlock(&shttpd_mutex);
@@ -676,7 +672,7 @@ wsmand_start_server(dictionary *ini)
 #else
     ctx = create_shttpd_context(soap);
     if (ctx == NULL) {
-        debug("Could not create shttpd context");
+        error("Could not create shttpd context");
         return listener;
     }
     shttpd_listen(ctx, lsn);

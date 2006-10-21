@@ -40,6 +40,7 @@
 #include <u/uuid.h>
 #include <u/lock.h>
 #include <u/strings.h>
+#include <u/uri.h>
 #include <u/url2.h>
 #include <u/md5.h>
 #include <u/list.h>
@@ -59,8 +60,5 @@
 #ifndef FALSE
 #define FALSE    0
 #endif  /* FALSE */ 
-
-
-
 
 #endif /* !_U_LIBU_H_ */

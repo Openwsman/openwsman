@@ -289,6 +289,7 @@ process_filters( op_t* op,
  * List all dispatcher interfaces
  * @param interfaces Dispatcher interfaces
  */
+#ifdef DEBUG_VERBOSE
 void wsman_dispatcher_list( list_t *interfaces ) 
 {
     lnode_t *node = list_first(interfaces);
@@ -298,6 +299,9 @@ void wsman_dispatcher_list( list_t *interfaces )
         node = list_next (interfaces, node);
     }		
 }
+#else
+#define wsman_dispatcher_list
+#endif
 
 
 int process_inbound_operation(op_t* op, WsmanMessage *msg)
@@ -552,13 +556,14 @@ cleanup:
  * @param flags Flags
  * @return Dispatch Handle
  */
-SoapDispatchH soap_create_dispatch(SoapH soap, 
-        char* inboundAction,
-        char* outboundAction, // optional
-        char* role, // reserved, must be NULL
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        unsigned long flags)
+SoapDispatchH
+soap_create_dispatch(SoapH soap, 
+                     char* inboundAction,
+                     char* outboundAction, // optional
+                     char* role, // reserved, must be NULL
+                     SoapServiceCallback callbackProc,
+                     void* callbackData,
+                     unsigned long flags)
 {
     debug("Creating dispatch");
     dispatch_t* disp = NULL;

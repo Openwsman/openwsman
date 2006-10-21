@@ -19,7 +19,9 @@
  * @param dstHeader Destination header
  * @param epr The Endpoint Reference
  */
-static void epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
+static void
+epr_from_request_to_response( WsXmlNodeH dstHeader,
+							  WsXmlNodeH epr)
 {
     int i;
     WsXmlNodeH child;
@@ -100,103 +102,73 @@ ws_create_response_envelope( WsContextH cntx,
     return doc;
 }
 
-WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* replyToUri, char* systemUri, char* resourceUri,
-        char* toUri, actionOptions options)
+WsXmlDocH 
+wsman_build_envelope( WsContextH cntx,
+                      char* action, 
+                      char* replyToUri,
+                      char* systemUri,
+                      char* resourceUri, 
+                      char* toUri, 
+                      actionOptions options)
 {
     WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
 
-    if ( doc )
-    {
-        WsXmlNodeH node;
-        unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
-        WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        char uuidBuf[100];
+    if ( !doc ) {
+		return NULL;
+	}
+	
+	WsXmlNodeH node;
+	unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
+	WsXmlNodeH header = ws_xml_get_soap_header(doc);
+	char uuidBuf[100];
 
-        generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 
-        ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
+	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
 
-        if ( replyToUri == NULL )
-            replyToUri = WSA_TO_ANONYMOUS;
+	if ( replyToUri == NULL )
+		replyToUri = WSA_TO_ANONYMOUS;
 
-        if ( toUri == NULL )
-            toUri = WSA_TO_ANONYMOUS;
+	if ( toUri == NULL )
+		toUri = WSA_TO_ANONYMOUS;
 
-        if ( action )
-            ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
+	if ( action )
+		ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
 
-        if ( systemUri )
-            ws_serialize_str(cntx, header, systemUri, XML_NS_WS_MAN, WSM_SYSTEM); 
+	if ( systemUri )
+		ws_serialize_str(cntx, header, systemUri, XML_NS_WS_MAN, WSM_SYSTEM); 
 
-        if ( toUri )
-            ws_serialize_str(cntx, header, toUri, XML_NS_ADDRESSING, WSA_TO); 
+	if ( toUri )
+		ws_serialize_str(cntx, header, toUri, XML_NS_ADDRESSING, WSA_TO); 
 
-        if ( resourceUri )
-            ws_serialize_str(cntx, header, resourceUri, XML_NS_WS_MAN, WSM_RESOURCE_URI); 
+	if ( resourceUri )
+		ws_serialize_str(cntx, header, resourceUri, XML_NS_WS_MAN, WSM_RESOURCE_URI); 
 
+	ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 
+	if ( options.timeout )
+	{
+		char buf[20];
+		sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000, (unsigned int)options.timeout % 1000);
+		ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
+	}
 
-        ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+	if ( options.max_envelope_size)
+	{
+		ws_serialize_uint32(cntx, header, options.max_envelope_size, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+	}
+	if ( options.fragment)
+	{
+		ws_serialize_str(cntx, header, options.fragment, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
+	}
 
-        if ( options.timeout )
-        {
-            char buf[20];
-            sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000, (unsigned int)options.timeout % 1000);
-            ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
-        }
+	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
 
-        if ( options.max_envelope_size)
-        {
-            ws_serialize_uint32(cntx, header, options.max_envelope_size, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
-        }
-        if ( options.fragment)
-        {
-            ws_serialize_str(cntx, header, options.fragment, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
-        }
+	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
+	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, replyToUri);
 
-        ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
-
-        node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
-        ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, replyToUri);
-    }
     return doc;
 }
-
-/**
- * Buid Inbound Envelope
- * @param  fw SOAP Framework handle
- * @param buf Message buffer
- * @return XML document with Envelope
- */
-    /*
-WsXmlDocH wsman_build_inbound_envelope(env_t* fw, char *inputBuffer, int inputBufferSize)
-{
-    WsXmlDocH doc = NULL;   
-    char *buf = (char *)soap_alloc( inputBufferSize + 1, 1);
-    strncpy (buf, inputBuffer, inputBufferSize);	        
-
-    if ( (doc = ws_xml_read_memory((SoapH)fw, buf, strlen(buf), NULL, 0)) != NULL )   
-    {        
-        WsmanFaultCodeType fault_code = wsman_is_valid_envelope(fw, doc);
-        if  ( wsman_is_duplicate_message_id(fw, doc) &&  fault_code == WSMAN_RC_OK )
-        {            
-            debug( 
-                    "Envelope Discarded: Duplicate MessageID");    
-        }   
-
-        if (fault_code != WSMAN_RC_OK)
-        {        		        		
-            ws_xml_destroy_doc(doc);
-            doc = NULL;            
-        }        
-    } else {
-        debug( "Parse Error!");    		
-    }
-    free(buf);
-    return doc;
-}
-    */
-
 
 
 /**
@@ -205,7 +177,9 @@ WsXmlDocH wsman_build_inbound_envelope(env_t* fw, char *inputBuffer, int inputBu
  * @param buf Message buffer
  * @return XML document with Envelope
  */
-WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg)
+WsXmlDocH
+wsman_build_inbound_envelope( env_t* fw, 
+                              WsmanMessage *msg)
 {
     WsXmlDocH doc = NULL;   
     if ( (doc = ws_xml_read_memory((SoapH)fw, 
@@ -243,7 +217,11 @@ WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg)
  * @param name Header element name
  * @return Header value
  */
-char* get_soap_header_value(env_t* fw, WsXmlDocH doc, char* nsUri, char* name)
+char*
+get_soap_header_value( env_t* fw, 
+					   WsXmlDocH doc, 
+					   char* nsUri, 
+					   char* name)
 {
     char* retVal = NULL;
     WsXmlNodeH node = get_soap_header_element(fw, doc, nsUri, name);

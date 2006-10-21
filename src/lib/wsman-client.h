@@ -129,7 +129,7 @@ typedef struct _WsManConnection WsManConnection;
 
 struct _WsManClientEnc {
     WsManClient          	enc;
-    WsContextH		wscntx;
+    WsContextH				wscntx;
     WsManClientData      	data;
     WsManCredentialData  	certData;
     WsManConnection     	*connection;
@@ -175,7 +175,6 @@ WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, 
 WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumContext, char* resourceUri, 
         int max_elements, actionOptions options);
 
-WsManConnection *initClientConnection(WsManClientData *cld);
 
 typedef void (*WsmanClientFn) (WsManClient *cl,                           
                            	 WsXmlDocH rqstDoc,

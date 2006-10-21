@@ -855,7 +855,7 @@ extern WsSelector t##_Get_Selectors[]
 
 void soap_enter(SoapH soap);
 void soap_leave(SoapH soap);
-char *wsman_remove_query_string(char * resourceUri);
+void wsman_remove_query_string(char * resourceUri, char **result);
 void soap_destroy_fw(SoapH soap);
 
 int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);

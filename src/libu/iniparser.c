@@ -284,7 +284,8 @@ char * iniparser_getstring(dictionary * d, char * key, char * def)
 
     lc_key = strdup(strlwc(key));
     sval = dictionary_get(d, lc_key, def);
-    free(lc_key);
+    if (lc_key)
+        free(lc_key);
     return sval ;
 }
 

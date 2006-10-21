@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <errno.h>
 #include "wsman_config.h"
 
 
@@ -71,7 +71,6 @@ static void wsman_output(WsXmlDocH doc)
     } else {
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     }
-        
     return;
 }
 
@@ -108,7 +107,6 @@ int main(int argc, char** argv)
     int retVal = 0;
     char *filename;
     dictionary       *ini = NULL;
-
 
     if (!wsman_parse_options(argc, argv))
         return 1;
@@ -155,7 +153,8 @@ int main(int argc, char** argv)
 
 
     if (cl == NULL) {
-        fprintf(stderr, "Null Client\n");
+        error("Null Client");
+        exit(EXIT_FAILURE);
     }
 
 
@@ -237,6 +236,10 @@ int main(int argc, char** argv)
         if (doc) {
             wsman_output(doc);
         }
+	
+    	if (doc)
+        	ws_xml_destroy_doc(doc);
+	
         break;
     case ACTION_ENUMERATION:
 
@@ -270,32 +273,44 @@ int main(int argc, char** argv)
         enumContext = wsenum_get_enum_context(enum_response); 
         WsXmlNodeH cntxNode;
         debug( "enumContext: %s", enumContext );
-        if (enumContext) {
+        if (enumContext) 
+		{
             while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext,
-                                wsman_options_get_max_elements(), options) )) {
+                                wsman_options_get_max_elements(), options) )) 
+			{
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
                         0, NULL, NULL);
                 wsman_output(doc);
                 if ( strcmp(ws_xml_get_node_local_name(node),
                                                 WSENUM_PULL_RESP) != 0 ) {
-                    debug( "no pull response" );
+                    error( "no pull response" );
+					if (doc)
+				        ws_xml_destroy_doc(doc);
                     break;
                 }
                 if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
                                                 WSENUM_END_OF_SEQUENCE) ) {
                     debug( "End of sequence");
+					if (doc)
+				        ws_xml_destroy_doc(doc);
                     break;
                 }
                 if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
-                                            WSENUM_ENUMERATION_CONTEXT)) ) {
+                                            WSENUM_ENUMERATION_CONTEXT)) ) 
+				{
                     u_free(enumContext);
                     enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
                 }
                 if ( enumContext == NULL || enumContext[0] == 0 ) {
                     error( "No enumeration context");
+					if (doc)
+				        ws_xml_destroy_doc(doc);
                     break;
                 }
+				if (doc)
+			        ws_xml_destroy_doc(doc);
                 /*
+				// Used for testing invalid enum contexts
                 if (counter == 1 ) {
                     enumContext = "xxxx";
                 }
@@ -303,9 +318,10 @@ int main(int argc, char** argv)
                 */
             }
         } else {
-            if (enum_response)
-                ws_xml_dump_node_tree(stdout,
-                        ws_xml_get_doc_root(enum_response));
+            if (enum_response) {
+				wsman_output(enum_response);			
+				ws_xml_destroy_doc(doc);         
+			}
         }
         break;
     default:
@@ -314,16 +330,20 @@ int main(int argc, char** argv)
     }
 
     cl->ft->release(cl);   
-    /*
+	/*
     if (doc)
         ws_xml_destroy_doc(doc);
-    soap_destroy_fw(cntx);
-    soap_free(cntx);
-    */
+	*/
+	if (cntx)
+		soap_destroy_fw((SoapH )cntx);
+
 
     if (ini)
         iniparser_freedict(ini);
-    //printf("     ******   Transfer Time = %ull usecs ******\n", get_transfer_time());
+
+#ifdef DEBUG_VERBOSE
+    printf("     ******   Transfer Time = %ull usecs ******\n", get_transfer_time());
+#endif
     return retVal;
 
 }

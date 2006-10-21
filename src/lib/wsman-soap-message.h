@@ -75,5 +75,6 @@ typedef struct _WsProperties WsProperties;
 void wsman_set_message_flags(WsmanMessage *msg, unsigned int flag);
 
 WsmanMessage *wsman_soap_message_new(void);
+void wsman_soap_message_destroy(WsmanMessage* wsman_msg);
 
 #endif

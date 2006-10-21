@@ -71,7 +71,6 @@
 #include "wsmand-daemon.h"
 
 
-
 static int log_pid = 0;
 
 static void
@@ -277,7 +276,8 @@ main (int argc, char **argv)
     g_thread_init (NULL); 
 #endif
     if (!wsmand_parse_options(argc, argv)) {
-        return 1;
+		fprintf(stderr, "Failed to parse command line options\n");
+        exit(EXIT_FAILURE);
     }
 
     filename = (char *)wsmand_options_get_config_file();
@@ -288,7 +288,7 @@ main (int argc, char **argv)
         return 1;
     } else if (!wsmand_read_config(ini)) {
         fprintf(stderr, "Configuration file not found\n");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     daemonize ();		
@@ -310,7 +310,7 @@ main (int argc, char **argv)
     initialize_logging ();
     WsManListenerH *listener = NULL;
     if ( (listener = wsmand_start_server(ini)) == NULL) {
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
 #ifdef LIBSOUP_LISTENER

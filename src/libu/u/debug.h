@@ -90,9 +90,16 @@ void debug_full (debug_level_e  level, const char   *format, ...);
 #else
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, format)
+#define error( format...) \
+        debug_full(DEBUG_LEVEL_ERROR, format)
+#define message( format...) \
+        debug_full(DEBUG_LEVEL_MESSAGE, format)
+#if 0
+#define debug(format...)
+#define message(format...)
+#define error(format...)
+#endif
 
-#define message debug
-#define error debug
 #endif
 
 

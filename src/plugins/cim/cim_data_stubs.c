@@ -60,7 +60,11 @@ static CimClientInfo
 CimResource_Init(WsContextH cntx)
 {
     char *_tmp = NULL;
+	char *r = NULL;
     CimClientInfo cimclient;
+
+	wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL), &r);
+	
     cimclient.cc = NULL;
     cimclient.namespaces = get_vendor_namespaces();
     cimclient.selectors = wsman_get_selector_list(cntx, NULL);
@@ -73,8 +77,9 @@ CimResource_Init(WsContextH cntx)
         cimclient.cim_namespace = _tmp;
     else
         cimclient.cim_namespace = get_cim_namespace();
-    cimclient.resource_uri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    cimclient.method_args = wsman_get_method_args(cntx, cimclient.resource_uri );
+    cimclient.resource_uri = u_strdup(r);
+    cimclient.method_args = wsman_get_method_args(cntx, r );
+	// u_free(r);
     return cimclient;
 }
 
@@ -85,7 +90,7 @@ CimResource_destroy(CimClientInfo *cimclient)
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
     if (cimclient->method_args) {
-        hash_free(cimclient->method_args);
+        //hash_free(cimclient->method_args);
         //hash_destroy(cimclient->method_args);
     }
     if (cimclient->selectors) {

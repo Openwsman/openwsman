@@ -217,7 +217,8 @@ scan_plugins_in_directory ( WsManListenerH *listener,
             } else {
                 error("Out of memory scanning for plugins.");
             }
-            u_free (plugin_path);
+			if (plugin_path)
+            	u_free (plugin_path);
             if (retv != 0  && (NULL != plugin))
                 plugin_free(plugin);
         }

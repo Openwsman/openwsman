@@ -1163,7 +1163,9 @@ destroy_dispatch_entry(dispatch_t* entry)
         if ( !usageCount && entry->inboundFilterList && entry->outboundFilterList)
         {
             list_destroy_nodes(entry->inboundFilterList);
+            list_destroy(entry->inboundFilterList);
             list_destroy_nodes(entry->outboundFilterList);
+            list_destroy(entry->outboundFilterList);
 
             u_free(entry->inboundAction);
             u_free(entry->outboundAction);
@@ -1295,12 +1297,19 @@ wsman_get_method_name ( WsContextH cntx )
     return method;
 }
 
+
+
 char*
 wsman_get_class_name ( WsContextH cntx ) 
 {
-    char *resourceUri = wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL));
-    char *className = u_strdup(strrchr(resourceUri, '/') + 1);
-    u_free(resourceUri);
+	char *r = NULL;
+    char *resourceUri = wsman_get_resource_uri(cntx, NULL);
+	wsman_remove_query_string(resourceUri, &r);	
+    char *className = u_strdup(strrchr(r, '/') + 1);
+
+    //u_free(r);
+	//u_free(resourceUri);
+	
     return className;
 }
 
@@ -1309,6 +1318,7 @@ wsman_get_resource_uri( WsContextH cntx,
                         WsXmlDocH doc )
 {
     char* val = NULL;
+
     if ( doc == NULL )
         doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
@@ -1326,30 +1336,38 @@ char*
 wsman_get_system_uri( WsContextH cntx,
                       WsXmlDocH doc)
 {
+	char *val = 0;
+	
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
     WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
-    char* val = (!node) ? NULL : ws_xml_get_node_text(node);
+    val = (!node) ? NULL : ws_xml_get_node_text(node);
     return val;
 }
 
 
 
-char*
-wsman_remove_query_string(char * resourceUri)
+void 
+wsman_remove_query_string(char *s, char **result)
 {
-    char *result;
-    xmlURIPtr uri;
-    uri = xmlParseURI((const char *)resourceUri);
-    uri->query = NULL;
-    result =  (char *)xmlSaveUri(uri);
-    if (uri)
-        xmlFreeURI(uri);
-    return result;
+    char *r = 0;
+	const char *q;
+	char *buf = 0;
+	
+	buf = u_strndup(s, strlen(s));
+	if ( (q = strchr (buf, '?')) != NULL) {
+		r = u_strndup(s, q - buf);		
+		*result = r;
+	} else {
+		*result = s;
+	}
+	
+	U_FREE(buf);	   
 }
 
 
 hash_t*
-wsman_get_method_args ( WsContextH cntx, char *resource_uri ) 
+wsman_get_method_args ( WsContextH cntx, 
+						char *resource_uri ) 
 {
     char *input = NULL;
     hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
@@ -1461,7 +1479,9 @@ wsman_get_selector( WsContextH cntx,
     return val;
 }
 
-char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc)
+char*
+ws_addressing_get_action( WsContextH cntx, 
+						  WsXmlDocH doc)
 {
     char *val = NULL;
     if ( doc == NULL )
