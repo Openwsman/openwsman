@@ -107,6 +107,7 @@ int main(int argc, char** argv)
     int retVal = 0;
     char *filename;
     dictionary       *ini = NULL;
+	WsManClient *cl;
 
     if (!wsman_parse_options(argc, argv))
         return 1;
@@ -126,11 +127,10 @@ int main(int argc, char** argv)
 
     initialize_logging ();
     wsman_client_transport_init(NULL);
-
     WsContextH cntx = ws_create_runtime(NULL);
-
-    WsManClient *cl;
+    
     debug( "Certificate: %s", wsman_options_get_cafile());
+
     if (wsman_options_get_cafile() != NULL) {
         cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
@@ -201,12 +201,14 @@ int main(int argc, char** argv)
         doc = ws_send_get_response(cl, rqstDoc, 60000);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
         break;
     case  ACTION_IDENTIFY:
         doc = cl->ft->identify(cl, options);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
         break;
     case  ACTION_INVOKE:
@@ -215,6 +217,7 @@ int main(int argc, char** argv)
                 wsman_options_get_properties(), options);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
         break;
     case  ACTION_TRANSFER_CREATE:
@@ -222,6 +225,7 @@ int main(int argc, char** argv)
                 wsman_options_get_properties(), options);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
         break;
     case  ACTION_TRANSFER_PUT:
@@ -229,16 +233,16 @@ int main(int argc, char** argv)
                 wsman_options_get_properties(), options);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
         break;
     case  ACTION_TRANSFER_GET:
         doc = cl->ft->get(cl, resourceUri, options);
         if (doc) {
             wsman_output(doc);
+			ws_xml_destroy_doc(doc);
         }
 	
-    	if (doc)
-        	ws_xml_destroy_doc(doc);
 	
         break;
     case ACTION_ENUMERATION:

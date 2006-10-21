@@ -228,8 +228,10 @@ invoke( WsManClient *cl,
 {
     WsXmlDocH respDoc = NULL;
 	char* uri = NULL;
-	
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;	
+    hscan_t hs;
+    hnode_t *hn;	
+    WsManClientEnc *wsc =(WsManClientEnc*)cl;
+ 	WsXmlNodeH argsin = NULL;
 
     char *action = NULL;
     wsman_remove_query_string(resourceUri, &uri);
@@ -245,11 +247,10 @@ invoke( WsManClient *cl,
     if (options.cim_ns)
         wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
     
-    WsXmlNodeH argsin = NULL;
+   
     if (prop)
         argsin = ws_xml_add_empty_child_format(ws_xml_get_soap_body(rqstDoc), uri , "%s_INPUT", method);
-    hscan_t hs;
-    hnode_t *hn;
+
     hash_scan_begin(&hs, prop);
     while ((hn = hash_scan_next(&hs))) {    	
         ws_xml_add_child(argsin, NULL, (char*) hnode_getkey(hn) ,  (char*) hnode_get(hn)  );
@@ -259,12 +260,14 @@ invoke( WsManClient *cl,
         if (rqstDoc)
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(rqstDoc));
     }
+
     respDoc = ws_send_get_response(cl, rqstDoc, options.timeout);
     ws_xml_destroy_doc(rqstDoc);
     if (action) 
         u_free(action);
 	if (uri)
     	u_free(uri);
+
     return respDoc;
 
 }
@@ -306,9 +309,9 @@ wsenum_enumerate( WsManClient* cl,
                   char *resourceUri,
                   int max_elements , 
                   actionOptions options) {
-    debug( "Enumerate...");
-
-    WsXmlDocH respDoc = wsman_enum_send_get_response(cl, WSENUM_ENUMERATE, NULL, resourceUri, max_elements, options);
+    message( "Enumerate...");
+    WsXmlDocH respDoc = wsman_enum_send_get_response(cl, WSENUM_ENUMERATE, 
+								NULL, resourceUri, max_elements, options);
     if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
         if (respDoc)
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(respDoc));
@@ -324,8 +327,10 @@ wsenum_pull( WsManClient* cl,
              int max_elements,
              actionOptions options)
 {
-    debug( "Pull... ");
+    message( "Pull request... ");
     WsXmlDocH respDoc;
+	WsManClientEnc             * wsc = (WsManClientEnc*)cl;
+
     if ( enumContext || (enumContext && enumContext[0] == 0) )
 	{
         respDoc = wsman_enum_send_get_response(cl, WSENUM_PULL, enumContext, resourceUri, max_elements, options);
@@ -333,6 +338,7 @@ wsenum_pull( WsManClient* cl,
         return NULL;
         error( "No enumeration context ???");
     }
+	release_connection(wsc->connection);
     return respDoc;
 }
 
@@ -347,7 +353,7 @@ wsenum_release( WsManClient* cl,
 }
 
 
-static  void
+void
 release_connection(WsManConnection *conn) 
 {
     if (conn->request)

@@ -205,6 +205,7 @@ void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
 
 long long get_transfer_time(void);
+void release_connection(WsManConnection *conn);
 
 #ifdef __cplusplus
 }
