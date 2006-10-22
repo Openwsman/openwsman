@@ -131,7 +131,12 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     CMPIStatus rc;
     hscan_t hs;
     hnode_t *hn;
-
+	if (!keys) {
+	    statusP->fault_code = WSMAN_INVALID_SELECTORS;
+        statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
+        goto cleanup;
+	}
+	
     if (CMGetKeyCount(objectpath, NULL) > hash_count(keys) ) 
     {
         statusP->fault_code = WSMAN_INVALID_SELECTORS;
@@ -320,13 +325,14 @@ cim_enum_instances (CimClientInfo *client,
     CMPIObjectPath * objectpath;    
     CMPIEnumeration * enumeration;
     CMPIStatus rc;
+
+    objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class , NULL);
     CMCIClient* cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
     if (!cc) {
         goto cleanup;
     }
     client->cc = (CMCIClient *)cc;
 
-    objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class , NULL);
     enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeClassOrigin, NULL, &rc);
     
     debug( "enumInstances() rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
