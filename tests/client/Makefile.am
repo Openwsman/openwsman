@@ -13,9 +13,11 @@ LIBS = \
 
 
 test_transfer_get_SOURCES = test_transfer_get.c
+test_transfer_get_SOURCES = test_enumeration.c
 
 noinst_PROGRAMS = \
-		  test_transfer_get
+		  test_transfer_get \
+		  test_enumeration
 	
    
 

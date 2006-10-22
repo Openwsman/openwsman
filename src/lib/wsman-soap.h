@@ -487,6 +487,7 @@ typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
 typedef int (*WsEndPointPut)(WsContextH, void*, void**, WsmanStatus*);
 typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 
+#define FLAG_NONE    						 0
 #define FLAG_ENUMERATION_COUNT_ESTIMATION    1
 #define FLAG_ENUMERATION_OPTIMIZATION        2
 #define FLAG_ENUMERATION_ENUM_EPR            4

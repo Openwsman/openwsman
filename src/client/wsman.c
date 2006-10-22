@@ -255,6 +255,7 @@ int main(int argc, char** argv)
 
         enumeration_mode = wsman_options_get_enum_mode();
         binding_enumeration_mode = wsman_options_get_binding_enum_mode();
+
         if (enumeration_mode) {
             if (strcmp(enumeration_mode, "epr") == 0 ) 
                 options.flags |= FLAG_ENUMERATION_ENUM_EPR;
@@ -271,16 +272,20 @@ int main(int argc, char** argv)
                 options.flags |= FLAG_POLYMORPHISM_NONE;
         }
 
-        if (wsman_options_get_optimize_enum()) {
+        if (wsman_options_get_optimize_enum()) 
+		{
             options.flags |= FLAG_ENUMERATION_OPTIMIZATION;
             optimize_max_elements = wsman_options_get_max_elements();
         }
+
         if (wsman_options_get_estimate_enum())
             options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
 
         WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
                 resource_uri, optimize_max_elements, options);
+
         enumContext = wsenum_get_enum_context(enum_response); 
+
         WsXmlNodeH cntxNode;
         debug( "enumContext: %s", enumContext );
         if (enumContext) 
@@ -293,7 +298,7 @@ int main(int argc, char** argv)
                 wsman_output(doc);
                 if ( strcmp(ws_xml_get_node_local_name(node),
                                                 WSENUM_PULL_RESP) != 0 ) {
-                    error( "no pull response" );
+                    error( "no Pull response" );
 					if (doc)
 				        ws_xml_destroy_doc(doc);
                     break;
@@ -301,8 +306,11 @@ int main(int argc, char** argv)
                 if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
                                                 WSENUM_END_OF_SEQUENCE) ) {
                     debug( "End of sequence");
+					/* FIXME */
+					/*
 					if (doc)
 				        ws_xml_destroy_doc(doc);
+					*/
                     break;
                 }
                 if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
