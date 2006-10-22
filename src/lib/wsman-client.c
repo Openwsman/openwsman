@@ -66,12 +66,75 @@ typedef struct _WsmanClientHandler WsmanClientHandler;
 
 static list_t *handlers;
 
+
+
+void initialize_action_options(actionOptions *op) 
+{
+   	bzero(op, sizeof(actionOptions));
+	op->selectors = NULL;
+	return;
+}
+
+void destroy_action_options(actionOptions *op) 
+{
+	if (op->selectors) {
+		hash_free(op->selectors);
+	}
+   	bzero(op, sizeof(actionOptions));
+	return;
+}
+
+void
+wsman_add_selectors_from_query_string(actionOptions *options, char *query_string)
+{
+	hash_t * query = parse_query(query_string, "&");	
+	if (query) {
+		options->selectors = query;
+	}
+}
+
+void 
+wsman_add_selector_from_options( WsXmlDocH doc, 
+								actionOptions options)
+{
+	if (options.selectors != NULL && hash_count(options.selectors) > 0 )
+	{
+		WsXmlNodeH header = ws_xml_get_soap_header(doc);
+		hnode_t *hn;
+		hscan_t hs;
+		hash_scan_begin(&hs, options.selectors);
+		while ((hn = hash_scan_next(&hs))) {
+			wsman_add_selector( header, 
+				(char*) hnode_getkey(hn), 
+				(char*) hnode_get(hn));
+			debug("key = %s value=%s", (char*) hnode_getkey(hn) , (char*) hnode_get(hn));
+		}
+	}
+	//hash_free_nodes(query);
+	//hash_destroy(query);
+}
+
+void 
+wsman_set_options_from_uri( char *resourceUri,
+							actionOptions *options)
+{
+	u_uri_t *uri;        
+    if (resourceUri != NULL )	
+        u_uri_parse((const char *)resourceUri, &uri);
+
+    if (uri->query != NULL  ) {        
+ 		wsman_add_selectors_from_query_string(options, uri->query);
+    }
+    if (uri)
+        u_uri_free(uri);
+}
+
+
 void 
 wsman_add_selector_from_uri( WsXmlDocH doc, 
                              char *resourceUri)
 {
-	u_uri_t *uri;
-    
+	u_uri_t *uri;    
     WsXmlNodeH header = ws_xml_get_soap_header(doc);
 
     if (resourceUri != NULL )	
@@ -114,22 +177,24 @@ WsXmlDocH transfer_create( WsManClient *cl, char *resourceUri, hash_t *prop, act
 
 WsXmlDocH 
 transfer_get( WsManClient *cl,
-              char *resourceUri,
+              char *resource_uri,
               actionOptions options) 
 {
-	char *clean_uri = NULL;
+	//char *clean_uri = NULL;
 	WsXmlDocH respDoc = NULL;
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;
 	
     char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
-    wsman_remove_query_string(resourceUri, &clean_uri);
+	
+    //wsman_remove_query_string(resourceUri, &clean_uri);
     
-
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;	
+    	
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
-            clean_uri , wsc->data.endpoint, options );
+            resource_uri , wsc->data.endpoint, options );
 
+    //wsman_add_selector_from_uri(rqstDoc, resourceUri);
+	wsman_add_selector_from_options(rqstDoc, options);
 
-    wsman_add_selector_from_uri(rqstDoc, resourceUri);
     if (options.cim_ns)
         wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
 
@@ -140,7 +205,7 @@ transfer_get( WsManClient *cl,
 
     ws_xml_destroy_doc(rqstDoc);
     u_free(action);
-    u_free(clean_uri);
+    
     return respDoc;
 
 }
@@ -178,8 +243,10 @@ transfer_put( WsManClient *cl,
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH get_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, 
             r , wsc->data.endpoint, options);
-    free(action);
-    wsman_add_selector_from_uri( get_rqstDoc, resourceUri);
+    u_free(action);
+
+    
+	wsman_add_selector_from_options(get_rqstDoc, options);
     get_respDoc = ws_send_get_response(cl, get_rqstDoc, options.timeout);
 
     WsXmlNodeH get_body = ws_xml_get_soap_body(get_respDoc);
@@ -188,7 +255,8 @@ transfer_put( WsManClient *cl,
     WsXmlDocH put_rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL, r,
             wsc->data.endpoint, options);
 
-    wsman_add_selector_from_uri( put_rqstDoc, resourceUri);
+    //wsman_add_selector_from_uri( put_rqstDoc, resourceUri);
+	wsman_add_selector_from_options(put_rqstDoc, options);
     if (options.cim_ns)
         wsman_add_selector(ws_xml_get_soap_header(put_rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
 
@@ -243,7 +311,8 @@ invoke( WsManClient *cl,
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx, action, WSA_TO_ANONYMOUS, NULL,
             uri , wsc->data.endpoint, options );
 
-    wsman_add_selector_from_uri( rqstDoc, resourceUri);
+    //wsman_add_selector_from_uri( rqstDoc, resourceUri);
+	wsman_add_selector_from_options(rqstDoc, options);
     if (options.cim_ns)
         wsman_add_selector(ws_xml_get_soap_header(rqstDoc), CIM_NAMESPACE_SELECTOR, options.cim_ns);
     
@@ -526,9 +595,9 @@ wsman_enum_send_get_response(WsManClient *cl,
 
 
 static WsManConnection* 
-initClientConnection(WsManClientData *cld)
+init_client_connection(WsManClientData *cld)
 {
-   WsManConnection *c=(WsManConnection*)calloc(1,sizeof(WsManConnection));
+   WsManConnection *c=(WsManConnection*)u_zalloc(sizeof(WsManConnection));
    c->response = NULL;
    c->request = NULL;
 
@@ -557,6 +626,8 @@ wsman_connect( WsContextH wscntxt,
 								rc);
 }
 
+
+
 WsManClient*
 wsman_connect_with_ssl( WsContextH wscntxt,
 		const char *hostname,
@@ -579,6 +650,7 @@ wsman_connect_with_ssl( WsContextH wscntxt,
     wsc->data.user        = username ? strdup(username) : NULL;
     wsc->data.pwd         = password ? strdup(password) : NULL;
     wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
+	wsc->data.auth_method = 0;
 
     if (port)
         wsc->data.port = port;
@@ -591,13 +663,46 @@ wsman_connect_with_ssl( WsContextH wscntxt,
         wsc->data.endpoint =  u_strdup_printf("%s://%s:%d/wsman", wsc->data.scheme  , hostname, port);
 
     debug( "Endpoint: %s", wsc->data.endpoint);
-    wsc->certData.certFile = certFile ? strdup(certFile) : NULL;
-    wsc->certData.keyFile = keyFile ? strdup(keyFile) : NULL;
+	
+	wsc->proxyData.proxy = NULL;
+	wsc->proxyData.proxy_auth = NULL;
+	
+    wsc->certData.certFile = certFile ? u_strdup(certFile) : NULL;
+    wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
+	wsc->certData.verify_peer = FALSE;
 
-    wsc->connection = initClientConnection(&wsc->data);	
+    wsc->connection = init_client_connection(&wsc->data);	
     return (WsManClient *)wsc;
 }
 
+
+void
+wsman_client_set_proxy_data(WsManClient *cl,
+							char * proxy,
+							char * proxy_auth) 
+{
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;
+	
+	wsc->proxyData.proxy = proxy?u_strdup(proxy):NULL;
+	wsc->proxyData.proxy_auth = proxy_auth?u_strdup(proxy_auth):NULL;
+}
+
+void
+wsman_client_set_ssl_verify_peer(WsManClient *cl, int verify)
+{
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;
+	if (verify)
+		wsc->certData.verify_peer = TRUE;
+	else
+		wsc->certData.verify_peer = FALSE;
+}
+
+void
+wsman_client_set_auth_method(WsManClient *cl, unsigned int auth_method)
+{
+	WsManClientEnc *wsc =(WsManClientEnc*)cl;
+	wsc->data.auth_method = auth_method;
+}
 
 unsigned int
 wsman_client_add_handler ( WsmanClientFn    fn,                     

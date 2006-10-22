@@ -42,7 +42,12 @@
 #include "../client/wsman-client-options.h"
 #include "u/libu.h"
 
-
+char *auth_methods[] = {
+     "basic",
+     "digest",
+     "ntlm",
+     NULL,
+};
 
 static void
 request_usr_pwd(ws_auth_type_t auth,
@@ -95,6 +100,19 @@ void ws_client_transport_set_auth_request_func(ws_auth_request_func_t f)
 
 
 
+int wsman_is_auth_method(int method)
+{
+	//FIXME
+	char *authentication_method = NULL;
+    if (authentication_method == NULL) {
+        return 1;
+    }
+    if (method >= AUTH_MAX) {
+        return 0;
+    }
+    return (!strncasecmp(authentication_method, auth_methods[method],
+            strlen(authentication_method)));
+}
 
 
 

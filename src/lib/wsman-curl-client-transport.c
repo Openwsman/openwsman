@@ -46,7 +46,7 @@
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-client-transport.h"
-#include "../client/wsman-client-options.h"
+
 
 
 extern ws_auth_request_func_t request_func;
@@ -145,12 +145,10 @@ wsman_client_handler( WsManClient *cl,
     static char wbuf[32000];  // XXX must be fixed
     transfer_ctx_t tr_data = {wbuf, 32000, 0};
     long http_code;
-    char    *proxy;
-    char *proxyauth;
     long auth_avail = 0;
     long auth_set = 0;
 
-    if (wsman_options_get_cafile() != NULL) {
+    if (wsc->certData.keyFile != NULL) {
         flags = CURL_GLOBAL_SSL;
     } else {
         flags = CURL_GLOBAL_NOTHING;
@@ -173,17 +171,17 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    proxy = wsman_options_get_proxy();
-    if (proxy) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXY, proxy);
+    
+    if (wsc->proxyData.proxy) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXY, wsc->proxyData.proxy);
         if (r != 0) {
             curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
             goto DONE;
         }
     }
-    proxyauth = wsman_options_get_proxyauth();
-    if (proxy) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, proxyauth);
+    
+    if (wsc->proxyData.proxy_auth) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, wsc->proxyData.proxy_auth);
         if (r != 0) {
             curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
             goto DONE;
@@ -202,13 +200,13 @@ wsman_client_handler( WsManClient *cl,
     }
     headers = curl_slist_append(headers,
         "Content-Type: application/soap+xml;charset=UTF-8");    
-    usag = malloc(12 + strlen(wsman_options_get_agent()) + 1);
+    usag = malloc(12 + strlen(DEFAULT_USER_AGENT) + 1);
     if (usag == NULL) {
         curl_err("Could not malloc memory");
         goto DONE;
     }
-
-    sprintf(usag, "User-Agent: %s", wsman_options_get_agent());
+//FIXME
+    sprintf(usag, "User-Agent: %s", DEFAULT_USER_AGENT);
     headers = curl_slist_append(headers, usag);
 
     r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -217,18 +215,18 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    if (wsman_options_get_cafile() != NULL) {
-        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsman_options_get_cafile());
+    if (wsc->certData.certFile != NULL) {
+        r = curl_easy_setopt(curl, CURLOPT_CAINFO, wsc->certData.certFile);
         if (r != 0) {
             curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
             goto DONE;
         }
-        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsman_options_get_cafile());
+        r = curl_easy_setopt(curl, CURLOPT_SSLKEY, wsc->certData.certFile);
         if (r != 0) {
             curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
             goto DONE;
         }
-        if (wsman_options_get_no_verify_peer()) {
+        if (wsc->certData.verify_peer) {
               r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
             if (r != 0) {
                 curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
@@ -264,7 +262,8 @@ wsman_client_handler( WsManClient *cl,
                 goto DONE;
             }
         }
-        if (wsman_options_get_debug_level() >= DEBUG_LEVEL_MESSAGE) {
+// FIXME
+        if ( 0 >= DEBUG_LEVEL_MESSAGE) {
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         }
         r = curl_easy_perform(curl);

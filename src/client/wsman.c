@@ -33,7 +33,7 @@
  * @author Eugene Yarmosh
  * @author Vadim Revyakin
  */
-
+#include "wsman_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,8 +41,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
-#include "wsman_config.h"
-
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -56,6 +54,8 @@
 #include "wsman.h"
 #include "wsman-client-transport.h"
 
+
+int facility = LOG_DAEMON;
 
 
 
@@ -74,8 +74,6 @@ static void wsman_output(WsXmlDocH doc)
     }
     return;
 }
-
-int facility = LOG_DAEMON;
 
 
 static void
@@ -113,11 +111,12 @@ int main(int argc, char** argv)
     WsXmlDocH doc;
     char *enumContext;
     WsXmlDocH rqstDoc;
-    actionOptions options;
-    bzero(&options, sizeof(options));
+    actionOptions options;    
     int optimize_max_elements = 0;	
-    char *enumeration_mode, *binding_enumeration_mode, *resourceUri;
+    char *enumeration_mode, *binding_enumeration_mode, *resource_uri_with_selectors;
+	char *resource_uri = NULL;
 	
+	initialize_action_options(&options);
 
     if (!wsman_parse_options(argc, argv))
         exit(EXIT_FAILURE);
@@ -168,9 +167,17 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-
+	// FIXME
+	//wsman_client_set_auth_method(cl, )
     wsman_client_add_handler(wsman_client_handler, NULL);
-    resourceUri = wsman_options_get_resource_uri();
+
+	/*
+	 * Setup Resource URI and Selectors
+	 */
+    resource_uri_with_selectors = wsman_options_get_resource_uri();
+	wsman_set_options_from_uri(resource_uri_with_selectors, &options);
+	wsman_remove_query_string(resource_uri_with_selectors, &resource_uri);
+
     op = wsman_options_get_action();
 
     if (wsman_options_get_dump_request()) {
@@ -194,7 +201,6 @@ int main(int argc, char** argv)
     options.cim_ns = wsman_options_get_cim_namespace();
 
 
-
     switch (op) 
     {
     case  ACTION_TEST:
@@ -214,7 +220,7 @@ int main(int argc, char** argv)
         }
         break;
     case  ACTION_INVOKE:
-        doc = cl->ft->invoke(cl, resourceUri,
+        doc = cl->ft->invoke(cl, resource_uri,
                 wsman_options_get_invoke_method(),
                 wsman_options_get_properties(), options);
         if (doc) {
@@ -223,7 +229,7 @@ int main(int argc, char** argv)
         }
         break;
     case  ACTION_TRANSFER_CREATE:
-        doc = cl->ft->create(cl, resourceUri,
+        doc = cl->ft->create(cl, resource_uri,
                 wsman_options_get_properties(), options);
         if (doc) {
             wsman_output(doc);
@@ -231,7 +237,7 @@ int main(int argc, char** argv)
         }
         break;
     case  ACTION_TRANSFER_PUT:
-        doc = cl->ft->put(cl, resourceUri,
+        doc = cl->ft->put(cl, resource_uri,
                 wsman_options_get_properties(), options);
         if (doc) {
             wsman_output(doc);
@@ -239,7 +245,7 @@ int main(int argc, char** argv)
         }
         break;
     case  ACTION_TRANSFER_GET:
-        doc = cl->ft->get(cl, resourceUri, options);
+        doc = cl->ft->get(cl, resource_uri, options);
         if (doc) {
             wsman_output(doc);
 			ws_xml_destroy_doc(doc);
@@ -273,13 +279,13 @@ int main(int argc, char** argv)
             options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
 
         WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
-                resourceUri, optimize_max_elements, options);
+                resource_uri, optimize_max_elements, options);
         enumContext = wsenum_get_enum_context(enum_response); 
         WsXmlNodeH cntxNode;
         debug( "enumContext: %s", enumContext );
         if (enumContext) 
 		{
-            while( (doc = cl->ft->wsenum_pull(cl, resourceUri, enumContext,
+            while( (doc = cl->ft->wsenum_pull(cl, resource_uri, enumContext,
                                 wsman_options_get_max_elements(), options) )) 
 			{
                 WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
@@ -332,7 +338,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Action not supported\n");
         retVal = 1;
     }
-
+	destroy_action_options(&options);
     cl->ft->release(cl);   
 	/*
     if (doc)

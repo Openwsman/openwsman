@@ -1,1 +1,1 @@
-SUBDIRS = client xml
+SUBDIRS = client

@@ -1,4 +1,4 @@
-SUBDIRS = src doc etc
+SUBDIRS = src doc etc tests
 
 package: dist
 	cp openwsman.spec /usr/src/packages/SPEC

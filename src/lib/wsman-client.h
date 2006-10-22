@@ -41,6 +41,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 
+#define DEFAULT_USER_AGENT PACKAGE_STRING
+
 struct _WsManClientEnc;
 typedef struct _WsManClientEnc WsManClientEnc;
 
@@ -55,11 +57,12 @@ typedef struct _WsManClientStatus {
 
 typedef struct clientData {
    char *hostName;
-   int port;
+   unsigned int port;
    char *user;
    char *pwd;
    char *scheme;
    char *endpoint;
+   unsigned int auth_method;
    int  status;
 } WsManClientData;
 
@@ -67,7 +70,14 @@ typedef struct clientData {
 typedef struct credentialData {
   char * certFile;
   char * keyFile;
+	unsigned int verify_peer;
 } WsManCredentialData;
+
+typedef struct proxyData {
+  char * proxy;
+  char * proxy_auth;
+} WsManProxyData;
+
 
 
 typedef struct _WsManClientFT 
@@ -133,41 +143,58 @@ struct _WsManClientEnc {
     WsManClientData      	data;
     WsManCredentialData  	certData;
     WsManConnection     	*connection;
+	WsManProxyData			proxyData;
 };
 
 char* wsman_make_action(char* uri, char* opName);
 
 
 WsManClient *wsman_connect( 
-		WsContextH wscntxt,
-		const char *hostname,
-		const int port,
-		const char *path,
-		const char *scheme,
-		const char *username,
-		const char *password,		
-		WsManClientStatus *rc);
+	WsContextH wscntxt,
+	const char *hostname,
+	const int port,
+	const char *path,
+	const char *scheme,
+	const char *username,
+	const char *password,		
+	WsManClientStatus *rc);
 
 WsManClient *wsman_connect_with_ssl( 
-		WsContextH wscntxt,
-		const char *hostname,
-		const int port,
-		const char *path,
-		const char *scheme,
-		const char *username,
-		const char *password,		
-                const char * certFile, 
-                const char * keyFile,
-		WsManClientStatus *rc);
+	WsContextH wscntxt,
+	const char *hostname,
+	const int port,
+	const char *path,
+	const char *scheme,
+	const char *username,
+	const char *password,		
+	const char * certFile, 
+	const char * keyFile,
+	WsManClientStatus *rc);
 
+void wsman_client_set_proxy_data(WsManClient *cl,
+	char * proxy,
+	char * proxy_auth);
+	
+void
+wsman_client_set_ssl_verify_peer(WsManClient *cl, int verify);
+
+void
+wsman_client_set_auth_method(WsManClient *cl, unsigned int auth_method);
 
 WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
+
 WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri, actionOptions options); 
+
 WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, hash_t *prop, actionOptions options);
+
 WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, hash_t *prop, actionOptions options);
+
 WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri, int max_elements, actionOptions options);
+
 WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , int max_elements, actionOptions options);
+
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext , actionOptions options);
+
 WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  hash_t *prop, actionOptions options);
 
 WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, char* resourceUri, char* url, actionOptions options);
@@ -186,8 +213,8 @@ unsigned int wsman_client_add_handler (WsmanClientFn fn, void *user_data);
 
 void wsman_client_remove_handler (unsigned int id);
 
-       
-// TEMP
+void initialize_action_options(actionOptions *op);  
+void destroy_action_options(actionOptions *op);     
 
 WsXmlDocH ws_send_get_response(WsManClient *cl, 
 				WsXmlDocH rqstDoc,				
@@ -198,11 +225,14 @@ int soap_submit_client_op(SoapOpH op, WsManClient *cl );
 
 void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
 
+void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
 
 char *wsenum_get_enum_context(WsXmlDocH doc);
 void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
 void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
+void wsman_add_selectors_from_query_string(actionOptions *options, char *query_string);
+void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
 long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);

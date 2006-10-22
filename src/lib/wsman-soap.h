@@ -510,6 +510,7 @@ struct _actionOptions {
     char *              dialect;
     char *              fragment;
     char *              cim_ns;
+	hash_t				*selectors;
     unsigned int        timeout;
     unsigned int        max_envelope_size;
 };

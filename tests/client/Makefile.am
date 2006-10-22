@@ -1,30 +1,21 @@
 
 INCLUDES = \
 	   $(XML_CFLAGS) \
-	   $(LIBXSLT_CFLAGS) \
-	   $(SOUP_CFLAGS) \
 	   -I$(top_srcdir) \
-	   -I$(top_srcdir)/src/plugins \
-	   -I$(top_srcdir)/src/lib
+	   -I$(top_srcdir)/src/lib \
+		-I$(top_srcdir)/src/libu	
 
 LIBS = \
        $(XML_LIBS) \
-       $(SOUP_LIBS) \
-       $(top_builddir)/src/lib/libwsman.la
+       $(top_builddir)/src/lib/libwsman.la \
+       $(top_builddir)/src/lib/libwsman_client.la \
+       $(top_builddir)/src/libu/libwsman_utils.la
 
 
-test_this_SOURCES = client.c \
-		     test_this.c \
-		     wsman.h
-		
-
-test2_put_SOURCES = client.c \
-		    test2_put.c \
-		    wsman.h
+test_transfer_get_SOURCES = test_transfer_get.c
 
 noinst_PROGRAMS = \
-		  test_this \
-		  test2_put
+		  test_transfer_get
 	
    
 

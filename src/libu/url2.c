@@ -15,7 +15,7 @@ hash_t *parse_query(char *query, const char *sep )
     h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
     /* foreach name=value pair... */
-    for(src = query; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL)
+    for(src = q; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL)
     {
         /* dup the string so we can modify it */
         key = u_strdup(tok);
@@ -31,11 +31,11 @@ hash_t *parse_query(char *query, const char *sep )
         }
     }
 
-    u_free(query);
+    u_free(q);
 
     return h;
 err:
-    u_free(query);
+    //u_free(query);
     return h;
 }
 

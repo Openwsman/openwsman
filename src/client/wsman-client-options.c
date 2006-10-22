@@ -47,12 +47,14 @@
 #include "wsman-client-options.h"
 #include "wsman.h"
 
+#if 0
 static char *auth_methods[] = {
      "basic",
      "digest",
      "ntlm",
      NULL,
 };
+#endif
 
 static const char **wsman_argv = NULL;
 
@@ -421,15 +423,4 @@ int wsman_options_get_no_verify_peer (void)
 }
 
 
-int wsman_is_auth_method(int method)
-{
-    if (authentication_method == NULL) {
-        return 1;
-    }
-    if (method >= AUTH_MAX) {
-        return 0;
-    }
-    return (!strncasecmp(authentication_method, auth_methods[method],
-            strlen(authentication_method)));
-}
 

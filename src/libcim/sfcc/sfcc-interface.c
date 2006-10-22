@@ -131,13 +131,15 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     CMPIStatus rc;
     hscan_t hs;
     hnode_t *hn;
+	int count;
+
 	if (!keys) {
-	    statusP->fault_code = WSMAN_INVALID_SELECTORS;
-        statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
-        goto cleanup;
+	  	count = 0;
+	} else {
+		count = (int)hash_count(keys);
 	}
 	
-    if (CMGetKeyCount(objectpath, NULL) > hash_count(keys) ) 
+    if (CMGetKeyCount(objectpath, NULL) >  count ) 
     {
         statusP->fault_code = WSMAN_INVALID_SELECTORS;
         statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;

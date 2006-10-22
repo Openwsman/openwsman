@@ -41,6 +41,14 @@
 #include "wsman-soap.h"
 #include "wsman-client.h"
 
+// FIXME, Duplicate?
+// Possible authentication methods
+#define AUTH_BASIC      0
+#define AUTH_DIGEST     1
+#define AUTH_NTLM       2
+#define AUTH_MAX        3
+
+
 typedef enum {
     WS_NO_AUTH,
     WS_BASIC_AUTH,
@@ -57,8 +65,7 @@ extern int wsman_client_transport_init(void *);
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 extern void wsman_client_transport_fini(void);
 
-
-
+extern int wsman_is_auth_method(int method);
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 
