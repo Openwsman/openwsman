@@ -21,8 +21,6 @@ OWSMAN_INCLUDES = \
 	wsman-soap-message.h \
 	wsman-client-transport.h
 
-libwsman_client_la_SOURCES = \
-	wsman-client.c 
 	
 libwsman_catalog_la_SOURCES = 
 
@@ -60,6 +58,8 @@ libwsman_soup_client_transport_la_LIBADD = $(SOUP_LIBS) \
 libwsman_soup_client_transport_la_LDFLAGS= -version-info 1:0
 endif
 
+libwsman_client_la_SOURCES = \
+	wsman-client.c 
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/libu \
@@ -79,15 +79,11 @@ libwsman_client_la_LIBADD = $(LIBS)
 libwsman_server_la_LIBADD = -ldl
 
 libwsman_la_LDFLAGS= -version-info 1:0
-libwsman_client_la_LDFLAGS= -version-info 1:0
 libwsman_server_la_LDFLAGS= -version-info 1:0
 libwsman_catalog_la_LDFLAGS= -version-info 1:0
 
 lib_LTLIBRARIES = \
-		 libwsman.la \
-		 libwsman_client.la \
-		 libwsman_catalog.la \
-		 libwsman_server.la
+		 libwsman.la 
 
 
 if USE_LIBCURL
@@ -104,4 +100,9 @@ INCLUDES += $(SOUP_CFLAGS) \
 
 libwsman_client_la_LIBADD +=  libwsman_soup_client_transport.la
 endif
+lib_LTLIBRARIES += \
+		 libwsman_client.la \
+		 libwsman_catalog.la \
+		 libwsman_server.la
 
+libwsman_client_la_LDFLAGS= -version-info 1:0
