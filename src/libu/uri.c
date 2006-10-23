@@ -93,6 +93,7 @@ void u_uri_free (u_uri_t *uri)
     U_FREE(uri->pwd);
     U_FREE(uri->host);
     U_FREE(uri->path);
+    U_FREE(uri->query);
     U_FREE(uri);
 }
 
@@ -144,6 +145,7 @@ int u_uri_parse (const char *s, u_uri_t **pu)
             dbg_err_if ( (uri->query = u_strndup (question + 1, end - (question + 1))) == NULL);
         }
     }
+    u_free(uri_string);
     return 0;
 err:
     u_uri_free(uri);
