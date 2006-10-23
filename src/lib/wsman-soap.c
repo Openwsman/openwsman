@@ -122,24 +122,24 @@ ws_create_context(SoapH soap)
 }
 
 SoapH
-ws_soap_initialize() 
+	ws_soap_initialize() 
 {	
-    env_t* fw = (env_t*)u_zalloc(sizeof(env_t));
-    if ( fw ) {
-        //fw->dispatchList.listOwner = fw;
-        fw->cntx = ws_create_context((SoapH)fw);    	
-        fw->inboundFilterList = list_create(LISTCOUNT_T_MAX);
-        fw->outboundFilterList = list_create(LISTCOUNT_T_MAX);
-	fw->dispatchList = list_create(LISTCOUNT_T_MAX);
-	fw->responseList = list_create(LISTCOUNT_T_MAX);
-	fw->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
-        fw->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
-        u_init_lock(fw);
-    }	
-    ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
-    soap_add_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
-    soap_add_filter((SoapH)fw, outbound_control_header_filter, NULL, 0);
-    return (SoapH)fw;
+	env_t* fw = (env_t*)u_zalloc(sizeof(env_t));
+	if ( fw ) {
+		//fw->dispatchList.listOwner = fw;
+		fw->cntx = ws_create_context((SoapH)fw);    	
+		fw->inboundFilterList = list_create(LISTCOUNT_T_MAX);
+		fw->outboundFilterList = list_create(LISTCOUNT_T_MAX);
+		fw->dispatchList = list_create(LISTCOUNT_T_MAX);
+		fw->responseList = list_create(LISTCOUNT_T_MAX);
+		fw->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
+		fw->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
+		u_init_lock(fw);
+	}	
+	ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
+	soap_add_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
+	soap_add_filter((SoapH)fw, outbound_control_header_filter, NULL, 0);
+	return (SoapH)fw;
 }
 
 
@@ -1149,30 +1149,35 @@ destroy_op_entry(op_t* entry)
 void 
 destroy_dispatch_entry(dispatch_t* entry)
 {
-    if ( entry )
-    {
-        int usageCount;
-        u_lock(entry->fw);
-        entry->usageCount--;
-        usageCount = entry->usageCount;
-        if ( !usageCount && list_contains(entry->fw->dispatchList, &entry->node))
-            list_delete(entry->fw->dispatchList, &entry->node);
+	int usageCount;
+	
+	if ( !entry )
+		return;
 
-        u_unlock(entry->fw);
+	u_lock(entry->fw);
+	entry->usageCount--;
+	usageCount = entry->usageCount;
+	if ( !usageCount && list_contains(entry->fw->dispatchList, &entry->node)) 
+	{
+		lnode_t *n = list_delete(entry->fw->dispatchList, &entry->node);
+		lnode_destroy(n);
+	}
 
-        if ( !usageCount && entry->inboundFilterList && entry->outboundFilterList)
-        {
-            list_destroy_nodes(entry->inboundFilterList);
-            list_destroy(entry->inboundFilterList);
-            list_destroy_nodes(entry->outboundFilterList);
-            list_destroy(entry->outboundFilterList);
+	u_unlock(entry->fw);
 
-            u_free(entry->inboundAction);
-            u_free(entry->outboundAction);
+	if ( !usageCount && entry->inboundFilterList && entry->outboundFilterList)
+	{
+		list_destroy_nodes(entry->inboundFilterList);
+		list_destroy(entry->inboundFilterList);
+		list_destroy_nodes(entry->outboundFilterList);
+		list_destroy(entry->outboundFilterList);
 
-            u_free(entry);
-        }
-    }
+		u_free(entry->inboundAction);
+		u_free(entry->outboundAction);
+
+		u_free(entry);
+	}
+
 }
 
 
@@ -1595,40 +1600,54 @@ outbound_addressing_filter(SoapOpH opHandle,
 
 
 void 
-soap_destroy_fw(SoapH soap)
+soap_destroy_fw( SoapH soap)
 {
-    env_t* fw = (env_t*)soap;
-
+	env_t *fw = (env_t *)soap;
     if ( fw->dispatcherProc )
         fw->dispatcherProc(fw->cntx, fw->dispatcherData, NULL);
 
-    while( !list_isempty(fw->dispatchList) )
-    {
-        destroy_dispatch_entry((dispatch_t*)list_first(fw->dispatchList));
-    }
+	if (fw->dispatchList)
+	{
+		while( !list_isempty(fw->dispatchList) )
+		{		
+			destroy_dispatch_entry((dispatch_t*)list_first(fw->dispatchList));				
+		}
+		list_destroy(fw->dispatchList);
+	}
 
     while( !list_isempty(fw->processedMsgIdList) )
     {
         lnode_t* node = list_del_first(fw->processedMsgIdList);
         u_free(node->list_data);
-        u_free(node);
+        lnode_destroy(node);
     }
+	list_destroy(fw->processedMsgIdList);
+	
     while( !list_isempty(fw->responseList) )
     {
         lnode_t* node = list_del_first(fw->responseList);
         op_t* entry = (op_t*)node->list_data;
         destroy_op_entry(entry);
-        u_free(node);
+        lnode_destroy(node);
     }
+	list_destroy(fw->responseList);
 
     list_destroy_nodes(fw->inboundFilterList);
+	list_destroy(fw->inboundFilterList);
+	
     list_destroy_nodes(fw->outboundFilterList);
+	list_destroy(fw->outboundFilterList);
+	
+	list_destroy_nodes(fw->WsSerializerAllocList);
+	list_destroy(fw->WsSerializerAllocList);
+	
 
-    ws_xml_parser_destroy((SoapH)soap);
-    //u_free(fw->addrWakeUp);
+    ws_xml_parser_destroy((SoapH)soap);  
+ 
     ws_destroy_context(fw->cntx);
     //soap_destroy_lock(fw);
     u_free(soap);
+
     return;
 }
 

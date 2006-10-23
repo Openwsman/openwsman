@@ -49,10 +49,3 @@ wsmand_SOURCES += \
 endif
 		
 
-#wsmand_LDADD =     \
-#		$(LINK_BEGIN) $(GMODULE_LIBS) $(SOUP_LIBS) $(LINK_END) $(SHARED_ONLY)
-
-
-#wsmand: $(wsmand_OBJECTS) $(wsmand_DEPENDENCIES)
-#	@rm -f wsmand
-#	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $(wsmand_LDFLAGS) $(wsmand_OBJECTS) $(wsmand_LDADD) $(LIBS)	       

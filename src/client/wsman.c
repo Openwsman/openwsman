@@ -356,10 +356,13 @@ int main(int argc, char** argv)
 	/*
     if (doc)
         ws_xml_destroy_doc(doc);
-	
-	if (cntx)
-		soap_destroy_fw((SoapH )cntx);
 	*/
+	if (cntx) {
+		SoapH soap = ws_context_get_runtime(cntx);  
+		soap_destroy_fw(soap);
+	}	
+
+	
 
     if (ini)
         iniparser_freedict(ini);

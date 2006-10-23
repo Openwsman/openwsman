@@ -447,14 +447,22 @@ release_connection(WsManConnection *conn)
 {
 	if (conn == NULL)
 		return;
+		
     if (conn->request) {
 		u_free(conn->request);
 		conn->response = NULL;
 	}
+	
     if (conn->response) {
 		u_free(conn->response);
 		conn->response = NULL;
 	}
+	/*
+	if (conn->response == NULL && conn->response == NULL) {
+		u_free(conn);
+	}
+	*/
+	
 }
 
 
@@ -789,15 +797,18 @@ soap_submit_client_op(SoapOpH op,
     char* response = wsc->connection->response;
     if (response)
     {
+		WsmanMessage *msg = wsman_soap_message_new();
         char *buf = (char *)u_zalloc(  strlen(response) + 1);
-        strncpy (buf, response, strlen(response));
-        WsmanMessage *msg = wsman_soap_message_new();
+
+        strncpy (buf, response, strlen(response));        
         msg->response.body = u_strdup(buf);
         msg->response.length = strlen(buf);
+
         WsXmlDocH in_doc =  wsman_build_inbound_envelope(fw, msg);
 
         u_free(buf);
         wsman_soap_message_destroy(msg);
+
         ((op_t*)op)->in_doc = in_doc;
     } else {
         ((op_t*)op)->in_doc = NULL;

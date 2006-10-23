@@ -1047,6 +1047,7 @@ do_serializer_free(WsContextH cntx,
             }
             node = list_next( ((env_t*)soap)->WsSerializerAllocList, node);
         }
+		// list_destroy(((env_t*)soap)->WsSerializerAllocList);
         u_unlock(soap);
     }
     return (node != NULL);

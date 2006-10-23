@@ -12,6 +12,7 @@ AM_MAINTAINER_MODE
 AC_PROG_MAKE_SET
 
 
+
 dnl ***************************
 dnl *** Set debugging flags ***
 dnl ***************************
@@ -237,8 +238,12 @@ if test "$enable_ssl" != "no"; then
     AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
 fi
 
-
-AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${sysconfdir}/openwsman/openwsman.conf"] , [Default config file])
+if test "$prefix" = "NONE"; then
+    prefix=$ac_default_prefix;
+fi
+SYSCONFDIR_TMP="`eval echo $sysconfdir`"
+echo $prefix
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${SYSCONFDIR_TMP}/openwsman/openwsman.conf"] , [Default config file])
 SYSCONFDIR=${sysconfdir}/openwsman
 
 dnl Subst PACKAGE_PLUGIN_DIR.

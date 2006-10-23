@@ -48,7 +48,9 @@ wsman_soap_message_destroy(WsmanMessage* wsman_msg)
         u_free(wsman_msg->request.body);
 
     if (wsman_msg->status.fault_msg)
-        u_free(wsman_msg->status.fault_msg);
+        u_free(wsman_msg->status.fault_msg);		
+	
+	u_free(wsman_msg);
 };
 
 

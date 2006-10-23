@@ -205,6 +205,10 @@ int main(int argc, char** argv)
 		destroy_action_options(&options);
 	}
 	cl->ft->release(cl);
+	if (cntx) {
+		SoapH soap = ws_context_get_runtime(cntx);  
+		soap_destroy_fw(soap);
+	}
 	return 0;
 }
 
