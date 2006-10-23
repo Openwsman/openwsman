@@ -85,7 +85,7 @@ void destroy_action_options(actionOptions *op)
 }
 
 void
-wsman_add_selectors_from_query_string(actionOptions *options, char *query_string)
+wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string)
 {
 	hash_t * query = parse_query(query_string, "&");	
 	if (query) {
@@ -676,33 +676,6 @@ wsman_connect_with_ssl( WsContextH wscntxt,
 }
 
 
-void
-wsman_client_set_proxy_data(WsManClient *cl,
-							char * proxy,
-							char * proxy_auth) 
-{
-	WsManClientEnc *wsc =(WsManClientEnc*)cl;
-	
-	wsc->proxyData.proxy = proxy?u_strdup(proxy):NULL;
-	wsc->proxyData.proxy_auth = proxy_auth?u_strdup(proxy_auth):NULL;
-}
-
-void
-wsman_client_set_ssl_verify_peer(WsManClient *cl, int verify)
-{
-	WsManClientEnc *wsc =(WsManClientEnc*)cl;
-	if (verify)
-		wsc->certData.verify_peer = TRUE;
-	else
-		wsc->certData.verify_peer = FALSE;
-}
-
-void
-wsman_client_set_auth_method(WsManClient *cl, unsigned int auth_method)
-{
-	WsManClientEnc *wsc =(WsManClientEnc*)cl;
-	wsc->data.auth_method = auth_method;
-}
 
 unsigned int
 wsman_client_add_handler ( WsmanClientFn    fn,                     

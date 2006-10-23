@@ -104,11 +104,13 @@ TestData tests[] = {
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
 
+#if 0
 static void wsman_output(WsXmlDocH doc)
 {
 	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
 	return;
 }
+#endif
 
 int main(int argc, char** argv)
 {

@@ -11,9 +11,18 @@ LIBS = \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/libu/libwsman_utils.la
 
+if USE_LIBCURL
+LIBS += $(CURL_LIBS)
+endif
+
+if USE_LIBSOUP_CLIENT
+LIBS += $(SOUP_LIBS) \
+	    $(GOBJECT_LIBS) \
+	    $(GTHREAD_LIBS)
+endif
 
 test_transfer_get_SOURCES = test_transfer_get.c
-test_transfer_get_SOURCES = test_enumeration.c
+test_enumeration_SOURCES = test_enumeration.c
 
 noinst_PROGRAMS = \
 		  test_transfer_get \

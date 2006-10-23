@@ -41,31 +41,41 @@
 #include "wsman-soap.h"
 #include "wsman-client.h"
 
-// FIXME, Duplicate?
 // Possible authentication methods
-#define AUTH_BASIC      0
-#define AUTH_DIGEST     1
-#define AUTH_NTLM       2
-#define AUTH_MAX        3
-
 
 typedef enum {
     WS_NO_AUTH,
     WS_BASIC_AUTH,
     WS_DIGEST_AUTH,
     WS_NTLM_AUTH,
+    WS_MAX_AUTH,
 } ws_auth_type_t;
 
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
 extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t);
 extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
+extern int wsman_is_auth_method(int method);
 
 extern int wsman_client_transport_init(void *);
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 extern void wsman_client_transport_fini(void);
 
-extern int wsman_is_auth_method(int method);
+
+extern char *wsman_transport_get_proxy(void);
+extern char *wsman_transport_get_proxyauth(void);
+extern char * wsman_transport_get_agent (void);
+extern char * wsman_transport_get_auth_method (void);
+extern int wsman_transport_get_no_verify_peer (void);
+extern char *wsman_transport_get_cafile(void);
+
+extern void wsman_transport_set_proxy(char *);
+extern void wsman_transport_set_proxyauth(char *);
+extern void wsman_transport_set_agent (char *);
+extern void wsman_transport_set_auth_method (char *);
+extern void wsman_transport_set_no_verify_peer (int);
+extern void wsman_transport_set_cafile(char *);
+
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 

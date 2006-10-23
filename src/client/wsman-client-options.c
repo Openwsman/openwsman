@@ -44,6 +44,7 @@
 #include "wsman-xml-api.h"
 #include "wsman-errors.h"
 #include "wsman-soap.h"
+#include "wsman-client-transport.h"
 #include "wsman-client-options.h"
 #include "wsman.h"
 
@@ -235,13 +236,16 @@ char wsman_parse_options(int argc, char **argv)
         _action = argv[1];
         resource_uri = argv[2];
     } else {
-        if (argv[1] && ( strcmp(argv[1], "identify") == 0 || strcmp(argv[1], "test") == 0 )) {
+        if (argv[1] && ( strcmp(argv[1], "identify") == 0 ||
+                        strcmp(argv[1], "test") == 0 )) {
             _action = argv[1];
-            if (wsman_options_get_test_file() &&  strcmp(argv[1], "test") == 0 ) {
+            if (wsman_options_get_test_file() &&
+                         strcmp(argv[1], "test") == 0 ) {
                 printf("running test case from file\n");
             }
         } else {
-            fprintf(stderr, "Error: operation can not be completed. Action or/and Resource Uri missing.\n");
+            fprintf(stderr, "Error: operation can not be completed."
+                " Action or/and Resource Uri missing.\n");
             return FALSE;
         }
     }
@@ -261,13 +265,36 @@ int wsman_read_client_config (dictionary *ini)
 {
     if (iniparser_find_entry(ini, "client")) {
         agent = iniparser_getstr(ini, "client:agent");
-        server_port = server_port ? server_port : iniparser_getint(ini, "client:port", 80);
-        authentication_method = authentication_method? authentication_method: iniparser_getstr(ini, "client:authentication_method");
+        server_port = server_port ?
+                server_port : iniparser_getint(ini, "client:port", 80);
+        authentication_method = authentication_method?
+                authentication_method:
+                iniparser_getstr(ini, "client:authentication_method");
     } else {
         return 0;
     }
     return 1;
 }
+
+void wsman_setup_transport_and_library_options()
+{
+        // transport options
+    wsman_transport_set_auth_method(authentication_method);
+    if (proxy) {
+        wsman_transport_set_proxy(proxy);
+        if (proxy_upwd) {
+            wsman_transport_set_proxyauth(proxy_upwd);
+        }
+    }
+    if (cafile) {
+        wsman_transport_set_cafile(cafile);
+    }
+    wsman_transport_set_no_verify_peer(no_verify_peer);
+
+        // library options
+
+}
+ 
 
 const char ** wsman_options_get_argv (void) {
     return wsman_argv;
@@ -311,13 +338,7 @@ char* wsman_options_get_password (void) {
     return password;
 }
  
-char*  wsman_options_get_proxy(void) {
-    return proxy;
-}
 
-char*  wsman_options_get_proxyauth(void) {
-    return proxy_upwd;
-}
 
 hash_t * wsman_options_get_properties (void)
 {
@@ -405,22 +426,9 @@ char * wsman_options_get_path (void)
 {	
     return url_path;
 }   
-char * wsman_options_get_agent (void)
-{	
-    if (agent)
-        return agent;
-    else
-        return PACKAGE_STRING;
-}   
-char * wsman_options_get_auth_method (void)
-{	
-    return authentication_method;
-}
 
-int wsman_options_get_no_verify_peer (void)
-{
-    return no_verify_peer;
-}
+
+
 
 
 

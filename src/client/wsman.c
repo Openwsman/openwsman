@@ -134,6 +134,8 @@ int main(int argc, char** argv)
         }
     }
 
+    wsman_setup_transport_and_library_options();
+
     initialize_logging ();
     wsman_client_transport_init(NULL);
     WsContextH cntx = ws_create_runtime(NULL);
@@ -167,8 +169,7 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-	// FIXME
-	//wsman_client_set_auth_method(cl, )
+
     wsman_client_add_handler(wsman_client_handler, NULL);
 
 	/*

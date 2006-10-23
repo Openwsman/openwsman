@@ -4,7 +4,7 @@
 
 #define MAXTOKENS 64
 
-hash_t *parse_query(char *query, const char *sep )
+hash_t *parse_query(const char *query, const char *sep )
 {
     char *pp, *tok, *src, *q = NULL;
     char *key, *val;

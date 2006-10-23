@@ -171,15 +171,6 @@ WsManClient *wsman_connect_with_ssl(
 	const char * keyFile,
 	WsManClientStatus *rc);
 
-void wsman_client_set_proxy_data(WsManClient *cl,
-	char * proxy,
-	char * proxy_auth);
-	
-void
-wsman_client_set_ssl_verify_peer(WsManClient *cl, int verify);
-
-void
-wsman_client_set_auth_method(WsManClient *cl, unsigned int auth_method);
 
 WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
 
@@ -231,7 +222,7 @@ char *wsenum_get_enum_context(WsXmlDocH doc);
 void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
 void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
-void wsman_add_selectors_from_query_string(actionOptions *options, char *query_string);
+void wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string);
 void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
 long long get_transfer_time(void);
