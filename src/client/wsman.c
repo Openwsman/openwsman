@@ -307,11 +307,10 @@ int main(int argc, char** argv)
                 if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
                                                 WSENUM_END_OF_SEQUENCE) ) {
                     debug( "End of sequence");
-					/* FIXME */
-					/*
+					
 					if (doc)
 				        ws_xml_destroy_doc(doc);
-					*/
+					
                     break;
                 }
                 if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
@@ -338,10 +337,13 @@ int main(int argc, char** argv)
             }
         } else {
             if (enum_response) {
-				wsman_output(enum_response);			
-				ws_xml_destroy_doc(doc);         
+				wsman_output(enum_response);							         
 			}
         }
+
+		if (enum_response) {
+			ws_xml_destroy_doc(enum_response);
+		}
         break;
     default:
         fprintf(stderr, "Action not supported\n");

@@ -403,9 +403,9 @@ wsenum_pull( WsManClient* cl,
     if ( enumContext || (enumContext && enumContext[0] == 0) )
 	{
         respDoc = wsman_enum_send_get_response(cl, WSENUM_PULL, enumContext, resourceUri, max_elements, options);
-    } else {
-        return NULL;
+    } else {       
         error( "No enumeration context ???");
+		 return NULL;
     }
 	release_connection(wsc->connection);
     return respDoc;
@@ -427,9 +427,9 @@ release_connection(WsManConnection *conn)
 {
     if (conn->request)
         u_free(conn->request);
-
     if (conn->response)
         u_free(conn->response);
+
 	u_free(conn);
 }
 
@@ -464,7 +464,10 @@ releaseClient(WsManClient * cl)
     u_free(wsc->certData.keyFile);
   }
 
-  if (wsc->connection) release_connection(wsc->connection);
+  /*
+  if (wsc->connection) 
+	release_connection(wsc->connection);
+	*/
 
   u_free(wsc);
   return rc;
