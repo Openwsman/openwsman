@@ -264,6 +264,8 @@ struct conn {
 	char		*query;		/* QUERY_STRING			*/
 	char		*range;		/* Range:			*/
 	char		*path_info;	/* PATH_INFO thing		*/
+    char        *usr;       /* save username if basic authentication */
+    char        *pwd;       /* save password if basic authentication */
 
 	unsigned long	nposted;	/* Emb. POST bytes buffered	*/
 	void		*userurl;	/* For embedded data		*/
@@ -1530,6 +1532,16 @@ disconnect(struct conn *c)
 
 	free_parsed_data(c);
 
+    if (c->usr) {
+        free(c->usr);
+        c->usr = NULL;
+    }
+    if (c->pwd) {
+        free(c->pwd);
+        c->pwd = NULL;
+    }
+
+
 	/* Free resources */
 	if (c->fd != -1) {
 		if (c->flags & FLAG_CGI)
@@ -2789,6 +2801,7 @@ checkauth(struct conn *c, const char *path)
 	struct digest	di;
         char *p, *pp;
         int  l;
+        int res;
         struct shttpd_ctx *ctx = c->ctx;
 
         if (!ctx->bauthf && !ctx->dauthf) {
@@ -2846,9 +2859,25 @@ checkauth(struct conn *c, const char *path)
         }
         *p++ = 0;
  
-        return ctx->bauthf(pp, p);
-        
+        res = ctx->bauthf(pp, p);
+        if (res) {
+            //authorized(net_0)
+            c->usr = strdup(pp);
+            c->pwd = strdup(p);
+        }
+
+        return res;
 }
+
+void      shttpd_get_credentials(struct shttpd_arg_t *arg,
+                        char **user, char **pwd)
+{
+    struct conn *c = (struct conn *)arg->priv;
+
+    *user = c->usr;
+    *pwd =  c->pwd;
+}
+
 
 #endif
                 

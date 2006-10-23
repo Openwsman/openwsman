@@ -204,10 +204,9 @@ static int server_callback (struct shttpd_arg_t *arg)
     (void) shttpd_get_post_query(arg, wsman_msg->request.body,
                     wsman_msg->request.length);    
 
-    /*
-    wsman_msg->auth_data.username = soup_server_auth_get_user(context->auth);
-    wsman_msg->auth_data.password = context->auth->basic.passwd;
-    */
+    
+    shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
+                    &wsman_msg->auth_data.password);
 
     // Call dispatcher
     dispatch_inbound_call(fw, wsman_msg);

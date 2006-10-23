@@ -79,7 +79,9 @@ typedef int (*shttpd_dauth_callback_t)(char *realm, char *method, struct digest 
 extern void shttpd_register_bauth_callback(struct shttpd_ctx *,
                             shttpd_bauth_callback_t);
 extern void shttpd_register_dauth_callback(struct shttpd_ctx *,
-                            shttpd_dauth_callback_t);    
+                            shttpd_dauth_callback_t);
+extern void      shttpd_get_credentials(struct shttpd_arg_t *,
+                        char **user, char **pwd);
 #endif
 
 /*
@@ -134,6 +136,8 @@ extern int		shttpd_get_post_query_len(struct shttpd_arg_t *);
 extern int              shttpd_get_post_query(struct shttpd_arg_t *, char *, int);
 extern int		shttpd_get_http_version(struct shttpd_arg_t *);
 extern const char *     shttpd_get_uri(struct shttpd_arg_t *);
+
+
 
 
 /*
