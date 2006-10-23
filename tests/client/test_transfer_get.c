@@ -104,13 +104,13 @@ TestData tests[] = {
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
 
-#if 0
+
 static void wsman_output(WsXmlDocH doc)
 {
 	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
 	return;
 }
-#endif
+
 
 int main(int argc, char** argv)
 {
@@ -144,12 +144,12 @@ int main(int argc, char** argv)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 
 		doc = cl->ft->get(cl, (char *)tests[i].resource_uri, options);
-		/*
+		
 		if (doc) {
 			wsman_output(doc);
 			ws_xml_destroy_doc(doc);
 		}
-		*/
+		
 		destroy_action_options(&options);
 	}
 	cl->ft->release(cl);

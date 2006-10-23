@@ -35,7 +35,6 @@ hash_t *parse_query(const char *query, const char *sep )
 
     return h;
 err:
-    //u_free(query);
     return h;
 }
 
