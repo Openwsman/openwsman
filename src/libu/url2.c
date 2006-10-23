@@ -4,14 +4,14 @@
 
 #define MAXTOKENS 64
 
-hash_t *parse_query(const char *query, const char *sep )
+hash_t *parse_query(const char *query)
 {
     char *pp, *tok, *src, *q = NULL;
     char *key, *val;
     hash_t *h = NULL;
 
     dbg_err_if(query == NULL);
-    q = u_strdup(query);
+    q = u_strdup((char *)query);
     h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
     /* foreach name=value pair... */

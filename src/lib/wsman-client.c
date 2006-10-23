@@ -88,9 +88,11 @@ void
 wsman_add_selectors_from_query_string( actionOptions *options, 
 									   const char *query_string)
 {
-	hash_t * query = parse_query(query_string, "&");	
-	if (query) {
-		options->selectors = query;
+	if (query_string) {
+		hash_t * query = parse_query(query_string);	
+		if (query) {
+			options->selectors = query;
+		}
 	}
 }
 
@@ -133,18 +135,21 @@ wsman_add_namespace_as_selector( WsXmlDocH doc,
 
 
 void 
-wsman_set_options_from_uri( char *resourceUri,
-							actionOptions *options)
+	wsman_set_options_from_uri( char *resourceUri,
+	actionOptions *options)
 {
 	u_uri_t *uri;        
-    if (resourceUri != NULL )	
-        u_uri_parse((const char *)resourceUri, &uri);
-
-    if (uri->query != NULL  ) {        
- 		wsman_add_selectors_from_query_string(options, uri->query);
-    }
-    if (uri)
-        u_uri_free(uri);
+	if (resourceUri != NULL )	
+		u_uri_parse((const char *)resourceUri, &uri);
+	else
+		return;
+		
+	if (uri->query != NULL  ) 
+	{        
+		wsman_add_selectors_from_query_string(options, uri->query);
+	}
+	if (uri)
+		u_uri_free(uri);
 }
 
 
@@ -159,7 +164,7 @@ wsman_add_selector_from_uri( WsXmlDocH doc,
         u_uri_parse((const char *)resourceUri, &uri);
 
     if (uri->query != NULL  ) {
-        hash_t * query = parse_query(uri->query, "&");
+        hash_t * query = parse_query(uri->query);
         hnode_t *hn;
         hscan_t hs;
         hash_scan_begin(&hs, query);

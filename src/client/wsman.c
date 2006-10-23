@@ -175,9 +175,11 @@ int main(int argc, char** argv)
 	/*
 	 * Setup Resource URI and Selectors
 	 */
-    resource_uri_with_selectors = wsman_options_get_resource_uri();
-	wsman_set_options_from_uri(resource_uri_with_selectors, &options);
-	wsman_remove_query_string(resource_uri_with_selectors, &resource_uri);
+  resource_uri_with_selectors = wsman_options_get_resource_uri();
+	if (resource_uri_with_selectors) {
+		wsman_set_options_from_uri(resource_uri_with_selectors, &options);
+		wsman_remove_query_string(resource_uri_with_selectors, &resource_uri);
+	}
 
     op = wsman_options_get_action();
 

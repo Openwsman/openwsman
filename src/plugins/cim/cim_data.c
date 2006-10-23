@@ -111,7 +111,7 @@ void set_config( void *self, dictionary *config )
         char *namespaces = iniparser_getstr (config, "cim:vendor_namespaces");
         if (namespaces)
         {
-            vendor_namespaces = parse_query(namespaces, ",");
+            vendor_namespaces = parse_query(namespaces);
         }
         debug("cim namespace: %s", cim_namespace);
     }

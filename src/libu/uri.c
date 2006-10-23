@@ -144,7 +144,9 @@ int u_uri_parse (const char *s, u_uri_t **pu)
         if (question[1]) {
             dbg_err_if ( (uri->query = u_strndup (question + 1, end - (question + 1))) == NULL);
         }
-    }
+    } else {
+			uri->query = NULL;
+		}
     u_free(uri_string);
     return 0;
 err:
