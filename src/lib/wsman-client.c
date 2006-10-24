@@ -419,7 +419,6 @@ wsenum_pull( WsManClient* cl,
              int max_elements,
              actionOptions options)
 {
-	WsXmlNodeH cntxNode;
 	WsXmlDocH respDoc;
 	
     message( "Pull request...");   	

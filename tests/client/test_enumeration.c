@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 {
 	int i;
 	WsManClient *cl;
-	WsXmlDocH doc;
+	//WsXmlDocH doc;
 	WsXmlDocH docp;
 	actionOptions options;
 	char *enumContext = NULL;	
