@@ -284,73 +284,28 @@ int main(int argc, char** argv)
         if (wsman_options_get_estimate_enum())
             options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
 
-        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
-                resource_uri, optimize_max_elements, options);
-
-        enumContext = wsenum_get_enum_context(enum_response); 
-
-        WsXmlNodeH cntxNode;
-        debug( "enumContext: %s", enumContext );
-        if (enumContext) 
-		{
-            while( (doc = cl->ft->wsenum_pull(cl, resource_uri, enumContext,
-                                wsman_options_get_max_elements(), options) )) 
-			{
-                WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
-                        0, NULL, NULL);
-                wsman_output(doc);
-                if ( strcmp(ws_xml_get_node_local_name(node),
-                                                WSENUM_PULL_RESP) != 0 ) {
-                    error( "no Pull response" );
-					if (doc)
-				        ws_xml_destroy_doc(doc);
-                    break;
-                }
-                if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
-                                                WSENUM_END_OF_SEQUENCE) ) {
-                    debug( "End of sequence");
-					
-					if (doc)
-				        ws_xml_destroy_doc(doc);
-					
-                    break;
-                }
-                if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
-                                            WSENUM_ENUMERATION_CONTEXT)) ) 
-				{
-                    u_free(enumContext);
-                    enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
-                }
-                if ( enumContext == NULL || enumContext[0] == 0 ) {
-                    error( "No enumeration context");
-					if (doc)
-				        ws_xml_destroy_doc(doc);
-                    break;
-                }
-				if (doc)
-			        ws_xml_destroy_doc(doc);
-                /*
-				// Used for testing invalid enum contexts
-                if (counter == 1 ) {
-                    enumContext = "xxxx";
-                }
-                counter++;
-                */
-            }
-        } else {
-            if (enum_response) {
-				wsman_output(enum_response);							         
-			}
-        }
-
-		if (enum_response) {
+		WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
+			resource_uri, optimize_max_elements, options);
+		wsman_output(enum_response);		
+		enumContext = wsenum_get_enum_context(enum_response);
+		if (enum_response)
 			ws_xml_destroy_doc(enum_response);
+		while (enumContext !=NULL)
+		{ 			
+			doc = cl->ft->wsenum_pull(cl, resource_uri, enumContext,
+				wsman_options_get_max_elements() , options);		
+			wsman_output(doc);
+			enumContext = wsman_get_next_enum_context(doc);
+			if (doc)
+				ws_xml_destroy_doc(doc);
 		}
+
         break;
     default:
         fprintf(stderr, "Action not supported\n");
         retVal = 1;
     }
+
 	destroy_action_options(&options);
     cl->ft->release(cl);   
 	/*

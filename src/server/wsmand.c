@@ -237,8 +237,6 @@ daemonize (void)
     fd = open ("/dev/null", O_RDWR); /* open /dev/null as stdin */
     assert (fd == STDIN_FILENO);
 
-
-
     /* Open a new file for our logging file descriptor.  This
        will be the fd 1, stdout. */
     fd = open ("/var/log/wsmand.log",

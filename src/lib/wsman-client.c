@@ -77,8 +77,8 @@ void initialize_action_options(actionOptions *op)
 
 void destroy_action_options(actionOptions *op) 
 {
-	if (op->selectors) {
-		hash_free(op->selectors);
+	if (op->selectors) {		
+		hash_free(op->selectors);		
 	}
    	bzero(op, sizeof(actionOptions));
 	return;
@@ -113,7 +113,7 @@ wsman_add_selector_from_options( WsXmlDocH doc,
 			debug("key = %s value=%s", (char*) hnode_getkey(hn) , (char*) hnode_get(hn));
 		}
 	}
-	//hash_free_nodes(query);
+	//hash_free(query);
 	//hash_destroy(query);
 }
 
@@ -390,6 +390,28 @@ wsenum_enumerate( WsManClient* cl,
 }
 
 
+
+char *
+wsman_get_next_enum_context(WsXmlDocH doc) 
+{
+	WsXmlNodeH cntxNode;
+	char *enumContext = NULL;
+	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
+		0, NULL, NULL);
+
+	if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+		WSENUM_ENUMERATION_CONTEXT)) ) 
+	{		
+		enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
+	}
+	if ( enumContext == NULL || enumContext[0] == 0 ) 
+	{
+		debug( "No new enumeration context");
+		enumContext = NULL;
+	}
+	return enumContext;
+}
+
 WsXmlDocH
 wsenum_pull( WsManClient* cl,
              char *resourceUri,
@@ -397,18 +419,37 @@ wsenum_pull( WsManClient* cl,
              int max_elements,
              actionOptions options)
 {
-    message( "Pull request... ");
-    WsXmlDocH respDoc;
-	WsManClientEnc* wsc = (WsManClientEnc*)cl;
+	WsXmlNodeH cntxNode;
+	WsXmlDocH respDoc;
+	
+    message( "Pull request...");   	
+	WsManClientEnc* wsc = (WsManClientEnc*)cl;	
 
     if ( enumContext || (enumContext && enumContext[0] == 0) )
 	{
-        respDoc = wsman_enum_send_get_response(cl, WSENUM_PULL, enumContext, resourceUri, max_elements, options);
+        respDoc = wsman_enum_send_get_response(cl, WSENUM_PULL, 
+			enumContext, resourceUri, max_elements, options);	
+		release_connection(wsc->connection);	
+		u_free(enumContext);
     } else {       
          error( "No enumeration context ???");
 		 return NULL;
     }
-	release_connection(wsc->connection);
+
+    WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc),
+             		0, NULL, NULL);
+    
+    if ( strcmp(ws_xml_get_node_local_name(node),
+                                     WSENUM_PULL_RESP) != 0 )
+	{
+        error( "no Pull response" );
+		return NULL;
+    }
+    if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+                                     WSENUM_END_OF_SEQUENCE) ) {
+        debug( "End of sequence");        
+    }
+	
     return respDoc;
 }
 

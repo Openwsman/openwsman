@@ -159,7 +159,10 @@ int ntests = sizeof (tests) / sizeof (tests[0]);
 
 static void wsman_output(WsXmlDocH doc)
 {
-	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+	if (doc)
+		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+	else
+		printf("returned doc is null\n");
 	return;
 }
 
@@ -168,8 +171,9 @@ int main(int argc, char** argv)
 	int i;
 	WsManClient *cl;
 	WsXmlDocH doc;
+	WsXmlDocH docp;
 	actionOptions options;
-		
+	char *enumContext = NULL;	
 	
 	wsman_client_transport_init(NULL);
 	WsContextH cntx = ws_create_runtime(NULL);
@@ -188,6 +192,7 @@ int main(int argc, char** argv)
 	for (i = 0; i < ntests; i++) 
 	{
 		printf ("Test %d: %s\n", i + 1, tests[i].explanation);
+		printf ("---------------------------\n");
 		
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
@@ -195,13 +200,22 @@ int main(int argc, char** argv)
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 		
-		doc = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,  tests[i].max_elements, options);
-		
-		if (doc) {
-			wsman_output(doc);
-			ws_xml_destroy_doc(doc);
-		}
-		
+		WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
+			tests[i].max_elements, options);
+	
+		wsman_output(enum_response);		
+		enumContext = wsenum_get_enum_context(enum_response);
+		if (enum_response)
+			ws_xml_destroy_doc(enum_response);
+		while (enumContext !=NULL)
+		{ 			
+			docp = cl->ft->wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
+				tests[i].max_elements, options);		
+			wsman_output(docp);							
+			enumContext = wsman_get_next_enum_context(docp);
+			if (docp)
+				ws_xml_destroy_doc(docp);
+		}		
 		destroy_action_options(&options);
 	}
 	cl->ft->release(cl);

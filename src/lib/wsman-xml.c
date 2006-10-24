@@ -613,7 +613,8 @@ WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
  * @return 
  * 
  */
-int ws_xml_enum_children(WsXmlNodeH parent, 
+int 
+ws_xml_enum_children(WsXmlNodeH parent, 
         WsXmlEnumCallback callback, 
         void* data, 
         int bRecursive)

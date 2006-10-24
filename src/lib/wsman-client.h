@@ -87,42 +87,47 @@ typedef struct _WsManClientFT
 	/**
 	 * Transfer Get
 	 */	
-	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri, actionOptions options);
+	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri,
+		actionOptions options);
         
 	/**
 	 * Transfer Put
 	 */	
-	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri, hash_t *prop, actionOptions options);
+	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri,
+		hash_t *prop, actionOptions options);
 	
 	/**
 	 * Enumerate
 	 */
-	WsXmlDocH (*wsenum_enumerate)(WsManClient* cl, char* resourceUri, int max_elements, actionOptions options);
+	WsXmlDocH (*wsenum_enumerate)(WsManClient* cl, 
+		char* resourceUri, int max_elements, actionOptions options);
 
 	/**
 	 * Pull
 	 */
-	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, char *enumContext, int max_elements, actionOptions options);
+	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, 
+		char *enumContext, int max_elements, actionOptions options);
         
 	/**
 	 * Release
 	 */
-	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri, char *enumContext, actionOptions options);
+	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri,
+		char *enumContext, actionOptions options);
 
 	/**
 	 * Transfer Create
 	 */	
-	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, hash_t *prop, actionOptions options);
+	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, hash_t *prop,
+		actionOptions options);
 	/**
 	 * Invoke custom method
 	 */	
-	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,  hash_t *prop, actionOptions options);
+	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,
+		hash_t *prop, actionOptions options);
 
 
 	WsXmlDocH (*identify)(WsManClient* cl, actionOptions options);
-        
-	 	 	 	 	 
-	
+        	 	 	 	 	 
 } WsManClientFT;
 
 
@@ -174,24 +179,33 @@ WsManClient *wsman_connect_with_ssl(
 
 WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
 
-WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri, actionOptions options); 
+WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri,
+		actionOptions options); 
 
-WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri, hash_t *prop, actionOptions options);
+WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri,
+		hash_t *prop, actionOptions options);
 
-WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri, hash_t *prop, actionOptions options);
+WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri,
+		hash_t *prop, actionOptions options);
 
-WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri, int max_elements, actionOptions options);
+WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
+		int max_elements, actionOptions options);
 
-WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, char *enumContext , int max_elements, actionOptions options);
+WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, 
+		char *enumContext , int max_elements, actionOptions options);
 
-WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri, char *enumContext , actionOptions options);
+WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
+		char *enumContext , actionOptions options);
 
-WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,  hash_t *prop, actionOptions options);
+WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,
+		hash_t *prop, actionOptions options);
 
-WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, char* enumContext, char* resourceUri, char* url, actionOptions options);
+WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, 
+		char* enumContext, char* resourceUri, char* url, actionOptions options);
 
-WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op, char* enumContext, char* resourceUri, 
-        int max_elements, actionOptions options);
+WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op,
+		char* enumContext, char* resourceUri, int max_elements, 
+		actionOptions options);
 
 
 typedef void (*WsmanClientFn) (WsManClient *cl,                           
@@ -227,6 +241,8 @@ void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
 long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);
+
+char *wsman_get_next_enum_context(WsXmlDocH doc);
 
 #ifdef __cplusplus
 }

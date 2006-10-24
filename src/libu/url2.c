@@ -11,7 +11,7 @@ hash_t *parse_query(const char *query)
     hash_t *h = NULL;
 
     dbg_err_if(query == NULL);
-    q = u_strdup((char *)query);
+    q = u_strdup(query);
     h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
     /* foreach name=value pair... */
@@ -32,9 +32,9 @@ hash_t *parse_query(const char *query)
     }
 
     u_free(q);
-
     return h;
 err:
+	u_free(q);
     return h;
 }
 
