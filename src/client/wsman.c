@@ -64,12 +64,16 @@ static void wsman_output(WsXmlDocH doc)
 {
     FILE *f;
     const char *filename = wsman_options_get_output_file();
+    if (!doc) {
+        error("doc with NULL content");
+        return;
+    }
     if (filename) {
         f  = fopen(filename , "w+");
         if (f == NULL)
             error("Could not open file for writing");
         else
-        ws_xml_dump_node_tree(f, ws_xml_get_doc_root(doc));
+            ws_xml_dump_node_tree(f, ws_xml_get_doc_root(doc));
     } else {
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
     }
