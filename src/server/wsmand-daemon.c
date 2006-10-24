@@ -331,13 +331,21 @@ shutdown_idle_cb (void* user_data)
 {
     int restart = (int )user_data;
 
+    if (shutdown_handlers == NULL) {
+        goto NULL_SHUTDOWN_HANDLERS;
+    }
+
+    if (list_isempty(shutdown_handlers)) {
+        goto EMPTY_LIST;
+    }
+
     lnode_t *n = list_first(shutdown_handlers);
 
     debug ("shutdown_idle_cb started");
-                
+
     while (n) {
         ShutdownHandler *handler = n->list_data;
-        
+
         if (handler && handler->fn) 
             handler->fn (handler->user_data);
 
@@ -345,8 +353,10 @@ shutdown_idle_cb (void* user_data)
         n = list_next(shutdown_handlers, n);
     }
 
-    //list_destroy_nodes (shutdown_handlers);
+    // list_destroy_nodes (shutdown_handlers);
+EMPTY_LIST:
     // list_destroy (shutdown_handlers);
+NULL_SHUTDOWN_HANDLERS:
 
     if (!restart) {
         /* We should be quitting the main loop (which will cause us to

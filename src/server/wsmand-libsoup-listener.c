@@ -245,7 +245,7 @@ wsmand_start_server(dictionary *ini)
     //g_return_val_if_fail(cntx != NULL, 1 );            
 
     SoapH soap = ws_context_get_runtime(cntx);   	
-    printf("wsmand_start_server started\n");
+
     if (!wsmand_options_get_digest()) {
         auth_ctx.types |= SOUP_AUTH_TYPE_BASIC;
         auth_ctx.basic_info.realm = AUTHENTICATION_REALM; 
