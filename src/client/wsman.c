@@ -288,11 +288,14 @@ int main(int argc, char** argv)
         }
         WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl,
                             resource_uri, optimize_max_elements, options);
-        wsman_output(enum_response);
-        enumContext = wsenum_get_enum_context(enum_response);
-        if (enum_response) {
-            ws_xml_destroy_doc(enum_response);
-        }
+		if (enum_response) {
+        	wsman_output(enum_response);
+			enumContext = wsenum_get_enum_context(enum_response);
+			ws_xml_destroy_doc(enum_response);
+		} else {
+			break;
+		}
+       
         while (enumContext !=NULL) {
             doc = cl->ft->wsenum_pull(cl, resource_uri, enumContext,
                             wsman_options_get_max_elements() , options);

@@ -110,6 +110,14 @@ TestData tests[] = {
 		1
 	},
 	{
+		"Enumeration with valid Resource URI and additional invalid selectors.",
+		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+		NULL, 
+		200,
+		FLAG_NONE,
+		1
+	},	
+	{
 		"Enumeration with valid Resource URI/Count Estimation.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
@@ -202,11 +210,13 @@ int main(int argc, char** argv)
 		 		
 		WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
 			tests[i].max_elements, options);
-	
-		wsman_output(enum_response);		
-		enumContext = wsenum_get_enum_context(enum_response);
-		if (enum_response)
+		if (enum_response) {
+			wsman_output(enum_response);		
+			enumContext = wsenum_get_enum_context(enum_response);
 			ws_xml_destroy_doc(enum_response);
+		} else {
+			enumContext = NULL;
+		}
 		while (enumContext !=NULL)
 		{ 			
 			docp = cl->ft->wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
