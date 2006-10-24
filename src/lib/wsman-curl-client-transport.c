@@ -45,6 +45,7 @@
 #include "wsman-errors.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
+#include "wsman-debug.h"
 #include "wsman-client-transport.h"
 
 
@@ -171,7 +172,7 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    
+
     if (wsman_transport_get_proxy()) {
         r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy());
         if (r != 0) {
@@ -179,7 +180,7 @@ wsman_client_handler( WsManClient *cl,
             goto DONE;
         }
     }
-    
+
     if (wsman_transport_get_proxyauth()) {
         r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
                     wsman_transport_get_proxyauth());
@@ -265,8 +266,8 @@ wsman_client_handler( WsManClient *cl,
                 goto DONE;
             }
         }
-// FIXME
-        if ( 0 >= DEBUG_LEVEL_MESSAGE) {
+
+        if (wsman_debug_level_debugged(DEBUG_LEVEL_MESSAGE)) {
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         }
         r = curl_easy_perform(curl);

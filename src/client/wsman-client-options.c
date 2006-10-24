@@ -46,6 +46,7 @@
 #include "wsman-soap.h"
 #include "wsman-client-transport.h"
 #include "wsman-client-options.h"
+#include "wsman-debug.h"
 #include "wsman.h"
 
 #if 0
@@ -292,7 +293,7 @@ void wsman_setup_transport_and_library_options()
     wsman_transport_set_no_verify_peer(no_verify_peer);
 
         // library options
-
+    wsman_debug_set_level(debug_level);
 }
  
 
@@ -300,9 +301,7 @@ const char ** wsman_options_get_argv (void) {
     return wsman_argv;
 }
 
-int wsman_options_get_debug_level (void) {
-    return debug_level;
-}
+
 
 int wsman_options_get_server_port (void) {
     return server_port;

@@ -19,6 +19,7 @@ OWSMAN_INCLUDES = \
 	wsman-xml-serializer.h \
 	wsman-client.h  \
 	wsman-soap-message.h \
+	wsman-debug.h \
 	wsman-client-transport.h
 
 	
@@ -36,6 +37,7 @@ libwsman_la_SOURCES = \
 	wsman-faults.c \
 	wsman-xml-serialize.c \
 	wsman-soap-envelope.c \
+	wsman-debug.c \
 	wsman-soap-message.c
 	$(OWSMAN_INCLUDES)
 

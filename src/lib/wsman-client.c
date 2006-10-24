@@ -832,7 +832,7 @@ get_transfer_time()
 }
 
 void
-wsman_client (WsManClient *cl, WsXmlDocH rqstDoc)
+wsman_client(WsManClient *cl, WsXmlDocH rqstDoc)
 {
     lnode_t *iter = list_first(handlers);
     struct timeval tv0, tv1;
@@ -841,32 +841,30 @@ wsman_client (WsManClient *cl, WsXmlDocH rqstDoc)
     {
         WsmanClientHandler *handler = (WsmanClientHandler *)iter->list_data;
         gettimeofday(&tv0, NULL);
-        handler->fn (cl, rqstDoc, handler->user_data);
+        handler->fn(cl, rqstDoc, handler->user_data);
         gettimeofday(&tv1, NULL);
         t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
         t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
         transfer_time += t1 -t0;
         iter = list_next(handlers, iter);
-    }     
+    }
     return;
 }
 
 int
-soap_submit_client_op(SoapOpH op, 
-                      WsManClient *cl )
-{	
+soap_submit_client_op(SoapOpH op, WsManClient *cl)
+{
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    env_t *fw = (env_t *)ws_context_get_runtime(wsc->wscntx);  
+    env_t *fw = (env_t *)ws_context_get_runtime(wsc->wscntx);
 
     wsman_client(cl, ((op_t*)op)->out_doc);
 
     char* response = wsc->connection->response;
-    if (response)
-    {
-		WsmanMessage *msg = wsman_soap_message_new();
+    if (response) {
+        WsmanMessage *msg = wsman_soap_message_new();
         char *buf = (char *)u_zalloc(  strlen(response) + 1);
 
-        strncpy (buf, response, strlen(response));        
+        strncpy (buf, response, strlen(response));
         msg->response.body = u_strdup(buf);
         msg->response.length = strlen(buf);
 
@@ -896,11 +894,11 @@ ws_send_get_response(WsManClient *cl,
     {
         SoapOpH op;
         op = soap_create_op(soap, NULL, NULL, NULL, NULL, NULL, 0, timeout);
-        if ( op != NULL ) {        		       		
+        if ( op != NULL ) {
             soap_set_op_doc(op, rqstDoc, 0);
             soap_submit_client_op(op, cl);
             respDoc = soap_detach_op_doc(op, 1);
-            soap_destroy_op(op);            
+            soap_destroy_op(op);
         }
     }
     return respDoc;
