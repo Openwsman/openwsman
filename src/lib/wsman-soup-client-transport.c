@@ -47,7 +47,6 @@
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-client-transport.h"
-#include "../client/wsman-client-options.h"
 
 
 
@@ -137,21 +136,33 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
         const char *auth_type, const char *auth_realm,
         char **username, char **password, gpointer data)
 {
-    char *pw;
-    char user[21];
+    ws_auth_type_t a;
+    WsManClientEnc *wsc = (WsManClientEnc *)data;
+    if (!strncasecmp(auth_type, "basic", 5)) {
+        a = WS_BASIC_AUTH;
+    } else if (!strncasecmp(auth_type, "digest", 6)) {
+        a = WS_DIGEST_AUTH;
+    } else if (!strncasecmp(auth_type, "ntlm", 4)) {
+        a = WS_NTLM_AUTH;
+    } else {
+        a = WS_MAX_AUTH;
+    }
 
-    fprintf(stderr,"Authentication failed, please retry\n");
-    printf("User name: ");
-    fflush(stdout); 
-    fgets(user, 20, stdin);
+    request_func(a, username, password);
 
-    if (strchr(user, '\n'))
-        (*(strchr(user, '\n'))) = '\0';
-    *username = u_strdup_printf ("%s", user);
+    u_free(wsc->data.user);
+    u_free(wsc->data.pwd);
+    if (*username) {
+        wsc->data.user = u_strdup(*username);
+    } else {
+        wsc->data.user = NULL;
+    }
 
-    pw = getpass("Password: ");
-    *password = u_strdup_printf ("%s", pw);
-
+    if (*password) {
+        wsc->data.pwd = u_strdup(*password);
+    } else {
+        wsc->data.pwd = NULL;
+    }
 }
 
 
@@ -173,7 +184,7 @@ authenticate (SoupSession *session,
         return;
     }
     reauthenticate(session, msg, auth_type, auth_realm,
-           username, password, NULL);
+           username, password, data);
 }
 
 
@@ -192,9 +203,9 @@ wsman_client_handler( WsManClient *cl,
     WsManClientEnc *wsc =(WsManClientEnc*)cl;
     WsManConnection *con = wsc->connection;
 
-    if (wsman_options_get_cafile() != NULL) {
+    if (wsman_transport_get_cafile() != NULL) {
         session = soup_session_async_new_with_options (
-            SOUP_SESSION_SSL_CA_FILE, wsman_options_get_cafile(),
+            SOUP_SESSION_SSL_CA_FILE, wsman_transport_get_cafile(),
             NULL);
     } else {
         session = soup_session_async_new ();    
@@ -213,7 +224,7 @@ wsman_client_handler( WsManClient *cl,
         return;
     }
     soup_message_add_header(msg->request_headers,
-            "User-Agent", wsman_options_get_agent());
+            "User-Agent", wsman_transport_get_agent());
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
     soup_message_set_request(msg, SOAP1_2_CONTENT_TYPE,
             SOUP_BUFFER_SYSTEM_OWNED, buf, len);
