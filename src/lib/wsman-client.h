@@ -42,12 +42,11 @@ extern "C" {
 
 
 #define DEFAULT_USER_AGENT PACKAGE_STRING
-
+#include "wsman-soap-api.h"
 #include "wsman-client-api.h"
 
 
 char* wsman_make_action(char* uri, char* opName);
-
 
 WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, 
 		char* enumContext, char* resourceUri, char* url, actionOptions options);
@@ -66,7 +65,8 @@ unsigned int wsman_client_add_handler (WsmanClientFn fn, void *user_data);
 
 void wsman_client_remove_handler (unsigned int id);
 
-void initialize_action_options(actionOptions *op);  
+void initialize_action_options(actionOptions *op);
+  
 void destroy_action_options(actionOptions *op);     
 
 WsXmlDocH ws_send_get_response(WsManClient *cl, 
@@ -86,6 +86,11 @@ void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
 void wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string);
 void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
+
+WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char*
+        replyToUri, char* resourceUri,
+        char* toUri, actionOptions options);
+
 
 long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);

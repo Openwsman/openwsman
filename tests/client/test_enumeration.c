@@ -43,10 +43,9 @@
 #include "u/libu.h"
 
 #include "wsman-xml-api.h"
-#include "wsman-soap.h"
-
-
+#include "wsman-soap-api.h"
 #include "wsman-client-api.h"
+
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
 
@@ -66,21 +65,21 @@ typedef struct {
 
 typedef struct {						
         /* Explanation of what you should see */
-        const char *explanation;
+    const char *explanation;
 
         /* Resource UR to test against */
-        const char *resource_uri;
+    const char *resource_uri;
 
-		/* Selectors in the form of a URI query   key=value&key2=value2 */
-		const char *selectors;
-		
+        /* Selectors in the form of a URI query   key=value&key2=value2 */
+    const char *selectors;
+
         /* What the final status code should be. */
-        unsigned int final_status;		
-		
-		unsigned char       flags;
-		
-		unsigned int		max_elements;
-		
+    unsigned int final_status;		
+
+    unsigned char       flags;
+
+    unsigned int		max_elements;
+
 } TestData;
 
 
@@ -94,7 +93,7 @@ TestData tests[] = {
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
 		NULL, 
 		500,
-		FLAG_DUMP_REQUEST,
+		FLAG_NONE,
 		1
 	},
 	{
@@ -102,7 +101,7 @@ TestData tests[] = {
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
 		200,
-		FLAG_DUMP_REQUEST,
+		FLAG_NONE,
 		1
 	},
 	{
@@ -185,8 +184,6 @@ initialize_logging (void)
     debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
 } 
 
-
-
 static void wsman_output(WsXmlDocH doc)
 {
 	if (doc)
@@ -250,8 +247,7 @@ int main(int argc, char** argv)
 			if (docp)
 				ws_xml_destroy_doc(docp);
 		}		
-		destroy_action_options(&options);
-		//wsman_client_remove_handler (id);
+		destroy_action_options(&options);		
     	cl->ft->release(cl);
     	if (cntx) {
     		SoapH soap = ws_context_get_runtime(cntx);  

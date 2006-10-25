@@ -267,13 +267,8 @@ struct _WsmanStatus {
 typedef struct _WsmanStatus WsmanStatus;
 
 #include "wsman-soap-message.h"
+#include "wsman-soap-api.h"
 
-
-struct __WsContext
-{
-	int __unk;
-};
-typedef struct __WsContext* WsContextH;
 
 struct __SoapDispatch
 {
@@ -503,19 +498,6 @@ enum __WsmanFilterDialect
     WSMAN_FILTER_SELECTOR
 };
 typedef enum __WsmanFilterDialect WsmanFilterDialect;
-
-
-struct _actionOptions {
-    unsigned char       flags;
-    char *              filter;
-    char *              dialect;
-    char *              fragment;
-    char *              cim_ns;
-	hash_t				*selectors;
-    unsigned int        timeout;
-    unsigned int        max_envelope_size;
-};
-typedef struct _actionOptions actionOptions;
 
 
 /** *********************************** */

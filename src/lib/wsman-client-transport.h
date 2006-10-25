@@ -53,27 +53,41 @@ typedef enum {
 
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
+
 extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t);
+
 extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
+
 extern int wsman_is_auth_method(int method);
 
 extern int wsman_client_transport_init(void *);
+
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+
 extern void wsman_client_transport_fini(void);
 
-
 extern char *wsman_transport_get_proxy(void);
+
 extern char *wsman_transport_get_proxyauth(void);
+
 extern char * wsman_transport_get_agent (void);
+
 extern char * wsman_transport_get_auth_method (void);
+
 extern int wsman_transport_get_no_verify_peer (void);
+
 extern char *wsman_transport_get_cafile(void);
 
 extern void wsman_transport_set_proxy(char *);
+
 extern void wsman_transport_set_proxyauth(char *);
+
 extern void wsman_transport_set_agent (char *);
+
 extern void wsman_transport_set_auth_method (char *);
+
 extern void wsman_transport_set_no_verify_peer (int);
+
 extern void wsman_transport_set_cafile(char *);
 
 

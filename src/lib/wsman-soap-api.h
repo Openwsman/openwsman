@@ -30,33 +30,19 @@
 
 /**
  * @author Anas Nashif
+ * @author Eugene Yarmosh
  */
 
-#ifndef WSMAN_SOAP_ENVELOPE_H_
-#define WSMAN_SOAP_ENVELOPE_H_
+#ifndef WSMAN_SOAP_API_H_
+#define WSMAN_SOAP_API_H_
 
 
-#define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
-
-void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
-
-int wsman_is_duplicate_message_id (env_t* fw, WsXmlDocH doc);
-
-char* get_soap_header_value(env_t* fw, WsXmlDocH doc, char* nsUri, char* name);
-
-WsXmlNodeH get_soap_header_element(env_t* fw, 
-        WsXmlDocH doc, char* nsUri, char* name);
-
-WsXmlDocH build_soap_fault(env_t *fw, char *soapNsUri, char *faultNsUri, 
-        char *code, char *subCode, char *reason, char *detail);
-
-void build_soap_version_fault(env_t *fw);
-
-WsXmlDocH ws_create_response_envelope(WsContextH cntx, 
-        WsXmlDocH rqstDoc, 
-        char* action);        
-
-WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg);
-
+ struct __WsContext
+ {
+ 	int __unk;
+ };
+ typedef struct __WsContext* WsContextH;
+ 
 
 #endif
+

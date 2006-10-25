@@ -213,7 +213,7 @@ transfer_get( WsManClient *cl,
     char *action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_GET);
 
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx,
-                            action, WSA_TO_ANONYMOUS, NULL,
+                            action, WSA_TO_ANONYMOUS, 
                             resource_uri , wsc->data.endpoint, options );
 
     wsman_add_selector_from_options(rqstDoc, options);
@@ -253,7 +253,7 @@ transfer_put( WsManClient *cl,
 
     WsManClientEnc *wsc =(WsManClientEnc*)cl;	
     WsXmlDocH get_rqstDoc = wsman_build_envelope(wsc->wscntx, action,
-                                WSA_TO_ANONYMOUS, NULL, r,
+                                WSA_TO_ANONYMOUS,  r,
                                 wsc->data.endpoint, options);
     u_free(action);
 
@@ -265,7 +265,7 @@ transfer_put( WsManClient *cl,
 
     action = wsman_make_action(XML_NS_TRANSFER, TRANSFER_PUT);
     WsXmlDocH put_rqstDoc = wsman_build_envelope(wsc->wscntx,
-                                    action, WSA_TO_ANONYMOUS, NULL, r,
+                                    action, WSA_TO_ANONYMOUS, r,
                                     wsc->data.endpoint, options);
 
     wsman_add_selector_from_options(put_rqstDoc, options);
@@ -326,7 +326,7 @@ invoke( WsManClient *cl,
         action = wsman_make_action(uri , method );
     }
     WsXmlDocH rqstDoc = wsman_build_envelope(wsc->wscntx,
-                                        action, WSA_TO_ANONYMOUS, NULL,
+                                        action, WSA_TO_ANONYMOUS, 
                                         uri , wsc->data.endpoint, options );
 
     //wsman_add_selector_from_uri( rqstDoc, resourceUri);
@@ -537,6 +537,71 @@ static WsManClientFT clientFt = {
 
 
 
+WsXmlDocH 
+wsman_build_envelope( WsContextH cntx,
+                      char* action, 
+                      char* replyToUri,                      
+                      char* resourceUri, 
+                      char* toUri, 
+                      actionOptions options)
+{
+    WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
+
+    if ( !doc ) {
+		return NULL;
+	}
+	
+	WsXmlNodeH node;
+	unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
+	WsXmlNodeH header = ws_xml_get_soap_header(doc);
+	char uuidBuf[100];
+
+	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+
+	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
+
+	if ( replyToUri == NULL )
+		replyToUri = WSA_TO_ANONYMOUS;
+
+	if ( toUri == NULL )
+		toUri = WSA_TO_ANONYMOUS;
+
+	if ( action )
+		ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
+
+	if ( toUri )
+		ws_serialize_str(cntx, header, toUri, XML_NS_ADDRESSING, WSA_TO); 
+
+	if ( resourceUri )
+		ws_serialize_str(cntx, header, resourceUri, XML_NS_WS_MAN, WSM_RESOURCE_URI); 
+
+    if (uuidBuf[0] != 0)
+	    ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+
+	if ( options.timeout )
+	{
+		char buf[20];
+		sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000, (unsigned int)options.timeout % 1000);
+		ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
+	}
+
+	if ( options.max_envelope_size)
+	{
+		ws_serialize_uint32(cntx, header, options.max_envelope_size, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+	}
+	if ( options.fragment)
+	{
+		ws_serialize_str(cntx, header, options.fragment, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
+	}
+
+	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
+
+	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
+	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, replyToUri);
+
+    return doc;
+}
+
 
 WsXmlDocH
 wsman_make_enum_message(WsContextH soap,
@@ -549,7 +614,7 @@ wsman_make_enum_message(WsContextH soap,
     char* action = wsman_make_action(XML_NS_ENUMERATION, op);
     
     WsXmlDocH doc = wsman_build_envelope(soap, action,
-                        WSA_TO_ANONYMOUS, NULL, resourceUri, url, options );
+                        WSA_TO_ANONYMOUS, resourceUri, url, options );
 
     if ( doc != NULL ) {
         WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),

@@ -78,6 +78,17 @@ extern "C" {
     } WsManProxyData;
 
 
+    struct _actionOptions {
+        unsigned char       flags;
+        char *              filter;
+        char *              dialect;
+        char *              fragment;
+        char *              cim_ns;
+    	hash_t				*selectors;
+        unsigned int        timeout;
+        unsigned int        max_envelope_size;
+    };
+    typedef struct _actionOptions actionOptions;
 
 
 typedef struct _WsManClientFT 
@@ -150,8 +161,6 @@ struct _WsManClientEnc {
     WsManConnection     	*connection;
 	WsManProxyData			proxyData;
 };
-
-
 
 WsManClient *wsman_connect( 
 	WsContextH wscntxt,
