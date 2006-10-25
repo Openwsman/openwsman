@@ -33,6 +33,7 @@
  * @author Eugene Yarmosh
  * @author Vadim Revyakin
  */
+
 #include "wsman_config.h"
 
 #include <stdio.h>
@@ -298,7 +299,7 @@ int main(int argc, char** argv)
             doc = cl->ft->wsenum_pull(cl, resource_uri, enumContext,
                             wsman_options_get_max_elements() , options);
             wsman_output(doc);
-            enumContext = wsman_get_next_enum_context(doc);
+            enumContext = wsenum_get_enum_context(doc);
             if (doc) {
                 ws_xml_destroy_doc(doc);
             }

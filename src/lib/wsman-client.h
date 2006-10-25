@@ -242,7 +242,6 @@ void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);
 
-char *wsman_get_next_enum_context(WsXmlDocH doc);
 
 #ifdef __cplusplus
 }

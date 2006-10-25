@@ -408,27 +408,6 @@ wsenum_enumerate( WsManClient* cl,
 
 
 
-char *
-wsman_get_next_enum_context(WsXmlDocH doc) 
-{
-	WsXmlNodeH cntxNode;
-	char *enumContext = NULL;
-	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
-		0, NULL, NULL);
-
-	if ( (cntxNode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
-		WSENUM_ENUMERATION_CONTEXT)) ) 
-	{		
-		enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
-	}
-	if ( enumContext == NULL || enumContext[0] == 0 ) 
-	{
-		debug( "No new enumeration context");
-		enumContext = NULL;
-	}
-	return enumContext;
-}
-
 WsXmlDocH
 wsenum_pull( WsManClient* cl,
              char *resourceUri,

@@ -200,7 +200,6 @@ int main(int argc, char** argv)
 {
 	int i;
 	WsManClient *cl;
-	//WsXmlDocH doc;
 	WsXmlDocH docp;
 	actionOptions options;
 	char *enumContext = NULL;
@@ -247,7 +246,7 @@ int main(int argc, char** argv)
 			docp = cl->ft->wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
 				tests[i].max_elements, options);		
 			wsman_output(docp);							
-			enumContext = wsman_get_next_enum_context(docp);
+			enumContext = wsenum_get_enum_context(docp);
 			if (docp)
 				ws_xml_destroy_doc(docp);
 		}		
