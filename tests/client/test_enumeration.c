@@ -41,24 +41,19 @@
 #include <time.h>
 
 #include "u/libu.h"
+
 #include "wsman-xml-api.h"
-#include "wsman-errors.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-xml-serializer.h"
 
 #include "wsman-client.h"
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
 
 
-
 int facility = LOG_DAEMON;
 int errors = 0;
 unsigned char optimized_flags;
-
-
-
 
 typedef struct {
 	const char *server;
@@ -231,8 +226,7 @@ int main(int argc, char** argv)
     		sd[0].username,
     		sd[0].password,
     		NULL);
-    	
-		
+    			
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
 		
