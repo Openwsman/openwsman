@@ -43,162 +43,11 @@ extern "C" {
 
 #define DEFAULT_USER_AGENT PACKAGE_STRING
 
-struct _WsManClientEnc;
-typedef struct _WsManClientEnc WsManClientEnc;
+#include "wsman-client-api.h"
 
-struct _WsManClient;
-typedef struct _WsManClient WsManClient;
-
-typedef struct _WsManClientStatus {
-    unsigned int rc;
-    char *msg;
-} WsManClientStatus;
-
-
-typedef struct clientData {
-   char *hostName;
-   unsigned int port;
-   char *user;
-   char *pwd;
-   char *scheme;
-   char *endpoint;
-   unsigned int auth_method;
-   int  status;
-} WsManClientData;
-
-
-typedef struct credentialData {
-  char * certFile;
-  char * keyFile;
-	unsigned int verify_peer;
-} WsManCredentialData;
-
-typedef struct proxyData {
-  char * proxy;
-  char * proxy_auth;
-} WsManProxyData;
-
-
-
-typedef struct _WsManClientFT 
-{
-        WsManClientStatus (*release)(WsManClient * cl);
-
-	/**
-	 * Transfer Get
-	 */	
-	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri,
-		actionOptions options);
-        
-	/**
-	 * Transfer Put
-	 */	
-	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri,
-		hash_t *prop, actionOptions options);
-	
-	/**
-	 * Enumerate
-	 */
-	WsXmlDocH (*wsenum_enumerate)(WsManClient* cl, 
-		char* resourceUri, int max_elements, actionOptions options);
-
-	/**
-	 * Pull
-	 */
-	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, 
-		char *enumContext, int max_elements, actionOptions options);
-        
-	/**
-	 * Release
-	 */
-	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri,
-		char *enumContext, actionOptions options);
-
-	/**
-	 * Transfer Create
-	 */	
-	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, hash_t *prop,
-		actionOptions options);
-	/**
-	 * Invoke custom method
-	 */	
-	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,
-		hash_t *prop, actionOptions options);
-
-
-	WsXmlDocH (*identify)(WsManClient* cl, actionOptions options);
-        	 	 	 	 	 
-} WsManClientFT;
-
-
-struct _WsManClient {
-   void *hdl;
-   WsManClientFT *ft;
-};
-
-struct _WsManConnection {
-    char*	request;
-    char*	response;
-};
-typedef struct _WsManConnection WsManConnection;
-
-struct _WsManClientEnc {
-    WsManClient          	enc;
-    WsContextH				wscntx;
-    WsManClientData      	data;
-    WsManCredentialData  	certData;
-    WsManConnection     	*connection;
-	WsManProxyData			proxyData;
-};
 
 char* wsman_make_action(char* uri, char* opName);
 
-
-WsManClient *wsman_connect( 
-	WsContextH wscntxt,
-	const char *hostname,
-	const int port,
-	const char *path,
-	const char *scheme,
-	const char *username,
-	const char *password,		
-	WsManClientStatus *rc);
-
-WsManClient *wsman_connect_with_ssl( 
-	WsContextH wscntxt,
-	const char *hostname,
-	const int port,
-	const char *path,
-	const char *scheme,
-	const char *username,
-	const char *password,		
-	const char * certFile, 
-	const char * keyFile,
-	WsManClientStatus *rc);
-
-
-WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
-
-WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri,
-		actionOptions options); 
-
-WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri,
-		hash_t *prop, actionOptions options);
-
-WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri,
-		hash_t *prop, actionOptions options);
-
-WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
-		int max_elements, actionOptions options);
-
-WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, 
-		char *enumContext , int max_elements, actionOptions options);
-
-WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
-		char *enumContext , actionOptions options);
-
-WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,
-		hash_t *prop, actionOptions options);
 
 WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op, 
 		char* enumContext, char* resourceUri, char* url, actionOptions options);
@@ -206,8 +55,7 @@ WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op,
 WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op,
 		char* enumContext, char* resourceUri, int max_elements, 
 		actionOptions options);
-
-
+		
 typedef void (*WsmanClientFn) (WsManClient *cl,                           
                            	 WsXmlDocH rqstDoc,
                            	 void  *user_data);

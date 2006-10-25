@@ -112,5 +112,10 @@ extern WsManDialectData g_wsDialectData[];
 typedef int (*WsXmlEnumCallback)(WsXmlNodeH, void*);
 typedef int (*WsXmlNsEnumCallback)(WsXmlNodeH, WsXmlNsH, void*);
 
+void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node);
+
+WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc);
+
+void ws_xml_destroy_doc(WsXmlDocH doc);
 
 #endif /*WS_XML_API_H_*/
