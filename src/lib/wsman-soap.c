@@ -1112,6 +1112,7 @@ create_op_entry( env_t* fw,
         entry->dispatch = dispatch;
         entry->cntx = ws_create_context((SoapH)fw);       
         entry->data = data;
+        entry->processed_headers = list_create(LISTCOUNT_T_MAX);
     }
     return entry;
 }
@@ -1120,28 +1121,35 @@ create_op_entry( env_t* fw,
 void
 destroy_op_entry(op_t* entry)
 {    
-    if ( entry )
+    debug("destroy op");
+    if ( !entry )
     {
-        debug("destroy op");
-        env_t* fw = entry->dispatch->fw;
-        if ( fw ) {
-            u_lock(fw);
-        }
-
-        if ( list_contains(fw->dispatchList, &entry->dispatch->node)) {
-            list_delete(fw->dispatchList, &entry->dispatch->node);
-        }
-        
-        unlink_response_entry(fw, entry);
-        
-        if ( fw ) {
-            u_unlock(fw);
-        }
-        
-        destroy_dispatch_entry(entry->dispatch);
-        ws_destroy_context(entry->cntx);
-        u_free(entry);
+        debug("nothing to destroy...");
+        return;
     }
+    
+    env_t* fw = entry->dispatch->fw;
+    if ( fw ) {
+        u_lock(fw);
+    }
+
+    if ( list_contains(fw->dispatchList, &entry->dispatch->node)) {
+        list_delete(fw->dispatchList, &entry->dispatch->node);
+    }
+
+    unlink_response_entry(fw, entry);
+
+    if ( fw ) {
+        u_unlock(fw);
+    }
+
+    destroy_dispatch_entry(entry->dispatch);
+    ws_destroy_context(entry->cntx);
+    list_destroy_nodes(entry->processed_headers);
+    list_destroy(entry->processed_headers);
+    
+    u_free(entry);
+    
 }
 
 

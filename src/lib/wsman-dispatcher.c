@@ -68,7 +68,7 @@ struct __WkHeaderInfo
     char* name;
 };
 
-// IsWkHeader
+
 int is_wk_header(WsXmlNodeH header)
 {
     static struct __WkHeaderInfo s_Info[] =
@@ -78,8 +78,7 @@ int is_wk_header(WsXmlNodeH header)
         {XML_NS_ADDRESSING, WSA_RELATES_TO},
         {XML_NS_ADDRESSING, WSA_ACTION},
         {XML_NS_ADDRESSING, WSA_REPLY_TO},
-        {XML_NS_ADDRESSING, WSA_TO},
-        {XML_NS_WS_MAN, WSM_SYSTEM},
+        {XML_NS_ADDRESSING, WSA_TO},        
         {XML_NS_WS_MAN, WSM_RESOURCE_URI},
         {XML_NS_WS_MAN, WSM_SELECTOR_SET},
         {XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE},
@@ -182,25 +181,28 @@ int validate_control_headers(op_t* op) {
 }
 
 
-#if 0
-WsXmlNodeH validate_mustunderstand_headers(op_t* op)
+
+WsXmlNodeH 
+validate_mustunderstand_headers(op_t* op)
 {
     WsXmlNodeH child = NULL;
-    WsXmlNodeH header = 
-        get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
-    char* nsUri = ws_xml_get_node_name_ns(header);
+    WsXmlNodeH header;
     int i;
+    
+    header = get_soap_header_element(op->dispatch->fw, 
+                    op->in_doc, NULL, NULL);
+    char* nsUri = ws_xml_get_node_name_ns(header);    
 
     for(i = 0; (child = ws_xml_get_child(header, i, NULL, NULL)) != NULL; i++)
     {
         if ( ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND) )
         {
-            DL_Node* node = DL_GetHead(&op->processedHeaders);
+            lnode_t* node = list_first(op->processed_headers);
             while(node != NULL)
             {
-                if ( node->dataBuf == node )
+                if ( node->list_data == node )
                     break;
-                node = DL_GetNext(node);
+                node = list_next(op->processed_headers, node);
             }
             if ( node == NULL )
             {
@@ -218,7 +220,7 @@ WsXmlNodeH validate_mustunderstand_headers(op_t* op)
     }
     return child;
 }
-#endif
+
 
 int
 process_filter_chain(op_t* op, 
@@ -264,13 +266,13 @@ process_filters( op_t* op,
 
     if ( !retVal && inbound )
     {
-        /*
+        
         WsXmlNodeH notUnderstoodHeader;
         if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 ) {        
             wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
             retVal = 1;
         }
-        */
+        
         if (validate_control_headers(op)) {
             wsman_generate_encoding_fault(op, WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
             retVal = 1;

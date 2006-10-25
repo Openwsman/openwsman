@@ -279,7 +279,7 @@ int wsman_read_client_config (dictionary *ini)
 
 void wsman_setup_transport_and_library_options()
 {
-        // transport options
+    // transport options
     wsman_transport_set_auth_method(authentication_method);
     if (proxy) {
         wsman_transport_set_proxy(proxy);
@@ -292,7 +292,7 @@ void wsman_setup_transport_and_library_options()
     }
     wsman_transport_set_no_verify_peer(no_verify_peer);
 
-        // library options
+    // library options
     wsman_debug_set_level(debug_level);
 }
  

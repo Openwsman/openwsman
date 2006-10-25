@@ -49,6 +49,7 @@
 
 #include "wsman-client.h"
 #include "wsman-client-transport.h"
+#include "wsman-debug.h"
 
 
 
@@ -98,7 +99,7 @@ TestData tests[] = {
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
 		NULL, 
 		500,
-		FLAG_NONE,
+		FLAG_DUMP_REQUEST,
 		1
 	},
 	{
@@ -106,7 +107,7 @@ TestData tests[] = {
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
 		200,
-		FLAG_NONE,
+		FLAG_DUMP_REQUEST,
 		1
 	},
 	{
@@ -165,6 +166,32 @@ TestData tests[] = {
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
 
+
+
+static void
+debug_message_handler (const char *str, debug_level_e level, void  *user_data)
+{
+    if (wsman_debug_level_debugged(level)) 
+    {
+        struct tm *tm;
+        time_t now;
+        char timestr[128];
+
+        time (&now);
+        tm = localtime (&now);
+        strftime (timestr, 128, "%b %e %T", tm);
+        fprintf (stderr, "%s  %s\n", timestr, str);
+    }
+}
+
+static void
+initialize_logging (void)
+{
+    debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
+} 
+
+
+
 static void wsman_output(WsXmlDocH doc)
 {
 	if (doc)
@@ -181,26 +208,30 @@ int main(int argc, char** argv)
 	//WsXmlDocH doc;
 	WsXmlDocH docp;
 	actionOptions options;
-	char *enumContext = NULL;	
+	char *enumContext = NULL;
+	//unsigned int id = 0;	
 	
 	wsman_client_transport_init(NULL);
-	WsContextH cntx = ws_create_runtime(NULL);
-
-	cl = wsman_connect( cntx, 
-		sd[0].server,
-		sd[0].port,
-		sd[0].path,
-		sd[0].scheme,
-		sd[0].username,
-		sd[0].password,
-		NULL);
+	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
+    initialize_logging();
 	wsman_client_add_handler(wsman_client_handler, NULL);
-	
 		
 	for (i = 0; i < ntests; i++) 
 	{
 		printf ("Test %d: %s\n", i + 1, tests[i].explanation);
-		printf ("---------------------------\n");
+		printf ("------------------------------------------------\n");
+
+    	WsContextH cntx = ws_create_runtime(NULL);
+
+    	cl = wsman_connect( cntx, 
+    		sd[0].server,
+    		sd[0].port,
+    		sd[0].path,
+    		sd[0].scheme,
+    		sd[0].username,
+    		sd[0].password,
+    		NULL);
+    	
 		
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
@@ -227,12 +258,14 @@ int main(int argc, char** argv)
 				ws_xml_destroy_doc(docp);
 		}		
 		destroy_action_options(&options);
+		//wsman_client_remove_handler (id);
+    	cl->ft->release(cl);
+    	if (cntx) {
+    		SoapH soap = ws_context_get_runtime(cntx);  
+    		soap_destroy_fw(soap);    		
+    	}		
 	}
-	cl->ft->release(cl);
-	if (cntx) {
-		SoapH soap = ws_context_get_runtime(cntx);  
-		soap_destroy_fw(soap);
-	}
+
 	return 0;
 }
 

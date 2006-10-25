@@ -95,7 +95,6 @@ debug_message_handler (const char *str, debug_level_e level, void  *user_data)
         strftime (timestr, 128, "%b %e %T", tm);
         fprintf (stderr, "%s  %s\n", timestr, str);
     }
-
 }
 
 static void

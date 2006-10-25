@@ -396,10 +396,12 @@ wsenum_enumerate( WsManClient* cl,
 
     WsXmlDocH respDoc = wsman_enum_send_get_response(cl, WSENUM_ENUMERATE,
 								NULL, resourceUri, max_elements, options);
+	/*
     if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
         if (respDoc)
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(respDoc));
     }
+    */
 	release_connection(wsc->connection);
     return respDoc;
 }
@@ -499,28 +501,6 @@ wsenum_get_enum_context(WsXmlDocH doc)
     return enumContext;
 }
 
-void
-release_connection(WsManConnection *conn) 
-{
-	if (conn == NULL)
-		return;
-		
-    if (conn->request) {
-		u_free(conn->request);
-		conn->response = NULL;
-	}
-	
-    if (conn->response) {
-		u_free(conn->response);
-		conn->response = NULL;
-	}
-	/*
-	if (conn->response == NULL && conn->response == NULL) {
-		u_free(conn);
-	}
-	*/
-	
-}
 
 
 
@@ -588,6 +568,7 @@ wsman_make_enum_message(WsContextH soap,
                         actionOptions options)
 {
     char* action = wsman_make_action(XML_NS_ENUMERATION, op);
+    
     WsXmlDocH doc = wsman_build_envelope(soap, action,
                         WSA_TO_ANONYMOUS, NULL, resourceUri, url, options );
 
@@ -599,7 +580,7 @@ wsman_make_enum_message(WsContextH soap,
                                  WSENUM_ENUMERATION_CONTEXT, enumContext);
         }
     }
-    free(action);
+    u_free(action);
     return doc;
 }
 
@@ -710,6 +691,31 @@ init_client_connection(WsManClientData *cld)
    return c;
 }
 
+
+void
+release_connection(WsManConnection *conn) 
+{
+	if (conn == NULL)
+		return;
+		
+    if (conn->request) {
+		u_free(conn->request);
+		conn->request = NULL;
+	}
+	
+    if (conn->response) {
+		u_free(conn->response);
+		conn->response = NULL;
+	}
+	/*
+	if (conn->response == NULL && conn->request == NULL) {
+		u_free(conn);
+	}
+	*/		
+}
+
+
+
 WsManClient* 
 wsman_connect(WsContextH wscntxt,
               const char *hostname, 
@@ -791,7 +797,7 @@ wsman_client_add_handler ( WsmanClientFn    fn,
     handler->fn = fn;
     handler->user_data = user_data;
 
-    if (handlers != NULL) {
+    if (handlers != NULL && list_count(handlers)>0) {
         lnode_t *node = list_last(handlers);
         handler->id = ((WsmanClientHandler *) node->list_data)->id + 1;
     } else {
@@ -811,10 +817,9 @@ wsman_client_remove_handler (unsigned int id)
     lnode_t *iter = list_first(handlers);
     while (iter != NULL) {
         WsmanClientHandler *handler = (WsmanClientHandler *)iter->list_data;
-
         if (handler->id == id) 
         {
-            list_delete (handlers, iter);
+            lnode_destroy(list_delete (handlers, iter));
             u_free (handler);
             return;
         }

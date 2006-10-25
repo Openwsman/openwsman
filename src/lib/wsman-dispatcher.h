@@ -69,7 +69,8 @@ struct __op_t
 	WsContextH cntx;
 	WsXmlDocH in_doc;   // not deleted on destroy
 	WsXmlDocH out_doc;  // not deleted on destroy
-        WsmanMessage *data;
+    WsmanMessage *data;
+    list_t *processed_headers;
 };
 typedef struct __op_t op_t;
 
