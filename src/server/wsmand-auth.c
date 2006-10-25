@@ -93,6 +93,8 @@ ws_authorize_digest(char *filename, WSmanAuthDigest *digest)
                 }
         }
 
+        fclose(fp);
+
         return (authorized);
 }
 
