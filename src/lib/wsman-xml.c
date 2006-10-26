@@ -390,7 +390,7 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
 }
 
 
-
+#if 0
 
 /**
  * Find a text in an XML document
@@ -399,13 +399,12 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
  * @param name Node name
  * @return found text 
  */
-/*
 char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
     return ws_xml_find_text_in_tree(root, nsUri, name, 1);
 }
-*/
+
 
 /**
  * Find a text in a XML tree
@@ -415,7 +414,6 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
  * @param bRecursive Recursive flag
  * @return found text 
  */
-/*
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive)
 {
     WsXmlNodeH node = head;
@@ -428,7 +426,7 @@ char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRe
 
     return NULL;
 }
-*/
+#endif
 
 /**
  * Free Memory
@@ -1588,5 +1586,9 @@ int check_xpath(WsXmlNodeH node, char *xpath_expr) {
 }
 
 
+char *ws_xml_get_xpath_value (WsXmlDocH doc, char *expression)
+{    
+    return xml_parser_get_xpath_value(doc, expression);
+}
 
 /** @} */

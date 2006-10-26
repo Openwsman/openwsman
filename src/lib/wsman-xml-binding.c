@@ -44,6 +44,9 @@
 #include <libxml/parser.h>
 #include <libxml/xmlstring.h>
 
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+
 #include "u/libu.h"
 
 #include "wsman-xml-api.h"
@@ -165,14 +168,16 @@ WsXmlDocH xml_parser_get_doc(WsXmlNodeH node)
 }
 
 
-WsXmlNodeH xml_parser_get_root(WsXmlDocH doc)
+WsXmlNodeH
+xml_parser_get_root(WsXmlDocH doc)
 {
     if ( ((iWsDoc*)doc)->parserDoc != NULL )
         return (WsXmlNodeH)xmlDocGetRootElement((xmlDocPtr)((iWsDoc*)doc)->parserDoc);
     return NULL;
 }
 
-WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
+WsXmlDocH
+xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
 {
     env_t* fw = (env_t*)soap;
     WsXmlDocH soapDoc = NULL;
@@ -201,7 +206,8 @@ WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, uns
 
 }
 
-WsXmlDocH xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
+WsXmlDocH 
+xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
 {	
     env_t* fw = (env_t*)soap;
     WsXmlDocH soapDoc = NULL;
@@ -807,7 +813,8 @@ WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which)
 
 
 
-void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node) {
+void 
+xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node) {
 
     xmlNodePtr n = (xmlNodePtr) node;
     xmlDocPtr d = (xmlDocPtr) doc;
@@ -822,10 +829,49 @@ void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
 }
 
 
+char *
+xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
+{
+    int i;
+    char *result = NULL;    
+    xmlXPathObject *obj;
+    xmlNodeSetPtr nodeset;
+    xmlXPathContextPtr ctxt;
+    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc; 
+                    
+    ctxt = xmlXPathNewContext(d);
+    if (ctxt == NULL) {
+        error("failed while creating xpath context");
+        return NULL;
+    }
+    
+    for(i = 0; g_wsNsData[i].uri != NULL; i++)
+    {
+        WsXmlNsData* nsd = &g_wsNsData[i];
+        if(xmlXPathRegisterNs(ctxt, BAD_CAST nsd->prefix, BAD_CAST nsd->uri) != 0) {
+            error("Error: unable to register NS with prefix=\"%s\" and href=\"%s\"", nsd->prefix, nsd->uri);        
+            return NULL;
+        }                   
+    }
+    
+    obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
+    if (obj) {
+        nodeset     = obj->nodesetval;
+        result = (char *) xmlNodeListGetString(d, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+    } else {
+        return NULL;
+    }    
+    xmlXPathFreeObject (obj);
+   
+    return result;  
+}
+
+
 int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr) {
 
     xmlDocPtr doc;
     xmlNodePtr rootNode = NULL;
+ 
     if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL ||
             (rootNode = xmlNewNode(NULL, BAD_CAST "resource")) == NULL )
     {

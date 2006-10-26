@@ -23,10 +23,12 @@ endif
 
 test_transfer_get_SOURCES = test_transfer_get.c
 test_enumeration_SOURCES = test_enumeration.c
+test_pull_SOURCES = test_pull.c
 
 noinst_PROGRAMS = \
 		  test_transfer_get \
-		  test_enumeration
+		  test_enumeration \
+		  test_pull
 	
    
 

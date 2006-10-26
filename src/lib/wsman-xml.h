@@ -107,23 +107,32 @@ struct __WsXmlDumpNodeTreeData
 typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
 
-
-
-
-
 WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
+
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
+
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
+
 void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
+
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
+
 WsXmlDocH ws_create_response_envelope(struct __WsContext *cntx, WsXmlDocH rqstDoc, char *action);
+
 WsXmlDocH ws_xml_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code, char *subCodeNs, char *subCode, char *lang, char *reason, void (*addDetailProc)(WsXmlNodeH, void *), void *addDetailProcData);
+
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[]);
+
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc);
+
 int ws_xml_enum_children(WsXmlNodeH parent, WsXmlEnumCallback callback, void *data, int bRecursive);
+
 int ws_xml_get_child_count(WsXmlNodeH parent);
+
 int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback, void *data, int bRecursive);
+
 char *ws_xml_get_node_name_ns(WsXmlNodeH node);
+
 char *ws_xml_get_node_local_name(WsXmlNodeH node);
 
 WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc);
@@ -133,6 +142,7 @@ char *ws_xml_get_node_text(WsXmlNodeH node);
 WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, int size, char *encoding, unsigned long options);
 
 WsXmlDocH ws_xml_create_doc(SoapH soap, char *rootNsUri, char *rootName);
+
 int ws_xml_set_node_name(WsXmlNodeH node, char *nsUri, char *name);
 
 void ws_xml_destroy_doc(WsXmlDocH doc);
@@ -250,6 +260,8 @@ int ws_xml_utf8_strlen(char *buf);
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc);
 
 void ws_xml_set_node_lang(WsXmlNodeH node, char* lang);
+
+char *ws_xml_get_xpath_value (WsXmlDocH doc, char *expression);
 
 /** @} */
 

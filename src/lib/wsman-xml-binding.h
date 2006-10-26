@@ -81,4 +81,7 @@ void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node);
 int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr);
 
 int xml_parser_utf8_strlen(char *buf);
+
+char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression);
+
 #endif /*XML_BINDING_LIBXML2_H_*/

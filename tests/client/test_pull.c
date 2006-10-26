@@ -97,7 +97,7 @@ ServerData sd[] = {
 
 TestData tests[] = {
 	{
-		"Enumeration with non existent Resource URI, Checking Fault Subcode", 
+		"Enumeration with non existent Resource URI", 
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
 		NULL, 
 		"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
@@ -105,27 +105,7 @@ TestData tests[] = {
 		500,
 		FLAG_NONE,
 		0
-	},
-    {
-	    "Enumeration with non existent Resource URI, Checking FaultDetail", 
-	    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
-	    NULL, 
-	    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-	    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",
-	    500,
-	    FLAG_NONE,
-	    0
-    },	
-    {
-	    "Enumeration with valid Resource URI and Items Count Estimation.",
-	    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-	    NULL, 
-	    "/s:Envelope/s:Header/wsman:TotalItemsCountEstimate",
-	    "2",
-	    200,
-	    FLAG_ENUMERATION_COUNT_ESTIMATION,
-	    0
-    }/*,    
+	} /*,
 	{
 		"Enumeration with valid Resource URI.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
@@ -216,7 +196,6 @@ initialize_logging (void)
 
 static void wsman_output(WsXmlDocH doc)
 {
-    return;
 	if (doc)
 		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
 	else
@@ -228,7 +207,7 @@ int main(int argc, char** argv)
 {
 	int i;
 	WsManClient *cl;
-	//WsXmlDocH docp;
+	WsXmlDocH docp;
 	actionOptions options;
 	char *enumContext = NULL;
 	//unsigned int id = 0;	
@@ -260,29 +239,38 @@ int main(int argc, char** argv)
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 		
-        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
-            tests[i].max_elements, options);
-        if (enum_response) 
-        {
-            enumContext = wsenum_get_enum_context(enum_response);
-        } else {
-            enumContext = NULL;
-        }
-        wsman_output(enum_response);
-        if ((char *)tests[i].expected_value != NULL) 
-        {			  
-            char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
-            if (xp)
-            {
-                if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
-                    printf("\t\t\033[22;32mPASSED\033[m\n");
-                else
-                    printf("\t\t\033[22;31mFAILED\033[m\n");			            
-            }
-        }		
-        ws_xml_destroy_doc(enum_response);			
-        destroy_action_options(&options);		
-        cl->ft->release(cl);
+		WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
+			tests[i].max_elements, options);
+		if (enum_response) {
+			//wsman_output(enum_response);
+			if ((char *)tests[i].expected_value != NULL) 
+			{			  
+			    char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
+			    if (xp)
+			    {
+			        if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
+			            printf("\t\t\033[22;32mPASSED\n");
+			        else
+			            printf("\t\tFAILED");			            
+			    }
+			}
+			
+			enumContext = wsenum_get_enum_context(enum_response);
+			ws_xml_destroy_doc(enum_response);
+		} else {
+			enumContext = NULL;
+		}
+		while (enumContext !=NULL)
+		{ 			
+			docp = cl->ft->wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
+				tests[i].max_elements, options);		
+			wsman_output(docp);							
+			enumContext = wsenum_get_enum_context(docp);
+			if (docp)
+				ws_xml_destroy_doc(docp);
+		}		
+		destroy_action_options(&options);		
+    	cl->ft->release(cl);
     	if (cntx) {
     		SoapH soap = ws_context_get_runtime(cntx);  
     		soap_destroy_fw(soap);    		
