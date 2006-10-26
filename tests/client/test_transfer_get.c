@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 		sd[0].username,
 		sd[0].password,
 		NULL);
-	wsman_client_add_handler(wsman_client_handler, NULL);
+	// wsman_client_add_handler(wsman_client_handler, NULL);
 	
 		
 	for (i = 0; i < ntests; i++) 
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 
-		doc = cl->ft->get(cl, (char *)tests[i].resource_uri, options);
+		doc = ws_transfer_get(cl, (char *)tests[i].resource_uri, options);
 		
 		if (doc) {
 			wsman_output(doc);
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 		
 		destroy_action_options(&options);
 	}
-	cl->ft->release(cl);
+	wsman_release_client(cl);
 	return 0;
 }
 

@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 	wsman_client_transport_init(NULL);
 	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
     initialize_logging();
-	wsman_client_add_handler(wsman_client_handler, NULL);
+	//wsman_client_add_handler(wsman_client_handler, NULL);
 		
 	for (i = 0; i < ntests; i++) 
 	{
@@ -259,7 +259,7 @@ int main(int argc, char** argv)
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 		
-        WsXmlDocH enum_response = cl->ft->wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
+        WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
             tests[i].max_elements, options);
         if (enum_response) 
         {
@@ -282,7 +282,7 @@ int main(int argc, char** argv)
         }		
         ws_xml_destroy_doc(enum_response);			
         destroy_action_options(&options);		
-        cl->ft->release(cl);
+        wsman_release_client(cl);
     	if (cntx) {
     		SoapH soap = ws_context_get_runtime(cntx);  
     		soap_destroy_fw(soap);    		

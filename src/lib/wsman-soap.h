@@ -538,14 +538,23 @@ int wsman_register_endpoint(WsContextH cntx,
         
 
 
-int ws_transfer_put(SoapOpH op, void* appData);        
-int wsmid_identify_stub(SoapOpH op, void* appData);        
-int ws_enumerate_stub(SoapOpH op, void* appData);        
-int ws_transfer_get(SoapOpH op, void* appData);
-int ws_transfer_get_raw(SoapOpH op, void* appData);
-int ws_pull_stub(SoapOpH op, void* appData);
-int ws_pull_stub_raw(SoapOpH op, void* appData);
-int ws_release_stub(SoapOpH op, void* appData);
+int ws_transfer_put_stub(SoapOpH op, void* appData);        
+
+int wsman_identify_stub(SoapOpH op, void* appData);        
+
+int wsenum_enumerate_stub(SoapOpH op, void* appData);        
+
+int ws_transfer_get_stub(SoapOpH op, void* appData);
+
+// REMOVE: int ws_transfer_get_raw_stub(SoapOpH op, void* appData);
+
+int wsenum_pull_stub(SoapOpH op, void* appData);
+
+int wsenum_pull_raw_stub(SoapOpH op, void* appData);
+
+int wsenum_release_stub(SoapOpH op, void* appData);
+
+
 WsEnumerateInfo* get_enum_info(WsContextH cntx, 
         WsXmlDocH doc, 
         char* cntxName,

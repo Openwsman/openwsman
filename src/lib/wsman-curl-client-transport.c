@@ -133,8 +133,9 @@ wsman_client_handler( WsManClient *cl,
                             r, curl_easy_strerror(r), str); \
                        http_code = 400
 
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    WsManConnection *con = wsc->connection;
+    
+    WsManConnection *con = cl->connection;
+    
     long flags;
     CURL *curl = NULL;
     CURLcode r;
@@ -166,7 +167,7 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    r = curl_easy_setopt(curl, CURLOPT_URL, wsc->data.endpoint);
+    r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_URL, ...)");
         goto DONE;
@@ -246,20 +247,20 @@ wsman_client_handler( WsManClient *cl,
     }
 
     while (1) {
-        if (wsc->data.user && wsc->data.pwd && auth_set) {
+        if (cl->data.user && cl->data.pwd && auth_set) {
             r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
             if (r != 0) {
                 curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
                 goto DONE;
             }
             u_free(upwd);
-            upwd = malloc(strlen(wsc->data.user) +
-                strlen(wsc->data.pwd) + 2);
+            upwd = malloc(strlen(cl->data.user) +
+                strlen(cl->data.pwd) + 2);
             if (!upwd) {
                 curl_err("Could not malloc memory");
                 goto DONE;
             }
-            sprintf(upwd, "%s:%s", wsc->data.user, wsc->data.pwd);
+            sprintf(upwd, "%s:%s", cl->data.user, cl->data.pwd);
             r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
             if (r != 0) {
                 curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
@@ -290,8 +291,8 @@ wsman_client_handler( WsManClient *cl,
             curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
             goto DONE;
         }
-        auth_set = reauthenticate(auth_set, auth_avail, &wsc->data.user,
-                            &wsc->data.pwd);
+        auth_set = reauthenticate(auth_set, auth_avail, &cl->data.user,
+                            &cl->data.pwd);
         tr_data.ind = 0;
         if (auth_set == 0) {
             // user wants to cancel authorization

@@ -40,8 +40,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
-#define DEFAULT_USER_AGENT PACKAGE_STRING
 #include "wsman-soap-api.h"
 #include "wsman-client-api.h"
 
@@ -54,37 +52,32 @@ WsXmlDocH wsman_make_enum_message(WsContextH soap, char* op,
 WsXmlDocH wsman_enum_send_get_response(WsManClient *cl, char* op,
 		char* enumContext, char* resourceUri, int max_elements, 
 		actionOptions options);
-		
-typedef void (*WsmanClientFn) (WsManClient *cl,                           
-                           	 WsXmlDocH rqstDoc,
-                           	 void  *user_data);
+
+extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 void wsman_client (WsManClient *cl, WsXmlDocH rqstDoc);
-
-unsigned int wsman_client_add_handler (WsmanClientFn fn, void *user_data);
-
-void wsman_client_remove_handler (unsigned int id);
 
 void initialize_action_options(actionOptions *op);
   
 void destroy_action_options(actionOptions *op);     
 
-WsXmlDocH ws_send_get_response(WsManClient *cl, 
-				WsXmlDocH rqstDoc,				
+WsXmlDocH ws_send_get_response(WsManClient *cl, WsXmlDocH rqstDoc,				
 				unsigned long timeout);
 				
 int soap_submit_client_op(SoapOpH op, WsManClient *cl );        
-
 
 void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
 
 void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
 
 char *wsenum_get_enum_context(WsXmlDocH doc);
+
 void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
+
 void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
 
 void wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string);
+
 void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
 WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char*
@@ -94,7 +87,7 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char*
 
 long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);
-
+WsManClientStatus wsman_release_client(WsManClient * cl);
 
 #ifdef __cplusplus
 }

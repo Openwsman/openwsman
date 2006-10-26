@@ -273,32 +273,32 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
     case WS_DISP_TYPE_IDENTIFY:
         debug("Registering endpoint for Identify");
         action = ep->inAction;
-        callbackProc = wsmid_identify_stub;
+        callbackProc = wsman_identify_stub;
         break;
     case WS_DISP_TYPE_ENUMERATE:
         debug("Registering endpoint for Enumerate");
         action = ep->inAction;
-        callbackProc = ws_enumerate_stub;
+        callbackProc = wsenum_enumerate_stub;
         break;
     case WS_DISP_TYPE_RELEASE:
         debug("Registering endpoint for Release");
         action = ep->inAction;
-        callbackProc = ws_release_stub;
+        callbackProc = wsenum_release_stub;
         break;
     case WS_DISP_TYPE_PULL:
         debug("Registering endpoint for Pull");
         action = ep->inAction;
-        callbackProc = ws_pull_stub;
+        callbackProc = wsenum_pull_stub;
         break; 
     case WS_DISP_TYPE_PULL_RAW:
         debug("Registering endpoint for Pull Raw");
         action = ep->inAction;
-        callbackProc = ws_pull_stub_raw;
+        callbackProc = wsenum_pull_raw_stub;
         break;         
     case WS_DISP_TYPE_GET:
         debug("Registering endpoint for Get");
         action = ep->inAction;
-        callbackProc = ws_transfer_get;      
+        callbackProc = ws_transfer_get_stub;      
         break;
     case WS_DISP_TYPE_GET_RAW:
         debug("Registering endpoint for Get Raw");
@@ -313,7 +313,7 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
     case WS_DISP_TYPE_PUT:
         debug("Registering endpoint for Put");
         action = ep->inAction;
-        callbackProc = ws_transfer_put;
+        callbackProc = ws_transfer_put_stub;
         break;
 
     case WS_DISP_TYPE_RAW_DOC:
@@ -357,7 +357,7 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
 }
 
 int 
-wsmid_identify_stub(SoapOpH op, 
+wsman_identify_stub(SoapOpH op, 
                     void* appData) 
 {
     debug( "Identify called");
@@ -396,7 +396,7 @@ wsmid_identify_stub(SoapOpH op,
 }
 
 
-int ws_transfer_put(SoapOpH op, void* appData)
+int ws_transfer_put_stub(SoapOpH op, void* appData)
 {
     WsmanStatus *status = u_malloc(sizeof(WsmanStatus *) );
     SoapH soap = soap_get_op_soap(op);	
@@ -445,7 +445,7 @@ int ws_transfer_put(SoapOpH op, void* appData)
  * @return status
  */
 int
-ws_enumerate_stub( SoapOpH op,
+wsenum_enumerate_stub( SoapOpH op,
                    void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
@@ -546,7 +546,7 @@ get_enum_info( WsContextH cntx,
 
 
 int
-ws_release_stub( SoapOpH op,
+wsenum_release_stub( SoapOpH op,
                  void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
@@ -581,7 +581,7 @@ ws_release_stub( SoapOpH op,
     return retVal;
 }
 
-int ws_pull_stub(SoapOpH op, void* appData)
+int wsenum_pull_stub(SoapOpH op, void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
     SoapH soap = soap_get_op_soap(op);
@@ -646,7 +646,7 @@ int ws_pull_stub(SoapOpH op, void* appData)
 }
 
 int 
-ws_pull_stub_raw( SoapOpH op,
+wsenum_pull_raw_stub( SoapOpH op,
                   void* appData)
 {
     WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
@@ -697,7 +697,7 @@ ws_pull_stub_raw( SoapOpH op,
     return retVal;
 }
 
-int ws_transfer_get(SoapOpH op, void* appData)
+int ws_transfer_get_stub(SoapOpH op, void* appData)
 {
     WsmanStatus status;
     wsman_status_init(&status);

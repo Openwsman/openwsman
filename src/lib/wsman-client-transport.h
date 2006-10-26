@@ -41,6 +41,11 @@
 #include "wsman-soap.h"
 #include "wsman-client.h"
 
+
+
+#define DEFAULT_USER_AGENT PACKAGE_STRING
+
+
 // Possible authentication methods
 
 typedef enum {
@@ -61,8 +66,6 @@ extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
 extern int wsman_is_auth_method(int method);
 
 extern int wsman_client_transport_init(void *);
-
-extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 extern void wsman_client_transport_fini(void);
 

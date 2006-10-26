@@ -41,111 +41,52 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-    struct _WsManClientEnc;
-    typedef struct _WsManClientEnc WsManClientEnc;
 
-    struct _WsManClient;
-    typedef struct _WsManClient WsManClient;
+struct _WsManClient;
+typedef struct _WsManClient WsManClient;
 
 
-    typedef struct _WsManClientStatus {
-        unsigned int rc;
-        char *msg;
-    } WsManClientStatus;
+typedef struct _WsManClientStatus {
+    unsigned int rc;
+    char *msg;
+} WsManClientStatus;
 
 
-    typedef struct clientData {
-       char *hostName;
-       unsigned int port;
-       char *user;
-       char *pwd;
-       char *scheme;
-       char *endpoint;
-       unsigned int auth_method;
-       int  status;
-    } WsManClientData;
+typedef struct clientData {
+   char *hostName;
+   unsigned int port;
+   char *user;
+   char *pwd;
+   char *scheme;
+   char *endpoint;
+   unsigned int auth_method;
+   int  status;
+} WsManClientData;
 
 
-    typedef struct credentialData {
-      char * certFile;
-      char * keyFile;
-    	unsigned int verify_peer;
-    } WsManCredentialData;
+typedef struct credentialData {
+    char * certFile;
+    char * keyFile;
+	unsigned int verify_peer;
+} WsManCredentialData;
 
-    typedef struct proxyData {
-      char * proxy;
-      char * proxy_auth;
-    } WsManProxyData;
-
-
-    struct _actionOptions {
-        unsigned char       flags;
-        char *              filter;
-        char *              dialect;
-        char *              fragment;
-        char *              cim_ns;
-    	hash_t				*selectors;
-        unsigned int        timeout;
-        unsigned int        max_envelope_size;
-    };
-    typedef struct _actionOptions actionOptions;
+typedef struct proxyData {
+    char * proxy;
+    char * proxy_auth;
+} WsManProxyData;
 
 
-typedef struct _WsManClientFT 
-{
-    WsManClientStatus (*release)(WsManClient * cl);
-
-	/**
-	 * Transfer Get
-	 */	
-	WsXmlDocH (*get)(WsManClient* cl, char* resourceUri,
-		actionOptions options);
-        
-	/**
-	 * Transfer Put
-	 */	
-	WsXmlDocH (*put)(WsManClient* cl, char* resourceUri,
-		hash_t *prop, actionOptions options);
-	
-	/**
-	 * Enumerate
-	 */
-	WsXmlDocH (*wsenum_enumerate)(WsManClient* cl, 
-		char* resourceUri, int max_elements, actionOptions options);
-
-	/**
-	 * Pull
-	 */
-	WsXmlDocH (*wsenum_pull)(WsManClient* cl, char* resourceUri, 
-		char *enumContext, int max_elements, actionOptions options);
-        
-	/**
-	 * Release
-	 */
-	WsXmlDocH (*wsenum_release)(WsManClient* cl, char* resourceUri,
-		char *enumContext, actionOptions options);
-
-	/**
-	 * Transfer Create
-	 */	
-	WsXmlDocH (*create)(WsManClient* cl, char* resourceUri, hash_t *prop,
-		actionOptions options);
-	/**
-	 * Invoke custom method
-	 */	
-	WsXmlDocH (*invoke)(WsManClient* cl, char* resourceUri, char *action,
-		hash_t *prop, actionOptions options);
-
-
-	WsXmlDocH (*identify)(WsManClient* cl, actionOptions options);
-        	 	 	 	 	 
-} WsManClientFT;
-
-
-struct _WsManClient {
-   void *hdl;
-   WsManClientFT *ft;
+struct _actionOptions {
+    unsigned char       flags;
+    char *              filter;
+    char *              dialect;
+    char *              fragment;
+    char *              cim_ns;
+	hash_t				*selectors;
+    unsigned int        timeout;
+    unsigned int        max_envelope_size;
 };
+typedef struct _actionOptions actionOptions;
 
 struct _WsManConnection {
     char*	request;
@@ -153,8 +94,8 @@ struct _WsManConnection {
 };
 typedef struct _WsManConnection WsManConnection;
 
-struct _WsManClientEnc {
-    WsManClient          	enc;
+struct _WsManClient {
+    void*          	        hdl;
     WsContextH				wscntx;
     WsManClientData      	data;
     WsManCredentialData  	certData;
@@ -187,13 +128,13 @@ WsManClient *wsman_connect_with_ssl(
 
 WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
 
-WsXmlDocH transfer_get(WsManClient *cl, char *resourceUri,
+WsXmlDocH ws_transfer_get(WsManClient *cl, char *resourceUri,
 		actionOptions options); 
 
-WsXmlDocH transfer_put(WsManClient *cl, char *resourceUri,
+WsXmlDocH ws_transfer_put(WsManClient *cl, char *resourceUri,
 		hash_t *prop, actionOptions options);
 
-WsXmlDocH transfer_create(WsManClient *cl, char *resourceUri,
+WsXmlDocH ws_transfer_create(WsManClient *cl, char *resourceUri,
 		hash_t *prop, actionOptions options);
 
 WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
@@ -205,7 +146,7 @@ WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri,
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
 		char *enumContext , actionOptions options);
 
-WsXmlDocH invoke(WsManClient *cl, char *resourceUri , char *action,
+WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri , char *action,
 		hash_t *prop, actionOptions options);
 
 
