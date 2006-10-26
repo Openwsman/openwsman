@@ -49,7 +49,6 @@
 
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
-#include "wsman-soap-verify.h"
 #include "wsman-xml.h"
 
 #define INVALID_RURI "wsa:DestinationUnreachablex"
