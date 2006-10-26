@@ -362,7 +362,7 @@ wsman_identify( WsManClient *cl,
 
     ws_xml_add_child(ws_xml_get_soap_body(doc),
                                 XML_NS_WSMAN_ID, WSMID_IDENTIFY , NULL);
-    // Optional: add vendor specific content extension to node 
+    
         
     respDoc = ws_send_get_response(cl, doc, options.timeout);
     ws_xml_destroy_doc(doc);
@@ -803,12 +803,9 @@ wsman_release_client(WsManClient * cl)
 
 int
 soap_submit_client_op(SoapOpH op, WsManClient *cl)
-{
-    
+{    
     env_t *fw = (env_t *)ws_context_get_runtime(cl->wscntx);
-
     wsman_client(cl, ((op_t*)op)->out_doc);
-
     char* response = cl->connection->response;
     if (response) 
     {

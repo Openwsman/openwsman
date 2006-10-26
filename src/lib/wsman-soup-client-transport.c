@@ -136,8 +136,9 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
         const char *auth_type, const char *auth_realm,
         char **username, char **password, gpointer data)
 {
+    WsManClient *cl = (WsManClient *)data;
     ws_auth_type_t a;
-    WsManClientEnc *wsc = (WsManClientEnc *)data;
+   
     if (!strncasecmp(auth_type, "basic", 5)) {
         a = WS_BASIC_AUTH;
     } else if (!strncasecmp(auth_type, "digest", 6)) {
@@ -150,18 +151,18 @@ reauthenticate (SoupSession *session, SoupMessage *msg,
 
     request_func(a, username, password);
 
-    u_free(wsc->data.user);
-    u_free(wsc->data.pwd);
+    u_free(cl->data.user);
+    u_free(cl->data.pwd);
     if (*username) {
-        wsc->data.user = u_strdup(*username);
+        cl->data.user = u_strdup(*username);
     } else {
-        wsc->data.user = NULL;
+        cl->data.user = NULL;
     }
 
     if (*password) {
-        wsc->data.pwd = u_strdup(*password);
+        cl->data.pwd = u_strdup(*password);
     } else {
-        wsc->data.pwd = NULL;
+        cl->data.pwd = NULL;
     }
 }
 
@@ -176,11 +177,10 @@ authenticate (SoupSession *session,
         char **password, 
         gpointer data)
 {
-    WsManClient *cl = data;
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    if (wsc->data.user && wsc->data.pwd) {
-        *username = u_strdup (wsc->data.user);
-        *password = u_strdup (wsc->data.pwd);
+    WsManClient *cl = (WsManClient *)data;    
+    if (cl->data.user && cl->data.pwd) {
+        *username = u_strdup (cl->data.user);
+        *password = u_strdup (cl->data.pwd);
         return;
     }
     reauthenticate(session, msg, auth_type, auth_realm,
@@ -200,8 +200,8 @@ wsman_client_handler( WsManClient *cl,
     char *buf = NULL;
     int len;
 
-    WsManClientEnc *wsc =(WsManClientEnc*)cl;
-    WsManConnection *con = wsc->connection;
+   
+    WsManConnection *con = cl->connection;
 
     if (wsman_transport_get_cafile() != NULL) {
         session = soup_session_async_new_with_options (
@@ -217,7 +217,7 @@ wsman_client_handler( WsManClient *cl,
                         G_CALLBACK (reauthenticate), cl);
 
     msg = soup_message_new_from_uri (SOUP_METHOD_POST,
-                        soup_uri_new(wsc->data.endpoint));
+                        soup_uri_new(cl->data.endpoint));
     http_debug (msg);
     if (!msg) {
         fprintf (stderr, "Could not parse URI\n");
