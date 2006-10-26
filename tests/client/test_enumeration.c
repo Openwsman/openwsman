@@ -277,8 +277,9 @@ int main(int argc, char** argv)
                 if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("\t\t\033[22;31mFAILED\033[m\n");			            
-            }
+                    printf("\t\t\033[22;31mFAILED\033[m\n");	
+                u_free(xp);		            
+            }            
         }		
         ws_xml_destroy_doc(enum_response);			
         destroy_action_options(&options);		
