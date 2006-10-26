@@ -862,7 +862,7 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
         return NULL;
     }    
     xmlXPathFreeObject (obj);
-   
+    xmlXPathFreeContext(ctxt);
     return result;  
 }
 
