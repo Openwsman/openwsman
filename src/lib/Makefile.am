@@ -39,7 +39,6 @@ libwsman_la_SOURCES = \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
 	wsman-soap-message.c \
-	wsman-soap-verify.c \
 	$(OWSMAN_INCLUDES)
 
 
