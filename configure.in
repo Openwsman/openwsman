@@ -347,5 +347,6 @@ AC_OUTPUT([
         etc/init/Makefile
         etc/init/wsmand.sh
         tests/Makefile
-        tests/client/Makefile
+        tests/cunit/Makefile
+	tests/client/Makefile
 	])
