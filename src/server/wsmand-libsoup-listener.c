@@ -255,62 +255,48 @@ wsmand_start_server(dictionary *ini)
         auth_ctx.digest_info.allow_algorithms = SOUP_ALGORITHM_MD5;
         auth_ctx.digest_info.force_integrity = FALSE;		
     }
-    auth_ctx.callback = server_auth_callback;   	   	
+    auth_ctx.callback = server_auth_callback;
 
     // The server handler to deal with all requests
-    if (wsmand_options_get_server_port() > 0) 
-    {
-        server = soup_server_new (SOUP_SERVER_PORT, wsmand_options_get_server_port(), NULL);
+    if (!wsmand_options_get_use_ssl()) {
+        server = soup_server_new (SOUP_SERVER_PORT,
+                                wsmand_options_get_server_port(), NULL);
         if (!server) {
-            debug( "Unable to bind to server port %d", wsmand_options_get_server_port());
+            debug( "Unable to bind to server port %d",
+                                        wsmand_options_get_server_port());
             return NULL;
-        }		
-        soup_server_add_handler (server, NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);       	    
+        }
         debug("Starting Server on port %d",  soup_server_get_port (server));
-        soup_server_run_async (server);
-        g_object_unref (server);
-    }
-
+    } else { // use ssl connection
 #ifdef HAVE_SSL
-    SoupServer *ssl_server = NULL;
-    if (wsmand_options_get_ssl_key_file() 
+        if (wsmand_options_get_ssl_key_file() 
             && wsmand_options_get_ssl_cert_file() 
-            && wsmand_options_get_server_ssl_port() > 0)  
-    {
-        ssl_server = soup_server_new (
+            && wsmand_options_get_server_ssl_port() > 0) {
+            server = soup_server_new (
                 SOUP_SERVER_PORT, wsmand_options_get_server_ssl_port(),
                 SOUP_SERVER_SSL_CERT_FILE, wsmand_options_get_ssl_cert_file(),
                 SOUP_SERVER_SSL_KEY_FILE, wsmand_options_get_ssl_key_file(),
                 NULL);
-
-        if (!ssl_server) 
+        } else {
+            error("Not enough data to start SSL server");
+        }
+        if (!server) 
         {
-            debug("Unable to bind to SSL server port %d", wsmand_options_get_server_ssl_port());
+            debug("Unable to bind to SSL server port %d",
+                            wsmand_options_get_server_ssl_port());
             return NULL;
         }
-        soup_server_add_handler (ssl_server , NULL, &auth_ctx, server_callback, NULL, (env_t *)soap);
-
-        debug("Starting SSL Server on port %d", 
-                soup_server_get_port (ssl_server));
-
-        soup_server_run_async (ssl_server);
-        g_object_unref (ssl_server);
-    }
-#endif
-
-#ifdef HAVE_SSL
-    if (server == NULL && ssl_server == NULL) {
-        fprintf(stderr, "Can't start server.\n");
-        debug("Can't start server...");
-        return NULL;   
-    }
+        debug("Starting SSL Server on port %d", soup_server_get_port(server));
 #else
-    if (server == NULL) {
-        fprintf(stderr, "Can't start server.\n");
-        debug("Can't start server...");
-        return 1;   
-    }
+        error("SSL not configured");
+        return listener;
 #endif
+    }
+
+    soup_server_add_handler (server, NULL, &auth_ctx, server_callback,
+                                                        NULL, (env_t *)soap);
+    soup_server_run_async (server);
+    g_object_unref (server);
 
     debug("Waiting for requests...");
     return listener;

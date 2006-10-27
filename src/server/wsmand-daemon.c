@@ -66,6 +66,7 @@ static char *ssl_cert_file = NULL;
 static char *pid_file = DEFAULT_PID_PATH;
 static int daemon_flag = 0;
 static int no_plugin_flag = 0;
+static int use_ssl = 0;
 static int debug_level = -1;
 static int foreground_debug = 0;
 static int syslog_level = -1;
@@ -88,11 +89,18 @@ int wsmand_parse_options(int argc, char **argv)
     u_error_t *error = NULL;
 
     u_option_entry_t options[] = {
-        { "no-plugins", 	'n', U_OPTION_ARG_NONE, 	&no_plugin_flag,"Do not load any plugins", NULL }, 
-        { "debug", 		'd', U_OPTION_ARG_NONE, 	&foreground_debug, 	"Start daemon in foreground and turn on debugging", NULL },
-        { "syslog", 		's', U_OPTION_ARG_INT, 	&syslog_level,  "Set the verbosity of syslog output.", "0-6" },
-        { "config-file",	'c', U_OPTION_ARG_STRING, 	&config_file,  	"Alternate configuration file", "<file>" },
-        { "pid-file",	        'p', U_OPTION_ARG_STRING, 	&pid_file,  	"PID file", "<file>" },
+        { "no-plugins",     'n', U_OPTION_ARG_NONE, &no_plugin_flag,
+                                    "Do not load any plugins", NULL },
+        { "ssl",     'S', U_OPTION_ARG_NONE, &use_ssl,
+                                    "Work through SSL port", NULL },
+        { "debug",          'd', U_OPTION_ARG_NONE, 	&foreground_debug,
+                  "Start daemon in foreground and turn on debugging", NULL },
+        { "syslog",         's', U_OPTION_ARG_INT, &syslog_level,
+                        "Set the verbosity of syslog output.", "0-6" },
+        { "config-file",    'c', U_OPTION_ARG_STRING, &config_file,
+                            "Alternate configuration file", "<file>" },
+        { "pid-file",       'p', U_OPTION_ARG_STRING, &pid_file,
+                                                "PID file", "<file>" },
 
         { NULL }
     };	
@@ -124,8 +132,8 @@ int wsmand_read_config (dictionary *ini)
         return 0;
     }
 
-    server_port = iniparser_getint (ini, "server:port", -1);
-    server_ssl_port =  iniparser_getint(ini, "server:ssl_port",-1);
+    server_port = iniparser_getint (ini, "server:port", 8889);
+    server_ssl_port =  iniparser_getint(ini, "server:ssl_port", 8888);
     debug_level = iniparser_getint (ini, "server:debug_level", 0);
     service_path = iniparser_getstring (ini, "server:service_path", "/wsman");
     ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
@@ -183,6 +191,11 @@ int wsmand_options_get_daemon_flag (void)
 int wsmand_options_get_no_plugins_flag (void)
 {
     return no_plugin_flag;
+}
+
+int wsmand_options_get_use_ssl(void)
+{
+    return use_ssl;
 }
 
 int wsmand_options_get_foreground_debug (void)

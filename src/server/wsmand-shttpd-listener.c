@@ -338,9 +338,7 @@ static struct shttpd_ctx  *
 create_shttpd_context(SoapH soap)
 {
     struct shttpd_ctx   *ctx;
-    if (wsmand_options_get_ssl_cert_file() &&
-                wsmand_options_get_ssl_key_file() &&
-                (wsmand_options_get_server_ssl_port() > 0)) {
+    if (wsmand_options_get_use_ssl()) {
         message("Using SSL");
         ctx = shttpd_init(NULL,
             "ssl_certificate", wsmand_options_get_ssl_cert_file(),
@@ -348,7 +346,6 @@ create_shttpd_context(SoapH soap)
             "auth_realm", AUTHENTICATION_REALM,
             "debug", wsmand_options_get_debug_level() > 0 ? "1" : "0",
             NULL);
-//            port = wsmand_options_get_server_ssl_port();
     } else {
         ctx = shttpd_init(NULL,
             "auth_realm", AUTHENTICATION_REALM,
@@ -532,29 +529,32 @@ wsmand_start_server(dictionary *ini)
 #endif
 
     if (cntx == NULL) {
-        return NULL;
+        return listener;
     }
     SoapH soap = ws_context_get_runtime(cntx);
 
     if (initialize_basic_authenticator()) {
-        return NULL;
+        return listener;
     }
 
     int lsn;
     int port;
 
 
-    if (wsmand_options_get_ssl_cert_file() &&
+    if (wsmand_options_get_use_ssl()) {
+        message("Using SSL");
+        if (wsmand_options_get_ssl_cert_file() &&
                 wsmand_options_get_ssl_key_file() &&
                 (wsmand_options_get_server_ssl_port() > 0)) {
-        port = wsmand_options_get_server_ssl_port();
-        message("Using SSL");
+            port = wsmand_options_get_server_ssl_port();
+        } else {
+            error("Not enough data to use SSL port");
+            return listener;
+        }
     } else {
         port = wsmand_options_get_server_port();
     }
-    if (port == 0) {
-        port = 9001;
-    }
+
     message( "     Working on port %d", port);
     if (wsmand_options_get_digest_password_file()) {
         message( "Using Digest Authorization");
