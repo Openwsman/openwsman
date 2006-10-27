@@ -26,8 +26,10 @@ hash_t *parse_query(const char *query)
 
         /* zero-term the name part and set the value pointer */
         *val++ = 0; 
-        if (!hash_alloc_insert(h, key, val)) {
-            debug("hash_alloc_insert failed");
+        if (!hash_lookup(h,key)) {
+            if ( !hash_alloc_insert(h, key, val)) {
+                debug("hash_alloc_insert failed");
+            }
         }
     }
 

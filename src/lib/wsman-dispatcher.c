@@ -78,7 +78,8 @@ int is_wk_header(WsXmlNodeH header)
         {XML_NS_ADDRESSING, WSA_RELATES_TO},
         {XML_NS_ADDRESSING, WSA_ACTION},
         {XML_NS_ADDRESSING, WSA_REPLY_TO},
-        {XML_NS_ADDRESSING, WSA_TO},        
+        {XML_NS_ADDRESSING, WSA_TO},
+        {XML_NS_ADDRESSING, WSA_FROM},  
         {XML_NS_WS_MAN, WSM_RESOURCE_URI},
         {XML_NS_WS_MAN, WSM_SELECTOR_SET},
         {XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE},
@@ -166,19 +167,49 @@ int unlink_response_entry(env_t* fw, op_t* entry)
     return retVal;
 }
 
-int validate_control_headers(op_t* op) {
+
+
+static void 
+wsman_generate_op_fault( op_t* op, 
+                         WsmanFaultCodeType faultCode,
+                         WsmanFaultDetailType faultDetail ) 
+{
+    if (op->in_doc == NULL)
+        return;
+    op->out_doc = wsman_generate_fault(op->cntx, op->in_doc, faultCode,
+            faultDetail, NULL);
+    return;
+}
+
+int validate_control_headers(op_t* op) 
+{
     unsigned long size = 0;
     WsXmlNodeH header = 
         get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
     if ( ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
     {
         size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
-        if ( size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
-            return 1;
-        }
+        if ( size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) 
+        {
+            wsman_generate_op_fault(op, WSMAN_ENCODING_LIMIT, WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
+            return 0;
+        } 
     }
-    return 0;
+  
+    if ( ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT) != NULL )
+    {
+        size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+        if ( size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) 
+        {
+            wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_OPERATION_TIMEOUT);
+            return 0;
+        } 
+    }        
+    return 1;
 }
+
+
+
 
 
 
@@ -273,8 +304,8 @@ process_filters( op_t* op,
             retVal = 1;
         }
         
-        if (validate_control_headers(op)) {
-            wsman_generate_encoding_fault(op, WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
+        if (!validate_control_headers(op)) 
+        {            
             retVal = 1;
         }
     }
@@ -284,6 +315,117 @@ process_filters( op_t* op,
     return retVal;
 }
 
+int
+soap_add_disp_filter( SoapDispatchH disp,
+                      SoapServiceCallback callbackProc,
+                      void* callbackData,
+                      int inbound)
+{
+    callback_t* entry = NULL;
+    if ( disp )
+    {
+        list_t* list = (!inbound) ? 
+            ((dispatch_t*)disp)->outboundFilterList : 
+            ((dispatch_t*)disp)->inboundFilterList;
+        entry = make_callback_entry(callbackProc, callbackData, list);
+    }
+    return (entry == NULL);
+}
+
+
+int
+soap_add_op_filter( SoapOpH op,
+                    SoapServiceCallback proc,
+                    void* data,
+                    int inbound)
+{
+    if ( op )
+        return soap_add_disp_filter((SoapDispatchH)((op_t*)op)->dispatch, 
+                proc, 
+                data,
+                inbound);
+    return 1;
+}
+
+
+int 
+soap_add_filter(SoapH soap, 
+                SoapServiceCallback callbackProc,
+                void* callbackData, 
+                int inbound)
+{
+    callback_t* entry = NULL;
+    if ( soap ) {
+        list_t* list = (!inbound) ?
+            ((env_t*)soap)->outboundFilterList :
+            ((env_t*)soap)->inboundFilterList;
+        entry = make_callback_entry(callbackProc, callbackData, list);
+    }
+    return (entry == NULL);
+}
+
+
+int
+outbound_control_header_filter( SoapOpH opHandle, 
+                                void* data)
+{
+    unsigned long size = 0;
+    char *buf = NULL;
+    int len, envelope_size;
+    env_t* fw = (env_t*)soap_get_op_soap(opHandle);
+    WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
+    WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
+    WsXmlNodeH inHeaders = get_soap_header_element(fw, in_doc, NULL, NULL);
+
+    if ( inHeaders ) {
+        if ( ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
+        {
+            size = ws_deserialize_uint32(NULL, inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+            ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
+            envelope_size = ws_xml_utf8_strlen(buf);
+            if (envelope_size > size ) 
+            {
+                wsman_generate_op_fault((op_t*) opHandle, WSMAN_ENCODING_LIMIT, WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
+               
+            }
+        }
+    }
+    return 0;
+}
+
+int
+outbound_addressing_filter(SoapOpH opHandle, 
+                           void* data)
+{
+    env_t* fw = (env_t*)soap_get_op_soap(opHandle);
+    WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
+    WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
+    WsXmlNodeH outHeaders = get_soap_header_element(fw, out_doc, NULL, NULL);
+
+    if ( outHeaders )
+    {
+        if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL
+                && !wsman_is_identify_request(in_doc))
+        {
+            char uuidBuf[100];
+            generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+            ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
+            debug( "Adding message id: %s" , uuidBuf);
+        }
+
+        if ( in_doc != NULL )
+        {
+            WsXmlNodeH inMsgIdNode;
+            if ( (inMsgIdNode = get_soap_header_element(fw, in_doc, XML_NS_ADDRESSING,
+                            WSA_MESSAGE_ID)) != NULL && 
+                    !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO) )
+            {
+                ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
+            }
+        }
+    }
+    return 0;
+}
 
 
 

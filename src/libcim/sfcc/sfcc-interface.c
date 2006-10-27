@@ -138,7 +138,7 @@ cim_verify_keys( CMPIObjectPath * objectpath,
 	} else {
 		count = (int)hash_count(keys);
 	}
-	
+	debug("selector count: %d", count);
     if (CMGetKeyCount(objectpath, NULL) >  count ) 
     {
         statusP->fault_code = WSMAN_INVALID_SELECTORS;
@@ -280,11 +280,10 @@ cim_get_op_from_enum( CimClientInfo *client,
     CMPIObjectPath * objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
     enumeration = ((CMCIClient *)client->cc)->ft->enumInstanceNames(client->cc, objectpath, &rc);
     if (rc.rc != 0 ) {
-        debug( "rc=%d, msg=%s",
+        debug( "enumInstanceNames rc=%d, msg=%s",
                 rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
         cim_to_wsman_status(rc, statusP);
-        statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-        cim_to_wsman_status(rc, statusP);
+        //statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;        
         goto cleanup;
     }
 
@@ -337,9 +336,11 @@ cim_enum_instances (CimClientInfo *client,
 
     enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeClassOrigin, NULL, &rc);
     
-    debug( "enumInstances() rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+    debug( "enumInstances() rc=%d, msg=%s", 
+        rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
-    if (rc.rc) {
+    if (rc.rc) 
+    {
         debug( "CMCIClient enumInstances() failed");
         cim_to_wsman_status(rc, status);
         goto cleanup;
@@ -881,7 +882,7 @@ cim_get_instance_from_enum ( CimClientInfo *client,
         } else {
             cim_to_wsman_status(rc, status);
         }
-        debug( "rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+        debug( "getInstance rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
         if (instance) CMRelease(instance);
     } else {
@@ -983,6 +984,7 @@ cim_to_wsman_status(CMPIStatus rc,
         break;
     case CMPI_RC_ERR_INVALID_CLASS:
         status->fault_code = WSA_DESTINATION_UNREACHABLE;
+        status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
         break;
     case CMPI_RC_ERR_FAILED:
         if (strcmp((char *)rc.msg->hdl, "CURL error: 7") == 0)

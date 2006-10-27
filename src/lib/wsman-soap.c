@@ -40,9 +40,6 @@
 #include <ctype.h>
 #include <string.h>
 
-
-#include <libxml/uri.h>
-
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -381,8 +378,9 @@ wsman_identify_stub(SoapOpH op,
     WsXmlDocH doc = NULL;
 
     if ( (data = endPoint(cntx, status)) == NULL ) {
-        debug( "Transfer Get fault");
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
+        error( "Identify Fault");
+        // FIXME
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INTERNAL_ERROR, -1, NULL);
     } else {
         doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
         ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo, 
@@ -393,7 +391,7 @@ wsman_identify_stub(SoapOpH op,
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     } else { 
-        debug( "Response doc invalid");
+        error( "Response doc invalid");
     }
 
     ws_serializer_free_all(cntx);
@@ -406,26 +404,33 @@ wsman_identify_stub(SoapOpH op,
 
 int ws_transfer_put_stub(SoapOpH op, void* appData)
 {
-    WsmanStatus *status = u_malloc(sizeof(WsmanStatus *) );
+    WsmanStatus status;
     SoapH soap = soap_get_op_soap(op);	
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
     WsDispatchEndPointInfo* info = (WsDispatchEndPointInfo*)appData;
     XmlSerializerInfo* typeInfo = info->serializationInfo;
     WsEndPointPut endPoint = (WsEndPointPut)info->serviceEndPoint;
 
+    WsXmlDocH _doc = soap_get_op_doc(op, 1);
+    WsXmlNodeH _body = ws_xml_get_soap_body(_doc);
+    WsXmlNodeH _r = ws_xml_get_child(_body, 0 , NULL, NULL);
+    
+
     void *data = ws_deserialize(cntx, 
             ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 
-            typeInfo, ws_xml_get_node_local_name(ws_xml_get_child(ws_xml_get_soap_body(soap_get_op_doc(op, 1)), 0 , NULL, NULL)),
+            typeInfo, ws_xml_get_node_local_name(_r),
             (char*)info->data, (char*)info->data, 0, 0); 
 
     int retVal = 0;
     WsXmlDocH doc = NULL;
     void* outData = NULL;
 
-    if ( (retVal = endPoint(cntx, data, &outData, status)) )
+    if ( (retVal = endPoint(cntx, data, &outData, &status)) )
     {
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
-    } else {
+        doc = wsman_generate_fault(cntx, _doc, status.fault_code, status.fault_detail_code, NULL);
+    } 
+    else 
+    {
         doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
         if ( outData ) {
             ws_serialize(cntx, ws_xml_get_soap_body(doc), outData, 
@@ -456,37 +461,42 @@ int
 wsenum_enumerate_stub( SoapOpH op,
                    void* appData)
 {
-    WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
-    SoapH soap = soap_get_op_soap(op);
-    WsContextH soapCntx = ws_get_soap_context(soap);
-
-    WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
-    WsEndPointEnumerate endPoint = (WsEndPointEnumerate)ep->serviceEndPoint;
-    WsEnumerateInfo enumInfo;
     WsXmlDocH doc = NULL;
     char cntxName[64] = WSFW_ENUM_PREFIX;
     char* enumId = &cntxName[sizeof(WSFW_ENUM_PREFIX) - 1];
     int retVal = 0;
+    
+    WsmanStatus status;
+    SoapH soap = soap_get_op_soap(op);
+    WsContextH soapCntx = ws_get_soap_context(soap);
+    wsman_status_init(&status);
+    
+    WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
+    WsEndPointEnumerate endPoint = (WsEndPointEnumerate)ep->serviceEndPoint;
+    WsEnumerateInfo enumInfo;
+    
+    WsXmlDocH _doc = soap_get_op_doc(op, 1);
 
     memset(&enumInfo, 0, sizeof(enumInfo));
     generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
 
     if ( endPoint && ( retVal =  
-                endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), &enumInfo, status)) ) 
+                endPoint(ws_create_ep_context(soap, _doc ), &enumInfo, &status)) ) 
     {
-        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), status->fault_code, -1, NULL);
+        doc = wsman_generate_fault(soapCntx, _doc, 
+            status.fault_code, status.fault_detail_code, NULL);
     } else {
         if ( enumInfo.pullResultPtr ) {
             doc = enumInfo.pullResultPtr;
             enumInfo.index++;
         } else {
-            doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
+            doc = ws_create_response_envelope(soapCntx, _doc, NULL);
         }
 
         if ( doc )
         {
             WsXmlNodeH resp_node;
-            wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, &enumInfo);
+            wsman_set_estimated_total(_doc, doc, &enumInfo);
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
             if ( enumInfo.pullResultPtr == NULL) {
                 resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
@@ -507,8 +517,7 @@ wsenum_enumerate_stub( SoapOpH op,
 
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
-    }
-    u_free(status);
+    }    
 
     return retVal;
 }
@@ -557,27 +566,34 @@ int
 wsenum_release_stub( SoapOpH op,
                  void* appData)
 {
-    WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
+    char cntxName[64];
+    int retVal = 0;
+    WsXmlDocH doc = NULL;
+    WsmanStatus status;
+    
+    
     SoapH soap = soap_get_op_soap(op);
     WsContextH soapCntx = ws_get_soap_context(soap);
     WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
     WsEndPointRelease endPoint = (WsEndPointRelease)ep->serviceEndPoint;
-    char cntxName[64];
-    int retVal = 0;
-    WsXmlDocH doc = NULL;
-    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, soap_get_op_doc(op, 1), cntxName,
+
+    wsman_status_init(&status);
+    WsXmlDocH _doc = soap_get_op_doc(op, 1);
+    
+    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, _doc, cntxName,
             sizeof(cntxName), WSENUM_RELEASE, NULL);
 
     if ( enumInfo == NULL ) {
-        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+        doc = wsman_generate_fault(soapCntx, _doc, 
+            WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
     } else {
-        if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, status)) )
+        if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, &status)) )
         {            
             error( "endPoint error");        		
-            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
+            doc = wsman_generate_fault(soapCntx, _doc, 
                     WSMAN_INTERNAL_ERROR, OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);   	            
         } else {
-            doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL);
+            doc = ws_create_response_envelope(soapCntx, _doc, NULL);
             ws_remove_context_val(soapCntx, cntxName); 
         }
     }        
@@ -591,11 +607,12 @@ wsenum_release_stub( SoapOpH op,
 
 int wsenum_pull_stub(SoapOpH op, void* appData)
 {
-    WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
+    
+    WsmanStatus status;
     SoapH soap = soap_get_op_soap(op);
     WsContextH soapCntx = ws_get_soap_context(soap);
 
-    //WsContextH soapCntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+    wsman_status_init(&status);    
 
     WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
     XmlSerializerInfo* typeInfo = ep->serializationInfo;
@@ -604,22 +621,25 @@ int wsenum_pull_stub(SoapOpH op, void* appData)
     int retVal = 0;
     WsXmlDocH doc = NULL;
     char* enumId = NULL;
+    
+    WsXmlDocH _doc = soap_get_op_doc(op, 1);
 
-    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, soap_get_op_doc(op, 1),
+    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, _doc,
             cntxName, sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {
-        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), 
+        doc = wsman_generate_fault(soapCntx, _doc, 
                 WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL); 
     } else {
-        if ( (retVal = endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), enumInfo, status)) ) {             
-            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+        if ( (retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status)) ) {             
+            doc = wsman_generate_fault(soapCntx, _doc, 
+                status.fault_code, status.fault_detail_code, NULL);
             ws_remove_context_val(soapCntx, cntxName); 	
         } else {
             enumInfo->index++;
-            if ( (doc = ws_create_response_envelope(soapCntx, soap_get_op_doc(op, 1), NULL)) )
+            if ( (doc = ws_create_response_envelope(soapCntx, _doc, NULL)) )
             {
-                wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, enumInfo);
+                wsman_set_estimated_total(_doc, doc, enumInfo);
                 WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), 
                         XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
                 if ( node != NULL )
@@ -630,7 +650,8 @@ int wsenum_pull_stub(SoapOpH op, void* appData)
                                 XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);                            
                         ws_serialize(soapCntx, itemsNode, enumInfo->pullResultPtr, 
                                 typeInfo, ep->respName, (char*)ep->data, (char*)ep->data, 1);                       
-                        if ( enumId ) {
+                        if ( enumId ) 
+                        {
                             ws_serialize_str(soapCntx, node, enumId, 
                                     XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
                         }
@@ -657,36 +678,45 @@ int
 wsenum_pull_raw_stub( SoapOpH op,
                   void* appData)
 {
-    WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
+    WsmanStatus status;       
+   
     WsXmlDocH doc = NULL;
     SoapH soap = soap_get_op_soap(op);
     WsContextH soapCntx = ws_get_soap_context(soap);
     WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
+    wsman_status_init(&status);
 
     WsEndPointPull endPoint = (WsEndPointPull)ep->serviceEndPoint;
     char cntxName[64];
     int retVal = 0;
     char* enumId = NULL;
+    WsXmlDocH _doc = soap_get_op_doc(op, 1);
 
-    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, soap_get_op_doc(op, 1), cntxName,
+    WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, _doc, cntxName,
             sizeof(cntxName), WSENUM_PULL, &enumId);
 
     if ( enumInfo == NULL ) {        
         error( "Invalid enumeration context...");
-        doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+        doc = wsman_generate_fault(soapCntx, _doc, 
+            WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
     } else {
-        if ( (retVal = endPoint(ws_create_ep_context(soap, soap_get_op_doc(op, 1)), enumInfo, status)) ) {             
-            doc = wsman_generate_fault(soapCntx, soap_get_op_doc(op, 1), WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+        if ( (retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status)) ) 
+        {             
+            doc = wsman_generate_fault(soapCntx, _doc, 
+                status.fault_code, status.fault_detail_code, NULL);
             ws_remove_context_val(soapCntx, cntxName); 	
         } else {
             enumInfo->index++;
             if ( enumInfo->pullResultPtr )
             {
                 doc = 	enumInfo->pullResultPtr;
-                wsman_set_estimated_total(soap_get_op_doc(op, 1), doc, enumInfo);
+                wsman_set_estimated_total(_doc, doc, enumInfo);
+                
                 WsXmlNodeH body =   ws_xml_get_soap_body(doc);
                 WsXmlNodeH response = ws_xml_get_child(body, 0 , XML_NS_ENUMERATION,WSENUM_PULL_RESP);
-                if (enumInfo->index == enumInfo->totalItems) {
+                
+                if (enumInfo->index == enumInfo->totalItems) 
+                {
                     ws_serialize_str(soapCntx, response, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);          
                 }
                 else if ( enumId ) {
@@ -701,14 +731,15 @@ wsenum_pull_raw_stub( SoapOpH op,
     } else {
         error( "doc is null");
     }    
-    u_free(status);
+  
     return retVal;
 }
 
 int ws_transfer_get_stub(SoapOpH op, void* appData)
 {
     WsmanStatus status;
-    wsman_status_init(&status);
+    
+    wsman_status_init(&status);    
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));    
 
@@ -721,7 +752,8 @@ int ws_transfer_get_stub(SoapOpH op, void* appData)
 
     if ( (data = endPoint(cntx, &status)) == NULL ) {
         warning( "Transfer Get fault");
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), WSMAN_INVALID_SELECTORS, -1, NULL);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
+            WSMAN_INVALID_SELECTORS, -1, NULL);
     } else {
         debug( "Creating Response doc");
         doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
@@ -959,37 +991,6 @@ SoapOpH soap_create_op( SoapH soap,
     return (SoapOpH)entry;
 }
 
-int
-soap_add_disp_filter( SoapDispatchH disp,
-                      SoapServiceCallback callbackProc,
-                      void* callbackData,
-                      int inbound)
-{
-    callback_t* entry = NULL;
-    if ( disp )
-    {
-        list_t* list = (!inbound) ? 
-            ((dispatch_t*)disp)->outboundFilterList : 
-            ((dispatch_t*)disp)->inboundFilterList;
-        entry = make_callback_entry(callbackProc, callbackData, list);
-    }
-    return (entry == NULL);
-}
-
-
-int
-soap_add_op_filter( SoapOpH op,
-                    SoapServiceCallback proc,
-                    void* data,
-                    int inbound)
-{
-    if ( op )
-        return soap_add_disp_filter((SoapDispatchH)((op_t*)op)->dispatch, 
-                proc, 
-                data,
-                inbound);
-    return 1;
-}
 
 
 /**
@@ -1534,85 +1535,6 @@ wsman_add_selector( WsXmlNodeH baseNode,
     return;
 }
 
-
-
-int 
-soap_add_filter(SoapH soap, 
-                SoapServiceCallback callbackProc,
-                void* callbackData, 
-                int inbound)
-{
-    callback_t* entry = NULL;
-    if ( soap ) {
-        list_t* list = (!inbound) ?
-            ((env_t*)soap)->outboundFilterList :
-            ((env_t*)soap)->inboundFilterList;
-        entry = make_callback_entry(callbackProc, callbackData, list);
-    }
-    return (entry == NULL);
-}
-
-
-int
-outbound_control_header_filter( SoapOpH opHandle, 
-                                void* data)
-{
-    unsigned long size = 0;
-    char *buf = NULL;
-    int len, envelope_size;
-    env_t* fw = (env_t*)soap_get_op_soap(opHandle);
-    WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
-    WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
-    WsXmlNodeH inHeaders = get_soap_header_element(fw, in_doc, NULL, NULL);
-
-    if ( inHeaders ) {
-        if ( ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
-        {
-            size = ws_deserialize_uint32(NULL, inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
-            ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
-            envelope_size = ws_xml_utf8_strlen(buf);
-            if (envelope_size > size ) {
-                wsman_generate_encoding_fault((op_t*) opHandle, 
-                        WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
-            }
-        }
-    }
-    return 0;
-}
-
-int
-outbound_addressing_filter(SoapOpH opHandle, 
-                           void* data)
-{
-    env_t* fw = (env_t*)soap_get_op_soap(opHandle);
-    WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
-    WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
-    WsXmlNodeH outHeaders = get_soap_header_element(fw, out_doc, NULL, NULL);
-
-    if ( outHeaders )
-    {
-        if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL
-                && !wsman_is_identify_request(in_doc))
-        {
-            char uuidBuf[100];
-            generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
-            ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
-            debug( "Adding message id: %s" , uuidBuf);
-        }
-
-        if ( in_doc != NULL )
-        {
-            WsXmlNodeH inMsgIdNode;
-            if ( (inMsgIdNode = get_soap_header_element(fw, in_doc, XML_NS_ADDRESSING,
-                            WSA_MESSAGE_ID)) != NULL && 
-                    !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO) )
-            {
-                ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
-            }
-        }
-    }
-    return 0;
-}
 
 
 void 

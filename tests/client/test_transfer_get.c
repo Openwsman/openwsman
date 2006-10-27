@@ -156,11 +156,11 @@ TestData tests[] = {
 0
 },	
 	{   
-	    "Transfer Get with all selectorsbut with wrong values Fault Value", 
+	    "Transfer Get with all selectors but with wrong values Fault Value", 
 	    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
 		"CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=langley.home.planux.comx",
 		"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-		"wsman:InvalidSelectors",		
+		"wsa:DestinationUnreachable",		
 		500,
 		0
 	}/*,	

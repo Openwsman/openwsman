@@ -118,6 +118,7 @@
 #define WSA_RELATES_TO		        "RelatesTo"
 #define WSA_TO				"To"
 #define WSA_REPLY_TO		        "ReplyTo"
+#define WSA_FROM		        "From"
 #define WSA_FAULT_TO			"FaultTo"
 #define WSA_REFERENCE_PROPERTIES	"ReferenceProperties"
 #define WSA_REFERENCE_PARAMETERS	"ReferenceParameters"
@@ -177,6 +178,7 @@
 #define WSENUM_CODE			"Code"
 #define WSENUM_SOURCE_SHUTTING_DOWN	"SourceShuttingDown"
 #define WSENUM_SOURCE_CANCELING	        "SourceCanceling"
+#define WSENUM_ACTION_FAULT "http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault"
 
 
 #define WSM_SYSTEM			"System"
@@ -198,8 +200,10 @@
 #define WSM_MAX_ENVELOPE_SIZE	        "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT	        "OperationTimeout"
 #define WSM_FAULT_SUBCODE	        "FaultSubCode"
+#define WSMAN_ACTION_FAULT            "http://schemas.dmtf.org/wbem/wsman/1/wsman/fault"
 
 
+#define WSXF_ACTION_FAULT            "http://schemas.xmlsoap.org/ws/2004/09/transfer/fault"
 
 
 // WSMB - Binding
@@ -574,7 +578,7 @@ SoapOpH soap_create_op(SoapH soap,
                        unsigned long timeout);
 
 
-int soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void *data, int inbound);
+
 WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound);
 WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound);
 int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound);
@@ -586,8 +590,6 @@ char *soap_get_op_dest_url(SoapOpH op);
 void soap_destroy_op(SoapOpH op);
 
 
-int outbound_addressing_filter(SoapOpH opHandle, void* data);
-int outbound_control_header_filter(SoapOpH opHandle, void* data);
 
 WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc);
 
@@ -619,10 +621,7 @@ hnode_t* create_context_entry(hash_t* h,
 // int ws_serializer_free(WsContextH cntx, void* ptr);
 
 void ws_serializer_free_all(WsContextH cntx);
-int soap_add_disp_filter(SoapDispatchH disp,
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        int inbound);
+
 
 int ws_set_context_ulong_val(WsContextH cntx, char* name, unsigned long val);
 
@@ -630,10 +629,7 @@ callback_t*
 make_callback_entry(SoapServiceCallback proc,
                          void* data,
                          list_t* list_to_add);
-int soap_add_filter(SoapH soap,
-        SoapServiceCallback callbackProc,
-        void* callbackData,
-        int inbound);
+
 
 char* get_http_response_status(WsXmlDocH doc, int* errCodePtr);
 

@@ -75,6 +75,22 @@ struct __op_t
 typedef struct __op_t op_t;
 
 
+int soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void *data, int inbound);
+
+int outbound_addressing_filter(SoapOpH opHandle, void* data);
+int outbound_control_header_filter(SoapOpH opHandle, void* data);
+
+int soap_add_disp_filter(SoapDispatchH disp,
+        SoapServiceCallback callbackProc,
+        void* callbackData,
+        int inbound);
+
+int soap_add_filter(SoapH soap,
+            SoapServiceCallback callbackProc,
+            void* callbackData,
+            int inbound);
+
+
 void 
 wsman_generate_notunderstood_fault( op_t* op, 
                                     WsXmlNodeH notUnderstoodHeader);

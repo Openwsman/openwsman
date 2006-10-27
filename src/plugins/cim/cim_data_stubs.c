@@ -126,9 +126,10 @@ CimResource_Get_EP( SoapOpH op,
         cim_get_instance_from_enum(&cimclient, cntx, body, &status);
     }
 
-    if (status.fault_code != 0) {
+    if (status.fault_code != 0) 
+    {
         ws_xml_destroy_doc(doc);
-        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, -1, NULL);
+        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, status.fault_detail_code, NULL);
     }
 
     if ( doc ) {
@@ -156,6 +157,7 @@ CimResource_Custom_EP( SoapOpH op,
     SoapH soap = soap_get_op_soap(op);
     in_doc = soap_get_op_doc(op, 1); 
     WsContextH cntx = ws_create_ep_context(soap, in_doc);
+    
     cimclient = CimResource_Init(cntx);
 
     if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
@@ -165,7 +167,7 @@ CimResource_Custom_EP( SoapOpH op,
 
     if (status.fault_code != 0) {
         ws_xml_destroy_doc(doc);
-        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, -1, NULL);
+        doc = wsman_generate_fault(cntx, in_doc, status.fault_code, status.fault_detail_code, NULL);
     }
 
     if ( doc ) {
@@ -289,7 +291,7 @@ CimResource_Put_EP( SoapOpH op,
 
     if (wsman_check_status(&status) != 0) {
         ws_xml_destroy_doc(doc);
-        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, -1, NULL);
+        doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, status.fault_detail_code, NULL);
     }
 
     if ( doc ) {

@@ -119,7 +119,6 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 WsXmlDocH ws_create_response_envelope(struct __WsContext *cntx, WsXmlDocH rqstDoc, char *action);
 
-WsXmlDocH ws_xml_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code, char *subCodeNs, char *subCode, char *lang, char *reason, void (*addDetailProc)(WsXmlNodeH, void *), void *addDetailProcData);
 
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[]);
 

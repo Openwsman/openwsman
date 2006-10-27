@@ -273,6 +273,8 @@ int main(int argc, char** argv)
                 else
                     printf("\t\t\033[22;31mFAILED\033[m\n");	
                 u_free(xp);		            
+            } else {
+                printf("\t\t\033[22;31mFAILED\033[m\n");
             }            
         }		
         ws_xml_destroy_doc(enum_response);			

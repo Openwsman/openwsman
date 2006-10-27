@@ -111,6 +111,7 @@ enum __WsmanFaultCodeType
     WSMAN_SCHEMA_VALIDATION_ERROR,
     
     /** wsen:TimedOut */
+    WSEN_TIMED_OUT,
     WSMAN_TIMED_OUT,
     
     /** wse:UnableToRenew */
@@ -279,6 +280,26 @@ typedef enum {
     WSMAN_STATUS_INSUFFICIENT_STORAGE            = 507, /* WebDAV search */
     WSMAN_STATUS_NOT_EXTENDED                    = 510  /* RFC 2774 */
 } WsmanKnownStatusCode;
+
+
+
+struct __WsmanFaultCodeTable
+{
+	WsmanFaultCodeType  fault_code;
+	char*               fault_action;
+	char*               subCodeNs;	
+	char*               code;
+	char*               subCode;
+	char*               reason;
+};
+typedef struct __WsmanFaultCodeTable WsmanFaultCodeTable;
+
+struct __WsmanFaultDetailTable
+{
+	WsmanFaultDetailType  fault_code;
+    char*   detail;
+};
+typedef struct __WsmanFaultDetailTable WsmanFaultDetailTable;
 
 
 #endif /*WSMAN_FAULTS_H_*/

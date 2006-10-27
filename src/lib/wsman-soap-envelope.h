@@ -58,5 +58,18 @@ WsXmlDocH ws_create_response_envelope(WsContextH cntx,
 
 WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg);
 
+WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code,
+        char *subCodeNs, char *subCode, char *lang, 
+        char *reason, void (*addDetailProc)(WsXmlNodeH, void *), void *addDetailProcData);
+
+        
+WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
+            WsXmlDocH rqstDoc,
+            char* code,
+            char* subCodeNs,
+            char* subCode,
+            char* lang,
+            char* reason,
+            char* faultDetail);    
 
 #endif

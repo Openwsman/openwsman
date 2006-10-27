@@ -421,5 +421,84 @@ cleanup:
 
 
 
+/**
+ * Create a Fault
+ * @param cntx WS Context
+ * @param rqstDoc Request document (Envelope)
+ * @param code Fault code
+ * @param subCodeNs Namespace of sub code
+ * @param subCode Sub code
+ * @param lang Language for Reason section
+ * @param reason Fault Reason
+ * @param addDetailProc Callback for details
+ * @param addDetailProcData Pointer to callback data
+ * @return XML document of the fault
+ */
+WsXmlDocH 
+wsman_create_fault_envelope(WsContextH cntx,
+        WsXmlDocH rqstDoc,
+        char* code,
+        char* subCodeNs,
+        char* subCode,
+        char* lang,
+        char* reason,
+        char* faultDetail)
+{
+    WsXmlDocH doc = NULL;
+
+    if ( rqstDoc ) {
+        doc = ws_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT); 
+    } else {
+        SoapH soap = ((WS_CONTEXT*)cntx)->soap;
+        doc = ws_xml_create_envelope(soap, NULL);
+    }
+
+    if ( doc == NULL )
+    {
+        return NULL;
+    }
+    char uuidBuf[50];
+    WsXmlNodeH header = ws_xml_get_soap_header(doc);
+    WsXmlNodeH body = ws_xml_get_soap_body(doc);
+    char* soapNs = ws_xml_get_node_name_ns(body);
+    WsXmlNodeH fault = ws_xml_add_child(body, soapNs, SOAP_FAULT, NULL);
+    WsXmlNodeH codeNode = ws_xml_add_child(fault, soapNs, SOAP_CODE, NULL);
+    WsXmlNodeH node = ws_xml_add_child(codeNode, soapNs, SOAP_VALUE, NULL);
+
+    ws_xml_set_node_qname_val(node, soapNs, code);
+
+    if ( subCode )
+    {
+        node = ws_xml_add_child(codeNode, soapNs, SOAP_SUBCODE, NULL);
+        node = ws_xml_add_child(node, soapNs, SOAP_VALUE, NULL);
+        if ( subCodeNs )
+            ws_xml_set_node_qname_val(node, subCodeNs, subCode);
+        else
+            ws_xml_set_node_text(node, subCode);
+    }
+
+    if ( reason ) 
+    {
+        node = ws_xml_add_child(fault, soapNs, SOAP_REASON, NULL);
+        node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
+        ws_xml_set_node_text(node, reason);            
+        ws_xml_set_node_lang(node, !lang ? "en" : lang );
+    }
+
+    if (faultDetail) {
+        WsXmlNodeH d = ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);
+        node = ws_xml_add_child_format(d, XML_NS_WS_MAN, 
+            SOAP_FAULT_DETAIL, "%s/%s", XML_NS_WSMAN_FAULT_DETAIL, faultDetail);        
+    }
+
+
+    generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+    ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
+
+
+    return doc;
+}
+
+
 
 
