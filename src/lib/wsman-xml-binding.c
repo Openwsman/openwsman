@@ -857,7 +857,8 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
     obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
     if (obj) {
         nodeset     = obj->nodesetval;
-        result = (char *) xmlNodeListGetString(d, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+        if (nodeset)
+            result = (char *) xmlNodeListGetString(d, nodeset->nodeTab[0]->xmlChildrenNode, 1);
     } else {
         return NULL;
     }    

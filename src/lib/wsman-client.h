@@ -89,6 +89,9 @@ long long get_transfer_time(void);
 void release_connection(WsManConnection *conn);
 WsManClientStatus wsman_release_client(WsManClient * cl);
 
+WsXmlDocH
+wsman_build_envelope_from_response (WsManClient *cl);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -815,11 +815,14 @@ cim_invoke_method (CimClientInfo *client,
     }
 
     objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
-    cim_add_keys(objectpath, client->selectors);
+    if (client->selectors && hash_count(client->selectors) > 0)
+        cim_add_keys(objectpath, client->selectors);
 
     // FIXME, bug #27
     argsin = newCMPIArgs(NULL);
-    cim_add_args(argsin, client->method_args);
+    
+    if (client->method_args && hash_count(client->method_args))
+        cim_add_args(argsin, client->method_args);
 
     argsout = newCMPIArgs(NULL);
     CMPIData data = cc->ft->invokeMethod( cc, objectpath,
