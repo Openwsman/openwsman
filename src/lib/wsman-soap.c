@@ -100,12 +100,20 @@ make_callback_entry( SoapServiceCallback proc,
     return entry;
 }
 
+static void free_hentry_func(hnode_t *n, void *arg)
+{
+    u_free(hnode_getkey(n));
+    u_free(n);
+}
+
+
 void
 ws_initialize_context( WsContextH hCntx, 
                        SoapH soap)
 {
     WS_CONTEXT* cntx = (WS_CONTEXT*)hCntx;
     cntx->entries = hash_create(HASHCOUNT_T_MAX, 0, 0);
+    hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
     cntx->last_get_name_idx = -1;
     cntx->owner = 1;
     cntx->soap = soap;
@@ -808,7 +816,7 @@ set_context_val( WsContextH hCntx,
             u_lock(cntx->soap);
             ws_remove_context_val(hCntx, name);
             if ( create_context_entry(cntx->entries, name, ptr) ) {
-                retVal = 0;			
+                retVal = 0;
             }
             u_unlock(cntx->soap);
         }
@@ -880,9 +888,9 @@ create_context_entry(hash_t* h,
                      char* name, 
                      void* val)
 {
-    const char *key = u_strdup(name);
+    char *key = u_strdup(name);
     hnode_t *hn = hnode_create(val);
-    hash_insert(h, hn , (const void *)key);
+    hash_insert(h, hn , (void *)key);
     return hn;
 }
 

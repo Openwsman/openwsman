@@ -332,7 +332,7 @@ void hash_set_allocator(hash_t *hash, hnode_alloc_t al,
 	hnode_free_t fr, void *context)
 {
     assert (hash_count(hash) == 0);
-    assert ((al == 0 && fr == 0) || (al != 0 && fr != 0));
+ //   assert ((al == 0 && fr == 0) || (al != 0 && fr != 0));
 
     hash->allocnode = al ? al : hnode_alloc;
     hash->freenode = fr ? fr : hnode_free;
@@ -516,7 +516,7 @@ hnode_t *hash_scan_next(hscan_t *scan)
  *    where N is the base 2 logarithm of the size of the hash table. 
  */
 
-void hash_insert(hash_t *hash, hnode_t *node, const void *key)
+void hash_insert(hash_t *hash, hnode_t *node, void *key)
 {
     hash_val_t hkey, chain;
 
@@ -621,7 +621,7 @@ hnode_t *hash_delete(hash_t *hash, hnode_t *node)
     return node;
 }
 
-int hash_alloc_insert(hash_t *hash, const void *key, void *data)
+int hash_alloc_insert(hash_t *hash, void *key, void *data)
 {
     hnode_t *node = hash->allocnode(hash->context);
 

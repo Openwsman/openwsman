@@ -73,7 +73,7 @@ extern int hash_val_t_bit;
 typedef struct hnode_t {
     #if defined(HASH_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)	/* 1 */
     struct hnode_t *hash_next;		/* 2 */
-    const void *hash_key;		/* 3 */
+    void *hash_key;		/* 3 */
     void *hash_data;			/* 4 */
     hash_val_t hash_hkey;		/* 5 */
     #else
@@ -193,10 +193,10 @@ extern void hash_free_nodes(hash_t *);
 extern void hash_free(hash_t *);
 extern hash_t *hash_init(hash_t *, hashcount_t, hash_comp_t,
 	hash_fun_t, hnode_t **, hashcount_t);
-extern void hash_insert(hash_t *, hnode_t *, const void *);
+extern void hash_insert(hash_t *, hnode_t *, void *);
 extern hnode_t *hash_lookup(hash_t *, const void *);
 extern hnode_t *hash_delete(hash_t *, hnode_t *);
-extern int hash_alloc_insert(hash_t *, const void *, void *);
+extern int hash_alloc_insert(hash_t *, void *, void *);
 extern void hash_delete_free(hash_t *, hnode_t *);
 
 extern void hnode_put(hnode_t *, void *);
