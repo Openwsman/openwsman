@@ -232,11 +232,8 @@ wsman_client_handler( WsManClient *cl,
     // Send the message...        
     soup_session_send_message (session, msg);
 
-    if (msg->status_code != SOUP_STATUS_UNAUTHORIZED &&
-                        msg->status_code != SOUP_STATUS_OK) {
-        printf ("Connection to server failed: %s (%d)\n",
-                msg->reason_phrase, msg->status_code);
-    }
+    cl->response_code = (long)msg->status_code;
+
 
     if (msg->response.body) {
         con->response = g_malloc0 (SOUP_MESSAGE (msg)->response.length + 1);

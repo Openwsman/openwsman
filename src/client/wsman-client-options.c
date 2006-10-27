@@ -247,10 +247,6 @@ char wsman_parse_options(int argc, char **argv)
         if (argv[1] && ( strcmp(argv[1], "identify") == 0 ||
                         strcmp(argv[1], "test") == 0 )) {
             _action = argv[1];
-            if (wsman_options_get_test_file() &&
-                         strcmp(argv[1], "test") == 0 ) {
-                printf("running test case from file\n");
-            }
         } else {
             fprintf(stderr, "Error: operation can not be completed."
                 " Action or/and Resource Uri missing.\n");
@@ -363,14 +359,13 @@ hash_t * wsman_options_get_properties (void)
     {
         char *cc[3]; 
         u_tokenize1(cc, 2, properties[c], '=');
-        printf("key=%s, value=%s", cc[0], cc[1]);
         if (!hash_alloc_insert(h, cc[0], cc[1])) {
             debug("hash_alloc_insert failed");
         }
         c++;
     }
     return h;
-}   
+}
 
 int wsman_options_get_action (void)
 {

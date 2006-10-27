@@ -260,10 +260,7 @@ wsman_client_handler( WsManClient *cl,
     con->response[tr_data.ind] = 0;
 
 DONE:
-    if (http_code != 200) {
-        fprintf (stderr,
-            "Connection to server failed: response code %ld\n", http_code);
-    }
+    cl->response_code = http_code;
     curl_slist_free_all(headers);
     u_free(usag);
     u_free(upwd);

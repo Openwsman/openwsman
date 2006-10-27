@@ -753,15 +753,6 @@ wsman_release_client(WsManClient * cl)
   }
   if (cl->data.endpoint) {
     u_free(cl->data.endpoint);
-  }    
-  if (cl->data.scheme) {
-    u_free(cl->data.scheme);
-  }
-  if (cl->certData.certFile) {
-    u_free(cl->certData.certFile);
-  }
-  if (cl->certData.keyFile) {
-    u_free(cl->certData.keyFile);
   }
 
   /*

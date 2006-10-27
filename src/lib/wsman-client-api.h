@@ -95,12 +95,11 @@ struct _WsManConnection {
 typedef struct _WsManConnection WsManConnection;
 
 struct _WsManClient {
-    void*          	        hdl;
-    WsContextH				wscntx;
-    WsManClientData      	data;
-    WsManCredentialData  	certData;
-    WsManConnection     	*connection;
-	WsManProxyData			proxyData;
+    void*               hdl;
+    WsContextH          wscntx;
+    WsManClientData     data;
+    WsManConnection     *connection;
+    long                response_code;
 };
 
 WsManClient*

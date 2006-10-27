@@ -126,7 +126,6 @@ int main(int argc, char** argv)
     filename = (char *)wsman_options_get_config_file();
     if (filename)  {
         ini = iniparser_load(filename);
-        printf("Using conf file: %s\n", filename);
         if (ini==NULL) {
             fprintf(stderr, "cannot parse file [%s]", filename);
             exit(EXIT_FAILURE);
@@ -299,8 +298,13 @@ int main(int argc, char** argv)
         retVal = 1;
     }
 
+    if (cl->response_code != 200) {
+        fprintf(stderr, "Connection failed. response code = %ld\n",
+                        cl->response_code);
+    }
+
     destroy_action_options(&options);
-    wsman_release_client(cl);   
+    wsman_release_client(cl);
     /*
     if (doc)
         ws_xml_destroy_doc(doc);
