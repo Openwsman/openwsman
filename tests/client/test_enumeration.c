@@ -227,15 +227,13 @@ int main(int argc, char** argv)
 {
 	int i;
 	WsManClient *cl;
-	//WsXmlDocH docp;
 	actionOptions options;
 	char *enumContext = NULL;
-	//unsigned int id = 0;	
 	
 	wsman_client_transport_init(NULL);
 	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
     initialize_logging();
-	//wsman_client_add_handler(wsman_client_handler, NULL);
+
 		
 	for (i = 0; i < ntests; i++) 
 	{
