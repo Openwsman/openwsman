@@ -122,9 +122,7 @@ int main(int argc, char** argv)
 
     initialize_action_options(&options);
 
-    if (!wsman_parse_options(argc, argv)) {
-        exit(EXIT_FAILURE);
-    }
+
     filename = (char *)wsman_options_get_config_file();
     if (filename)  {
         ini = iniparser_load(filename);
@@ -137,7 +135,9 @@ int main(int argc, char** argv)
             exit(EXIT_FAILURE);
         }
     }
-
+    if (!wsman_parse_options(argc, argv)) {
+        exit(EXIT_FAILURE);
+    }
     wsman_setup_transport_and_library_options();
 
     initialize_logging ();
@@ -146,25 +146,13 @@ int main(int argc, char** argv)
 
     debug( "Certificate: %s", wsman_options_get_cafile());
 
-    if (wsman_options_get_cafile() != NULL) {
-        cl = wsman_connect_with_ssl( cntx, wsman_options_get_server(),
+    cl = wsman_connect( cntx, wsman_options_get_server(),
                     wsman_options_get_server_port(),
                     wsman_options_get_path(),
-                    "https",
+                    wsman_options_get_cafile() ? "https" : "http",
                     wsman_options_get_username(),
-                    wsman_options_get_password(),
-                    wsman_options_get_cafile(),
-                    NULL,
-                    NULL);
-    } else {
-        cl = wsman_connect( cntx, wsman_options_get_server(),
-                    wsman_options_get_server_port(),
-                    wsman_options_get_path(),
-                    "http",
-                    wsman_options_get_username(),
-                    wsman_options_get_password(),
-                    NULL);
-    }
+                    wsman_options_get_password());
+
 
 
     if (cl == NULL) {
@@ -322,7 +310,7 @@ int main(int argc, char** argv)
         soap_destroy_fw(soap);
     }
 
-
+    wsman_client_transport_fini();
     if (ini) {
         iniparser_freedict(ini);
     }

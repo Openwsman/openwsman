@@ -194,8 +194,6 @@ int main(int argc, char** argv)
 		
 	
 	wsman_client_transport_init(NULL);
-
-
 	
 		
 	for (i = 0; i < ntests; i++) 
@@ -209,8 +207,7 @@ int main(int argc, char** argv)
     		sd[0].path,
     		sd[0].scheme,
     		sd[0].username,
-    		sd[0].password,
-    		NULL);		
+    		sd[0].password);		
 		initialize_action_options(&options);
 		
 		if (tests[i].selectors != NULL)

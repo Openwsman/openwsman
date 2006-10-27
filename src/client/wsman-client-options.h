@@ -15,7 +15,6 @@ extern int wsman_read_client_config (dictionary *ini);
 extern char wsman_parse_options(int argc, char **argv);
 extern void wsman_setup_transport_and_library_options(void);
 
-
 extern char *wsman_options_get_server(void);
 extern int wsman_options_get_server_port(void);
 extern char * wsman_options_get_path (void);

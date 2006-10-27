@@ -103,27 +103,15 @@ struct _WsManClient {
 	WsManProxyData			proxyData;
 };
 
-WsManClient *wsman_connect( 
-	WsContextH wscntxt,
-	const char *hostname,
-	const int port,
-	const char *path,
-	const char *scheme,
-	const char *username,
-	const char *password,		
-	WsManClientStatus *rc);
+WsManClient*
+wsman_connect( WsContextH wscntxt,
+        const char *hostname,
+        const int port,
+        const char *path,
+        const char *scheme,
+        const char *username,
+        const char *password);
 
-WsManClient *wsman_connect_with_ssl( 
-	WsContextH wscntxt,
-	const char *hostname,
-	const int port,
-	const char *path,
-	const char *scheme,
-	const char *username,
-	const char *password,		
-	const char * certFile, 
-	const char * keyFile,
-	WsManClientStatus *rc);
 
 
 WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);

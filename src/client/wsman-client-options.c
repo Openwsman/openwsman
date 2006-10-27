@@ -60,8 +60,20 @@ static char *auth_methods[] = {
 
 static const char **wsman_argv = NULL;
 
-static int server_port =  80;
+static int request_only = 0;
+static int server_port =  0;
 static char *cafile = NULL;
+static char *username = NULL;
+static char *password = NULL;
+static char *server = "localhost";
+static char *agent = NULL;
+static char *url_path = NULL;
+static char *authentication_method = NULL;
+static char no_verify_peer = 0;
+static char *proxy = NULL;
+static char *proxy_upwd = NULL;
+
+
 static int debug_level = -1;
 static char *test_case = NULL;
 static int enum_max_elements = 0;
@@ -72,9 +84,7 @@ static char *enum_mode = NULL;
 static char *binding_enum_mode = NULL;
 //gboolean  dump_response = FALSE;
 
-static char *username = NULL;
-static char *password = NULL;
-static char *server = "localhost";
+
 static char *cim_namespace = NULL;
 static char *fragment = NULL;
 static char *wsm_filter = NULL;
@@ -84,17 +94,12 @@ static unsigned long operation_timeout = 0;
 static unsigned long max_envelope_size = 0;
 
 static char *_action = NULL;
-static char *agent = NULL;
 static char *config_file = NULL;
 static char *output_file = NULL;
 static char *resource_uri = NULL;
 static char *invoke_method = NULL;
-static char *url_path = NULL;
 static char **properties = NULL;
-static char *authentication_method = NULL;
-static char no_verify_peer = 0;
-static char *proxy = NULL;
-static char *proxy_upwd = NULL;
+
 
 WsActions action_data[] = 
 { 
@@ -145,6 +150,8 @@ char wsman_parse_options(int argc, char **argv)
 		"Write output to file",		"<file>" },
 	{ "noverifypeer",'V',	U_OPTION_ARG_NONE,	&no_verify_peer,
 		"Not to verify peer certificate",	NULL },
+    { "request",'Q',   U_OPTION_ARG_NONE,  &request_only,
+        "Only output reqest. Not send it.",   NULL },
         { NULL }
     };
 
@@ -251,6 +258,14 @@ char wsman_parse_options(int argc, char **argv)
         }
     }
     u_error_free(error);
+
+    // set default options 
+    if (server_port == 0) {
+       server_port = cafile ? 8888 : 8889;
+    }
+    if (url_path == NULL) {
+        url_path = "/wsman";
+    }
     return TRUE;
 }
 
@@ -424,10 +439,5 @@ char * wsman_options_get_dialect (void)
 char * wsman_options_get_path (void)
 {	
     return url_path;
-}   
-
-
-
-
-
+}
 

@@ -122,6 +122,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
     return len;
 }
 
+static CURL *curl = NULL;
 
 
 void  
@@ -136,8 +137,8 @@ wsman_client_handler( WsManClient *cl,
     
     WsManConnection *con = cl->connection;
     
-    long flags;
-    CURL *curl = NULL;
+ //   long flags;
+//    CURL *curl = NULL;
     CURLcode r;
     char *upwd = NULL;
     char *usag = NULL;
@@ -148,24 +149,8 @@ wsman_client_handler( WsManClient *cl,
     transfer_ctx_t tr_data = {wbuf, 32000, 0};
     long http_code;
     long auth_avail = 0;
-    long auth_set = 0;
+    static long auth_set = 0;
 
-    if (wsman_transport_get_cafile() != NULL) {
-        flags = CURL_GLOBAL_SSL;
-    } else {
-        flags = CURL_GLOBAL_NOTHING;
-    }
-    r = curl_global_init(flags);
-    if (r != 0) {
-        curl_err("Could not initialize curl globals");
-        goto DONE;
-    }
-
-    curl = curl_easy_init();
-    if (curl == NULL) {
-        curl_err("Could not init easy curl");
-        goto DONE;
-    }
 
     r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
     if (r != 0) {
@@ -173,23 +158,6 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-
-    if (wsman_transport_get_proxy()) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy());
-        if (r != 0) {
-            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
-            goto DONE;
-        }
-    }
-
-    if (wsman_transport_get_proxyauth()) {
-        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
-                    wsman_transport_get_proxyauth());
-        if (r != 0) {
-            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
-            goto DONE;
-        }
-    }
 
     r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
     if (r != 0) {
@@ -218,29 +186,8 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    if (wsman_transport_get_cafile() != NULL) {
-        r = curl_easy_setopt(curl, CURLOPT_CAINFO,
-                            wsman_transport_get_cafile());
-        if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
-            goto DONE;
-        }
-        r = curl_easy_setopt(curl, CURLOPT_SSLKEY,
-                            wsman_transport_get_cafile());
-        if (r != 0) {
-            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
-            goto DONE;
-        }
-        if (wsman_transport_get_no_verify_peer()) {
-              r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-            if (r != 0) {
-                curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
-                goto DONE;
-            }
-        }
-    }
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-    r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);    
+    r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
         goto DONE;
@@ -321,23 +268,89 @@ DONE:
     u_free(usag);
     u_free(upwd);
 	u_free(buf);
-    if (curl) {		
-		curl_easy_cleanup(curl);
-        curl_global_cleanup();
-    }
 
     return;
+#undef curl_err
 
 }
 
 
 int wsman_client_transport_init(void *arg)
 {
+    CURLcode r;
+    long flags;
+#define curl_err(str)  debug("Error = %d (%s); %s", \
+                            r, curl_easy_strerror(r), str);
+    if (wsman_transport_get_cafile() != NULL) {
+        flags = CURL_GLOBAL_SSL;
+    } else {
+        flags = CURL_GLOBAL_NOTHING;
+    }
+    r = curl_global_init(flags);
+    if (r != 0) {
+        debug("Error = %d (%s); Could not initialize curl globals",
+                            r, curl_easy_strerror(r));
+        return 1;
+    }
+
+    curl = curl_easy_init();
+    if (curl == NULL) {
+        curl_global_cleanup();
+        debug("Could not init easy curl");
+        return 1;
+    }
+    if (wsman_transport_get_proxy()) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy());
+        if (r != 0) {
+            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
+            goto DONE;
+        }
+    }
+
+    if (wsman_transport_get_proxyauth()) {
+        r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
+                    wsman_transport_get_proxyauth());
+        if (r != 0) {
+            curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
+            goto DONE;
+        }
+    }
+    if (wsman_transport_get_cafile() != NULL) {
+        r = curl_easy_setopt(curl, CURLOPT_CAINFO,
+                            wsman_transport_get_cafile());
+        if (r != 0) {
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
+            goto DONE;
+        }
+        r = curl_easy_setopt(curl, CURLOPT_SSLKEY,
+                            wsman_transport_get_cafile());
+        if (r != 0) {
+            curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
+            goto DONE;
+        }
+        if (wsman_transport_get_no_verify_peer()) {
+              r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+            if (r != 0) {
+                curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
+                goto DONE;
+            }
+        }
+    }
     return 0;
+DONE:
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        return 1;
 }
 
 void wsman_client_transport_fini()
 {
+    curl_global_cleanup();
+    if (curl) {
+        curl_easy_cleanup(curl);
+        curl = NULL;
+    }
+
     return;
 }
 

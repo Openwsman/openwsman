@@ -394,33 +394,36 @@ wsenum_pull( WsManClient* cl,
              int max_elements,
              actionOptions options)
 {
-	WsXmlDocH respDoc;
-	
+    WsXmlDocH respDoc;
+
     message( "Pull request...");   	
     if ( enumContext || (enumContext && enumContext[0] == 0) )
 	{
         respDoc = wsman_enum_send_get_response(cl, WSENUM_PULL, 
-			enumContext, resourceUri, max_elements, options);		
-		u_free(enumContext);
-    } else {       
+        enumContext, resourceUri, max_elements, options);		
+        u_free(enumContext);
+    } else {
          error( "No enumeration context ???");
-		 return NULL;
+        return NULL;
     }
 
     WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(respDoc),
-             		0, NULL, NULL);
-    
-    if ( strcmp(ws_xml_get_node_local_name(node),
-                                     WSENUM_PULL_RESP) != 0 )
-	{
+                    0, NULL, NULL);
+
+    if (node == NULL) {
         error( "no Pull response" );
-		return NULL;
+        return NULL;
+    }
+    if ( strcmp(ws_xml_get_node_local_name(node),
+                                     WSENUM_PULL_RESP) != 0 ) {
+        error( "no Pull response" );
+        return NULL;
     }
     if ( ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
                                      WSENUM_END_OF_SEQUENCE) ) {
-        debug( "End of sequence");        
+        debug( "End of sequence");
     }
-	
+
     return respDoc;
 }
 
@@ -693,68 +696,42 @@ release_connection(WsManConnection *conn)
 
 
 
-WsManClient* 
-wsman_connect(WsContextH wscntxt,
-              const char *hostname, 
-              const int port, 
-              const char *path, 
-              const char *scheme, 
-              const char *username, 
-              const char *password, 
-              WsManClientStatus *rc)
-{
-    return wsman_connect_with_ssl(wscntxt, hostname, port, path, scheme,
-                                  username, password, NULL, NULL, rc);
-}
-
-
 
 WsManClient*
-wsman_connect_with_ssl( WsContextH wscntxt,
-		const char *hostname,
-		const int port,
-		const char *path,
-		const char *scheme,
-		const char *username,
-		const char *password,
-        const char * certFile, 
-        const char * keyFile,
-		WsManClientStatus *rc)
+wsman_connect( WsContextH wscntxt,
+        const char *hostname,
+        const int port,
+        const char *path,
+        const char *scheme,
+        const char *username,
+        const char *password)
 {
     WsManClient  *wsc     = (WsManClient*)calloc(1, sizeof(WsManClient));
-    wsc->hdl              = &wsc->data;    
-    wsc->wscntx			  = wscntxt;
+    wsc->hdl              = &wsc->data;
+    wsc->wscntx	          = wscntxt;
 
     wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
+    wsc->data.port        = port;
+
     wsc->data.user        = username ? strdup(username) : NULL;
     wsc->data.pwd         = password ? strdup(password) : NULL;
-    wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
-    wsc->data.auth_method = 0;
 
-    if (port) {
-        wsc->data.port = port;
-    } else {
-        wsc->data.port = strcmp(wsc->data.scheme,
-                                            "https") == 0 ?  8888 : 8889;
-    }
-    if (path) {
-        wsc->data.endpoint =  u_strdup_printf("%s://%s:%d%s",
-                                     wsc->data.scheme, hostname, port, path);
-    } else {
-        wsc->data.endpoint =  u_strdup_printf("%s://%s:%d/wsman",
-                                           wsc->data.scheme, hostname, port);
-    }
+
+    wsc->data.endpoint =  u_strdup_printf("%s://%s:%d%s",
+                                     scheme, hostname, port, path);
     debug( "Endpoint: %s", wsc->data.endpoint);
-	
-	wsc->proxyData.proxy = NULL;
-	wsc->proxyData.proxy_auth = NULL;
-	
-    wsc->certData.certFile = certFile ? u_strdup(certFile) : NULL;
-    wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
-	wsc->certData.verify_peer = FALSE;
+
+//    wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
+//    wsc->data.auth_method = 0;
+    //wsc->proxyData.proxy = NULL;
+    //wsc->proxyData.proxy_auth = NULL;
+
+    //wsc->certData.certFile = certFile ? u_strdup(certFile) : NULL;
+    //wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
+    //wsc->certData.verify_peer = FALSE;
 
     wsc->connection = init_client_connection(&wsc->data);	
-  
+
     return wsc;
 }
 

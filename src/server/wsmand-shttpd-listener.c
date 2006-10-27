@@ -95,7 +95,7 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
     if (filename == NULL) {
         debug( "Could not get digest password file name");
         return 0;
-    }       
+    }
     wsdig.request_method = method;
     wsdig.username       = dig->user;
     wsdig.realm          = realm;

@@ -229,8 +229,7 @@ int main(int argc, char** argv)
     		sd[0].path,
     		sd[0].scheme,
     		sd[0].username,
-    		sd[0].password,
-    		NULL);
+    		sd[0].password);
     			
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
