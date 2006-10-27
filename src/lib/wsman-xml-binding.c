@@ -832,11 +832,13 @@ void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
 char *
 xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
 {
-    int i;
+    //int i;
     char *result = NULL;    
     xmlXPathObject *obj;
     xmlNodeSetPtr nodeset;
     xmlXPathContextPtr ctxt;
+    xmlNsPtr *nsList, *cur;
+    
     xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc; 
                     
     ctxt = xmlXPathNewContext(d);
@@ -844,7 +846,19 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
         error("failed while creating xpath context");
         return NULL;
     }
+    nsList = xmlGetNsList(d, (xmlNodePtr )xml_parser_get_root(doc));
+    if (nsList == NULL)
+        return NULL;
+  
+    for (cur = nsList; *cur != NULL; cur++) {
+        if(xmlXPathRegisterNs(ctxt, (*cur)->prefix, (*cur)->href) != 0) {
+            //error("Error: unable to register NS with prefix=\"%s\" and href=\"%s\"", cur->prefix, cur->href);        
+            return NULL;
+        }       
+    }
+    xmlFree(nsList);
     
+#if 0    
     for(i = 0; g_wsNsData[i].uri != NULL; i++)
     {
         WsXmlNsData* nsd = &g_wsNsData[i];
@@ -853,6 +867,7 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
             return NULL;
         }                   
     }
+#endif
     
     obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
     if (obj) {

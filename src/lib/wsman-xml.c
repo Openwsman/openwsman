@@ -1132,7 +1132,8 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
  * @param val Value of the node
  * @return New XML node
  */
-WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
+WsXmlNodeH 
+ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
 {
     WsXmlNodeH newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 
@@ -1140,7 +1141,8 @@ WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char*
     return newNode;
 }
 
-WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
+WsXmlNodeH 
+ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
 {
     va_list args;
     char buf[4096];
@@ -1153,7 +1155,8 @@ WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* for
     return newNode;
 }
 
-WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
+WsXmlNodeH 
+ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
 {
     va_list args;
     char buf[4096];
@@ -1174,7 +1177,8 @@ WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName
  * @param bDefault FIXME
  * @return 1 if Ok, 0 if not
  */
-static int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
+static int 
+is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
 {
     int retVal = 0;
     char* curPrefix = xml_parser_ns_query(ns, XML_NS_PREFIX);
@@ -1210,7 +1214,8 @@ static int is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
  * @todo if ns is present, it should work as replace, walk through the tree and
  * update QName values and attributes
  */
-WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDefault)
+WsXmlNsH
+ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDefault)
 {
     WsXmlNsH ns = NULL;
 
@@ -1243,7 +1248,8 @@ WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDef
  * responsibility to update QName fields accordingly
  * 
  */
-WsXmlNodeH ws_xml_add_qname_child(WsXmlNodeH parent, 
+WsXmlNodeH
+ws_xml_add_qname_child(WsXmlNodeH parent, 
         char* nameNs,
         char* name,
         char* valueNs,
@@ -1283,19 +1289,22 @@ ws_xml_add_node_attr( WsXmlNodeH node,
 }
 
 
-void ws_xml_remove_node_attr(WsXmlAttrH attr)
+void 
+ws_xml_remove_node_attr(WsXmlAttrH attr)
 {
     if ( attr )
         xml_parser_attr_remove(attr);
 }
 
 
-WsXmlAttrH ws_xml_get_node_attr(WsXmlNodeH node, int index)
+WsXmlAttrH
+ws_xml_get_node_attr(WsXmlNodeH node, int index)
 {
     return xml_parser_attr_get(node, index);
 }
 
-WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
+WsXmlAttrH 
+ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
 {
     WsXmlAttrH attr = NULL;
     if ( node && attrName )
@@ -1325,7 +1334,8 @@ WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
 }
 
 
-unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
+unsigned long 
+ws_xml_get_node_ulong(WsXmlNodeH node)
 {
     unsigned long val = 0;
     char* text = ws_xml_get_node_text(node);
@@ -1336,7 +1346,8 @@ unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
 }
 
 
-int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
+int 
+ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
 {
     int retVal = -1;
     if ( node )
