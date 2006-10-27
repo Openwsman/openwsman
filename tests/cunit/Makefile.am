@@ -16,15 +16,7 @@ LIBS = \
        $(top_builddir)/src/libu/libwsman_utils.la \
        /usr/local/lib/libcunit.a
 
-if USE_LIBCURL
 LIBS += $(CURL_LIBS)
-endif
-
-if USE_LIBSOUP_CLIENT
-LIBS += $(SOUP_LIBS) \
-	    $(GOBJECT_LIBS) \
-	    $(GTHREAD_LIBS)
-endif
 
 run_tests_SOURCES = run_tests.c \
               client_suite.c \

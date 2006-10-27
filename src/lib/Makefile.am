@@ -42,23 +42,11 @@ libwsman_la_SOURCES = \
 	$(OWSMAN_INCLUDES)
 
 
-if USE_LIBCURL
 libwsman_curl_client_transport_la_SOURCES = \
 		wsman-client-transport.c \
 		wsman-curl-client-transport.c
 libwsman_curl_client_transport_la_LIBADD = $(CURL_LIBS)
 libwsman_curl_client_transport_la_LDFLAGS= -version-info 1:0
-endif
-
-if USE_LIBSOUP_CLIENT
-libwsman_soup_client_transport_la_SOURCES = \
-		wsman-client-transport.c \
-		wsman-soup-client-transport.c
-libwsman_soup_client_transport_la_LIBADD = $(SOUP_LIBS) \
-       $(GOBJECT_LIBS) \
-       $(GTHREAD_LIBS)
-libwsman_soup_client_transport_la_LDFLAGS= -version-info 1:0
-endif
 
 libwsman_client_la_SOURCES = \
 	wsman-client.c 
@@ -88,20 +76,9 @@ lib_LTLIBRARIES = \
 		 libwsman.la 
 
 
-if USE_LIBCURL
 lib_LTLIBRARIES += libwsman_curl_client_transport.la 
 libwsman_client_la_LIBADD += libwsman_curl_client_transport.la
 
-endif
-
-if USE_LIBSOUP_CLIENT
-lib_LTLIBRARIES += libwsman_soup_client_transport.la 
-INCLUDES += $(SOUP_CFLAGS) \
-	    $(GOBJECT_CFLAGS) \
-	    $(GTHREAD_CFLAGS)
-
-libwsman_client_la_LIBADD +=  libwsman_soup_client_transport.la
-endif
 lib_LTLIBRARIES += \
 		 libwsman_client.la \
 		 libwsman_catalog.la \

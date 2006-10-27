@@ -53,26 +53,6 @@ AC_ARG_WITH(client,
                             [compile client.])])
 
 
-AC_ARG_WITH(libcurl,
-            [AC_HELP_STRING([--with-libcurl],
-                            [use libcurl for client transport backend.])])
-AC_ARG_WITH(libsoup-client,
-            [AC_HELP_STRING([--with-libsoup-client],
-                            [use libsoup for client transport backend.])])
-with_libsoup_client=yes
-if  test "$with_libcurl" = yes; then
-    AC_MSG_RESULT([Using built in transport backend])
-   with_libcurl=yes
-   with_libsoup_client=no
-fi 
-dnl libsoup wins
-if test "$with_libcurl" = "$with_libsoup_client"; then
-    AC_MSG_ERROR([Sorry, only one client transport backend can be selected. Use libsoup])
-   with_libsoup_client=yes
-   with_libcurl=no
-fi 
-AM_CONDITIONAL(USE_LIBSOUP_CLIENT, test "$with_libsoup_client" == "yes")
-AM_CONDITIONAL(USE_LIBCURL, test "$with_libcurl" == "yes")
 AM_CONDITIONAL(COMPILE_CLIENT, test "$without_client" == "no")
 
 # Set the debug flags
@@ -102,22 +82,14 @@ if test "x$with_libsoup_serv" = "xyes"; then
 else
     AC_DEFINE(SHTTPD_LISTENER, 1, [Defined if shttpd listener to be used])
 fi
-if test "x$with_libsoup_client" = "xyes"; then
-    AC_DEFINE(LIBSOUP_CLIENT, 1, [Defined if libsoup to be used in client])
-else
-    AC_DEFINE(LIBCURL_CLIENT, 1, [Defined if libcurl to be used in client])
-fi
 
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.8.0 )
 PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
 PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
-if test "x$with_libsoup_serv" = "xyes" -o "x$with_libsoup_client" = "xyes"; then
+if test "x$with_libsoup_serv" = "xyes"; then
      PKG_CHECK_MODULES(SOUP, libsoup-2.2)
 fi
-if test "x$with_libcurl" = "xyes"; then
-     PKG_CHECK_MODULES(CURL, libcurl)
-fi
-
+PKG_CHECK_MODULES(CURL, libcurl)
 AC_CHECK_FUNCS(strtok_r \
 getpid \
 strsep \
