@@ -366,45 +366,7 @@ struct _WS_CONTEXT
 typedef struct _WS_CONTEXT WS_CONTEXT;
 
 
-struct __NameAliase
-{
-        char* name;
-        char* aliase;
-};
-typedef struct __NameAliase NameAliase;
-NameAliase* g_NameNameAliaseTable;
-
 typedef void (*WsProcType)(void);
-
-
-
-
-#if 0
-struct __PropertyInfo 
-{
-	char *key;
-	char *val;
-};
-typedef struct __WsPropertyInfo WsPropertyInfo;
-
-struct __WsSelectorInfo 
-{
-	char *key;
-        char *type;
-	char *val;
-};
-typedef struct __WsSelectorInfo WsSelectorInfo;
-
-struct __WsSelector 
-{
-	char *name;
-	char *value;
-	char *type;
-	char *description;	
-};
-typedef struct __WsSelector WsSelector;
-#endif
-
 
 struct __WsDispatchEndPointInfo
 {
@@ -445,7 +407,6 @@ struct __WsDispatchInterfaceInfo
 };
 typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
 
-
 struct __DispatchToEpMap
 {
 	SoapDispatchH disp;
@@ -478,12 +439,17 @@ struct __WsEnumerateInfo
         void* pullResultPtr;
         void* appEnumContext;
 };
+
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
 typedef int (*WsEndPointEnumerate)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+
 typedef int (*WsEndPointPull)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+
 typedef int (*WsEndPointRelease)(WsContextH, WsEnumerateInfo*, WsmanStatus*);
+
 typedef int (*WsEndPointPut)(WsContextH, void*, void**, WsmanStatus*);
+
 typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 
 #define FLAG_NONE    						 0
@@ -507,26 +473,21 @@ typedef enum __WsmanFilterDialect WsmanFilterDialect;
 /** *********************************** */
 
 WsXmlDocH ws_get_context_xml_doc_val(WsContextH cntx, char* name);
-char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
-
-hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
-        
-        
-void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
-char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
-//void wsman_set_selector( WsXmlDocH doc, char* name, char* val);
-char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
-char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
 // WS_CONTEXT_ENTRY* find_context_entry(list_t *list, WS_CONTEXT_ENTRY* start, char* name, int bPrefix);
 
 void ws_initialize_context(WsContextH hCntx, SoapH soap);
+
 WsContextH ws_create_context(SoapH soap);
+
 SoapH ws_soap_initialize(void);
+
 SoapH ws_context_get_runtime(WsContextH hCntx);
 
 void* get_context_val(WsContextH hCntx, char* name);
+
 void* ws_get_context_val(WsContextH cntx, char* name, int* size);
+
 unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name);
 
 WsContextH ws_create_runtime (list_t *interfaces);
@@ -540,8 +501,6 @@ int wsman_register_endpoint(WsContextH cntx,
         WsDispatchEndPointInfo* ep,
         WsManDispatcherInfo* dispInfo);
         
-
-
 int ws_transfer_put_stub(SoapOpH op, void* appData);        
 
 int wsman_identify_stub(SoapOpH op, void* appData);        
@@ -558,15 +517,12 @@ int wsenum_pull_raw_stub(SoapOpH op, void* appData);
 
 int wsenum_release_stub(SoapOpH op, void* appData);
 
-
 WsEnumerateInfo* get_enum_info(WsContextH cntx, 
         WsXmlDocH doc, 
         char* cntxName,
         int cntxNameLen,
         char* op,
         char** enumIdPtr);
-
-
 
 SoapOpH soap_create_op(SoapH soap, 
                        char *inboundAction,
@@ -577,19 +533,23 @@ SoapOpH soap_create_op(SoapH soap,
                        unsigned long flags, 
                        unsigned long timeout);
 
-
-
 WsXmlDocH soap_get_op_doc(SoapOpH op, int inbound);
+
 WsXmlDocH soap_detach_op_doc(SoapOpH op, int inbound);
+
 int soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound);
+
 char *soap_get_op_action(SoapOpH op, int inbound);
+
 void soap_set_op_action(SoapOpH op, char *action, int inbound);
+
 unsigned long soap_get_op_flags(SoapOpH op);
+
 SoapH soap_get_op_soap(SoapOpH op);
+
 char *soap_get_op_dest_url(SoapOpH op);
+
 void soap_destroy_op(SoapOpH op);
-
-
 
 WsContextH ws_create_ep_context(SoapH soap, WsXmlDocH doc);
 
@@ -602,6 +562,7 @@ int ws_destroy_context(WsContextH hCntx);
 int ws_remove_context_val(WsContextH hCntx, char* name);
 
 int ws_set_context_val(WsContextH hCntx, char* name, void* val, int size, int bNoDup);
+
 int set_context_val(WsContextH hCntx, 
         char* name, 
         void* val, 
@@ -611,7 +572,6 @@ int set_context_val(WsContextH hCntx,
 int ws_set_context_xml_doc_val(WsContextH cntx, char* name, WsXmlDocH val);
 
 void destroy_context_entry(WS_CONTEXT_ENTRY* entry);
-
 
 hnode_t* create_context_entry(hash_t* h, 
         char* name, 
@@ -631,8 +591,6 @@ make_callback_entry(SoapServiceCallback proc,
                          list_t* list_to_add);
 
 
-char* get_http_response_status(WsXmlDocH doc, int* errCodePtr);
-
 int wsman_fault_occured(WsmanMessage *msg);
 
 WsXmlDocH wsman_generate_fault(
@@ -650,11 +608,7 @@ void wsman_generate_fault_buffer(
         char *fault_msg,
 	char **buf, 
 	int* len);
-
-
-int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);				
-
-        
+  
  
 // ******************** 
 
@@ -739,95 +693,6 @@ int soap_xml_wait_for_response(SoapOpH op, unsigned long tm);
 #define ADD_NAMESPACE( ns , prefix )\
         {ns, prefix }
 
-
-#define WS_STUB_0(T)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, &(d->retVal));\
-} 
-
-#define WS_STUB_1(T, n1)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, &(d->retVal));\
-} 
-
-#define WS_STUB_2(T, n1, n2)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, &(d->retVal));\
-} 
-
-#define WS_STUB_3(T, n1, n2, n3)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3, &(d->retVal));\
-} 
-
-#define WS_STUB_4(T, n1, n2, n3, n4)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3, d->n4, &(d->retVal));\
-} 
-
-#define WS_STUB_5(T, n1, n2, n3, n4, n5)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3, d->n4, d->n5, &(d->retVal));\
-} 
-
-
-#define WS_STUB_NO_RET_0(T)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c);\
-} 
-
-#define WS_STUB_NO_RET_1(T, n1)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1);\
-} 
-
-#define WS_STUB_NO_RET_2(T, n1, n2)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2);\
-} 
-
-#define WS_STUB_NO_RET_3(T, n1, n2, n3)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3);\
-} 
-
-#define WS_STUB_NO_RET_4(T, n1, n2, n3, n4)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3, d->n4);\
-} 
-
-#define WS_STUB_NO_RET_5(T, n1, n2, n3, n4, n5)\
-int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
-{\
-	struct T##_ProcInfo* d = (struct T##_ProcInfo*)ptr;\
-	return T##_EP(c, d->n1, d->n2, d->n3, d->n4, d->n5);\
-} 
-
-
-
-
 // Selectors
 #define ADD_SELECTOR(n,t,d)\
 	{ n, NULL, t, d}
@@ -840,18 +705,9 @@ int T##_stub(WsContextH c, void* ptr,  XmlSerializerInfo* s)\
 extern WsSelector t##_Get_Selectors[]
 
 
-
-
-void soap_enter(SoapH soap);
-void soap_leave(SoapH soap);
 void wsman_remove_query_string(char * resourceUri, char **result);
 void soap_destroy_fw(SoapH soap);
 
-int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
-void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo);
-int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
-char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
-void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
 
 int wsman_is_fault_envelope(WsXmlDocH doc);
 
@@ -865,10 +721,6 @@ int wsman_is_identify_request(WsXmlDocH doc);
 void wsman_status_init(WsmanStatus* s);
 int wsman_check_status( WsmanStatus *s);
 
-char* wsman_get_class_name ( WsContextH cntx );
-
-char* wsman_get_method_name ( WsContextH cntx ); 
-hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );
 
 
 #endif /*SOAP_API_H_*/

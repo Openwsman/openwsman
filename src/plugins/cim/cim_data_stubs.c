@@ -52,6 +52,7 @@
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
+#include "wsman-soap-envelope.h"
 #include "sfcc-interface.h"
 #include "cim_data.h"
 
@@ -202,7 +203,8 @@ CimResource_Enumerate_EP( WsContextH cntx,
     if (enum_mode)
         wsman_set_enum_mode(enum_mode, enumInfo);
 
-    if (max_elements > 0) {
+    if (max_elements > 0)
+    {
         doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
         WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_ENUMERATE_RESP , NULL);       

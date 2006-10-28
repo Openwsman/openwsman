@@ -35,7 +35,6 @@
 #ifndef WSMAN_SOAP_ENVELOPE_H_
 #define WSMAN_SOAP_ENVELOPE_H_
 
-
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
 void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
@@ -71,5 +70,33 @@ WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
             char* lang,
             char* reason,
             char* faultDetail);    
+
+char* wsman_get_class_name ( WsContextH cntx );
+
+char* wsman_get_method_name ( WsContextH cntx ); 
+
+hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );            
+
+int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
+
+void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo);
+
+int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
+
+char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
+
+void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
+
+char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
+
+hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
+        
+void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
+
+char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
+
+char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
+
+char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
 #endif

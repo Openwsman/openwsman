@@ -57,6 +57,7 @@ static int noverifypeer = 0;
 static char *cafile;
 
 static long long transfer_time = 0;
+
 long long
 get_transfer_time()
 {

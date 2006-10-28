@@ -465,27 +465,33 @@ wsenum_enumerate_stub( SoapOpH op,
     char cntxName[64] = WSFW_ENUM_PREFIX;
     char* enumId = &cntxName[sizeof(WSFW_ENUM_PREFIX) - 1];
     int retVal = 0;
-    
+    WsEnumerateInfo enumInfo;    
     WsmanStatus status;
+    struct timeval tv;
+    
     SoapH soap = soap_get_op_soap(op);
     WsContextH soapCntx = ws_get_soap_context(soap);
     wsman_status_init(&status);
     
     WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
     WsEndPointEnumerate endPoint = (WsEndPointEnumerate)ep->serviceEndPoint;
-    WsEnumerateInfo enumInfo;
-    
+        
     WsXmlDocH _doc = soap_get_op_doc(op, 1);
 
-    memset(&enumInfo, 0, sizeof(enumInfo));
+    memset(&enumInfo, 0, sizeof(enumInfo));    
     generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
+      
+    gettimeofday(&tv, NULL);
+    enumInfo.timeStamp = tv.tv_sec * 10000000 + tv.tv_usec;    
 
-    if ( endPoint && ( retVal =  
-                endPoint(ws_create_ep_context(soap, _doc ), &enumInfo, &status)) ) 
+    if ( endPoint && 
+        ( retVal = endPoint(ws_create_ep_context(soap, _doc ), &enumInfo, &status)) ) 
     {
         doc = wsman_generate_fault(soapCntx, _doc, 
             status.fault_code, status.fault_detail_code, NULL);
-    } else {
+    } 
+    else 
+    {              
         if ( enumInfo.pullResultPtr ) {
             doc = enumInfo.pullResultPtr;
             enumInfo.index++;
@@ -1086,7 +1092,8 @@ soap_set_op_action( SoapOpH op,
     }
 }
 
-unsigned long soap_get_op_flags(SoapOpH op)
+unsigned long 
+soap_get_op_flags(SoapOpH op)
 {
     if ( op )
     {
@@ -1095,7 +1102,8 @@ unsigned long soap_get_op_flags(SoapOpH op)
     return 0;
 }
 
-SoapH soap_get_op_soap(SoapOpH op)
+SoapH 
+soap_get_op_soap(SoapOpH op)
 {
     if ( op )
         return (SoapH)((op_t*)op)->dispatch->fw;
@@ -1103,7 +1111,8 @@ SoapH soap_get_op_soap(SoapOpH op)
     return NULL;
 }
 
-void soap_destroy_op(SoapOpH op)
+void 
+soap_destroy_op(SoapOpH op)
 {
     destroy_op_entry((op_t*)op);
 }
@@ -1218,322 +1227,6 @@ add_response_entry(env_t* fw, op_t* op)
     u_unlock(fw);
 }
 
-char* wsman_get_enum_mode( WsContextH cntx, 
-                           WsXmlDocH doc) 
-{
-    char *enum_mode = NULL;
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-    if ( doc ) {
-        WsXmlNodeH node = ws_xml_get_soap_body(doc);
-
-        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE)) )
-        {
-            WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_ENUM_MODE);
-            if ( opt ) {
-                char *text = ws_xml_get_node_text(opt);
-                if (text != NULL)
-                    enum_mode = text;
-            }
-        }
-    } 
-    return enum_mode;
-}
-
-void
-wsman_set_enum_mode( char *enum_mode,
-                     WsEnumerateInfo *enumInfo) 
-{
-    if (strcmp(enum_mode, WSM_ENUM_EPR) == 0 )
-        enumInfo->flags |= FLAG_ENUMERATION_ENUM_EPR;
-    else if (strcmp(enum_mode, WSM_ENUM_OBJ_AND_EPR) == 0 )
-        enumInfo->flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
-
-    return;
-}
-
-
-int
-wsman_is_optimization( WsContextH cntx,
-                       WsXmlDocH doc)
-{
-    int max_elements = 0;
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-    if ( doc ) {
-        WsXmlNodeH node = ws_xml_get_soap_body(doc);
-
-        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE)) )
-        {
-            WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM);
-            if ( opt ) {
-                WsXmlNodeH max = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_MAX_ELEMENTS);
-                if (max) {
-                    char *text = ws_xml_get_node_text(max);
-                    if (text != NULL)
-                        max_elements = atoi(text);
-                } else {
-                    max_elements = 1;
-                }
-            }
-        }
-    } 
-    return max_elements;
-}
-
-int
-wsen_get_max_elements( WsContextH cntx,
-                       WsXmlDocH doc)
-{
-    int max_elements = 0;
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-    if ( doc ) {
-        WsXmlNodeH node = ws_xml_get_soap_body(doc);
-
-        if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL)) )
-        {
-            node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_MAX_ELEMENTS);
-            if ( node ) {
-                char *text = ws_xml_get_node_text(node);
-                if (text != NULL)
-                    max_elements = atoi(text);
-            }
-        }
-    } else {
-        return 0;
-    }
-    return max_elements;
-
-}
-
-
-char*
-wsman_get_method_name ( WsContextH cntx ) 
-{
-    char *m = ws_addressing_get_action(cntx, NULL);
-    char *method = u_strdup(strrchr(m, '/') + 1);
-    return method;
-}
-
-
-
-char*
-wsman_get_class_name ( WsContextH cntx ) 
-{
-	char *r = NULL;
-    char *resourceUri = wsman_get_resource_uri(cntx, NULL);
-	wsman_remove_query_string(resourceUri, &r);	
-    char *className = u_strdup(strrchr(r, '/') + 1);
-
-    //u_free(r);
-	//u_free(resourceUri);
-	
-    return className;
-}
-
-char*
-wsman_get_resource_uri( WsContextH cntx, 
-                        WsXmlDocH doc )
-{
-    char* val = NULL;
-
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-    if ( doc )
-    {
-        WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
-        val = (!node) ? NULL : ws_xml_get_node_text(node);
-    }
-    return val;
-}
-
-
-char*
-wsman_get_system_uri( WsContextH cntx,
-                      WsXmlDocH doc)
-{
-	char *val = 0;
-	
-    WsXmlNodeH header = ws_xml_get_soap_header(doc);
-    WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
-    val = (!node) ? NULL : ws_xml_get_node_text(node);
-    return val;
-}
-
-
-
-void 
-wsman_remove_query_string(char *s, char **result)
-{
-    char *r = 0;
-	const char *q;
-	char *buf = 0;
-	
-	buf = u_strndup(s, strlen(s));
-	if ( (q = strchr (buf, '?')) != NULL) {
-		r = u_strndup(s, q - buf);		
-		*result = r;
-	} else {
-		*result = s;
-	}
-	
-	U_FREE(buf);	   
-}
-
-
-hash_t*
-wsman_get_method_args ( WsContextH cntx, 
-						char *resource_uri ) 
-{
-    char *input = NULL;
-    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
-    WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-    if ( doc ) {
-        WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        char *mn = wsman_get_method_name (cntx);
-        input = u_strdup_printf("%s_INPUT", mn );
-        WsXmlNodeH in_node = ws_xml_get_child(body, 0, resource_uri, input);
-        if (in_node) {
-            debug("INPUT found");
-            WsXmlNodeH arg;
-            int index = 0;
-            while( (arg = ws_xml_get_child(in_node, index++, NULL, NULL)) )
-            {
-                char *key = ws_xml_get_node_local_name(arg);
-                debug( "Argument: %s=%s", key, ws_xml_get_node_text(arg));
-                if (!hash_alloc_insert(h, key, ws_xml_get_node_text(arg))) {
-                    error("hash_alloc_insert failed");
-                }
-            }
-        }
-        u_free(mn);
-        u_free(input);
-    } else {
-        error("xml document is null");
-    }
-    if (!hash_isempty(h))
-        return h;
-
-    hash_destroy(h);
-    return NULL;
-}
-
-hash_t*
-wsman_get_selector_list( WsContextH cntx,
-                         WsXmlDocH doc)
-{
-    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-    if ( doc )
-    {
-        WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-        if ( node )
-        {
-            WsXmlNodeH selector;
-            int index = 0;
-            while( (selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR)) )
-            {
-                char* attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-                if ( attrVal == NULL )
-                    attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
-
-                debug( "Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
-                if ( attrVal )
-                {
-                    if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
-                        error("hash_alloc_insert failed");
-                    }
-                }
-            }
-        }
-    } else {
-        error( "doc is null");
-    }
-    if (!hash_isempty(h))
-        return h;
-
-    hash_destroy(h);
-    return NULL;
-}
-
-char*
-wsman_get_selector( WsContextH cntx,
-                    WsXmlDocH doc,
-                    char* name, 
-                    int index)
-{
-    char* val = NULL;
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-    if ( doc ) {
-        WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        WsXmlNodeH node = ws_xml_get_child(header, index, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-
-        if ( node )
-        {
-            WsXmlNodeH selector;
-            int index = 0;
-
-            while( (selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR)) )
-            {
-                char* attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-                if ( attrVal == NULL )
-                    attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
-
-                if ( attrVal && !strcmp(attrVal, name) )
-                {
-                    val = ws_xml_get_node_text(selector);
-                    break;
-                }
-            }
-        }
-    }
-    debug( "Selector value for %s: %s", name, val );
-    return val;
-}
-
-char*
-ws_addressing_get_action( WsContextH cntx, 
-						  WsXmlDocH doc)
-{
-    char *val = NULL;
-    if ( doc == NULL )
-        doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-    if ( doc ) {
-        WsXmlNodeH header = ws_xml_get_soap_header(doc);
-        WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_ACTION);
-        val = (!node) ? NULL : ws_xml_get_node_text(node);
-    }
-
-    return val;
-}
-
-void
-wsman_add_selector( WsXmlNodeH baseNode,
-                    char* name,
-                    char* val)
-{
-    WsXmlNodeH selector = NULL;
-    WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-
-    if ( set || (set = ws_xml_add_child(baseNode, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL)) )
-    {
-        if ( (selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, val)) )
-        {
-            ws_xml_add_node_attr(selector, NULL,  WSM_NAME, name);
-        }
-    }
-    return;
-}
 
 
 
