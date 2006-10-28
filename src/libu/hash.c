@@ -430,7 +430,7 @@ hash_t *hash_init(hash_t *hash, hashcount_t maxcount,
  * 3. Otherwise if a chain is not found, set the next pointer to NULL
  *    so that hash_scan_next() shall indicate failure.
  */
-
+#include "stdio.h"
 void hash_scan_begin(hscan_t *scan, hash_t *hash)
 {
     hash_val_t nchains = hash->nchains;
@@ -439,10 +439,10 @@ void hash_scan_begin(hscan_t *scan, hash_t *hash)
     scan->table = hash;
 
     /* 1 */
-
-    for (chain = 0; chain < nchains && hash->table[chain] == 0; chain++)
-	;
-
+    
+    for (chain = 0; chain < nchains && hash->table[chain] == 0; chain++)    
+    ;
+         
     if (chain < nchains) {	/* 2 */
 	scan->chain = chain;
 	scan->next = hash->table[chain];

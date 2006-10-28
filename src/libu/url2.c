@@ -27,17 +27,27 @@ hash_t *parse_query(const char *query)
         /* zero-term the name part and set the value pointer */
         *val++ = 0; 
         if (!hash_lookup(h,key)) {
+            //debug("added: %s", key);
             if ( !hash_alloc_insert(h, key, val)) {
                 debug("hash_alloc_insert failed");
             }
+        } else {
+            debug("duplicate not added to hash");
         }
     }
-
+    /*
+    hscan_t hs;
+    hnode_t *hn;
+    hash_scan_begin(&hs, h);
+    while ((hn = hash_scan_next(&hs))) {    	
+        printf("xxx: %s\n",  (char*) hnode_getkey(hn));   
+    } 
+    */   
     u_free(q);
     return h;
 err:
 	u_free(q);
-    return h;
+    return NULL;
 }
 
 

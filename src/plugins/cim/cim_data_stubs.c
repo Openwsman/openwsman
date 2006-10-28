@@ -56,29 +56,29 @@
 #include "cim_data.h"
 
 
-static CimClientInfo
+static CimClientInfo*
 CimResource_Init(WsContextH cntx)
 {
     char *_tmp = NULL;
 	char *r = NULL;
-    CimClientInfo cimclient;
+    CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 
 	wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL), &r);
 	
-    cimclient.cc = NULL;
-    cimclient.namespaces = get_vendor_namespaces();
-    cimclient.selectors = wsman_get_selector_list(cntx, NULL);
-    cimclient.requested_class = wsman_get_class_name(cntx);
-    cimclient.method = wsman_get_method_name(cntx);
-    if (cimclient.selectors) {
-        _tmp = cim_get_namespace_selector(cimclient.selectors);
+    cimclient->cc = NULL;
+    cimclient->namespaces = get_vendor_namespaces();
+    cimclient->selectors = wsman_get_selector_list(cntx, NULL);
+    cimclient->requested_class = wsman_get_class_name(cntx);
+    cimclient->method = wsman_get_method_name(cntx);
+    if (cimclient->selectors) {
+        _tmp = cim_get_namespace_selector(cimclient->selectors);
     }
     if (_tmp)
-        cimclient.cim_namespace = _tmp;
+        cimclient->cim_namespace = _tmp;
     else
-        cimclient.cim_namespace = get_cim_namespace();
-    cimclient.resource_uri = u_strdup(r);
-    cimclient.method_args = wsman_get_method_args(cntx, r );
+        cimclient->cim_namespace = get_cim_namespace();
+    cimclient->resource_uri = u_strdup(r);
+    cimclient->method_args = wsman_get_method_args(cntx, r );
 	// u_free(r);
     return cimclient;
 }
@@ -86,21 +86,17 @@ CimResource_Init(WsContextH cntx)
 static void
 CimResource_destroy(CimClientInfo *cimclient)
 {
+
     if (cimclient->resource_uri) u_free(cimclient->resource_uri);
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
     if (cimclient->method_args) {
-        //hash_free(cimclient->method_args);
-        //hash_destroy(cimclient->method_args);
+        //hash_free(cimclient->method_args);       
     }
     if (cimclient->selectors) {
-        hash_free(cimclient->selectors);
-        //hash_destroy(cimclient->selectors);
+        hash_free(cimclient->selectors);        
     }
-    if (cimclient->namespaces) {
-        hash_free(cimclient->namespaces);
-        //hash_destroy(cimclient->namespaces);
-    }
+    u_free(cimclient);
     return;
 }
 
@@ -111,7 +107,7 @@ CimResource_Get_EP( SoapOpH op,
     debug( "Get Endpoint Called");
     WsXmlDocH doc = NULL;
     WsmanStatus status;
-    CimClientInfo cimclient;
+    CimClientInfo *cimclient;
 
     wsman_status_init(&status);
     SoapH soap = soap_get_op_soap(op);
@@ -123,7 +119,7 @@ CimResource_Get_EP( SoapOpH op,
 
     if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        cim_get_instance_from_enum(&cimclient, cntx, body, &status);
+        cim_get_instance_from_enum(cimclient, cntx, body, &status);
     }
 
     if (status.fault_code != 0) 
@@ -138,7 +134,7 @@ CimResource_Get_EP( SoapOpH op,
         debug( "Invalid doc" );
     }
     
-    CimResource_destroy(&cimclient);
+    CimResource_destroy(cimclient);
     ws_destroy_context(cntx);
     return 0;
 }
@@ -149,7 +145,7 @@ CimResource_Custom_EP( SoapOpH op,
 {
     debug( "Custom Method Endpoint Called");
     WsXmlDocH doc = NULL;
-    CimClientInfo cimclient;
+    CimClientInfo *cimclient;
     WsmanStatus status;
     WsXmlDocH in_doc = NULL;
 
@@ -162,7 +158,7 @@ CimResource_Custom_EP( SoapOpH op,
 
     if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
-        cim_invoke_method(&cimclient, cntx, body, &status);
+        cim_invoke_method(cimclient, cntx, body, &status);
     }
 
     if (status.fault_code != 0) {
@@ -177,7 +173,7 @@ CimResource_Custom_EP( SoapOpH op,
     }
 
     ws_destroy_context(cntx);
-    CimResource_destroy(&cimclient);
+    CimResource_destroy(cimclient);
 
     return 0;
 }
@@ -194,8 +190,8 @@ CimResource_Enumerate_EP( WsContextH cntx,
     WsXmlDocH doc;
     char *enum_mode;
 
-    CimClientInfo cimclient = CimResource_Init(cntx);
-    cim_enum_instances (&cimclient, enumInfo,  status);
+    CimClientInfo *cimclient = CimResource_Init(cntx);
+    cim_enum_instances (cimclient, enumInfo,  status);
 
     if (status && status->fault_code != 0) {
         goto err;
@@ -210,7 +206,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
         doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
         WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_ENUMERATE_RESP , NULL);       
-        cim_get_enum_items(&cimclient, cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
+        cim_get_enum_items(cimclient, cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
         if (doc != NULL ) {
             enumInfo->pullResultPtr = doc;
             int index2 = enumInfo->index + 1;
@@ -223,7 +219,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
     }
    
     ws_destroy_context(cntx);
-    CimResource_destroy(&cimclient);
+    CimResource_destroy(cimclient);
     return 0;
 err:
     return 1;
@@ -244,13 +240,16 @@ CimResource_Pull_EP( WsContextH cntx,
 {
     debug( "Pull Endpoint Called");      
     WsXmlDocH doc = NULL;
-    CimClientInfo cimclient = CimResource_Init(cntx);
+    
+    
+    CimClientInfo *cimclient = CimResource_Init(cntx);
+    
     doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
     WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
             WSENUM_PULL_RESP, NULL);       
 
     int max = wsen_get_max_elements(cntx, NULL);
-    cim_get_enum_items(&cimclient, cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
+    cim_get_enum_items(cimclient, cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
     
     if (doc != NULL )
         enumInfo->pullResultPtr = doc;
@@ -263,7 +262,7 @@ CimResource_Pull_EP( WsContextH cntx,
 
 
 
-    CimResource_destroy(&cimclient);
+    CimResource_destroy(cimclient);
     ws_destroy_context(cntx);
     return 0;
 }
@@ -280,13 +279,13 @@ CimResource_Put_EP( SoapOpH op,
 
     SoapH soap = soap_get_op_soap(op);
     WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-    CimClientInfo cimclient = CimResource_Init(cntx);
+    CimClientInfo *cimclient = CimResource_Init(cntx);
 
     if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) 
     { 
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
-        cim_put_instance_from_enum(&cimclient, cntx , in_body, body, &status);
+        cim_put_instance_from_enum(cimclient, cntx , in_body, body, &status);
     }
 
     if (wsman_check_status(&status) != 0) {
@@ -299,7 +298,9 @@ CimResource_Put_EP( SoapOpH op,
     } else {
         debug( "Invalid doc" );
     }
-
+    
+    CimResource_destroy(cimclient);
+    ws_destroy_context(cntx);
     return 0;
 }
 
