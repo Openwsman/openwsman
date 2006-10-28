@@ -704,19 +704,7 @@ void wsman_generate_fault_buffer(
 #define DECLARE_SELECTOR_ARRAY(t)\
 extern WsSelector t##_Get_Selectors[]
 
-
-void wsman_remove_query_string(char * resourceUri, char **result);
 void soap_destroy_fw(SoapH soap);
-
-
-int wsman_is_fault_envelope(WsXmlDocH doc);
-
-void wsman_set_fault(WsmanMessage *msg, 
-            WsmanFaultCodeType fault_code, 
-            WsmanFaultDetailType fault_detail_code,
-            const char *details);
-
-int wsman_is_identify_request(WsXmlDocH doc);
 
 void wsman_status_init(WsmanStatus* s);
 int wsman_check_status( WsmanStatus *s);

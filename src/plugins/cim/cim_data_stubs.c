@@ -64,7 +64,7 @@ CimResource_Init(WsContextH cntx)
 	char *r = NULL;
     CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 
-	wsman_remove_query_string(wsman_get_resource_uri(cntx, NULL), &r);
+	r = wsman_get_resource_uri(cntx, NULL);
 	
     cimclient->cc = NULL;
     cimclient->namespaces = get_vendor_namespaces();

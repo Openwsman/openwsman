@@ -99,4 +99,13 @@ char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
 
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
+int wsman_is_fault_envelope(WsXmlDocH doc);
+
+void wsman_set_fault(WsmanMessage *msg, 
+            WsmanFaultCodeType fault_code, 
+            WsmanFaultDetailType fault_detail_code,
+            const char *details);
+
+int wsman_is_identify_request(WsXmlDocH doc);
+
 #endif

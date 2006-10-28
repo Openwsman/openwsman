@@ -84,9 +84,12 @@ WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char*
         replyToUri, char* resourceUri,
         char* toUri, actionOptions options);
 
+void wsman_remove_query_string(char * resourceUri, char **result);
 
 long long get_transfer_time(void);
+
 void release_connection(WsManConnection *conn);
+
 WsManClientStatus wsman_release_client(WsManClient * cl);
 
 WsXmlDocH

@@ -73,6 +73,26 @@ void destroy_action_options(actionOptions *op)
 	return;
 }
 
+void 
+wsman_remove_query_string(char *s, char **result)
+{
+    char *r = 0;
+	const char *q;
+	char *buf = 0;
+	
+	buf = u_strndup(s, strlen(s));
+	if ( (q = strchr (buf, '?')) != NULL) {
+		r = u_strndup(s, q - buf);		
+		*result = r;
+	} else {
+		*result = s;
+	}
+	
+	U_FREE(buf);	   
+}
+
+
+
 void
 wsman_add_selectors_from_query_string( actionOptions *options, 
 									   const char *query_string)

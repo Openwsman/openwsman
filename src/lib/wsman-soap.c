@@ -446,11 +446,6 @@ int ws_transfer_put_stub(SoapOpH op, void* appData)
 }
 
 
-
-
-    
-
-
 /**
  * Enumeration Stub for processing enumeration requests
  * @param op SOAP pperation handler
@@ -1170,8 +1165,6 @@ destroy_op_entry(op_t* entry)
     
 }
 
-
-
 void 
 destroy_dispatch_entry(dispatch_t* entry)
 {
@@ -1205,9 +1198,6 @@ destroy_dispatch_entry(dispatch_t* entry)
 	}
 
 }
-
-
-
 
 WsXmlDocH
 ws_get_context_xml_doc_val( WsContextH cntx,
@@ -1280,37 +1270,6 @@ soap_destroy_fw( SoapH soap)
     u_free(soap);
 
     return;
-}
-
-void 
-wsman_set_estimated_total(WsXmlDocH in_doc, 
-                          WsXmlDocH out_doc, 
-                          WsEnumerateInfo *enumInfo) 
-{
-    WsXmlNodeH header = ws_xml_get_soap_header( in_doc);
-    if (ws_xml_get_child(header,0 , 
-                XML_NS_WS_MAN, 
-                WSM_REQUEST_TOTAL) != NULL) {
-        if (out_doc) {
-            WsXmlNodeH response_header = ws_xml_get_soap_header( out_doc);
-            if (enumInfo->totalItems >= 0 )
-                ws_xml_add_child_format(response_header, 
-                        XML_NS_WS_MAN, 
-                        WSM_TOTAL_ESTIMATE, "%d", enumInfo->totalItems);
-        }
-    }
-    return;
-}
-
-int 
-wsman_is_identify_request(WsXmlDocH doc) {
-
-    WsXmlNodeH node = ws_xml_get_soap_body(doc);
-    node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMID_IDENTIFY);
-    if (node)
-        return 1;
-    else
-        return 0;
 }
 
 

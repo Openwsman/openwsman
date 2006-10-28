@@ -610,14 +610,10 @@ wsman_get_method_name ( WsContextH cntx )
 char*
 wsman_get_class_name ( WsContextH cntx ) 
 {
-	char *r = NULL;
-    char *resourceUri = wsman_get_resource_uri(cntx, NULL);
-	wsman_remove_query_string(resourceUri, &r);	
-    char *className = u_strdup(strrchr(r, '/') + 1);
-
-    //u_free(r);
-	//u_free(resourceUri);
-	
+	//char *r = NULL;
+    char *resource_uri = wsman_get_resource_uri(cntx, NULL);
+	//wsman_remove_query_string(resourceUri, &r);	
+    char *className = u_strdup(strrchr(resource_uri, '/') + 1);
     return className;
 }
 
@@ -654,23 +650,6 @@ wsman_get_system_uri( WsContextH cntx,
 
 
 
-void 
-wsman_remove_query_string(char *s, char **result)
-{
-    char *r = 0;
-	const char *q;
-	char *buf = 0;
-	
-	buf = u_strndup(s, strlen(s));
-	if ( (q = strchr (buf, '?')) != NULL) {
-		r = u_strndup(s, q - buf);		
-		*result = r;
-	} else {
-		*result = s;
-	}
-	
-	U_FREE(buf);	   
-}
 
 
 hash_t*
@@ -803,9 +782,6 @@ ws_addressing_get_action( WsContextH cntx,
     return val;
 }
 
-
-
-
 void
 wsman_add_selector( WsXmlNodeH baseNode,
                     char* name,
@@ -822,6 +798,39 @@ wsman_add_selector( WsXmlNodeH baseNode,
         }
     }
     return;
+}
+
+
+
+void 
+wsman_set_estimated_total(WsXmlDocH in_doc, 
+                          WsXmlDocH out_doc, 
+                          WsEnumerateInfo *enumInfo) 
+{
+    WsXmlNodeH header = ws_xml_get_soap_header( in_doc);
+    if (ws_xml_get_child(header,0 , 
+                XML_NS_WS_MAN, 
+                WSM_REQUEST_TOTAL) != NULL) {
+        if (out_doc) {
+            WsXmlNodeH response_header = ws_xml_get_soap_header( out_doc);
+            if (enumInfo->totalItems >= 0 )
+                ws_xml_add_child_format(response_header, 
+                        XML_NS_WS_MAN, 
+                        WSM_TOTAL_ESTIMATE, "%d", enumInfo->totalItems);
+        }
+    }
+    return;
+}
+
+int 
+wsman_is_identify_request(WsXmlDocH doc) {
+
+    WsXmlNodeH node = ws_xml_get_soap_body(doc);
+    node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMID_IDENTIFY);
+    if (node)
+        return 1;
+    else
+        return 0;
 }
 
 
