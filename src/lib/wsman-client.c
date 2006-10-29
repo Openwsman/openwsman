@@ -680,15 +680,16 @@ wsman_build_envelope_from_response (WsManClient *cl)
         } else {
             u_buf_set(buffer, response,  strlen(response) );
         }
-    }
 
-    if ( (doc = ws_xml_read_memory((SoapH)fw,
-                    u_buf_ptr(buffer),
-                    u_buf_size(buffer), NULL, 0)) != NULL )
-    {
-        debug("xml doc received...");
-    }
-    u_buf_free(buffer);
+
+        if ( (doc = ws_xml_read_memory((SoapH)fw,
+            u_buf_ptr(buffer),
+            u_buf_size(buffer), NULL, 0)) != NULL )
+        {
+            debug("xml doc received...");
+        }
+        u_buf_free(buffer);
+    }    
     return doc;
 }
 
