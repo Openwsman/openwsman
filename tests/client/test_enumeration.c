@@ -54,6 +54,8 @@
 #define INVALID_RURI "wsa:DestinationUnreachablex"
 #define XPATH_V "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value"
 
+#define ENUM_ACTION_RELEASE_REPS		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReleaseResponse"
+
 int facility = LOG_DAEMON;
 int errors = 0;
 unsigned char optimized_flags;
@@ -124,15 +126,17 @@ TestData tests[] = {
 	    200,
 	    FLAG_ENUMERATION_COUNT_ESTIMATION,
 	    0
-    } /*,    
+    },    
 	{
 		"Enumeration with valid Resource URI.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+	    "/s:Envelope/s:Body/wsen:EnumerateResponse/wsen:EnumerationContext",
+	    "any",	    		
 		200,
 		FLAG_NONE,
 		0
-	},
+	}/*,
 	{
 		"Enumeration with valid Resource URI and additional invalid selectors.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
@@ -269,7 +273,11 @@ int main(int argc, char** argv)
             char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
             if (xp)
             {
-                if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
+                if (strcmp((char *)tests[i].expected_value, "any" ) == 0 
+                    && strlen(xp) > 0 ) {
+                    printf("\t\t\033[22;32mPASSED\033[m\n");
+                }
+                else if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
                     printf("\t\t\033[22;31mFAILED\033[m\n");	
@@ -280,8 +288,20 @@ int main(int argc, char** argv)
         }		
         ws_xml_destroy_doc(enum_response);	
         if (enumContext) {
-            /*WsXmlDocH release_response = */wsenum_release(cl, (char *)tests[i].resource_uri , enumContext,
-             options);	
+            printf ("Test %d: %70s:", i + 1, "Check Release Response:");
+            WsXmlDocH release_response = wsenum_release(cl, (char *)tests[i].resource_uri , enumContext,
+                options);	
+            char *xp = ws_xml_get_xpath_value(release_response, "/s:Envelope/s:Header/wsa:Action");
+            if (xp)
+            {
+                if (strcmp(xp, ENUM_ACTION_RELEASE_REPS ) == 0)
+                    printf("\t\t\033[22;32mPASSED\033[m\n");
+                else
+                    printf("\t\t\033[22;31mFAILED\033[m\n");	
+                u_free(xp);		            
+            } else {
+                printf("\t\t\033[22;31mFAILED\033[m\n");
+            }             
         }	
         destroy_action_options(&options);		
         wsman_release_client(cl);

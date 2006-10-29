@@ -187,6 +187,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
                           WsEnumerateInfo* enumInfo,
                           WsmanStatus *status)
 {
+    debug("CIM Enumeration");
     int max_elements = 0;
     WsXmlDocH doc;
     char *enum_mode;
@@ -219,8 +220,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
         else
             enumInfo->pullResultPtr = NULL;
     }
-   
-    ws_destroy_context(cntx);
+      
     CimResource_destroy(cimclient);
     return 0;
 err:

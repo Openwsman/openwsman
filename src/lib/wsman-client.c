@@ -319,6 +319,7 @@ wsman_create_request( WsManClient *cl,
     WsXmlNodeH node;                  
     if (options.action == WSMAN_ACTION_IDENTIFY)
     {
+        printf("identify\n");
         request = ws_xml_create_envelope(
             ws_context_get_runtime(cl->wscntx), NULL);         
     } else {
@@ -328,9 +329,11 @@ wsman_create_request( WsManClient *cl,
     
     body = ws_xml_get_soap_body(request);
     header = ws_xml_get_soap_header(request);
+    
     switch (options.action)
     {
         case WSMAN_ACTION_IDENTIFY:
+             printf("identify\n");
             ws_xml_add_child(ws_xml_get_soap_body(request),
                             XML_NS_WSMAN_ID, WSMID_IDENTIFY , NULL);
         break;
@@ -399,16 +402,14 @@ wsman_create_request( WsManClient *cl,
             
         }                
     }
+    
+    
     if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
     }    
                                                 
     return request;
 }
-
-
-
-
 
 static void
 wsman_set_transfer_put_properties(WsXmlDocH get_response, 
@@ -454,8 +455,10 @@ ws_transfer_put( WsManClient *cl,
                  char *resource_uri,             
                  actionOptions options) 
 {     
+    
     WsXmlDocH get_response = ws_transfer_get(cl, resource_uri, options);
 	
+	options.action = WSMAN_ACTION_TRANSFER_PUT;
     WsXmlDocH put_request = wsman_create_request(cl, resource_uri, options, NULL);
     wsman_set_transfer_put_properties(get_response, put_request, options);
     wsman_send_request(cl, put_request);    
@@ -470,6 +473,7 @@ wsman_invoke( WsManClient *cl,
         char *resource_uri,             
         actionOptions options)
 {
+    options.action = WSMAN_ACTION_CUSTOM;
     WsXmlDocH request = wsman_create_request(cl, resource_uri, options, NULL);
     wsman_send_request(cl, request);       	
 	WsXmlDocH response = wsman_build_envelope_from_response(cl);
@@ -482,6 +486,7 @@ WsXmlDocH
 wsman_identify( WsManClient *cl,
                 actionOptions options)
 {	
+    options.action = WSMAN_ACTION_IDENTIFY;
     WsXmlDocH request  = wsman_create_request(cl, NULL, options, NULL);
     wsman_send_request(cl, request);       	
 	WsXmlDocH response = wsman_build_envelope_from_response(cl);

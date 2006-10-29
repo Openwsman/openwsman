@@ -100,7 +100,7 @@ make_callback_entry( SoapServiceCallback proc,
 static void free_hentry_func(hnode_t *n, void *arg)
 {
     u_free(hnode_getkey(n));
-    u_free(hnode_get(n));
+    //u_free(hnode_get(n));
     u_free(n);
 }
 
@@ -473,7 +473,7 @@ int ws_transfer_put_stub(SoapOpH op, void* appData)
     } 
     else 
     {
-        doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+        doc = ws_create_response_envelope(cntx, _doc, NULL);
         if ( outData ) {
             ws_serialize(cntx, ws_xml_get_soap_body(doc), outData, 
                     typeInfo, NULL, (char*)info->data, (char*)info->data, 1); 
@@ -507,7 +507,7 @@ wsenum_enumerate_stub( SoapOpH op,
     struct timeval tv;
     
     SoapH soap = soap_get_op_soap(op);  
-    WsContextH soapCntx = ws_get_soap_context(soap);
+    
       
     wsman_status_init(&status);
     
@@ -543,7 +543,9 @@ wsenum_enumerate_stub( SoapOpH op,
             WsXmlNodeH resp_node;
             wsman_set_estimated_total(_doc, doc, &enumInfo);
             WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            if ( enumInfo.pullResultPtr == NULL) {
+            
+            if ( enumInfo.pullResultPtr == NULL) 
+            {
                 resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
             } else {
                 resp_node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
@@ -554,9 +556,11 @@ wsenum_enumerate_stub( SoapOpH op,
             } else {
                 ws_serialize_str(epcntx, resp_node, enumId, 
                         XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+                WsContextH soapCntx = ws_get_soap_context(soap);
                 ws_set_context_val(soapCntx, cntxName, &enumInfo, sizeof(enumInfo), 0);  
             }
         }
+        
     }
 
 
@@ -675,8 +679,7 @@ int wsenum_pull_stub(SoapOpH op, void* appData)
 
     if ( doc )
     {
-        soap_set_op_doc(op, doc, 0);
-        ws_xml_destroy_doc(doc);
+        soap_set_op_doc(op, doc, 0);       
     }
 
     return retVal;
