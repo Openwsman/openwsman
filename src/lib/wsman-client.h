@@ -80,20 +80,16 @@ void wsman_add_selectors_from_query_string(actionOptions *options, const char *q
 
 void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
-WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char*
-        replyToUri, char* resourceUri,
-        char* toUri, actionOptions options);
+WsXmlDocH wsman_build_envelope(WsContextH cntx, char* reply_to_uri, char* resource_uri,
+        char* to_uri, actionOptions options);
 
 void wsman_remove_query_string(char * resourceUri, char **result);
 
 long long get_transfer_time(void);
 
-void release_connection(WsManConnection *conn);
 
-WsManClientStatus wsman_release_client(WsManClient * cl);
 
-WsXmlDocH
-wsman_build_envelope_from_response (WsManClient *cl);
+WsXmlDocH wsman_build_envelope_from_response (WsManClient *cl);
 
 #ifdef __cplusplus
 }

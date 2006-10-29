@@ -187,6 +187,8 @@ wsman_client_handler( WsManClient *cl,
     }
 
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
+    
+    
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
     if (r != 0) {
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
@@ -255,10 +257,7 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    con->response = (char *)malloc(tr_data.ind + 1);
-    memcpy(con->response, wbuf, tr_data.ind);
-    con->response[tr_data.ind] = 0;
-
+    u_buf_set(con->response, wbuf, tr_data.ind); 
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);

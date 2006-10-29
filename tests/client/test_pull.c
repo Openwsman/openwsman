@@ -233,12 +233,12 @@ int main(int argc, char** argv)
     			
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
-		
+		options.max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
 		 		
 		WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
-			tests[i].max_elements, options);
+			 options);
 		if (enum_response) {
 			//wsman_output(enum_response);
 			if ((char *)tests[i].expected_value != NULL) 
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 		while (enumContext !=NULL)
 		{ 			
 			docp = wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
-				tests[i].max_elements, options);		
+				 options);		
 			wsman_output(docp);							
 			enumContext = wsenum_get_enum_context(docp);
 			if (docp)

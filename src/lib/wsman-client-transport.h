@@ -93,6 +93,9 @@ extern void wsman_transport_set_no_verify_peer (int);
 
 extern void wsman_transport_set_cafile(char *);
 
+WsManClientStatus wsman_release_client(WsManClient * cl);
+
+void release_connection(WsManConnection *conn);
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 

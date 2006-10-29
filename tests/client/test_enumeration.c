@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
     initialize_logging();
 
-		
+	printf("Number of tests: %d\n", ntests);
 	for (i = 0; i < ntests; i++) 
 	{
 		printf ("Test %d: %70s:", i + 1, tests[i].explanation);	
@@ -250,12 +250,13 @@ int main(int argc, char** argv)
     			
 		initialize_action_options(&options);
 		options.flags = tests[i].flags;
-		
+		options.max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
+		 	
 		 		
         WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
-            tests[i].max_elements, options);
+             options);
         if (enum_response) 
         {
             enumContext = wsenum_get_enum_context(enum_response);

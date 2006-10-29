@@ -39,10 +39,9 @@
 #define ACTION_TRANSFER_GET        1
 #define ACTION_TRANSFER_PUT        2
 #define ACTION_ENUMERATION         3
-#define ACTION_PRIVATE_CATCH       4
-#define ACTION_INVOKE              5
-#define ACTION_TRANSFER_CREATE     6
-#define ACTION_IDENTIFY            7
-#define ACTION_TEST                8
+#define ACTION_INVOKE              4
+#define ACTION_TRANSFER_CREATE     5
+#define ACTION_IDENTIFY            6
+#define ACTION_TEST                7
 
 #endif // WSMAN_CLIENT_H

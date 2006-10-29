@@ -70,26 +70,14 @@
 #define XML_NS_XML_SCHEMA	        "http://www.w3.org/2001/XMLSchema"
 #define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
 
-// CIM
-#ifdef DMTF_WSMAN_SPEC_1
+
 #define XML_NS_CIM_SCHEMA	        "http://schemas.dmtf.org/wbem/wscim/1/common"
 #define XML_NS_CIM_CLASS                "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
 #define XML_NS_CIM_BINDING              "http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd"
 
-#else // DMTF_WSMAN_SPEC_1
-#define XML_NS_CIM_SCHEMA               "http://schemas.dmtf.org/cimv2.9/CIM_Schema"
-#define XML_NS_CIM_CLASS		"http://schemas.dmtf.org/wsman/2005/06/cimv2.9"
-#endif
-
 
 // WS-Management
-
-#ifdef DMTF_WSMAN_SPEC_1
 #define XML_NS_WS_MAN                   "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
-#else
-#define XML_NS_WS_MAN			"http://schemas.xmlsoap.org/ws/2005/06/management"
-#endif
-
 #define XML_NS_WSMAN_FAULT_DETAIL       "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail"
 
 #define XML_NS_WS_MAN_CAT	        "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
@@ -149,13 +137,14 @@
 #define TRANSFER_ACTION_GET		"http://schemas.xmlsoap.org/ws/2004/09/transfer/Get"
 #define TRANSFER_GET			"Get"
 #define TRANSFER_PUT			"Put"
+#define TRANSFER_CREATE			"Create"
 
-#define ENUM_ACTION_ENUMERATE	        "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"
+#define ENUM_ACTION_ENUMERATE	"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate"
 #define ENUM_ACTION_RELEASE		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Release"
 #define ENUM_ACTION_PULL		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull"
 #define WSENUM_ENUMERATE		"Enumerate"
 #define WSENUM_ENUMERATE_RESP	        "EnumerateResponse"
-#define WSENUM_PULL			"Pull"
+#define WSENUM_PULL			    "Pull"
 #define WSENUM_PULL_RESP		"PullResponse"
 #define WSENUM_END_TO			"EndTo"
 #define WSENUM_EXPIRES			"Expires"

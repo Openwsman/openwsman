@@ -211,7 +211,8 @@ int main(int argc, char** argv)
 		initialize_action_options(&options);
 		
 		if (tests[i].selectors != NULL)
-			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
+			wsman_add_selectors_from_query_string (&options, tests[i].selectors);
+		
 		 
 		doc = ws_transfer_get(cl, (char *)tests[i].resource_uri, options);
         if ((char *)tests[i].expected_value != NULL) 

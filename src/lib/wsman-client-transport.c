@@ -67,6 +67,102 @@ get_transfer_time()
 }
 
 
+
+
+static WsManConnection* 
+init_client_connection(WsManClientData *cld)
+{
+   WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
+   u_buf_create(&conn->response);
+   u_buf_create(&conn->request);
+
+   return conn;
+}
+
+
+void
+release_connection(WsManConnection *conn) 
+{
+	if (conn == NULL)
+		return;
+		
+    if (conn->request) {
+		u_free(conn->request);
+		conn->request = NULL;
+	}
+	
+    if (conn->response) {
+		u_free(conn->response);
+		conn->response = NULL;
+	}
+}
+
+
+
+
+
+WsManClient*
+wsman_connect( WsContextH wscntxt,
+        const char *hostname,
+        const int port,
+        const char *path,
+        const char *scheme,
+        const char *username,
+        const char *password)
+{
+    WsManClient  *wsc     = (WsManClient*)calloc(1, sizeof(WsManClient));
+    wsc->hdl              = &wsc->data;
+    wsc->wscntx	          = wscntxt;
+
+    wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
+    wsc->data.port        = port;
+
+    wsc->data.user        = username ? strdup(username) : NULL;
+    wsc->data.pwd         = password ? strdup(password) : NULL;
+
+
+    wsc->data.endpoint =  u_strdup_printf("%s://%s:%d%s",
+                                     scheme, hostname, port, path);
+    debug( "Endpoint: %s", wsc->data.endpoint);
+
+//    wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
+//    wsc->data.auth_method = 0;
+    //wsc->proxyData.proxy = NULL;
+    //wsc->proxyData.proxy_auth = NULL;
+
+    //wsc->certData.certFile = certFile ? u_strdup(certFile) : NULL;
+    //wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
+    //wsc->certData.verify_peer = FALSE;
+
+    wsc->connection = init_client_connection(&wsc->data);	
+
+    return wsc;
+}
+
+
+
+WsManClientStatus 
+wsman_release_client(WsManClient * cl)
+{
+  WsManClientStatus rc={0,NULL}; 
+
+  if (cl->data.hostName) {
+    u_free(cl->data.hostName);
+  }
+  if (cl->data.user) {
+    u_free(cl->data.user);
+  }
+  if (cl->data.pwd) {
+    u_free(cl->data.pwd);
+  }
+  if (cl->data.endpoint) {
+    u_free(cl->data.endpoint);
+  }
+
+  u_free(cl);
+  return rc;
+}
+
 static void
 request_usr_pwd(ws_auth_type_t auth,
                 char **username,

@@ -75,6 +75,19 @@ typedef struct proxyData {
     char * proxy_auth;
 } WsManProxyData;
 
+enum __WsmanAction 
+{
+    WSMAN_ACTION_NONE = 0, 
+    WSMAN_ACTION_TRANSFER_GET,
+    WSMAN_ACTION_TRANSFER_PUT,
+    WSMAN_ACTION_ENUMERATION,
+    WSMAN_ACTION_PULL, 
+    WSMAN_ACTION_CUSTOM,    
+    WSMAN_ACTION_TRANSFER_CREATE,    
+    WSMAN_ACTION_IDENTIFY,
+    WSMAN_ACTION_TEST
+};
+typedef enum __WsmanAction WsmanAction;
 
 struct _actionOptions {
     unsigned char       flags;
@@ -82,15 +95,19 @@ struct _actionOptions {
     char *              dialect;
     char *              fragment;
     char *              cim_ns;
+    char *              method;
 	hash_t				*selectors;
+	hash_t              *properties;
     unsigned int        timeout;
     unsigned int        max_envelope_size;
+    unsigned int        max_elements;
+    WsmanAction         action;
 };
 typedef struct _actionOptions actionOptions;
 
 struct _WsManConnection {
-    char*	request;
-    char*	response;
+    u_buf_t*	request;
+    u_buf_t*	response;
 };
 typedef struct _WsManConnection WsManConnection;
 
@@ -119,16 +136,16 @@ WsXmlDocH ws_transfer_get(WsManClient *cl, char *resourceUri,
 		actionOptions options); 
 
 WsXmlDocH ws_transfer_put(WsManClient *cl, char *resourceUri,
-		hash_t *prop, actionOptions options);
+		actionOptions options);
 
 WsXmlDocH ws_transfer_create(WsManClient *cl, char *resourceUri,
-		hash_t *prop, actionOptions options);
+		actionOptions options);
 
 WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
-		int max_elements, actionOptions options);
+		actionOptions options);
 
 WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, 
-		char *enumContext , int max_elements, actionOptions options);
+		char *enumContext , actionOptions options);
 
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
 		char *enumContext , actionOptions options);
@@ -136,6 +153,7 @@ WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
 WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri , char *action,
 		hash_t *prop, actionOptions options);
 
+void wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 #ifdef __cplusplus
 }
