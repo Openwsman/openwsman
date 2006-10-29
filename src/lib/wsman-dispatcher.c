@@ -400,6 +400,7 @@ outbound_addressing_filter(SoapOpH opHandle,
     env_t* fw = (env_t*)soap_get_op_soap(opHandle);
     WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
     WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
+    
     WsXmlNodeH outHeaders = get_soap_header_element(fw, out_doc, NULL, NULL);
 
     if ( outHeaders )
@@ -448,7 +449,8 @@ void wsman_dispatcher_list( list_t *interfaces )
 #endif
 
 
-int process_inbound_operation(op_t* op, WsmanMessage *msg)
+int
+process_inbound_operation(op_t* op, WsmanMessage *msg)
 {
     int retVal = 1;
     char* buf = NULL;

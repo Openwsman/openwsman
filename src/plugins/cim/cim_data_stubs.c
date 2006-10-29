@@ -224,10 +224,14 @@ CimResource_Enumerate_EP( WsContextH cntx,
     CimResource_destroy(cimclient);
     return 0;
 err:
+    CimResource_destroy(cimclient);
     return 1;
 }
 
-int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status)
+int 
+CimResource_Release_EP( WsContextH cntx, 
+                WsEnumerateInfo* enumInfo, 
+                WsmanStatus *status)
 {
     debug( "Release Endpoint Called");      
     cim_release_enum_context(enumInfo);

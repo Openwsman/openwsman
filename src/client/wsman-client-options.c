@@ -60,7 +60,7 @@ static char *auth_methods[] = {
 
 static const char **wsman_argv = NULL;
 
-static int request_only = 0;
+
 static int server_port =  0;
 static char *cafile = NULL;
 static char *username = NULL;
@@ -80,9 +80,11 @@ static int enum_max_elements = 0;
 char  enum_optimize = 0;
 char  enum_estimate = 0;
 char  dump_request = 0;
+char  step = 0;
+char  request_only = 0;
 static char *enum_mode = NULL;
 static char *binding_enum_mode = NULL;
-//gboolean  dump_response = FALSE;
+static char *enum_context = NULL;
 
 
 static char *cim_namespace = NULL;
@@ -103,12 +105,14 @@ static char **properties = NULL;
 
 WsActions action_data[] = 
 { 
- { "get", ACTION_TRANSFER_GET},
- { "put", ACTION_TRANSFER_PUT},
- { "enumerate", ACTION_ENUMERATION},
- { "invoke", ACTION_INVOKE},
- { "identify", ACTION_IDENTIFY},
- { "test", ACTION_TEST},
+ { "get", WSMAN_ACTION_TRANSFER_GET},
+ { "put", WSMAN_ACTION_TRANSFER_PUT},
+ { "enumerate", WSMAN_ACTION_ENUMERATION},
+ { "pull", WSMAN_ACTION_PULL},
+ { "release", WSMAN_ACTION_RELEASE},
+ { "invoke", WSMAN_ACTION_CUSTOM },
+ { "identify", WSMAN_ACTION_IDENTIFY},
+ { "test", WSMAN_ACTION_TEST},
  { NULL, 0},
 };
 
@@ -149,9 +153,7 @@ char wsman_parse_options(int argc, char **argv)
 	{ "out-file",	'O',	U_OPTION_ARG_STRING,	&output_file,
 		"Write output to file",		"<file>" },
 	{ "noverifypeer",'V',	U_OPTION_ARG_NONE,	&no_verify_peer,
-		"Not to verify peer certificate",	NULL },
-    { "request",'Q',   U_OPTION_ARG_NONE,  &request_only,
-        "Only output reqest. Not send it.",   NULL },
+		"Not to verify peer certificate",	NULL },        
         { NULL }
     };
 
@@ -172,7 +174,7 @@ char wsman_parse_options(int argc, char **argv)
     };
 
     u_option_entry_t enum_options[] = {
-#ifdef DMTF_WSMAN_SPEC_1
+
 	{ "max-elements", 'm',	U_OPTION_ARG_INT,	&enum_max_elements,
 	"Max Elements Per Pull/Optimized Enumeration",
 	"<max number of elements>" },
@@ -182,17 +184,18 @@ char wsman_parse_options(int argc, char **argv)
 		"Return estimation of total items",	NULL },
 	{ "enum-mode",	'M',	U_OPTION_ARG_STRING,	&enum_mode,
 		"Enumeration Mode",	"epr|objepr" },
-#endif
+    { "enum-context",	'U',	U_OPTION_ARG_STRING,	&enum_context,
+    	"Enumeration Context (For use with Pull and Release)",	"<enum context>" },
         { NULL }
     };
 
     u_option_entry_t cim_options[] = {
-#ifdef DMTF_WSMAN_SPEC_1
+
 	{ "namespace",	'N',	U_OPTION_ARG_STRING,	&cim_namespace,
 	"CIM Namespace (default is root/cimv2)",	"<namespace>" },
 	{ "binding-enum-mode", 'B', U_OPTION_ARG_STRING, &binding_enum_mode,
 	"CIM binding Enumeration Mode",	"none|include|exclude"},
-#endif
+
         { NULL }
     };
 
@@ -201,6 +204,10 @@ char wsman_parse_options(int argc, char **argv)
 	"Send request from file",	"<file name>"},
 	{ "print-request", 'R', U_OPTION_ARG_NONE,	&dump_request,
 	"print request on stdout",	NULL},
+    { "request",'Q',   U_OPTION_ARG_NONE,  &request_only,
+        "Only output reqest. Not send it.",   NULL },
+    { "step",'S',   U_OPTION_ARG_NONE,  &step,
+        "Do not perform multiple operations (do not pull data when enumerating)",   NULL },	
         //{ "print-response", 'N', 0, G_OPTION_ARG_NONE, &dump_response, "print all responses to stdout", NULL},
         { NULL }
     };
@@ -401,7 +408,16 @@ char wsman_options_get_estimate_enum (void)
 char wsman_options_get_dump_request (void)
 {	
     return dump_request;
-}   
+}  
+char wsman_options_get_step_request (void)
+{	
+    return step;
+} 
+
+char * wsman_options_get_enum_context (void)
+{	
+    return enum_context;
+}
 
 char * wsman_options_get_test_file (void)
 {	

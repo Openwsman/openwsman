@@ -100,6 +100,7 @@ make_callback_entry( SoapServiceCallback proc,
 static void free_hentry_func(hnode_t *n, void *arg)
 {
     u_free(hnode_getkey(n));
+    u_free(hnode_get(n));
     u_free(n);
 }
 
@@ -361,6 +362,47 @@ int wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo* wsInterfac
     return (disp == NULL);
 }
 
+
+WsEnumerateInfo*
+get_enum_info( WsContextH cntx,
+               WsXmlDocH doc, 
+               char* cntxName, 
+               int cntxNameLen,
+               char* op, 
+               char** enumIdPtr)
+{
+    WsEnumerateInfo* enumInfo = NULL;
+    char* enumId = NULL;
+    WsXmlNodeH node = ws_xml_get_soap_body(doc);
+
+    if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, op)) )
+    {
+        node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+        if ( node ) {
+            enumId = ws_xml_get_node_text(node);
+            if ( enumIdPtr != NULL ) {
+                *enumIdPtr = enumId;
+            }
+        }
+    }
+    debug("enum context: %s", enumId );
+
+    if ( enumId != NULL )
+    {
+        strcpy(cntxName, WSFW_ENUM_PREFIX);
+        strncpy(&cntxName[sizeof(WSFW_ENUM_PREFIX) - 1],
+                enumId,
+                cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
+        debug("enum context: %s", cntxName );
+        enumInfo = (WsEnumerateInfo*)ws_get_context_val(cntx, cntxName, NULL);
+        if (!enumInfo)
+            error("enumInfo is null");
+    }
+    return enumInfo;
+}
+
+
+
 int 
 wsman_identify_stub(SoapOpH op, 
                     void* appData) 
@@ -464,15 +506,17 @@ wsenum_enumerate_stub( SoapOpH op,
     WsmanStatus status;
     struct timeval tv;
     
-    SoapH soap = soap_get_op_soap(op);
+    SoapH soap = soap_get_op_soap(op);  
     WsContextH soapCntx = ws_get_soap_context(soap);
+      
     wsman_status_init(&status);
     
     WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
     WsEndPointEnumerate endPoint = (WsEndPointEnumerate)ep->serviceEndPoint;
         
     WsXmlDocH _doc = soap_get_op_doc(op, 1);
-
+    WsContextH epcntx = ws_create_ep_context(soap, _doc);    
+    
     memset(&enumInfo, 0, sizeof(enumInfo));    
     generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
       
@@ -480,9 +524,9 @@ wsenum_enumerate_stub( SoapOpH op,
     enumInfo.timeStamp = tv.tv_sec * 10000000 + tv.tv_usec;    
 
     if ( endPoint && 
-        ( retVal = endPoint(ws_create_ep_context(soap, _doc ), &enumInfo, &status)) ) 
+        ( retVal = endPoint(epcntx, &enumInfo, &status)) ) 
     {
-        doc = wsman_generate_fault(soapCntx, _doc, 
+        doc = wsman_generate_fault(epcntx, _doc, 
             status.fault_code, status.fault_detail_code, NULL);
     } 
     else 
@@ -491,7 +535,7 @@ wsenum_enumerate_stub( SoapOpH op,
             doc = enumInfo.pullResultPtr;
             enumInfo.index++;
         } else {
-            doc = ws_create_response_envelope(soapCntx, _doc, NULL);
+            doc = ws_create_response_envelope(epcntx, _doc, NULL);
         }
 
         if ( doc )
@@ -506,9 +550,9 @@ wsenum_enumerate_stub( SoapOpH op,
             }
 
             if (enumInfo.index == enumInfo.totalItems) {
-                ws_serialize_str(soapCntx, resp_node, NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);          
+                ws_serialize_str(epcntx, resp_node, NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);          
             } else {
-                ws_serialize_str(soapCntx, resp_node, enumId, 
+                ws_serialize_str(epcntx, resp_node, enumId, 
                         XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
                 ws_set_context_val(soapCntx, cntxName, &enumInfo, sizeof(enumInfo), 0);  
             }
@@ -519,48 +563,10 @@ wsenum_enumerate_stub( SoapOpH op,
     if ( doc ) {
         soap_set_op_doc(op, doc, 0);
     }    
-
+    ws_serializer_free_all(epcntx);
+    ws_destroy_context(epcntx);    
     return retVal;
 }
-
-WsEnumerateInfo*
-get_enum_info( WsContextH cntx,
-               WsXmlDocH doc, 
-               char* cntxName, 
-               int cntxNameLen,
-               char* op, 
-               char** enumIdPtr)
-{
-    WsEnumerateInfo* enumInfo = NULL;
-    char* enumId = NULL;
-    WsXmlNodeH node = ws_xml_get_soap_body(doc);
-
-    if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, op)) )
-    {
-        node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-        if ( node ) {
-            enumId = ws_xml_get_node_text(node);
-            if ( enumIdPtr != NULL ) {
-                *enumIdPtr = enumId;
-            }
-        }
-    }
-    debug("enum context: %s", enumId );
-
-    if ( enumId != NULL )
-    {
-        strcpy(cntxName, WSFW_ENUM_PREFIX);
-        strncpy(&cntxName[sizeof(WSFW_ENUM_PREFIX) - 1],
-                enumId,
-                cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
-        debug("enum context: %s", cntxName );
-        enumInfo = (WsEnumerateInfo*)ws_get_context_val(cntx, cntxName, NULL);
-        if (!enumInfo)
-            error("enumInfo is null");
-    }
-    return enumInfo;
-}
-
 
 
 int
@@ -584,7 +590,8 @@ wsenum_release_stub( SoapOpH op,
     WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, _doc, cntxName,
             sizeof(cntxName), WSENUM_RELEASE, NULL);
 
-    if ( enumInfo == NULL ) {
+    if ( enumInfo == NULL ) 
+    {
         doc = wsman_generate_fault(soapCntx, _doc, 
             WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
     } else {
@@ -595,12 +602,12 @@ wsenum_release_stub( SoapOpH op,
                     WSMAN_INTERNAL_ERROR, OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);   	            
         } else {
             doc = ws_create_response_envelope(soapCntx, _doc, NULL);
+            debug("Releasing context: %s", cntxName);
             ws_remove_context_val(soapCntx, cntxName); 
         }
     }        
     if ( doc ) {
-        soap_set_op_doc(op, doc, 0);
-        ws_xml_destroy_doc(doc);
+        soap_set_op_doc(op, doc, 0);        
     }
 
     return retVal;
@@ -814,7 +821,8 @@ ws_remove_context_val( WsContextH hCntx,
         u_lock(cntx->soap);
         hnode_t *hn = hash_lookup(cntx->entries, name);
         if (hn) {
-            hash_scan_delfree(cntx->entries, hn);
+            debug("Found context entry: %s", name);
+            hash_delete_free(cntx->entries, hn);
             retVal = 0;
         }
         u_unlock(cntx->soap);
@@ -862,10 +870,15 @@ set_context_val( WsContextH hCntx,
 }
 
 
-int ws_set_context_val(WsContextH hCntx, char* name, void* val, int size, int bNoDup)
+int 
+ws_set_context_val( WsContextH hCntx,
+                    char* name, 
+                    void* val, 
+                    int size, 
+                    int no_dup)
 {
     debug("setting context value");
-    int retVal = set_context_val(hCntx, name, val, size, bNoDup, WS_CONTEXT_TYPE_BLOB);
+    int retVal = set_context_val(hCntx, name, val, size, no_dup, WS_CONTEXT_TYPE_BLOB);
     return retVal;
 }
 

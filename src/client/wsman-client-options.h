@@ -33,6 +33,7 @@ extern char *wsman_options_get_binding_enum_mode (void);
 extern char *wsman_options_get_cim_namespace (void);
 extern char wsman_options_get_optimize_enum (void);
 extern char wsman_options_get_dump_request (void);
+extern char wsman_options_get_step_request (void);
 extern char wsman_options_get_estimate_enum (void);
 extern char * wsman_options_get_fragment (void);
 extern char * wsman_options_get_filter (void);
@@ -40,6 +41,8 @@ extern char * wsman_options_get_dialect (void);
 extern const char * wsman_options_get_config_file (void);
 extern unsigned long wsman_options_get_max_envelope_size (void);
 extern unsigned long wsman_options_get_operation_timeout (void);
+
+extern char * wsman_options_get_enum_context (void);
 
 extern const char ** wsman_options_get_argv (void);
 extern const char * wsman_options_get_output_file (void);

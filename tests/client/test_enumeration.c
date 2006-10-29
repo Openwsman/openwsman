@@ -124,7 +124,7 @@ TestData tests[] = {
 	    200,
 	    FLAG_ENUMERATION_COUNT_ESTIMATION,
 	    0
-    }/*,    
+    } /*,    
 	{
 		"Enumeration with valid Resource URI.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
@@ -278,7 +278,11 @@ int main(int argc, char** argv)
                 printf("\t\t\033[22;31mFAILED\033[m\n");
             }            
         }		
-        ws_xml_destroy_doc(enum_response);			
+        ws_xml_destroy_doc(enum_response);	
+        if (enumContext) {
+            /*WsXmlDocH release_response = */wsenum_release(cl, (char *)tests[i].resource_uri , enumContext,
+             options);	
+        }	
         destroy_action_options(&options);		
         wsman_release_client(cl);
     	if (cntx) {

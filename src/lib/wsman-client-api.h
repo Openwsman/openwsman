@@ -82,6 +82,7 @@ enum __WsmanAction
     WSMAN_ACTION_TRANSFER_PUT,
     WSMAN_ACTION_ENUMERATION,
     WSMAN_ACTION_PULL, 
+    WSMAN_ACTION_RELEASE,
     WSMAN_ACTION_CUSTOM,    
     WSMAN_ACTION_TRANSFER_CREATE,    
     WSMAN_ACTION_IDENTIFY,
@@ -150,8 +151,8 @@ WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri,
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
 		char *enumContext , actionOptions options);
 
-WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri , char *action,
-		hash_t *prop, actionOptions options);
+WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,
+		 actionOptions options);
 
 void wsman_send_request(WsManClient *cl, WsXmlDocH request);
 

@@ -102,7 +102,9 @@ ws_create_response_envelope( WsContextH cntx,
     WsXmlDocH doc = ws_xml_create_envelope(soap, soapNs);	
     if ( wsman_is_identify_request(rqstDoc) ) {
         return doc;
-    } else if ( doc ) {
+    } 
+    else if ( doc ) 
+    {
         WsXmlNodeH dstHeader = ws_xml_get_soap_header(doc);
         WsXmlNodeH srcHeader = ws_xml_get_soap_header(rqstDoc);
         WsXmlNodeH srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);

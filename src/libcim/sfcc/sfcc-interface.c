@@ -1033,7 +1033,8 @@ cim_to_wsman_status(CMPIStatus rc,
 void
 cim_release_enum_context( WsEnumerateInfo* enumInfo ) 
 {
-    if (enumInfo->appEnumContext) {
+    if (enumInfo->appEnumContext) 
+    {
         CMPIEnumeration * enumeration = (CMPIEnumeration *)enumInfo->appEnumContext;
         /*
         CMPIArray * array = (CMPIArray *)enumInfo->enumResults;
