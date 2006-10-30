@@ -301,7 +301,8 @@ int main(int argc, char** argv)
                 u_free(xp);		            
             } else {
                 printf("\t\t\033[22;31mFAILED\033[m\n");
-            }             
+            }    
+            ws_xml_destroy_doc(release_response);         
         }	
         destroy_action_options(&options);		
         wsman_release_client(cl);

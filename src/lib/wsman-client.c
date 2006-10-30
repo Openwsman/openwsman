@@ -633,6 +633,7 @@ wsman_build_envelope( WsContextH cntx,
     {
 		ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
 	}
+    u_free(action);
 
 	if ( to_uri )
 		ws_serialize_str(cntx, header, to_uri, XML_NS_ADDRESSING, WSA_TO); 

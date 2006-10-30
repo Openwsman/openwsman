@@ -1,1 +1,1 @@
-SUBDIRS = client 
+SUBDIRS = cunit client 
