@@ -90,7 +90,7 @@ void u_option_group_add_entries(u_option_group_t *group,
 
 typedef struct u_option_context {
 	char			*usage;
-	u_list_t		*groups;
+	list_t			*groups;
 	unsigned int		mode;
 	char			*prog_name;
 } u_option_context_t;

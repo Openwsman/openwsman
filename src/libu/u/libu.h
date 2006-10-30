@@ -46,7 +46,6 @@
 #include <u/iniparser.h>
 #include <u/debug.h>
 #include <u/uerr.h>
-#include <u/ulist.h>
 #include <u/uoption.h>
 
 

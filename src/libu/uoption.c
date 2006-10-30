@@ -108,7 +108,7 @@ static void free_help_buf(help_buf_t *help_buf)
 
 static void print_help_header(u_option_context_t *ctx, help_buf_t *help_buf)
 {
-	u_list_t		*list;
+	lnode_t			*node;
 	u_option_group_t	*grp;
 	tmp_help_buf_t		*buf = help_buf->buf;
 
@@ -119,20 +119,20 @@ static void print_help_header(u_option_context_t *ctx, help_buf_t *help_buf)
 	put_to_help_buf(help_buf, 0, "Help Options");
 	put_to_help_buf(help_buf, 1, "  -?, --help");
 
-	list = u_list_first(ctx->groups);
-	if (list && list->next) {
+	node = list_first(ctx->groups);
+	if (node && list_next(ctx->groups, node)) {
 		put_to_help_buf(help_buf, 1, "  --help-all");
 		buf[help_buf->num - 1].part2 = u_strdup("Show help options");
 	}
-	list = u_list_next(list);
-	while (list) {
-		grp = (u_option_group_t *)list->data;
+	node = list_next(ctx->groups, node);
+	while (node) {
+		grp = (u_option_group_t *)node->list_data;
 		put_to_help_buf(help_buf, 1, "  --help-%s", grp->name);
 		if (grp->help_descr) {
 			buf[help_buf->num - 1].part2 =
 					u_strdup(grp->help_descr);
 		}
-		list = u_list_next(list);
+		node = list_next(ctx->groups, node);
 	}
 	put_to_help_buf(help_buf, 0, "");
 	
@@ -184,14 +184,15 @@ static void print_short_help(u_option_context_t *ctx)
 {
 	help_buf_t		help_buf;
 	tmp_help_buf_t		buf[1024];
+	lnode_t			*node;
 
 	help_buf.buf = buf;
 	help_buf.maxlen = 0;
 	help_buf.num = 0;
 
-	ctx->groups = u_list_first(ctx->groups);
+	node = list_first(ctx->groups);
 	print_help_header(ctx, &help_buf);
-	print_help_group((u_option_group_t *)ctx->groups->data, &help_buf);
+	print_help_group((u_option_group_t *)node->list_data, &help_buf);
 
 	print_help_buf(&help_buf);
 	free_help_buf(&help_buf);
@@ -201,7 +202,7 @@ static void print_short_help(u_option_context_t *ctx)
 
 static void print_long_help(u_option_context_t *ctx, char *hoption)
 {
-	u_list_t		*list;
+	lnode_t			*node,	*first;
 	u_option_group_t	*grp;
 	char			*help_str;
 	help_buf_t		help_buf;
@@ -211,23 +212,23 @@ static void print_long_help(u_option_context_t *ctx, char *hoption)
 	help_buf.maxlen = 0;
 	help_buf.num = 0;
 
-	ctx->groups = u_list_first(ctx->groups);
-	list = u_list_next(ctx->groups);
-	while (list) {
-		grp = (u_option_group_t *)list->data;
+	first = list_first(ctx->groups);
+	node = list_next(ctx->groups, first);
+	while (node) {
+		grp = (u_option_group_t *)node->list_data;
 		help_str = u_strdup_printf("help-%s", grp->name);
 		if (!strncmp(hoption, help_str, strlen(help_str))) {
 			u_free(help_str);
 			break;
 		}
 		u_free(help_str);
-		list = u_list_next(list);
+		node = list_next(ctx->groups, node);
 	}
 
-	if (!list) {
+	if (!node) {
 		if (!strncmp(hoption, "help-all", strlen("help-all")) &&
 				strlen(hoption) == strlen("help-all")) {
-			grp = (u_option_group_t *)ctx->groups->data;
+			grp = (u_option_group_t *)first->list_data;
 		} else if (!strncmp(hoption, "help", strlen("help")) &&
 				strlen(hoption) == strlen("help")) {
 			grp = NULL;
@@ -239,16 +240,16 @@ static void print_long_help(u_option_context_t *ctx, char *hoption)
 	print_help_header(ctx, &help_buf);
 
 	if (grp == NULL) {
-		grp = (u_option_group_t *)ctx->groups->data;
+		grp = (u_option_group_t *)first->list_data;
 		print_help_group(grp, &help_buf);
-	} else if (grp == (u_option_group_t *)ctx->groups->data) {
-		list = u_list_next(ctx->groups);
-		while (list) {
-			grp = (u_option_group_t *)list->data;
+	} else if (grp == (u_option_group_t *)first->list_data) {
+		node = list_next(ctx->groups, first);
+		while (node) {
+			grp = (u_option_group_t *)node->list_data;
 			print_help_group(grp, &help_buf);
-			list = u_list_next(list);
+			node = list_next(ctx->groups, node);
 		}
-		grp = (u_option_group_t *)ctx->groups->data;
+		grp = (u_option_group_t *)first->list_data;
 		print_help_group(grp, &help_buf);
 	} else {
 		print_help_group(grp, &help_buf);
@@ -262,7 +263,7 @@ static void print_long_help(u_option_context_t *ctx, char *hoption)
 
 static unsigned int context_get_number_entries(u_option_context_t *ctx)
 {
-	u_list_t		*list;
+	lnode_t			*node;
 	u_option_group_t	*grp;
 	unsigned int		num_entr = 0;
 
@@ -270,11 +271,11 @@ static unsigned int context_get_number_entries(u_option_context_t *ctx)
 		return 0;
 	}
 
-	list = u_list_first(ctx->groups);
-	while (list) {
-		grp = (u_option_group_t *)list->data;
+	node = list_first(ctx->groups);
+	while (node) {
+		grp = (u_option_group_t *)node->list_data;
 		num_entr += grp->num_entries;
-		list = list->next;
+		node = list_next(ctx->groups, node);
 	}
 
 	return num_entr;
@@ -402,7 +403,7 @@ static void get_tmp_data(struct tmp_buf *data, int nd)
 
 static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 {
-	u_list_t		*list;
+	lnode_t			*node;
 	u_option_group_t	*grp;
 	int			e;
 	size_t			nlen;
@@ -417,9 +418,9 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 		}
 	}
 
-	list = u_list_first(ctx->groups);
-	while (list) {
-		grp = (u_option_group_t *)list->data;
+	node = list_first(ctx->groups);
+	while (node) {
+		grp = (u_option_group_t *)node->list_data;
 
 		for (e = 0; e < grp->num_entries; e++) {
 			nlen = strlen(grp->entries[e].name);
@@ -432,7 +433,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 				return &(grp->entries[e]);
 			}
 		}
-		list = list->next;
+		node = list_next(ctx->groups, node);
 	}
 
 	return NULL;
@@ -440,7 +441,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 
 static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 {
-	u_list_t		*list;
+	lnode_t			*node;
 	u_option_group_t	*grp;
 	int			e;
 
@@ -454,16 +455,16 @@ static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 		}
 	}
 
-	list = u_list_first(ctx->groups);
-	while (list) {
-		grp = (u_option_group_t *)list->data;
+	node = list_first(ctx->groups);
+	while (node) {
+		grp = (u_option_group_t *)node->list_data;
 
 		for (e = 0; e < grp->num_entries; e++) {
 			if (option == grp->entries[e].short_name) {
 				return &(grp->entries[e]);
 			}
 		}
-		list = list->next;
+		node = list_next(ctx->groups, node);
 	}
 
 	return NULL;
@@ -538,6 +539,9 @@ u_option_context_t* u_option_context_new(const char *usage)
 		ctx->usage = strdup(usage);
 	}
 
+	ctx->groups = list_create(LISTCOUNT_T_MAX);
+
+
 	ctx->mode |= U_OPTION_CONTEXT_HELP_ENABLED;
 
 	return ctx;
@@ -545,18 +549,20 @@ u_option_context_t* u_option_context_new(const char *usage)
 
 void u_option_context_free(u_option_context_t *ctx)
 {
-	u_list_t	*list;
+	lnode_t		*node,	*tmp;
 
 	if (!ctx)
 		return;
 
-	ctx->groups = u_list_first(ctx->groups);
-	while (ctx->groups) {
-		list = ctx->groups;
-		u_option_group_free((u_option_group_t *)list->data);
-		ctx->groups = u_list_delete_link(list, list);
-		u_list_free(list);
+	node = list_first(ctx->groups);
+	while (node) {
+		tmp = list_next(ctx->groups, node);
+		u_option_group_free((u_option_group_t *)node->list_data);
+		list_delete (ctx->groups, node);
+		lnode_destroy(node);
+		node = tmp;
 	}
+	list_destroy(ctx->groups);
 
 	if (ctx->usage)
 		u_free(ctx->usage);
@@ -570,10 +576,13 @@ void u_option_context_free(u_option_context_t *ctx)
 void u_option_context_add_group(u_option_context_t *ctx,
 				u_option_group_t *group)
 {
+	lnode_t		*node;
+
 	if (!ctx || !group)
 		return;
 
-	ctx->groups = u_list_append(ctx->groups, (void *)group);
+	node = lnode_create((void *)group);
+	list_append(ctx->groups, node);
 }
 
 void u_option_context_add_main_entries(u_option_context_t *ctx,
@@ -581,6 +590,7 @@ void u_option_context_add_main_entries(u_option_context_t *ctx,
 				       const char *name)
 {
 	u_option_group_t	*grp;
+	lnode_t			*node;
 
 	if (!ctx || !options) {
 		return;
@@ -589,7 +599,8 @@ void u_option_context_add_main_entries(u_option_context_t *ctx,
 	grp = u_option_group_new(name, NULL, NULL);
 	u_option_group_add_entries(grp, options);
 	grp->ismain = 1;
-	ctx->groups = u_list_prepend(ctx->groups, (void *)grp);
+	node = lnode_create((void *)grp);
+	list_prepend(ctx->groups, node);
 }
 
 void u_option_context_set_ignore_unknown_options(u_option_context_t *ctx,
