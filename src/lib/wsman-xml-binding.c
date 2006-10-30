@@ -852,33 +852,26 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
   
     for (cur = nsList; *cur != NULL; cur++) {
         if(xmlXPathRegisterNs(ctxt, (*cur)->prefix, (*cur)->href) != 0) {
-            //error("Error: unable to register NS with prefix=\"%s\" and href=\"%s\"", cur->prefix, cur->href);        
+              
             return NULL;
         }       
     }
     xmlFree(nsList);
     
-#if 0    
-    for(i = 0; g_wsNsData[i].uri != NULL; i++)
-    {
-        WsXmlNsData* nsd = &g_wsNsData[i];
-        if(xmlXPathRegisterNs(ctxt, BAD_CAST nsd->prefix, BAD_CAST nsd->uri) != 0) {
-            error("Error: unable to register NS with prefix=\"%s\" and href=\"%s\"", nsd->prefix, nsd->uri);        
-            return NULL;
-        }                   
-    }
-#endif
     
     obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
     if (obj) {
-        nodeset     = obj->nodesetval;
-        if (nodeset)
+        nodeset = obj->nodesetval;
+        if (nodeset && nodeset->nodeNr > 0)
             result = (char *) xmlNodeListGetString(d, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+
+	 xmlXPathFreeContext(ctxt);
+	 xmlXPathFreeObject (obj);
     } else {
         return NULL;
     }    
-    xmlXPathFreeObject (obj);
-    xmlXPathFreeContext(ctxt);
+   
+   
     return result;  
 }
 

@@ -278,6 +278,7 @@ void enumeration_test(int idx)
   if ((char *)tests[i].expected_value != NULL) 
     {			  
       char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
+      CU_ASSERT_PTR_NOT_NULL(xp);
       if (xp)
         {
 	  CU_ASSERT_STRING_EQUAL(xp,(char *)tests[i].expected_value );
