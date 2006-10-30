@@ -87,7 +87,7 @@ void wsman_remove_query_string(char * resourceUri, char **result);
 
 long long get_transfer_time(void);
 
-
+hash_t *wsman_create_hash_from_query_string(const char *query_string);
 
 WsXmlDocH wsman_build_envelope_from_response (WsManClient *cl);
 

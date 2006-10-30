@@ -278,6 +278,8 @@ cim_get_op_from_enum( CimClientInfo *client,
     CMPIObjectPath * result_op = NULL;
     WsmanStatus statusPP;
 
+    if (client->requested_class) 
+        debug("class available");
     CMPIObjectPath * objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
     enumeration = ((CMCIClient *)client->cc)->ft->enumInstanceNames(client->cc, objectpath, &rc);
     if (rc.rc != 0 ) {
@@ -811,19 +813,27 @@ cim_invoke_method (CimClientInfo *client,
     CMPIObjectPath * objectpath;    
     CMPIArgs *argsin, *argsout;
     CMPIStatus rc;
+    WsmanStatus statusP;
     CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
     if (!cc) {
         return;
     }
+    client->cc = cc;
 
-    objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
+    // objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
+    if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
+    {
+    
+    
+    /*
     if (client->selectors && hash_count(client->selectors) > 0)
         cim_add_keys(objectpath, client->selectors);
+        */
 
-    // FIXME, bug #27
+    
     argsin = newCMPIArgs(NULL);
     
-    if (client->method_args && hash_count(client->method_args))
+    if (client->method_args && hash_count(client->method_args) > 0)
         cim_add_args(argsin, client->method_args);
 
     argsout = newCMPIArgs(NULL);
@@ -850,9 +860,15 @@ cim_invoke_method (CimClientInfo *client,
     }
 
     cim_to_wsman_status(rc, status);
+    
+    } else {
+        status->fault_code = statusP.fault_code;
+        status->fault_detail_code = statusP.fault_detail_code;
+    }
+    
     if (objectpath) CMRelease(objectpath);
-    if (argsin) CMRelease(argsin);
-    if (argsout) CMRelease(argsout);
+    // if (argsin) CMRelease(argsin);
+    // if (argsout) CMRelease(argsout);
     if (cc) CMRelease(cc);
     return;
 }
@@ -1004,6 +1020,9 @@ cim_to_wsman_status(CMPIStatus rc,
         break;
     case CMPI_RC_ERR_INVALID_NAMESPACE:
     case CMPI_RC_ERR_INVALID_PARAMETER:
+        status->fault_code = WSMAN_INVALID_PARAMERTER;
+        status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
+        break;
     case CMPI_RC_ERR_NOT_SUPPORTED:
     case CMPI_RC_ERR_CLASS_HAS_CHILDREN:
     case CMPI_RC_ERR_CLASS_HAS_INSTANCES:

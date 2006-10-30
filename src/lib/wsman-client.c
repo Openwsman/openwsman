@@ -96,6 +96,17 @@ wsman_remove_query_string(char *s, char **result)
 	U_FREE(buf);	   
 }
 
+hash_t*
+wsman_create_hash_from_query_string(const char *query_string)
+{
+	if (query_string) {
+		hash_t * query = parse_query(query_string);	
+		if (query) {
+			return(query);
+		}
+	}
+	return NULL;
+}
 
 
 void
@@ -318,8 +329,7 @@ wsman_create_request( WsManClient *cl,
     WsXmlNodeH header;
     WsXmlNodeH node;                  
     if (options.action == WSMAN_ACTION_IDENTIFY)
-    {
-        printf("identify\n");
+    {   
         request = ws_xml_create_envelope(
             ws_context_get_runtime(cl->wscntx), NULL);         
     } else {
@@ -329,24 +339,26 @@ wsman_create_request( WsManClient *cl,
     
     body = ws_xml_get_soap_body(request);
     header = ws_xml_get_soap_header(request);
+    hscan_t hs;
+    hnode_t *hn;    
     
     switch (options.action)
     {
-        case WSMAN_ACTION_IDENTIFY:
-             printf("identify\n");
+        case WSMAN_ACTION_IDENTIFY:           
             ws_xml_add_child(ws_xml_get_soap_body(request),
                             XML_NS_WSMAN_ID, WSMID_IDENTIFY , NULL);
         break;
         case WSMAN_ACTION_CUSTOM:                        
-            if (options.properties) {
-                /*
-                node = ws_xml_add_empty_child_format( body, resource_uri , "%s_INPUT", method);
-                hash_scan_begin(&hs, options.properties);
-                while ((hn = hash_scan_next(&hs))) {
-                    ws_xml_add_child(node, NULL, (char*) hnode_getkey(hn),
-                        (char*) hnode_get(hn));
+            if (options.properties)
+            {      
+                if (options.method) {        
+                    node = ws_xml_add_empty_child_format( body, resource_uri , "%s_INPUT", options.method);
+                    hash_scan_begin(&hs, options.properties);
+                    while ((hn = hash_scan_next(&hs))) {
+                        ws_xml_add_child(node, NULL, (char*) hnode_getkey(hn),
+                            (char*) hnode_get(hn));
+                    }                
                 }
-                */
             }        
         break;
         case WSMAN_ACTION_ENUMERATION:
@@ -470,10 +482,12 @@ ws_transfer_put( WsManClient *cl,
 
 WsXmlDocH
 wsman_invoke( WsManClient *cl,
-        char *resource_uri,             
+        char *resource_uri,   
+        char *method,          
         actionOptions options)
 {
     options.action = WSMAN_ACTION_CUSTOM;
+    options.method = method;
     WsXmlDocH request = wsman_create_request(cl, resource_uri, options, NULL);
     wsman_send_request(cl, request);       	
 	WsXmlDocH response = wsman_build_envelope_from_response(cl);

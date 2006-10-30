@@ -215,9 +215,9 @@ int main(int argc, char** argv)
         }
         break;
     case  WSMAN_ACTION_CUSTOM:
-        options.method = wsman_options_get_invoke_method();
+       
         options.properties = wsman_options_get_properties();
-        doc = wsman_invoke(cl, resource_uri, options);
+        doc = wsman_invoke(cl, resource_uri, wsman_options_get_invoke_method(), options);
         if (doc) {
             wsman_output(doc);
             ws_xml_destroy_doc(doc);

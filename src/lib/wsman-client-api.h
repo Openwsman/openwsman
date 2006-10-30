@@ -151,7 +151,7 @@ WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri,
 WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
 		char *enumContext , actionOptions options);
 
-WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,
+WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,char *method,
 		 actionOptions options);
 
 void wsman_send_request(WsManClient *cl, WsXmlDocH request);

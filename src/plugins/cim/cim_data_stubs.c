@@ -92,7 +92,7 @@ CimResource_destroy(CimClientInfo *cimclient)
     if (cimclient->method) u_free(cimclient->method);
     if (cimclient->requested_class) u_free(cimclient->requested_class);
     if (cimclient->method_args) {
-        //hash_free(cimclient->method_args);       
+        hash_free(cimclient->method_args);       
     }
     if (cimclient->selectors) {
         hash_free(cimclient->selectors);        
