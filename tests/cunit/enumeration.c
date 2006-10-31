@@ -229,7 +229,6 @@ static void wsman_output(WsXmlDocH doc)
 
 WsManClient *cl;
 actionOptions options;
-WsContextH cntx;
 
 int init_enumeration_test(void)
 {
@@ -237,9 +236,7 @@ int init_enumeration_test(void)
   if (_debug) wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
   initialize_logging();
 
-  cntx = ws_create_runtime(NULL);
-
-  cl = wsman_connect( cntx, 
+  cl = wsman_create_client( 
 		      sd[0].server,
 		      sd[0].port,
 		      sd[0].path,
@@ -292,10 +289,6 @@ int clean_enumeration_test(void)
 {			
   destroy_action_options(&options);		
   wsman_release_client(cl);
-  if (cntx) {
-    SoapH soap = ws_context_get_runtime(cntx);  
-    soap_destroy_fw(soap);    		
-  }
   return 0;
 }
 

@@ -221,9 +221,7 @@ int main(int argc, char** argv)
 		printf ("Test %d: %s:", i + 1, tests[i].explanation);
 		//printf ("------------------------------------------------\n");
 
-    	WsContextH cntx = ws_create_runtime(NULL);
-
-    	cl = wsman_connect( cntx, 
+    	cl = wsman_create_client( 
     		sd[0].server,
     		sd[0].port,
     		sd[0].path,
@@ -269,10 +267,6 @@ int main(int argc, char** argv)
 		}		
 		destroy_action_options(&options);		
     	wsman_release_client(cl);
-    	if (cntx) {
-    		SoapH soap = ws_context_get_runtime(cntx);  
-    		soap_destroy_fw(soap);    		
-    	}		
 	}
 
 	return 0;
