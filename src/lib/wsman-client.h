@@ -79,6 +79,8 @@ extern "C" {
 
   WsXmlDocH wsman_build_envelope_from_response (WsManClient *cl);
 
+  void wsman_set_action_option(actionOptions *options, unsigned int);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -154,6 +154,14 @@ extern "C" {
 
   void wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
+  WsXmlDocH 
+  wsman_create_request( WsManClient *cl,
+                        WsmanAction action,
+                        char *method,
+                        char *resource_uri,
+                        actionOptions options,
+                        void *data);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

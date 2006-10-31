@@ -57,7 +57,8 @@
 
 
 
-void initialize_action_options(actionOptions *op) 
+void 
+initialize_action_options(actionOptions *op) 
 {
   bzero(op, sizeof(actionOptions));
   op->selectors = NULL;
@@ -65,7 +66,8 @@ void initialize_action_options(actionOptions *op)
   return;
 }
 
-void destroy_action_options(actionOptions *op) 
+void 
+destroy_action_options(actionOptions *op) 
 {
   if (op->selectors) {		
     hash_free(op->selectors);		
@@ -74,6 +76,14 @@ void destroy_action_options(actionOptions *op)
     hash_free(op->properties);		
   }	
   bzero(op, sizeof(actionOptions));
+  return;
+}
+
+void 
+wsman_set_action_option(actionOptions *options, unsigned int flag)
+{
+  options->flags |= flag;
+  
   return;
 }
 
@@ -137,22 +147,19 @@ wsman_add_selector_from_options( WsXmlDocH doc, actionOptions options)
             (char*)hnode_getkey(hn), (char*)hnode_get(hn));
     }
   }
-  //hash_free(query);
-  //hash_destroy(query);
+
 }
 
 
-// FIXME
+
 void
 wsman_add_namespace_as_selector( WsXmlDocH doc, 
                                  char *_namespace)
 {
   WsXmlNodeH header = ws_xml_get_soap_header(doc);
-  WsXmlNodeH set = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-  debug("%p",  set);
-  if (set != NULL) {
-    //set = ws_xml_add_child(header, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
-  }
+  wsman_add_selector(header,
+                       CIM_NAMESPACE_SELECTOR, _namespace);
+
   return;
 }
 
@@ -318,7 +325,7 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
 }
 
 
-static WsXmlDocH 
+WsXmlDocH 
 wsman_create_request( WsManClient *cl,
                       WsmanAction action,
                       char *method,
@@ -471,7 +478,7 @@ ws_transfer_get( WsManClient *cl,
                  char *resource_uri,
                  actionOptions options) 
 {    
-  //options.action = WSMAN_ACTION_TRANSFER_GET;
+ 
   WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_GET, NULL,  resource_uri, options, NULL);
   wsman_send_request(cl, request);       	
   WsXmlDocH response = wsman_build_envelope_from_response(cl);

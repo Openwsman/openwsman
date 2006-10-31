@@ -120,7 +120,7 @@ int main(int argc, char** argv)
   char *enumeration_mode, *binding_enumeration_mode, *resource_uri_with_selectors;
   char *resource_uri = NULL;
 
-  initialize_action_options(&options);
+  
 
 
   filename = (char *)wsman_options_get_config_file();
@@ -142,6 +142,7 @@ int main(int argc, char** argv)
 
   initialize_logging ();
   wsman_client_transport_init(NULL); 
+  initialize_action_options(&options);
 
   debug( "Certificate: %s", wsman_options_get_cafile());
 
@@ -172,24 +173,30 @@ int main(int argc, char** argv)
 
   op = wsman_options_get_action();
 
-  if (wsman_options_get_dump_request()) {
-    options.flags |= FLAG_DUMP_REQUEST;
+  if (wsman_options_get_dump_request()) {   
+    wsman_set_action_option(&options,FLAG_DUMP_REQUEST ); 
   }
+
   if (wsman_options_get_max_envelope_size()) {
     options.max_envelope_size = wsman_options_get_max_envelope_size();
   }
+
   if (wsman_options_get_operation_timeout()) {
     options.timeout = wsman_options_get_operation_timeout();
   }
+
   if (wsman_options_get_fragment()) {
     options.fragment = wsman_options_get_fragment();
   }
+
   if (wsman_options_get_filter()) {
     options.filter = wsman_options_get_filter();
   }
+
   if (wsman_options_get_dialect()) {
     options.dialect = wsman_options_get_dialect();
   }
+
   options.properties = wsman_options_get_properties();
   options.cim_ns = wsman_options_get_cim_namespace();
 
@@ -263,27 +270,28 @@ int main(int argc, char** argv)
 
     if (enumeration_mode) {
       if (strcmp(enumeration_mode, "epr") == 0)
-        options.flags |= FLAG_ENUMERATION_ENUM_EPR;
+        wsman_set_action_option(&options, FLAG_ENUMERATION_ENUM_EPR);
       else
-        options.flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
+        wsman_set_action_option(&options,FLAG_ENUMERATION_ENUM_OBJ_AND_EPR);
     }
 
     if (binding_enumeration_mode) {
       if (strcmp(binding_enumeration_mode, "include") == 0)
-        options.flags |= FLAG_IncludeSubClassProperties;
+        wsman_set_action_option(&options, FLAG_IncludeSubClassProperties);
       else if (strcmp(binding_enumeration_mode, "exclude") == 0)
-        options.flags |= FLAG_ExcludeSubClassProperties;
+        wsman_set_action_option(&options, FLAG_ExcludeSubClassProperties);
       else if (strcmp(binding_enumeration_mode, "none") == 0)
-        options.flags |= FLAG_POLYMORPHISM_NONE;
+        wsman_set_action_option(&options, FLAG_POLYMORPHISM_NONE);
     }
 
-    if (wsman_options_get_optimize_enum()) {
-      options.flags |= FLAG_ENUMERATION_OPTIMIZATION;
+    if (wsman_options_get_optimize_enum()) 
+    {
+      wsman_set_action_option(&options, FLAG_ENUMERATION_OPTIMIZATION);            
       options.max_elements = wsman_options_get_max_elements();
     }
 
     if (wsman_options_get_estimate_enum()) {
-      options.flags |= FLAG_ENUMERATION_COUNT_ESTIMATION;
+      wsman_set_action_option(&options, FLAG_ENUMERATION_COUNT_ESTIMATION);
     }
         
     WsXmlDocH enum_response = wsenum_enumerate(cl,
