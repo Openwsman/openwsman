@@ -20,7 +20,7 @@ LIBS += $(CURL_LIBS)
 
 run_tests_SOURCES = run_tests.c \
               client_suite.c \
-              test_enumeration.c
+              enumeration.c
 
 noinst_PROGRAMS = run_tests 
 
