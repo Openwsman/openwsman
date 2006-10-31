@@ -92,7 +92,7 @@ void get_endpoints(void *self, void **data)
     ifc->compliance = XML_NS_WS_MAN;
     ifc->wsmanResourceUri = NULL;
     ifc->extraData = NULL;
-    ifc->namespaces = wsmid_identify_Namespaces;
+    ifc->namespaces = NULL;
     ifc->endPoints = wsmid_identify_EndPoints;			
 }
 

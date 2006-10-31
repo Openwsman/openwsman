@@ -120,8 +120,7 @@ int main(int argc, char** argv)
   char *enumeration_mode, *binding_enumeration_mode, *resource_uri_with_selectors;
   char *resource_uri = NULL;
 
-  
-
+ 
 
   filename = (char *)wsman_options_get_config_file();
   if (filename)  {

@@ -391,7 +391,7 @@ struct __WsDispatchInterfaceInfo
 	char* actionUriBase;
 	char* wsmanResourceUri;
 	void* extraData;
-	WsSupportedNamespaces* namespaces;	
+	list_t* namespaces;	
 	WsDispatchEndPointInfo* endPoints;	
 };
 typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
@@ -603,25 +603,24 @@ void wsman_generate_fault_buffer(
 
 #define WS_DISP_TYPE_MASK				0xffff
 
-#define WS_DISP_TYPE_RAW_DOC				0
+#define WS_DISP_TYPE_RAW_DOC			0
 #define WS_DISP_TYPE_GET				1
 #define WS_DISP_TYPE_PUT				2
-#define WS_DISP_TYPE_CREATE				3
-#define WS_DISP_TYPE_DELETE				4
+#define WS_DISP_TYPE_CREATE			3
+#define WS_DISP_TYPE_DELETE			4
 
-#define WS_DISP_TYPE_ENUMERATE		        	5
+#define WS_DISP_TYPE_ENUMERATE     	5
 #define WS_DISP_TYPE_PULL				6
-#define WS_DISP_TYPE_RELEASE				7
-#define WS_DISP_TYPE_UPDATE				8
-#define WS_DISP_TYPE_GETSTATUS			        9
+#define WS_DISP_TYPE_RELEASE			7
+#define WS_DISP_TYPE_UPDATE			8
+#define WS_DISP_TYPE_GETSTATUS      9
 #define WS_DISP_TYPE_COUNT				11
-#define WS_DISP_TYPE_PULL_RAW			        12
-#define WS_DISP_TYPE_GET_RAW				13
-#define WS_DISP_TYPE_GET_NAMESPACE			14
-#define WS_DISP_TYPE_CUSTOM_METHOD			15
-#define WS_DISP_TYPE_PUT_RAW				16
-#define WS_DISP_TYPE_IDENTIFY				17
-
+#define WS_DISP_TYPE_PULL_RAW	      12
+#define WS_DISP_TYPE_GET_RAW			13
+#define WS_DISP_TYPE_GET_NAMESPACE	14
+#define WS_DISP_TYPE_CUSTOM_METHOD	15
+#define WS_DISP_TYPE_PUT_RAW			16
+#define WS_DISP_TYPE_IDENTIFY			17
 #define WS_DISP_TYPE_PRIVATE				0xfffe
 
 
