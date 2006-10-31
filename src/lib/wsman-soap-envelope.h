@@ -108,4 +108,9 @@ void wsman_set_fault(WsmanMessage *msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
+void 
+wsman_set_polymorph_mode( WsContextH cntx,
+                          WsXmlDocH doc,
+                          WsEnumerateInfo *enumInfo);
+
 #endif

@@ -493,7 +493,8 @@ cim_get_class (CimClientInfo *client,
 static void
 instance2xml( CimClientInfo *client,
               CMPIInstance* instance,
-              WsXmlNodeH body)
+              WsXmlNodeH body,
+              WsEnumerateInfo* enumInfo)
 {   
   int i;
   char *new_ns = NULL;
@@ -506,7 +507,8 @@ instance2xml( CimClientInfo *client,
   int numproperties = instance->ft->getPropertyCount(instance, NULL);
 
 
-  if (1)
+  if (enumInfo && ( (enumInfo->flags & 
+                     FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) 
     target_class = client->requested_class;
   else
     target_class = (char *)classname->hdl;
@@ -522,7 +524,8 @@ instance2xml( CimClientInfo *client,
   //FIXME
   xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns );
 
-  if (1) 
+  if (enumInfo && ( (enumInfo->flags & 
+                     FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) 
   {
     debug("class name: %s", client->requested_class );
     _class = cim_get_class(client, client->requested_class , NULL);
@@ -542,7 +545,9 @@ instance2xml( CimClientInfo *client,
     {
       CMPIString * propertyname;
       CMPIData data;
-      if (1) {
+      if (enumInfo && ((enumInfo->flags & 
+                        FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties) )
+      {
          _class->ft->getPropertyAt(_class, i, &propertyname, NULL);
          data = instance->ft->getProperty(instance,  (char *)propertyname->hdl, NULL);
       }
@@ -554,8 +559,11 @@ instance2xml( CimClientInfo *client,
     }
   }
 
-
-  if (_class) CMRelease(_class);
+  if (enumInfo && ( (enumInfo->flags & 
+                     FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) 
+  {
+    if (_class) CMRelease(_class);
+  }
   if (classname) CMRelease(classname);
   if (namespace) CMRelease(namespace);
   if (objectpath) CMRelease(objectpath);
@@ -672,7 +680,7 @@ cim_getElementAt(CimClientInfo *client,
 {
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
-  instance2xml(client, data.value.inst, itemsNode);
+  instance2xml(client, data.value.inst, itemsNode, enumInfo);
   return;
 }
 
@@ -704,7 +712,7 @@ cim_getEprObjAt(CimClientInfo *client,
   CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
   WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM , NULL);
   cim_add_epr(item, client->resource_uri, objectpath);
-  instance2xml(client, instance, item);
+  instance2xml(client, instance, item, enumInfo);
 
   CMRelease(objectpath);
   return;
@@ -917,7 +925,7 @@ cim_get_instance_from_enum ( CimClientInfo *client,
     instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_IncludeClassOrigin , NULL, &rc);
     if (rc.rc == 0 ) {
       if (instance) 
-        instance2xml(client, instance, body);
+        instance2xml(client, instance, body, NULL);
     } else {
       cim_to_wsman_status(rc, status);
     }
@@ -967,7 +975,7 @@ cim_put_instance_from_enum (CimClientInfo *client,
     cim_to_wsman_status(rc, status);
     if (rc.rc == 0 ) {
       if (instance)
-        instance2xml(client, instance, body);
+        instance2xml(client, instance, body, NULL);
     } 
     if (instance) CMRelease(instance);
   } else {
@@ -1001,7 +1009,7 @@ cim_get_instance (CimClientInfo *client,
   cim_add_keys(objectpath, client->selectors);
   instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
   if (instance)
-    instance2xml(client, instance, body);
+    instance2xml(client, instance, body, NULL);
 
   /* Print the results */
   debug( "getInstance() rc=%d, msg=%s",

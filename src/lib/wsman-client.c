@@ -389,7 +389,7 @@ wsman_create_request( WsManClient *cl,
   case WSMAN_ACTION_ENUMERATION:
     node = ws_xml_add_child(ws_xml_get_soap_body(request),
                             XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);            
-    wsman_set_enumeration_options(header, options);
+    wsman_set_enumeration_options(body, options);
     break;        
   case WSMAN_ACTION_PULL:
     node = ws_xml_add_child(ws_xml_get_soap_body(request),

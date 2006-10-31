@@ -199,6 +199,8 @@
 #define WSMB_POLYMORPHISM_MODE          "PolymorphismMode"
 #define WSMB_INCLUDE_SUBCLASS_PROP      "IncludeSubClassProperties"
 #define WSMB_EXCLUDE_SUBCLASS_PROP      "ExcludeSubClassProperties"
+#define WSMB_NONE      "None"
+
 
 // Catalog
 
@@ -457,6 +459,15 @@ enum __WsmanFilterDialect
     WSMAN_FILTER_SELECTOR
 };
 typedef enum __WsmanFilterDialect WsmanFilterDialect;
+
+
+enum __WsmanPolymorphismMode
+{
+  INCLUDE_SUBCLASS_PROP = 1,
+  EXCLUDE_SUBCLASS_PROP,
+  POLYMORPHISM_NONE
+};
+typedef enum __WsmanPolymorphismMode WsmanPolymorphismMode;
 
 
 /** *********************************** */

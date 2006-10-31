@@ -51,10 +51,10 @@
 
 #if 0
 static char *auth_methods[] = {
-     "basic",
-     "digest",
-     "ntlm",
-     NULL,
+  "basic",
+  "digest",
+  "ntlm",
+  NULL,
 };
 #endif
 
@@ -104,351 +104,355 @@ static char **properties = NULL;
 
 
 WsActions action_data[] = 
-{ 
- { "get", WSMAN_ACTION_TRANSFER_GET},
- { "put", WSMAN_ACTION_TRANSFER_PUT},
- { "enumerate", WSMAN_ACTION_ENUMERATION},
- { "pull", WSMAN_ACTION_PULL},
- { "release", WSMAN_ACTION_RELEASE},
- { "invoke", WSMAN_ACTION_CUSTOM },
- { "identify", WSMAN_ACTION_IDENTIFY},
- { "test", WSMAN_ACTION_TEST},
- { NULL, 0},
-};
+  { 
+    { "get", WSMAN_ACTION_TRANSFER_GET},
+    { "put", WSMAN_ACTION_TRANSFER_PUT},
+    { "enumerate", WSMAN_ACTION_ENUMERATION},
+    { "pull", WSMAN_ACTION_PULL},
+    { "release", WSMAN_ACTION_RELEASE},
+    { "invoke", WSMAN_ACTION_CUSTOM },
+    { "identify", WSMAN_ACTION_IDENTIFY},
+    { "test", WSMAN_ACTION_TEST},
+    { NULL, 0},
+  };
 
 char wsman_parse_options(int argc, char **argv) 
 {
 
-    char retval = 0;
-    u_error_t *error = NULL;
+  char retval = 0;
+  u_error_t *error = NULL;
 
-    u_option_entry_t options[] = {
-	{ "debug",	'd',	U_OPTION_ARG_INT,	&debug_level,
+  u_option_entry_t options[] = {
+    { "debug",	'd',	U_OPTION_ARG_INT,	&debug_level,
 		"Set the verbosity of debugging output.",	"1-6" },
-	{ "cafile",	'c',	U_OPTION_ARG_STRING,	&cafile,
+    { "cafile",	'c',	U_OPTION_ARG_STRING,	&cafile,
 		"Certificate file",	"<filename>"  },
-	{ "username",	'u',	U_OPTION_ARG_STRING,	&username,
+    { "username",	'u',	U_OPTION_ARG_STRING,	&username,
 		"User name",	"<username>" },
-	{ "path",	'g',	U_OPTION_ARG_STRING,	&url_path,
+    { "path",	'g',	U_OPTION_ARG_STRING,	&url_path,
 		"Path",	"<path>" },
-	{ "password",	'p',	U_OPTION_ARG_STRING,	&password,
+    { "password",	'p',	U_OPTION_ARG_STRING,	&password,
 		"Password",	"<password>" },
-	{ "hostname",	'h',	U_OPTION_ARG_STRING,	&server,
+    { "hostname",	'h',	U_OPTION_ARG_STRING,	&server,
 		"Host name",	"<hostname>" },
-	{ "port",	'P',	U_OPTION_ARG_INT,	&server_port,
+    { "port",	'P',	U_OPTION_ARG_INT,	&server_port,
 		"Server Port",	"<port>"},
-	{ "proxy",	'X',	U_OPTION_ARG_STRING,	&proxy,
+    { "proxy",	'X',	U_OPTION_ARG_STRING,	&proxy,
 		"Proxy name",			"<proxy>" },
-	{ "proxyauth",	'Y',	U_OPTION_ARG_STRING,	&proxy_upwd,
+    { "proxyauth",	'Y',	U_OPTION_ARG_STRING,	&proxy_upwd,
 		"Proxy user:pwd",		"<proxyauth>" },
-	{ "auth",	'y', 	U_OPTION_ARG_STRING,	&authentication_method,
+    { "auth",	'y', 	U_OPTION_ARG_STRING,	&authentication_method,
 		"Authentication Method",	"<basic|digest>" },
-	{ "method",	'a',	U_OPTION_ARG_STRING,	&invoke_method,
+    { "method",	'a',	U_OPTION_ARG_STRING,	&invoke_method,
 		"Method (Works only with 'invoke')", "<custom method>" },
-	{ "prop",	'k',	U_OPTION_ARG_STRING_ARRAY,	&properties,
-	"Properties with key value pairs (For 'put', 'invoke' and 'create')",
-						"<key=val>" },
-	{ "config-file",'C',	U_OPTION_ARG_STRING,	&config_file,
+    { "prop",	'k',	U_OPTION_ARG_STRING_ARRAY,	&properties,
+      "Properties with key value pairs (For 'put', 'invoke' and 'create')",
+      "<key=val>" },
+    { "config-file",'C',	U_OPTION_ARG_STRING,	&config_file,
 		"Alternate configuration file",	"<file>" },
-	{ "out-file",	'O',	U_OPTION_ARG_STRING,	&output_file,
+    { "out-file",	'O',	U_OPTION_ARG_STRING,	&output_file,
 		"Write output to file",		"<file>" },
-	{ "noverifypeer",'V',	U_OPTION_ARG_NONE,	&no_verify_peer,
+    { "noverifypeer",'V',	U_OPTION_ARG_NONE,	&no_verify_peer,
 		"Not to verify peer certificate",	NULL },        
-        { NULL }
-    };
+    { NULL }
+  };
 
 
 
-    u_option_entry_t request_options[] = {
-	{ "filter",	'x',	U_OPTION_ARG_STRING,	&wsm_filter,
+  u_option_entry_t request_options[] = {
+    { "filter",	'x',	U_OPTION_ARG_STRING,	&wsm_filter,
 		"Filter" ,			"<filter>" },
-	{ "dialect",	'D',	U_OPTION_ARG_STRING,	&wsm_dialect,
+    { "dialect",	'D',	U_OPTION_ARG_STRING,	&wsm_dialect,
 		"Filter Dialect" ,		"<dialect>" },
-	{ "timeout",	't',	U_OPTION_ARG_INT,	&operation_timeout,
+    { "timeout",	't',	U_OPTION_ARG_INT,	&operation_timeout,
 		"Operation timeout in seconds",	"<time in sec>" },
-	{ "max-envelope-size", 'e', U_OPTION_ARG_INT,	&max_envelope_size,
+    { "max-envelope-size", 'e', U_OPTION_ARG_INT,	&max_envelope_size,
 		"maximal envelope size" ,	"<size>" },
-	{ "fragment",	'F',	U_OPTION_ARG_STRING,	&fragment,
+    { "fragment",	'F',	U_OPTION_ARG_STRING,	&fragment,
 		"Fragment (Supported Dialects: XPATH)" , "<fragment>" },
-        { NULL }
-    };
+    { NULL }
+  };
 
-    u_option_entry_t enum_options[] = {
+  u_option_entry_t enum_options[] = {
 
-	{ "max-elements", 'm',	U_OPTION_ARG_INT,	&enum_max_elements,
-	"Max Elements Per Pull/Optimized Enumeration",
-	"<max number of elements>" },
-	{ "optimize",	'o',	U_OPTION_ARG_NONE,	&enum_optimize,
+    { "max-elements", 'm',	U_OPTION_ARG_INT,	&enum_max_elements,
+      "Max Elements Per Pull/Optimized Enumeration",
+      "<max number of elements>" },
+    { "optimize",	'o',	U_OPTION_ARG_NONE,	&enum_optimize,
 		"Optimize enumeration results",		NULL },
-	{ "estimate-count", 'E', U_OPTION_ARG_NONE,	&enum_estimate,
+    { "estimate-count", 'E', U_OPTION_ARG_NONE,	&enum_estimate,
 		"Return estimation of total items",	NULL },
-	{ "enum-mode",	'M',	U_OPTION_ARG_STRING,	&enum_mode,
+    { "enum-mode",	'M',	U_OPTION_ARG_STRING,	&enum_mode,
 		"Enumeration Mode",	"epr|objepr" },
     { "enum-context",	'U',	U_OPTION_ARG_STRING,	&enum_context,
     	"Enumeration Context (For use with Pull and Release)",	"<enum context>" },
-        { NULL }
-    };
+    { NULL }
+  };
 
-    u_option_entry_t cim_options[] = {
+  u_option_entry_t cim_options[] = {
 
-	{ "namespace",	'N',	U_OPTION_ARG_STRING,	&cim_namespace,
-	"CIM Namespace (default is root/cimv2)",	"<namespace>" },
-	{ "binding-enum-mode", 'B', U_OPTION_ARG_STRING, &binding_enum_mode,
-	"CIM binding Enumeration Mode",	"none|include|exclude"},
+    { "namespace",	'N',	U_OPTION_ARG_STRING,	&cim_namespace,
+      "CIM Namespace (default is root/cimv2)",	"<namespace>" },
+    { "binding-enum-mode", 'B', U_OPTION_ARG_STRING, &binding_enum_mode,
+      "CIM binding Enumeration Mode",	"none|include|exclude"},
 
-        { NULL }
-    };
+    { NULL }
+  };
 
-    u_option_entry_t test_options[] = {
-	{ "from-file",	'f',	U_OPTION_ARG_STRING,	&test_case,
-	"Send request from file",	"<file name>"},
-	{ "print-request", 'R', U_OPTION_ARG_NONE,	&dump_request,
-	"print request on stdout",	NULL},
+  u_option_entry_t test_options[] = {
+    { "from-file",	'f',	U_OPTION_ARG_STRING,	&test_case,
+      "Send request from file",	"<file name>"},
+    { "print-request", 'R', U_OPTION_ARG_NONE,	&dump_request,
+      "print request on stdout",	NULL},
     { "request",'Q',   U_OPTION_ARG_NONE,  &request_only,
-        "Only output reqest. Not send it.",   NULL },
+      "Only output reqest. Not send it.",   NULL },
     { "step",'S',   U_OPTION_ARG_NONE,  &step,
-        "Do not perform multiple operations (do not pull data when enumerating)",   NULL },	
-        //{ "print-response", 'N', 0, G_OPTION_ARG_NONE, &dump_response, "print all responses to stdout", NULL},
-        { NULL }
-    };
+      "Do not perform multiple operations (do not pull data when enumerating)",   NULL },	
+    //{ "print-response", 'N', 0, G_OPTION_ARG_NONE, &dump_response, "print all responses to stdout", NULL},
+    { NULL }
+  };
 
-    u_option_group_t *enum_group;
-    u_option_group_t *test_group;
-    u_option_group_t *cim_group;
-    u_option_group_t *req_flag_group;
+  u_option_group_t *enum_group;
+  u_option_group_t *test_group;
+  u_option_group_t *cim_group;
+  u_option_group_t *req_flag_group;
 
-    u_option_context_t *opt_ctx;	
-    opt_ctx = u_option_context_new("<action> <Resource Uri>");
-    enum_group = u_option_group_new("enumeration", "Enumeration",
-                                    "Enumeration Options");
-    test_group = u_option_group_new("tests", "Tests", "Test Cases");
-    cim_group = u_option_group_new("cim", "CIM", "CIM Options");
-    req_flag_group = u_option_group_new("flags", "Flags", "Request Flags");
+  u_option_context_t *opt_ctx;	
+  opt_ctx = u_option_context_new("<action> <Resource Uri>");
+  enum_group = u_option_group_new("enumeration", "Enumeration",
+                                  "Enumeration Options");
+  test_group = u_option_group_new("tests", "Tests", "Test Cases");
+  cim_group = u_option_group_new("cim", "CIM", "CIM Options");
+  req_flag_group = u_option_group_new("flags", "Flags", "Request Flags");
 
-    u_option_group_add_entries(enum_group, enum_options);
-    u_option_group_add_entries(test_group, test_options);
-    u_option_group_add_entries(cim_group, cim_options);
-    u_option_group_add_entries(req_flag_group, request_options);
+  u_option_group_add_entries(enum_group, enum_options);
+  u_option_group_add_entries(test_group, test_options);
+  u_option_group_add_entries(cim_group, cim_options);
+  u_option_group_add_entries(req_flag_group, request_options);
 
-    u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
-    u_option_context_add_main_entries(opt_ctx, options, "wsman");
-    u_option_context_add_group(opt_ctx, enum_group);
-    u_option_context_add_group(opt_ctx, test_group);
-    u_option_context_add_group(opt_ctx, cim_group);
-    u_option_context_add_group(opt_ctx, req_flag_group);
+  u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
+  u_option_context_add_main_entries(opt_ctx, options, "wsman");
+  u_option_context_add_group(opt_ctx, enum_group);
+  u_option_context_add_group(opt_ctx, test_group);
+  u_option_context_add_group(opt_ctx, cim_group);
+  u_option_context_add_group(opt_ctx, req_flag_group);
 
-    retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
-    u_option_context_free(opt_ctx);
+  retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
+  u_option_context_free(opt_ctx);
 
-    if (error) {
-        if (error->message)
-            printf ("%s\n", error->message);
-        u_error_free(error);
-        return FALSE;
-    }
-
-    if (argc > 2 ) {
-        _action = argv[1];
-        resource_uri = argv[2];
-    } else {
-        if (argv[1] && ( strcmp(argv[1], "identify") == 0 ||
-                        strcmp(argv[1], "test") == 0 )) {
-            _action = argv[1];
-        } else {
-            fprintf(stderr, "Error: operation can not be completed."
-                " Action or/and Resource Uri missing.\n");
-            return FALSE;
-        }
-    }
+  if (error) {
+    if (error->message)
+      printf ("%s\n", error->message);
     u_error_free(error);
+    return FALSE;
+  }
 
-    // set default options 
-    if (server_port == 0) {
-       server_port = cafile ? 8888 : 8889;
+  if (argc > 2 ) {
+    _action = argv[1];
+    resource_uri = argv[2];
+  } else {
+    if (argv[1] && ( strcmp(argv[1], "identify") == 0 ||
+                     strcmp(argv[1], "test") == 0 )) {
+      _action = argv[1];
+    } else {
+      fprintf(stderr, "Error: operation can not be completed."
+              " Action or/and Resource Uri missing.\n");
+      return FALSE;
     }
-    if (url_path == NULL) {
-        url_path = "/wsman";
-    }
-    return TRUE;
+  }
+  u_error_free(error);
+
+  // set default options 
+  if (server_port == 0) {
+    server_port = cafile ? 8888 : 8889;
+  }
+  if (url_path == NULL) {
+    url_path = "/wsman";
+  }
+  return TRUE;
 }
 
 const char * wsman_options_get_output_file (void)
 {
-    return output_file;
+  return output_file;
 }
 const char * wsman_options_get_config_file (void) {
-    return config_file;
+  return config_file;
 }
 
 int wsman_read_client_config (dictionary *ini)
 {
-    if (iniparser_find_entry(ini, "client")) {
-        agent = iniparser_getstr(ini, "client:agent");
-        server_port = server_port ?
-                server_port : iniparser_getint(ini, "client:port", 80);
-        authentication_method = authentication_method?
-                authentication_method:
-                iniparser_getstr(ini, "client:authentication_method");
-    } else {
-        return 0;
-    }
-    return 1;
+  if (iniparser_find_entry(ini, "client")) {
+    agent = iniparser_getstr(ini, "client:agent");
+    server_port = server_port ?
+      server_port : iniparser_getint(ini, "client:port", 80);
+    authentication_method = authentication_method?
+      authentication_method:
+      iniparser_getstr(ini, "client:authentication_method");
+  } else {
+    return 0;
+  }
+  return 1;
 }
 
 void wsman_setup_transport_and_library_options()
 {
-    // transport options
-    wsman_transport_set_auth_method(authentication_method);
-    if (proxy) {
-        wsman_transport_set_proxy(proxy);
-        if (proxy_upwd) {
-            wsman_transport_set_proxyauth(proxy_upwd);
-        }
+  // transport options
+  wsman_transport_set_auth_method(authentication_method);
+  if (proxy) {
+    wsman_transport_set_proxy(proxy);
+    if (proxy_upwd) {
+      wsman_transport_set_proxyauth(proxy_upwd);
     }
-    if (cafile) {
-        wsman_transport_set_cafile(cafile);
-    }
-    wsman_transport_set_no_verify_peer(no_verify_peer);
+  }
+  if (cafile) {
+    wsman_transport_set_cafile(cafile);
+  }
+  wsman_transport_set_no_verify_peer(no_verify_peer);
 
-    // library options
-    wsman_debug_set_level(debug_level);
+  // library options
+  wsman_debug_set_level(debug_level);
 }
  
 
 const char ** wsman_options_get_argv (void) {
-    return wsman_argv;
+  return wsman_argv;
 }
 
 
 
 int wsman_options_get_server_port (void) {
-    return server_port;
+  return server_port;
 }
 
-unsigned long wsman_options_get_max_envelope_size (void) {
-    return max_envelope_size;
+unsigned long 
+wsman_options_get_max_envelope_size (void) 
+{
+  return max_envelope_size;
 }
 unsigned long wsman_options_get_operation_timeout (void) {
-    return operation_timeout;
+  return operation_timeout;
 }
 
 char* wsman_options_get_cafile (void) {
-    return cafile;
+  return cafile;
 }        
 
 char* wsman_options_get_server (void) {
-    if (server)
-        return server;
-    else
-        return "localhost";
+  if (server)
+    return server;
+  else
+    return "localhost";
 }
 
 char* wsman_options_get_invoke_method (void) {
-    return invoke_method;
+  return invoke_method;
 }   
 
 char* wsman_options_get_username (void) {
-    return username;
+  return username;
 }   
 
 char* wsman_options_get_password (void) {
-    return password;
+  return password;
 }
  
 
 
 hash_t * wsman_options_get_properties (void)
 {
-    int c = 0;
-    hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+  int c = 0;
+  hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
     
-    while(properties != NULL && properties[c] != NULL)
-    {
-        char *cc[3]; 
-        u_tokenize1(cc, 2, properties[c], '=');
-        if (!hash_alloc_insert(h, cc[0], cc[1])) {
-            debug("hash_alloc_insert failed");
-        }
-        c++;
+  while(properties != NULL && properties[c] != NULL)
+  {
+    char *cc[3]; 
+    u_tokenize1(cc, 2, properties[c], '=');
+    if (!hash_alloc_insert(h, cc[0], cc[1])) {
+      debug("hash_alloc_insert failed");
     }
-    return h;
+    c++;
+  }
+  return h;
 }
 
 int wsman_options_get_action (void)
 {
-    int op = 0;
-    int i;
-    for(i = 0; action_data[i].action != NULL; i++)
-    {
-        if (strcmp(action_data[i].action, _action)  == 0 ) {
-            op = action_data[i].value;
-            break;
-        }
+  int op = 0;
+  int i;
+  for(i = 0; action_data[i].action != NULL; i++)
+  {
+    if (strcmp(action_data[i].action, _action)  == 0 ) {
+      op = action_data[i].value;
+      break;
     }
-    return op;
+  }
+  return op;
 }   
 
 char* wsman_options_get_resource_uri (void)
 {	
-    return resource_uri;
+  return resource_uri;
 }   
 
 int wsman_options_get_max_elements (void)
 {	
-    return enum_max_elements;
+  return enum_max_elements;
 }   
 char wsman_options_get_optimize_enum (void)
 {	
-    return enum_optimize;
+  return enum_optimize;
 }   
 char wsman_options_get_estimate_enum (void)
 {	
-    return enum_estimate;
+  return enum_estimate;
 }   
 char wsman_options_get_dump_request (void)
 {	
-    return dump_request;
+  return dump_request;
 }  
 char wsman_options_get_step_request (void)
 {	
-    return step;
+  return step;
 } 
 
 char * wsman_options_get_enum_context (void)
 {	
-    return enum_context;
+  return enum_context;
 }
 
 char * wsman_options_get_test_file (void)
 {	
-    return test_case;
+  return test_case;
 }   
 char * wsman_options_get_enum_mode (void)
 {	
-    return enum_mode;
+  return enum_mode;
 }   
-char * wsman_options_get_binding_enum_mode (void)
+char*
+wsman_options_get_binding_enum_mode (void)
 {	
-    return binding_enum_mode;
+  return binding_enum_mode;
 }   
-char * wsman_options_get_cim_namespace (void)
+char*
+wsman_options_get_cim_namespace (void)
 {	
-    return cim_namespace;
+  return cim_namespace;
 }   
 char * wsman_options_get_fragment (void)
 {	
-    return fragment;
+  return fragment;
 }   
 char * wsman_options_get_filter (void)
 {	
-    return wsm_filter;
+  return wsm_filter;
 }   
 char * wsman_options_get_dialect (void)
 {	
-    return wsm_dialect;
+  return wsm_dialect;
 }   
 char * wsman_options_get_path (void)
 {	
-    return url_path;
+  return url_path;
 }
 
