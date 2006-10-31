@@ -52,7 +52,7 @@
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
 #include "wsman-xml.h"
-#include "test_enumeration.h"
+#include "enumeration.h"
 
 
 int _debug = 0;

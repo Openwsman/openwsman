@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <CUnit/Basic.h> 
 #include "client_suite.h"
-#include "test_enumeration.h"
+#include "enumeration.h"
 
 int init_client_suite(void);
 int clean_client_suite(void);
