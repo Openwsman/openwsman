@@ -680,7 +680,18 @@ cim_getElementAt(CimClientInfo *client,
 {
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
-  instance2xml(client, data.value.inst, itemsNode, enumInfo);
+
+  CMPIInstance *instance = data.value.inst;
+  CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+  CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
+ 
+  if (enumInfo && ((enumInfo->flags & 
+                        FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
+    if (objectpath) CMRelease(objectpath);
+    return;
+  }
+  instance2xml(client, instance, itemsNode, enumInfo);
   return;
 }
 
@@ -695,6 +706,16 @@ cim_getEprAt( CimClientInfo *client,
 
   CMPIInstance *instance = data.value.inst;
   CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+  CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
+
+  if (enumInfo && ((enumInfo->flags & 
+                        FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
+    if (objectpath) CMRelease(objectpath);
+    return;
+  }
+
+ 
   cim_add_epr(itemsNode, client->resource_uri, objectpath);
   CMRelease(objectpath);
   return;
