@@ -1220,48 +1220,47 @@ cim_get_enum_items(CimClientInfo *client,
                    int max) 
 {
   WsXmlNodeH itemsNode;
-  if ( node != NULL ) {
-    itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
-    debug( "Total items: %d", enumInfo->totalItems );
-    if (max > 0 ) 
+  int c;
+
+  if ( node == NULL ) 
+    return;
+
+  itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
+  debug( "Total items: %d", enumInfo->totalItems );
+       
+  if (max > 0 ) 
+  {
+    while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) 
     {
-      while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) 
-      {
-        if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
-          cim_getEprAt(client, enumInfo, itemsNode);
-        else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
-          cim_getEprObjAt(client, enumInfo, itemsNode);
-        else
-          cim_getElementAt(client, enumInfo, itemsNode);
-        enumInfo->index++;
-        max--;
-      }
-      enumInfo->index--;
-    } 
-    else 
-    {
-      if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) 
-      {
-        int c;
-        while( enumInfo->index < enumInfo->totalItems)
-        {
-          if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
-            c = cim_getEprAt(client, enumInfo, itemsNode);
-          else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
-            c = cim_getEprObjAt(client, enumInfo, itemsNode);
-          else 
-            c = cim_getElementAt(client, enumInfo, itemsNode);           
-          
-          if (c == 0 )
-            enumInfo->index++;
-          else
-            break;
-        }
-        if ( c == 0 )
-          enumInfo->index--;
-                 
-      }
+      if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
+        c = cim_getEprAt(client, enumInfo, itemsNode);
+      else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
+        c = cim_getEprObjAt(client, enumInfo, itemsNode);
+      else
+        c = cim_getElementAt(client, enumInfo, itemsNode);
+      enumInfo->index++;
+      max--;
     }
+    enumInfo->index--;
+  } 
+  else 
+  {        
+    while(  enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems)
+    {
+      if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
+        c = cim_getEprAt(client, enumInfo, itemsNode);
+      else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
+        c = cim_getEprObjAt(client, enumInfo, itemsNode);
+      else 
+        c = cim_getElementAt(client, enumInfo, itemsNode);           
+          
+      if (c == 0 )
+        enumInfo->index++;
+      else
+        break;
+    }
+    if ( c == 0 )
+      enumInfo->index--;                        
   }  
 }
 
