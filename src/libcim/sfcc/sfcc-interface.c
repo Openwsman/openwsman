@@ -284,7 +284,7 @@ property2xml( CMPIData data,
 {
   char *valuestr = NULL;
 
-  debug("property: %s", name);
+  // debug("property: %s", name);
   if (CMIsArray(data)) 
   {
     if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
@@ -417,19 +417,21 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     count = (int)hash_count(keys);
   }
   debug("selector count: %d", count);
-  if (CMGetKeyCount(objectpath, NULL) >  count ) 
+  if (CMGetKeyCount(objectpath, &rc) >  count ) 
   {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
     statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
     goto cleanup;
-  } else if (CMGetKeyCount(objectpath, NULL) < hash_count(keys) )  {
+  } else if (CMGetKeyCount(objectpath, &rc) < hash_count(keys) )  {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
     goto cleanup;
   }
 
+
   hash_scan_begin(&hs, keys);
   char *cv;
-  while ((hn = hash_scan_next(&hs))) {    	
+  while ((hn = hash_scan_next(&hs))) 
+  {    	
     CMPIData data = CMGetKey(objectpath, (char*) hnode_getkey(hn), &rc);
     if ( rc.rc != 0 ) { // key not found
       statusP->fault_code = WSMAN_INVALID_SELECTORS;
@@ -449,6 +451,9 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     }
   }
  cleanup:
+  debug( "getKey rc=%d, msg=%s",
+           rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+
   debug("fault: %d %d",  statusP->fault_code, statusP->fault_detail_code );
   return  statusP->fault_code;
 }
@@ -587,9 +592,9 @@ cim_get_op_from_enum( CimClientInfo *client,
     debug("class available");
   CMPIObjectPath * objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
   enumeration = ((CMCIClient *)client->cc)->ft->enumInstanceNames(client->cc, objectpath, &rc);
-  if (rc.rc != 0 ) {
-    debug( "enumInstanceNames rc=%d, msg=%s",
+  debug( "enumInstanceNames rc=%d, msg=%s",
            rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+  if (rc.rc != 0 ) {
     cim_to_wsman_status(rc, statusP);
     //statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;        
     goto cleanup;
@@ -678,7 +683,7 @@ cim_getElementAt(CimClientInfo *client,
                  WsEnumerateInfo* enumInfo,
                  WsXmlNodeH itemsNode) 
 {
-  debug("cim_getElementAt");
+ 
   int retval = 1;
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
@@ -766,7 +771,7 @@ xml2instance( CMPIInstance *instance,
   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
 
   int numproperties = instance->ft->getPropertyCount(instance, NULL);
-  debug( "properties: %d", numproperties);
+  // debug( "properties: %d", numproperties);
   char *className = resourceUri + sizeof(XML_NS_CIM_CLASS);
 
   WsXmlNodeH r = ws_xml_get_child(body, 0, resourceUri, className);
