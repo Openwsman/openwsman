@@ -673,11 +673,13 @@ cim_enum_instances (CimClientInfo *client,
 
 
 
-void
+int
 cim_getElementAt(CimClientInfo *client,
                  WsEnumerateInfo* enumInfo,
                  WsXmlNodeH itemsNode) 
 {
+  debug("cim_getElementAt");
+  int retval = 1;
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
 
@@ -687,15 +689,17 @@ cim_getElementAt(CimClientInfo *client,
  
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
-      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
+  {
     if (objectpath) CMRelease(objectpath);
-    return;
+    retval = 0;
   }
-  instance2xml(client, instance, itemsNode, enumInfo);
-  return;
+
+  if (retval) instance2xml(client, instance, itemsNode, enumInfo);
+  return retval;
 }
 
-void
+int
 cim_getEprAt( CimClientInfo *client,
               WsEnumerateInfo* enumInfo, 
               WsXmlNodeH itemsNode)
@@ -710,18 +714,19 @@ cim_getEprAt( CimClientInfo *client,
 
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
-      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
+  {
     if (objectpath) CMRelease(objectpath);
-    return;
+    return 0;
   }
 
  
   cim_add_epr(itemsNode, client->resource_uri, objectpath);
   CMRelease(objectpath);
-  return;
+  return 1;
 }
 
-void 
+int 
 cim_getEprObjAt(CimClientInfo *client,
                 WsEnumerateInfo* enumInfo,
                 WsXmlNodeH itemsNode)
@@ -731,12 +736,22 @@ cim_getEprObjAt(CimClientInfo *client,
 
   CMPIInstance *instance = data.value.inst;
   CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
+  CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
+
+  if (enumInfo && ((enumInfo->flags & 
+                        FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
+  {
+    if (objectpath) CMRelease(objectpath);
+    return 0;
+  }
+
   WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM , NULL);
   cim_add_epr(item, client->resource_uri, objectpath);
   instance2xml(client, instance, item, enumInfo);
 
   CMRelease(objectpath);
-  return;
+  return 1;
 }
 
 
@@ -1222,18 +1237,32 @@ cim_get_enum_items(CimClientInfo *client,
         max--;
       }
       enumInfo->index--;
-    } else {
+    } 
+    else 
+    {
       if ( enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems ) 
       {
-        if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
-          cim_getEprAt(client, enumInfo, itemsNode);
-        else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
-          cim_getEprObjAt(client, enumInfo, itemsNode);
-        else
-          cim_getElementAt(client, enumInfo, itemsNode);
+        int c;
+        while( enumInfo->index < enumInfo->totalItems)
+        {
+          if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
+            c = cim_getEprAt(client, enumInfo, itemsNode);
+          else if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) == FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )
+            c = cim_getEprObjAt(client, enumInfo, itemsNode);
+          else 
+            c = cim_getElementAt(client, enumInfo, itemsNode);           
+          
+          if (c == 0 )
+            enumInfo->index++;
+          else
+            break;
+        }
+        if ( c == 0 )
+          enumInfo->index--;
+                 
       }
     }
-  }   
+  }  
 }
 
 
