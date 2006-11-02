@@ -513,11 +513,15 @@ dispatch_inbound_call(env_t *fw,
   if ( in_doc != NULL && !wsman_fault_occured(msg) ) 
   {
     dispatch_t* dispatch;            
-    if ( (dispatch = get_dispatch_entry(fw, in_doc)) != NULL ) {
-      if ( (op = create_op_entry(fw, dispatch, msg, 0)) == NULL ) {
+    if ( (dispatch = get_dispatch_entry(fw, in_doc)) != NULL ) 
+    {
+      if ( (op = create_op_entry(fw, dispatch, msg, 0)) == NULL ) 
+      {
         destroy_dispatch_entry(dispatch);
       }
-    } else if (!wsman_fault_occured(msg)) {
+    } 
+    else if (!wsman_fault_occured(msg)) 
+    {
       wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE, 
                       WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
     }

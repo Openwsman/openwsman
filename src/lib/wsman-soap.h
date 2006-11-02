@@ -1,32 +1,32 @@
 /*******************************************************************************
-* Copyright (C) 2004-2006 Intel Corp. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of source code must retain the above copyright notice,
-*    this list of conditions and the following disclaimer.
-*
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this list of conditions and the following disclaimer in the documentation
-*    and/or other materials provided with the distribution.
-*
-*  - Neither the name of Intel Corp. nor the names of its
-*    contributors may be used to endorse or promote products derived from this
-*    software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
-* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*******************************************************************************/
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  - Neither the name of Intel Corp. nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL Intel Corp. OR THE CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
 
 /**
  * @author Anas Nashif
@@ -97,8 +97,8 @@
 #define XML_SCHEMA_NIL			"nil"
 
 
-#define WSA_TO_ANONYMOUS\
-                "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous"
+#define WSA_TO_ANONYMOUS                                             \
+  "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous"
 #define WSA_MESSAGE_ID		        "MessageID"
 #define WSA_ADDRESS			"Address"
 #define WSA_EPR				"EndpointReference"
@@ -110,8 +110,8 @@
 #define WSA_FAULT_TO			"FaultTo"
 #define WSA_REFERENCE_PROPERTIES	"ReferenceProperties"
 #define WSA_REFERENCE_PARAMETERS	"ReferenceParameters"
-#define WSA_ACTION_FAULT\
-		"http://schemas.xmlsoap.org/ws/2004/08/addressing/fault"
+#define WSA_ACTION_FAULT                                    \
+  "http://schemas.xmlsoap.org/ws/2004/08/addressing/fault"
 
 
 
@@ -255,9 +255,9 @@
 
 #include "wsman-faults.h"
 struct _WsmanStatus {
-    WsmanFaultCodeType fault_code;
-    WsmanFaultDetailType fault_detail_code;
-    char *fault_msg;
+  WsmanFaultCodeType fault_code;
+  WsmanFaultDetailType fault_detail_code;
+  char *fault_msg;
 };
 typedef struct _WsmanStatus WsmanStatus;
 
@@ -267,7 +267,7 @@ typedef struct _WsmanStatus WsmanStatus;
 
 struct __SoapDispatch
 {
-	unsigned __undefined;
+  unsigned __undefined;
 };
 typedef struct __SoapDispatch* SoapDispatchH;
 
@@ -278,22 +278,22 @@ typedef SoapDispatchH (*DispatcherCallback)(WsContextH, void*, WsXmlDocH);
 #define _SoapH_Defined
 struct __Soap
 {
-	unsigned __undefined;
+  unsigned __undefined;
 };
 typedef struct __Soap* SoapH;
 #endif
 
 struct __SoapOp
 {
-	unsigned __undefined;
+  unsigned __undefined;
 };
 typedef struct __SoapOp* SoapOpH;
 
 
 struct __DispatchResponse
 {
-	char *buf;
-	int httpCode;
+  char *buf;
+  int httpCode;
 };
 typedef struct __DispatchResponse DispatchResponse;
 
@@ -301,58 +301,58 @@ typedef struct __DispatchResponse DispatchResponse;
 typedef int (*SoapServiceCallback)(SoapOpH, void*);
 struct __callback_t
 {
-	lnode_t node; // dataBuf is passed to callback as data
-	SoapServiceCallback proc;
+  lnode_t node; // dataBuf is passed to callback as data
+  SoapServiceCallback proc;
 };
 typedef struct __callback_t callback_t;
 
 struct __env_t
 {
-        pthread_mutex_t lockData;  // do not move this field
-	int bExit;
-	void* parserData;
-	unsigned long uniqueIdCounter;
+  pthread_mutex_t lockData;  // do not move this field
+  int bExit;
+  void* parserData;
+  unsigned long uniqueIdCounter;
 	
-	list_t *inboundFilterList;
-	list_t *outboundFilterList;
+  list_t *inboundFilterList;
+  list_t *outboundFilterList;
 	
-	list_t *dispatchList;	
-	list_t *responseList;
-	list_t *processedMsgIdList;
+  list_t *dispatchList;	
+  list_t *responseList;
+  list_t *processedMsgIdList;
 
-	WsContextH cntx; // TBD claen up and initilaize it;
+  WsContextH cntx; // TBD claen up and initilaize it;
 
-	unsigned long lastResponseListScanTicks;
+  unsigned long lastResponseListScanTicks;
 	
-	// TBD: ??? Make it thread and pass as parameters
-	int resendCount;
-	unsigned long resentTimeout[SOAP_MAX_RESENT_COUNT];
+  // TBD: ??? Make it thread and pass as parameters
+  int resendCount;
+  unsigned long resentTimeout[SOAP_MAX_RESENT_COUNT];
 
-	list_t  *WsSerializerAllocList;
+  list_t  *WsSerializerAllocList;
 		
-	void* dispatcherData;
-	DispatcherCallback dispatcherProc;
+  void* dispatcherData;
+  DispatcherCallback dispatcherProc;
 };
 typedef struct __env_t env_t;
 
 
 struct _WS_CONTEXT_ENTRY
 {
-	lnode_t *node;
-	unsigned long size;
-	unsigned long options;
-	char* name;
+  lnode_t *node;
+  unsigned long size;
+  unsigned long options;
+  char* name;
 };
 typedef struct _WS_CONTEXT_ENTRY WS_CONTEXT_ENTRY;
 
 struct _WS_CONTEXT
 {
-	SoapH soap;
-	hash_t *entries;
-	int owner; // to prevent user from destroying cntx he hasn't created
-	// the fields below are for optimization
-	WS_CONTEXT_ENTRY* last_entry;
-	int last_get_name_idx;
+  SoapH soap;
+  hash_t *entries;
+  int owner; // to prevent user from destroying cntx he hasn't created
+  // the fields below are for optimization
+  WS_CONTEXT_ENTRY* last_entry;
+  int last_get_name_idx;
 };
 typedef struct _WS_CONTEXT WS_CONTEXT;
 
@@ -361,74 +361,75 @@ typedef void (*WsProcType)(void);
 
 struct __WsDispatchEndPointInfo
 {
-	unsigned long flags; // put/get/create/delete rpc enumerate/release/pull/update/getstatus	
-	char* rqstName;
-	char* respName;
-	char* inAction;
-	char* outAction;
-	struct __XmlSerializerInfo* serializationInfo;
-	WsProcType serviceEndPoint;
-	void* data;
-	struct __WsSelector* selectors;
+  unsigned long flags; // put/get/create/delete rpc enumerate/release/pull/update/getstatus	
+  char* rqstName;
+  char* respName;
+  char* inAction;
+  char* outAction;
+  struct __XmlSerializerInfo* serializationInfo;
+  WsProcType serviceEndPoint;
+  void* data;
+  struct __WsSelector* selectors;
 };
 typedef struct __WsDispatchEndPointInfo WsDispatchEndPointInfo;
 
 struct __WsSupportedNamespaces
 {
-	char* ns;
-	char* class_prefix;
+  char* ns;
+  char* class_prefix;
 };
 typedef struct __WsSupportedNamespaces WsSupportedNamespaces;
 
 
 struct __WsDispatchInterfaceInfo
 {
-	unsigned long flags;
-	char* config_id;
-	char* version;
-	char* notes;
-	char* vendor;
-	char* displayName;
-	char* compliance;	
-	char* actionUriBase;
-	char* wsmanResourceUri;
-	void* extraData;
-	list_t* namespaces;	
-	WsDispatchEndPointInfo* endPoints;	
+  unsigned long flags;
+  char* config_id;
+  char* version;
+  char* notes;
+  char* vendor;
+  char* displayName;
+  char* compliance;	
+  char* actionUriBase;
+  char* wsmanResourceUri;
+  void* extraData;
+  list_t* namespaces;	
+  WsDispatchEndPointInfo* endPoints;	
 };
 typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
 
 struct __DispatchToEpMap
 {
-	SoapDispatchH disp;
-	WsDispatchEndPointInfo* ep;
-	// WsDispatchInterfaceInfo* wsInterface;
+  SoapDispatchH disp;
+  WsDispatchEndPointInfo* ep;
+  // WsDispatchInterfaceInfo* wsInterface;
 };
 typedef struct __DispatchToEpMap DispatchToEpMap;
 
 struct __WsManDispatcherInfo
 {
-	int interfaceCount;
-	int mapCount;
-	void *interfaces;
-	DispatchToEpMap map[1];
+  int interfaceCount;
+  int mapCount;
+  void *interfaces;
+  DispatchToEpMap map[1];
 };
 typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
 
 
 struct __WsEnumerateInfo
 {
-//      char* enumerationId;
-//      WsDispatchEndPointInfo* ep;
-        unsigned long timeStamp;
-        unsigned long timeout;
-        unsigned int totalItems;
-        unsigned int maxItems;
-        unsigned char flags;
-        int index;
-        void* enumResults;
-        void* pullResultPtr;
-        void* appEnumContext;
+  //      char* enumerationId;
+  //      WsDispatchEndPointInfo* ep;
+  unsigned long timeStamp;
+  unsigned long timeout;
+  unsigned int totalItems;
+  unsigned int maxItems;
+  unsigned char flags;
+  int index;
+  void* enumResults;
+  void* pullResultPtr;
+  void* appEnumContext;
+  WsmanAuth auth_data;
 };
 
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
@@ -454,19 +455,19 @@ typedef void* (*WsEndPointGet)(WsContextH, WsmanStatus*);
 #define FLAG_POLYMORPHISM_NONE               128
 
 enum __WsmanFilterDialect
-{
+  {
     WSMAN_FILTER_XPATH,
     WSMAN_FILTER_SELECTOR
-};
+  };
 typedef enum __WsmanFilterDialect WsmanFilterDialect;
 
 
 enum __WsmanPolymorphismMode
-{
-  INCLUDE_SUBCLASS_PROP = 1,
-  EXCLUDE_SUBCLASS_PROP,
-  POLYMORPHISM_NONE
-};
+  {
+    INCLUDE_SUBCLASS_PROP = 1,
+    EXCLUDE_SUBCLASS_PROP,
+    POLYMORPHISM_NONE
+  };
 typedef enum __WsmanPolymorphismMode WsmanPolymorphismMode;
 
 
@@ -493,13 +494,13 @@ unsigned long ws_get_context_ulong_val(WsContextH cntx, char* name);
 WsContextH ws_create_runtime (list_t *interfaces);
 
 int wsman_register_interface(WsContextH cntx, 
-        WsDispatchInterfaceInfo* wsInterface,
-        WsManDispatcherInfo* dispInfo);
+                             WsDispatchInterfaceInfo* wsInterface,
+                             WsManDispatcherInfo* dispInfo);
 
 int wsman_register_endpoint(WsContextH cntx, 
-        WsDispatchInterfaceInfo* wsInterface,
-        WsDispatchEndPointInfo* ep,
-        WsManDispatcherInfo* dispInfo);
+                            WsDispatchInterfaceInfo* wsInterface,
+                            WsDispatchEndPointInfo* ep,
+                            WsManDispatcherInfo* dispInfo);
         
 int ws_transfer_put_stub(SoapOpH op, void* appData);        
 
@@ -518,11 +519,11 @@ int wsenum_pull_raw_stub(SoapOpH op, void* appData);
 int wsenum_release_stub(SoapOpH op, void* appData);
 
 WsEnumerateInfo* get_enum_info(WsContextH cntx, 
-        WsXmlDocH doc, 
-        char* cntxName,
-        int cntxNameLen,
-        char* op,
-        char** enumIdPtr);
+                               WsXmlDocH doc, 
+                               char* cntxName,
+                               int cntxNameLen,
+                               char* op,
+                               char** enumIdPtr);
 
 SoapOpH soap_create_op(SoapH soap, 
                        char *inboundAction,
@@ -564,18 +565,18 @@ int ws_remove_context_val(WsContextH hCntx, char* name);
 int ws_set_context_val(WsContextH hCntx, char* name, void* val, int size, int bNoDup);
 
 int set_context_val(WsContextH hCntx, 
-        char* name, 
-        void* val, 
-        int size, 
-        int bNoDup, 
-        unsigned long type);
+                    char* name, 
+                    void* val, 
+                    int size, 
+                    int bNoDup, 
+                    unsigned long type);
 int ws_set_context_xml_doc_val(WsContextH cntx, char* name, WsXmlDocH val);
 
 void destroy_context_entry(WS_CONTEXT_ENTRY* entry);
 
 hnode_t* create_context_entry(hash_t* h, 
-        char* name, 
-        void* val);
+                              char* name, 
+                              void* val);
         
 // int do_serializer_free(WsContextH cntx, void* ptr);
 // int ws_serializer_free(WsContextH cntx, void* ptr);
@@ -587,27 +588,27 @@ int ws_set_context_ulong_val(WsContextH cntx, char* name, unsigned long val);
 
 callback_t*
 make_callback_entry(SoapServiceCallback proc,
-                         void* data,
-                         list_t* list_to_add);
+                    void* data,
+                    list_t* list_to_add);
 
 
 int wsman_fault_occured(WsmanMessage *msg);
 
 WsXmlDocH wsman_generate_fault(
-	WsContextH cntx,
-	WsXmlDocH inDoc, 
-	WsmanFaultCodeType faultCode, 
-	WsmanFaultDetailType faultDetail,
-        char *fault_msg);
+  WsContextH cntx,
+  WsXmlDocH inDoc, 
+  WsmanFaultCodeType faultCode, 
+  WsmanFaultDetailType faultDetail,
+  char *fault_msg);
 	
 void wsman_generate_fault_buffer(
-	WsContextH cntx, 
-	WsXmlDocH inDoc, 
-	WsmanFaultCodeType faultCode, 
-	WsmanFaultDetailType faultDetail, 
-        char *fault_msg,
-	char **buf, 
-	int* len);
+  WsContextH cntx, 
+  WsXmlDocH inDoc, 
+  WsmanFaultCodeType faultCode, 
+  WsmanFaultDetailType faultDetail, 
+  char *fault_msg,
+  char **buf, 
+  int* len);
   
  
 // ******************** 
@@ -636,72 +637,72 @@ void wsman_generate_fault_buffer(
 
 
 
-#define END_POINT_IDENTIFY(t, ns)\
-	{ WS_DISP_TYPE_IDENTIFY, NULL, NULL, NULL, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Identify_EP, ns, NULL}
+#define END_POINT_IDENTIFY(t, ns)                           \
+  { WS_DISP_TYPE_IDENTIFY, NULL, NULL, NULL, NULL,          \
+      t##_TypeInfo, (WsProcType)t##_Identify_EP, ns, NULL}
 
-#define END_POINT_TRANSFER_GET(t, ns)\
-	{ WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}
+#define END_POINT_TRANSFER_GET(t, ns)                                \
+  { WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,         \
+      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}
 
-#define END_POINT_TRANSFER_GET_RAW(t, ns)\
-	{ WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
+#define END_POINT_TRANSFER_GET_RAW(t, ns)                         \
+  { WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
 
-#define END_POINT_TRANSFER_PUT_RAW(t, ns)\
-	{ WS_DISP_TYPE_PUT_RAW, NULL, NULL, TRANSFER_ACTION_PUT, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}	  
+#define END_POINT_TRANSFER_PUT_RAW(t, ns)                         \
+  { WS_DISP_TYPE_PUT_RAW, NULL, NULL, TRANSFER_ACTION_PUT, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}	  
 
-#define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)\
-	{ WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
+#define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)                         \
+  { WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}	  
 
-#define END_POINT_TRANSFER_PUT(t, ns)\
-	{ WS_DISP_TYPE_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}
-
-
+#define END_POINT_TRANSFER_PUT(t, ns)                          \
+  { WS_DISP_TYPE_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,   \
+      t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}
 
 
-#define END_POINT_ENUMERATE(t, ns)\
-	{ WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
 
-#define END_POINT_RELEASE(t, ns)\
-	{ WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Release_EP, ns, NULL}
 
-#define END_POINT_PULL(t, ns)\
-	{ WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
+#define END_POINT_ENUMERATE(t, ns)                                   \
+  { WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL, \
+      t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
 
-#define END_POINT_PULL_RAW(t, ns)\
-	{ WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL,\
-	  t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}	  
+#define END_POINT_RELEASE(t, ns)                                  \
+  { WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Release_EP, ns, NULL}
 
-#define END_POINT_PRIVATE_EP(t, a, m, ns)    \
-        { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL, \
-          t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
+#define END_POINT_PULL(t, ns)                               \
+  { WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
 
-#define END_POINT_CUSTOM_METHOD(t, ns)    \
-        { WS_DISP_TYPE_PRIVATE, NULL, NULL, NULL, NULL, \
-          t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
+#define END_POINT_PULL_RAW(t, ns)                              \
+  { WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL, \
+      t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}	  
+
+#define END_POINT_PRIVATE_EP(t, a, m, ns)                \
+  { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL,           \
+      t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
+
+#define END_POINT_CUSTOM_METHOD(t, ns)                      \
+  { WS_DISP_TYPE_PRIVATE, NULL, NULL, NULL, NULL,           \
+      t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
 
 #define END_POINT_LAST	{ 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 #define NAMESPACE_LAST	{ NULL , NULL }
-#define ADD_NAMESPACE( ns , prefix )\
-        {ns, prefix }
+#define ADD_NAMESPACE( ns , prefix )            \
+  {ns, prefix }
 
 // Selectors
-#define ADD_SELECTOR(n,t,d)\
-	{ n, NULL, t, d}
+#define ADD_SELECTOR(n,t,d)                     \
+  { n, NULL, t, d}
 	  
 #define SELECTOR_LAST { NULL, NULL, NULL, NULL }
 #define START_TRANSFER_GET_SELECTORS(t) WsSelector t##_Get_Selectors[] = {
 
 #define FINISH_TRANSFER_GET_SELECTORS(t) SELECTOR_LAST }
-#define DECLARE_SELECTOR_ARRAY(t)\
-extern WsSelector t##_Get_Selectors[]
+#define DECLARE_SELECTOR_ARRAY(t)               \
+  extern WsSelector t##_Get_Selectors[]
 
 void soap_destroy_fw(SoapH soap);
 

@@ -409,24 +409,28 @@ cim_verify_keys( CMPIObjectPath * objectpath,
   CMPIStatus rc;
   hscan_t hs;
   hnode_t *hn;
-  int count;
+  int count, opcount;
 
   if (!keys) {
     count = 0;
   } else {
     count = (int)hash_count(keys);
   }
-  debug("selector count: %d", count);
-  if (CMGetKeyCount(objectpath, &rc) >  count ) 
+  opcount = CMGetKeyCount(objectpath, &rc);
+  debug( "getKeyCount rc=%d, msg=%s",
+           rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+
+
+  debug("selector count from user: %d, in object path: %d", count, opcount);
+  if (opcount >  count ) 
   {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
     statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
     goto cleanup;
-  } else if (CMGetKeyCount(objectpath, &rc) < hash_count(keys) )  {
+  } else if (opcount < hash_count(keys) )  {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
     goto cleanup;
   }
-
 
   hash_scan_begin(&hs, keys);
   char *cv;
@@ -453,8 +457,6 @@ cim_verify_keys( CMPIObjectPath * objectpath,
  cleanup:
   debug( "getKey rc=%d, msg=%s",
            rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
-
-  debug("fault: %d %d",  statusP->fault_code, statusP->fault_detail_code );
   return  statusP->fault_code;
 }
 
@@ -468,6 +470,9 @@ cim_get_class (CimClientInfo *client,
   CMPIObjectPath * op;    
   CMPIConstClass * _class;
   CMPIStatus rc;
+
+  CMCIClient * cc = (CMCIClient *)client->cc;
+  /*
   CMCIClient* cc;
 
   if (!client->cc)
@@ -478,10 +483,11 @@ cim_get_class (CimClientInfo *client,
     }
     client->cc = (CMCIClient *)cc;
   }
+  */
 
   op = newCMPIObjectPath(CIM_NAMESPACE, class,  NULL);
 
-  _class = ((CMCIClient *)client->cc)->ft->getClass(client->cc, op, 0, NULL, &rc);
+  _class = cc->ft->getClass(cc, op, 0, NULL, &rc);
 
   /* Print the results */
   debug( "getClass() rc=%d, msg=%s",
@@ -606,7 +612,10 @@ cim_get_op_from_enum( CimClientInfo *client,
   {
     CMPIData data = enumeration->ft->getNext(enumeration, NULL);
     CMPIObjectPath *op = CMClone(data.value.ref, NULL);
-    if (cim_verify_keys(op, client->selectors, &statusPP) != 0 ) {
+    CMPIString *opstr = CMObjectPathToString(op, NULL);
+    debug("objectpath: %s", (char *)opstr->hdl );
+    if (cim_verify_keys(op, client->selectors, &statusPP) != 0 ) 
+    {
       if (op) CMRelease(op);
       continue;
     } else {
@@ -640,13 +649,17 @@ cim_enum_instances (CimClientInfo *client,
   CMPIEnumeration * enumeration;
   CMPIStatus rc;
 
+  CMCIClient * cc = (CMCIClient *)client->cc;
+
+
   objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class , NULL);
+  /*
   CMCIClient* cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
   if (!cc) {
     goto cleanup;
   }
   client->cc = (CMCIClient *)cc;
-
+  */
   enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeClassOrigin, NULL, &rc);
     
   debug( "enumInstances() rc=%d, msg=%s", 
@@ -869,7 +882,8 @@ cim_connect_to_cimom( char *cim_host,
   CMCIClient *cimclient = cmciConnect(cim_host, NULL, DEFAULT_HTTP_CIMOM_PORT,
                                       cim_host_userid, cim_host_passwd, &rc);
   if (cimclient == NULL) 
-    debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);		
+    debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
+  cim_to_wsman_status(rc, status);		
   return cimclient;
 }
 
@@ -885,12 +899,14 @@ cim_invoke_method (CimClientInfo *client,
   CMPIArgs *argsin, *argsout;
   CMPIStatus rc;
   WsmanStatus statusP;
+  CMCIClient * cc = (CMCIClient *)client->cc;
+  /*
   CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
   if (!cc) {
     return;
   }
   client->cc = cc;
-
+  */
   // objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
   {
@@ -954,8 +970,8 @@ cim_get_instance_from_enum ( CimClientInfo *client,
   CMPIObjectPath * objectpath;
   CMPIStatus rc;
   WsmanStatus statusP;
-  CMCIClient * cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
-  client->cc = cc;
+  CMCIClient * cc = (CMCIClient *)client->cc; // cim_connect_to_cimom( "localhost", client->username, client->password , status);
+  
   if (!cc) {
     goto cleanup;
   }
@@ -999,18 +1015,22 @@ cim_put_instance_from_enum (CimClientInfo *client,
   CMPIStatus rc;
   WsmanStatus statusP;
   wsman_status_init(&statusP);
+
+  CMCIClient * cc = (CMCIClient *)client->cc;
+  /*
   client->cc = (CMCIClient *)cim_connect_to_cimom( "localhost", NULL, NULL , status);
   if (!client->cc) {
     return;
   }
+  */
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
   {
-    instance = ((CMCIClient *)client->cc)->ft->getInstance(client->cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
+    instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
     debug( "getInstance() rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
     xml2instance(instance, in_body, client->resource_uri);
 
-    rc = ((CMCIClient *)client->cc)->ft->setInstance(client->cc, objectpath, instance,  0, NULL );
+    rc = cc->ft->setInstance(cc, objectpath, instance,  0, NULL );
     debug( "modifyInstance() rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
     cim_to_wsman_status(rc, status);
@@ -1039,12 +1059,13 @@ cim_get_instance (CimClientInfo *client,
   CMPIInstance * instance;
   CMPIObjectPath * objectpath;    
   CMPIStatus rc;
-
+  /*
   CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
   if (!cc) {
     return;
   }
-
+  */
+  CMCIClient * cc = (CMCIClient *)client->cc;
   objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
 
   cim_add_keys(objectpath, client->selectors);
@@ -1144,10 +1165,13 @@ cim_enum_instancenames (CimClientInfo *client,
   CMPIStatus rc;
   CMPIObjectPath * objectpath;    
   CMPIEnumeration * enumeration;
+  /*
   CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
   if (!cc) {
     return NULL;
   }
+  */
+  CMCIClient * cc = (CMCIClient *)client->cc;
 
   objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
 

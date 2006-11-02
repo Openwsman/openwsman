@@ -53,20 +53,23 @@
 #include "wsman-dispatcher.h"
 
 #include "wsman-soap-envelope.h"
+#include "wsman-soap-message.h"
 #include "sfcc-interface.h"
 #include "cim_data.h"
 
 
 static CimClientInfo*
-CimResource_Init(WsContextH cntx)
+CimResource_Init(WsContextH cntx, char *username, char *password)
 {
   char *_tmp = NULL;
   char *r = NULL;
   CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
+  WsmanStatus status;
 
+  wsman_status_init(&status);
   r = wsman_get_resource_uri(cntx, NULL);
-	
-  cimclient->cc = NULL;
+  debug ("username: %s, password: %s", username, password );
+  cimclient->cc = (void *)cim_connect_to_cimom( "localhost", username, password , &status);
   cimclient->namespaces = get_vendor_namespaces();
   cimclient->selectors = wsman_get_selector_list(cntx, NULL);
   cimclient->requested_class = wsman_get_class_name(cntx);
@@ -111,14 +114,22 @@ CimResource_Get_EP( SoapOpH op,
   WsXmlDocH doc = NULL;
   WsmanStatus status;
   CimClientInfo *cimclient;
+  WsXmlDocH in_doc = NULL;
 
   wsman_status_init(&status);
   SoapH soap = soap_get_op_soap(op);
-  WsXmlDocH in_doc = NULL;
+  
 
   in_doc = soap_get_op_doc(op, 1);
   WsContextH cntx = ws_create_ep_context(soap, in_doc);
-  cimclient = CimResource_Init(cntx);
+  
+
+  op_t *_op = (op_t *)op;
+  WsmanMessage *msg = (WsmanMessage *)_op->data;
+  if (msg) {
+    cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+  }
+
 
   if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -128,7 +139,8 @@ CimResource_Get_EP( SoapOpH op,
   if (status.fault_code != 0) 
   {
     ws_xml_destroy_doc(doc);
-    doc = wsman_generate_fault(cntx, in_doc, status.fault_code, status.fault_detail_code, NULL);
+    doc = wsman_generate_fault(cntx, in_doc, status.fault_code, 
+                               status.fault_detail_code, NULL);
   }
 
   if ( doc ) {
@@ -157,7 +169,12 @@ CimResource_Custom_EP( SoapOpH op,
   in_doc = soap_get_op_doc(op, 1); 
   WsContextH cntx = ws_create_ep_context(soap, in_doc);
     
-  cimclient = CimResource_Init(cntx);
+  op_t *_op = (op_t *)op;
+  WsmanMessage *msg = (WsmanMessage *)_op->data;
+  if (msg) {
+    cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+  }
+  
 
   if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -166,7 +183,8 @@ CimResource_Custom_EP( SoapOpH op,
 
   if (status.fault_code != 0) {
     ws_xml_destroy_doc(doc);
-    doc = wsman_generate_fault(cntx, in_doc, status.fault_code, status.fault_detail_code, NULL);
+    doc = wsman_generate_fault(cntx, in_doc, status.fault_code, 
+                               status.fault_detail_code, NULL);
   }
 
   if ( doc ) {
@@ -194,7 +212,14 @@ CimResource_Enumerate_EP( WsContextH cntx,
   WsXmlDocH doc;
   char *enum_mode;
 
-  CimClientInfo *cimclient = CimResource_Init(cntx);
+  WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+  CimClientInfo *cimclient; //  = CimResource_Init(cntx);
+  
+ 
+  if ( enumInfo) {   
+    cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+  }
+
   cim_enum_instances (cimclient, enumInfo,  status);
 
   if (status && status->fault_code != 0) {
@@ -203,7 +228,6 @@ CimResource_Enumerate_EP( WsContextH cntx,
 
   max_elements = wsman_is_optimization(cntx, NULL );
 
-
   enum_mode = wsman_get_enum_mode(cntx, NULL); 
   if (enum_mode)
     wsman_set_enum_mode(enum_mode, enumInfo);
@@ -211,7 +235,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
   wsman_set_polymorph_mode(cntx, NULL, enumInfo);
   if (max_elements > 0)
   {
-    doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
+    doc = ws_create_response_envelope(cntx, in_doc , NULL);
     WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
                                        WSENUM_ENUMERATE_RESP , NULL);       
     cim_get_enum_items(cimclient, cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
@@ -233,6 +257,9 @@ CimResource_Enumerate_EP( WsContextH cntx,
   return 1;
 }
 
+
+
+
 int 
 CimResource_Release_EP( WsContextH cntx, 
                         WsEnumerateInfo* enumInfo, 
@@ -251,23 +278,32 @@ CimResource_Pull_EP( WsContextH cntx,
 {
   debug( "Pull Endpoint Called");      
   WsXmlDocH doc = NULL;
-    
-    
-  CimClientInfo *cimclient = CimResource_Init(cntx);
-    
-  doc = ws_create_response_envelope(cntx, ws_get_context_xml_doc_val(cntx, WSFW_INDOC), NULL);
-  WsXmlNodeH pullnode = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
+  CimClientInfo *cimclient;
+
+  WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+  
+  if ( enumInfo) {   
+    cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+  }      
+  
+  
+  doc = ws_create_response_envelope(cntx, in_doc, NULL);
+  WsXmlNodeH body = ws_xml_get_soap_body(doc);
+
+  WsXmlNodeH pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
                                          WSENUM_PULL_RESP, NULL);       
 
   int max = wsen_get_max_elements(cntx, NULL);
-  cim_get_enum_items(cimclient, cntx, pullnode, enumInfo, XML_NS_ENUMERATION,  max);
+  cim_get_enum_items(cimclient, cntx, pullnode, 
+                     enumInfo, XML_NS_ENUMERATION,  max);
     
   if (doc != NULL )
     enumInfo->pullResultPtr = doc;
   else
     enumInfo->pullResultPtr = NULL;
 
-  if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) {
+  if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) 
+  {
     cim_release_enum_context(enumInfo);
   }
 
@@ -287,11 +323,18 @@ CimResource_Put_EP( SoapOpH op,
   debug( "Put Endpoint Called");
   WsXmlDocH doc = NULL;
   WsmanStatus status;
+  CimClientInfo *cimclient;
 
   SoapH soap = soap_get_op_soap(op);
   WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-  CimClientInfo *cimclient = CimResource_Init(cntx);
+  op_t *_op = (op_t *)op;
+  WsmanMessage *msg = (WsmanMessage *)_op->data;
 
+  if (msg) {
+    cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+  }
+
+ 
   if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) 
   { 
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -301,7 +344,8 @@ CimResource_Put_EP( SoapOpH op,
 
   if (wsman_check_status(&status) != 0) {
     ws_xml_destroy_doc(doc);
-    doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), status.fault_code, status.fault_detail_code, NULL);
+    doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
+                               status.fault_code, status.fault_detail_code, NULL);
   }
 
   if ( doc ) {
