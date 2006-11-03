@@ -74,6 +74,7 @@ AC_SUBST(OWSMAN_DEBUG_FLAGS)
 
 
 
+PKG_CHECK_MODULES(CURL, libcurl)
 
 
 dnl
@@ -83,13 +84,12 @@ else
     AC_DEFINE(SHTTPD_LISTENER, 1, [Defined if shttpd listener to be used])
 fi
 
-PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.8.0 )
-PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
-PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 if test "x$with_libsoup_serv" = "xyes"; then
-     PKG_CHECK_MODULES(SOUP, libsoup-2.2)
+    PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.8.0 )
+    PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
+    PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
+    PKG_CHECK_MODULES(SOUP, libsoup-2.2)
 fi
-PKG_CHECK_MODULES(CURL, libcurl)
 AC_CHECK_FUNCS(strtok_r \
 getpid \
 strsep \

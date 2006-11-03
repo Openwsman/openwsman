@@ -472,18 +472,6 @@ cim_get_class (CimClientInfo *client,
   CMPIStatus rc;
 
   CMCIClient * cc = (CMCIClient *)client->cc;
-  /*
-  CMCIClient* cc;
-
-  if (!client->cc)
-  {
-    cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
-    if (!cc) {
-      return NULL;
-    }
-    client->cc = (CMCIClient *)cc;
-  }
-  */
 
   op = newCMPIObjectPath(CIM_NAMESPACE, class,  NULL);
 
@@ -653,13 +641,7 @@ cim_enum_instances (CimClientInfo *client,
 
 
   objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class , NULL);
-  /*
-  CMCIClient* cc = cim_connect_to_cimom("localhost", NULL, NULL , status);
-  if (!cc) {
-    goto cleanup;
-  }
-  client->cc = (CMCIClient *)cc;
-  */
+
   enumeration = cc->ft->enumInstances(cc, objectpath, CMPI_FLAG_IncludeClassOrigin, NULL, &rc);
     
   debug( "enumInstances() rc=%d, msg=%s", 
@@ -900,14 +882,7 @@ cim_invoke_method (CimClientInfo *client,
   CMPIStatus rc;
   WsmanStatus statusP;
   CMCIClient * cc = (CMCIClient *)client->cc;
-  /*
-  CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
-  if (!cc) {
-    return;
-  }
-  client->cc = cc;
-  */
-  // objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
+
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
   {
     
@@ -970,7 +945,7 @@ cim_get_instance_from_enum ( CimClientInfo *client,
   CMPIObjectPath * objectpath;
   CMPIStatus rc;
   WsmanStatus statusP;
-  CMCIClient * cc = (CMCIClient *)client->cc; // cim_connect_to_cimom( "localhost", client->username, client->password , status);
+  CMCIClient * cc = (CMCIClient *)client->cc;
   
   if (!cc) {
     goto cleanup;
@@ -1017,12 +992,7 @@ cim_put_instance_from_enum (CimClientInfo *client,
   wsman_status_init(&statusP);
 
   CMCIClient * cc = (CMCIClient *)client->cc;
-  /*
-  client->cc = (CMCIClient *)cim_connect_to_cimom( "localhost", NULL, NULL , status);
-  if (!client->cc) {
-    return;
-  }
-  */
+
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
   {
     instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
@@ -1059,12 +1029,7 @@ cim_get_instance (CimClientInfo *client,
   CMPIInstance * instance;
   CMPIObjectPath * objectpath;    
   CMPIStatus rc;
-  /*
-  CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
-  if (!cc) {
-    return;
-  }
-  */
+
   CMCIClient * cc = (CMCIClient *)client->cc;
   objectpath = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
 
@@ -1165,12 +1130,7 @@ cim_enum_instancenames (CimClientInfo *client,
   CMPIStatus rc;
   CMPIObjectPath * objectpath;    
   CMPIEnumeration * enumeration;
-  /*
-  CMCIClient *cc = cim_connect_to_cimom( "localhost", NULL, NULL , status);
-  if (!cc) {
-    return NULL;
-  }
-  */
+
   CMCIClient * cc = (CMCIClient *)client->cc;
 
   objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);

@@ -527,6 +527,7 @@ wsman_verify_enum_info(SoapOpH op,
   op_t *_op = (op_t *)op;  
   WsmanMessage *msg = (WsmanMessage *)_op->data;
 
+  debug ("verifying enumeration context");
   if (strcmp(msg->auth_data.username, enumInfo->auth_data.username) != 0 &&
       strcmp(msg->auth_data.password, enumInfo->auth_data.password) != 0) 
   {
@@ -757,16 +758,20 @@ wsenum_pull_raw_stub( SoapOpH op,
   WsEnumerateInfo* enumInfo = get_enum_info(soapCntx, _doc, cntxName,
                                             sizeof(cntxName), WSENUM_PULL, &enumId);
 
-  
-  if ( enumInfo && wsman_verify_enum_info(op, enumInfo, &status)) 
-  {
-    doc = wsman_generate_fault(soapCntx, _doc, 
-                               status.fault_code, status.fault_detail_code, NULL);        
-  } else if ( enumInfo == NULL ) {        
+  if ( enumInfo == NULL ) {        
     error( "Invalid enumeration context...");
     doc = wsman_generate_fault(soapCntx, _doc, 
                                WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
-  } else {
+  } 
+  else 
+  {
+    if (!wsman_verify_enum_info(op, enumInfo, &status)) 
+    {
+      doc = wsman_generate_fault(soapCntx, _doc, 
+                                 status.fault_code, status.fault_detail_code, NULL);  
+      goto cleanup;
+    }
+
     if ( (retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status)) ) 
     {             
       doc = wsman_generate_fault(soapCntx, _doc, 
@@ -793,6 +798,8 @@ wsenum_pull_raw_stub( SoapOpH op,
       }
     }
   }
+
+ cleanup:
   if ( doc ) {
     soap_set_op_doc(op, doc, 0);
   } else {
