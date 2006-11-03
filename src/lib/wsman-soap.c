@@ -528,12 +528,14 @@ wsman_verify_enum_info(SoapOpH op,
   WsmanMessage *msg = (WsmanMessage *)_op->data;
 
   debug ("verifying enumeration context");
-  if (strcmp(msg->auth_data.username, enumInfo->auth_data.username) != 0 &&
-      strcmp(msg->auth_data.password, enumInfo->auth_data.password) != 0) 
-  {
-    status->fault_code = WSMAN_ACCESS_DENIED;
-    status->fault_detail_code = -1;
-    return 0;
+  if (msg->auth_data.username && msg->auth_data.password) {
+    if (strcmp(msg->auth_data.username, enumInfo->auth_data.username) != 0 &&
+        strcmp(msg->auth_data.password, enumInfo->auth_data.password) != 0) 
+    {
+      status->fault_code = WSMAN_ACCESS_DENIED;
+      status->fault_detail_code = -1;
+      return 0;
+    }
   }
   return 1;
 }
