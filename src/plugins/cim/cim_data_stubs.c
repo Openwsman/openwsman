@@ -113,7 +113,7 @@ CimResource_Get_EP( SoapOpH op,
   debug( "Get Endpoint Called");
   WsXmlDocH doc = NULL;
   WsmanStatus status;
-  CimClientInfo *cimclient;
+  CimClientInfo *cimclient = NULL;
   WsXmlDocH in_doc = NULL;
 
   wsman_status_init(&status);
@@ -160,7 +160,7 @@ CimResource_Custom_EP( SoapOpH op,
 {
   debug( "Custom Method Endpoint Called");
   WsXmlDocH doc = NULL;
-  CimClientInfo *cimclient;
+  CimClientInfo *cimclient = NULL;
   WsmanStatus status;
   WsXmlDocH in_doc = NULL;
 
@@ -213,7 +213,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
   char *enum_mode;
 
   WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-  CimClientInfo *cimclient; //  = CimResource_Init(cntx);
+  CimClientInfo *cimclient = NULL;
   
  
   if ( enumInfo) {   
@@ -278,7 +278,7 @@ CimResource_Pull_EP( WsContextH cntx,
 {
   debug( "Pull Endpoint Called");      
   WsXmlDocH doc = NULL;
-  CimClientInfo *cimclient;
+  CimClientInfo *cimclient = NULL;
 
   WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
   
@@ -323,7 +323,7 @@ CimResource_Put_EP( SoapOpH op,
   debug( "Put Endpoint Called");
   WsXmlDocH doc = NULL;
   WsmanStatus status;
-  CimClientInfo *cimclient;
+  CimClientInfo *cimclient = NULL;
 
   SoapH soap = soap_get_op_soap(op);
   WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));

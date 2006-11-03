@@ -512,7 +512,7 @@ instance2xml( CimClientInfo *client,
   CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
   CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
-  CMPIConstClass* _class;
+  CMPIConstClass* _class = NULL;
   char *target_class;
 
   int numproperties = instance->ft->getPropertyCount(instance, NULL);
@@ -539,7 +539,7 @@ instance2xml( CimClientInfo *client,
                      FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) 
   {
     debug("class name: %s", client->requested_class );
-    _class = cim_get_class(client, client->requested_class , NULL);
+    CMPIConstClass* _class = cim_get_class(client, client->requested_class , NULL);
     numproperties = _class->ft->getPropertyCount(_class, NULL);
     
   } else {
@@ -1249,7 +1249,7 @@ cim_get_enum_items(CimClientInfo *client,
                    int max) 
 {
   WsXmlNodeH itemsNode;
-  int c;
+  int c = 0;
 
   if ( node == NULL ) 
     return;
