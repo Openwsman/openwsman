@@ -184,17 +184,22 @@ request_usr_pwd(ws_auth_type_t auth,
 {
   char *pw;
   char user[21];
+  char *p;
 
   fprintf(stdout,"Authentication failed, please retry\n");
   fprintf(stdout, "%s authentication is used\n",
           ws_client_transport_get_auth_name(auth));
   printf("User name: ");
   fflush(stdout); 
-  fgets(user, 20, stdin);
+  if ( (p = fgets(user, 20, stdin) ) != NULL ) 
+  {
 
-  if (strchr(user, '\n'))
-    (*(strchr(user, '\n'))) = '\0';
-  *username = u_strdup_printf ("%s", user);
+    if (strchr(user, '\n'))
+      (*(strchr(user, '\n'))) = '\0';
+    *username = u_strdup_printf ("%s", user);
+  } else {
+    *username = NULL;
+  }
 
   pw = getpass("Password: ");
   *password = u_strdup_printf ("%s", pw);
