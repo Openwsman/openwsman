@@ -1,12 +1,13 @@
 Name:           openwsman
-Version:        @PACKAGE_VERSION@
+Version:       @PACKAGE_VERSION@
 Release:        1
 License:        BSD
 Url:            http://www.openwsman.org/
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Group:          Applications/Management
-BuildRequires:  curl-devel openssl-devel libsoup-devel sblim-sfcc-devel
+BuildRequires:  sblim-sfcc-devel curl-devel pkgconfig libxml2-devel pam-devel
+Requires:       sblim-sfcc curl libxml2 openssl pam
 Summary:        Opensource Implementation of WS-Management
 
 
@@ -22,11 +23,12 @@ Requires:       openwsman
 Openwsman Development files
 
 
+
 %prep
 %setup
 
 %build
-%configure
+%configure --with-shttpd --disable-more-warnings
 make
 
 %install
@@ -45,6 +47,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/plugins
 %{_libdir}/openwsman/plugins/*so*
+%dir %{_libdir}/openwsman/authenticators
+%{_libdir}/openwsman/authenticators/*so*
 %dir /etc/openwsman
 %config /etc/openwsman/openwsman.conf
 /etc/openwsman/owsmangencert.sh
@@ -56,6 +60,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_includedir}/*
 %{_libdir}/*.a
 %{_libdir}/*.la
+%{_libdir}/openwsman/authenticators/*.a
+%{_libdir}/openwsman/authenticators/*.la
 %{_libdir}/openwsman/plugins/*.a
 %{_libdir}/openwsman/plugins/*.la
 
