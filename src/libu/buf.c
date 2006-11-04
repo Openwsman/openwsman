@@ -279,6 +279,7 @@ int u_buf_free(u_buf_t *ubuf)
     if(ubuf->data)
         u_free(ubuf->data);
 
+    u_free(ubuf);
     return 0;
 err:
     return ~0;

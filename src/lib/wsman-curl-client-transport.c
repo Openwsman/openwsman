@@ -258,6 +258,7 @@ wsman_client_handler( WsManClient *cl,
     }
 
     u_buf_set(con->response, wbuf, tr_data.ind); 
+    printf("%p\n", con->response);
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);

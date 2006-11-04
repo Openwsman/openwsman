@@ -53,6 +53,9 @@
 
 static int _debug = 0;
 
+
+#define PASSED "\t\t\033[22;32mPASSED\033[m\n"
+#define FAILED "\t\t\033[22;31mFAILED\033[m\n"
 #define ENUM_ACTION_RELEASE_REPS		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReleaseResponse"
 
 int facility = LOG_DAEMON;
@@ -273,15 +276,15 @@ int main(int argc, char** argv)
       {
         if (strcmp((char *)tests[i].expected_value, "any" ) == 0 
             && strlen(xp) > 0 ) {
-          printf("\t\t\033[22;32mPASSED\033[m\n");
+          printf(PASSED);
         }
         else if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
-          printf("\t\t\033[22;32mPASSED\033[m\n");
+          printf(PASSED);
         else
-          printf("\t\t\033[22;31mFAILED\033[m\n");	
+          printf(FAILED);	
         u_free(xp);		            
       } else {
-        printf("\t\t\033[22;31mFAILED\033[m\n");
+        printf(FAILED);
       }            
     }		
     ws_xml_destroy_doc(enum_response);	
@@ -293,12 +296,12 @@ int main(int argc, char** argv)
       if (xp)
       {
         if (strcmp(xp, ENUM_ACTION_RELEASE_REPS ) == 0)
-          printf("\t\t\033[22;32mPASSED\033[m\n");
+          printf(PASSED);
         else
-          printf("\t\t\033[22;31mFAILED\033[m\n");	
+          printf(FAILED);	
         u_free(xp);		            
       } else {
-        printf("\t\t\033[22;31mFAILED\033[m\n");
+        printf(FAILED);
       }    
       ws_xml_destroy_doc(release_response);         
     }	

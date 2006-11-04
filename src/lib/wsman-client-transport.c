@@ -75,6 +75,7 @@ init_client_connection(WsManClientData *cld)
   WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
   u_buf_create(&conn->response);
   u_buf_create(&conn->request);
+  printf("1 %p\n", conn->response);
 
   return conn;
 }
@@ -87,14 +88,13 @@ release_connection(WsManConnection *conn)
     return;
 		
   if (conn->request) {
-    u_free(conn->request);
-    conn->request = NULL;
+    u_buf_free(conn->request);
   }
 	
   if (conn->response) {
-    u_free(conn->response);
-    conn->response = NULL;
+    u_buf_free(conn->response);
   }
+  u_free(conn);
 }
 
 
@@ -158,6 +158,10 @@ wsman_release_client(WsManClient * cl)
   }
   if (cl->data.endpoint) {
     u_free(cl->data.endpoint);
+  }
+
+  if (cl->connection) {
+    release_connection(cl->connection);
   }
 
   if (cl->wscntx) {

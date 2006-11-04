@@ -591,7 +591,8 @@ wsenum_release( WsManClient* cl,
     WsXmlDocH request = wsman_create_request(cl,  WSMAN_ACTION_RELEASE, NULL, resource_uri, options, enumContext);   
     wsman_send_request(cl, request); 
     response = wsman_build_envelope_from_response(cl);  
-    u_free(enumContext);       
+    u_free(enumContext); 
+    ws_xml_destroy_doc(request);
   } else {
     return NULL;
   }
