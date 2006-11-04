@@ -25,21 +25,25 @@ AC_ARG_ENABLE(debug,
 	      enable_debug=$debug_default)
 
 AC_ARG_WITH(libsoup,
-	[AC_HELP_STRING([--with-libsoup],[use libsoup for transport backend]),,with_libsoup=yes])
+	[AC_HELP_STRING([--with-libsoup],[use libsoup for transport backend])],[],[with_libsoup=no])
 
 
 AC_ARG_WITH(shttpd,
             [AC_HELP_STRING([--with-shttpd],
-                            [use builtin httpd server for transport backend  (default=yes)]), ,,with_shttpd=yes])
+                            [use builtin httpd server for transport backend  (default=yes)])],[],[with_shttpd=yes])
 
-dnl libsoup wins
+dnl echo $with_shttpd
+dnl echo $with_libsoup
+
 if test "$with_shttpd" = "$with_libsoup_serv" -a "x$with_shttpd" = "xyes" ; then
     AC_MSG_ERROR([Sorry, only one server transport backend can be selected. Using shttpd])
-   with_libsoup_serv=no
+   with_libsoup=no
    with_shttpd=yes
 fi 
-AM_CONDITIONAL(USE_LIBSOUP_SERV, test "$with_libsoup" == "yes")
-AM_CONDITIONAL(USE_SHTTPD, test "$with_shttpd" == "yes")
+
+
+AM_CONDITIONAL(USE_LIBSOUP_SERV, test "x$with_libsoup" == "xyes")
+AM_CONDITIONAL(USE_SHTTPD, test "x$with_shttpd" == "xyes")
 
 PKG_CHECK_MODULES(CURL, libcurl)
 
@@ -80,9 +84,7 @@ AC_SUBST(OWSMAN_DEBUG_FLAGS)
 
 
 
-
-dnl
-if test "x$with_libsoup_serv" = "xyes"; then
+if test "x$with_libsoup" = "xyes"; then
     AC_DEFINE(LIBSOUP_LISTENER, 1, [Defined if libsoup listener to be used])
 else
     AC_DEFINE(SHTTPD_LISTENER, 1, [Defined if shttpd listener to be used])
