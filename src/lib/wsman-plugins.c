@@ -85,8 +85,6 @@ plugin_free(WsManPlugin *self)
 {
     message( "Un-loading plugins: %s", self->p_name ); 
 
-    //g_return_if_fail(self);
-    //
     if( self->p_handle && self->cleanup )
         (*self->cleanup)( self->p_handle, self->data );
     if(self->p_name)
@@ -240,6 +238,6 @@ wsman_plugins_unload(WsManListenerH *listener)
 {
 
     free_plugins(listener->plugins);
-    list_destroy(listener->plugins);
+    // list_destroy(listener->plugins);
     return 0;
 }
