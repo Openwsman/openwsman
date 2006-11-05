@@ -1,3 +1,61 @@
+0.4.0
+    * Standalone http server (replace libsoup), libsoup server still available using config options, however it will no longer be supported
+    * Support for both Basic and Diegst at the same time
+    * Command line client
+	* Client now uses curl
+	* Added additional debuging options( save output to file, step operatings)
+    * WS-CIM Compliance
+	- Added support for namespaces as selectors
+	- Full polymorphism support
+    * CIM Plugin
+	- Authentication with CIMOM using basic authentication
+	- Multiple vendor namespace now supported
+	- Vendor namespaces are configured in master config file
+	- Default CIM namespace configurable in master config file
+    * PAM Support
+    * Removed dependency on Glib2
+    * New command line parser for client and server
+    * Improved client interface
+    * Test clients added
+    * CUnit testing added (more tests to follow)
+    * Functional testing scripts added (more comliance tests to follow)
+    * Compliance with WS-Management specification
+	- Authenticate with same credentials when enumerating
+	- More Header checks
+    * Updated Fault table
+    * Many memory leak fixes
+    * Plugin reads configuration data from master config file
+	
+0.3.2
+
+    * Parse SSL port correctly
+    * Invoke CIM methods with right variables. 
+
+0.3.1
+
+    * fixed bug with null array value in cim access library: #24 
+
+0.3.0
+
+    * Code Cleanup
+    * Optimize code size
+    * RPM Support using SUSE build services
+    * Further modularization
+    * More WS-Management specification conformance
+    * Utility Library (glib replacement in core library)
+    * Basic CIM Binding support (Polymorphism)
+    * Many bug fixes, see report for more details. 
+
+0.2.0
+
+    * This is a cleanup release with many bug fixes and the following additional features:
+    * RPM support
+    * Core library split into functional sub libraries for server, client and utility functions.
+
+0.1.0 
+    * This is the first release defaulting to support the WS-management specification from the DMTF (version 1.0, currently draft). Support for the June 2005 specification has been disabled. You will not be able to send requests to Windows 2003 R2 or Vista with WS-Man support unless those have the new WS-Management stack from Microsoft.
+
+    * This release also added some new options to the client and removed many command line options from the service. Those options are now part of the configuration file used for the service. 
 0.09:
     * Support DMTF draft specification (Work in Progress)
     * Optimized enumeration
