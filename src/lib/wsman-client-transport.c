@@ -75,7 +75,6 @@ init_client_connection(WsManClientData *cld)
   WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
   u_buf_create(&conn->response);
   u_buf_create(&conn->request);
-  printf("1 %p\n", conn->response);
 
   return conn;
 }
