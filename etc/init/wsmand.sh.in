@@ -46,7 +46,7 @@ rc_reset
 
 case "$1" in
     start)
-    if [ ! -f "@SYSCONFDR@/serverkey.pem" ]; then
+    if [ ! -f "@SYSCONFDIR@/serverkey.pem" ]; then
         if [ -f "/etc/ssl/servercerts/servercert.pem" \
                 -a -f "/etc/ssl/servercerts/serverkey.pem" ]; then
             echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
