@@ -270,6 +270,7 @@ main (int argc, char **argv)
   struct sigaction sig_action;
   dictionary       *ini;
   char *filename;
+  WsManListenerH *listener = NULL;
 
 #ifdef LIBSOUP_LISTENER
   GMainLoop *loop;
@@ -309,7 +310,7 @@ main (int argc, char **argv)
   sigaction (SIGHUP, &sig_action, NULL);
 
   initialize_logging ();
-  WsManListenerH *listener = NULL;
+ 
   if ( (listener = wsmand_start_server(ini)) == NULL) {
     exit(EXIT_FAILURE);
   }

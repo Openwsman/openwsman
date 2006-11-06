@@ -88,10 +88,15 @@ void debug_full (debug_level_e  level, const char   *format, ...);
         debug_full(DEBUG_LEVEL_MESSAGE, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
                 debug_helper (format))
 #else
+#define warnings( format...) \
+        debug_full(DEBUG_LEVEL_WARNING, format)
+
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, format)
+
 #define error( format...) \
         debug_full(DEBUG_LEVEL_ERROR, format)
+
 #define message( format...) \
         debug_full(DEBUG_LEVEL_MESSAGE, format)
 #if 0

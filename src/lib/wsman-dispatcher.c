@@ -505,10 +505,10 @@ void
 dispatch_inbound_call(env_t *fw,
                       WsmanMessage *msg) 
 {   
-  int ret;		
-  debug( "Inbound call...");
+  int ret;		 
   WsXmlDocH in_doc = wsman_build_inbound_envelope( fw, msg);
 
+  debug( "Inbound call...");
   op_t* op = NULL;	
   if ( in_doc != NULL && !wsman_fault_occured(msg) ) 
   {
@@ -522,6 +522,7 @@ dispatch_inbound_call(env_t *fw,
     } 
     else if (!wsman_fault_occured(msg)) 
     {
+      debug("xx");
       wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE, 
                       WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
     }
@@ -551,7 +552,7 @@ get_dispatch_entry( env_t* fw,
   }
 
   if ( dispatch == NULL ) {
-    warning( "Dispatcher Error");
+    error( "Dispatcher Error");
   } else { 
     dispatch->usageCount++;
   }
@@ -600,6 +601,7 @@ wsman_dispatcher( WsContextH cntx,
   lnode_t *node = list_first((list_t *)dispInfo->interfaces);
 
   if ( doc == NULL ) {
+    error("doc is null");
     u_free(data);
     goto cleanup;
   } else {
@@ -613,12 +615,15 @@ wsman_dispatcher( WsContextH cntx,
   while( node != NULL )
   {            
     WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->list_data;
-    if ( wsman_is_identify_request(doc)) {
-      if ( (ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID ) ) ) {
+    if ( wsman_is_identify_request(doc)) 
+    {
+      if ( (ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID ) ) ) 
+      {
         r = interface;
         resUriMatch = 1;
         break;                    
       }
+      debug("ns did not match");
     }
     /*
      * If Resource URI is null then most likely we are dealing with  a generic plugin

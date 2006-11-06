@@ -147,7 +147,7 @@ pwd_conv(int num_msg, const struct pam_message **msgm,
     char *pwd = (char *)appdata_ptr;
     int n;
     struct pam_response *reply;
-printf("pwd_conv started\n");
+    // printf("pwd_conv started\n");
     reply = (struct pam_response *) calloc(num_msg,
                         sizeof(struct pam_response));
     if (reply == NULL) {
@@ -181,7 +181,7 @@ authorize(char *username, const char *password)
     pam_handle_t   *pamh = NULL;
     int             r;
     int             res = 0;
-printf("service = %s\n", service);
+    // printf("service = %s\n", service);
     r = PAM_start(service, username, &conv, &pamh);
     if (r != PAM_SUCCESS) {
         debug("pam_start failed = %d(%s)", r, PAM_strerror(pamh, r));

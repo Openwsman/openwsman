@@ -77,7 +77,25 @@ SER_FINISH_END_POINTS(wsmid_identify);
 SER_START_NAMESPACES(wsmid_identify)
     ADD_NAMESPACE( XML_NS_WSMAN_ID, NULL ),
 SER_FINISH_NAMESPACES(wsmid_identify);
+static list_t *
+set_namespaces(void) 
+{
 
+  int i;
+
+  list_t *l = list_create(LISTCOUNT_T_MAX);
+  for (i = 0; wsmid_identify_Namespaces[i].ns != NULL; i++)
+  {
+    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
+    ns->class_prefix = wsmid_identify_Namespaces[i].class_prefix;
+    ns->ns = (char*) wsmid_identify_Namespaces[i].ns;
+    lnode_t *node = lnode_create(ns);
+    list_append(l, node);
+  }
+
+
+  return l;
+}
 
 
 void get_endpoints(void *self, void **data) 
@@ -92,7 +110,7 @@ void get_endpoints(void *self, void **data)
     ifc->compliance = XML_NS_WS_MAN;
     ifc->wsmanResourceUri = NULL;
     ifc->extraData = NULL;
-    ifc->namespaces = NULL;
+    ifc->namespaces = set_namespaces();
     ifc->endPoints = wsmid_identify_EndPoints;			
 }
 
