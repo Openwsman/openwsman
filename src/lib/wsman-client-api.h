@@ -117,6 +117,7 @@ extern "C" {
     WsManClientData     data;
     WsManConnection     *connection;
     long                response_code;
+    void                *transport;
   };
 
   WsManClient*

@@ -168,6 +168,8 @@ wsman_release_client(WsManClient * cl)
     soap_destroy_fw(soap);
   }
 
+  wsman_transport_close_transport(cl);
+
   u_free(cl);
   return rc;
 }
