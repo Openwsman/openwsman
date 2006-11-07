@@ -113,6 +113,7 @@ typedef int (*WsXmlEnumCallback)(WsXmlNodeH, void*);
 typedef int (*WsXmlNsEnumCallback)(WsXmlNodeH, WsXmlNsH, void*);
 
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node);
+void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char** buf, int* ptrSize);
 
 WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc);
 

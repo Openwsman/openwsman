@@ -828,6 +828,13 @@ void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
     return;
 }
 
+void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize) {
+
+    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc;
+    xmlDocDumpFormatMemory(d, ( xmlChar **)buf, ptrSize, 1);
+    return;
+}
+
 
 char *
 xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)

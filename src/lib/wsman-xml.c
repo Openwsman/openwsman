@@ -1499,6 +1499,13 @@ void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)
     return;
 }
 
+void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char** buf, int* ptrSize)
+{
+    WsXmlDocH doc = xml_parser_get_doc(node);
+    xml_parser_doc_dump_memory(doc, buf, ptrSize);
+    return;
+}
+
 void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
     xml_parser_doc_dump(f, doc);
     return;

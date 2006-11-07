@@ -76,6 +76,7 @@ void xml_parser_free_memory(void* ptr);
 void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
 
 void xml_parser_doc_dump(FILE* f, WsXmlDocH doc);
+void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize);
 void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node);
 
 int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr);
