@@ -100,7 +100,7 @@ make_callback_entry( SoapServiceCallback proc,
 static void free_hentry_func(hnode_t *n, void *arg)
 {
   u_free(hnode_getkey(n));
-  //u_free(hnode_get(n));
+  u_free(hnode_get(n));
   u_free(n);
 }
 
