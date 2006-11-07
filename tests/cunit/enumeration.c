@@ -40,7 +40,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
-#include <CUnit/Basic.h>
+#include "client_suite.h"
 
 #include "u/libu.h"
 
@@ -52,55 +52,15 @@
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
 #include "wsman-xml.h"
-#include "enumeration.h"
+#include "common.h"
 
 
-int _debug = 0;
 
-#define INVALID_RURI "wsa:DestinationUnreachablex"
-#define XPATH_V "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value"
-
-int facility = LOG_DAEMON;
-int errors = 0;
-unsigned char optimized_flags;
-
-typedef struct {
-  const char *server;
-  int port;
-  const char *path;
-  const char *scheme;
-  const char *username;
-  const char *password;
-} ServerData;
-
-typedef struct {						
-  /* Explanation of what you should see */
-  const char *explanation;
-
-  /* Resource UR to test against */
-  const char *resource_uri;
-
-  /* Selectors in the form of a URI query   key=value&key2=value2 */
-  const char *selectors;
-
-  const char* xpath_expression;
-  const char* expected_value;
-
-  /* What the final status code should be. */
-  unsigned int final_status;		
-
-  unsigned char       flags;
-
-  unsigned int		max_elements;
-
-} TestData;
+static int _debug = 0;
 
 
-ServerData sd[] = {
-  {"localhost", 8889, "/wsman", "http", "wsman", "secret"}
-};
 
-TestData tests[] = {
+TestData enum_tests[] = {
   {
     "Enumeration with non existent Resource URI, Checking Fault Subcode", 
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
@@ -126,7 +86,7 @@ TestData tests[] = {
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
     NULL, 
     "/s:Envelope/s:Header/wsman:TotalItemsCountEstimate",
-    "2",
+    "3",
     200,
     FLAG_ENUMERATION_COUNT_ESTIMATION,
     0
@@ -193,29 +153,6 @@ TestData tests[] = {
 };
 
 
-int ntests = sizeof (tests) / sizeof (tests[0]);
-
-static void
-debug_message_handler (const char *str, debug_level_e level, void  *user_data)
-{
-  if (wsman_debug_level_debugged(level)) 
-    {
-      struct tm *tm;
-      time_t now;
-      char timestr[128];
-
-      time (&now);
-      tm = localtime (&now);
-      strftime (timestr, 128, "%b %e %T", tm);
-      fprintf (stderr, "%s  %s\n", timestr, str);
-    }
-}
-
-static void
-initialize_logging (void)
-{
-  debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-} 
 
 static void wsman_output(WsXmlDocH doc)
 {
@@ -230,23 +167,6 @@ static void wsman_output(WsXmlDocH doc)
 WsManClient *cl;
 actionOptions options;
 
-int init_enumeration_test(void)
-{
-  wsman_client_transport_init(NULL);
-  if (_debug) wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
-  initialize_logging();
-
-  cl = wsman_create_client( 
-		      sd[0].server,
-		      sd[0].port,
-		      sd[0].path,
-		      sd[0].scheme,
-		      sd[0].username,
-		      sd[0].password);
-
-  initialize_action_options(&options);
-  return 0;
-}
 
 void enumeration_test(int idx);
 
@@ -256,13 +176,13 @@ void enumeration_test(int idx)
 
   int i = idx;
 
-  options.flags = tests[i].flags;
+  options.flags = enum_tests[i].flags;
 
-  if (tests[i].selectors != NULL)
-    wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
+  if (enum_tests[i].selectors != NULL)
+    wsman_add_selectors_from_query_string (&options, enum_tests[i].selectors);	
 
-  options.max_elements = tests[i].max_elements;
-  WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
+  options.max_elements = enum_tests[i].max_elements;
+  WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)enum_tests[i].resource_uri ,
 						      options);
   if (enum_response) 
     {
@@ -272,25 +192,19 @@ void enumeration_test(int idx)
   }
   if (_debug) wsman_output(enum_response);
 
-  if ((char *)tests[i].expected_value != NULL) 
-    {			  
-      char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
-      CU_ASSERT_PTR_NOT_NULL(xp);
-      if (xp)
-        {
-	  CU_ASSERT_STRING_EQUAL(xp,(char *)tests[i].expected_value );
-	  u_free(xp);		            
-        }            
-    }		
+  if ((char *)enum_tests[i].expected_value != NULL) 
+  {			  
+    char *xp = ws_xml_get_xpath_value(enum_response, (char *)enum_tests[i].xpath_expression);
+    CU_ASSERT_PTR_NOT_NULL(xp);
+    if (xp)
+    {
+      CU_ASSERT_STRING_EQUAL(xp,(char *)enum_tests[i].expected_value );
+      u_free(xp);		            
+    }            
+  }		
   ws_xml_destroy_doc(enum_response);
 }
 
-int clean_enumeration_test(void)
-{			
-  destroy_action_options(&options);		
-  wsman_release_client(cl);
-  return 0;
-}
 
 void enum_test_0(void);
 void enum_test_1(void);
@@ -315,9 +229,9 @@ int add_enumeration_tests(CU_pSuite ps)
 {
   int found_test = 0;
   /* add the tests to the suite */
-  found_test = (NULL != CU_add_test(ps, tests[0].explanation, (CU_TestFunc)enum_test_0));
-  found_test += (NULL != CU_add_test(ps, tests[1].explanation, (CU_TestFunc)enum_test_1));
-  found_test += (NULL != CU_add_test(ps, tests[2].explanation, (CU_TestFunc)enum_test_2));
+  found_test = (NULL != CU_add_test(ps, enum_tests[0].explanation, (CU_TestFunc)enum_test_0));
+  found_test += (NULL != CU_add_test(ps, enum_tests[1].explanation, (CU_TestFunc)enum_test_1));
+  found_test += (NULL != CU_add_test(ps, enum_tests[2].explanation, (CU_TestFunc)enum_test_2));
   return (found_test > 0);
 }
 

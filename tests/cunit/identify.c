@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2004-2006 Dell Inc. All rights reserved.
+ * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- *  - Neither the name of Dell Inc. nor the names of its
+ *  - Neither the name of Intel Corp. nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
  *
@@ -29,47 +29,94 @@
  *******************************************************************************/
 
 /**
- * @author Nathan Rakoff
+ * @author Anas Nashif
  */
+#include "wsman_config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <time.h>
+
+#include "u/libu.h"
+#include "wsman-xml-api.h"
+#include "wsman-errors.h"
+#include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-xml-serializer.h"
+
+#include "wsman-client.h"
+#include "wsman-client-transport.h"
 #include <CUnit/Basic.h> 
-#include "client_suite.h"
 #include "common.h"
 
 
 
 
-int init_client_suite(void);
-int clean_client_suite(void);
 
-int init_client_suite(void)
+
+TestData identify_tests[] = {
+  {
+    "Testin Identify Request", 
+    NULL, 
+    NULL, 
+    "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProtocolVersion",
+    XML_NS_WS_MAN,
+    200,
+    FLAG_NONE,
+    0
+  }
+};
+
+WsManClient *cl;
+actionOptions options;
+
+
+
+static int 
+identify_test(int idx)
 {
-  return init_test();
+	
+   
+    WsXmlDocH response;    
+    int i = idx;
+   
+    response = wsman_identify(cl, options);
+
+    if ((char *)identify_tests[i].expected_value != NULL) 
+    {			  
+      char *xp = ws_xml_get_xpath_value(response, (char *)identify_tests[i].xpath_expression);
+      CU_ASSERT_PTR_NOT_NULL(xp);
+      if (xp)
+      {
+        CU_ASSERT_STRING_EQUAL(xp,(char *)identify_tests[i].expected_value );
+        u_free(xp);		            
+      }            
+    }		
+    if (response) {			
+      ws_xml_destroy_doc(response);
+    }
+
+	
+	return 0;
 }
 
-int clean_client_suite(void)
+
+
+static void identify_test_0(void)
 {
-   return clean_test();
+  identify_test(0);
 }
 
-CU_pSuite setup_client_suite(void)
+int add_identify_tests(CU_pSuite ps)
 {
-   /* add a suite to the registry */
-   CU_pSuite ps = CU_add_suite("Client Enumeration Tests", init_client_suite, clean_client_suite);
-   if (NULL == ps) {
-      return ps;
-   }
-   /* add the tests to the suite */
-   if (0 == add_enumeration_tests(ps)) {
-      return NULL;
-   }
-   if (0 == add_identify_tests(ps)) {
-      return NULL;
-   }
-   if (0 == add_transfer_get_tests(ps)) {
-      return NULL;
-   }
-   return ps;   
+  int found_test = 0;
+  /* add the tests to the suite */
+  found_test = (NULL != CU_add_test(ps, identify_tests[0].explanation, (CU_TestFunc)identify_test_0));
+  
+  return (found_test > 0);
 }
+
 

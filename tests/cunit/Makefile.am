@@ -19,10 +19,13 @@ LIBS = \
 LIBS += $(CURL_LIBS)
 
 run_tests_SOURCES = run_tests.c \
-		client_suite.h \
-              client_suite.c \
-              enumeration.h \
-              enumeration.c
+		    client_suite.h \
+		    client_suite.c \
+		    common.c \
+		    common.h \
+		    identify.c \
+		    enumeration.c \
+		    transfer_get.c
 
 noinst_PROGRAMS = run_tests 
 
