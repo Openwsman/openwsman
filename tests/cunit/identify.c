@@ -59,11 +59,31 @@
 
 TestData identify_tests[] = {
   {
-    "Testin Identify Request", 
+    "Testing Identify Request, check protocol version", 
     NULL, 
     NULL, 
     "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProtocolVersion",
     XML_NS_WS_MAN,
+    200,
+    FLAG_NONE,
+    0
+  },
+  {
+    "Testing Identify Request, check product version", 
+    NULL, 
+    NULL, 
+    "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProductVersion",
+    PACKAGE_VERSION,
+    200,
+    FLAG_NONE,
+    0
+  },
+  {
+    "Testing Identify Request, check product vendor", 
+    NULL, 
+    NULL, 
+    "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProductVendor",
+    "Openwsman Project",
     200,
     FLAG_NONE,
     0
@@ -109,12 +129,22 @@ static void identify_test_0(void)
 {
   identify_test(0);
 }
+static void identify_test_1(void)
+{
+  identify_test(1);
+}
+static void identify_test_2(void)
+{
+  identify_test(2);
+}
 
 int add_identify_tests(CU_pSuite ps)
 {
   int found_test = 0;
   /* add the tests to the suite */
   found_test = (NULL != CU_add_test(ps, identify_tests[0].explanation, (CU_TestFunc)identify_test_0));
+  found_test = (NULL != CU_add_test(ps, identify_tests[1].explanation, (CU_TestFunc)identify_test_1));
+  found_test = (NULL != CU_add_test(ps, identify_tests[2].explanation, (CU_TestFunc)identify_test_2));
   
   return (found_test > 0);
 }

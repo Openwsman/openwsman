@@ -66,11 +66,9 @@ END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
   SER_FINISH_END_POINTS(CimResource);
 
 
-
-// Should be set from config file
 SER_START_NAMESPACES(CimResource)
 ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
-  SER_FINISH_NAMESPACES(CimResource);
+SER_FINISH_NAMESPACES(CimResource);
 
 
 
