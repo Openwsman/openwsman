@@ -508,6 +508,7 @@ void u_option_group_free(u_option_group_t *group)
 		u_free(group->descr);
 	if(group->help_descr)
 		u_free(group->help_descr);
+    u_free(group);
 }
 
 void u_option_group_add_entries(u_option_group_t *group,
