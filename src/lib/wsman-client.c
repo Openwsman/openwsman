@@ -562,6 +562,7 @@ wsenum_pull( WsManClient* cl,
     wsman_send_request(cl, request); 
     response = wsman_build_envelope_from_response(cl);
     u_free(enumContext);
+    ws_xml_destroy_doc(request);
   } else {
     error( "No enumeration context ???");
     return NULL;
