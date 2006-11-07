@@ -320,6 +320,7 @@ main (int argc, char **argv)
   g_main_loop_run (loop);
 #endif
   wsman_plugins_unload(listener);
+  u_free(listener);
   iniparser_freedict(ini);
   return 0;
 }
