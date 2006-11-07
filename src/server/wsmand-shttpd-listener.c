@@ -566,6 +566,12 @@ wsmand_start_server(dictionary *ini)
             wsmand_default_basic_authenticator());
     }
 
+    if ((wsmand_options_get_digest_password_file() == NULL) &&
+                (basic_auth_callback == NULL)) {
+        error("Server does not work without authentication");
+        return listener;
+    }
+
     wsmand_shutdown_add_handler(listener_shutdown_handler, &continue_working);
 
     lsn = shttpd_open_port(port);
