@@ -77,6 +77,9 @@ static WsManPlugin*
 plugin_new(void)
 {
     WsManPlugin *self = u_malloc(sizeof(WsManPlugin));
+    if (self) {
+        memset(self, 0, sizeof(WsManPlugin));
+    }
     return self ;
 }
 
@@ -85,13 +88,14 @@ plugin_free(WsManPlugin *self)
 {
     message( "Un-loading plugins: %s", self->p_name ); 
 
-    if( self->p_handle && self->cleanup )
+    if( self->p_handle && self->cleanup ) {
         (*self->cleanup)( self->p_handle, self->data );
+    }
     if(self->p_name)
         u_free(self->p_name);
     if( self->p_handle )
         dlclose( self->p_handle );
-    u_free( self );
+//    u_free( self );
 }
 
 static WsManPluginError 
@@ -167,15 +171,20 @@ load_plugin(WsManPlugin *self, const char *p_name)
 static void
 free_plugins(list_t * plugin_list)
 {
-    if( plugin_list )
-    {
-        lnode_t *p = list_first(plugin_list);
-        while (p) {
-            WsManPlugin *plugin = (WsManPlugin *)p->list_data;
-            plugin_free(plugin);
-            p = list_next(plugin_list, p);
-        }
+    if (plugin_list == NULL) {
+        return;
     }
+    if (list_isempty(plugin_list)) {
+        return;
+    }
+    lnode_t *p = list_first(plugin_list);
+     while (p) {
+         WsManPlugin *plugin = (WsManPlugin *)p->list_data;
+         plugin_free(plugin);
+         p = list_next(plugin_list, p);
+    }
+    list_destroy_nodes(plugin_list);
+    list_destroy(plugin_list);
 }
 
 static int
