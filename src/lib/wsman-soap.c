@@ -130,8 +130,12 @@ ws_create_context(SoapH soap)
 SoapH
 ws_soap_initialize() 
 {	
-  env_t* fw = (env_t*)u_zalloc(sizeof(env_t));
-  if ( fw ) {
+    env_t* fw = (env_t*)u_zalloc(sizeof(env_t));
+
+    if (fw == NULL) {
+        error("Could not alloc memory");
+        return NULL;
+    }
     //fw->dispatchList.listOwner = fw;
     fw->cntx = ws_create_context((SoapH)fw);    	
     fw->inboundFilterList = list_create(LISTCOUNT_T_MAX);
@@ -141,11 +145,10 @@ ws_soap_initialize()
     fw->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
     fw->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
     u_init_lock(fw);
-  }	
-  ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
-  soap_add_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
-  soap_add_filter((SoapH)fw, outbound_control_header_filter, NULL, 0);
-  return (SoapH)fw;
+    ws_xml_parser_initialize((SoapH)fw, g_wsNsData);
+    soap_add_filter((SoapH)fw, outbound_addressing_filter, NULL, 0);
+    soap_add_filter((SoapH)fw, outbound_control_header_filter, NULL, 0);
+    return (SoapH)fw;
 }
 
 
@@ -181,7 +184,7 @@ static int calculate_map_count(list_t *interfaces)
  */
 static void ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, void* data)
 {
-  env_t* soap = (env_t*)ws_context_get_runtime(cntx);   
+  env_t* soap = (env_t*)ws_context_get_runtime(cntx);
   if ( soap) {
     soap->dispatcherProc = proc;
     soap->dispatcherData = data;
@@ -193,37 +196,40 @@ static void ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, voi
 WsContextH 
 ws_create_runtime (list_t *interfaces)
 {
-  SoapH soap = ws_soap_initialize();
-  if (soap && interfaces != NULL ) 
-  {
+    SoapH soap = ws_soap_initialize();
+
+    if (soap == NULL) {
+        error("Could not initialize soap");
+        return NULL;
+    }
+    if (interfaces == NULL) {
+        error("NULL interfaces");
+        return ((env_t*)soap)->cntx;
+    }
     int size = calculate_map_count(interfaces);
     WsManDispatcherInfo* dispInfo = (WsManDispatcherInfo*)u_zalloc(size);
     if ( dispInfo == NULL ) {
-      u_free(soap);
-      soap = NULL;
-    } else {     
-      debug( "Registering %d plugins", (int )list_count(interfaces) );	
-      dispInfo->interfaceCount = list_count(interfaces);
-      dispInfo->interfaces = interfaces;
-      lnode_t *node = list_first(interfaces);        	
-      while(node != NULL)
-      {                    	
-        if ( wsman_register_interface(((env_t*)soap)->cntx, 
+        error("Could not allocate memory");
+        u_free(soap);
+        return NULL;
+    }
+    debug( "Registering %d plugins", (int )list_count(interfaces) );
+    dispInfo->interfaceCount = list_count(interfaces);
+    dispInfo->interfaces = interfaces;
+    lnode_t *node = list_first(interfaces);
+    while(node != NULL) {
+        if (wsman_register_interface(((env_t*)soap)->cntx,
                                       ( WsDispatchInterfaceInfo*) node->list_data,
-                                      dispInfo) != 0 )
-        {
+                                      dispInfo) != 0 ) {
           error( "Interface registeration failed");
           u_free(dispInfo);
-          soap = NULL;                   
-        }                                               
+          soap_destroy_fw(soap);
+          return NULL;
+        }
         node = list_next(interfaces, node);
-      }                            
-      if ( soap ) {
-        ws_register_dispatcher(((env_t*)soap)->cntx, wsman_dispatcher, dispInfo);
-      }
-    }		
-  }
-  return ((env_t*)soap)->cntx;
+    }
+    ws_register_dispatcher(((env_t*)soap)->cntx, wsman_dispatcher, dispInfo);
+    return ((env_t*)soap)->cntx;
 }
 
 
