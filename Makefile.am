@@ -1,6 +1,16 @@
 SUBDIRS = src doc etc tests
 
+wsmanincludedir = $(includedir)/openwsman
+wsmaninclude_HEADERS = wsman_config.h
+
 package: dist
 	cp openwsman.spec /usr/src/packages/SPEC
 	cp openwsman-*.tar.gz /usr/src/packages/SOURCES
 	rpmbuild -ba openwsman.spec
+
+install-data-local: openwsman.pc
+	$(mkinstalldirs) $(libdir)/pkgconfig
+	$(INSTALL_DATA) openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
+
+uninstall-local:
+	rm -f $(DESTDIR)$(libdir)/pkgconfig/openwsman.pc

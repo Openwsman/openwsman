@@ -35,12 +35,12 @@
 
 #define _GNU_SOURCE
 
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
+#include <string.h>*/
 
-#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"

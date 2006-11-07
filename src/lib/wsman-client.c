@@ -36,14 +36,14 @@
 #include <wsman_config.h>
 #endif
 
+#include <libxml/uri.h>
+/*
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <assert.h>*/
 
-
-#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-dispatcher.h"
@@ -51,7 +51,7 @@
 
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h" 
-#include <libxml/uri.h>
+
 #include "wsman-faults.h"
 #include "wsman-client.h"
 

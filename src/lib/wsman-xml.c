@@ -33,16 +33,15 @@
  * @author Eugene Yarmosh
  */
 
-
+/*
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <ctype.h>*/
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
-#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"

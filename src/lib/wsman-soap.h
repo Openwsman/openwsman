@@ -36,6 +36,7 @@
 #ifndef WSMAN_SOAP_H_
 #define WSMAN_SOAP_H_
 
+#include "u/libu.h"
 
 #define PROCESSED_MSG_ID_MAX_SIZE	        200
 #define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST     8192

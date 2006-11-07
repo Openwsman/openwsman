@@ -11,7 +11,12 @@ AM_CONFIG_HEADER(wsman_config.h)
 AM_MAINTAINER_MODE
 AC_PROG_MAKE_SET
 
-
+WSMAN_PKG=wsman
+WSMAN_CLIENT_PKG=${WSMAN_PKG}_client
+WSMAN_UTILS_PKG=${WSMAN_PKG}_utils
+AC_SUBST(WSMAN_UTILS_PKG)
+AC_SUBST(WSMAN_CLIENT_PKG)
+AC_SUBST(WSMAN_PKG)
 
 dnl ***************************
 dnl *** Set debugging flags ***
@@ -265,6 +270,10 @@ dnl *** Output Everything ***
 dnl *************************
 AC_SUBST(SYSCONFDIR)
 
+AC_CONFIG_FILES([
+	openwsman.pc
+        openwsman.spec])
+
 AC_OUTPUT([
         Doxyfile
 	Makefile
@@ -287,7 +296,6 @@ AC_OUTPUT([
         doc/Makefile
         doc/specs/Makefile
         etc/Makefile
-        openwsman.spec
         etc/owsmangencert.sh
         etc/init/Makefile
         etc/init/wsmand.sh

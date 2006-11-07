@@ -35,7 +35,7 @@
 #ifndef WS_XML_API_H_
 #define WS_XML_API_H_
 
-
+#include "u/libu.h"
 
 
 #define SOAP_ENVELOPE			"Envelope"

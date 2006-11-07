@@ -40,7 +40,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-
+#include "u/libu.h"
+#include "wsman-xml-api.h"
 
   struct _WsManClient;
   typedef struct _WsManClient WsManClient;
