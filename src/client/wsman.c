@@ -307,7 +307,11 @@ int main(int argc, char** argv)
     {
       while (enumContext !=NULL) {
         doc = wsenum_pull(cl, resource_uri, enumContext, options);
+ 
         wsman_output(doc);
+        if (cl->response_code != 200) {
+          break;
+        }
         enumContext = wsenum_get_enum_context(doc);
         if (doc) {
           ws_xml_destroy_doc(doc);
