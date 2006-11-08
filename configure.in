@@ -111,6 +111,35 @@ daemon
 # check for ssize_t
 AC_CHECK_TYPE(ssize_t, int)
 
+
+dnl copied from openwbem :)
+use_pam=0       
+AC_ARG_ENABLE(pam,
+AC_HELP_STRING(--disable-pam,disable pam integration))
+if test "$enable_pam" != no; then
+        use_pam=1
+        AC_CHECK_HEADERS(pam/pam_misc.h pam/pam_appl.h, true, use_pam=0)
+        if test x$use_pam = x0; then
+                AC_CHECK_HEADERS(security/pam_misc.h security/pam_appl.h,
+                        use_pam=1, use_pam=0)
+        fi
+                
+        if test x$use_pam = x1; then
+                AC_DEFINE([HAVE_PAM], [1], [Defined if pam support is available])
+                PAM_LIB="-lpam"
+        else
+                AC_MSG_WARN(*** No PAM headers found! The PAM authentication module ***)
+                AC_MSG_WARN(*** will not be built. The config file defaults to      ***)
+                AC_MSG_WARN(*** using PAM authentication.                           ***)
+                AC_MSG_WARN(*** You must edit the config file and use a different   ***)
+                AC_MSG_WARN(*** authentication module or else the daemon won't start***)
+        fi
+fi                      
+AC_SUBST(PAM_LIB)
+AM_CONDITIONAL(USE_PAM, test x$use_pam = x1)
+
+
+
 dnl ----------------------------------------------------------------------
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h sys/signal.h])
 AC_CHECK_HEADERS([ctype.h sys/resource.h sys/socket.h sys/select.h])
