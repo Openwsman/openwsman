@@ -16,12 +16,6 @@
 
 #include "wsman_test.h"
 
-//
-// ************ Serialization type information for resource ************
-//
-// It creates an array of items with name StateDescription_TypeInfo 
-// It can be used in calls to WsSerialize and WsDeserialize 
-//
 SER_START_ITEMS("Test", WsManTestResult)
 SER_UINT8("result1", 1, 1), 
 SER_UINT8("result2", 1, 1), 
@@ -40,16 +34,16 @@ FINISH_TRANSFER_GET_SELECTORS(WsManTest);
 #endif
 
 SER_START_END_POINTS(WsManTest)
-    END_POINT_TRANSFER_GET(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_ENUMERATE(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_PULL(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_RELEASE(WsManTest, XML_NS_WS_MAN"/test"),
-    END_POINT_TRANSFER_PUT(WsManTest, XML_NS_WS_MAN"/test"),
+    END_POINT_TRANSFER_GET(WsManTest, XML_NS_OPENWSMAN"/test"),
+    END_POINT_ENUMERATE(WsManTest, XML_NS_OPENWSMAN"/test"),
+    END_POINT_PULL(WsManTest, XML_NS_OPENWSMAN"/test"),
+    END_POINT_RELEASE(WsManTest, XML_NS_OPENWSMAN"/test"),
+    END_POINT_TRANSFER_PUT(WsManTest, XML_NS_OPENWSMAN"/test"),
 SER_FINISH_END_POINTS(WsManTest);
 
 
 SER_START_NAMESPACES(WsManTest)
-    ADD_NAMESPACE( XML_NS_WSMAN_ID, NULL ),
+    ADD_NAMESPACE( XML_NS_OPENWSMAN, NULL ),
 SER_FINISH_NAMESPACES(WsManTest);
 
 static list_t *

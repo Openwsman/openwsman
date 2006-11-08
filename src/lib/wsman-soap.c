@@ -414,6 +414,9 @@ wsman_identify_stub(SoapOpH op,
                     void* appData) 
 {
   debug( "Identify called");
+  void* data;
+  WsXmlDocH doc = NULL;
+
   WsmanStatus *status = u_zalloc(sizeof(WsmanStatus *) );
   SoapH soap = soap_get_op_soap(op);
   WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));    
@@ -422,8 +425,6 @@ wsman_identify_stub(SoapOpH op,
   XmlSerializerInfo* typeInfo = info->serializationInfo;
   WsEndPointGet endPoint = (WsEndPointGet)info->serviceEndPoint;
 
-  void* data;
-  WsXmlDocH doc = NULL;
 
   if ( (data = endPoint(cntx, status)) == NULL ) {
     error( "Identify Fault");
@@ -444,7 +445,7 @@ wsman_identify_stub(SoapOpH op,
   }
 
   ws_serializer_free_all(cntx);
-  ws_destroy_context(cntx);
+  // ws_destroy_context(cntx);
   u_free(status);
 
   return 0;

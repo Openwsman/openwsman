@@ -72,6 +72,8 @@
 #define XML_NS_SCHEMA_INSTANCE	        "http://www.w3.org/2001/XMLSchema-instance"
 
 
+#define XML_NS_OPENWSMAN   "http://schema.openwsman.org/2006/openwsman"
+
 #define XML_NS_CIM_SCHEMA	        "http://schemas.dmtf.org/wbem/wscim/1/common"
 #define XML_NS_CIM_CLASS                "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
 #define XML_NS_CIM_BINDING              "http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd"
@@ -644,7 +646,7 @@ void wsman_generate_fault_buffer(
 
 #define END_POINT_TRANSFER_GET(t, ns)                                \
   { WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,         \
-      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, t##_Get_Selectors}
+      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}
 
 #define END_POINT_TRANSFER_GET_RAW(t, ns)                         \
   { WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
@@ -694,6 +696,7 @@ void wsman_generate_fault_buffer(
 #define ADD_NAMESPACE( ns , prefix )            \
   {ns, prefix }
 
+#if 0
 // Selectors
 #define ADD_SELECTOR(n,t,d)                     \
   { n, NULL, t, d}
@@ -705,6 +708,7 @@ void wsman_generate_fault_buffer(
 #define DECLARE_SELECTOR_ARRAY(t)               \
   extern WsSelector t##_Get_Selectors[]
 
+#endif
 void soap_destroy_fw(SoapH soap);
 
 void wsman_status_init(WsmanStatus* s);

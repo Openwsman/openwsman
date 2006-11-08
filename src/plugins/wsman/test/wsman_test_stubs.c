@@ -63,7 +63,7 @@ WsManTest* g_WsManTestArr[2] =
 
 WsManTest* WsManTest_Get_EP(WsContextH cntx)
 {
-    debug ("Get Endpoint Called"); 
+    debug ("Test Get Endpoint Called"); 
     return &g_WsManTest1;
 }
 

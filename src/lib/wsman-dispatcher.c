@@ -107,38 +107,6 @@ int is_wk_header(WsXmlNodeH header)
 }
 
 
-
-/*
-  op_t* find_response_entry(env_t* fw, char* id)
-  {
-  op_t* entry = NULL;
-
-  if ( fw )
-  {
-  DL_Node* node;
-  soap_fw_lock(fw);
-  node = DL_GetHead(&fw->responseList);
-
-  while( node != NULL )
-  {
-  entry = (op_t*)node->dataBuf;
-  // TBD: more accurate comparision
-  if ( !stricmp(id, entry->dispatch->inboundAction) )
-  {
-  DL_RemoveNode(node);
-  u_free(node);
-  break;
-  }
-  entry = NULL;
-
-  node = DL_GetNext(node);
-  }
-  soap_fw_unlock(fw);
-  }
-  return entry;
-  }
-*/
-
 int unlink_response_entry(env_t* fw, op_t* entry)
 {
   int retVal = 0;
@@ -568,6 +536,7 @@ wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r,
   if (r->namespaces == NULL) {
     return NULL;
   }
+
   if ( uri ) 
   {
     lnode_t *node = list_first(r->namespaces);
