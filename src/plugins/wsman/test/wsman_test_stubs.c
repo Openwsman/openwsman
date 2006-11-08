@@ -30,30 +30,25 @@
 
 /**
  * @author Anas Nashif
- * @author Eugene Yarmosh
  */
 
-#include "config.h"
+#include "wsman_config.h"
 
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"
 
-#include <gmodule.h>
 
-#include "ws_utilities.h"
+#include "u/libu.h"
 
-
-
-#include "ws_errors.h"
-#include "ws_xml_api.h"
-#include "soap_api.h"
-#include "xml_serializer.h"
-#include "ws_dispatcher.h"
+#include "wsman-errors.h"
+#include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-xml-serializer.h"
+#include "wsman-dispatcher.h"
 
 #include "wsman_test.h"
-#include "wsman-debug.h"
 
 
 
@@ -66,35 +61,33 @@ WsManTest* g_WsManTestArr[2] =
  	&g_WsManTest2, &g_WsManTest3
  };
 
-// ******************* WS-MAN this *******************************
-
 WsManTest* WsManTest_Get_EP(WsContextH cntx)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Get Endpoint Called"); 
+    debug ("Get Endpoint Called"); 
     return &g_WsManTest1;
 }
 
 WsManTest* WsManTest_Put_EP(WsContextH cntx)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Put Endpoint Called"); 
+    debug( "Put Endpoint Called"); 
     return &g_WsManTest1;
 }
 
 int WsManTest_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Enumerate Endpoint Called");   
+    debug( "Enumerate Endpoint Called");   
     return 0;
 }
 
 int WsManTest_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Release Endpoint Called");    
+    debug( "Release Endpoint Called");    
     return 0;
 }
 
 int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 { 
-    wsman_debug (WSMAN_DEBUG_LEVEL_DEBUG, "Pull Endpoint Called"); 
+    debug( "Pull Endpoint Called"); 
     if ( enumInfo->index >= 0 && enumInfo->index < 2 )
     {
         enumInfo->pullResultPtr = g_WsManTestArr[enumInfo->index];

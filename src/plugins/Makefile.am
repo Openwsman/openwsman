@@ -1,1 +1,1 @@
-SUBDIRS = identify cim
+SUBDIRS = identify cim wsman

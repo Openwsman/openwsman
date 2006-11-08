@@ -7,11 +7,10 @@ libwsman_test_la_SOURCES = \
 	wsman_test.h
 
 INCLUDES = -I$(top_srcdir)/src/lib \
-	   $(GMODULE_CFLAGS)
+	   -I$(top_srcdir)/src/libu 
 
 LIBS = \
-    $(XML_LIBS) \
-    $(GMODULE_LIBS)
+    $(XML_LIBS)
 
 plugin_LTLIBRARIES= libwsman_test.la
 
