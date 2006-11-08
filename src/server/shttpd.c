@@ -47,6 +47,7 @@
 #endif /* CONFIG */
 #define	HTPASSWD	".htpasswd"	/* Passwords file name		*/
 #define	EXPIRE_TIME	3600		/* Expiration time, seconds	*/
+#define KEEP_ALIVE_TIME 60      /* keep connection, seconds */
 #ifndef IO_MAX
 #define	IO_MAX		16384		/* Max request size		*/
 #endif /* IO_MAX */
@@ -209,12 +210,13 @@ enum {METHOD_GET, METHOD_POST, METHOD_PUT, METHOD_DELETE, METHOD_HEAD};
  * I/O buffer
  */
 struct io {
-	char	buf[IO_MAX];		/* Buffer		*/
+	char	*buf;		/* Buffer		*/
+    size_t  bufsize;
 	int	done;			/* IO finished		*/
 	size_t	head;			/* Bytes read		*/
 	size_t	tail;			/* Bytes written	*/
 };
-#define	IO_SPACELEN(io)		(sizeof((io)->buf) - (io)->head - 1)
+#define	IO_SPACELEN(io)		((io)->bufsize - (io)->head - 1)
 #define	IO_DATALEN(io)		((io)->head - (io)->tail)
 
 /*
@@ -275,18 +277,19 @@ struct conn {
 	struct stat	st;		/* Stats of requested file	*/
 	DIR		*dirp;		/* Opened directory		*/
 	unsigned int	flags;		/* Flags			*/
-#define	FLAG_FINISHED		1	/* Connection to be closed	*/
-#define	FLAG_PARSED		2	/* Request has been parsed	*/
-#define	FLAG_CGIPARSED		4	/* CGI output has been parsed	*/
-#define	FLAG_SSLACCEPTED	8	/* SSL_accept() succeeded	*/
-#define	FLAG_ALWAYS_READY	16	/* Local channel always ready for IO */
-#define	FLAG_USER_WATCH		32	/* User watch			*/
-#define	FLAG_SOCK_READABLE	64
-#define	FLAG_SOCK_WRITABLE	128
-#define FLAG_FD_READABLE	256
-#define	FLAG_FD_WRITABLE	512
-#define	FLAG_CGI		1024
-#define	FLAG_KEEP_CONNECTION	2048
+#define	FLAG_FINISHED           0x0001	/* Connection to be closed	*/
+#define	FLAG_PARSED             0x0002	/* Request has been parsed	*/
+#define	FLAG_CGIPARSED          0x0004	/* CGI output has been parsed	*/
+#define	FLAG_SSLACCEPTED        0x0008	/* SSL_accept() succeeded	*/
+#define	FLAG_ALWAYS_READY       0x0010	/* Local channel always ready for IO */
+//#define	FLAG_USER_WATCH         0x0020	/* User watch			*/
+#define	FLAG_SOCK_READABLE      0x0040
+#define	FLAG_SOCK_WRITABLE      0x0080
+#define FLAG_FD_READABLE        0x0100
+#define	FLAG_FD_WRITABLE        0x0200
+#define	FLAG_CGI                0x0400
+#define	FLAG_KEEP_CONNECTION	0x0800
+#define FLAG_AUTHORIZED         0x1000  /* Already authorized */
 };
 
 #define	FLAG_IO_READY	(FLAG_SOCK_WRITABLE | FLAG_SOCK_READABLE | \
@@ -981,7 +984,7 @@ printf("         end of c->query body\n");
 	/* Now, when all POST data is read, we can call user callback */
 	c->local.head += url->func(&arg);
 	c->state = arg.state;
-	assert(c->local.head <= sizeof(c->local.buf));
+	assert(c->local.head <= c->local.bufsize);
 
 	if (arg.last) {
 		c->local.done++;
@@ -1232,7 +1235,7 @@ static void
 io_inc_tail(struct io *io, size_t n)
 {
 	assert(io->tail <= io->head);
-	assert(io->head <= sizeof(io->buf));
+	assert(io->head <= io->bufsize);
 	io->tail += n;
 	assert(io->tail <= io->head);
 	if (io->tail == io->head)
@@ -1518,20 +1521,43 @@ free_parsed_data(struct conn *c)
 static void
 disconnect(struct conn *c)
 {
+    int keep_alive = (c->flags & FLAG_KEEP_CONNECTION);
 
 	elog(ERR_DEBUG, "disconnecting %p", c);
 
-	del_conn_from_ctx(c->ctx, c);
 
-	if (c->ctx->accesslog != NULL)
-		log_access(c->ctx->accesslog, c);
-
-	/* In inetd mode, exit if request is finished. */
-	if (inetd)
-		exit_flag++;
 
 	free_parsed_data(c);
 
+    if (c->remote.buf) {
+        free(c->remote.buf);
+        c->remote.buf = NULL;
+    }
+    c->remote.head = 0;
+    c->remote.tail = 0;
+    c->remote.done = 0;
+
+    if (c->local.buf) {
+        free(c->local.buf);
+        c->local.buf = NULL;
+    }
+    c->local.head = 0;
+    c->local.tail = 0;
+    c->local.done = 0;
+
+    if (keep_alive) {
+        c->flags &= (FLAG_SSLACCEPTED | FLAG_AUTHORIZED);
+        c->expire = current_time + KEEP_ALIVE_TIME;
+        elog(ERR_DEBUG, "connection %p is keeping alive for %d secs",
+                    c, KEEP_ALIVE_TIME);
+        return;
+    }
+    del_conn_from_ctx(c->ctx, c);
+
+    if (c->ctx->accesslog != NULL)
+        log_access(c->ctx->accesslog, c);
+
+    /* In inetd mode, exit if request is finished. */
     if (c->usr) {
         free(c->usr);
         c->usr = NULL;
@@ -1540,8 +1566,8 @@ disconnect(struct conn *c)
         free(c->pwd);
         c->pwd = NULL;
     }
-
-
+    if (inetd)
+        exit_flag++;
 	/* Free resources */
 	if (c->fd != -1) {
 		if (c->flags & FLAG_CGI)
@@ -1780,20 +1806,22 @@ senderr(struct conn *c, int status, const char *descr,
 		const char *headers, const char *fmt, ...)
 {
 	va_list	ap;
-	char	msg[sizeof(c->local.buf)];
+	char	msg[c->local.bufsize];
 	int	n;
 
 	c->shlength = n = Snprintf(msg, sizeof(msg),
 	   "HTTP/1.1 %d %s\r\nConnection: close\r\n%s%s\r\n%d ",
+//       "HTTP/1.1 %d %s\r\n%s%s\r\n%d ",
 	    status, descr, headers, headers[0] == '\0' ? "" : "\r\n", status);
 	va_start(ap, fmt);
 	n += vsnprintf(msg + n, sizeof(msg) - n, fmt, ap);
 	if (n > (int) sizeof(msg))
 		n = sizeof(msg);
 	va_end(ap);
-	mystrlcpy(c->local.buf, msg, sizeof(c->local.buf));
+	mystrlcpy(c->local.buf, msg, c->local.bufsize);
 	c->local.head = n;
 	c->local.tail = 0;
+    c->flags &= ~FLAG_KEEP_CONNECTION;
 	elog(ERR_DEBUG, "%s: [%s]", "senderr", c->local.buf);
 	c->status = status;
 	c->local.done++;
@@ -1913,7 +1941,7 @@ put_file(struct conn *c)
 	if (n <= 0 || c->nposted >= c->cclength) {
 		(void) fstat(c->fd, &c->st);
 		c->local.head = c->shlength = Snprintf(c->local.buf,
-		    sizeof(c->local.buf),
+		    c->local.bufsize,
 		    "HTTP/1.1 %d OK\r\n"
 		    "Content-Length: %u\r\n"
 		    "Connection: close\r\n\r\n", c->status, c->st.st_size);
@@ -1997,7 +2025,7 @@ do_dir(struct conn *c)
 	if ((c->dirp = opendir(c->path)) == NULL) {
 		senderr(c, 500, "Error","", "Cannot open dir");
 	} else {
-		c->local.head = Snprintf(c->local.buf, sizeof(c->local.buf),
+		c->local.head = Snprintf(c->local.buf, c->local.bufsize,
 		    "HTTP/1.1 200 OK\r\n"
 		    "Content-Type: text/html\r\n"
 		    "\r\n"
@@ -2077,7 +2105,7 @@ do_get(struct conn *c)
 
 	/* Local read buffer should be empty */
 	c->local.head = c->shlength = Snprintf(c->local.buf,
-	    sizeof(c->local.buf),
+	    c->local.bufsize,
 	    "HTTP/1.1 %d %s\r\n"
 	    "Date: %s\r\n"
 	    "Last-Modified: %s\r\n"
@@ -2804,6 +2832,9 @@ checkauth(struct conn *c, const char *path)
         int res;
         struct shttpd_ctx *ctx = c->ctx;
 
+        if (c->flags & FLAG_AUTHORIZED) {
+            return 1;
+        }
         if (!ctx->bauthf && !ctx->dauthf) {
                 return 1;
         }
@@ -2818,7 +2849,11 @@ checkauth(struct conn *c, const char *path)
                 if (getauth(c, &di) == 0) {
                         return 0;
                 }
-                return ctx->dauthf(ctx->realm, c->method, &di);
+                res = ctx->dauthf(ctx->realm, c->method, &di);
+                if (res) {
+                    c->flags |= FLAG_AUTHORIZED;
+                }
+                return res;
         }
 
         if (ncasecmp(c->auth, "Basic ", 6) != 0) {
@@ -2864,6 +2899,7 @@ checkauth(struct conn *c, const char *path)
             //authorized(net_0)
             c->usr = strdup(pp);
             c->pwd = strdup(p);
+            c->flags |= FLAG_AUTHORIZED;
         }
 
         return res;
@@ -3615,6 +3651,25 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 	int		n, len;
 
 	assert(ctx == c->ctx);
+    if (c->remote.buf == NULL) {
+        c->remote.buf = malloc(c->remote.bufsize);
+        if (c->remote.buf == NULL) {
+            elog(ERR_DEBUG, "No memory");
+            c->flags = FLAG_FINISHED;
+            return;
+        }
+        c->flags |= FLAG_KEEP_CONNECTION;
+    }
+    if (c->local.buf == NULL) {
+        c->local.buf = malloc(c->remote.bufsize);
+        if (c->local.buf == NULL) {
+            elog(ERR_DEBUG, "No memory");
+            c->flags = FLAG_FINISHED;
+            return;
+        }
+        c->flags |= FLAG_KEEP_CONNECTION;
+    }
+
 #if 0
 	elog(ERR_DEBUG, "serve: enter %p: local %d.%d.%d, remote %d.%d.%d", c,
 	    c->local.done, c->local.head, c->local.tail,
@@ -3630,6 +3685,10 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 			c->remote.buf[c->remote.head] = '\0';
 			c->expire += EXPIRE_TIME;
 		} else if (!(c->flags & FLAG_PARSED) && c->remote.done) {
+            if (n == 0) {
+                // connection closed by peer 
+                c->flags &= ~FLAG_KEEP_CONNECTION;
+            }
 			c->flags |= FLAG_FINISHED;
 		}
 		elog(ERR_DEBUG, "serve: readremote returned %d", n);
@@ -3708,6 +3767,9 @@ shttpd_add(struct shttpd_ctx *ctx, int sock)
 		c->ssl		= ssl;
 		c->birth	= current_time;
 		c->expire	= current_time + EXPIRE_TIME;
+        c->local.bufsize = IO_MAX;
+        c->remote.bufsize = IO_MAX;
+ //       c->flags = FLAG_KEEP_CONNECTION;
 #ifndef _WIN32
 		(void) fcntl(sock, F_SETFD, FD_CLOEXEC);
 #endif /* _WIN32 */
@@ -3758,6 +3820,8 @@ shttpd_listen(struct shttpd_ctx *ctx, int sock)
 	c->watch_data	= (void *) sock;
 	c->sock		= sock;
 	c->fd		= -1;
+    c->local.bufsize = IO_MAX;
+    c->remote.bufsize = IO_MAX;
 	c->expire	= (time_t) LONG_MAX;	/* Never expires */
 	add_conn_to_ctx(ctx, c);
 
@@ -3796,7 +3860,6 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 	int		max_fd = 0, msec = milliseconds;
 
 	current_time = time(0);
-
 	FD_ZERO(&read_set);
 	FD_ZERO(&write_set);
 
@@ -3804,7 +3867,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		c->flags &= ~FLAG_IO_READY;
 
 #define	MERGEFD(fd,set)	\
-	do {FD_SET(fd, set); if (fd > max_fd) max_fd = fd; } while (0)
+	do {FD_SET(fd, set); if (fd > max_fd) max_fd = fd;} while (0)
 	
 		/* If there is space to read, do it */
 		if (IO_SPACELEN(&c->remote))
@@ -3859,7 +3922,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		}
 		if (FD_ISSET(c->sock, &write_set)) {
 			c->flags |= FLAG_SOCK_WRITABLE;
-                }
+        }
 #if 0
 		if (IO_SPACELEN(&c->local) && ((c->flags & FLAG_ALWAYS_READY) ||
 		    (c->fd != -1 && FD_ISSET(c->fd, &read_set))))
@@ -4043,6 +4106,7 @@ shttpd_fini(struct shttpd_ctx *ctx)
 	/* Free all connections */
 	for (c = ctx->connections; c != NULL; c = nc) {
 		nc = c->next;
+        c->flags = 0;
 		disconnect(c);
 	}
 

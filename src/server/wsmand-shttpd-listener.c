@@ -282,7 +282,7 @@ DONE:
         n += snprintf(arg->buf + n, arg->buflen -n,
              "Content-Length: %d\r\n", shttp_msg->length);
     }
-    n += snprintf(arg->buf + n, arg->buflen -n, "Connection: close\r\n");
+//    n += snprintf(arg->buf + n, arg->buflen -n, "Connection: close\r\n");
 
     if (!shttp_msg || shttp_msg->length == 0) {
         n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
