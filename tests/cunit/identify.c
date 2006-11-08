@@ -104,6 +104,7 @@ identify_test(int idx)
     int i = idx;
    
     response = wsman_identify(cl, options);
+    CU_ASSERT_TRUE(cl->response_code == identify_tests[i].final_status );
 
     if ((char *)identify_tests[i].expected_value != NULL) 
     {			  

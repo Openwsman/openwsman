@@ -147,6 +147,8 @@ static int transfer_get_test(int idx)
 
 
   doc = ws_transfer_get(cl, (char *)get_tests[i].resource_uri, options);
+  CU_ASSERT_TRUE(cl->response_code == get_tests[i].final_status );
+
   if ((char *)get_tests[i].expected_value != NULL) 
   {			  
     if ((char *)get_tests[i].expected_value != NULL) 

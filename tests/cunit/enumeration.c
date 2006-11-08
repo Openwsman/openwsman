@@ -184,6 +184,7 @@ void enumeration_test(int idx)
   options.max_elements = enum_tests[i].max_elements;
   WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)enum_tests[i].resource_uri ,
 						      options);
+  CU_ASSERT_TRUE(cl->response_code == enum_tests[i].final_status );
   if (enum_response) 
     {
       enumContext = wsenum_get_enum_context(enum_response);
