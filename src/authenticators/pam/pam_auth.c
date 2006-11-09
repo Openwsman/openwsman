@@ -33,6 +33,7 @@
  * @author Vadim Revyakin
  */
 
+#define NO_DLLOAD
 
 #include <string.h>
 #include <stdlib.h>
@@ -40,6 +41,8 @@
 
 #ifndef STANDALONE
 #include "u/libu.h"
+int initialize(void *arg);
+int authorize(char *username, const char *password);
 #endif
 
 
@@ -63,13 +66,26 @@ static char *service = "openwsman";
 #define PAM_strerror pam_strerror
 
 #else
+#ifdef NO_DLLOAD
+
+#define PAM_start pam_start
+#define PAM_authenticate pam_authenticate
+#define PAM_acct_mgmt pam_acct_mgmt
+#define PAM_end pam_end
+#define PAM_strerror pam_strerror
+
+int
+initialize(void *arg)
+{
+    return 0;
+}
+
+#else // !STANDALONE && !NO_DLLOAD
 
 #include <dlfcn.h>
 
 #define LIBPAM   "libpam.so"
 
-int initialize(void *arg);
-int authorize(char *username, const char *password);
 
 static int (*PAM_start)(const char *service_name,
                         const char *user,
@@ -81,10 +97,6 @@ static int (*PAM_end)(pam_handle_t *pamh, int pam_status);
 static int (*PAM_strerror)(pam_handle_t *pamh, int errnum);
 
 
-
-static int
-pwd_conv(int num_msg, const struct pam_message **msgm,
-        struct pam_response **response, void *appdata_ptr);
 
 int
 initialize(void *arg)
@@ -137,6 +149,7 @@ initialize(void *arg)
 }
 
 
+#endif // NO_DLLOAD
 #endif // STANDALONE
 
 
