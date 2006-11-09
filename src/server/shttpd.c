@@ -41,6 +41,7 @@
 #endif
 #endif
 
+
 #define	SHTTPD_VERSION		"1.35"		/* Version			*/
 #ifndef CONFIG
 #define	CONFIG		"/usr/local/etc/shttpd.conf"	/* Configuration file		*/
@@ -77,6 +78,8 @@
 #include <direct.h>
 #include <io.h>
 #include <shlobj.h>
+
+ 
 #define	ERRNO			GetLastError()
 #define	NO_SOCKLEN_T
 #define	SSL_LIB			"libssl32.dll"
@@ -118,6 +121,7 @@ typedef struct DIR {
 #include <arpa/inet.h>
 #include <sys/time.h>		/* Some linuxes put struct timeval there */
 
+
 #include <pwd.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -154,6 +158,8 @@ typedef struct DIR {
 #include <dmalloc.h>
 #endif /* WITH_DMALLOC */
 
+
+
 #ifdef EMBEDDED
 #include "shttpd.h"
 #endif /* EMBEDDED */
@@ -172,14 +178,15 @@ typedef int socklen_t;
  * built on any system with binary SSL libraries installed.
  */
 
+
 typedef struct ssl_st SSL;
 typedef struct ssl_method_st SSL_METHOD;
 typedef struct ssl_ctx_st SSL_CTX;
-
+#if 0
 #define	SSL_ERROR_WANT_READ	2
 #define	SSL_ERROR_WANT_WRITE	3
 #define SSL_FILETYPE_PEM	1
-
+#endif
 /*
  * Unified socket address
  */
@@ -233,7 +240,9 @@ struct conn {
 	time_t		expire;		/* Expiration time		*/
 	time_t		ims;		/* If-Modified-Since:		*/
 	int		sock;		/* Remote socket		*/
+#ifdef HAVE_SSL
 	SSL		*ssl;		/* SSL descriptor		*/
+#endif
 	int		reqlen;		/* Request length		*/
 	int		status;
 	int		http_method;	/* HTTP method			*/
@@ -339,6 +348,7 @@ union variant {
 	void		*value_void;
 };
 
+#if 0
 /*
  * Dynamically loaded SSL functionality
  */
@@ -380,6 +390,8 @@ static struct ssl_func {
 #define	SSL_CTX_use_certificate_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(12))((x), (y), (z))
 #define SSL_pending(x) (* (int (*)(SSL *)) FUNC(13))(x)
+#endif
+
 
 /*
  * Mount points (Alias)
@@ -434,7 +446,9 @@ struct shttpd_ctx {
 	struct userurl	*urls;			/* User urls */
 	struct userauth	*auths;			/* User auth files */
 	struct conn	*connections;		/* List of connections */
+#ifdef HAVE_SSL
 	SSL_CTX		*ssl_ctx;		/* SSL context */
+#endif
 #ifdef _WIN32
 	CRITICAL_SECTION mutex;			/* For MT case */
 	HANDLE		ev[2];			/* For thread synchronization */
@@ -725,14 +739,17 @@ set_mime(struct shttpd_ctx *ctx, void *arg, const char *string)
 	(void) fclose(fp);
 }
 
+#ifdef HAVE_SSL
+#include <openssl/ssl.h>
 static void
 set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 {
 	SSL_CTX		*CTX;
-	void		*lib;
-	struct ssl_func	*fp;
+//	void		*lib;
+//	struct ssl_func	*fp;
 
 	arg = NULL;	/* Unused */
+#if 0
 	/* Load SSL library dynamically */
 	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL) {
 		elog(ERR_FATAL, "set_ssl: cannot load %s", SSL_LIB);
@@ -741,6 +758,7 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 	for (fp = ssl_sw; fp->name != NULL; fp++)
 		if ((fp->ptr.value_void = dlsym(lib, fp->name)) == NULL)
 			elog(ERR_FATAL, "set_ssl: cannot find %s", fp->name);
+#endif
 
 	/* Initialize SSL crap */
 	SSL_library_init();
@@ -762,6 +780,8 @@ set_ssl_priv_key(struct shttpd_ctx *ctx, void *arg, const char *pem)
         elog(ERR_FATAL, "cannot open private key %s", pem);
     }
 }
+#endif
+
 /*
  * Setup aliases. Passed string must be in format
  * "directory1=url1,directory2=url2,..."
@@ -855,10 +875,12 @@ static struct opt options[] = {
 		OFS(pass), "file", NULL, NULL, OPT_FLAG_FILE	},
 	{'v', "debug", "Debug mode", set__debug,
 		0, BOOL_OPT, "0", NULL, OPT_FLAG_BOOL	},
+#ifdef HAVE_SSL
 	{'s', "ssl_certificate", "SSL certificate file", set_ssl,
 		OFS(ssl_ctx), "pem_file", NULL, NULL, OPT_FLAG_FILE},
     {'k', "ssl_priv_key", "SSL pivate key file", set_ssl_priv_key,
         OFS(ssl_ctx), "pem_file", NULL, NULL, OPT_FLAG_FILE},
+#endif
 	{'U', "put_auth", "PUT,DELETE auth file",set_str,
 		OFS(put_auth), "file", NULL, NULL, OPT_FLAG_FILE},
 	{'V', "cgi_envvar", "CGI envir variables", set_envvars,
@@ -1576,13 +1598,15 @@ disconnect(struct conn *c)
 			(void) close(c->fd);
 	}
 	if (c->dirp)		(void) closedir(c->dirp);
+#ifdef HAVE_SSL
 	if (c->ssl)		SSL_free(c->ssl);
-
+#endif
 	(void) shutdown(c->sock, 2);
 	(void) closesocket(c->sock);
 	free(c);
 }
 
+#ifdef HAVE_SSL
 /*
  * Perform SSL handshake
  */
@@ -1601,6 +1625,7 @@ handshake(struct conn *c)
 		c->flags |= FLAG_SSLACCEPTED;
 	}
 }
+#endif
 
 #define	INCREMENT_KB(nbytes, static_counter, kbytes)		\
 do {								\
@@ -1625,9 +1650,11 @@ writeremote(struct conn *c, const char *buf, size_t len)
 		len = c->sclength + c->shlength - c->nsent;
 
 	/* Send the data via socket or SSL connection */
+#ifdef HAVE_SSL
 	if (c->ssl)
 		n = SSL_write(c->ssl, buf, len);
 	else
+#endif
 		n = send(c->sock, buf, len, 0);
 
 	if (n > 0) {
@@ -1655,6 +1682,7 @@ readremote(struct conn *c, char *buf, size_t len)
 {
 	static int	in;
 	int		n = -1;
+#ifdef HAVE_SSL
     int ssl_err;
 	if (c->ssl) {
         if (!(c->flags & FLAG_SSLACCEPTED)) {
@@ -1670,9 +1698,9 @@ readremote(struct conn *c, char *buf, size_t len)
                 return -1;
             }
         }
-	} else {
+	} else
 		n = recv(c->sock, buf, len, 0);
-    }
+#endif
 	if (n > 0)
 		INCREMENT_KB(n, in, c->ctx->kb_in);
 
@@ -3741,13 +3769,15 @@ shttpd_add(struct shttpd_ctx *ctx, int sock)
 {
 	struct conn	*c;
 	struct usa	sa;
+#ifdef HAVE_SSL
 	SSL		*ssl = NULL;
-
+#endif
 	sa.len = sizeof(sa.u.sin);
 	(void) nonblock(sock);
 
 	if (getpeername(sock, &sa.u.sa, &sa.len)) {
 		elog(ERR_INFO, "shttpd_add: %s", strerror(errno));
+#ifdef HAVE_SSL
 	} else if (ctx->ssl_ctx && (ssl = SSL_new(ctx->ssl_ctx)) == NULL) {
 		elog(ERR_INFO, "shttpd_add: SSL_new: %s", strerror(ERRNO));
 		(void) closesocket(sock);
@@ -3755,6 +3785,7 @@ shttpd_add(struct shttpd_ctx *ctx, int sock)
 		elog(ERR_INFO, "shttpd_add: SSL_set_fd: %s", strerror(ERRNO));
 		(void) closesocket(sock);
 		SSL_free(ssl);
+#endif
 	} else if ((c = calloc(1, sizeof(*c))) == NULL) {
 		(void) closesocket(sock);
 		elog(ERR_INFO, "shttpd_add: calloc: %s", strerror(ERRNO));
@@ -3764,17 +3795,20 @@ shttpd_add(struct shttpd_ctx *ctx, int sock)
 		c->watch	= serve;
 		c->watch_data	= c;
 		c->fd		= -1;
+#ifdef HAVE_SSL
 		c->ssl		= ssl;
+#endif
 		c->birth	= current_time;
 		c->expire	= current_time + EXPIRE_TIME;
         c->local.bufsize = IO_MAX;
         c->remote.bufsize = IO_MAX;
- //       c->flags = FLAG_KEEP_CONNECTION;
 #ifndef _WIN32
 		(void) fcntl(sock, F_SETFD, FD_CLOEXEC);
 #endif /* _WIN32 */
+#ifdef HAVE_SSL
 		if (ssl)
 			handshake(c);
+#endif
 		ctx->nrequests++;
 
 		add_conn_to_ctx(ctx, c);
@@ -4065,10 +4099,11 @@ do_init(const char *config_file, int argc, char *argv[])
 		if (opt->tmp != NULL)
 			opt->setter(ctx, ((char *) ctx) + opt->ofs, opt->tmp);
 
+#ifdef HAVE_SSL
 	/* If SSL is wanted and port is not overridden, set it to 443 */
 	if (ctx->port == atoi(PORT) && ctx->ssl_ctx != NULL)
 		ctx->port = 443;
-
+#endif
 	/* If document_root is not set, set it to current directory */
 	if (ctx->root[0] == '\0')
 		(void) getcwd(ctx->root, sizeof(ctx->root));

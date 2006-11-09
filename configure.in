@@ -244,6 +244,7 @@ fi
 if test "$enable_ssl" != "no"; then
     AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
 fi
+AM_CONDITIONAL(USE_OPENSSL, test "x$enable_ssl" != "xno")
 
 if test "$prefix" = "NONE"; then
     prefix=$ac_default_prefix;

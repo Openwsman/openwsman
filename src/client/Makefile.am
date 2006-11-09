@@ -6,7 +6,7 @@ INCLUDES = \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu
        
-INCLUDES += $(CURL_FLARS)
+INCLUDES += $(CURL_CFLAGS)
 
 
 LIBS = \

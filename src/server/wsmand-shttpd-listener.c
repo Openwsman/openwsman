@@ -531,6 +531,12 @@ wsmand_start_server(dictionary *ini)
     if (cntx == NULL) {
         return listener;
     }
+#ifndef HAVE_SSL
+    if (wsmand_options_get_use_ssl()) {
+        error("Server configured without SSL support");
+        return listener;
+    }
+#endif
     SoapH soap = ws_context_get_runtime(cntx);
 
     if (initialize_basic_authenticator()) {
