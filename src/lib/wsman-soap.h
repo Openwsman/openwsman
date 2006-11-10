@@ -284,13 +284,13 @@ struct __SoapOp
 typedef struct __SoapOp* SoapOpH;
 
 
-struct __internalWsDoc
+struct _WsXmlDoc
 {
     void* parserDoc;
     SoapH fw;
     unsigned long prefixIndex;
 };
-typedef struct __internalWsDoc iWsDoc;
+
 
 struct __DispatchResponse
 {

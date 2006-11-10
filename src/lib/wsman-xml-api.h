@@ -56,11 +56,8 @@
 
 
 
-struct __WsXmlDoc
-{
-	int __undefined;
-};
-typedef struct __WsXmlDoc* WsXmlDocH;
+struct _WsXmlDoc;
+typedef struct _WsXmlDoc* WsXmlDocH;
 
 struct __WsXmlNode
 {

@@ -114,10 +114,11 @@ int xml_parser_utf8_strlen (char *buf) {
     return xmlUTF8Strlen(BAD_CAST buf);
 }
 
-void xml_parser_doc_to_memory( WsXmlDocH doc, char** buf, int* ptrSize, char* encoding)
+void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf,
+                              int* ptrSize, char* encoding)
 {
     if ( doc && buf && ptrSize )
-        xmlDocDumpMemoryEnc(((iWsDoc*)doc)->parserDoc, 
+        xmlDocDumpMemoryEnc(doc->parserDoc,
                 ( xmlChar **) buf, ptrSize, (!encoding) ? "UTF-8" : encoding);
 }
 
@@ -127,7 +128,7 @@ void xml_parser_free_memory(void* ptr)
         xmlFree(ptr);
 }
 
-int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
+int xml_parser_create_doc(WsXmlDocH wsDoc, char* rootName)
 {
     int retVal = -1;
     xmlDocPtr doc;
@@ -136,7 +137,7 @@ int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
     if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL ||
             (rootNode = xmlNewNode(NULL, BAD_CAST rootName)) == NULL )
     {
-        if ( doc )
+        if (doc)
             xmlFreeDoc(doc);
     } else {
         doc->_private = wsDoc;
@@ -150,11 +151,10 @@ int xml_parser_create_doc(iWsDoc* wsDoc, char* rootName)
 
 
 
-void xml_parser_destroy_doc(iWsDoc* wsDoc)
+void xml_parser_destroy_doc(WsXmlDocH wsDoc)
 {
     xmlDocPtr xmlDoc = (xmlDocPtr)wsDoc->parserDoc;
-    if ( xmlDoc != NULL )
-    {
+    if ( xmlDoc != NULL ) {
         destroy_tree_private_data(xmlDocGetRootElement(xmlDoc));
         xmlFreeDoc(xmlDoc);
     }
@@ -171,37 +171,33 @@ WsXmlDocH xml_parser_get_doc(WsXmlNodeH node)
 WsXmlNodeH
 xml_parser_get_root(WsXmlDocH doc)
 {
-    if ( ((iWsDoc*)doc)->parserDoc != NULL )
-        return (WsXmlNodeH)xmlDocGetRootElement((xmlDocPtr)((iWsDoc*)doc)->parserDoc);
+    if (doc->parserDoc != NULL )
+        return (WsXmlNodeH)xmlDocGetRootElement((xmlDocPtr)doc->parserDoc);
     return NULL;
 }
 
 WsXmlDocH
 xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
 {
-    WsXmlDocH soapDoc = NULL;
-    if (soap)
-    {
-        xmlDocPtr xmlDoc = xmlReadFile(filename, 
-                encoding,
-                XML_PARSE_NONET | XML_PARSE_NSCLEAN);
-        if ( xmlDoc != NULL )
-        {
-            iWsDoc* iDoc;
-            if ( (iDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc))) == NULL )
-            {
-                xmlFreeDoc(xmlDoc);
-            }
-            else
-            {
-                xmlDoc->_private = iDoc;
-                iDoc->fw = soap;
-                iDoc->parserDoc = xmlDoc;
-                soapDoc = (WsXmlDocH)iDoc;
-            }
-        }
+    WsXmlDocH Doc = NULL;
+    if (soap == NULL) {
+        return NULL;
     }
-    return soapDoc;
+    xmlDocPtr xmlDoc = xmlReadFile(filename, encoding,
+                        XML_PARSE_NONET | XML_PARSE_NSCLEAN);
+    if (xmlDoc == NULL) {
+        return NULL;
+    }
+    Doc = (WsXmlDocH)u_zalloc(sizeof (*Doc));
+    if (Doc == NULL) {
+         xmlFreeDoc(xmlDoc);
+         return NULL;
+    }
+    xmlDoc->_private = Doc;
+    Doc->fw = soap;
+    Doc->parserDoc = xmlDoc;
+
+    return Doc;
 
 }
 
@@ -209,32 +205,27 @@ WsXmlDocH
 xml_parser_memory_to_doc(SoapH soap, char* buf, int size,
                          char* encoding, unsigned long options)
 {
-    WsXmlDocH soapDoc = NULL;
+    WsXmlDocH Doc = NULL;
 
-    if ( buf && size && soap)
-    {
-        xmlDocPtr xmlDoc = xmlReadMemory(buf,
-                size,
-                NULL,
-                encoding,
-                XML_PARSE_NONET | XML_PARSE_NSCLEAN);
-        if ( xmlDoc != NULL )
-        {
-            iWsDoc* iDoc;
-            if ( (iDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc))) == NULL )
-            {
-                xmlFreeDoc(xmlDoc);
-            }
-            else
-            {
-                xmlDoc->_private = iDoc;
-                iDoc->fw = soap;
-                iDoc->parserDoc = xmlDoc;
-                soapDoc = (WsXmlDocH)iDoc;
-            }
-        }
+    if (!buf || !size || !soap) {
+        return NULL;
     }
-    return soapDoc;
+    xmlDocPtr xmlDoc = xmlReadMemory(buf, size, NULL, encoding,
+                                     XML_PARSE_NONET | XML_PARSE_NSCLEAN);
+   if (xmlDoc == NULL) {
+        return NULL;
+   }
+   Doc = (WsXmlDocH)u_zalloc(sizeof (*Doc));
+   if (Doc == NULL ) {
+       xmlFreeDoc(xmlDoc);
+       return NULL;
+   }
+
+   xmlDoc->_private = Doc;
+   Doc->fw = soap;
+   Doc->parserDoc = xmlDoc;
+
+    return Doc;
 }
 
 
@@ -822,15 +813,15 @@ xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node) {
 
 void xml_parser_doc_dump(FILE* f, WsXmlDocH doc) {
 
-    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc;
+    xmlDocPtr d = (xmlDocPtr)doc->parserDoc;
     xmlDocFormatDump(f, d, 1);
     return;
 }
 
 void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize) {
 
-    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc;
-    xmlDocDumpFormatMemory(d, ( xmlChar **)buf, ptrSize, 1);
+    xmlDocPtr d = (xmlDocPtr)doc->parserDoc;
+    xmlDocDumpFormatMemory(d, (xmlChar **)buf, ptrSize, 1);
     return;
 }
 
@@ -844,41 +835,38 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
     xmlNodeSetPtr nodeset;
     xmlXPathContextPtr ctxt;
     xmlNsPtr *nsList, *cur;
-    
-    xmlDocPtr d = (xmlDocPtr)((iWsDoc*)doc)->parserDoc; 
-                    
+    xmlDocPtr d = (xmlDocPtr)doc->parserDoc; 
+
     ctxt = xmlXPathNewContext(d);
     if (ctxt == NULL) {
         error("failed while creating xpath context");
         return NULL;
     }
     nsList = xmlGetNsList(d, (xmlNodePtr )xml_parser_get_root(doc));
-    if (nsList == NULL)
+    if (nsList == NULL) {
         return NULL;
-  
+    }
     for (cur = nsList; *cur != NULL; cur++) {
         if(xmlXPathRegisterNs(ctxt, (*cur)->prefix, (*cur)->href) != 0) {
-              
             return NULL;
-        }       
+        }
     }
     xmlFree(nsList);
-    
-    
+
     obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
     if (obj) {
         nodeset = obj->nodesetval;
         if (nodeset && nodeset->nodeNr > 0)
-            result = (char *) xmlNodeListGetString(d, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+            result = (char *) xmlNodeListGetString(d,
+                                nodeset->nodeTab[0]->xmlChildrenNode, 1);
 
-	 xmlXPathFreeContext(ctxt);
-	 xmlXPathFreeObject (obj);
+     xmlXPathFreeContext(ctxt);
+     xmlXPathFreeObject (obj);
     } else {
         return NULL;
-    }    
-   
-   
-    return result;  
+    }
+
+    return result;
 }
 
 

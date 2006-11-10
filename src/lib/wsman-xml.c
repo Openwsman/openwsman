@@ -67,10 +67,10 @@ ws_xml_make_default_prefix ( WsXmlNodeH node,
                              char* buf, 
                              int bufsize)
 {
-    iWsDoc* doc = (iWsDoc*)xml_parser_get_doc(node);
+    WsXmlDocH doc = xml_parser_get_doc(node);
     WsXmlNsH ns;
 
-    if ( doc != NULL && (ns = ws_xml_find_wk_ns((SoapH)doc->fw, uri, NULL)) != NULL )
+    if ( doc != NULL && (ns = ws_xml_find_wk_ns(doc->fw, uri, NULL)) != NULL )
         strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
     else
         if ( bufsize >= 12 )
@@ -445,7 +445,7 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 {
     SoapH soap = NULL;
     if ( doc )
-        soap = (SoapH)((iWsDoc*)doc)->fw;
+        soap = doc->fw;
     return soap;
 }
 
@@ -680,34 +680,36 @@ WsXmlDocH ws_xml_read_file( SoapH soap, char* filename,
  */
 WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName) 
 {
-    iWsDoc* wsDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc));
+    WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
 
-    if ( wsDoc ) {       
-        wsDoc->fw = soap;
-        if ( xml_parser_create_doc(wsDoc, rootName) != 0 )
-        {
-            u_free(wsDoc);
-            wsDoc = NULL;
-        } else {
-            if ( rootNsUri != NULL )
-            {
-                WsXmlNodeH rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
-                WsXmlNsH ns;
-                char prefix[12];
-
-                ws_xml_make_default_prefix(rootNode, rootNsUri, prefix, sizeof(prefix));
-
-                if ( (ns = xml_parser_ns_add(rootNode, rootNsUri, prefix)) == NULL )
-                {
-                    ws_xml_destroy_doc((WsXmlDocH)wsDoc);
-                    wsDoc = NULL;
-                }
-                else
-                    ws_xml_set_node_name(rootNode, rootNsUri, NULL);
-            }
-        }
+    if (wsDoc == NULL) {
+        error("No memory");
+        return NULL;
     }
-    return (WsXmlDocH)wsDoc;	
+    wsDoc->fw = soap;
+    if (xml_parser_create_doc(wsDoc, rootName) != 0) {
+            error("xml_parser_create_doc failed");
+            u_free(wsDoc);
+            return NULL;
+    }
+
+    if (rootNsUri == NULL) {
+        return wsDoc;
+    }
+
+    WsXmlNodeH rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
+    WsXmlNsH ns;
+    char prefix[12];
+
+    ws_xml_make_default_prefix(rootNode, rootNsUri, prefix, sizeof (prefix));
+    ns = xml_parser_ns_add(rootNode, rootNsUri, prefix);
+    if (ns == NULL) {
+         error("xml_parser_ns_add failed");
+         ws_xml_destroy_doc(wsDoc);
+         return NULL;
+    }
+    ws_xml_set_node_name(rootNode, rootNsUri, NULL);
+    return wsDoc;	
 }
 
 
@@ -746,11 +748,10 @@ int ws_xml_set_node_name(WsXmlNodeH node, char* nsUri, char* name)
  * @param doc XML document
  */
 void ws_xml_destroy_doc(WsXmlDocH doc) {
-    if ( doc )
-    {
-        xml_parser_destroy_doc((iWsDoc*)doc);
+    if (doc) {
+        xml_parser_destroy_doc(doc);
         u_free(doc);
-    }	
+    }
 }
 
 

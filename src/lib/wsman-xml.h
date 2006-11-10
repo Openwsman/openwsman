@@ -43,6 +43,7 @@
 #ifndef XML_API_GENERIC_H_
 #define XML_API_GENERIC_H_
 
+#include "wsman-xml-api.h"
 
 #define XML_LAST_CHILD			(-1)
 #define XML_ELEMENT_NEXT		(-2)
