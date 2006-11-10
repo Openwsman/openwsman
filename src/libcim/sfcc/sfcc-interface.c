@@ -594,29 +594,36 @@ cim_get_op_from_enum( CimClientInfo *client,
     goto cleanup;
   }
 
-    
+  CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
+  int n = CMGetArrayCount(enumArr, NULL);
   wsman_status_init(&statusPP);
-  while (enumeration->ft->hasNext(enumeration, NULL)) 
-  {
-    CMPIData data = enumeration->ft->getNext(enumeration, NULL);
-    CMPIObjectPath *op = CMClone(data.value.ref, NULL);
-    CMPIString *opstr = CMObjectPathToString(op, NULL);
-    debug("objectpath: %s", (char *)opstr->hdl );
-    if (cim_verify_keys(op, client->selectors, &statusPP) != 0 ) 
-    {
+  if (n > 0 ) {
+  
+    while (enumeration->ft->hasNext(enumeration, NULL)) {
+      debug("enum");
+      CMPIData data = enumeration->ft->getNext(enumeration, NULL);
+      CMPIObjectPath *op = CMClone(data.value.ref, NULL);
+      CMPIString *opstr = CMObjectPathToString(op, NULL);
+      debug("objectpath: %s", (char *)opstr->hdl );
+      if (cim_verify_keys(op, client->selectors, &statusPP) != 0 ) {
+        if (op) CMRelease(op);
+        continue;
+      } else {
+        result_op =  CMClone(data.value.ref, NULL);
+        CMSetNameSpace(result_op, client->cim_namespace);
+        match = 1;
+        if (op) CMRelease(op);
+        break;
+      }
       if (op) CMRelease(op);
-      continue;
-    } else {
-      result_op =  CMClone(data.value.ref, NULL);
-      CMSetNameSpace(result_op, client->cim_namespace);
-      match = 1;
-      if (op) CMRelease(op);
-      break;
     }
-    if (op) CMRelease(op);
+    statusP->fault_code = statusPP.fault_code;
+    statusP->fault_detail_code = statusPP.fault_detail_code;
+  } else {
+    statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
+    statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+   
   }
-  statusP->fault_code = statusPP.fault_code;
-  statusP->fault_detail_code = statusPP.fault_detail_code;
   debug("fault: %d %d",  statusP->fault_code, statusP->fault_detail_code );
 
  cleanup:
@@ -878,21 +885,13 @@ cim_invoke_method (CimClientInfo *client,
                    WsmanStatus *status) 
 {
   CMPIObjectPath * objectpath;    
-  CMPIArgs *argsin, *argsout;
+  CMPIArgs *argsin = NULL, *argsout = NULL;
   CMPIStatus rc;
   WsmanStatus statusP;
   CMCIClient * cc = (CMCIClient *)client->cc;
 
-  if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
-  {
-    
-    
-    /*
-      if (client->selectors && hash_count(client->selectors) > 0)
-      cim_add_keys(objectpath, client->selectors);
-    */
+  if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) {
 
-    
     argsin = newCMPIArgs(NULL);
     
     if (client->method_args && hash_count(client->method_args) > 0)
@@ -929,8 +928,8 @@ cim_invoke_method (CimClientInfo *client,
   }
     
   if (objectpath) CMRelease(objectpath);
-  // if (argsin) CMRelease(argsin);
-  // if (argsout) CMRelease(argsout);
+  if (argsin) CMRelease(argsin);
+  if (argsout) CMRelease(argsout);
   if (cc) CMRelease(cc);
   return;
 }
