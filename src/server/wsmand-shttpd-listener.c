@@ -192,7 +192,7 @@ static int server_callback (struct shttpd_arg_t *arg)
     debug("Encoding: %s", encoding);
 
 
-    env_t* fw = (env_t*)arg->user_data;	
+    SoapH soap = (SoapH)arg->user_data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
 
     wsman_msg->request.length = shttpd_get_post_query_len(arg);
@@ -202,14 +202,14 @@ static int server_callback (struct shttpd_arg_t *arg)
         goto DONE;
     }
     (void) shttpd_get_post_query(arg, wsman_msg->request.body,
-                    wsman_msg->request.length);    
+                    wsman_msg->request.length);
 
-    
+
     shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
                     &wsman_msg->auth_data.password);
 
     // Call dispatcher
-    dispatch_inbound_call(fw, wsman_msg);
+    dispatch_inbound_call(soap, wsman_msg);
 
     if (wsman_msg->request.body) {
         free(wsman_msg->request.body);
@@ -219,10 +219,10 @@ static int server_callback (struct shttpd_arg_t *arg)
 
     if ( wsman_fault_occured(wsman_msg) ) {
         char *buf;
-        int  len;    		
+        int  len;
         if (wsman_msg->in_doc != NULL) {
             wsman_generate_fault_buffer(
-                    fw->cntx, 
+                    soap->cntx, 
                     wsman_msg->in_doc, 
                     wsman_msg->status.fault_code , 
                     wsman_msg->status.fault_detail_code, 

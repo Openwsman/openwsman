@@ -460,23 +460,22 @@ int
 ws_xml_parser_initialize( SoapH soap, 
                           WsXmlNsData nsData[])
 {
-    env_t* fw = (env_t*)soap;
     int retVal = -1;
     WsXmlParserData* parserData = NULL;
 
-    if ( fw != NULL 
+    if ( soap != NULL 
             && 
             (parserData = (WsXmlParserData*)u_zalloc(sizeof(WsXmlParserData))) != NULL)
     {
-        u_lock(fw);
+        u_lock(soap);
 
         xml_parser_initialize(soap);
 
-        if ( (parserData->nsHolder = ws_xml_create_doc((SoapH)fw, NULL, "NsList")) != NULL )
+        if ( (parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList")) != NULL )
         {
             WsXmlNodeH node = ws_xml_get_doc_root(parserData->nsHolder);
             retVal = 0;
-            fw->parserData = parserData;
+            soap->parserData = parserData;
             if ( nsData )
             {
                 int i;
@@ -487,7 +486,7 @@ ws_xml_parser_initialize( SoapH soap,
                 }
             }
         }
-        u_unlock(fw);
+        u_unlock(soap);
     }
 
     if ( retVal != 0 && parserData )
@@ -501,15 +500,14 @@ ws_xml_parser_initialize( SoapH soap,
 void 
 ws_xml_parser_destroy(SoapH soap)
 {
-    env_t* fw = (env_t*)soap;
-    if ( fw && fw->parserData )
+    if (soap && soap->parserData )
     {
-        u_lock(fw);
-        ws_xml_destroy_doc(((WsXmlParserData*)fw->parserData)->nsHolder);
+        u_lock(soap);
+        ws_xml_destroy_doc(((WsXmlParserData*)soap->parserData)->nsHolder);
         xml_parser_destroy(soap);
-        u_free(fw->parserData);
-        fw->parserData = NULL;
-        u_unlock(fw);
+        u_free(soap->parserData);
+        soap->parserData = NULL;
+        u_unlock(soap);
     }
 }
 
@@ -685,7 +683,7 @@ WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName)
     iWsDoc* wsDoc = (iWsDoc*)u_zalloc(sizeof(iWsDoc));
 
     if ( wsDoc ) {       
-        wsDoc->fw = (env_t*)soap;
+        wsDoc->fw = soap;
         if ( xml_parser_create_doc(wsDoc, rootName) != 0 )
         {
             u_free(wsDoc);
@@ -911,12 +909,11 @@ WsXmlNsH
 ws_xml_find_wk_ns( SoapH soap, 
                    char* uri, 
                    char* prefix)
-{   
-    env_t* fw = (env_t*)soap;
+{
     WsXmlNsH ns = NULL;
-    if ( fw )
+    if (soap)
     {
-        WsXmlParserData* data = (WsXmlParserData*)fw->parserData;
+        WsXmlParserData* data = (WsXmlParserData*)soap->parserData;
         if ( data && data->nsHolder )
         {            
             WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);

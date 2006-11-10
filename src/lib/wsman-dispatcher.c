@@ -107,29 +107,29 @@ int is_wk_header(WsXmlNodeH header)
 }
 
 
-int unlink_response_entry(env_t* fw, op_t* entry)
+int unlink_response_entry(SoapH soap, op_t* entry)
 {
   int retVal = 0;
 
-  if ( fw && entry )
+  if (soap && entry)
   {
-    int try = u_try_lock(fw);
+    int try = u_try_lock(soap);
 
-    lnode_t *node = list_first(fw->responseList);
+    lnode_t *node = list_first(soap->responseList);
     while( node != NULL )
     {
       if ( entry == (op_t*)node->list_data )
       {
-        list_delete(fw->responseList, node);
+        list_delete(soap->responseList, node);
         u_free(node);
         retVal = 1;
         break;
       }
-      node = list_next(fw->responseList, node);
+      node = list_next(soap->responseList, node);
     }
 
     if (!try)
-      u_unlock(fw);
+      u_unlock(soap);
   }
 
   return retVal;
@@ -319,10 +319,10 @@ soap_add_filter(SoapH soap,
                 int inbound)
 {
   callback_t* entry = NULL;
-  if ( soap ) {
+  if (soap) {
     list_t* list = (!inbound) ?
-      ((env_t*)soap)->outboundFilterList :
-      ((env_t*)soap)->inboundFilterList;
+    soap->outboundFilterList :
+    soap->inboundFilterList;
     entry = make_callback_entry(callbackProc, callbackData, list);
   }
   return (entry == NULL);
@@ -336,21 +336,21 @@ outbound_control_header_filter( SoapOpH opHandle,
   unsigned long size = 0;
   char *buf = NULL;
   int len, envelope_size;
-  env_t* fw = (env_t*)soap_get_op_soap(opHandle);
+  SoapH soap = soap_get_op_soap(opHandle);
   WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
   WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
-  WsXmlNodeH inHeaders = get_soap_header_element(fw, in_doc, NULL, NULL);
+  WsXmlNodeH inHeaders = get_soap_header_element(soap, in_doc, NULL, NULL);
 
-  if ( inHeaders ) {
-    if ( ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL )
-    {
-      size = ws_deserialize_uint32(NULL, inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+  if (inHeaders) {
+    if (ws_xml_get_child(inHeaders, 0,
+                XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
+      size = ws_deserialize_uint32(NULL, inHeaders, 0,
+                                 XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
       ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
       envelope_size = ws_xml_utf8_strlen(buf);
-      if (envelope_size > size ) 
-      {
-        wsman_generate_op_fault((op_t*) opHandle, WSMAN_ENCODING_LIMIT, WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
-               
+      if (envelope_size > size ) {
+        wsman_generate_op_fault((op_t*) opHandle, WSMAN_ENCODING_LIMIT,
+                                WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
       }
     }
   }
@@ -361,31 +361,29 @@ int
 outbound_addressing_filter(SoapOpH opHandle, 
                            void* data)
 {
-  env_t* fw = (env_t*)soap_get_op_soap(opHandle);
+  SoapH soap = soap_get_op_soap(opHandle);
   WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
   WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
     
-  WsXmlNodeH outHeaders = get_soap_header_element(fw, out_doc, NULL, NULL);
+  WsXmlNodeH outHeaders = get_soap_header_element(soap, out_doc, NULL, NULL);
 
-  if ( outHeaders )
-  {
-    if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL
-         && !wsman_is_identify_request(in_doc))
-    {
+  if (outHeaders) {
+    if ( ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,
+            WSA_MESSAGE_ID) == NULL && !wsman_is_identify_request(in_doc)) {
       char uuidBuf[100];
       generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
       ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
       debug( "Adding message id: %s" , uuidBuf);
     }
 
-    if ( in_doc != NULL )
-    {
+    if ( in_doc != NULL ) {
       WsXmlNodeH inMsgIdNode;
-      if ( (inMsgIdNode = get_soap_header_element(fw, in_doc, XML_NS_ADDRESSING,
-                                                  WSA_MESSAGE_ID)) != NULL && 
-           !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO) )
-      {
-        ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
+      inMsgIdNode = get_soap_header_element(soap, in_doc,
+                                    XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+      if (inMsgIdNode != NULL && !ws_xml_get_child(outHeaders, 0,
+                                XML_NS_ADDRESSING, WSA_RELATES_TO)) {
+        ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,
+                WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
       }
     }
   }
@@ -470,26 +468,24 @@ process_inbound_operation(op_t* op, WsmanMessage *msg)
 
 
 void
-dispatch_inbound_call(env_t *fw,
+dispatch_inbound_call(SoapH soap,
                       WsmanMessage *msg) 
 {   
   int ret;		 
-  WsXmlDocH in_doc = wsman_build_inbound_envelope( fw, msg);
+  WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, msg);
 
   debug( "Inbound call...");
-  op_t* op = NULL;	
-  if ( in_doc != NULL && !wsman_fault_occured(msg) ) 
-  {
-    dispatch_t* dispatch;            
-    if ( (dispatch = get_dispatch_entry(fw, in_doc)) != NULL ) 
-    {
-      if ( (op = create_op_entry(fw, dispatch, msg, 0)) == NULL ) 
-      {
+  op_t* op = NULL;
+
+  if (in_doc != NULL && !wsman_fault_occured(msg)) {
+    dispatch_t* dispatch = get_dispatch_entry(soap, in_doc);
+
+    if (dispatch != NULL) {
+      op = create_op_entry(soap, dispatch, msg, 0);
+      if (op == NULL ) {
         destroy_dispatch_entry(dispatch);
       }
-    } 
-    else if (!wsman_fault_occured(msg)) 
-    {
+    } else if (!wsman_fault_occured(msg)) {
       debug("xx");
       wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE, 
                       WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
@@ -510,13 +506,13 @@ dispatch_inbound_call(env_t *fw,
 
 
 
-dispatch_t* 
-get_dispatch_entry( env_t* fw, 
-                    WsXmlDocH doc)
+dispatch_t*
+get_dispatch_entry(SoapH soap, WsXmlDocH doc)
 {
   dispatch_t* dispatch = NULL;
-  if ( fw->dispatcherProc ) {
-    dispatch = (dispatch_t*) fw->dispatcherProc(fw->cntx, fw->dispatcherData, doc);
+  if ( soap->dispatcherProc ) {
+    dispatch = (dispatch_t*)soap->dispatcherProc(soap->cntx,
+                                    soap->dispatcherData, doc);
   }
 
   if ( dispatch == NULL ) {
@@ -693,7 +689,7 @@ soap_create_dispatch(SoapH soap,
   dispatch_t* disp = NULL;
   if ( soap && role == NULL )
   {
-    disp = create_dispatch_entry((env_t*)soap, inboundAction, outboundAction,
+    disp = create_dispatch_entry(soap, inboundAction, outboundAction,
                                  role, callbackProc, callbackData, flags);
   }
 
@@ -726,7 +722,7 @@ void soap_start_dispatch(SoapDispatchH disp)
  * @return Dispatch Entry
  */
 dispatch_t*
-create_dispatch_entry(env_t* fw, 
+create_dispatch_entry(SoapH soap, 
                       char* inboundAction, 
                       char* outboundAction, 
                       char* role, 
@@ -737,7 +733,7 @@ create_dispatch_entry(env_t* fw,
 
   dispatch_t* entry = wsman_dispatch_entry_new();
   if ( entry ) {
-    entry->fw = fw;
+    entry->fw = soap;
     entry->flags = flags;
     entry->inboundAction = u_str_clone(inboundAction);
     entry->outboundAction = u_str_clone(outboundAction);

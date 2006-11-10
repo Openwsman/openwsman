@@ -148,14 +148,13 @@ ws_create_response_envelope( WsContextH cntx,
  * @return XML document with Envelope
  */
 WsXmlDocH
-wsman_build_inbound_envelope( env_t* fw, 
-                              WsmanMessage *msg)
+wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg)
 {
-  WsXmlDocH doc = NULL;   
-  if ( (doc = ws_xml_read_memory((SoapH)fw, 
-                                 (msg->request.body)?msg->request.body:msg->response.body, 
-                                 (msg->request.length)?msg->request.length:msg->response.length, NULL, 0)) != NULL )   
-  {        
+  WsXmlDocH doc = NULL;
+  if ( (doc = ws_xml_read_memory(soap,
+             (msg->request.body) ? msg->request.body : msg->response.body,
+             (msg->request.length) ? msg->request.length :
+                                     msg->response.length, NULL, 0)) != NULL) {
     if (wsman_is_identify_request(doc)) {
       wsman_set_message_flags(msg, FLAG_IDENTIFY_REQUEST);
       wsman_is_valid_envelope(msg, doc);
@@ -163,10 +162,9 @@ wsman_build_inbound_envelope( env_t* fw,
     } 
 
     wsman_is_valid_envelope(msg, doc);
-    if  ( wsman_is_duplicate_message_id(fw, doc) 
-          && !wsman_fault_occured(msg) ) 
-    {
-      wsman_set_fault(msg, 
+    if  ( wsman_is_duplicate_message_id(soap, doc) &&
+                               !wsman_fault_occured(msg)) {
+      wsman_set_fault(msg,
                       WSA_INVALID_MESSAGE_INFORMATION_HEADER, 
                       WSA_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
     }
@@ -188,13 +186,13 @@ wsman_build_inbound_envelope( env_t* fw,
  * @return Header value
  */
 char*
-get_soap_header_value( env_t* fw, 
-                       WsXmlDocH doc, 
-                       char* nsUri, 
+get_soap_header_value(SoapH soap, 
+                       WsXmlDocH doc,
+                       char* nsUri,
                        char* name)
 {
   char* retVal = NULL;
-  WsXmlNodeH node = get_soap_header_element(fw, doc, nsUri, name);
+  WsXmlNodeH node = get_soap_header_element(soap, doc, nsUri, name);
 
   if ( node != NULL )
     retVal = u_str_clone(ws_xml_get_node_text(node));
@@ -211,7 +209,7 @@ get_soap_header_value( env_t* fw,
  * @param name Header element name
  * @return XML node 
  */
-WsXmlNodeH get_soap_header_element(env_t* fw, 
+WsXmlNodeH get_soap_header_element(SoapH soap,
                                    WsXmlDocH doc, char* nsUri, char* name)
 {
   WsXmlNodeH node = ws_xml_get_soap_header(doc);
@@ -233,7 +231,7 @@ WsXmlNodeH get_soap_header_element(env_t* fw,
  * @param detail Fault Details
  * @return Fault XML document
  */
-WsXmlDocH build_soap_fault(env_t* fw, char* soapNsUri, char* faultNsUri, char* code,
+WsXmlDocH build_soap_fault(SoapH soap, char* soapNsUri, char* faultNsUri, char* code,
                            char* subCode, char* reason, char* detail)
 {
   WsXmlDocH doc;
@@ -241,8 +239,7 @@ WsXmlDocH build_soap_fault(env_t* fw, char* soapNsUri, char* faultNsUri, char* c
   if ( faultNsUri == NULL )
     faultNsUri = soapNsUri;
 
-  if ( (doc = ws_xml_create_doc((SoapH)fw, soapNsUri, SOAP_ENVELOPE)) != NULL ) 
-  {
+  if ( (doc = ws_xml_create_doc(soap, soapNsUri, SOAP_ENVELOPE)) != NULL ) {
     WsXmlNodeH node;
     WsXmlNodeH fault;
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
@@ -292,25 +289,20 @@ WsXmlDocH build_soap_fault(env_t* fw, char* soapNsUri, char* faultNsUri, char* c
  * @param  fw SOAP Framework handle
  * @todo Send fault back
  */     
-void build_soap_version_fault(env_t* fw)
+void build_soap_version_fault(SoapH soap)
 {
-  WsXmlDocH fault = build_soap_fault(fw, 
-                                     NULL, 
-                                     XML_NS_SOAP_1_2, 
-                                     "VersionMismatch", 
-                                     NULL, 
-                                     "Version Mismatch", 
-                                     NULL);
+  WsXmlDocH fault = build_soap_fault(soap, NULL, XML_NS_SOAP_1_2,
+                                     "VersionMismatch", NULL,
+                                     "Version Mismatch", NULL);
 
-  if ( fault != NULL )
-  {
+  if (fault != NULL) {
     WsXmlNodeH upgrade;
     WsXmlNodeH h = ws_xml_get_soap_header(fault);
 
     ws_xml_define_ns(ws_xml_get_doc_root(fault), XML_NS_SOAP_1_1, NULL, 0);
 
-    if ( (upgrade = ws_xml_add_child(h, XML_NS_SOAP_1_2, SOAP_UPGRADE, NULL)) )
-    {
+    upgrade = ws_xml_add_child(h, XML_NS_SOAP_1_2, SOAP_UPGRADE, NULL);
+    if (upgrade) {
       WsXmlNodeH node;
 
       if ( (node = ws_xml_add_child(upgrade, 
@@ -320,18 +312,16 @@ void build_soap_version_fault(env_t* fw)
       {
         ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_2, SOAP_ENVELOPE);
       }
-      if ( (node = ws_xml_add_child(upgrade, 
-                                    XML_NS_SOAP_1_2, 
-                                    SOAP_SUPPORTED_ENVELOPE, 
-                                    NULL)) )
-      {
+      node = ws_xml_add_child(upgrade, XML_NS_SOAP_1_2, 
+                              SOAP_SUPPORTED_ENVELOPE, NULL);
+      if (node) {
         ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_1, SOAP_ENVELOPE);
       }
     }
     // FIXME: Send fault
     ws_xml_destroy_doc(fault);
   }
-}   
+}
 
 
 
@@ -342,45 +332,44 @@ void build_soap_version_fault(env_t* fw)
  * @param doc XML document
  * @return status
  */
-int wsman_is_duplicate_message_id (env_t* fw, WsXmlDocH doc)
-{    
-  char* msgId = get_soap_header_value(fw, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc)
+{
+  char* msgId = get_soap_header_value(soap, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 
   int retVal = 0;
-  if ( msgId ) {
+  if (msgId) {
     debug( "Checking Message ID: %s", msgId);
-    u_lock(fw);
-    lnode_t *node = list_first(fw->processedMsgIdList);
+    u_lock(soap);
+    lnode_t *node = list_first(soap->processedMsgIdList);
 
-    while( node != NULL )
-    {
-      if ( !strcmp(msgId, (char*)node->list_data) ) {              
-        debug( "Duplicate Message ID: %s", msgId);                         
+    while( node != NULL ) {
+      if ( !strcmp(msgId, (char*)node->list_data) ) {
+        debug( "Duplicate Message ID: %s", msgId);
         retVal = 1;
         break;
       }
-      node = list_next(fw->processedMsgIdList, node);
+      node = list_next(soap->processedMsgIdList, node);
     }
 
-    if ( !retVal )
-    {
-      while( list_count(fw->processedMsgIdList) >= PROCESSED_MSG_ID_MAX_SIZE )
-      {
-        node = list_del_first(fw->processedMsgIdList);
+    if (!retVal) {
+      while (list_count(soap->processedMsgIdList) >=
+                                  PROCESSED_MSG_ID_MAX_SIZE) {
+        node = list_del_first(soap->processedMsgIdList);
         u_free(node->list_data);
         u_free(node);
       }
 
-      if ( (node = lnode_create( NULL)) )
-      {
-        if ( (node->list_data = u_str_clone(msgId)) == NULL ) {
+      node = lnode_create( NULL);
+      if (node) {
+        node->list_data = u_str_clone(msgId);
+        if (node->list_data == NULL) {
           u_free(node);
         } else {
-          list_append(fw->processedMsgIdList, node);
+          list_append(soap->processedMsgIdList, node);
         }
       }
     }
-    u_unlock(fw);
+    u_unlock(soap);
   } else {       
     debug( "No MessageId found");
   }

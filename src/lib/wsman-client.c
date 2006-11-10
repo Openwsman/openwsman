@@ -709,25 +709,22 @@ wsman_build_envelope_from_response (WsManClient *cl)
   WsXmlDocH doc = NULL;
   u_buf_t *buffer;
 
-  env_t *fw = (env_t *)ws_context_get_runtime(cl->wscntx);
+  SoapH soap = ws_context_get_runtime(cl->wscntx);
   char* response = (char *)u_buf_ptr(cl->connection->response);
-  if (response)
-  {
+  if (response) {
     if (u_buf_create(&buffer) != 0) {
       error("Error while creating buffer");
     } else {
       u_buf_set(buffer, response,  strlen(response) );
     }
 
-
-    if ( (doc = ws_xml_read_memory((SoapH)fw,
-                                   u_buf_ptr(buffer),
-                                   u_buf_size(buffer), NULL, 0)) != NULL )
-    {
+    doc = ws_xml_read_memory(soap, u_buf_ptr(buffer),
+                                   u_buf_size(buffer), NULL, 0);
+    if (doc != NULL) {
       debug("xml doc received...");
     }
     u_buf_free(buffer);
-  }    
+  }
   return doc;
 }
 

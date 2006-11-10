@@ -276,15 +276,6 @@ typedef struct __SoapDispatch* SoapDispatchH;
 
 typedef SoapDispatchH (*DispatcherCallback)(WsContextH, void*, WsXmlDocH);
 
-// this structure is similarly defined in wsman-xml-api.h
-#ifndef _SoapH_Defined
-#define _SoapH_Defined
-struct __Soap
-{
-  unsigned __undefined;
-};
-typedef struct __Soap* SoapH;
-#endif
 
 struct __SoapOp
 {
@@ -292,6 +283,14 @@ struct __SoapOp
 };
 typedef struct __SoapOp* SoapOpH;
 
+
+struct __internalWsDoc
+{
+    void* parserDoc;
+    SoapH fw;
+    unsigned long prefixIndex;
+};
+typedef struct __internalWsDoc iWsDoc;
 
 struct __DispatchResponse
 {
@@ -309,7 +308,7 @@ struct __callback_t
 };
 typedef struct __callback_t callback_t;
 
-struct __env_t
+struct __Soap
 {
   pthread_mutex_t lockData;  // do not move this field
   int bExit;
@@ -336,7 +335,7 @@ struct __env_t
   void* dispatcherData;
   DispatcherCallback dispatcherProc;
 };
-typedef struct __env_t env_t;
+//typedef struct __env_t env_t;
 
 
 struct _WS_CONTEXT_ENTRY

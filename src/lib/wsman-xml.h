@@ -44,7 +44,6 @@
 #define XML_API_GENERIC_H_
 
 
-
 #define XML_LAST_CHILD			(-1)
 #define XML_ELEMENT_NEXT		(-2)
 #define XML_ELEMENT_PREV		(-3)
@@ -67,14 +66,6 @@ struct __WsXmlParserData
 };
 typedef struct __WsXmlParserData WsXmlParserData;
 
-
-struct __internalWsDoc
-{
-	void* parserDoc;
-	env_t* fw;
-	unsigned long prefixIndex;
-};
-typedef struct __internalWsDoc iWsDoc;
 
 
 #define xml_parser_get_first_child(x) xml_parser_node_get(x, 0)
@@ -117,7 +108,7 @@ void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
-WsXmlDocH ws_create_response_envelope(struct __WsContext *cntx, WsXmlDocH rqstDoc, char *action);
+//WsXmlDocH ws_create_response_envelope(struct __WsContext *cntx, WsXmlDocH rqstDoc, char *action);
 
 
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[]);

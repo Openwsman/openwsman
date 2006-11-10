@@ -97,7 +97,6 @@ debug_message_handler (const char *str,
 
     log_msg = u_strdup_printf ("%s [%d] %s\n",
                                timestr, log_pid, str);
-       
     if ( (p = write (STDERR_FILENO, log_msg, strlen (log_msg)) ) < 0  )
       fprintf(stderr, "Failed writing to log file\n");
     fsync (STDERR_FILENO);

@@ -179,9 +179,8 @@ xml_parser_get_root(WsXmlDocH doc)
 WsXmlDocH
 xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
 {
-    env_t* fw = (env_t*)soap;
     WsXmlDocH soapDoc = NULL;
-    if (fw)
+    if (soap)
     {
         xmlDocPtr xmlDoc = xmlReadFile(filename, 
                 encoding,
@@ -196,7 +195,7 @@ xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long
             else
             {
                 xmlDoc->_private = iDoc;
-                iDoc->fw = fw;			
+                iDoc->fw = soap;
                 iDoc->parserDoc = xmlDoc;
                 soapDoc = (WsXmlDocH)iDoc;
             }
@@ -207,12 +206,12 @@ xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long
 }
 
 WsXmlDocH 
-xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigned long options)
-{	
-    env_t* fw = (env_t*)soap;
+xml_parser_memory_to_doc(SoapH soap, char* buf, int size,
+                         char* encoding, unsigned long options)
+{
     WsXmlDocH soapDoc = NULL;
 
-    if ( buf && size && fw)
+    if ( buf && size && soap)
     {
         xmlDocPtr xmlDoc = xmlReadMemory(buf,
                 size,
@@ -229,7 +228,7 @@ xml_parser_memory_to_doc(SoapH soap,char* buf, int size, char* encoding, unsigne
             else
             {
                 xmlDoc->_private = iDoc;
-                iDoc->fw = fw;			
+                iDoc->fw = soap;
                 iDoc->parserDoc = xmlDoc;
                 soapDoc = (WsXmlDocH)iDoc;
             }

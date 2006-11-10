@@ -55,15 +55,6 @@
 #define SOAP_SUPPORTED_ENVELOPE	"SupportedEnvelope"
 
 
-#ifndef _SoapH_Defined
-#define _SoapH_Defined
-struct __Soap
-{
-	unsigned __undefined;
-};
-typedef struct __Soap* SoapH;
-#endif
-
 
 struct __WsXmlDoc
 {

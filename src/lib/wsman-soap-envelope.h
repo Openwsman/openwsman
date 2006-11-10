@@ -35,33 +35,35 @@
 #ifndef WSMAN_SOAP_ENVELOPE_H_
 #define WSMAN_SOAP_ENVELOPE_H_
 
+#include "wsman-soap-api.h"
+
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
 void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
 
-int wsman_is_duplicate_message_id (env_t* fw, WsXmlDocH doc);
+int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc);
 
-char* get_soap_header_value(env_t* fw, WsXmlDocH doc, char* nsUri, char* name);
+char* get_soap_header_value(SoapH soap, WsXmlDocH doc, char* nsUri, char* name);
 
-WsXmlNodeH get_soap_header_element(env_t* fw, 
+WsXmlNodeH get_soap_header_element(SoapH soap,
         WsXmlDocH doc, char* nsUri, char* name);
 
-WsXmlDocH build_soap_fault(env_t *fw, char *soapNsUri, char *faultNsUri, 
+WsXmlDocH build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri, 
         char *code, char *subCode, char *reason, char *detail);
 
-void build_soap_version_fault(env_t *fw);
+void build_soap_version_fault(SoapH soap);
 
 WsXmlDocH ws_create_response_envelope(WsContextH cntx, 
         WsXmlDocH rqstDoc, 
-        char* action);        
+        char* action);
 
-WsXmlDocH wsman_build_inbound_envelope(env_t* fw, WsmanMessage *msg);
+WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg);
 
 WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code,
         char *subCodeNs, char *subCode, char *lang, 
         char *reason, void (*addDetailProc)(WsXmlNodeH, void *), void *addDetailProcData);
 
-        
+
 WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
             WsXmlDocH rqstDoc,
             char* code,
@@ -69,7 +71,7 @@ WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
             char* subCode,
             char* lang,
             char* reason,
-            char* faultDetail);    
+            char* faultDetail);
 
 char* wsman_get_class_name ( WsContextH cntx );
 

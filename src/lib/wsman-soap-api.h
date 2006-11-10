@@ -37,12 +37,14 @@
 #define WSMAN_SOAP_API_H_
 
 
- struct __WsContext
- {
- 	int __unk;
- };
- typedef struct __WsContext* WsContextH;
+
+ struct WS_CONTEXT;
+ typedef struct WS_CONTEXT* WsContextH;
  
+
+struct __Soap;
+typedef struct __Soap* SoapH;
+
 
 #endif
 
