@@ -48,7 +48,7 @@
 #endif /* CONFIG */
 #define	HTPASSWD	".htpasswd"	/* Passwords file name		*/
 #define	EXPIRE_TIME	3600		/* Expiration time, seconds	*/
-#define KEEP_ALIVE_TIME 60      /* keep connection, seconds */
+#define KEEP_ALIVE_TIME 2      /* keep connection, seconds */
 #ifndef IO_MAX
 #define	IO_MAX		16384		/* Max request size		*/
 #endif /* IO_MAX */

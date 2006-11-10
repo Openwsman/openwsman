@@ -86,13 +86,13 @@ REQUEST_PASSWORD:
     message("%s authorization is used",
             ws_client_transport_get_auth_name(ws_auth));
     if (auth_set == 0 && *username && *password) {
-        // use username and password from command line
+        // use existing username and password
         return choosen_auth;
     }
 
     request_func(ws_auth, username, password);
 
-    if (strlen(*username) == 0) {
+    if (!(*username) || strlen(*username) == 0) {
         debug("No username. Authorization canceled");
         return 0;
     }
