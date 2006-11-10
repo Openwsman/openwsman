@@ -297,13 +297,15 @@ wsman_client_handler( WsManClient *cl,
             curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
             goto DONE;
         }
-        if (cl->data.user) {
-            u_free(cl->data.user);
-            cl->data.user = NULL;
-        }
-        if (cl->data.pwd) {
-            u_free(cl->data.pwd);
-            cl->data.pwd = NULL;
+        if (auth_set) {
+            if (cl->data.user) {
+                u_free(cl->data.user);
+                cl->data.user = NULL;
+            }
+            if (cl->data.pwd) {
+                u_free(cl->data.pwd);
+                cl->data.pwd = NULL;
+            }
         }
         auth_set = reauthenticate(auth_set, auth_avail, &cl->data.user,
                             &cl->data.pwd);
