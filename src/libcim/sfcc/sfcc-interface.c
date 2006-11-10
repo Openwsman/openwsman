@@ -654,8 +654,7 @@ cim_enum_instances (CimClientInfo *client,
   debug( "enumInstances() rc=%d, msg=%s", 
          rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
-  if (rc.rc) 
-  {
+  if (rc.rc) {
     debug( "CMCIClient enumInstances() failed");
     cim_to_wsman_status(rc, status);
     goto cleanup;
@@ -696,8 +695,7 @@ cim_getElementAt(CimClientInfo *client,
  
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
-      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
-  {
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
     if (objectpath) CMRelease(objectpath);
     retval = 0;
   }
@@ -721,8 +719,7 @@ cim_getEprAt( CimClientInfo *client,
 
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
-      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
-  {
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
     if (objectpath) CMRelease(objectpath);
     return 0;
   }
@@ -747,8 +744,7 @@ cim_getEprObjAt(CimClientInfo *client,
 
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
-      (strcmp((char *)classname->hdl, client->requested_class) != 0)) 
-  {
+      (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
     if (objectpath) CMRelease(objectpath);
     return 0;
   }
@@ -778,8 +774,7 @@ xml2instance( CMPIInstance *instance,
 
   WsXmlNodeH r = ws_xml_get_child(body, 0, resourceUri, className);
        
-  if (numproperties) 
-  {
+  if (numproperties) {
     for (i=0; i<numproperties; i++) {
       CMPIString * propertyname;
       CMPIData data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
@@ -992,8 +987,7 @@ cim_put_instance_from_enum (CimClientInfo *client,
 
   CMCIClient * cc = (CMCIClient *)client->cc;
 
-  if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) 
-  {
+  if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) {
     instance = cc->ft->getInstance(cc, objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
     debug( "getInstance() rc=%d, msg=%s", rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
@@ -1216,8 +1210,7 @@ cim_get_enum_items(CimClientInfo *client,
   itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
   debug( "Total items: %d", enumInfo->totalItems );
        
-  if (max > 0 ) 
-  {
+  if (max > 0 ) {
     while(max > 0 && enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) 
     {
       if ( ( enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) == FLAG_ENUMERATION_ENUM_EPR )
