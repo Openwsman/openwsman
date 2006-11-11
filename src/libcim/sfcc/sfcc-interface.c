@@ -502,7 +502,7 @@ instance2xml( CimClientInfo *client,
   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
   CMPIConstClass* _class = NULL;
   char *target_class;
-
+  char *final_class = NULL;
   int numproperties = instance->ft->getPropertyCount(instance, NULL);
 
 
@@ -513,7 +513,7 @@ instance2xml( CimClientInfo *client,
     target_class = (char *)classname->hdl;
 
   new_ns = cim_find_namespace_for_class(client, target_class);
-  char *final_class = u_strdup(strrchr(new_ns, '/') + 1);
+  final_class = u_strdup(strrchr(new_ns, '/') + 1);
   WsXmlNodeH r = ws_xml_add_child(body, NULL, final_class , NULL);
 
   u_free(final_class);
@@ -524,12 +524,11 @@ instance2xml( CimClientInfo *client,
   xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns );
 
   if (enumInfo && ( (enumInfo->flags & 
-                     FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) 
-  {
+                     FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties)) {
     debug("class name: %s", client->requested_class );
-    CMPIConstClass* _class = cim_get_class(client, client->requested_class , NULL);
-    numproperties = _class->ft->getPropertyCount(_class, NULL);
-    
+    _class = cim_get_class(client, client->requested_class , NULL);
+    if (_class)
+      numproperties = _class->ft->getPropertyCount(_class, NULL);    
   } else {
     numproperties = instance->ft->getPropertyCount(instance, NULL);
   }
@@ -538,10 +537,8 @@ instance2xml( CimClientInfo *client,
   if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, "xsi" ))
     debug( "namespace failed: %s", client->resource_uri);
        
-  if (numproperties) 
-  {
-    for (i=0; i<numproperties; i++) 
-    {
+  if (numproperties) {
+    for (i=0; i<numproperties; i++) {
       CMPIString * propertyname;
       CMPIData data;
       if (enumInfo && ((enumInfo->flags & 
@@ -703,6 +700,10 @@ cim_getElementAt(CimClientInfo *client,
   if (retval) instance2xml(client, instance, itemsNode, enumInfo);
   return retval;
 }
+
+
+
+
 
 int
 cim_getEprAt( CimClientInfo *client,
