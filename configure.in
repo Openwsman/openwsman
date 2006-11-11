@@ -61,15 +61,6 @@ if test "x$with_libsoup" = "xyes"; then
 
 fi
 
-with_client=yes
-without_client=no
-AC_ARG_WITH(client,
-            [AC_HELP_STRING([--with-client],
-                            [compile client.])])
-
-
-AM_CONDITIONAL(COMPILE_CLIENT, test "$without_client" == "no")
-
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then
     test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
@@ -309,7 +300,6 @@ AC_OUTPUT([
 	Makefile
         src/Makefile
         src/server/Makefile
-        src/client/Makefile
         src/lib/Makefile
         src/libcim/Makefile
         src/libcim/include/Makefile
