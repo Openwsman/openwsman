@@ -10,7 +10,7 @@ package: dist
 
 install-data-local: openwsman.pc
 	$(mkinstalldirs) $(libdir)/pkgconfig
-	$(INSTALL_DATA) openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) -D openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
 
 uninstall-local:
 	rm -f $(DESTDIR)$(libdir)/pkgconfig/openwsman.pc

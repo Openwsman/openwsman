@@ -309,7 +309,6 @@ AC_OUTPUT([
         src/plugins/identify/Makefile
         src/plugins/wsman/Makefile
         src/plugins/wsman/test/Makefile
-        src/plugins/wsman/test2/Makefile
         src/authenticators/Makefile
         src/authenticators/file/Makefile
         src/authenticators/pam/Makefile
