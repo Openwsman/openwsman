@@ -330,8 +330,11 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
   char *ns_uri = ws_xml_get_node_name_ns_uri(resource_node);
   hscan_t hs;
   hnode_t *hn;
-  hash_scan_begin(&hs, options.properties );
-  while ((hn = hash_scan_next(&hs))) {    	
+  if (!options.properties) {
+    return;
+  }
+  hash_scan_begin(&hs, options.properties);
+  while ((hn = hash_scan_next(&hs))) {
     WsXmlNodeH n = ws_xml_get_child(resource_node, 0,
                                     ns_uri ,(char*) hnode_getkey(hn) );
     ws_xml_set_node_text(n, (char*) hnode_get(hn));
