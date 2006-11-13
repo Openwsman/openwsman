@@ -185,6 +185,10 @@ int main(int argc, char** argv)
 			options.properties = wsman_create_hash_from_query_string (tests[i].properties);		
 		 
 		doc = wsman_invoke(cl, (char *)tests[i].resource_uri, (char *)tests[i].method, options);
+        if (!doc) {
+                printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+                goto CONTINUE;
+        }
 		if (0)
 		    wsman_output(doc);
         if ((char *)tests[i].expected_value != NULL) 
@@ -204,7 +208,7 @@ int main(int argc, char** argv)
 		if (doc) {			
 			ws_xml_destroy_doc(doc);
 		}
-		
+CONTINUE:
 		destroy_action_options(&options);
         wsman_release_client(cl);
 	}

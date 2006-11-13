@@ -104,7 +104,10 @@ int main(int argc, char** argv)
 
 
     doc = wsman_identify(cl, options);
-
+    if (!doc) {
+           printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+           goto CONTINUE;
+    }
     char *xp = ws_xml_get_xpath_value(doc, "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProtocolVersion");
     if (xp)
     {
@@ -120,7 +123,7 @@ int main(int argc, char** argv)
     if (doc) {			
         ws_xml_destroy_doc(doc);
     }
-
+CONTINUE:
     destroy_action_options(&options);
     wsman_release_client(cl);
 

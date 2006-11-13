@@ -262,12 +262,13 @@ int main(int argc, char** argv)
 
     WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
                                                options);
-    if (enum_response) 
-    {
-      enumContext = wsenum_get_enum_context(enum_response);
-    } else {
-      enumContext = NULL;
+    if (!enum_response) {
+         printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+         goto CONTINUE;
     }
+
+    enumContext = wsenum_get_enum_context(enum_response);
+
     wsman_output(enum_response);
     if ((char *)tests[i].expected_value != NULL) 
     {			  
@@ -291,7 +292,12 @@ int main(int argc, char** argv)
     if (enumContext) {
       printf ("Test %d: %70s:", i + 1, "Check Release Response:");
       WsXmlDocH release_response = wsenum_release(cl, (char *)tests[i].resource_uri , enumContext,
-                                                  options);	
+                                                  options);
+
+      if (!release_response) {
+           printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+           goto CONTINUE;
+      }
       char *xp = ws_xml_get_xpath_value(release_response, "/s:Envelope/s:Header/wsa:Action");
       if (xp)
       {
@@ -304,7 +310,8 @@ int main(int argc, char** argv)
         printf(FAILED);
       }    
       ws_xml_destroy_doc(release_response);         
-    }	
+    }
+CONTINUE:	
     destroy_action_options(&options);		
     wsman_release_client(cl);
 

@@ -482,6 +482,10 @@ ws_transfer_put( WsManClient *cl,
     
   WsXmlDocH get_response = ws_transfer_get(cl, resource_uri, options);
 	
+  if (!get_response) {
+    error("ws_transfer_get returned NULL doc");
+    return NULL;
+  }
   
   WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT, NULL, resource_uri, options, (void *)get_response);
   wsman_send_request(cl, put_request);    

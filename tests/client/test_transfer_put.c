@@ -143,6 +143,10 @@ int main(int argc, char** argv)
 			options.properties = wsman_create_hash_from_query_string (tests[i].properties);		
 		 
 		doc = ws_transfer_put(cl, (char *)tests[i].resource_uri, options);
+        if (!doc) {
+                printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+                goto CONTINUE;
+        }
         if ((char *)tests[i].expected_value != NULL) 
         {			  
             char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
@@ -160,7 +164,7 @@ int main(int argc, char** argv)
 		if (doc) {			
 			ws_xml_destroy_doc(doc);
 		}
-		
+CONTINUE:
 		destroy_action_options(&options);
         wsman_release_client(cl);
 	}
