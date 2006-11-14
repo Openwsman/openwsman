@@ -147,23 +147,21 @@ int main(int argc, char** argv)
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-        if ((char *)tests[i].expected_value != NULL) 
-        {			  
+        if ((char *)tests[i].expected_value != NULL) {
             char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
-            if (xp)
-            {
+            if (xp) {
                 if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
                     printf("\t\t\033[22;31mFAILED\033[m\n");	
-                u_free(xp);		            
+                u_free(xp);
             } else {
                 printf("\t\t\033[22;31mFAILED\033[m\n");
-            }        
-        }		
-		if (doc) {			
-			ws_xml_destroy_doc(doc);
-		}
+            }
+        } else {
+            printf("\t\t\033[22;32mPASSED\033[m\n");
+        }
+        ws_xml_destroy_doc(doc);
 CONTINUE:
 		destroy_action_options(&options);
         wsman_release_client(cl);

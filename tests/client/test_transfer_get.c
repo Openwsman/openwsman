@@ -54,6 +54,7 @@
 
 int facility = LOG_DAEMON;
 int errors = 0;
+char *host = "langley.home.planux.com";
 
 
 
@@ -74,10 +75,10 @@ typedef struct {
     const char *resource_uri;
 
     /* Selectors in the form of a URI query   key=value&key2=value2 */
-    const char *selectors;
+    char *selectors;
 
     const char* xpath_expression;
-    const char* expected_value;
+    char* expected_value;
 
     /* What the final status code should be. */
     unsigned int final_status;		
@@ -93,7 +94,7 @@ ServerData sd[] = {
 
 TestData tests[] = {
     {
-        "Transfer Get without any selectors, Check Fault Value", 
+        "Transfer Get without any selectors, Check Fault Value.", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
         NULL,
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
@@ -102,7 +103,7 @@ TestData tests[] = {
         0
     },
     {
-        "Transfer Get without any selectors, Checking FaultDetail", 
+        "Transfer Get without any selectors, Checking FaultDetail.", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
         NULL,
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
@@ -111,7 +112,7 @@ TestData tests[] = {
         0
     },
     {
-        "Transfer Get with non existent Resource URI, Check FaultDetail",
+        "Transfer Get with non existent Resource URI, Check FaultDetail.",
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
         NULL, 
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
@@ -120,7 +121,7 @@ TestData tests[] = {
         0
     },    
     {
-        "Transfer Get with non existent Resource URI, Check Fault Value",
+        "Transfer Get with non existent Resource URI, Check Fault Value.",
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
         NULL, 
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
@@ -129,49 +130,72 @@ TestData tests[] = {
         0
     },	
     {
-        "Transfer Get with missing selectors, Checking Fault Value", 
+        "Transfer Get with missing selectors, Checking Fault Value.", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-        "Name=langley.home.planux.com",
+        "Name=%s",
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-        "wsman:InvalidSelectors",	    
+        "wsman:InvalidSelectors",
         500,
         0
     },
     {
-        "Transfer Get with missing selectors, Checking FaultDetail", 
+        "Transfer Get with missing selectors, Checking FaultDetail.",
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-        "Name=langley.home.planux.com",
+        "Name=%s",
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-        "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",	    
+        "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",
         500,
         0
-    },	
+    },
+    // The commented tests don't create request with duplicated selectors
+/*
     {
-        "Transfer Get with duplicate selectors, Checking FaultDetail", 
+        "Transfer Get with duplicate selectors, Checking Fault Value.", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-        "Name=langley.home.planux.com&Name=langley.home.planux.com1",
-        "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-        "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/DuplicateSelectors",	    
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s&Name=%s1",
+        "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+        "wsman:InvalidSelectors",
         500,
         0
-    },	
-    {   
-        "Transfer Get with all selectors but with wrong values Fault Value", 
+    },
+    {
+        "Transfer Get with duplicate selectors, Checking FaultDetail.", 
+        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s&Name=%s1",
+        "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+        "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/DuplicateSelectors",
+        500,
+        0
+    },
+    {
+        "Transfer Get with duplicate selectors (other order), Checking Fault Value.", 
+        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s1&Name=%s",
+        "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+        "wsman:InvalidSelectors",
+        500,
+        0
+    },
+*/
+    {
+        "Transfer Get with all selectors but with wrong values, Checking Fault Value.", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=langley.home.planux.comx",
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%sx",
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
         "wsa:DestinationUnreachable",		
         500,
         0
-    }/*,	
+    },
        {
-       "Transfer Get with correct selectors", 
+       "Transfer Get with correct selectors, Checking response code.", 
        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-       "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=langley.home.planux.com",
-       "/s:Envelope/s:Body/p:ComputerSystem",
+       "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s",
+       "/s:Envelope/s:Body/p:CIM_ComputerSystem/p:Name",
+//      "%s",
+       NULL,
        200,
        0
-       }*/
+       }
 };
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
@@ -192,13 +216,22 @@ int main(int argc, char** argv)
     WsXmlDocH doc;
     actionOptions options;
 
-
+    if (getenv("OPENWSMAN_TEST_HOST")) {
+        host = getenv("OPENWSMAN_TEST_HOST");
+    }
     wsman_client_transport_init(NULL);
 
 
     for (i = 0; i < ntests; i++) 
     {
-        printf ("Test %d: %70s:", i + 1, tests[i].explanation);
+        if (tests[i].selectors) {
+            tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
+        }
+        if (tests[i].expected_value) {
+            tests[i].expected_value = u_strdup_printf(tests[i].expected_value, host, host, host);
+        }
+
+        printf ("Test %3d: %s ", i + 1, tests[i].explanation);
         cl = wsman_create_client(
                 sd[0].server,
                 sd[0].port,
@@ -217,24 +250,32 @@ int main(int argc, char** argv)
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
+        if (tests[i].final_status != cl->response_code) {
+            printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n", cl->response_code);
+            goto CONTINUE;
+        }
         if ((char *)tests[i].expected_value != NULL) 
-        {			  
+        {
             char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
             if (xp)
             {
                 if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("\t\t\033[22;31mFAILED\033[m\n");	
-                u_free(xp);		            
+                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",(char *)tests[i].xpath_expression, xp);	
+                u_free(xp);
             } else {
-                printf("\t\t\033[22;31mFAILED\033[m\n");
-            }        
-        }		
-        if (doc) {			
-            ws_xml_destroy_doc(doc);
+                printf(" No %s\t\033[22;31mFAILED\033[m\n", (char *)tests[i].xpath_expression);
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+            }
+        } else {
+           printf("\t\t\033[22;32mPASSED\033[m\n");
         }
+
+        ws_xml_destroy_doc(doc);
 CONTINUE:
+        u_free(tests[i].selectors);
+        u_free(tests[i].expected_value);
         destroy_action_options(&options);
         wsman_release_client(cl);
     }		

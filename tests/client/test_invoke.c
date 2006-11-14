@@ -49,21 +49,23 @@
 
 #include "wsman-client.h"
 #include "wsman-client-transport.h"
+#include "wsman-debug.h"
 
 
 
 int facility = LOG_DAEMON;
 int errors = 0;
+char *host = "langley.home.planux.com";
 
 
 
 typedef struct {
-	const char *server;
-	int port;
-	const char *path;
-	const char *scheme;
-	const char *username;
-	const char *password;
+    const char *server;
+    int port;
+    const char *path;
+    const char *scheme;
+    const char *username;
+    const char *password;
 } ServerData;
 
 typedef struct {						
@@ -73,76 +75,76 @@ typedef struct {
         /* Resource UR to test against */
         const char *resource_uri;
 
-		/* Selectors in the form of a URI query   key=value&key2=value2 */
-		const char *selectors;
-		const char *properties;
-		
-		const char *method;
-		
+        /* Selectors in the form of a URI query   key=value&key2=value2 */
+        char *selectors;
+        const char *properties;
+
+        const char *method;
+
         const char* xpath_expression;
         const char* expected_value;
-				
+
         /* What the final status code should be. */
         unsigned int final_status;		
-		
+
 } TestData;
 
 
 ServerData sd[] = {
-	{"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+    {"localhost", 8889, "/wsman", "http", "wsman", "secret"}
 };
 
 TestData tests[] = {
-	{
-	    "Custom method without any selectors, Check Fault Value", 
-	    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService", 
-	    NULL,
-	    NULL,
-	    "ManageSystemTime",
-		"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-		"wsman:InvalidSelectors",	    
-	    500	    
-	},
-{
-    "Custom method without any parameters, Check Fault Value", 
+    {
+    "Custom method without any selectors. ",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService", 
-    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=langley.home.planux.com&CreationClassName=OMC_SystemTimeService&Name=timeservice",
+    NULL,
     NULL,
     "ManageSystemTime",
-	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-	"wsman:InvalidParameter",	    
-    500	    
-},
-{
-    "Custom method without any parameters/method, Check Fault Value", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService", 
-    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=langley.home.planux.com&CreationClassName=OMC_SystemTimeService&Name=timeservice",
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsman:InvalidSelectors",
+    500
+    },
+    {
+    "Custom method without any parameters. ",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService",
+    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=%s&CreationClassName=OMC_SystemTimeService&Name=timeservice",
+    NULL,
+    "ManageSystemTime",
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsman:InvalidParameter",
+    500
+    },
+    {
+    "Custom method without any parameters/method. ",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService",
+    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=%s&CreationClassName=OMC_SystemTimeService&Name=timeservice",
     NULL,
     NULL,
-	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-	"wsa:DestinationUnreachable",	    
-    500	    
-},
-{
-    "Custom method with wrong parameters, Check Fault Value", 
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsa:DestinationUnreachable",
+    500
+    },
+    {
+    "Custom method with wrong parameters. ", 
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService", 
-    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=langley.home.planux.com&CreationClassName=OMC_SystemTimeService&Name=timeservice",
+    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=%s&CreationClassName=OMC_SystemTimeService&Name=timeservice",
     "GetRequestx=TRUE",
     "ManageSystemTime",
-	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-	"wsman:InvalidParameter",	    
-    500	    
-},
-{
-    "Custom method with correct parameters, Check Return Value", 
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsman:InvalidParameter",
+    500
+    },
+    {
+    "Custom method with correct parameters. ", 
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/OMC_SystemTimeService", 
-    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=langley.home.planux.com&CreationClassName=OMC_SystemTimeService&Name=timeservice",
+    "SystemCreationClassName=OMC_UnitaryComputerSystem&SystemName=%s&CreationClassName=OMC_SystemTimeService&Name=timeservice",
     "GetRequest=TRUE",
     "ManageSystemTime",
-	"/s:Envelope/s:Body/n1:ManageSystemTime_OUTPUT/ReturnValue",
-	"0",	    
-    200	    
-}
+    "/s:Envelope/s:Body/n1:ManageSystemTime_OUTPUT/ReturnValue",
+    "0",
+    200
+    }
 };
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
@@ -150,70 +152,74 @@ int ntests = sizeof (tests) / sizeof (tests[0]);
 
 static void wsman_output(WsXmlDocH doc)
 {
-	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-	return;
+    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+    return;
 }
 
 
 
 int main(int argc, char** argv)
 {
-	int i;
-	WsManClient *cl;
-	WsXmlDocH doc;
-	actionOptions options;
-		
-	
-	wsman_client_transport_init(NULL);
-	
-		
-	for (i = 0; i < ntests; i++) 
-	{
-		printf ("Test %d: %70s:", i + 1, tests[i].explanation);
+    int i;
+    WsManClient *cl;
+    WsXmlDocH doc;
+    actionOptions options;
 
-    	cl = wsman_create_client(  sd[0].server,
-    		sd[0].port,
-    		sd[0].path,
-    		sd[0].scheme,
-    		sd[0].username,
-    		sd[0].password);		
-		initialize_action_options(&options);
-		
-		if (tests[i].selectors != NULL)
-			options.selectors = wsman_create_hash_from_query_string (tests[i].selectors);
-		if (tests[i].properties != NULL)
-			options.properties = wsman_create_hash_from_query_string (tests[i].properties);		
-		 
-		doc = wsman_invoke(cl, (char *)tests[i].resource_uri, (char *)tests[i].method, options);
+    if (getenv("OPENWSMAN_TEST_HOST")) {
+        host = getenv("OPENWSMAN_TEST_HOST");
+    }
+
+    wsman_client_transport_init(NULL);
+
+    for (i = 0; i < ntests; i++) {
+        printf ("Test %3d: %s ", i + 1, tests[i].explanation);
+        tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
+
+        cl = wsman_create_client(sd[0].server,
+                                 sd[0].port,
+                                 sd[0].path,
+                                 sd[0].scheme,
+                                 sd[0].username,
+                                 sd[0].password);
+        initialize_action_options(&options);
+
+        if (tests[i].selectors != NULL)
+            options.selectors = wsman_create_hash_from_query_string (tests[i].selectors);
+        if (tests[i].properties != NULL)
+            options.properties = wsman_create_hash_from_query_string (tests[i].properties);
+
+        doc = wsman_invoke(cl, (char *)tests[i].resource_uri, (char *)tests[i].method, options);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-		if (0)
-		    wsman_output(doc);
-        if ((char *)tests[i].expected_value != NULL) 
-        {			  
+        if (tests[i].final_status != cl->response_code) {
+            printf("Status = %ld \t\t\t\033[22;31mFAILED\033[m\n", cl->response_code);
+            goto CONTINUE;
+        }
+
+        if (0)
+            wsman_output(doc);
+        if ((char *)tests[i].expected_value != NULL) {
             char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
-            if (xp)
-            {
-                if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
-                    printf("\t\t\033[22;32mPASSED\033[m\n");
+            if (xp) {
+                if (strcmp(xp, (char *)tests[i].expected_value ) == 0)
+                    printf("\t\t\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("\t\t\033[22;31mFAILED\033[m\n");	
-                u_free(xp);		            
+                    printf("%s\t\033[22;31mFAILED\033[m\n", (char *)tests[i].expected_value);
+                u_free(xp);
             } else {
-                printf("\t\t\033[22;31mFAILED\033[m\n");
-            }        
-        }		
-		if (doc) {			
-			ws_xml_destroy_doc(doc);
-		}
+                printf("No xpath value \t\t\033[22;31mFAILED\033[m\n");
+            }
+        }
+        ws_xml_destroy_doc(doc);
 CONTINUE:
-		destroy_action_options(&options);
+        u_free(tests[i].selectors);
+        destroy_action_options(&options);
         wsman_release_client(cl);
-	}
-	
-	return 0;
+    }
+
+    return 0;
 }
 
 
