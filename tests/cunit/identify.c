@@ -57,13 +57,15 @@
 
 
 
-TestData identify_tests[] = {
+static TestData tests[] = {
   {
     "Testing Identify Request, check protocol version", 
     NULL, 
     NULL, 
     "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProtocolVersion",
     XML_NS_WS_MAN,
+    NULL,
+    NULL,
     200,
     FLAG_NONE,
     0
@@ -74,6 +76,8 @@ TestData identify_tests[] = {
     NULL, 
     "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProductVersion",
     PACKAGE_VERSION,
+    NULL,
+    NULL,
     200,
     FLAG_NONE,
     0
@@ -84,69 +88,70 @@ TestData identify_tests[] = {
     NULL, 
     "/s:Envelope/s:Body/wsmid:IdentifyResponse/wsmid:ProductVendor",
     "Openwsman Project",
+    NULL,
+    NULL,
     200,
     FLAG_NONE,
     0
   }
 };
 
-WsManClient *cl;
+
+static int ntests = sizeof (tests) / sizeof (tests[0]);
+
+
+extern WsManClient *cl;
 actionOptions options;
 
 
 
-static int 
-identify_test(int idx)
-{
-	
-   
-    WsXmlDocH response;    
-    int i = idx;
-   
-    response = wsman_identify(cl, options);
-    CU_ASSERT_TRUE(cl->response_code == identify_tests[i].final_status );
+static void
+identify_test() {
 
-    if ((char *)identify_tests[i].expected_value != NULL) 
-    {			  
-      char *xp = ws_xml_get_xpath_value(response, (char *)identify_tests[i].xpath_expression);
-      CU_ASSERT_PTR_NOT_NULL(xp);
-      if (xp)
-      {
-        CU_ASSERT_STRING_EQUAL(xp,(char *)identify_tests[i].expected_value );
-        u_free(xp);		            
-      }            
-    }		
-    if (response) {			
-      ws_xml_destroy_doc(response);
+    WsXmlDocH response;
+    static int i = 0;
+    char *xp = NULL;
+
+    reinit_client_connection(cl);
+    initialize_action_options(&options);
+
+    response = wsman_identify(cl, options);
+    CU_ASSERT_TRUE(cl->response_code == tests[i].final_status);
+
+    CU_ASSERT_PTR_NOT_NULL(response);
+    if (response == NULL) {
+        goto RETURN;
     }
 
-	
-	return 0;
+    if (tests[i].fault_value != NULL) {
+        char *xp = ws_xml_get_xpath_value(response, tests[i].fault_expr);
+        CU_ASSERT_PTR_NOT_NULL(xp);
+        if (xp) {
+          CU_ASSERT_STRING_EQUAL(xp, tests[i].fault_value );
+        }
+    }
+
+RETURN:
+    if (response) {
+      ws_xml_destroy_doc(response);
+    }
+    u_free(xp);
+    destroy_action_options(&options);
+    i++;
 }
 
 
 
-static void identify_test_0(void)
-{
-  identify_test(0);
-}
-static void identify_test_1(void)
-{
-  identify_test(1);
-}
-static void identify_test_2(void)
-{
-  identify_test(2);
-}
+int add_identify_tests(CU_pSuite ps) {
+    int found_test = 0;
+    int i;
 
-int add_identify_tests(CU_pSuite ps)
-{
-  int found_test = 0;
-  /* add the tests to the suite */
-  found_test = (NULL != CU_add_test(ps, identify_tests[0].explanation, (CU_TestFunc)identify_test_0));
-  found_test = (NULL != CU_add_test(ps, identify_tests[1].explanation, (CU_TestFunc)identify_test_1));
-  found_test = (NULL != CU_add_test(ps, identify_tests[2].explanation, (CU_TestFunc)identify_test_2));
-  
+         /* add the tests to the suite */
+    for (i =0; i < ntests; i++) {
+        found_test += (NULL != CU_add_test(ps,
+                        tests[i].explanation, identify_test));
+    }
+
   return (found_test > 0);
 }
 

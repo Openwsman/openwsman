@@ -60,37 +60,32 @@ static int _debug = 0;
 
 
 
-TestData enum_tests[] = {
+static TestData tests[] = {
   {
-    "Enumeration with non existent Resource URI, Checking Fault Subcode", 
+    "Enumeration with non existent Resource URI.", 
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
     NULL, 
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
     "wsa:DestinationUnreachable",
-    500,
-    FLAG_NONE,
-    0
-  },
-  {
-    "Enumeration with non existent Resource URI, Checking FaultDetail", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
-    NULL, 
     "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
     "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",
     500,
     FLAG_NONE,
     0
-  },	
+  },
+
   {
     "Enumeration with valid Resource URI and Items Count Estimation.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
     NULL, 
     "/s:Envelope/s:Header/wsman:TotalItemsCountEstimate",
     "3",
+    NULL,
+    NULL,
     200,
     FLAG_ENUMERATION_COUNT_ESTIMATION,
     0
-  }/*,    
+  }, /*
      {
      "Enumeration with valid Resource URI.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
@@ -153,87 +148,80 @@ TestData enum_tests[] = {
 };
 
 
+static int ntests = sizeof (tests) / sizeof (tests[0]);
 
-static void wsman_output(WsXmlDocH doc)
-{
-  return;
+
+extern WsManClient *cl;
+
+/*
+static void wsman_output(WsXmlDocH doc) {
   if (doc)
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
   else
     printf("returned doc is null\n");
   return;
 }
+*/
 
-WsManClient *cl;
 actionOptions options;
 
 
-void enumeration_test(int idx);
 
-void enumeration_test(int idx)
-{
-  char *enumContext = NULL;
+static void enumeration_test() {
+    char *enumContext = NULL;
+    static int i = 0;
+    char *xp = NULL;
 
-  int i = idx;
+    reinit_client_connection(cl);
+    initialize_action_options(&options);
 
-  options.flags = enum_tests[i].flags;
+    options.flags = tests[i].flags;
 
-  if (enum_tests[i].selectors != NULL)
-    wsman_add_selectors_from_query_string (&options, enum_tests[i].selectors);	
+    if (tests[i].selectors != NULL)
+         wsman_add_selectors_from_query_string(&options, tests[i].selectors);
 
-  options.max_elements = enum_tests[i].max_elements;
-  WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)enum_tests[i].resource_uri ,
-						      options);
-  CU_ASSERT_TRUE(cl->response_code == enum_tests[i].final_status );
-  if (enum_response) 
-    {
-      enumContext = wsenum_get_enum_context(enum_response);
+    options.max_elements = tests[i].max_elements;
+    WsXmlDocH enum_response = wsenum_enumerate(cl,
+                                (char *)tests[i].resource_uri, options);
+    CU_ASSERT_TRUE(cl->response_code == tests[i].final_status );
+    if (enum_response) {
+        enumContext = wsenum_get_enum_context(enum_response);
     } else {
-    enumContext = NULL;
-  }
-  if (_debug) wsman_output(enum_response);
+        enumContext = NULL;
+    }
 
-  if ((char *)enum_tests[i].expected_value != NULL) 
-  {			  
-    char *xp = ws_xml_get_xpath_value(enum_response, (char *)enum_tests[i].xpath_expression);
+    if (_debug) wsman_output(enum_response);
+
+    if (tests[i].fault_expr == NULL) {
+        goto RETURN;
+    }
+    xp = ws_xml_get_xpath_value(enum_response, tests[i].fault_expr);
     CU_ASSERT_PTR_NOT_NULL(xp);
-    if (xp)
-    {
-      CU_ASSERT_STRING_EQUAL(xp,(char *)enum_tests[i].expected_value );
-      u_free(xp);		            
-    }            
-  }		
-  ws_xml_destroy_doc(enum_response);
+    if (!xp) {
+        goto RETURN;
+    }
+    CU_ASSERT_STRING_EQUAL(xp, tests[i].fault_value );
+
+RETURN:
+    if (enum_response) {
+        ws_xml_destroy_doc(enum_response);
+    }
+    u_free(xp);
+    destroy_action_options(&options);
+    i++; // decrease executed test number
 }
 
 
-void enum_test_0(void);
-void enum_test_1(void);
-void enum_test_2(void);
+int add_enumeration_tests(CU_pSuite ps) {
+    int found_test = 0;
+    int i;
 
-void enum_test_0(void)
-{
-  enumeration_test(0);
-}
-
-void enum_test_1(void)
-{
-  enumeration_test(1);
-}
-
-void enum_test_2(void)
-{
-  enumeration_test(2);
-}
-
-int add_enumeration_tests(CU_pSuite ps)
-{
-  int found_test = 0;
-  /* add the tests to the suite */
-  found_test = (NULL != CU_add_test(ps, enum_tests[0].explanation, (CU_TestFunc)enum_test_0));
-  found_test += (NULL != CU_add_test(ps, enum_tests[1].explanation, (CU_TestFunc)enum_test_1));
-  found_test += (NULL != CU_add_test(ps, enum_tests[2].explanation, (CU_TestFunc)enum_test_2));
-  return (found_test > 0);
+        /* add the tests to the suite */
+    for (i = 0; i < ntests; i++) {
+        found_test += (NULL != CU_add_test(ps,
+                            tests[i].explanation, enumeration_test));
+    }
+    return (found_test > 0);
 }
 
 

@@ -55,162 +55,191 @@
 
 TestData get_tests[] = {
   {
-    "Transfer Get without any selectors, Check Fault Value", 
+    "Transfer Get without any selectors.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
     NULL,
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
     "wsman:InvalidSelectors",	    
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",
     500, 
     0,
     0
   },
+
   {
-    "Transfer Get without any selectors, Checking FaultDetail", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-    NULL,
-    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",	    
-    500, 
-    0,
-    0
-  },
-  {
-    "Transfer Get with non existent Resource URI, Check FaultDetail",
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
-    NULL, 
-    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",	    
-    500, 
-    0,
-    0
-  },    
-  {
-    "Transfer Get with non existent Resource URI, Check Fault Value",
+    "Transfer Get with non existent Resource URI.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
     NULL, 
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
     "wsa:DestinationUnreachable",  
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",
     500, 
     0,
     0
-  },	
+  },
+
   {
-    "Transfer Get with missing selectors, Checking Fault Value", 
+    "Transfer Get with unsufficient selectors.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-    "Name=langley.home.planux.com",
+    "Name=%s",
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-    "wsman:InvalidSelectors",	    
+    "wsman:InvalidSelectors",
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",
+    500,
+    0,
+    0
+  },
+
+  {
+    "Transfer Get with wrong selectors.",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+    "CreationClassName=OpenWBEM_UnitaryComputerSystem&Namex=%s",
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsman:InvalidSelectors",
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/UnexpectedSelectors",
+    500,
+    0,
+    0
+  },
+
+  {
+    "Transfer Get with all selectors but with wrong values 1.",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+    "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%sx",
+    "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+    "wsman:InvalidSelectors",
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidValue",
     500,
     0,
     0
   },
   {
-    "Transfer Get with missing selectors, Checking FaultDetail", 
+    "Transfer Get with all selectors but with wrong values 2.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-    "Name=langley.home.planux.com",
-    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
-    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",	    
-    500,
-    0,
-    0
-  },	
-  {   
-    "Transfer Get with all selectors but with wrong values Fault Value", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-    "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=langley.home.planux.comx",
+    "CreationClassName=OpenWBEM_UnitaryComputerSystemx&Name=%s",
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-    "wsa:DestinationUnreachable",		
+    "wsman:InvalidSelectors",
+    "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
+    "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidValue",
     500,
     0,
     0
-  }/*,	
-     {
-     "Transfer Get with correct selectors", 
-     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-     "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=langley.home.planux.com",
-     "/s:Envelope/s:Body/p:ComputerSystem",
-     200,
-     0
-     }*/
+  },
+  {
+    "Transfer Get with correct selectors. Check response code",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+    "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    200,
+    0,
+  },
 };
 
+static int ntests = sizeof (get_tests) / sizeof (get_tests[0]);
 
-WsManClient *cl;
+
+
+extern WsManClient *cl;
 actionOptions options;
 
-static int transfer_get_test(int idx)
-{
-  int i = idx;
-  WsXmlDocH doc;
-  if (get_tests[i].selectors != NULL)
-    wsman_add_selectors_from_query_string (&options, get_tests[i].selectors);
+static void transfer_get_test() {
+    WsXmlDocH doc;
+    char *xpf = NULL;
+    char *xpd = NULL;
+    static int i = 0; // executed test number.
+    char *old_selectors = get_tests[i].selectors;
 
 
-  doc = ws_transfer_get(cl, (char *)get_tests[i].resource_uri, options);
-  CU_ASSERT_TRUE(cl->response_code == get_tests[i].final_status );
-
-  if ((char *)get_tests[i].expected_value != NULL) 
-  {			  
-    if ((char *)get_tests[i].expected_value != NULL) 
-    {                         
-      char *xp = ws_xml_get_xpath_value(doc, (char *)get_tests[i].xpath_expression);
-      CU_ASSERT_PTR_NOT_NULL(xp);
-      if (xp)
-      {
-        CU_ASSERT_STRING_EQUAL(xp,(char *)get_tests[i].expected_value );
-        u_free(xp);                     
-      }            
-    }		
-    if (doc) {			
-      ws_xml_destroy_doc(doc);
+    if (get_tests[i].selectors) {
+        get_tests[i].selectors =
+              u_strdup_printf(get_tests[i].selectors, host, host, host);
     }
-  }		
-  return 0;
+
+    reinit_client_connection(cl);
+    initialize_action_options(&options);
+
+    if (get_tests[i].selectors != NULL) {
+       wsman_add_selectors_from_query_string (&options, get_tests[i].selectors);
+    }
+
+
+    doc = ws_transfer_get(cl, (char *)get_tests[i].resource_uri, options);
+    CU_ASSERT_TRUE(cl->response_code == get_tests[i].final_status);
+
+    CU_ASSERT_PTR_NOT_NULL(doc);
+    if (!doc) {
+        goto RETURN;
+    }
+
+    if (get_tests[i].fault_expr == NULL) {
+        goto RETURN;
+    }
+    CU_ASSERT_PTR_NOT_NULL(get_tests[i].fault_value);
+    if (get_tests[i].fault_value == NULL) {
+        goto RETURN;
+    }
+    xpf = ws_xml_get_xpath_value(doc, get_tests[i].fault_expr);
+    CU_ASSERT_PTR_NOT_NULL(xpf);
+    if (!xpf) {
+        goto RETURN;
+    }
+    CU_ASSERT_STRING_EQUAL(xpf, get_tests[i].fault_value);
+
+    if (strcmp(xpf, get_tests[i].fault_value)) {
+        //printf("Expected %s;   returned %s\n",
+        //           get_tests[i].fault_value, xpf);
+         goto RETURN;
+    }
+    if (get_tests[i].detail_expr == NULL) {
+        goto RETURN;
+    }
+    xpd = ws_xml_get_xpath_value(doc, get_tests[i].detail_expr);
+    CU_ASSERT_PTR_NOT_NULL(xpd);
+    if (!xpd) {
+        goto RETURN;
+    }
+    CU_ASSERT_PTR_NOT_NULL(get_tests[i].detail_value);
+    if (get_tests[i].detail_value == NULL) {
+        goto RETURN;
+    }
+    CU_ASSERT_STRING_EQUAL(xpd, get_tests[i].detail_value );
+    if (strcmp(xpd, get_tests[i].detail_value)) {
+        //printf("Expected %s;   returned %s\n",
+        //              get_tests[i].detail_value, xpd);
+         goto RETURN;
+    }
+
+RETURN:
+    u_free(xpf);
+    u_free(xpd);
+    if (doc) {
+        ws_xml_destroy_doc(doc);
+    }
+    u_free((char *)get_tests[i].selectors);
+    get_tests[i].selectors = old_selectors;
+    destroy_action_options(&options);
+    i++; // increase executed test number
 }
 
 
 
-static void transfer_get_test_0(void)
-{
-  transfer_get_test(0);
-}
-static void transfer_get_test_1(void)
-{
-  transfer_get_test(1);
-}
-static void transfer_get_test_2(void)
-{
-  transfer_get_test(2);
-}
-static void transfer_get_test_3(void)
-{
-  transfer_get_test(3);
-}
-static void transfer_get_test_4(void)
-{
-  transfer_get_test(4);
-}
-static void transfer_get_test_5(void)
-{
-  transfer_get_test(5);
-}
-static void transfer_get_test_6(void)
-{
-  transfer_get_test(6);
-}
 
-int add_transfer_get_tests(CU_pSuite ps)
-{
-  int found_test = 0;
-  /* add the tests to the suite */
-  found_test = (NULL != CU_add_test(ps, get_tests[0].explanation, (CU_TestFunc)transfer_get_test_0));
-  found_test = (NULL != CU_add_test(ps, get_tests[1].explanation, (CU_TestFunc)transfer_get_test_1));
-  found_test = (NULL != CU_add_test(ps, get_tests[2].explanation, (CU_TestFunc)transfer_get_test_2));
-  found_test = (NULL != CU_add_test(ps, get_tests[3].explanation, (CU_TestFunc)transfer_get_test_3));
-  found_test = (NULL != CU_add_test(ps, get_tests[4].explanation, (CU_TestFunc)transfer_get_test_4));
-  found_test = (NULL != CU_add_test(ps, get_tests[5].explanation, (CU_TestFunc)transfer_get_test_5));
-  found_test = (NULL != CU_add_test(ps, get_tests[6].explanation, (CU_TestFunc)transfer_get_test_6));
-  
-  return (found_test > 0);
+int add_transfer_get_tests(CU_pSuite ps) {
+    int found_test = 0;
+    int i;
+        /* add the tests to the suite */
+    for (i =0; i < ntests; i++) {
+            found_test += (NULL != CU_add_test(ps, get_tests[i].explanation,
+                                            (CU_TestFunc)transfer_get_test));
+    }
+    return (found_test > 0);
 }
 

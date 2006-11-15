@@ -20,10 +20,17 @@ typedef struct {
   const char *resource_uri;
 
   /* Selectors in the form of a URI query   key=value&key2=value2 */
-  const char *selectors;
+  char *selectors;
 
-  const char* xpath_expression;
-  const char* expected_value;
+    /* Fault Value */
+  char* fault_expr;
+  char* fault_value;
+
+    /* Fault detail */
+  char *detail_expr;
+  char *detail_value;
+
+
 
   /* What the final status code should be. */
   unsigned int final_status;		
@@ -34,6 +41,7 @@ typedef struct {
 
 } TestData;
 
+extern char *host;
 
 int init_test(void);
 int clean_test(void);

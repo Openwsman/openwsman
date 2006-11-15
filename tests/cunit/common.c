@@ -25,16 +25,16 @@
 
 
 WsManClient *cl;
-    
-actionOptions options;
+char *host = "langley.home.planux.com";
 
 
 
 
-int init_test(void)
-{
+int init_test(void) {
   wsman_client_transport_init(NULL);
- 
+  if (getenv("OPENWSMAN_TEST_HOST")) {
+    host = getenv("OPENWSMAN_TEST_HOST");
+  }
   ServerData sd[] = {
     {"localhost", 8889, "/wsman", "http", "wsman", "secret"}
   };
@@ -46,15 +46,12 @@ int init_test(void)
 		      sd[0].scheme,
 		      sd[0].username,
 		      sd[0].password);
-
-  initialize_action_options(&options);
   return 0;
 }
 
 
-int clean_test(void)
-{			
-  destroy_action_options(&options);		
+int clean_test(void) {
   wsman_release_client(cl);
+  wsman_client_transport_fini();
   return 0;
 }

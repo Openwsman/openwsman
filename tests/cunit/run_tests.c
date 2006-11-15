@@ -33,14 +33,38 @@
  */
 #include <stdio.h>
 #include <CUnit/Basic.h> 
-#include "client_suite.h"
+#include "common.h"
 
 #define TRUE    1
 #define FALSE	0
 
 
-int main(int argc, char** argv)
-{
+static CU_pSuite
+setup_client_suite(void) {
+   int num_tests = 0;
+   /* add a suite to the registry */
+   CU_pSuite ps = CU_add_suite("OpenWSman Client Library Tests",
+                                        init_test, clean_test);
+   if (NULL == ps) {
+      return NULL;
+   }
+
+   /* add the tests to the suite */
+   num_tests += add_enumeration_tests(ps);
+   num_tests += add_identify_tests(ps);
+   num_tests += add_transfer_get_tests(ps);
+   if (num_tests == 0) {
+        printf("No tests to run\n");
+        // nothing to do 
+     return NULL;
+   }
+   return ps;
+}
+
+
+
+int
+main(int argc, char** argv) {
    CU_pSuite pSuite = NULL;
 
    /* initialize the CUnit test registry */
