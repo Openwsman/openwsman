@@ -161,10 +161,6 @@ typedef struct DIR {
 
 
 
-#ifdef EMBEDDED
-#include "shttpd.h"
-#endif /* EMBEDDED */
-
 /*
  * Darwin prior to 7.0 and Win32 do not have socklen_t
  */
@@ -179,10 +175,13 @@ typedef int socklen_t;
  * built on any system with binary SSL libraries installed.
  */
 
-
+#ifdef HAVE_SSL
+#include <openssl/ssl.h>
 typedef struct ssl_st SSL;
 typedef struct ssl_method_st SSL_METHOD;
 typedef struct ssl_ctx_st SSL_CTX;
+#endif
+
 #if 0
 #define	SSL_ERROR_WANT_READ	2
 #define	SSL_ERROR_WANT_WRITE	3
@@ -743,7 +742,6 @@ set_mime(struct shttpd_ctx *ctx, void *arg, const char *string)
 }
 
 #ifdef HAVE_SSL
-#include <openssl/ssl.h>
 static void
 set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 {
