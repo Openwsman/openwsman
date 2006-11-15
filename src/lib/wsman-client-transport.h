@@ -95,6 +95,7 @@ extern void wsman_transport_set_cafile(char *);
 
 WsManClientStatus wsman_release_client(WsManClient * cl);
 
+void reinit_client_connection(WsManClient *cl);
 void release_connection(WsManConnection *conn);
 void wsman_transport_close_transport(WsManClient *cl);
 

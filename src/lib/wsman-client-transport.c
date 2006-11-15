@@ -69,14 +69,15 @@ get_transfer_time()
 
 
 
-static WsManConnection* 
-init_client_connection(WsManClientData *cld)
+void
+reinit_client_connection(WsManClient* cl)
 {
+  release_connection(cl->connection);
   WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
   u_buf_create(&conn->response);
   u_buf_create(&conn->request);
-
-  return conn;
+  cl->response_code = 0;
+  cl->connection = conn;
 }
 
 
@@ -134,7 +135,7 @@ wsman_create_client( const char *hostname,
   //wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
   //wsc->certData.verify_peer = FALSE;
 
-  wsc->connection = init_client_connection(&wsc->data);	
+  reinit_client_connection(wsc);
 
   return wsc;
 }
