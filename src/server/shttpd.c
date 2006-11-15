@@ -39,6 +39,7 @@
 #ifndef EMBEDDED
 #define EMBEDDED
 #endif
+#include "shttpd.h"
 #endif
 
 
@@ -260,7 +261,9 @@ struct conn {
 
 	char		method[16];	/* Used method			*/
 	char		uri[IO_MAX];	/* Url-decoded URI		*/
+#ifndef OPENWSMAN
 	char		ouri[IO_MAX];	/* Original unmodified URI	*/
+#endif
 	char		saved[IO_MAX];	/* Saved request		*/
 	char		proto[PROTO_SIZE];	/* HTTP protocol	*/
 
@@ -1522,10 +1525,8 @@ free_parsed_data(struct conn *c)
         free(c->path);
         c->path = NULL;
     }
-    if (c->query) {
-        free(c->query);
-        c->query = NULL;
-    }
+
+    c->nposted = 0;
     if (c->range) {
         free(c->range);
         c->range = NULL;
@@ -1535,6 +1536,7 @@ free_parsed_data(struct conn *c)
         free(c->query);
         c->query = NULL;
     }
+    c->nposted = 0;
     c->cclength = 0;
 }
 
@@ -1808,7 +1810,7 @@ log_access(FILE *fp, const struct conn *c)
 	strftime(date, sizeof(date), "%d/%b/%Y %H:%M:%S", localtime(&current_time));
 	(void) fprintf(fp, "%s - %s [%s] \"%s %s %s\" %d %lu ",
 	    inet_ntoa(c->sa.u.sin.sin_addr), c->user ? c->user : "-",
-	    date, c->method, c->ouri, c->proto, c->status,
+	    date, c->method, c->uri, c->proto, c->status,
 	    c->nsent > c->shlength ? c->nsent - c->shlength : 0);
 
 	if (c->referer)
@@ -3663,8 +3665,10 @@ parse_request(struct conn *c)
                 return;
         }
         (void) strcpy(c->saved, s);	/* Save whole request */
+#ifndef OPENWSMAN
 	(void) strcpy(c->ouri, c->uri);	/* Save unmodified URI */
-	parse_headers(c, strchr(s, '\n') + 1);                      
+#endif
+	parse_headers(c, strchr(s, '\n') + 1);
     handle(c);
 	c->flags |= FLAG_PARSED;
 }

@@ -27,6 +27,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <sys/types.h>
 
 /*
  * This structure is passed to the user callback function
@@ -47,11 +48,12 @@ struct shttpd_ctx;
 /*
  * HTTP digest authentication
  */
+
 #include "u/libu.h"
  
 
 #ifndef IO_MAX
-#define	IO_MAX		16384		/* Max request size		*/
+#define	IO_MAX		4096		/* Max request size		*/
 #endif /* IO_MAX */
 #ifndef USER_MAX
 #define	USER_MAX	64		/* Remote user name maxsize	*/
