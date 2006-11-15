@@ -199,8 +199,10 @@ static int server_callback (struct shttpd_arg_t *arg)
     wsman_msg->request.body   = (char *)malloc(wsman_msg->request.length);
     if (wsman_msg->request.body == NULL) {
         status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+        error("NULL request body. len = %d", wsman_msg->request.length);
         goto DONE;
     }
+
     (void) shttpd_get_post_query(arg, wsman_msg->request.body,
                     wsman_msg->request.length);
 
