@@ -121,7 +121,7 @@ TestData tests[] = {
         "wsman:InvalidRepresentation",
         500
     },
-/*
+
     {
         "Transfer Put with wrong content, Check Fault Value", 
         "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
@@ -131,7 +131,6 @@ TestData tests[] = {
         "wsman:InvalidRepresentation",
         500
     },
-*/
 };
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
