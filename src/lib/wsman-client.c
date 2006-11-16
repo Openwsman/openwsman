@@ -51,7 +51,7 @@
 
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h" 
-
+#include "wsman-client-transport.h"
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
@@ -267,11 +267,21 @@ ws_transfer_create( WsManClient *cl,
 }
 
 
+static long long transfer_time;
 
 void wsman_send_request(WsManClient *cl, WsXmlDocH request)
 {
-  if (request)
-    wsman_client(cl, request);
+  struct timeval tv0, tv1;
+  long long t0, t1;
+
+  gettimeofday(&tv0, NULL);
+
+  wsman_client_handler(cl, request, NULL);
+
+  gettimeofday(&tv1, NULL);
+  t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
+  t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
+  transfer_time += t1 -t0;
 }
 
 

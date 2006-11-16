@@ -70,8 +70,21 @@
 #define XML_COUNT_NS            11
 #define XML_COUNT_ATTR          12
 
+
 struct _WsXmlDoc;
 typedef struct _WsXmlDoc* WsXmlDocH;
+
+ struct WS_CONTEXT;
+ typedef struct WS_CONTEXT* WsContextH;
+ 
+
+struct __Soap;
+typedef struct __Soap* SoapH;
+
+
+
+
+
 
 struct __WsXmlNode
 {
@@ -130,9 +143,6 @@ void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
-
-//WsXmlDocH ws_create_response_envelope(struct __WsContext *cntx, WsXmlDocH rqstDoc, char *action);
-
 
 
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc);

@@ -41,15 +41,9 @@
 #include <time.h>
 
 #include "u/libu.h"
-
-#include "wsman-xml-api.h"
-
-#include "wsman-soap-api.h"
 #include "wsman-client-api.h"
-
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
-#include "wsman-xml.h"
 
 static int _debug = 0;
 

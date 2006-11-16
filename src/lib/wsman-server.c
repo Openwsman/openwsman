@@ -41,16 +41,11 @@
 #include <dlfcn.h>
 
 #include "u/libu.h"
-#include "wsman-xml-api.h"
-#include "wsman-soap.h"
-#include "wsman-dispatcher.h"
-#include "wsman-soap-envelope.h"
-
-#include "wsman-xml.h"
-#include "wsman-xml-serializer.h" 
 #include "wsman-faults.h"
+#include "wsman-xml-api.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
+#include "wsman-dispatcher.h"
 
 
 

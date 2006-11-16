@@ -35,7 +35,7 @@
 #ifndef WSMAN_SOAP_ENVELOPE_H_
 #define WSMAN_SOAP_ENVELOPE_H_
 
-#include "wsman-soap-api.h"
+#include "wsman-xml-api.h"
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 

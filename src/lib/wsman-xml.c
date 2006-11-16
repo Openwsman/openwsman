@@ -46,7 +46,7 @@
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-binding.h"
-
+#include "wsman-namespaces.h"
 /**
  * @defgroup XMLParserGeneric Generic XML Parser Interface
  * @brief Generic XML Parser interface functions

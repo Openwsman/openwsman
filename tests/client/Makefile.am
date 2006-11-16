@@ -11,6 +11,7 @@ LIBS = \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/libu/libwsman_utils.la
 
+
 LIBS += $(CURL_LIBS)
 
 test_transfer_get_SOURCES = test_transfer_get.c

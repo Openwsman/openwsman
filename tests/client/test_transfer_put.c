@@ -46,6 +46,7 @@
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-debug.h"
 
 #include "wsman-client.h"
 #include "wsman-client-transport.h"
@@ -54,6 +55,7 @@
 
 int facility = LOG_DAEMON;
 int errors = 0;
+char *host = "langley.home.planux.com";
 
 
 
@@ -74,7 +76,7 @@ typedef struct {
         const char *resource_uri;
 
 		/* Selectors in the form of a URI query   key=value&key2=value2 */
-		const char *selectors;
+		char *selectors;
 		const char *properties;
 		
         const char* xpath_expression;
@@ -100,7 +102,36 @@ TestData tests[] = {
 		"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
 		"wsman:InvalidSelectors",	    
 	    500
-	}
+	},
+    {
+        "Transfer Put with wrong destination, Check Fault Value", 
+        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemx", 
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s",
+        NULL,
+        "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+        "wsa:DestinationUnreachable",
+        500
+    },
+    {
+        "Transfer Put with wrong selectors, Check Fault Value", 
+        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
+        "CreationClassName=OpenWBEM_UnitaryComputerSystemx&Name=%s",
+        NULL,
+        "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+        "wsman:InvalidRepresentation",
+        500
+    },
+/*
+    {
+        "Transfer Put with wrong content, Check Fault Value", 
+        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
+        "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s",
+        NULL,
+        "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
+        "wsman:InvalidRepresentation",
+        500
+    },
+*/
 };
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
@@ -121,14 +152,20 @@ int main(int argc, char** argv)
 	WsXmlDocH doc;
 	actionOptions options;
 		
+    if (getenv("OPENWSMAN_TEST_HOST")) {
+        host = getenv("OPENWSMAN_TEST_HOST");
+    }
+//  wsman_debug_set_level(6);
 	
 	wsman_client_transport_init(NULL);
 	
 		
 	for (i = 0; i < ntests; i++) 
 	{
-		printf ("Test %d: %70s:", i + 1, tests[i].explanation);
-
+		printf ("Test %3d: %s. ", i + 1, tests[i].explanation);
+        if (tests[i].selectors) {
+            tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
+        }
     	cl = wsman_create_client( sd[0].server,
     		sd[0].port,
     		sd[0].path,
@@ -147,16 +184,23 @@ int main(int argc, char** argv)
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
+       if (tests[i].final_status != cl->response_code) {
+            printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n", cl->response_code);
+            goto CONTINUE;
+        }
         if ((char *)tests[i].expected_value != NULL) {
             char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
             if (xp) {
                 if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("\t\t\033[22;31mFAILED\033[m\n");	
+                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",
+                        (char *)tests[i].xpath_expression, xp);
                 u_free(xp);
             } else {
-                printf("\t\t\033[22;31mFAILED\033[m\n");
+                printf(" No %s\t\033[22;31mFAILED\033[m\n",
+                        (char *)tests[i].xpath_expression);
+                ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
             }
         } else {
             printf("\t\t\033[22;32mPASSED\033[m\n");

@@ -35,7 +35,7 @@
 #ifndef WSMAN_SERVER_H_
 #define WSMAN_SERVER_H_
 
-
+#include "wsman-plugins.h"
 
 WsContextH wsman_init_plugins(WsManListenerH *listener);
 WsManListenerH *wsman_dispatch_list_new(void);

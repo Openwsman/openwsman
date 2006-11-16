@@ -41,15 +41,10 @@
 #include <time.h>
 
 #include "u/libu.h"
-
-#include "wsman-xml-api.h"
-
-#include "wsman-soap-api.h"
 #include "wsman-client-api.h"
-
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
-#include "wsman-xml.h"
+
 
 #define INVALID_RURI "wsa:DestinationUnreachablex"
 #define XPATH_V "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value"
@@ -104,11 +99,13 @@ TestData tests[] = {
 		500,
 		FLAG_NONE,
 		0
-	} /*,
+	},
 	{
 		"Enumeration with valid Resource URI.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_NONE,
 		0
@@ -117,6 +114,8 @@ TestData tests[] = {
 		"Enumeration with valid Resource URI and additional invalid selectors.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_NONE,
 		1
@@ -125,6 +124,8 @@ TestData tests[] = {
 		"Enumeration with valid Resource URI/Count Estimation.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_ENUMERATION_COUNT_ESTIMATION,
 		0
@@ -133,6 +134,8 @@ TestData tests[] = {
 		"Enumeration with valid Resource URI/Optimization.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_ENUMERATION_OPTIMIZATION,
 		0
@@ -141,6 +144,8 @@ TestData tests[] = {
 		"Enumeration with Count Estimation/Optimzation and get all elements.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION,
 		10
@@ -150,20 +155,24 @@ TestData tests[] = {
 		"Enumeration with Count Estimation/Optimzation/Epr and get all elements.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION | FLAG_ENUMERATION_ENUM_EPR,
 		10
 		
-	},	
+	},
 	{
 		"Enumeration with Count Estimation/Optimzation/ObjAndEpr and get all elements.",
 		"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 		NULL, 
+        NULL,
+        NULL,
 		200,
 		FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION | FLAG_ENUMERATION_ENUM_OBJ_AND_EPR,
 		10
 		
-	}	*/
+	}
 };
 
 

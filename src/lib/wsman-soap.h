@@ -37,18 +37,11 @@
 #define WSMAN_SOAP_H_
 
 #include "u/libu.h"
-
-
 #include "wsman-faults.h"
-struct _WsmanStatus {
-  WsmanFaultCodeType fault_code;
-  WsmanFaultDetailType fault_detail_code;
-  char *fault_msg;
-};
-typedef struct _WsmanStatus WsmanStatus;
-
 #include "wsman-soap-message.h"
-#include "wsman-soap-api.h"
+#include "wsman-xml-api.h"
+
+#define SOAP_MAX_RESENT_COUNT       10
 
 
 struct __SoapDispatch

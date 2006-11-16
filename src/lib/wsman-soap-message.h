@@ -51,6 +51,13 @@ struct _WsmanAuth {
 };
 typedef struct _WsmanAuth WsmanAuth;
 
+struct _WsmanStatus {
+  WsmanFaultCodeType fault_code;
+  WsmanFaultDetailType fault_detail_code;
+  char *fault_msg;
+};
+typedef struct _WsmanStatus WsmanStatus;
+
 
 struct _WsmanMessage {
     const char          *method;

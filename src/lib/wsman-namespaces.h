@@ -30,30 +30,43 @@
 
 /**
  * @author Anas Nashif
+ * @author Vadim Revyakin
  */
 
-#ifndef WSMANCLIENT_H_
-#define WSMANCLIENT_H_
+#ifndef _WSMAN_NAMESPACES_H_
+#define _WSMAN_NAMESPACES_H_
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-#include "wsman-client-api.h"
+#define XML_NS_SOAP_1_1             "http://schemas.xmlsoap.org/soap/envelope"
+#define XML_NS_SOAP_1_2             "http://www.w3.org/2003/05/soap-envelope"
 
 
+#define XML_NS_XML_NAMESPACES       "http://www.w3.org/XML/1998/namespace"  
+#define XML_NS_ADDRESSING           "http://schemas.xmlsoap.org/ws/2004/08/addressing"
+#define XML_NS_DISCOVERY            "http://schemas.xmlsoap.org/ws/2004/10/discovery"
+#define XML_NS_EVENTING             "http://schemas.xmlsoap.org/ws/2004/08/eventing"
+#define XML_NS_ENUMERATION          "http://schemas.xmlsoap.org/ws/2004/09/enumeration"
+#define XML_NS_TRANSFER             "http://schemas.xmlsoap.org/ws/2004/09/transfer"
+#define XML_NS_XML_SCHEMA           "http://www.w3.org/2001/XMLSchema"
+#define XML_NS_SCHEMA_INSTANCE      "http://www.w3.org/2001/XMLSchema-instance"
+
+
+#define XML_NS_OPENWSMAN            "http://schema.openwsman.org/2006/openwsman"
+
+#define XML_NS_CIM_SCHEMA           "http://schemas.dmtf.org/wbem/wscim/1/common"
+#define XML_NS_CIM_CLASS            "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
+#define XML_NS_CIM_BINDING          "http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd"
+
+
+// WS-Management
+#define XML_NS_WS_MAN               "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
+#define XML_NS_WSMAN_FAULT_DETAIL   "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail"
+
+#define XML_NS_WS_MAN_CAT           "http://schemas.xmlsoap.org/ws/2005/06/wsmancat"
+
+#define XML_NS_WSMAN_ID             "http://schemas.dmtf.org/wbem/wsman/identity/1/wsmanidentity.xsd"
 
 
 
-  
+#endif
 
-
-
-
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /*WSMANCLIENT_H_*/

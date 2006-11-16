@@ -242,23 +242,6 @@ int wsman_is_auth_method(int method)
                        strlen(authentication_method)));
 }
 
-void
-wsman_client(WsManClient *cl, WsXmlDocH rqstDoc)
-{
-  struct timeval tv0, tv1;
-  long long t0, t1;
-
-  gettimeofday(&tv0, NULL);
-    
-  wsman_client_handler(cl, rqstDoc, NULL);
-    
-  gettimeofday(&tv1, NULL);
-  t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
-  t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
-  transfer_time += t1 -t0;
-
-  return;
-}
 
 char *wsman_transport_get_proxy()
 {
