@@ -32,7 +32,6 @@
  * @author Nathan Rakoff
  */
 #include <stdio.h>
-#include <CUnit/Basic.h> 
 #include "common.h"
 
 #define TRUE    1

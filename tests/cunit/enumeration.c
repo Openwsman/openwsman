@@ -40,18 +40,12 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
-#include "client_suite.h"
 
 #include "u/libu.h"
 
-#include "wsman-xml-api.h"
-
-#include "wsman-soap-api.h"
 #include "wsman-client-api.h"
-
 #include "wsman-client-transport.h"
 #include "wsman-debug.h"
-#include "wsman-xml.h"
 #include "common.h"
 
 

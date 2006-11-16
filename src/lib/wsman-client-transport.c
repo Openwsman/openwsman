@@ -39,6 +39,8 @@
 #include <unistd.h>
 
 #include "wsman-client-transport.h"
+#include "wsman-soap.h"
+#include "wsman-client.h"
 #include "u/libu.h"
 
 char *auth_methods[] = {

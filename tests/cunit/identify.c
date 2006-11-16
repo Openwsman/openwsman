@@ -41,15 +41,9 @@
 #include <time.h>
 
 #include "u/libu.h"
-#include "wsman-xml-api.h"
 #include "wsman-errors.h"
-#include "wsman-soap.h"
-#include "wsman-xml.h"
-#include "wsman-xml-serializer.h"
-
-#include "wsman-client.h"
+#include "wsman-client-api.h"
 #include "wsman-client-transport.h"
-#include <CUnit/Basic.h> 
 #include "common.h"
 
 
@@ -124,7 +118,7 @@ identify_test() {
     }
 
     if (tests[i].fault_value != NULL) {
-        char *xp = ws_xml_get_xpath_value(response, tests[i].fault_expr);
+        xp = ws_xml_get_xpath_value(response, tests[i].fault_expr);
         CU_ASSERT_PTR_NOT_NULL(xp);
         if (xp) {
           CU_ASSERT_STRING_EQUAL(xp, tests[i].fault_value );

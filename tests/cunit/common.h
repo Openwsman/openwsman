@@ -2,6 +2,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#include <CUnit/Basic.h> 
 
 typedef struct {
   const char *server;

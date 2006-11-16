@@ -42,6 +42,7 @@ extern "C" {
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
+#include "wsman-soap-api.h"
 
   struct _WsManClient;
   typedef struct _WsManClient WsManClient;
@@ -53,7 +54,7 @@ extern "C" {
   } WsManClientStatus;
 
 
-  typedef struct clientData {
+  typedef struct __clientData {
     char *hostName;
     unsigned int port;
     char *user;
@@ -65,7 +66,7 @@ extern "C" {
   } WsManClientData;
 
 
-  typedef struct credentialData {
+  typedef struct __credentialData {
     char * certFile;
     char * keyFile;
     unsigned int verify_peer;
@@ -163,6 +164,24 @@ extern "C" {
                         char *resource_uri,
                         actionOptions options,
                         void *data);
+
+ void initialize_action_options(actionOptions *op);
+  
+  void destroy_action_options(actionOptions *op);
+                
+  void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
+
+  void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
+
+  char *wsenum_get_enum_context(WsXmlDocH doc);
+
+  void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
+
+  void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
+
+  void wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string);
+
+  void wsman_add_selector_from_options( WsXmlDocH doc,  actionOptions options);
 
 #ifdef __cplusplus
 }

@@ -46,34 +46,15 @@ extern "C" {
 
   char* wsman_make_action(char* uri, char* opName);
 
-  extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+//  extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
   void wsman_client (WsManClient *cl, WsXmlDocH rqstDoc);
 
-  void initialize_action_options(actionOptions *op);
-  
-  void destroy_action_options(actionOptions *op);     
-				
-  void  wsman_add_selector_from_uri( WsXmlDocH doc, char *resourceUri);
-
-  void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
-
-  char *wsenum_get_enum_context(WsXmlDocH doc);
-
-  void wsman_add_fragment_transfer(  WsXmlDocH doc, char *fragment );
-
-  void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
-
-  void wsman_add_selectors_from_query_string(actionOptions *options, const char *query_string);
-
-  void wsman_add_selector_from_options( WsXmlDocH doc, 	actionOptions options);
 
   WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action, char* reply_to_uri, char* resource_uri,
                                  char* to_uri, actionOptions options);
 
   void wsman_remove_query_string(char * resourceUri, char **result);
-
-  long long get_transfer_time(void);
 
   hash_t *wsman_create_hash_from_query_string(const char *query_string);
 

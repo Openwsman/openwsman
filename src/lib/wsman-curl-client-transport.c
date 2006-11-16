@@ -181,7 +181,7 @@ DONE:
 
 void
 wsman_client_handler( WsManClient *cl,
-                      WsXmlDocH rqstDoc, 
+                      WsXmlDocH rqstDoc,
                       void* user_data) 
 {
 #define curl_err(str)  debug("Error = %d (%s); %s", \

@@ -36,10 +36,7 @@
 #define WSMAN_CLIENT_TRANSPORT_H_
 
 #include "u/libu.h"
-
-#include "wsman-xml-api.h"
-#include "wsman-soap.h"
-#include "wsman-client.h"
+#include "wsman-client-api.h"
 
 
 
@@ -55,6 +52,8 @@ typedef enum {
     WS_NTLM_AUTH,
     WS_MAX_AUTH,
 } ws_auth_type_t;
+
+extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
@@ -98,6 +97,9 @@ WsManClientStatus wsman_release_client(WsManClient * cl);
 void reinit_client_connection(WsManClient *cl);
 void release_connection(WsManConnection *conn);
 void wsman_transport_close_transport(WsManClient *cl);
+
+  long long get_transfer_time(void);
+
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 
