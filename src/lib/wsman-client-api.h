@@ -43,6 +43,7 @@ extern "C" {
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-namespaces.h"
+#include "wsman-soap.h"
 
 
 
