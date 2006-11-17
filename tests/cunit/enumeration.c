@@ -177,7 +177,7 @@ static void enumeration_test() {
     options.max_elements = tests[i].max_elements;
     WsXmlDocH enum_response = wsenum_enumerate(cl,
                                 (char *)tests[i].resource_uri, options);
-    CU_ASSERT_TRUE(cl->response_code == tests[i].final_status );
+    CU_ASSERT_TRUE(wsman_get_client_response_code(cl) == tests[i].final_status );
     if (enum_response) {
         enumContext = wsenum_get_enum_context(enum_response);
     } else {

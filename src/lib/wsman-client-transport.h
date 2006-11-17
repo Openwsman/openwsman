@@ -92,11 +92,10 @@ extern void wsman_transport_set_no_verify_peer (int);
 
 extern void wsman_transport_set_cafile(char *);
 
-WsManClientStatus wsman_release_client(WsManClient * cl);
+extern void wsman_release_client(WsManClient * cl);
 
-void reinit_client_connection(WsManClient *cl);
-void release_connection(WsManConnection *conn);
-void wsman_transport_close_transport(WsManClient *cl);
+extern void reinit_client_connection(WsManClient *cl);
+extern void wsman_transport_close_transport(WsManClient *cl);
 
   long long get_transfer_time(void);
 

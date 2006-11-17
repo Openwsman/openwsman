@@ -110,7 +110,7 @@ identify_test() {
     initialize_action_options(&options);
 
     response = wsman_identify(cl, options);
-    CU_ASSERT_TRUE(cl->response_code == tests[i].final_status);
+    CU_ASSERT_TRUE(wsman_get_client_response_code(cl) == tests[i].final_status);
 
     CU_ASSERT_PTR_NOT_NULL(response);
     if (response == NULL) {

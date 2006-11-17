@@ -165,7 +165,7 @@ static void transfer_get_test() {
 
 
     doc = ws_transfer_get(cl, (char *)get_tests[i].resource_uri, options);
-    CU_ASSERT_TRUE(cl->response_code == get_tests[i].final_status);
+    CU_ASSERT_TRUE(wsman_get_client_response_code(cl) == get_tests[i].final_status);
 
     CU_ASSERT_PTR_NOT_NULL(doc);
     if (!doc) {

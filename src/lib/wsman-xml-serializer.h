@@ -43,7 +43,8 @@
 #ifndef WS_XML_SERIALIZER_H
 #define WS_XML_SERIALIZER_H
 
-#include "wsman-client-api.h"
+#include "wsman-types.h"
+#include "wsman-names.h"
 
 typedef unsigned char XML_TYPE_UINT8;
 typedef unsigned short XML_TYPE_UINT16;

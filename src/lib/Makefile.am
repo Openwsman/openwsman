@@ -4,9 +4,6 @@ wsmanincludedir = $(includedir)/openwsman
 wsmaninclude_HEADERS = \
 	wsman-types.h \
 	wsman-names.h \
-	wsman-xml.h \
-	wsman-soap.h \
-	wsman-soap-message.h \
 	wsman-faults.h \
 	wsman-debug.h \
 	wsman-errors.h \
@@ -19,6 +16,8 @@ wsmaninclude_HEADERS = \
 OWSMAN_INCLUDES = \
 	wsman-soap.h \
 	wsman-soap-envelope.h \
+	wsman-xml.h \
+	wsman-soap.h \
 	wsman-soap-message.h \
 	wsman-catalog.h \
 	wsman-server.h \

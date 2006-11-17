@@ -57,6 +57,31 @@
 
 
 
+long wsman_get_client_response_code(WsManClient *cl)
+{
+    return cl->response_code;
+}
+
+
+WsContextH wsman_client_get_context(WsManClient *cl)
+{
+    return cl->wscntx;
+}
+
+WsXmlDocH wsman_client_read_file(WsManClient *cl, char* filename,
+                                 char* encoding, unsigned long options)
+{
+    return ws_xml_read_file(ws_context_get_runtime(cl->wscntx),
+                                        filename, encoding, options);
+}
+
+WsXmlDocH wsman_client_read_memory(WsManClient *cl, char* buf,
+                        int size, char* encoding, unsigned long options)
+{
+    return ws_xml_read_memory(ws_context_get_runtime(cl->wscntx),
+                                            buf, size, encoding, options);
+}
+
 void 
 initialize_action_options(actionOptions *op) 
 {

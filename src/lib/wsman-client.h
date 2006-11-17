@@ -42,8 +42,45 @@ extern "C" {
 
 #include "wsman-client-api.h"
 
+struct _WsManConnection {
+    u_buf_t*    request;
+    u_buf_t*    response;
+};
+typedef struct _WsManConnection WsManConnection;
 
 
+typedef struct {
+    char *hostName;
+    unsigned int port;
+    char *user;
+    char *pwd;
+    char *scheme;
+    char *endpoint;
+    unsigned int auth_method;
+    int  status;
+} WsManClientData;
+
+
+typedef struct  {
+    char * certFile;
+    char * keyFile;
+    unsigned int verify_peer;
+} WsManCredentialData;
+
+typedef struct  {
+    char * proxy;
+    char * proxy_auth;
+} WsManProxyData;
+
+
+struct _WsManClient {
+    void*               hdl;
+    WsContextH          wscntx;
+    WsManClientData     data;
+    WsManConnection     *connection;
+    long                response_code;
+    void                *transport;
+};
 
 
   

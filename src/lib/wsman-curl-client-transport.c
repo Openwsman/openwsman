@@ -41,7 +41,8 @@
 #include <curl/easy.h>
 
 #include "u/libu.h"
-#include "wsman-xml-api.h"
+#include "wsman-types.h"
+#include "wsman-client.h"
 #include "wsman-soap.h"
 #include "wsman-errors.h"
 #include "wsman-xml.h"

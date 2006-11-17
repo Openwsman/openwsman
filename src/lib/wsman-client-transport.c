@@ -69,6 +69,21 @@ get_transfer_time()
 }
 
 
+static void
+release_connection(WsManConnection *conn) 
+{
+  if (conn == NULL) {
+    return;
+  }
+  if (conn->request) {
+    u_buf_free(conn->request);
+  }
+  if (conn->response) {
+    u_buf_free(conn->response);
+  }
+  u_free(conn);
+}
+
 
 
 void
@@ -82,22 +97,6 @@ reinit_client_connection(WsManClient* cl)
   cl->connection = conn;
 }
 
-
-void
-release_connection(WsManConnection *conn) 
-{
-  if (conn == NULL)
-    return;
-		
-  if (conn->request) {
-    u_buf_free(conn->request);
-  }
-	
-  if (conn->response) {
-    u_buf_free(conn->response);
-  }
-  u_free(conn);
-}
 
 
 
@@ -128,15 +127,6 @@ wsman_create_client( const char *hostname,
                                         scheme, hostname, port, path);
   debug( "Endpoint: %s", wsc->data.endpoint);
 
-  //    wsc->data.scheme      = scheme ? strdup(scheme) : strdup("http");
-  //    wsc->data.auth_method = 0;
-  //wsc->proxyData.proxy = NULL;
-  //wsc->proxyData.proxy_auth = NULL;
-
-  //wsc->certData.certFile = certFile ? u_strdup(certFile) : NULL;
-  //wsc->certData.keyFile = keyFile ? u_strdup(keyFile) : NULL;
-  //wsc->certData.verify_peer = FALSE;
-
   reinit_client_connection(wsc);
 
   return wsc;
@@ -144,10 +134,9 @@ wsman_create_client( const char *hostname,
 
 
 
-WsManClientStatus 
+void
 wsman_release_client(WsManClient * cl)
 {
-  WsManClientStatus rc={0,NULL}; 
 
   if (cl->data.hostName) {
     u_free(cl->data.hostName);
@@ -174,7 +163,6 @@ wsman_release_client(WsManClient * cl)
   wsman_transport_close_transport(cl);
 
   u_free(cl);
-  return rc;
 }
 
 static void

@@ -43,7 +43,7 @@ extern "C" {
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-names.h"
-#include "wsman-soap.h"
+#include "wsman-types.h"
 
 
 
@@ -52,37 +52,7 @@ extern "C" {
   typedef struct _WsManClient WsManClient;
 
 
-  typedef struct _WsManClientStatus {
-    unsigned int rc;
-    char *msg;
-  } WsManClientStatus;
-
-
-  typedef struct __clientData {
-    char *hostName;
-    unsigned int port;
-    char *user;
-    char *pwd;
-    char *scheme;
-    char *endpoint;
-    unsigned int auth_method;
-    int  status;
-  } WsManClientData;
-
-
-  typedef struct __credentialData {
-    char * certFile;
-    char * keyFile;
-    unsigned int verify_peer;
-  } WsManCredentialData;
-
-  typedef struct proxyData {
-    char * proxy;
-    char * proxy_auth;
-  } WsManProxyData;
-
-  enum __WsmanAction 
-    {
+typedef enum {
       WSMAN_ACTION_NONE = 0,
       WSMAN_ACTION_TRANSFER_GET,
       WSMAN_ACTION_TRANSFER_PUT,
@@ -93,10 +63,9 @@ extern "C" {
       WSMAN_ACTION_TRANSFER_CREATE,
       WSMAN_ACTION_IDENTIFY,
       WSMAN_ACTION_TEST
-    };
-  typedef enum __WsmanAction WsmanAction;
+} WsmanAction;
 
-  struct _actionOptions {
+typedef struct {
     unsigned char       flags;
     char *              filter;
     char *              dialect;
@@ -108,23 +77,9 @@ extern "C" {
     unsigned int        max_envelope_size;
     unsigned int        max_elements;
 
-  };
-  typedef struct _actionOptions actionOptions;
+} actionOptions;
 
-  struct _WsManConnection {
-    u_buf_t*	request;
-    u_buf_t*	response;
-  };
-  typedef struct _WsManConnection WsManConnection;
 
-  struct _WsManClient {
-    void*               hdl;
-    WsContextH          wscntx;
-    WsManClientData     data;
-    WsManConnection     *connection;
-    long                response_code;
-    void                *transport;
-  };
 
 
 
@@ -135,6 +90,14 @@ extern "C" {
                  const char *scheme,
                  const char *username,
                  const char *password);
+
+            /* WsManClient handling */
+  long wsman_get_client_response_code(WsManClient *cl);
+  WsContextH wsman_client_get_context(WsManClient *cl);
+  WsXmlDocH wsman_client_read_file(WsManClient *cl, char* filename,
+                                 char* encoding, unsigned long options);
+  WsXmlDocH wsman_client_read_memory(WsManClient *cl, char* buf,
+                        int size, char* encoding, unsigned long options);
 
 
 

@@ -183,8 +183,9 @@ int main(int argc, char** argv)
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-       if (tests[i].final_status != cl->response_code) {
-            printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n", cl->response_code);
+       if (tests[i].final_status != wsman_get_client_response_code(cl)) {
+            printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n",
+                                wsman_get_client_response_code(cl));
             goto CONTINUE;
         }
         if ((char *)tests[i].expected_value != NULL) {

@@ -558,68 +558,64 @@ wsenum_enumerate_stub( SoapOpH op,
   char cntxName[64] = WSFW_ENUM_PREFIX;
   char* enumId = &cntxName[sizeof(WSFW_ENUM_PREFIX) - 1];
   int retVal = 0;
-  WsEnumerateInfo enumInfo;    
+  WsEnumerateInfo enumInfo;
   WsmanStatus status;
-  
-    
-  SoapH soap = soap_get_op_soap(op);            
+
+
+  SoapH soap = soap_get_op_soap(op);
   wsman_status_init(&status);
-    
+
   WsDispatchEndPointInfo* ep = (WsDispatchEndPointInfo*)appData;
   WsEndPointEnumerate endPoint = (WsEndPointEnumerate)ep->serviceEndPoint;
-        
-  WsXmlDocH _doc = soap_get_op_doc(op, 1);
-  WsContextH epcntx = ws_create_ep_context(soap, _doc);    
 
- 
-  memset(&enumInfo, 0, sizeof(enumInfo));    
+  WsXmlDocH _doc = soap_get_op_doc(op, 1);
+  WsContextH epcntx = ws_create_ep_context(soap, _doc);
+
+
+  memset(&enumInfo, 0, sizeof(enumInfo));
   generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
   wsman_set_enum_info(op, &enumInfo );
-  
-  if ( endPoint && 
-       ( retVal = endPoint(epcntx, &enumInfo, &status)) ) 
-  {
-    doc = wsman_generate_fault(epcntx, _doc, 
-                               status.fault_code, status.fault_detail_code, NULL);
-  } 
-  else 
-  {              
-    if ( enumInfo.pullResultPtr ) 
-    {
-      doc = enumInfo.pullResultPtr;
-      enumInfo.index++;
-    } else {
-      doc = ws_create_response_envelope(epcntx, _doc, NULL);
-    }
 
-    if ( doc )
-    {
-      WsXmlNodeH resp_node;
-      wsman_set_estimated_total(_doc, doc, &enumInfo);
-      WsXmlNodeH body = ws_xml_get_soap_body(doc);
-            
-      if ( enumInfo.pullResultPtr == NULL) 
-      {
-        resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP, NULL);
+  if (endPoint && (retVal = endPoint(epcntx, &enumInfo, &status))) {
+      doc = wsman_generate_fault(epcntx, _doc, 
+                    status.fault_code, status.fault_detail_code, NULL);
+  } else {
+      if (enumInfo.pullResultPtr) {
+          doc = enumInfo.pullResultPtr;
+          enumInfo.index++;
       } else {
-        resp_node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+          doc = ws_create_response_envelope(epcntx, _doc, NULL);
       }
 
-      if (enumInfo.index == enumInfo.totalItems) {
-        ws_serialize_str(epcntx, resp_node, NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);          
-      } else {
-        ws_serialize_str(epcntx, resp_node, enumId, 
-                         XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-        WsContextH soapCntx = ws_get_soap_context(soap);
-        ws_set_context_val(soapCntx, cntxName, &enumInfo, sizeof(enumInfo), 0);  
+      if (doc) {
+          WsXmlNodeH resp_node;
+          wsman_set_estimated_total(_doc, doc, &enumInfo);
+          WsXmlNodeH body = ws_xml_get_soap_body(doc);
+
+          if (enumInfo.pullResultPtr == NULL) {
+              resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION,
+                                              WSENUM_ENUMERATE_RESP, NULL);
+          } else {
+              resp_node = ws_xml_get_child(body, 0,
+                                XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+          }
+
+          if (enumInfo.index == enumInfo.totalItems) {
+              ws_serialize_str(epcntx, resp_node,
+                               NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);
+          } else {
+              ws_serialize_str(epcntx, resp_node, enumId, 
+                            XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+              WsContextH soapCntx = ws_get_soap_context(soap);
+              set_context_val(soapCntx, cntxName, &enumInfo,
+                                sizeof(enumInfo), 0, WS_CONTEXT_TYPE_BLOB);
+          }
       }
-    }
-        
   }
 
-  if ( doc ) {
-    soap_set_op_doc(op, doc, 0);
-  }    
+  if (doc) {
+      soap_set_op_doc(op, doc, 0);
+  }
   ws_serializer_free_all(epcntx);
   ws_destroy_context(epcntx);    
   return retVal;
@@ -943,20 +939,6 @@ set_context_val( WsContextH hCntx,
   }
   return retVal;
 }
-
-
-int 
-ws_set_context_val( WsContextH hCntx,
-                    char* name, 
-                    void* val, 
-                    int size, 
-                    int no_dup)
-{
-  debug("setting context value");
-  int retVal = set_context_val(hCntx, name, val, size, no_dup, WS_CONTEXT_TYPE_BLOB);
-  return retVal;
-}
-
 
 
 int
