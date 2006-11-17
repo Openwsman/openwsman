@@ -85,6 +85,11 @@ struct __WsXmlDumpNodeTreeData
 typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
 
+extern WsXmlNsData g_wsNsData[];
+extern WsManDialectData g_wsDialectData[];
+
+
+
 WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
 
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);

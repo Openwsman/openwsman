@@ -36,23 +36,19 @@
 #define WS_XML_API_H_
 
 #include "u/libu.h"
+#include "wsman-types.h"
 
+// context
 
-#define SOAP_ENVELOPE			"Envelope"
-#define SOAP_HEADER				"Header"
-#define SOAP_BODY				"Body"
-#define SOAP_FAULT				"Fault"
-#define SOAP_CODE				"Code"
-#define SOAP_VALUE				"Value"
-#define SOAP_SUBCODE			"Subcode"
-#define SOAP_REASON				"Reason"
-#define SOAP_TEXT				"Text"
-#define SOAP_LANG				"lang"
-#define SOAP_DETAIL				"Detail"
-#define SOAP_MUST_UNDERSTAND	"mustUnderstand"
-#define SOAP_VERSION_MISMATCH	"VersionMismatch"
-#define SOAP_UPGRADE			"Upgrade"
-#define SOAP_SUPPORTED_ENVELOPE	"SupportedEnvelope"
+#define WS_CONTEXT_TYPE_MASK           0x0f
+#define WS_CONTEXT_FREE_DATA           0x80
+
+#define WS_CONTEXT_TYPE_STRING         0x01
+#define WS_CONTEXT_TYPE_ULONG          0x02
+#define WS_CONTEXT_TYPE_XMLDOC         0x03
+#define WS_CONTEXT_TYPE_XMLNODE        0x04
+#define WS_CONTEXT_TYPE_BLOB           0x05
+#define WS_CONTEXT_TYPE_FAULT          0x06
 
 
 #define XML_LAST_CHILD          (-1)
@@ -71,57 +67,23 @@
 #define XML_COUNT_ATTR          12
 
 
-struct _WsXmlDoc;
-typedef struct _WsXmlDoc* WsXmlDocH;
-
- struct WS_CONTEXT;
- typedef struct WS_CONTEXT* WsContextH;
- 
-
-struct __Soap;
-typedef struct __Soap* SoapH;
-
-
+#define FLAG_NONE                            0
+#define FLAG_ENUMERATION_COUNT_ESTIMATION    1
+#define FLAG_ENUMERATION_OPTIMIZATION        2
+#define FLAG_ENUMERATION_ENUM_EPR            4
+#define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    8
+#define FLAG_DUMP_REQUEST                    16
+#define FLAG_IncludeSubClassProperties       32
+#define FLAG_ExcludeSubClassProperties       64
+#define FLAG_POLYMORPHISM_NONE               128
 
 
 
+#define PROCESSED_MSG_ID_MAX_SIZE            200
+#define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST  8192
 
-struct __WsXmlNode
-{
-	int __undefined;
-};
-typedef struct __WsXmlNode* WsXmlNodeH;
 
-struct __WsXmlAttr
-{
-	int __undefined;
-};
-typedef struct __WsXmlAttr* WsXmlAttrH;
 
-struct __WsXmlNs
-{
-	int __undefined;
-};
-typedef struct __WsXmlNs* WsXmlNsH;
-
-struct __WsXmlNsData
-{
-	char* uri;
-	char* prefix;
-};
-typedef struct __WsXmlNsData WsXmlNsData;
-
-extern WsXmlNsData g_wsNsData[];
-
-struct __WsManDialectData
-{
-	char* uri;
-	char* name;
-};
-typedef struct __WsManDialectData WsManDialectData;
-
-extern WsXmlNsData g_wsNsData[];
-extern WsManDialectData g_wsDialectData[];
 
 
 typedef int (*WsXmlEnumCallback)(WsXmlNodeH, void*);

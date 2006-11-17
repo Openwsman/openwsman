@@ -2,15 +2,16 @@ AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
 wsmanincludedir = $(includedir)/openwsman
 wsmaninclude_HEADERS = \
-	wsman-namespaces.h \
-	wsman-xml-api.h \
+	wsman-types.h \
+	wsman-names.h \
 	wsman-xml.h \
 	wsman-soap.h \
 	wsman-soap-message.h \
 	wsman-faults.h \
-	wsman-client-api.h \
 	wsman-debug.h \
 	wsman-errors.h \
+	wsman-xml-api.h \
+	wsman-client-api.h \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h
 
