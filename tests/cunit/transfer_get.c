@@ -143,7 +143,7 @@ static int ntests = sizeof (get_tests) / sizeof (get_tests[0]);
 extern WsManClient *cl;
 actionOptions options;
 
-static void transfer_get_test() {
+static void transfer_get_test(void) {
     WsXmlDocH doc;
     char *xpf = NULL;
     char *xpd = NULL;

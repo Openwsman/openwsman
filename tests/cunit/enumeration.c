@@ -147,7 +147,7 @@ static int ntests = sizeof (tests) / sizeof (tests[0]);
 
 extern WsManClient *cl;
 
-/*
+
 static void wsman_output(WsXmlDocH doc) {
   if (doc)
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
@@ -155,13 +155,13 @@ static void wsman_output(WsXmlDocH doc) {
     printf("returned doc is null\n");
   return;
 }
-*/
+
 
 actionOptions options;
 
 
 
-static void enumeration_test() {
+static void enumeration_test(void) {
     char *enumContext = NULL;
     static int i = 0;
     char *xp = NULL;

@@ -77,7 +77,8 @@ void debug_remove_handler (unsigned int id);
 const char * debug_helper (const char *format, ...);
 void debug_full (debug_level_e  level, const char   *format, ...);
 
-#ifdef DEBUG_VERBOSE
+#if 1
+//#ifdef DEBUG_VERBOSE
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
                 debug_helper (format))

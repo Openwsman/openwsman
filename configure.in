@@ -282,7 +282,7 @@ have_sfcc=no
 AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc=yes])
 have_cunit=no
 dnl AC_CHECK_LIBS(CU_initialize_registry,cunit,,AC_MSG_WARN(unit tests require that cunit library be installed))
-AC_CHECK_HEADERS([CUnit/Basic.h], have_cunit="yes" )
+PKG_CHECK_MODULES(CUNIT, libcunit , have_cunit="yes", have_cunit="no")
 
 AM_CONDITIONAL(BUILD_CUNIT_TESTS, test "$have_cunit" == "yes")
 
@@ -292,12 +292,12 @@ dnl *************************
 AC_SUBST(SYSCONFDIR)
 
 AC_CONFIG_FILES([
-	openwsman.pc
+        openwsman.pc
         openwsman.spec])
 
 AC_OUTPUT([
         Doxyfile
-	Makefile
+        Makefile
         src/Makefile
         src/server/Makefile
         src/lib/Makefile
@@ -323,5 +323,5 @@ AC_OUTPUT([
         etc/init/wsmand.sh
         tests/Makefile
         tests/cunit/Makefile
-	tests/client/Makefile
+        tests/client/Makefile
 	])

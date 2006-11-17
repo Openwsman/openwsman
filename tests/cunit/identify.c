@@ -100,7 +100,7 @@ actionOptions options;
 
 
 static void
-identify_test() {
+identify_test(void) {
 
     WsXmlDocH response;
     static int i = 0;
