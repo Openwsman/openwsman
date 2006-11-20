@@ -77,9 +77,11 @@ release_connection(WsManConnection *conn)
   }
   if (conn->request) {
     u_buf_free(conn->request);
+    conn->request = NULL;
   }
   if (conn->response) {
     u_buf_free(conn->response);
+    conn->response = NULL;
   }
   u_free(conn);
 }
@@ -140,24 +142,30 @@ wsman_release_client(WsManClient * cl)
 
   if (cl->data.hostName) {
     u_free(cl->data.hostName);
+    cl->data.hostName = NULL;
   }
   if (cl->data.user) {
     u_free(cl->data.user);
+    cl->data.user = NULL;
   }
   if (cl->data.pwd) {
     u_free(cl->data.pwd);
+    cl->data.pwd = NULL;
   }
   if (cl->data.endpoint) {
     u_free(cl->data.endpoint);
+    cl->data.endpoint = NULL;
   }
 
   if (cl->connection) {
     release_connection(cl->connection);
+    cl->connection = NULL;
   }
 
   if (cl->wscntx) {
     SoapH soap = ws_context_get_runtime(cl->wscntx);
     soap_destroy_fw(soap);
+    cl->wscntx = NULL;
   }
 
   wsman_transport_close_transport(cl);

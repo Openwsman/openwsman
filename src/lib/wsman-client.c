@@ -94,11 +94,11 @@ initialize_action_options(actionOptions *op)
 void 
 destroy_action_options(actionOptions *op) 
 {
-  if (op->selectors) {		
-    hash_free(op->selectors);		
+  if (op->selectors) {
+    hash_free(op->selectors);
   }
   if (op->properties) {		
-    hash_free(op->properties);		
+    hash_free(op->properties);
   }	
   bzero(op, sizeof(actionOptions));
   return;
@@ -108,7 +108,6 @@ void
 wsman_set_action_option(actionOptions *options, unsigned int flag)
 {
   options->flags |= flag;
-  
   return;
 }
 
@@ -171,7 +170,6 @@ wsman_add_selector_from_options( WsXmlDocH doc, actionOptions options)
             (char*)hnode_getkey(hn), (char*)hnode_get(hn));
     }
   }
-
 }
 
 
@@ -232,19 +230,18 @@ wsman_add_selector_from_uri( WsXmlDocH doc,
     hash_free_nodes(query);
     hash_destroy(query);
   }
-  if (uri)
+  if (uri) {
     u_uri_free(uri);
+  }
 }
 
 
 static char*
 wsman_create_action_str(WsmanAction action)
-{ 
+{
   char *action_str = NULL;
-    
-  switch (action)
-  {
-    
+
+  switch (action)  {
   case WSMAN_ACTION_ENUMERATION:
     action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_ENUMERATE);
     break;
@@ -277,9 +274,10 @@ wsman_make_action(char *uri, char* op_name)
 {
   int len = strlen(uri) + strlen(op_name) + 2;
   char* ptr = (char*)malloc(len);
-  if ( ptr )
+  if (ptr) {
     sprintf(ptr, "%s/%s", uri, op_name);
-  return ptr;    
+  }
+  return ptr;
 }
 
 
@@ -323,7 +321,7 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
                               WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
     }
   }
-    
+
   if ((options.flags & FLAG_ENUMERATION_ENUM_EPR) ==
       FLAG_ENUMERATION_ENUM_EPR) {
     ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE, WSM_ENUM_EPR);
@@ -346,8 +344,6 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
     ws_xml_add_child(node, XML_NS_CIM_BINDING,
                      WSMB_POLYMORPHISM_MODE, "None");
   }
-    
-
 }
 
 static void
@@ -357,11 +353,11 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
 {
   WsXmlNodeH get_body = ws_xml_get_soap_body(get_response);
   WsXmlNodeH put_body = ws_xml_get_soap_body(put_request);
-    
+
   ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0, NULL, NULL));
 
   WsXmlNodeH resource_node = ws_xml_get_child(put_body, 0 , NULL, NULL);
-    
+
   char *ns_uri = ws_xml_get_node_name_ns_uri(resource_node);
   hscan_t hs;
   hnode_t *hn;
@@ -371,7 +367,7 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
   hash_scan_begin(&hs, options.properties);
   while ((hn = hash_scan_next(&hs))) {
     WsXmlNodeH n = ws_xml_get_child(resource_node, 0,
-                                    ns_uri ,(char*) hnode_getkey(hn) );
+                                    ns_uri ,(char*) hnode_getkey(hn));
     ws_xml_set_node_text(n, (char*) hnode_get(hn));
   }
 }
@@ -379,19 +375,19 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
 
 
 WsXmlDocH 
-wsman_create_request( WsManClient *cl,
-                      WsmanAction action,
-                      char *method,
-                      char *resource_uri,
-                      actionOptions options,
-                      void *data) 
-{    
+wsman_create_request(WsManClient *cl,
+                     WsmanAction action,
+                     char *method,
+                     char *resource_uri,
+                     actionOptions options,
+                     void *data)
+{
   WsXmlDocH request;
   WsXmlNodeH body;
   WsXmlNodeH header;
   WsXmlNodeH node; 
   char* _action = NULL;
-                 
+
   if (action == WSMAN_ACTION_IDENTIFY) {   
     request = ws_xml_create_envelope(
       ws_context_get_runtime(cl->wscntx), NULL);         
@@ -408,47 +404,46 @@ wsman_create_request( WsManClient *cl,
 
     request = wsman_build_envelope(cl->wscntx, _action,
                                    WSA_TO_ANONYMOUS, resource_uri,
-                                   cl->data.endpoint, options );         
+                                   cl->data.endpoint, options );
   }
-    
+
   body = ws_xml_get_soap_body(request);
   header = ws_xml_get_soap_header(request);
   hscan_t hs;
-  hnode_t *hn;    
-    
+  hnode_t *hn;
+
   switch (action) {
-  case WSMAN_ACTION_IDENTIFY:           
+  case WSMAN_ACTION_IDENTIFY:
     ws_xml_add_child(ws_xml_get_soap_body(request),
                      XML_NS_WSMAN_ID, WSMID_IDENTIFY , NULL);
     break;
-  case WSMAN_ACTION_CUSTOM:                        
-    if (options.properties) {      
-      if (method) {        
+  case WSMAN_ACTION_CUSTOM:
+    if (options.properties) {
+      if (method) {
         node = ws_xml_add_empty_child_format( body, resource_uri , "%s_INPUT", method);
         hash_scan_begin(&hs, options.properties);
         while ((hn = hash_scan_next(&hs))) {
           ws_xml_add_child(node, NULL, (char*) hnode_getkey(hn),
                            (char*) hnode_get(hn));
-        }                
+        }
       }
-    }        
+    }
     break;
   case WSMAN_ACTION_TRANSFER_PUT:
     wsman_set_transfer_put_properties((WsXmlDocH )data, request, options);
     break;
   case WSMAN_ACTION_ENUMERATION:
     node = ws_xml_add_child(ws_xml_get_soap_body(request),
-                            XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);            
+                            XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
     wsman_set_enumeration_options(body, options);
-    break;        
+    break;
   case WSMAN_ACTION_PULL:
     node = ws_xml_add_child(ws_xml_get_soap_body(request),
                             XML_NS_ENUMERATION, WSENUM_PULL, NULL);
     if ( data ) {
       ws_xml_add_child(node, XML_NS_ENUMERATION,
                        WSENUM_ENUMERATION_CONTEXT, (char *)data);
-    }     
-        
+    }
     break;
   case WSMAN_ACTION_RELEASE:
     node = ws_xml_add_child(ws_xml_get_soap_body(request),
@@ -456,56 +451,50 @@ wsman_create_request( WsManClient *cl,
     if ( data ) {
       ws_xml_add_child(node, XML_NS_ENUMERATION,
                        WSENUM_ENUMERATION_CONTEXT, (char *)data);
-    }     
-        
-    break;        
+    }
+
+    break;
   case WSMAN_ACTION_NONE:
   case WSMAN_ACTION_TRANSFER_CREATE:
   case WSMAN_ACTION_TEST:
   case WSMAN_ACTION_TRANSFER_GET:
     break;
   }
-    
-  if (action == WSMAN_ACTION_PULL || action == WSMAN_ACTION_ENUMERATION) 
-  {
+
+  if (action == WSMAN_ACTION_PULL || action == WSMAN_ACTION_ENUMERATION) {
     if (options.max_elements > 0 ) {
       node = ws_xml_get_child( body, 0, NULL, NULL);
       ws_xml_add_child_format(node, XML_NS_ENUMERATION,
                               WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
     }
     if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) ==
-        FLAG_ENUMERATION_COUNT_ESTIMATION) 
-    {       
+                                         FLAG_ENUMERATION_COUNT_ESTIMATION) {
       ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
     }
-    if (options.filter && options.dialect) 
-    {
+    if (options.filter && options.dialect) {
       node = ws_xml_get_child(body, 0 , NULL, NULL);
       WsXmlNodeH filter = ws_xml_add_child(node,
-                                           XML_NS_WS_MAN, WSENUM_FILTER, options.filter);
-            
+                               XML_NS_WS_MAN, WSENUM_FILTER, options.filter);
       ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options.dialect);
-            
-    }                
+    }
   }
-    
-    
+
   if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
-  }    
-                                                
+  }
+
   return request;
 }
 
 
 WsXmlDocH 
-ws_transfer_get( WsManClient *cl,
-                 char *resource_uri,
-                 actionOptions options) 
-{    
- 
-  WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_GET, NULL,  resource_uri, options, NULL);
-  wsman_send_request(cl, request);       	
+ws_transfer_get(WsManClient *cl,
+                char *resource_uri,
+                actionOptions options) 
+{
+  WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_GET,
+                                         NULL,  resource_uri, options, NULL);
+  wsman_send_request(cl, request);
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -516,32 +505,33 @@ WsXmlDocH
 ws_transfer_put( WsManClient *cl,
                  char *resource_uri,             
                  actionOptions options) 
-{     
-    
+{
   WsXmlDocH get_response = ws_transfer_get(cl, resource_uri, options);
-	
+
   if (!get_response) {
     error("ws_transfer_get returned NULL doc");
     return NULL;
   }
-  
-  WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT, NULL, resource_uri, options, (void *)get_response);
+
+  WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
+                            NULL, resource_uri, options, (void *)get_response);
   wsman_send_request(cl, put_request);    
   WsXmlDocH put_response = wsman_build_envelope_from_response(cl); 
 
-  ws_xml_destroy_doc(put_request);    			
+  ws_xml_destroy_doc(put_request);	
   return put_response;
 }
 
 WsXmlDocH
 wsman_invoke( WsManClient *cl,
-              char *resource_uri,   
-              char *method,          
+              char *resource_uri
+              char *method,
               actionOptions options)
 {
  
-  WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_CUSTOM, method, resource_uri, options, NULL);
-  wsman_send_request(cl, request);       	
+  WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_CUSTOM, method,
+                                                 resource_uri, options, NULL);
+  wsman_send_request(cl, request);
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -553,8 +543,9 @@ wsman_identify( WsManClient *cl,
                 actionOptions options)
 {	
  
-  WsXmlDocH request  = wsman_create_request(cl, WSMAN_ACTION_IDENTIFY, NULL, NULL, options, NULL);
-  wsman_send_request(cl, request);       	
+  WsXmlDocH request  = wsman_create_request(cl, WSMAN_ACTION_IDENTIFY,
+                                              NULL, NULL, options, NULL);
+  wsman_send_request(cl, request);
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -563,29 +554,30 @@ wsman_identify( WsManClient *cl,
 
 
 WsXmlDocH
-wsenum_enumerate( WsManClient* cl,
-                  char *resource_uri,                  
-                  actionOptions options) 
+wsenum_enumerate(WsManClient* cl,
+                 char *resource_uri,
+                 actionOptions options)
 {
- 
-  WsXmlDocH request = wsman_create_request(cl,  WSMAN_ACTION_ENUMERATION, NULL,resource_uri, options, NULL);
-  wsman_send_request(cl, request);       	
+  WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_ENUMERATION,
+                                        NULL,resource_uri, options, NULL);
+  wsman_send_request(cl, request);
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
-  return response;  
+  return response;
 }
 
 
 WsXmlDocH
-wsenum_pull( WsManClient* cl,
-             char *resource_uri,
-             char *enumContext,            
-             actionOptions options)
+wsenum_pull(WsManClient* cl,
+            char *resource_uri,
+            char *enumContext,
+            actionOptions options)
 {
   WsXmlDocH response;
   
-  if ( enumContext || (enumContext && enumContext[0] == 0) ) {
-    WsXmlDocH request = wsman_create_request(cl,  WSMAN_ACTION_PULL, NULL, resource_uri, options, enumContext);               	
+  if (enumContext || (enumContext && enumContext[0] == 0)) {
+    WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_PULL, NULL,
+                                          resource_uri, options, enumContext);
     wsman_send_request(cl, request); 
     response = wsman_build_envelope_from_response(cl);
     u_free(enumContext);
@@ -598,9 +590,9 @@ wsenum_pull( WsManClient* cl,
   WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(response),
                                      0, NULL, NULL);
 
-  if (node == NULL || 
-      ( strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP)) != 0) {
-    error( "no Pull response" );        
+  if (node == NULL ||
+         (strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP)) != 0) {
+    error( "no Pull response" );
   }
   return response;
 }
@@ -609,15 +601,16 @@ wsenum_pull( WsManClient* cl,
 WsXmlDocH
 wsenum_release( WsManClient* cl, 
                 char *resource_uri,
-                char *enumContext, 
+                char *enumContext,
                 actionOptions options) 
-{		
+{
   WsXmlDocH response; 
-  
+
   if ( enumContext || (enumContext && enumContext[0] == 0) ) {
-    WsXmlDocH request = wsman_create_request(cl,  WSMAN_ACTION_RELEASE, NULL, resource_uri, options, enumContext);   
+    WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_RELEASE,
+                                   NULL, resource_uri, options, enumContext);
     wsman_send_request(cl, request); 
-    response = wsman_build_envelope_from_response(cl);  
+    response = wsman_build_envelope_from_response(cl);
     u_free(enumContext); 
     ws_xml_destroy_doc(request);
   } else {
@@ -634,8 +627,9 @@ wsenum_get_enum_context(WsXmlDocH doc)
                                               0, NULL, NULL);
 
   if ( enumStartNode ) {
-    WsXmlNodeH cntxNode = ws_xml_get_child(enumStartNode,
-                                           0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+    WsXmlNodeH cntxNode = ws_xml_get_child(enumStartNode, 0,
+                                           XML_NS_ENUMERATION,
+                                           WSENUM_ENUMERATION_CONTEXT);
     enumContext = u_str_clone(ws_xml_get_node_text(cntxNode));
   } else {
     return NULL;
@@ -646,61 +640,65 @@ wsenum_get_enum_context(WsXmlDocH doc)
 
 
 WsXmlDocH 
-wsman_build_envelope( WsContextH cntx,                     
-                      char *action,
-                      char* reply_to_uri,                      
-                      char* resource_uri, 
-                      char* to_uri, 
-                      actionOptions options)
+wsman_build_envelope(WsContextH cntx,
+                     char *action,
+                     char* reply_to_uri,
+                     char* resource_uri, 
+                     char* to_uri, 
+                     actionOptions options)
 {
   WsXmlNodeH node;
   char uuidBuf[100];  
-    
+
   WsXmlDocH doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
   if ( !doc ) {
     return NULL;
   }
 		
-  unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND);
+  unsigned long savedMustUnderstand = ws_get_context_ulong_val(cntx,
+                                                    ENFORCE_MUST_UNDERSTAND);
   WsXmlNodeH header = ws_xml_get_soap_header(doc);
 	
   generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
   ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
 
-  if ( reply_to_uri == NULL )
+  if (reply_to_uri == NULL) {
     reply_to_uri = WSA_TO_ANONYMOUS;
-
-  if ( to_uri == NULL )
+  }
+  if (to_uri == NULL) {
     to_uri = WSA_TO_ANONYMOUS;
- 
-  if ( action != NULL) 
-  {
-    ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION); 
+  }
+  if ( action != NULL) {
+    ws_serialize_str(cntx, header, action, XML_NS_ADDRESSING, WSA_ACTION);
   }
 
   u_free(action);
 
-  if ( to_uri )
+  if (to_uri) {
     ws_serialize_str(cntx, header, to_uri, XML_NS_ADDRESSING, WSA_TO); 
-
-  if ( resource_uri )
-    ws_serialize_str(cntx, header, resource_uri, XML_NS_WS_MAN, WSM_RESOURCE_URI); 
-
-  if (uuidBuf[0] != 0)
+  }
+  if (resource_uri) {
+    ws_serialize_str(cntx, header, resource_uri,
+                                           XML_NS_WS_MAN, WSM_RESOURCE_URI);
+  }
+  if (uuidBuf[0] != 0) {
     ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
-
-  if ( options.timeout ) {
+  }
+  if (options.timeout) {
     char buf[20];
-    sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000, (unsigned int)options.timeout % 1000);
+    sprintf(buf, "PT%u.%uS", (unsigned int)options.timeout/1000,
+                                     (unsigned int)options.timeout % 1000);
     ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
   }
 
   if ( options.max_envelope_size) {
-    ws_serialize_uint32(cntx, header, options.max_envelope_size, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE); 
+    ws_serialize_uint32(cntx, header, options.max_envelope_size,
+                                      XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
   }
 	
   if ( options.fragment) {
-    ws_serialize_str(cntx, header, options.fragment, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
+    ws_serialize_str(cntx, header, options.fragment,
+                                      XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER); 
   }
 
   ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
@@ -713,7 +711,7 @@ wsman_build_envelope( WsContextH cntx,
   if (options.cim_ns) {
     wsman_add_selector(header,
                        CIM_NAMESPACE_SELECTOR, options.cim_ns);
-  }	
+  }
 
   return doc;
 }

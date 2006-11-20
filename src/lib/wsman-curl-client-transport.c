@@ -370,6 +370,7 @@ wsman_transport_close_transport(WsManClient *cl)
     if (cl->transport != NULL) {
         curl_easy_cleanup((CURL *)cl->transport);
     }
+    cl->transport = NULL;
 }
 
 
