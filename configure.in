@@ -281,8 +281,7 @@ CHECK_SFCC
 have_sfcc=no
 AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc=yes])
 have_cunit=no
-dnl AC_CHECK_LIBS(CU_initialize_registry,cunit,,AC_MSG_WARN(unit tests require that cunit library be installed))
-PKG_CHECK_MODULES(CUNIT, libcunit , have_cunit="yes", have_cunit="no")
+AC_CHECK_HEADERS([CUnit/Basic.h], have_cunit="yes" )
 
 AM_CONDITIONAL(BUILD_CUNIT_TESTS, test "$have_cunit" == "yes")
 

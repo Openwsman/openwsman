@@ -1016,7 +1016,11 @@ cim_put_instance_from_enum (CimClientInfo *client,
     debug( "modifyInstance() rc=%d, msg=%s", rc.rc,
                                       (rc.msg)? (char *)rc.msg->hdl : NULL);
 
-    cim_to_wsman_status(rc, status);
+    if (rc.rc == CMPI_RC_ERR_FAILED) {
+      status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+    } else {
+      cim_to_wsman_status(rc, status);
+    }
     if (rc.rc == 0 ) {
       if (instance)
         instance2xml(client, instance, body, NULL);
