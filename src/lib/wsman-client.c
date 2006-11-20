@@ -524,7 +524,7 @@ ws_transfer_put( WsManClient *cl,
 
 WsXmlDocH
 wsman_invoke( WsManClient *cl,
-              char *resource_uri
+              char *resource_uri,
               char *method,
               actionOptions options)
 {

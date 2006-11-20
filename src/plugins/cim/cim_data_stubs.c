@@ -323,6 +323,7 @@ CimResource_Put_EP( SoapOpH op,
   WsmanStatus status;
   CimClientInfo *cimclient = NULL;
 
+  wsman_status_init(&status);
   SoapH soap = soap_get_op_soap(op);
   WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
   op_t *_op = (op_t *)op;
@@ -333,8 +334,7 @@ CimResource_Put_EP( SoapOpH op,
   }
 
  
-  if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) 
-  { 
+  if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) { 
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
     cim_put_instance_from_enum(cimclient, cntx , in_body, body, &status);
