@@ -90,6 +90,9 @@ typedef struct {
                  const char *scheme,
                  const char *username,
                  const char *password);
+  void wsman_release_client(WsManClient * cl);
+  void reinit_client_connection(WsManClient *cl);
+
 
             /* WsManClient handling */
   long wsman_get_client_response_code(WsManClient *cl);
@@ -123,7 +126,6 @@ typedef struct {
 
 
 
-  void wsman_send_request(WsManClient *cl, WsXmlDocH request);
   WsXmlDocH wsman_build_envelope_from_response(WsManClient *cl);
 
 

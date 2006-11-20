@@ -52,6 +52,7 @@
 
 
 extern ws_auth_request_func_t request_func;
+void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 static long
 reauthenticate(long auth_set, long auth_avail, char **username, char **password)
@@ -183,15 +184,13 @@ DONE:
 void
 wsman_client_handler( WsManClient *cl,
                       WsXmlDocH rqstDoc,
-                      void* user_data) 
+                      void* user_data)
 {
 #define curl_err(str)  debug("Error = %d (%s); %s", \
                             r, curl_easy_strerror(r), str); \
                        http_code = 400
 
-    
     WsManConnection *con = cl->connection;
-    
     CURL *curl = NULL;
     CURLcode r;
     char *upwd = NULL;
@@ -228,7 +227,7 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
     headers = curl_slist_append(headers,
-        "Content-Type: application/soap+xml;charset=UTF-8");    
+        "Content-Type: application/soap+xml;charset=UTF-8");
     usag = malloc(12 + strlen(wsman_transport_get_agent()) + 1);
     if (usag == NULL) {
         curl_err("Could not malloc memory");

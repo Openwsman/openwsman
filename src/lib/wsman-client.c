@@ -127,7 +127,7 @@ wsman_remove_query_string(char *s, char **result)
     *result = s;
   }
 	
-  U_FREE(buf);	   
+  U_FREE(buf);
 }
 
 hash_t*
@@ -250,7 +250,7 @@ wsman_create_action_str(WsmanAction action)
     break;
   case WSMAN_ACTION_RELEASE:
     action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_RELEASE);
-    break;    
+    break;
   case WSMAN_ACTION_TRANSFER_CREATE:
     action_str = wsman_make_action(XML_NS_TRANSFER, TRANSFER_CREATE);
     break;
@@ -283,29 +283,12 @@ wsman_make_action(char *uri, char* op_name)
 
 WsXmlDocH 
 ws_transfer_create( WsManClient *cl,
-                    char *resource_uri,                   
+                    char *resource_uri,
                     actionOptions options)
 {
   return NULL;
 }
 
-
-static long long transfer_time;
-
-void wsman_send_request(WsManClient *cl, WsXmlDocH request)
-{
-  struct timeval tv0, tv1;
-  long long t0, t1;
-
-  gettimeofday(&tv0, NULL);
-
-  wsman_client_handler(cl, request, NULL);
-
-  gettimeofday(&tv1, NULL);
-  t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
-  t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
-  transfer_time += t1 -t0;
-}
 
 
 
@@ -336,7 +319,7 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
     ws_xml_add_child(node, XML_NS_CIM_BINDING,
                      WSMB_POLYMORPHISM_MODE, WSMB_INCLUDE_SUBCLASS_PROP);
   } else if ((options.flags & 
-              FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties) {
+          FLAG_ExcludeSubClassProperties) == FLAG_ExcludeSubClassProperties) {
     ws_xml_add_child(node, XML_NS_CIM_BINDING,
                      WSMB_POLYMORPHISM_MODE, WSMB_EXCLUDE_SUBCLASS_PROP);
   } else if ((options.flags &
@@ -388,9 +371,9 @@ wsman_create_request(WsManClient *cl,
   WsXmlNodeH node; 
   char* _action = NULL;
 
-  if (action == WSMAN_ACTION_IDENTIFY) {   
+  if (action == WSMAN_ACTION_IDENTIFY) {
     request = ws_xml_create_envelope(
-      ws_context_get_runtime(cl->wscntx), NULL);         
+      ws_context_get_runtime(cl->wscntx), NULL);
   } else {
     if (method) {
       if (strchr(method, '/')) {
@@ -502,9 +485,9 @@ ws_transfer_get(WsManClient *cl,
 
 
 WsXmlDocH
-ws_transfer_put( WsManClient *cl,
-                 char *resource_uri,             
-                 actionOptions options) 
+ws_transfer_put(WsManClient *cl,
+                char *resource_uri,
+                actionOptions options) 
 {
   WsXmlDocH get_response = ws_transfer_get(cl, resource_uri, options);
 
@@ -515,7 +498,7 @@ ws_transfer_put( WsManClient *cl,
 
   WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
                             NULL, resource_uri, options, (void *)get_response);
-  wsman_send_request(cl, put_request);    
+  wsman_send_request(cl, put_request);
   WsXmlDocH put_response = wsman_build_envelope_from_response(cl); 
 
   ws_xml_destroy_doc(put_request);	
@@ -523,12 +506,11 @@ ws_transfer_put( WsManClient *cl,
 }
 
 WsXmlDocH
-wsman_invoke( WsManClient *cl,
-              char *resource_uri,
-              char *method,
-              actionOptions options)
+wsman_invoke(WsManClient *cl,
+             char *resource_uri,
+             char *method,
+             actionOptions options)
 {
- 
   WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_CUSTOM, method,
                                                  resource_uri, options, NULL);
   wsman_send_request(cl, request);
@@ -541,8 +523,7 @@ wsman_invoke( WsManClient *cl,
 WsXmlDocH
 wsman_identify( WsManClient *cl,
                 actionOptions options)
-{	
- 
+{
   WsXmlDocH request  = wsman_create_request(cl, WSMAN_ACTION_IDENTIFY,
                                               NULL, NULL, options, NULL);
   wsman_send_request(cl, request);
@@ -574,7 +555,7 @@ wsenum_pull(WsManClient* cl,
             actionOptions options)
 {
   WsXmlDocH response;
-  
+
   if (enumContext || (enumContext && enumContext[0] == 0)) {
     WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_PULL, NULL,
                                           resource_uri, options, enumContext);
@@ -748,5 +729,136 @@ wsman_build_envelope_from_response (WsManClient *cl)
   }
   return doc;
 }
+
+
+
+
+
+static void
+release_connection(WsManConnection *conn) 
+{
+  if (conn == NULL) {
+    return;
+  }
+  if (conn->request) {
+    u_buf_free(conn->request);
+    conn->request = NULL;
+  }
+  if (conn->response) {
+    u_buf_free(conn->response);
+    conn->response = NULL;
+  }
+  u_free(conn);
+}
+
+
+
+void
+reinit_client_connection(WsManClient* cl)
+{
+  release_connection(cl->connection);
+  WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
+  u_buf_create(&conn->response);
+  u_buf_create(&conn->request);
+  cl->response_code = 0;
+  cl->connection = conn;
+}
+
+
+
+
+
+
+WsManClient*
+wsman_create_client( const char *hostname,
+                     const int port,
+                     const char *path,
+                     const char *scheme,
+                     const char *username,
+                     const char *password)
+{
+  WsManClient  *wsc     = (WsManClient*)calloc(1, sizeof(WsManClient));
+  wsc->hdl              = &wsc->data;
+  if (pthread_mutex_init(&wsc->mutex, NULL)) {
+        u_free(wsc);
+        return NULL;
+  }
+  wsc->wscntx            = ws_create_runtime(NULL);
+
+  wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
+  wsc->data.port        = port;
+
+  wsc->data.user        = username ? strdup(username) : NULL;
+  wsc->data.pwd         = password ? strdup(password) : NULL;
+
+
+  wsc->data.endpoint =  u_strdup_printf("%s://%s:%d%s",
+                                        scheme, hostname, port, path);
+  debug( "Endpoint: %s", wsc->data.endpoint);
+
+  reinit_client_connection(wsc);
+
+  return wsc;
+}
+
+
+
+void
+wsman_release_client(WsManClient * cl)
+{
+
+  if (cl->data.hostName) {
+    u_free(cl->data.hostName);
+    cl->data.hostName = NULL;
+  }
+  if (cl->data.user) {
+    u_free(cl->data.user);
+    cl->data.user = NULL;
+  }
+  if (cl->data.pwd) {
+    u_free(cl->data.pwd);
+    cl->data.pwd = NULL;
+  }
+  if (cl->data.endpoint) {
+    u_free(cl->data.endpoint);
+    cl->data.endpoint = NULL;
+  }
+
+  if (cl->connection) {
+    release_connection(cl->connection);
+    cl->connection = NULL;
+  }
+
+  if (cl->wscntx) {
+    SoapH soap = ws_context_get_runtime(cl->wscntx);
+    soap_destroy_fw(soap);
+    cl->wscntx = NULL;
+  }
+
+  wsman_transport_close_transport(cl);
+
+  u_free(cl);
+}
+
+int wsman_client_lock(WsManClient *cl)
+{
+    pthread_mutex_lock(&cl->mutex);
+    if (cl->flags & WSMAN_CLIENT_BUSY) {
+        pthread_mutex_unlock(&cl->mutex);
+        return 1;
+    }
+    cl->flags |= WSMAN_CLIENT_BUSY;
+    pthread_mutex_unlock(&cl->mutex);
+    return 0;
+}
+
+
+void wsman_client_unlock(WsManClient *cl)
+{
+    pthread_mutex_lock(&cl->mutex);
+    cl->flags &= ~WSMAN_CLIENT_BUSY;
+    pthread_mutex_unlock(&cl->mutex);
+}
+
 
 

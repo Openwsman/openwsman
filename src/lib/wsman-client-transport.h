@@ -53,7 +53,9 @@ typedef enum {
     WS_MAX_AUTH,
 } ws_auth_type_t;
 
-extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+
+
+void wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
@@ -92,9 +94,7 @@ extern void wsman_transport_set_no_verify_peer (int);
 
 extern void wsman_transport_set_cafile(char *);
 
-extern void wsman_release_client(WsManClient * cl);
 
-extern void reinit_client_connection(WsManClient *cl);
 extern void wsman_transport_close_transport(WsManClient *cl);
 
   long long get_transfer_time(void);

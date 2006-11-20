@@ -40,6 +40,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <pthread.h>
 #include "wsman-client-api.h"
 
 struct _WsManConnection {
@@ -75,6 +76,8 @@ typedef struct  {
 
 struct _WsManClient {
     void*               hdl;
+    int flags;
+    pthread_mutex_t     mutex;
     WsContextH          wscntx;
     WsManClientData     data;
     WsManConnection     *connection;
@@ -82,8 +85,12 @@ struct _WsManClient {
     void                *transport;
 };
 
+#define WSMAN_CLIENT_BUSY       0x0001
 
-  
+
+
+int wsman_client_lock(WsManClient *cl);
+void wsman_client_unlock(WsManClient *cl);
 
 
 

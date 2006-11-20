@@ -58,7 +58,34 @@ static char *user_agent = PACKAGE_STRING;
 static int noverifypeer = 0;
 static char *cafile;
 
+extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+
+
 static long long transfer_time = 0;
+
+void wsman_send_request(WsManClient *cl, WsXmlDocH request)
+{
+  struct timeval tv0, tv1;
+  long long t0, t1;
+
+  if (wsman_client_lock(cl)) {
+       // FIXME. How to return error?
+        error("Client busy");
+        return;
+  }
+  reinit_client_connection(cl);
+  cl->response_code = 400; 
+
+  gettimeofday(&tv0, NULL);
+
+  wsman_client_handler(cl, request, NULL);
+
+  gettimeofday(&tv1, NULL);
+  t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
+  t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
+  transfer_time += t1 -t0;
+  wsman_client_lock(cl);
+}
 
 long long
 get_transfer_time()
@@ -69,109 +96,6 @@ get_transfer_time()
 }
 
 
-static void
-release_connection(WsManConnection *conn) 
-{
-  if (conn == NULL) {
-    return;
-  }
-  if (conn->request) {
-    u_buf_free(conn->request);
-    conn->request = NULL;
-  }
-  if (conn->response) {
-    u_buf_free(conn->response);
-    conn->response = NULL;
-  }
-  u_free(conn);
-}
-
-
-
-void
-reinit_client_connection(WsManClient* cl)
-{
-  release_connection(cl->connection);
-  WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
-  u_buf_create(&conn->response);
-  u_buf_create(&conn->request);
-  cl->response_code = 0;
-  cl->connection = conn;
-}
-
-
-
-
-
-
-WsManClient*
-wsman_create_client( const char *hostname,
-                     const int port,
-                     const char *path,
-                     const char *scheme,
-                     const char *username,
-                     const char *password)
-{
-  
-  WsManClient  *wsc     = (WsManClient*)calloc(1, sizeof(WsManClient));
-  wsc->hdl              = &wsc->data;
-    
-  wsc->wscntx	         = ws_create_runtime(NULL);
-
-  wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
-  wsc->data.port        = port;
-
-  wsc->data.user        = username ? strdup(username) : NULL;
-  wsc->data.pwd         = password ? strdup(password) : NULL;
-
-
-  wsc->data.endpoint =  u_strdup_printf("%s://%s:%d%s",
-                                        scheme, hostname, port, path);
-  debug( "Endpoint: %s", wsc->data.endpoint);
-
-  reinit_client_connection(wsc);
-
-  return wsc;
-}
-
-
-
-void
-wsman_release_client(WsManClient * cl)
-{
-
-  if (cl->data.hostName) {
-    u_free(cl->data.hostName);
-    cl->data.hostName = NULL;
-  }
-  if (cl->data.user) {
-    u_free(cl->data.user);
-    cl->data.user = NULL;
-  }
-  if (cl->data.pwd) {
-    u_free(cl->data.pwd);
-    cl->data.pwd = NULL;
-  }
-  if (cl->data.endpoint) {
-    u_free(cl->data.endpoint);
-    cl->data.endpoint = NULL;
-  }
-
-  if (cl->connection) {
-    release_connection(cl->connection);
-    cl->connection = NULL;
-  }
-
-  if (cl->wscntx) {
-    SoapH soap = ws_context_get_runtime(cl->wscntx);
-    soap_destroy_fw(soap);
-    cl->wscntx = NULL;
-  }
-
-  wsman_transport_close_transport(cl);
-
-  u_free(cl);
-}
 
 static void
 request_usr_pwd(ws_auth_type_t auth,
