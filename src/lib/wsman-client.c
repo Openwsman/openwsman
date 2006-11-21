@@ -576,7 +576,7 @@ wsenum_pull(WsManClient* cl,
   if (enumContext || (enumContext && enumContext[0] == 0)) {
     WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_PULL, NULL,
                                           resource_uri, options, enumContext);
-    wsman_send_request(cl, request); 
+    wsman_send_request(cl, request);
     response = wsman_build_envelope_from_response(cl);
     u_free(enumContext);
     ws_xml_destroy_doc(request);
@@ -773,16 +773,21 @@ release_connection(WsManConnection *conn)
 void
 reinit_client_connection(WsManClient* cl)
 {
-  release_connection(cl->connection);
+  u_buf_clear(cl->connection->response);
+  u_buf_clear(cl->connection->request);
+  cl->response_code = 0;
+}
+
+
+static void
+init_client_connection(WsManClient* cl)
+{
   WsManConnection *conn =(WsManConnection*)u_zalloc(sizeof(WsManConnection));
   u_buf_create(&conn->response);
   u_buf_create(&conn->request);
   cl->response_code = 0;
   cl->connection = conn;
 }
-
-
-
 
 
 
@@ -813,7 +818,7 @@ wsman_create_client( const char *hostname,
                                         scheme, hostname, port, path);
   debug( "Endpoint: %s", wsc->data.endpoint);
 
-  reinit_client_connection(wsc);
+  init_client_connection(wsc);
 
   return wsc;
 }

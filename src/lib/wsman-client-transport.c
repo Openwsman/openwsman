@@ -74,7 +74,6 @@ void wsman_send_request(WsManClient *cl, WsXmlDocH request)
         return;
   }
   reinit_client_connection(cl);
-  cl->response_code = 400; 
 
   gettimeofday(&tv0, NULL);
 
@@ -84,7 +83,7 @@ void wsman_send_request(WsManClient *cl, WsXmlDocH request)
   t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
   t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
   transfer_time += t1 -t0;
-  wsman_client_lock(cl);
+  wsman_client_unlock(cl);
 }
 
 long long
