@@ -9,6 +9,6 @@ package: dist
 	rpmbuild -ba openwsman.spec
 
 install-data-local: openwsman.pc
-	$(mkinstalldirs) $(libdir)/pkgconfig
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) -D openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
 
