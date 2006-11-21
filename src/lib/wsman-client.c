@@ -478,7 +478,6 @@ wsman_create_request(WsManClient *cl,
   if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
   }
-    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
 
   return request;
 }

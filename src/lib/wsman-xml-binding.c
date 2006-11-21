@@ -825,6 +825,24 @@ void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize) {
     return;
 }
 
+static void
+register_namespaces( xmlXPathContextPtr ctxt , WsXmlDocH doc, WsXmlNodeH node)
+{
+    xmlNsPtr *nsList, *cur;
+    xmlDocPtr d = (xmlDocPtr)doc->parserDoc; 
+
+
+    nsList = xmlGetNsList(d, (xmlNodePtr )node);
+    if (nsList == NULL) {
+        return;
+    }
+    for (cur = nsList; *cur != NULL; cur++) {
+        if(xmlXPathRegisterNs(ctxt, (*cur)->prefix, (*cur)->href) != 0) {
+            return;
+        }
+    }
+    xmlFree(nsList);
+}
 
 char *
 xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
@@ -834,7 +852,6 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
     xmlXPathObject *obj;
     xmlNodeSetPtr nodeset;
     xmlXPathContextPtr ctxt;
-    xmlNsPtr *nsList, *cur;
     xmlDocPtr d = (xmlDocPtr)doc->parserDoc; 
 
     ctxt = xmlXPathNewContext(d);
@@ -842,16 +859,11 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
         error("failed while creating xpath context");
         return NULL;
     }
-    nsList = xmlGetNsList(d, (xmlNodePtr )xml_parser_get_root(doc));
-    if (nsList == NULL) {
-        return NULL;
+    WsXmlNodeH body = ws_xml_get_soap_body(doc);
+    register_namespaces(ctxt, doc, xml_parser_get_root(doc));
+    if ( ws_xml_get_child(body, 0 , NULL, NULL)) {
+        register_namespaces(ctxt, doc,  ws_xml_get_child(body, 0 , NULL, NULL));
     }
-    for (cur = nsList; *cur != NULL; cur++) {
-        if(xmlXPathRegisterNs(ctxt, (*cur)->prefix, (*cur)->href) != 0) {
-            return NULL;
-        }
-    }
-    xmlFree(nsList);
 
     obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
     if (obj) {
