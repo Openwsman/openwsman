@@ -96,6 +96,7 @@ typedef struct {
 
             /* WsManClient handling */
   long wsman_get_client_response_code(WsManClient *cl);
+  char *wsman_client_get_fault_string(WsManClient *cl);
   WsContextH wsman_client_get_context(WsManClient *cl);
   WsXmlDocH wsman_client_read_file(WsManClient *cl, char* filename,
                                  char* encoding, unsigned long options);

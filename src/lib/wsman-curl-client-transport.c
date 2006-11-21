@@ -210,19 +210,25 @@ wsman_client_handler( WsManClient *cl,
     curl = (CURL *)cl->transport;
 
     r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
-    if (r != 0) {
+    if (r != CURLE_OK) {
+        http_code = 400;
+        cl->fault_string = strdup(curl_easy_strerror(r));
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_URL, ...)");
         goto DONE;
     }
 
 
     r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
-    if (r != 0) {
+    if (r != CURLE_OK) {
+        http_code = 400;
+        cl->fault_string = strdup(curl_easy_strerror(r));
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
         goto DONE;
     }
     r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
-    if (r != 0) {
+    if (r != CURLE_OK) {
+        http_code = 400;
+        cl->fault_string = strdup(curl_easy_strerror(r));
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
         goto DONE;
     }
@@ -230,6 +236,8 @@ wsman_client_handler( WsManClient *cl,
         "Content-Type: application/soap+xml;charset=UTF-8");
     usag = malloc(12 + strlen(wsman_transport_get_agent()) + 1);
     if (usag == NULL) {
+        http_code = 400;
+        cl->fault_string = strdup("Could not malloc memory");
         curl_err("Could not malloc memory");
         goto DONE;
     }
@@ -238,16 +246,19 @@ wsman_client_handler( WsManClient *cl,
     headers = curl_slist_append(headers, usag);
 
     r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    if (r != 0) {
+    if (r != CURLE_OK) {
+        http_code = 400;
+        cl->fault_string = strdup(curl_easy_strerror(r));
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)");
         goto DONE;
     }
 
     ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-    
-    
+
     r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
-    if (r != 0) {
+    if (r != CURLE_OK) {
+        http_code = 400;
+        cl->fault_string = strdup(curl_easy_strerror(r));
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
         goto DONE;
     }
@@ -255,20 +266,25 @@ wsman_client_handler( WsManClient *cl,
     while (1) {
         if (cl->data.user && cl->data.pwd && auth_set) {
             r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
-            if (r != 0) {
+            if (r != CURLE_OK) {
+                http_code = 400;
+                cl->fault_string = strdup(curl_easy_strerror(r));
                 curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
                 goto DONE;
             }
             u_free(upwd);
-            upwd = malloc(strlen(cl->data.user) +
-                strlen(cl->data.pwd) + 2);
+            upwd = malloc(strlen(cl->data.user) + strlen(cl->data.pwd) + 2);
             if (!upwd) {
+                http_code = 400;
+                cl->fault_string = strdup("Could not malloc memory");
                 curl_err("Could not malloc memory");
                 goto DONE;
             }
             sprintf(upwd, "%s:%s", cl->data.user, cl->data.pwd);
             r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
-            if (r != 0) {
+            if (r != CURLE_OK) {
+                http_code = 400;
+                cl->fault_string = strdup(curl_easy_strerror(r));
                 curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
                 goto DONE;
             }
@@ -279,11 +295,15 @@ wsman_client_handler( WsManClient *cl,
         }
         r = curl_easy_perform(curl);
         if (r != CURLE_OK) {
+            http_code = 400;
+            cl->fault_string = strdup(curl_easy_strerror(r));
             curl_err("curl_easy_perform failed"); 
             goto DONE;
         }
         r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-        if (r != 0) {
+        if (r != CURLE_OK) {
+            http_code = 400;
+            cl->fault_string = strdup(curl_easy_strerror(r));
             curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
             goto DONE;
         }
@@ -293,7 +313,9 @@ wsman_client_handler( WsManClient *cl,
         }
         // we are here because of authorization required
         r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
-        if (r != 0) {
+        if (r != CURLE_OK) {
+            http_code = 400;
+            cl->fault_string = strdup(curl_easy_strerror(r));
             curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
             goto DONE;
         }
@@ -325,7 +347,7 @@ wsman_client_handler( WsManClient *cl,
     }
 
     u_buf_set(con->response, wbuf, tr_data.ind); 
-    
+
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);

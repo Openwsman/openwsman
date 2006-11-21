@@ -82,6 +82,7 @@ struct _WsManClient {
     WsManClientData     data;
     WsManConnection     *connection;
     long                response_code;
+    char                *fault_string;
     void                *transport;
 };
 

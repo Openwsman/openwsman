@@ -62,6 +62,14 @@ long wsman_get_client_response_code(WsManClient *cl)
     return cl->response_code;
 }
 
+char *
+wsman_client_get_fault_string(WsManClient *cl)
+{
+    if (cl->fault_string == NULL) {
+        return NULL;
+    }
+    return strdup(cl->fault_string);
+}
 
 WsContextH wsman_client_get_context(WsManClient *cl)
 {
@@ -799,6 +807,10 @@ reinit_client_connection(WsManClient* cl)
   u_buf_clear(cl->connection->response);
   u_buf_clear(cl->connection->request);
   cl->response_code = 0;
+  if (cl->fault_string) {
+        u_free(cl->fault_string);
+        cl->fault_string = NULL;
+  }
 }
 
 
@@ -868,12 +880,14 @@ wsman_release_client(WsManClient * cl)
     u_free(cl->data.endpoint);
     cl->data.endpoint = NULL;
   }
-
+  if (cl->fault_string) {
+    u_free(cl->fault_string);
+    cl->fault_string = NULL;
+  }
   if (cl->connection) {
     release_connection(cl->connection);
     cl->connection = NULL;
   }
-
   if (cl->wscntx) {
     SoapH soap = ws_context_get_runtime(cl->wscntx);
     soap_destroy_fw(soap);
