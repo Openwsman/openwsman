@@ -65,10 +65,7 @@ long wsman_get_client_response_code(WsManClient *cl)
 char *
 wsman_client_get_fault_string(WsManClient *cl)
 {
-    if (cl->fault_string == NULL) {
-        return NULL;
-    }
-    return strdup(cl->fault_string);
+    return cl->fault_string;
 }
 
 WsContextH wsman_client_get_context(WsManClient *cl)
