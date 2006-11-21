@@ -32,8 +32,8 @@
  * @author Vadim Revyakin
  */
 
-#ifndef WSMAN_APACHE_H_
-#define WSMAN_APACHE_H_
+#ifndef WSMAN_SERVER_API_H_
+#define WSMAN_SERVER_API_H_
 
 
 #ifdef __cplusplus
@@ -41,8 +41,8 @@ extern "C" {
 #endif /* __cplusplus */
 #include "u/libu.h"
 
-void *wsman_apache_create_config(void);
-u_buf_t *wsman_apache_get_response(void *arg, char *request);
+void *wsman_server_create_config(void);
+u_buf_t *wsman_server_get_response(void *arg, char *request);
 
 #ifdef __cplusplus
 }

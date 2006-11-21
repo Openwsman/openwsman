@@ -32,7 +32,7 @@
  * @author Vadim Revyakin
  */
 #include "wsman-types.h"
-#include "wsman-apache.h"
+#include "wsman-server-api.h"
 #include "wsman-server.h"
 #include "wsman-dispatcher.h"
 #include "wsman-soap.h"
@@ -40,7 +40,7 @@
 
 
 void *
-wsman_apache_create_config(void)
+wsman_server_create_config(void)
 {
     SoapH soap = NULL;
     WsManListenerH *listener = wsman_dispatch_list_new();
@@ -53,7 +53,7 @@ wsman_apache_create_config(void)
 
 
 u_buf_t *
-wsman_apache_get_response(void *arg, char *request)
+wsman_server_get_response(void *arg, char *request)
 {
     WsmanMessage *wsman_msg;
     u_buf_t  *u_buf;
