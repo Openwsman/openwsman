@@ -146,6 +146,7 @@ xml2property( CMPIInstance *instance,
               char *name,
               char *value )
 {
+  
   CMPIType type = data.type;
 
   if (type & CMPI_ARRAY) {
@@ -788,7 +789,9 @@ xml2instance( CMPIInstance *instance,
                                  resourceUri, (char *)propertyname->hdl);
       char *value =  ws_xml_get_node_text(child);
       // debug( "property value: %s", value);
-      xml2property(instance, data, (char *)propertyname->hdl, value );
+      if (value) {
+        xml2property(instance, data, (char *)propertyname->hdl, value );
+      }
       CMRelease(propertyname);
     }
   }

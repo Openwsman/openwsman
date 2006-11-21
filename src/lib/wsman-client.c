@@ -155,6 +155,18 @@ wsman_add_selectors_from_query_string( actionOptions *options,
   }
 }
 
+void
+wsman_add_properties_from_query_string( actionOptions *options, 
+                                       const char *query_string)
+{
+  if (query_string) {
+    hash_t * query = parse_query(query_string);	
+    if (query) {
+      options->properties = query;
+    }
+  }
+}
+
 void 
 wsman_add_selector_from_options( WsXmlDocH doc, actionOptions options)
 {
@@ -337,7 +349,8 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
   WsXmlNodeH get_body = ws_xml_get_soap_body(get_response);
   WsXmlNodeH put_body = ws_xml_get_soap_body(put_request);
 
-  ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0, NULL, NULL));
+  //ws_xml_duplicate_tree(put_body, ws_xml_get_child(get_body, 0, NULL, NULL));
+  ws_xml_copy_node( ws_xml_get_child(get_body, 0, NULL, NULL), put_body);
 
   WsXmlNodeH resource_node = ws_xml_get_child(put_body, 0 , NULL, NULL);
 
@@ -465,6 +478,7 @@ wsman_create_request(WsManClient *cl,
   if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
   }
+    ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
 
   return request;
 }
@@ -495,13 +509,16 @@ ws_transfer_put(WsManClient *cl,
     error("ws_transfer_get returned NULL doc");
     return NULL;
   }
+  if (wsman_is_fault_envelope(get_response)) {
+    return get_response;
+  }
 
   WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
                             NULL, resource_uri, options, (void *)get_response);
   wsman_send_request(cl, put_request);
   WsXmlDocH put_response = wsman_build_envelope_from_response(cl); 
 
-  ws_xml_destroy_doc(put_request);	
+  //ws_xml_destroy_doc(put_request);	
   return put_response;
 }
 

@@ -359,17 +359,16 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 }
 
 
-/*
-void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc) 
+void
+ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst) 
 {
     if (src && dst )
     {
-        xmlNodePtr x = xmlDocCopyNode((xmlNodePtr)src, (xmlDocPtr)doc , 1 );
+        xmlNodePtr x = xmlDocCopyNode((xmlNodePtr)src, ((xmlDocPtr)src)->doc , 1 );
         if (x)
             xmlAddChild((xmlNodePtr ) dst, x );
     }
 }
-*/
 
 
 int ws_xml_utf8_strlen(char *buf) {

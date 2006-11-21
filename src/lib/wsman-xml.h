@@ -133,10 +133,10 @@ int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int ws_xml_utf8_strlen(char *buf);
 
-void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst , WsXmlDocH doc);
 
 void ws_xml_set_node_lang(WsXmlNodeH node, char* lang);
 
+void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 
 /** @} */
 

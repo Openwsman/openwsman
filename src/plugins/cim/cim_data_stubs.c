@@ -337,7 +337,13 @@ CimResource_Put_EP( SoapOpH op,
   if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) { 
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
-    cim_put_instance_from_enum(cimclient, cntx , in_body, body, &status);
+    if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
+      cim_put_instance_from_enum(cimclient, cntx , in_body, body, &status);
+    } else {
+      // FIXME: Correct fault
+      status.fault_code = WSA_INVALID_MESSAGE_INFORMATION_HEADER;
+      
+    }
   }
 
   if (wsman_check_status(&status) != 0) {

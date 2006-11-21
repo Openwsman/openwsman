@@ -151,6 +151,8 @@ typedef struct {
   void destroy_action_options(actionOptions *op);
   void wsman_add_selectors_from_query_string(actionOptions *options,
                                              const char *query_string);
+  void wsman_add_properties_from_query_string( actionOptions *options, 
+                                       const char *query_string);
   void wsman_add_selector_from_options( WsXmlDocH doc,  actionOptions options);
   void wsman_set_action_option(actionOptions *options, unsigned int);
   void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
