@@ -148,13 +148,15 @@ ws_create_response_envelope( WsContextH cntx,
  * @return XML document with Envelope
  */
 WsXmlDocH
-wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg)
+wsman_build_inbound_envelope(SoapH soap,
+                             WsmanMessage *msg)
 {
-  WsXmlDocH doc = NULL;
-  if ( (doc = ws_xml_read_memory(soap,
-             (msg->request.body) ? msg->request.body : msg->response.body,
-             (msg->request.length) ? msg->request.length :
-                                     msg->response.length, NULL, 0)) != NULL) {
+
+  WsXmlDocH doc = ws_xml_read_memory(soap, u_buf_ptr(msg->request), 
+                                     u_buf_len(msg->request), NULL, 0);
+
+  if ( doc != NULL) {
+
     if (wsman_is_identify_request(doc)) {
       wsman_set_message_flags(msg, FLAG_IDENTIFY_REQUEST);
       wsman_is_valid_envelope(msg, doc);
@@ -162,6 +164,7 @@ wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg)
     } 
 
     wsman_is_valid_envelope(msg, doc);
+
     if  ( wsman_is_duplicate_message_id(soap, doc) &&
                                !wsman_fault_occured(msg)) {
       wsman_set_fault(msg,
@@ -209,8 +212,11 @@ get_soap_header_value(SoapH soap,
  * @param name Header element name
  * @return XML node 
  */
-WsXmlNodeH get_soap_header_element(SoapH soap,
-                                   WsXmlDocH doc, char* nsUri, char* name)
+WsXmlNodeH 
+get_soap_header_element(SoapH soap,
+                        WsXmlDocH doc, 
+                        char* nsUri, 
+                        char* name)
 {
   WsXmlNodeH node = ws_xml_get_soap_header(doc);
   if ( node && name ) {
@@ -289,7 +295,8 @@ WsXmlDocH build_soap_fault(SoapH soap, char* soapNsUri, char* faultNsUri, char* 
  * @param  fw SOAP Framework handle
  * @todo Send fault back
  */     
-void build_soap_version_fault(SoapH soap)
+void 
+build_soap_version_fault(SoapH soap)
 {
   WsXmlDocH fault = build_soap_fault(soap, NULL, XML_NS_SOAP_1_2,
                                      "VersionMismatch", NULL,

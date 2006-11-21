@@ -8,6 +8,9 @@ package: dist
 	cp openwsman-*.tar.gz /usr/src/packages/SOURCES
 	rpmbuild -ba openwsman.spec
 
+etags: TAGS
+	find . -name "*.[chCH]" -print | etags -
+
 install-data-local: openwsman.pc
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) -D openwsman.pc $(DESTDIR)$(libdir)/pkgconfig

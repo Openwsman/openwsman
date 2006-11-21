@@ -100,6 +100,7 @@ CimResource_destroy(CimClientInfo *cimclient)
   {
     hash_free(cimclient->selectors);        
   }
+  cim_release_client(cimclient);
   u_free(cimclient);
   return;
 }

@@ -412,11 +412,13 @@ void wsman_dispatcher_list( list_t *interfaces )
 
 
 int
-process_inbound_operation(op_t* op, WsmanMessage *msg)
+process_inbound_operation(op_t* op, 
+                          WsmanMessage *msg)
 {
   int retVal = 1;
   char* buf = NULL;
   int len;
+
   if ( process_filters(op, 1) ) 
   {
     if (wsman_is_fault_envelope(op->out_doc)) {
@@ -427,9 +429,8 @@ process_inbound_operation(op_t* op, WsmanMessage *msg)
 
     if (op->out_doc)
     {
-      ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");
-      msg->response.length = len;
-      msg->response.body = strndup(buf, len);
+      ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");     
+      u_buf_set(msg->response, buf, len);
 
       ws_xml_destroy_doc(op->out_doc);
       u_free(buf);
@@ -451,9 +452,7 @@ process_inbound_operation(op_t* op, WsmanMessage *msg)
           msg->http_code = WSMAN_STATUS_OK;
         }
         ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");
-        msg->response.length = len;
-        msg->response.body = strndup(buf, len);
-
+        u_buf_set(msg->response, buf, len);      
         ws_xml_destroy_doc(op->out_doc);
         u_free(buf);
         destroy_op_entry(op);

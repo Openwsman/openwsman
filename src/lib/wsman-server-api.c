@@ -56,26 +56,27 @@ u_buf_t *
 wsman_server_get_response(void *arg, char *request)
 {
     WsmanMessage *wsman_msg;
-    u_buf_t  *u_buf;
+    //u_buf_t  *u_buf;
     SoapH  soap = (SoapH)arg;
 
     // XXX. check POST method
 
     wsman_msg = wsman_soap_message_new();
-    wsman_msg->request.body = request;
-    wsman_msg->request.length = strlen(request);
+    u_buf_set(wsman_msg->request, request, strlen(request));
 
-        // Call dispatcher
+    // Call dispatcher
     dispatch_inbound_call(soap, wsman_msg);
 
+    /* FIXME
     u_buf_create(&u_buf);
     u_buf_set(u_buf, wsman_msg->response.body,
                         wsman_msg->response.length);
 
+    
     wsman_msg->request.body = NULL;
     wsman_soap_message_destroy(wsman_msg);
-
-    return u_buf;
+    */
+    return wsman_msg->request;
 }
 
 

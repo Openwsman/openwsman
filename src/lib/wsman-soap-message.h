@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
  *
@@ -60,14 +59,14 @@ typedef struct _WsmanStatus WsmanStatus;
 
 
 struct _WsmanMessage {
-    const char          *method;
-    WsmanStatus         status;
-    WsmanDataBuffer     request;
-    WsmanDataBuffer     response;
-    WsXmlDocH           in_doc;
-    WsmanKnownStatusCode http_code;
-    WsmanAuth           auth_data;
-    unsigned int        flags;
+  const char          *method;
+  WsmanStatus         status;
+  u_buf_t     *request;
+  u_buf_t     *response;
+  WsXmlDocH           in_doc;
+  WsmanKnownStatusCode http_code;
+  WsmanAuth           auth_data;
+  unsigned int        flags;
 };
 typedef struct _WsmanMessage WsmanMessage;
 

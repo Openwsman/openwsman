@@ -132,17 +132,16 @@ typedef struct {
 
 
 
-static int server_callback (struct shttpd_arg_t *arg)
+static int 
+server_callback (struct shttpd_arg_t *arg)
 {
     const char *path, *method;
     char *default_path;
     const char *content_type;
     const char *encoding;
-
     int status = WSMAN_STATUS_OK;
 
-    ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;
-    WsmanMessage *wsman_msg;
+    ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;    
     int n = 0;
     int k;
 
@@ -152,27 +151,20 @@ static int server_callback (struct shttpd_arg_t *arg)
     }
 
     // Here we must handle the initial request
-
-    wsman_msg = wsman_soap_message_new();
+    WsmanMessage *wsman_msg = wsman_soap_message_new();
 
     // Check HTTP headers
-    path = shttpd_get_uri(arg);
+   
     method = shttpd_get_env(arg, "REQUEST_METHOD");
-    debug("%s %s HTTP/1.%d", method, path,
-            shttpd_get_http_version(arg));
-
-//    soup_message_foreach_header (msg->request_headers, print_header, NULL);
-//    if (msg->request.length) {
-//        debug("Request: %.*s", msg->request.length, msg->request.body);
-//    }
 
     // Check Method
     if (strncmp(method, "POST", 4)) {
-        debug( "Insupported method %s", method);
+        debug( "Unsupported method %s", method);
         status = WSMAN_STATUS_NOT_IMPLEMENTED;
         goto DONE;
     }
 
+    path = shttpd_get_uri(arg);
     default_path = wsmand_options_get_service_path();
     if (path) {
         if (strcmp(path, default_path) != 0 ) {
@@ -195,17 +187,17 @@ static int server_callback (struct shttpd_arg_t *arg)
     SoapH soap = (SoapH)arg->user_data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
 
-    wsman_msg->request.length = shttpd_get_post_query_len(arg);
-    wsman_msg->request.body   = (char *)malloc(wsman_msg->request.length);
-    if (wsman_msg->request.body == NULL) {
+    size_t length = shttpd_get_post_query_len(arg);
+    char *body   = (char *)malloc(length);
+    if (body == NULL) {
         status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-        error("NULL request body. len = %d", wsman_msg->request.length);
+        error("NULL request body. len = %d", length);
         goto DONE;
     }
+    
 
-    (void) shttpd_get_post_query(arg, wsman_msg->request.body,
-                    wsman_msg->request.length);
-
+    (void) shttpd_get_post_query(arg, body,length);
+    u_buf_set( wsman_msg->request, body, length);
 
     shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
                     &wsman_msg->auth_data.password);
@@ -213,11 +205,10 @@ static int server_callback (struct shttpd_arg_t *arg)
     // Call dispatcher
     dispatch_inbound_call(soap, wsman_msg);
 
-    if (wsman_msg->request.body) {
-        free(wsman_msg->request.body);
-        wsman_msg->request.body = NULL;
+    if (wsman_msg->request) {
+      u_free(body);
+      u_buf_free(wsman_msg->request);    
     }
-    wsman_msg->request.length = 0;
 
     if ( wsman_fault_occured(wsman_msg) ) {
         char *buf;
@@ -247,10 +238,10 @@ static int server_callback (struct shttpd_arg_t *arg)
 
     shttp_msg = (ShttpMessage *)malloc(sizeof (ShttpMessage));
     if (shttp_msg) {
-        shttp_msg->length = wsman_msg->response.length;
-        shttp_msg->response = (char *)wsman_msg->response.body;
-        shttp_msg->ind = 0;
-        status =wsman_msg->http_code;
+      shttp_msg->length = u_buf_size(wsman_msg->response);
+      shttp_msg->response = (char *)u_buf_ptr(wsman_msg->response);
+      shttp_msg->ind = 0;
+      status = wsman_msg->http_code;
     } else {
         status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
     }
@@ -259,7 +250,7 @@ static int server_callback (struct shttpd_arg_t *arg)
         ws_xml_destroy_doc(wsman_msg->in_doc);
     }
 DONE:
-
+    //wsman_soap_message_destroy(wsman_msg);
     u_free(wsman_msg);
     debug("Response (status) %d", status, shttp_reason_phrase(status));
 
@@ -294,7 +285,7 @@ DONE:
     }
 
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
-
+    
 CONTINUE:
     k = arg->buflen - n;
     if (k <= shttp_msg->length - shttp_msg->ind) {
@@ -320,6 +311,7 @@ CONTINUE:
     debug("%s", arg->buf);
     u_free(shttp_msg->response);
     u_free(shttp_msg);
+    
     arg->last =1;
     arg->state = NULL;
     return n;

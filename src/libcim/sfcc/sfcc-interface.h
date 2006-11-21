@@ -19,6 +19,10 @@ CMCIClient* cim_connect_to_cimom( char *cim_host,
 	char *cim_host_userid, 
 	char *cim_host_passwd, WsmanStatus *status);
 
+void
+cim_release_client(CimClientInfo* cimclient);
+
+
 void xml2instance( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri);
 
 void xml2property( CMPIInstance *instance, CMPIData data , char *name , char *value);

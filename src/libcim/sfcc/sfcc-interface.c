@@ -480,7 +480,7 @@ cim_get_class (CimClientInfo *client,
          rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
   cim_to_wsman_status(rc, status);
   if (op) CMRelease(op);
-  if (cc) CMRelease(cc);
+  // if (cc) CMRelease(cc);
   return _class;
 }
 
@@ -873,10 +873,10 @@ add_cim_location ( WsXmlNodeH resource,
 }
 
 CMCIClient *
-cim_connect_to_cimom( char *cim_host,
-                      char *cim_host_userid, 
-                      char *cim_host_passwd, 
-                      WsmanStatus *status)
+cim_connect_to_cimom(char *cim_host,
+                     char *cim_host_userid, 
+                     char *cim_host_passwd, 
+                     WsmanStatus *status)
 {
 
   CMPIStatus rc;
@@ -888,6 +888,13 @@ cim_connect_to_cimom( char *cim_host,
   cim_to_wsman_status(rc, status);		
   return cimclient;
 }
+
+void
+cim_release_client(CimClientInfo *cimclient)
+{
+  if (cimclient->cc) CMRelease((CMCIClient *)cimclient->cc);
+}
+
 
 
 
