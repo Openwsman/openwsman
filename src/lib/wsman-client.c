@@ -490,7 +490,10 @@ ws_transfer_get(WsManClient *cl,
 {
   WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_GET,
                                          NULL,  resource_uri, options, NULL);
-  wsman_send_request(cl, request);
+  if (wsman_send_request(cl, request)) {
+    ws_xml_destroy_doc(request);
+    return NULL;
+  }
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -514,7 +517,11 @@ ws_transfer_put(WsManClient *cl,
 
   WsXmlDocH put_request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
                             NULL, resource_uri, options, (void *)get_response);
-  wsman_send_request(cl, put_request);
+  // ws_xml_destroy_doc(get_response);
+  if (wsman_send_request(cl, put_request)) {
+    ws_xml_destroy_doc(put_request);
+    return NULL;
+  }
   WsXmlDocH put_response = wsman_build_envelope_from_response(cl); 
 
   //ws_xml_destroy_doc(put_request);	
@@ -529,7 +536,10 @@ wsman_invoke(WsManClient *cl,
 {
   WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_CUSTOM, method,
                                                  resource_uri, options, NULL);
-  wsman_send_request(cl, request);
+  if (wsman_send_request(cl, request)) {
+    ws_xml_destroy_doc(request);
+    return NULL;
+  }
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -542,7 +552,10 @@ wsman_identify( WsManClient *cl,
 {
   WsXmlDocH request  = wsman_create_request(cl, WSMAN_ACTION_IDENTIFY,
                                               NULL, NULL, options, NULL);
-  wsman_send_request(cl, request);
+  if (wsman_send_request(cl, request)) {
+    ws_xml_destroy_doc(request);
+    return NULL;
+  }
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -557,7 +570,10 @@ wsenum_enumerate(WsManClient* cl,
 {
   WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_ENUMERATION,
                                         NULL,resource_uri, options, NULL);
-  wsman_send_request(cl, request);
+  if (wsman_send_request(cl, request)) {
+    ws_xml_destroy_doc(request);
+    return NULL;
+  }
   WsXmlDocH response = wsman_build_envelope_from_response(cl);
   ws_xml_destroy_doc(request);
   return response;
@@ -575,7 +591,11 @@ wsenum_pull(WsManClient* cl,
   if (enumContext || (enumContext && enumContext[0] == 0)) {
     WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_PULL, NULL,
                                           resource_uri, options, enumContext);
-    wsman_send_request(cl, request);
+    if (wsman_send_request(cl, request)) {
+      ws_xml_destroy_doc(request);
+      u_free(enumContext);
+      return NULL;
+    }
     response = wsman_build_envelope_from_response(cl);
     u_free(enumContext);
     ws_xml_destroy_doc(request);
@@ -606,7 +626,11 @@ wsenum_release( WsManClient* cl,
   if ( enumContext || (enumContext && enumContext[0] == 0) ) {
     WsXmlDocH request = wsman_create_request(cl, WSMAN_ACTION_RELEASE,
                                    NULL, resource_uri, options, enumContext);
-    wsman_send_request(cl, request); 
+    if (wsman_send_request(cl, request)) {
+      ws_xml_destroy_doc(request);
+      u_free(enumContext); 
+      return NULL;
+    }
     response = wsman_build_envelope_from_response(cl);
     u_free(enumContext); 
     ws_xml_destroy_doc(request);

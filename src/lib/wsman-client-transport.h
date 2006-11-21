@@ -55,7 +55,7 @@ typedef enum {
 
 
 
-void wsman_send_request(WsManClient *cl, WsXmlDocH request);
+int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 
 typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);

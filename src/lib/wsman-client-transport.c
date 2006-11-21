@@ -63,15 +63,15 @@ extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user
 
 static long long transfer_time = 0;
 
-void wsman_send_request(WsManClient *cl, WsXmlDocH request)
+int
+wsman_send_request(WsManClient *cl, WsXmlDocH request)
 {
   struct timeval tv0, tv1;
   long long t0, t1;
 
   if (wsman_client_lock(cl)) {
-       // FIXME. How to return error?
         error("Client busy");
-        return;
+        return 1;
   }
   reinit_client_connection(cl);
 
@@ -84,6 +84,7 @@ void wsman_send_request(WsManClient *cl, WsXmlDocH request)
   t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
   transfer_time += t1 -t0;
   wsman_client_unlock(cl);
+  return 0;
 }
 
 long long
