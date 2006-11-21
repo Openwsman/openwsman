@@ -10,7 +10,8 @@ wsmaninclude_HEADERS = \
 	wsman-xml-api.h \
 	wsman-client-api.h \
 	wsman-client-transport.h \
-	wsman-xml-serializer.h
+	wsman-xml-serializer.h \
+    wsman-apache.h
 
 
 OWSMAN_INCLUDES = \
@@ -36,7 +37,8 @@ libwsman_catalog_la_SOURCES =
 
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
-	wsman-plugins.c 
+	wsman-plugins.c \
+    wsman-apache.c
 
 libwsman_la_SOURCES = \
 	wsman-xml-binding.c \
