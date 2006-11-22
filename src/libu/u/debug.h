@@ -35,8 +35,6 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#include "wsman_config.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 
