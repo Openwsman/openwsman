@@ -673,7 +673,6 @@ cim_enum_instances (CimClientInfo *client,
   enumInfo->appEnumContext = enumeration;
 
  cleanup:
-  if (cc) CMRelease(cc);
   if (objectpath) CMRelease(objectpath);
   return;
 }
@@ -950,7 +949,6 @@ cim_invoke_method (CimClientInfo *client,
   if (objectpath) CMRelease(objectpath);
   if (argsin) CMRelease(argsin);
   if (argsout) CMRelease(argsout);
-  if (cc) CMRelease(cc);
   return;
 }
 
@@ -994,7 +992,6 @@ cim_get_instance_from_enum ( CimClientInfo *client,
 
   if (objectpath) CMRelease(objectpath);
  cleanup:
-  if (cc) CMRelease(cc);
   return;
 }
 

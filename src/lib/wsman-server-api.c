@@ -37,6 +37,23 @@
 #include "wsman-dispatcher.h"
 #include "wsman-soap.h"
 
+#if 0
+static void
+debug_message_handler (const char *str, 
+                       debug_level_e level, 
+                       void *user_data)
+{
+  
+    int log_pid = getpid ();
+
+    char *log_name = u_strdup_printf ("wsmand[%d]", log_pid);
+
+    openlog (log_name, 0, LOG_DAEMON);
+    syslog (LOG_INFO, "%s", str);
+    closelog ();
+    u_free (log_name);
+}
+#endif
 
 
 void *
@@ -48,35 +65,25 @@ wsman_server_create_config(void)
     if (cntx != NULL) {
         soap = ws_context_get_runtime(cntx);
     }
+    //debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
     return (void *)soap;
 }
 
 
-u_buf_t *
+char *
 wsman_server_get_response(void *arg, char *request)
 {
+    char *response;
     WsmanMessage *wsman_msg;
-    //u_buf_t  *u_buf;
     SoapH  soap = (SoapH)arg;
-
-    // XXX. check POST method
-
     wsman_msg = wsman_soap_message_new();
     u_buf_set(wsman_msg->request, request, strlen(request));
-
     // Call dispatcher
     dispatch_inbound_call(soap, wsman_msg);
-
-    /* FIXME
-    u_buf_create(&u_buf);
-    u_buf_set(u_buf, wsman_msg->response.body,
-                        wsman_msg->response.length);
-
-    
-    wsman_msg->request.body = NULL;
+    response = u_strdup((char *)u_buf_ptr(wsman_msg->response));
     wsman_soap_message_destroy(wsman_msg);
-    */
-    return wsman_msg->request;
+
+    return response;
 }
 
 

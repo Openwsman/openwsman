@@ -14,4 +14,5 @@ etags: TAGS
 install-data-local: openwsman.pc
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) -D openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) -D openwsman-server.pc $(DESTDIR)$(libdir)/pkgconfig
 

@@ -1,6 +1,7 @@
-#!/bin/sh
-aclocal &&
-autoheader &&
-libtoolize --force && 
-automake -af &&
+#!/bin/sh -x
+
+libtoolize --copy --force --automake
+aclocal
+autoheader
+automake --add-missing --copy --foreign
 autoconf
