@@ -1,7 +1,4 @@
 
-#include "wsman_config.h"
-
-
 #define NO_HMAP
 #define NO_CONFIG
 #define NO_LOG

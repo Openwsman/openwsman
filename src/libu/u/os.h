@@ -6,7 +6,6 @@
 #include "libu_conf.h"
 
 #include <syslog.h>
-#include <u/unlink.h>
 #include <u/fnmatch.h>
 
 

@@ -12,7 +12,7 @@ wsmaninclude_HEADERS = \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h \
     wsman-server-api.h \
-    wsman-soap-message.h \
+    wsman-soap-message.h 
 
 
 OWSMAN_INCLUDES = \
