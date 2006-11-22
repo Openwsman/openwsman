@@ -32,6 +32,8 @@
  * @author Vadim Revyakin
  */
 #include "wsman-types.h"
+#include "wsman-faults.h"
+#include "wsman-soap-message.h"
 #include "wsman-server-api.h"
 #include "wsman-server.h"
 #include "wsman-dispatcher.h"
@@ -70,20 +72,11 @@ wsman_server_create_config(void)
 }
 
 
-char *
-wsman_server_get_response(void *arg, char *request)
+void
+wsman_server_get_response(void *arg, WsmanMessage *msg)
 {
-    char *response;
-    WsmanMessage *wsman_msg;
     SoapH  soap = (SoapH)arg;
-    wsman_msg = wsman_soap_message_new();
-    u_buf_set(wsman_msg->request, request, strlen(request));
-    // Call dispatcher
-    dispatch_inbound_call(soap, wsman_msg);
-    response = u_strdup((char *)u_buf_ptr(wsman_msg->response));
-    wsman_soap_message_destroy(wsman_msg);
-
-    return response;
+    dispatch_inbound_call(soap, msg);
 }
 
 

@@ -42,7 +42,7 @@ extern "C" {
 #include "u/libu.h"
 
 void *wsman_server_create_config(void);
-char *wsman_server_get_response(void *arg, char *request);
+void wsman_server_get_response(void *arg, WsmanMessage *msg);
 
 #ifdef __cplusplus
 }

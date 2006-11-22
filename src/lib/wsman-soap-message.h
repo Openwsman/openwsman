@@ -35,14 +35,12 @@
 #ifndef WSMAN_SOAP_MESSAGE_H_
 #define WSMAN_SOAP_MESSAGE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+#include "u/libu.h"
 
 #define FLAG_IDENTIFY_REQUEST    1
-
-struct _WsmanDataBuffer {
-    char 	*body;
-    size_t	length;
-};
-typedef struct _WsmanDataBuffer WsmanDataBuffer;
 
 struct _WsmanAuth {
     char *username;
@@ -70,17 +68,13 @@ struct _WsmanMessage {
 };
 typedef struct _WsmanMessage WsmanMessage;
 
-
-struct _WsProperties {
-    char *key;
-    char *value;   
-};
-typedef struct _WsProperties WsProperties;
-
-
 void wsman_set_message_flags(WsmanMessage *msg, unsigned int flag);
 
 WsmanMessage *wsman_soap_message_new(void);
 void wsman_soap_message_destroy(WsmanMessage* wsman_msg);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif

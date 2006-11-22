@@ -379,38 +379,6 @@ wsman_set_fault( WsmanMessage *msg,
     if (details) msg->status.fault_msg = strdup(details);
     return;
 }
-#if 0
-static char *
-get_fault_details(WsmanFaultDetailType fault_detail_code)
-{
-    char *descr;
-    switch (fault_detail_code) 
-    {
-    case WSMAN_DETAIL_INVALID_RESOURCEURI:
-        descr = 
-            "The WS-Management service cannot process the request." \
-            " The specified resource URI is missing or in an incorrect format.";
-        break;
-    case WSMAN_DETAIL_MAX_ENVELOPE_SIZE:
-        descr 	= "The WS-Management service cannot process the request because" \
-                   "the envelope size in the request is too small.";
-                      
-        break;
-    case WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED:
-        descr 	= "The response that the WS-Management service computed exceeds" \
-                  "the maximum envelope size in the request.";
-        break;
-    case OWSMAN_DETAIL_ENDPOINT_ERROR:
-        descr = "Endpoint Failure";
-        break;
-    default:
-        descr = NULL;
-        break;
-    }
-    return descr;
-}
-
-#endif
 
 int 
 wsman_is_fault_envelope( WsXmlDocH doc ) 
@@ -423,18 +391,6 @@ wsman_is_fault_envelope( WsXmlDocH doc )
         return 0;
 }
 
-#if 0
-
-struct __WsmanFaultCodeTable
-{
-	WsmanFaultCodeType  fault_code;
-	char*               fault_action;
-	char*               subCodeNs;	
-	char*               code;
-	char*               subCode;
-	char*               reason;
-};
-#endif
 
 WsXmlDocH 
 wsman_generate_fault( WsContextH cntx, 
@@ -479,117 +435,6 @@ wsman_generate_fault( WsContextH cntx,
     return fault;                      
 }
 
-
-#if 0
-
-WsXmlDocH 
-wsman_generate_fault( WsContextH cntx, 
-                      WsXmlDocH in_doc, 
-                      WsmanFaultCodeType faultCode, 
-                      WsmanFaultDetailType faultDetail,
-                      char *fault_msg)
-{
-    char *code = FAULT_SENDER_CODE;
-    char *subCodeNs;
-    char *subCode;
-    char *reason;
-    char *detail = NULL;
-
-    debug( "Fault Code: %d", faultCode);
-    switch (faultCode) 
-    {
-    case WSA_ENDPOINT_UNAVAILABLE:
-        subCodeNs 	= XML_NS_ADDRESSING;
-        subCode		= "EndpointUnavailable";
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Endpoint unavailable.";
-        break;
-    case WSA_ACTION_NOT_SUPPORTED:
-        subCodeNs 	= XML_NS_ADDRESSING;
-        subCode		= "ActionNotSupported";
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Action not supported.";
-
-        break;
-    case WSMAN_INVALID_SELECTORS:
-        subCodeNs 	= XML_NS_WS_MAN;
-        subCode		= "InvalidSelectors";
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 	= "The WS-Management service cannot process the request " \
-                "because the selectors for the resource are not valid.";
-
-        break;
-    case SOAP_FAULT_MUSTUNDERSTAND:
-        subCodeNs 	= XML_NS_SOAP_1_2;
-        subCode		= "MustUnderstand"; 		 			
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Header not understood";
-        break; 				 		 		 		
-    case WSMAN_UNKNOWN:
-    case WSMAN_INTERNAL_ERROR:
-        subCodeNs 	= XML_NS_WS_MAN;
-        subCode		= "InternalError";
-        code			= FAULT_RECEIVER_CODE;
-
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Internal Error."; 		 			
-        break;
-    case WSA_INVALID_MESSAGE_INFORMATION_HEADER:
-        subCodeNs 	= XML_NS_ADDRESSING;
-        subCode 	  	= "InvalidMessageInformationHeader";
-
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Invalid Header"; 			 		
-        break;
-    case WSEN_INVALID_ENUMERATION_CONTEXT:
-        subCodeNs 	= XML_NS_ENUMERATION;
-        subCode 	  	= "InvalidEnumerationContext";
-        code			= FAULT_RECEIVER_CODE;
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "An invalid enumeration context was supplied with the message"; 			 		
-        break; 		
-    case WSMAN_ENCODING_LIMIT:
-        subCodeNs 	= XML_NS_WS_MAN;
-        subCode 	  	= "EncodingLimit";
-
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 	= "Encoding Limit, No details..";
-
-        break; 		
-    case WSA_DESTINATION_UNREACHABLE:
-        detail 		= "InvalidResourceURI";
-        subCodeNs 	= XML_NS_ADDRESSING;
-        subCode 	  	= "DestinationUnreachable";
-
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Destination Unreachable";
-
-    break;        
-    case WSA_DESTINATION_UNREACHABLE:
-        detail 		= "InvalidResourceURI";
-        subCodeNs 	= XML_NS_ADDRESSING;
-        subCode 	  	= "DestinationUnreachable";
-
-        if (( reason = get_fault_details(faultDetail)) == NULL)
-            reason 		= "Destination Unreachable";
-
-        break; 		
-    default:
-        subCodeNs = NULL;
-        subCode = NULL;
-        reason = NULL;
-        break;
-
-    }; 
-    if (fault_msg!= NULL ) {
-        reason = fault_msg;
-    }
-    WsXmlDocH fault =  ws_xml_create_fault(cntx, in_doc,
-            code, subCodeNs, subCode, NULL, reason, add_details_proc, faultDetail);	                    
-    return fault;                        
-}
-
-#endif
 
 
 void
