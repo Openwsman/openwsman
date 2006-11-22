@@ -38,6 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "wsman_config.h"
 #include "wsman-client-transport.h"
 #include "wsman-soap.h"
 #include "wsman-client.h"

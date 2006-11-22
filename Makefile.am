@@ -1,7 +1,7 @@
 SUBDIRS = src doc etc tests
 
 wsmanincludedir = $(includedir)/openwsman
-wsmaninclude_HEADERS = wsman_config.h
+#wsmaninclude_HEADERS = wsman_config.h
 
 package: dist
 	cp openwsman.spec /usr/src/packages/SPEC
