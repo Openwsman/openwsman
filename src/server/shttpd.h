@@ -135,7 +135,7 @@ extern const char *	shttpd_get_header(struct shttpd_arg_t *, const char *);
 extern const char *	shttpd_get_env(struct shttpd_arg_t *, const char *);
 
 extern int		shttpd_get_post_query_len(struct shttpd_arg_t *);
-extern int              shttpd_get_post_query(struct shttpd_arg_t *, char *, int);
+extern char    *shttpd_get_post_query(struct shttpd_arg_t *);
 extern int		shttpd_get_http_version(struct shttpd_arg_t *);
 extern const char *     shttpd_get_uri(struct shttpd_arg_t *);
 

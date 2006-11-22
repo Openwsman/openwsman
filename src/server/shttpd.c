@@ -1148,15 +1148,16 @@ int
 shttpd_get_post_query_len(struct shttpd_arg_t *arg)
 {
 	struct conn	*c = arg->priv;
-
 	return c->cclength;
 }
 
 	
-int
-shttpd_get_post_query(struct shttpd_arg_t *arg, char *to, int length)
+char *
+shttpd_get_post_query(struct shttpd_arg_t *arg)
 {
 	struct conn	*c = arg->priv;
+    return c->query;
+/*
 	char 		*p = c->query;
 	int len;
 
@@ -1172,6 +1173,7 @@ shttpd_get_post_query(struct shttpd_arg_t *arg, char *to, int length)
 	memcpy(to, p, len);
 
 	return len;
+*/
 }
 
 int

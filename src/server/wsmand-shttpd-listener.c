@@ -120,8 +120,12 @@ basic_auth_callback(char *username, char *password)
 
 
 static char *
-shttp_reason_phrase(int status) {
-        return "Error";
+shttp_reason_phrase(int status)
+{
+    if (status == WSMAN_STATUS_OK) {
+        return "OK";
+    }
+    return "Error";
 }
 
 typedef struct {
@@ -135,18 +139,23 @@ typedef struct {
 static int 
 server_callback (struct shttpd_arg_t *arg)
 {
-    const char *path, *method;
-    char *default_path;
+    const char *method;
     const char *content_type;
-    const char *encoding;
+//    char *default_path;
+//    const char *path;
+//    const char *encoding;
     int status = WSMAN_STATUS_OK;
+    char *fault_reason = NULL;
 
-    ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;    
+    ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;
     int n = 0;
     int k;
 
     if (shttp_msg != NULL) {
-        // WE already have the response. Just continue to send it to server
+        // We already have the response, but server
+        // output buffer is smaller then it.
+        // Some part of resopnse have already sent.
+        // Just continue to send it to server
         goto CONTINUE;
     }
 
@@ -154,138 +163,135 @@ server_callback (struct shttpd_arg_t *arg)
     WsmanMessage *wsman_msg = wsman_soap_message_new();
 
     // Check HTTP headers
-   
-    method = shttpd_get_env(arg, "REQUEST_METHOD");
 
-    // Check Method
+    method = shttpd_get_env(arg, "REQUEST_METHOD");
     if (strncmp(method, "POST", 4)) {
         debug( "Unsupported method %s", method);
-        status = WSMAN_STATUS_NOT_IMPLEMENTED;
+        status = WSMAN_STATUS_METHOD_NOT_ALLOWED;
+        fault_reason = "POST method supported only";
         goto DONE;
     }
 
+#if 0
+    // Redundant check. Server must work correctly
     path = shttpd_get_uri(arg);
     default_path = wsmand_options_get_service_path();
-    if (path) {
-        if (strcmp(path, default_path) != 0 ) {
-            status = WSMAN_STATUS_BAD_REQUEST;
-            goto DONE;
-        }
-    } else {
-        path = u_strdup ("");
-    }
-
-    content_type = shttpd_get_header(arg, "Content-Type");
-    if (content_type && strncmp(content_type, SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
-        status = WSMAN_STATUS_BAD_REQUEST;
+    if (!path || (strcmp(path, default_path) != 0 )) {
+        status = WSMAN_STATUS_NOT_ACCEPTABLE;
+        fault_reason = "Wrong URI";
         goto DONE;
     }
-    encoding = strchr(content_type, '=') + 1;
-    debug("Encoding: %s", encoding);
+#endif
+
+    content_type = shttpd_get_header(arg, "Content-Type");
+    if (content_type && strncmp(content_type,
+                SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
+        status = WSMAN_STATUS_BAD_REQUEST;
+        fault_reason = "Unsupported content type";
+        goto DONE;
+    }
+//    encoding = strchr(content_type, '=') + 1;
+//    debug("Encoding: %s", encoding);
 
 
     SoapH soap = (SoapH)arg->user_data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
 
+    // Get request from http server
     size_t length = shttpd_get_post_query_len(arg);
-    char *body   = (char *)malloc(length);
+    char *body   = shttpd_get_post_query(arg);
     if (body == NULL) {
-        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+        status = WSMAN_STATUS_BAD_REQUEST;
+        fault_reason = "No request body";
         error("NULL request body. len = %d", length);
         goto DONE;
     }
-    
-
-    (void) shttpd_get_post_query(arg, body,length);
     u_buf_set( wsman_msg->request, body, length);
 
-    shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
+    // some plugins can use credentials for its 
+    // own authentication
+     shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
                     &wsman_msg->auth_data.password);
 
-    // Call dispatcher
+
+    // Call dispatcher. Real request handling
     dispatch_inbound_call(soap, wsman_msg);
 
+
     if (wsman_msg->request) {
-      u_free(body);
-      u_buf_free(wsman_msg->request);    
+      // we don't need request any more
+      u_buf_free(wsman_msg->request);
     }
 
-    if ( wsman_fault_occured(wsman_msg) ) {
+    // here we start to handle the response
+
+    shttp_msg = (ShttpMessage *)malloc(sizeof (ShttpMessage));
+    if (shttp_msg == NULL) {
+        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+        fault_reason = "No memory";
+        goto DONE;
+    }
+    if (wsman_fault_occured(wsman_msg)) {
         char *buf;
         int  len;
         if (wsman_msg->in_doc != NULL) {
             wsman_generate_fault_buffer(
-                    soap->cntx, 
-                    wsman_msg->in_doc, 
-                    wsman_msg->status.fault_code , 
-                    wsman_msg->status.fault_detail_code, 
-                    wsman_msg->status.fault_msg, 
+                    soap->cntx,
+                    wsman_msg->in_doc,
+                    wsman_msg->status.fault_code,
+                    wsman_msg->status.fault_detail_code,
+                    wsman_msg->status.fault_msg,
                     &buf, &len);
-            shttp_msg = (ShttpMessage *)malloc(sizeof (ShttpMessage));
-            if (shttp_msg) {
-                shttp_msg->length = len;
-                shttp_msg->response = strndup(buf, len);
-                shttp_msg->ind = 0;
-            } else {
-                //  XXX handle error
-            }  
-            free(buf);
+            shttp_msg->length = len;
+            shttp_msg->response = buf;
+            shttp_msg->ind = 0;
         }
-
-        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR; // ?????
+        // According to spec
+        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
         goto DONE;
     }
 
-    shttp_msg = (ShttpMessage *)malloc(sizeof (ShttpMessage));
-    if (shttp_msg) {
-      shttp_msg->length = u_buf_size(wsman_msg->response);
-      shttp_msg->response = (char *)u_buf_ptr(wsman_msg->response);
-      shttp_msg->ind = 0;
-      status = wsman_msg->http_code;
-    } else {
-        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-    }
+    shttp_msg->length = u_buf_size(wsman_msg->response);
+    shttp_msg->response = (char *)u_buf_ptr(wsman_msg->response);
+    shttp_msg->ind = 0;
+    status = wsman_msg->http_code;
+
+DONE:
 
     if (wsman_msg->in_doc != NULL) {
         ws_xml_destroy_doc(wsman_msg->in_doc);
     }
-DONE:
     //wsman_soap_message_destroy(wsman_msg);
     u_free(wsman_msg);
+    if (fault_reason == NULL) {
+        fault_reason = shttp_reason_phrase(status);
+    }
     debug("Response (status) %d", status, shttp_reason_phrase(status));
 
-    // Here we begin to create response
-    // we consider output buffer is large enough to hold all headers
-    switch (status) {
-        case WSMAN_STATUS_OK:
-                n += snprintf(arg->buf + n, arg->buflen -n,
-	               "HTTP/1.1 200 OK\r\n");
-                break;
-        default:
-	       n += snprintf(arg->buf + n, arg->buflen -n, "HTTP/1.1 %d %s\r\n",
-                        status, shttp_reason_phrase(status));
-        break;
-    }
+    // Here we begin to create the http response.
+    // Create the headers at first.
+    // We consider output buffer of server is large enough to hold all headers.
+
+    n += snprintf(arg->buf + n, arg->buflen -n, "HTTP/1.1 %d %s\r\n",
+                       status, fault_reason);
     n += snprintf(arg->buf + n, arg->buflen -n, "Server: %s/%s\r\n",
                 PACKAGE, VERSION);
-    if (shttp_msg && shttp_msg->length > 0) {
-        n += snprintf(arg->buf + n, arg->buflen -n,
-                "Content-Type: %s\r\n",
-                SOAP1_2_CONTENT_TYPE);
-        n += snprintf(arg->buf + n, arg->buflen -n,
-             "Content-Length: %d\r\n", shttp_msg->length);
-    }
-//    n += snprintf(arg->buf + n, arg->buflen -n, "Connection: close\r\n");
 
     if (!shttp_msg || shttp_msg->length == 0) {
+        // can't send the body of response or nothing to send
         n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
         arg->last = 1;
-        if (shttp_msg) free(shttp_msg);
+        u_free(shttp_msg);
         return n;
     }
 
+    n += snprintf(arg->buf + n, arg->buflen -n, "Content-Type: %s\r\n",
+                SOAP1_2_CONTENT_TYPE);
+    n += snprintf(arg->buf + n, arg->buflen -n, "Content-Length: %d\r\n",
+                shttp_msg->length);
     n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
-    
+
+    // add response body to output buffer
 CONTINUE:
     k = arg->buflen - n;
     if (k <= shttp_msg->length - shttp_msg->ind) {
@@ -295,12 +301,12 @@ CONTINUE:
         arg->state = shttp_msg;
         return n + k;
     }
-    // Enough room for all message
+    // Enough room for all response body
     memcpy(arg->buf + n, shttp_msg->response + shttp_msg->ind,
                                 shttp_msg->length - shttp_msg->ind);
     n += shttp_msg->length - shttp_msg->ind;
     if (n + 4 > arg->buflen) {
-        // not enough room empty lines at the end of message
+        // not enough room for empty lines at the end of the message
         arg->state = shttp_msg;
         shttp_msg->ind = shttp_msg->length;
         return n;
@@ -311,7 +317,7 @@ CONTINUE:
     debug("%s", arg->buf);
     u_free(shttp_msg->response);
     u_free(shttp_msg);
-    
+
     arg->last =1;
     arg->state = NULL;
     return n;
