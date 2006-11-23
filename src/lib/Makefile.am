@@ -22,7 +22,6 @@ OWSMAN_INCLUDES = \
 	wsman-xml.h \
 	wsman-soap.h \
 	wsman-soap-message.h \
-	wsman-catalog.h \
 	wsman-server.h \
 	wsman-plugins.h \
 	wsman-dispatcher.h \
@@ -35,7 +34,6 @@ OWSMAN_INCLUDES = \
 	$(wsmaninclude_HEADERS)
 
 	
-libwsman_catalog_la_SOURCES = 
 
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
@@ -87,12 +85,10 @@ libwsman_server_la_LDFLAGS= -version-info 1:0
 
 
 
-libwsman_catalog_la_LDFLAGS= -version-info 1:0
 
 lib_LTLIBRARIES = \
 		 libwsman.la \
 		 libwsman_curl_client_transport.la \
 		 libwsman_client.la \
-		 libwsman_catalog.la \
 		 libwsman_server.la
 

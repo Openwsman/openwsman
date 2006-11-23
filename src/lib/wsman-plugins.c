@@ -55,7 +55,7 @@ scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
     int n;
     list_t *files = list_create(LISTCOUNT_T_MAX);
 
-    if (0 > (n = scandir (dir, &namelist, select, alphasort)))
+    if (0 > (n = scandir (dir, &namelist, 0, alphasort)))
     {
         return files;
     } else {

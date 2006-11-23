@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
  *
@@ -37,7 +36,19 @@
 
 #include <string.h>
 #include <stdlib.h>
+
+#if defined HAVE_PAM_PAM_APPL_H
+#include <pam/pam_appl.h>
+#elif defined HAVE_SECURITY_PAM_APPL_H
 #include <security/pam_appl.h>
+#endif
+
+#if defined HAVE_PAM_PAM_MISC_H
+#include <pam/pam_misc.h>
+#elif defined HAVE_SECURITY_PAM_MISC_H
+#include <security/pam_misc.h>
+#endif
+
 
 #ifndef STANDALONE
 #include "u/libu.h"

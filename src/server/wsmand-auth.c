@@ -9,7 +9,9 @@
 #include <wsmand-auth.h>
 #include "wsmand-daemon.h"
 
+#ifdef HAVE_CRYPT_H
 #include <crypt.h>
+#endif
 #include <time.h>
 
 

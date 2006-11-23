@@ -4,7 +4,7 @@ INCLUDES =  \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu \
-		-I/usr/include/openssl \
+	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
 if USE_LIBSOUP_SERV
 INCLUDES += $(SOUP_CFLAGS)  \
@@ -14,7 +14,7 @@ INCLUDES += $(SOUP_CFLAGS)  \
 endif
 
 LIBS = \
-       -lcrypt \
+       $(OPENSSL_LIBS) \
        $(top_builddir)/src/lib/libwsman.la \
        $(top_builddir)/src/libu/libwsman_utils.la \
        $(top_builddir)/src/lib/libwsman_server.la

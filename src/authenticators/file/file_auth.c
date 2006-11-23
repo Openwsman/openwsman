@@ -36,7 +36,9 @@
 
 #include <string.h>
 #include <stdlib.h>
+#ifdef HAVE_CRYPT_H
 #include <crypt.h>
+#endif
 #include "u/libu.h"
 #include <stdio.h>
 
