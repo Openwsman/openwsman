@@ -35,7 +35,7 @@
 #ifndef WSMAN_SOAP_ENVELOPE_H_
 #define WSMAN_SOAP_ENVELOPE_H_
 
-#include "wsman-xml-api.h"
+#include "wsman-types.h"
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
@@ -60,8 +60,9 @@ WsXmlDocH ws_create_response_envelope(WsContextH cntx,
 WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg);
 
 WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code,
-        char *subCodeNs, char *subCode, char *lang, 
-        char *reason, void (*addDetailProc)(WsXmlNodeH, void *), void *addDetailProcData);
+        char *subCodeNs, char *subCode, char *lang,
+        char *reason, void (*addDetailProc)(WsXmlNodeH, void *),
+        void *addDetailProcData);
 
 
 WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
@@ -77,11 +78,13 @@ char* wsman_get_class_name ( WsContextH cntx );
 
 char* wsman_get_method_name ( WsContextH cntx ); 
 
-hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );            
+hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );
 
 int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
-void wsman_set_estimated_total(WsXmlDocH in_doc, WsXmlDocH out_doc, WsEnumerateInfo *enumInfo);
+void wsman_set_estimated_total(WsXmlDocH in_doc,
+                               WsXmlDocH out_doc,
+                               WsEnumerateInfo *enumInfo);
 
 int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
 
@@ -92,7 +95,7 @@ void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
 hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
-        
+
 void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 
 char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
@@ -110,9 +113,8 @@ void wsman_set_fault(WsmanMessage *msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
-void 
-wsman_set_polymorph_mode( WsContextH cntx,
-                          WsXmlDocH doc,
-                          WsEnumerateInfo *enumInfo);
+void wsman_set_polymorph_mode(WsContextH cntx,
+                              WsXmlDocH doc,
+                              WsEnumerateInfo *enumInfo);
 
 #endif

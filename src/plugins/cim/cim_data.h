@@ -36,7 +36,8 @@
 #ifndef __CIM_DATA_H__
 #define __CIM_DATA_H__
 
-
+#include "wsman-declarations.h"
+#include "wsman-xml-serializer.h"
 
 // The resource is modeled as a struct
 struct __CimResource
@@ -61,7 +62,7 @@ int CimResource_Custom_EP(SoapOpH op, void* appData);
 int CimResource_Put_EP(SoapOpH op, void* appData);
 
 SER_DECLARE_TYPE(CimResource);
-SER_DECLARE_EP_ARRAY(CimResource);
+DECLARE_EP_ARRAY(CimResource);
 
 void get_endpoints(void *self, void **data);
 

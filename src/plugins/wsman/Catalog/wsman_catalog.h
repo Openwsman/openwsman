@@ -61,7 +61,7 @@ int WsManCatalog_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
 
 
 SER_DECLARE_TYPE(WsManCatalog);
-SER_DECLARE_EP_ARRAY(WsManCatalog);
+DECLARE_EP_ARRAY(WsManCatalog);
 DECLARE_SELECTOR_ARRAY(WsManCatalog);
 
 

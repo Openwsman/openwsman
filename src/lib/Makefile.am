@@ -16,6 +16,7 @@ wsmaninclude_HEADERS = \
 
 
 OWSMAN_INCLUDES = \
+	wsman-declarations.h \
 	wsman-soap.h \
 	wsman-soap-envelope.h \
 	wsman-xml.h \

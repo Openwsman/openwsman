@@ -70,7 +70,7 @@ WsManTest2* WsManTest2_Get_EP (WsContextH cntx);
 // End point array declaration for the resource
 // extern WsDispatchEndPointInfo WsManTest2_EndPoints[];
 SER_DECLARE_TYPE(WsManTest2);
-SER_DECLARE_EP_ARRAY(WsManTest2);
+DECLARE_EP_ARRAY(WsManTest2);
 DECLARE_SELECTOR_ARRAY(WsManTest2);
 
 

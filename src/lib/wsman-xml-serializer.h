@@ -221,6 +221,7 @@ void *ws_deserialize(WsContextH cntx,
  * @param x Minimum count, 1 for single elementd; > 1 for fixed size array;  0 for dynamic array. 
  * @param y Maximum count, 1 for single elementd; > 1 for fixed size array;  0 for dynamic array. 
  */
+
 #define SER_UINT8(n, x, y)\
 	{(n), (x), (y), do_serialize_uint8, NULL}
 #define SER_UINT16(n, x, y)\
@@ -351,11 +352,10 @@ void *ws_deserialize(WsContextH cntx,
 #define SER_RET_VAL_STRUCT_PTR(n, t)\
 	{(n), SER_PTR | 1, 1 | SER_RET_VAL, do_serialize_struct, t##_TypeItems}
 
+
 #define SER_TYPE_STRUCT(n, t)\
 struct __XmlSerializerInfo t##_TypeInfo[] = {\
 {(n), 1, 1, do_serialize_struct, t##_TypeItems} }
-
-#define SER_LAST {NULL, 0, 0, NULL, NULL}
 
 
 #define SER_START_ITEMS(n, t)\
@@ -365,25 +365,9 @@ struct __XmlSerializerInfo t##_TypeItems[] = {
 	{NULL, 0, 0, NULL, NULL} };\
 	SER_TYPE_STRUCT(n, t)
 
-#define SER_START_END_POINTS(t) WsDispatchEndPointInfo t##_EndPoints[] = {
-
-#define SER_FINISH_END_POINTS(t) END_POINT_LAST }
-
-
-#define SER_START_NAMESPACES(t) WsSupportedNamespaces t##_Namespaces[] = {
-#define SER_FINISH_NAMESPACES(t) NAMESPACE_LAST }
-
-#define SER_DECLARE_EP_ARRAY(t)\
-extern WsDispatchEndPointInfo t##_EndPoints[]
-
 #define SER_DECLARE_TYPE(t)\
 extern struct __XmlSerializerInfo t##_TypeInfo[];\
 extern struct __XmlSerializerInfo t##_TypeItems[]
-
-
-
-
-//#define SER_END_ITEMS		{NULL, 0, 0, NULL, NULL} }
 
 struct __XmlSerializationData;
 int do_serialize_uint8(struct __XmlSerializationData* data);

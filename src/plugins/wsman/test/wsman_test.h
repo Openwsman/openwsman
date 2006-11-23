@@ -35,6 +35,9 @@
 #ifndef __WS_MAN_TEST_H__
 #define __WS_MAN_TEST_H__
 
+#include "wsman-declarations.h"
+#include "wsman-xml-serializer.h"
+
 #define WS_MAN_TEST_RESOURCE_URI		 XML_NS_OPENWSMAN"/test"
 
 
@@ -67,7 +70,7 @@ WsManTest* WsManTest_Get_EP (WsContextH cntx);
 
 
 SER_DECLARE_TYPE(WsManTest);
-SER_DECLARE_EP_ARRAY(WsManTest);
+DECLARE_EP_ARRAY(WsManTest);
 // DECLARE_SELECTOR_ARRAY(WsManTest);
 
 

@@ -43,8 +43,6 @@
 
 #include "wsman-errors.h"
 #include "wsman-xml-api.h"
-#include "wsman-soap.h"
-#include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 #include "cim-interface.h"
 
@@ -56,19 +54,19 @@ hash_t *vendor_namespaces = NULL;
 SER_START_ITEMS("CIM", CimResource)
 SER_END_ITEMS("CIM", CimResource);
 
-SER_START_END_POINTS(CimResource)
-END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
+START_END_POINTS(CimResource)
+  END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
   END_POINT_TRANSFER_PUT_RAW(CimResource, XML_NS_CIM_CLASS),
   END_POINT_ENUMERATE(CimResource, XML_NS_CIM_CLASS),
   END_POINT_PULL_RAW(CimResource, XML_NS_CIM_CLASS),
   END_POINT_RELEASE(CimResource, XML_NS_CIM_CLASS),
   END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),
-  SER_FINISH_END_POINTS(CimResource);
+FINISH_END_POINTS(CimResource);
 
 
-SER_START_NAMESPACES(CimResource)
-ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
-SER_FINISH_NAMESPACES(CimResource);
+START_NAMESPACES(CimResource)
+  ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
+FINISH_NAMESPACES(CimResource);
 
 
 
@@ -80,9 +78,9 @@ set_vendor_namespaces(void)
   int i;
 
   list_t *l = list_create(LISTCOUNT_T_MAX);
-  for (i = 0; CimResource_Namespaces[i].ns != NULL; i++)
-  {
-    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
+  for (i = 0; CimResource_Namespaces[i].ns != NULL; i++) {
+    WsSupportedNamespaces *ns =
+          (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
     ns->class_prefix = CimResource_Namespaces[i].class_prefix;
     ns->ns = (char*) CimResource_Namespaces[i].ns;
     lnode_t *node = lnode_create(ns);
@@ -91,14 +89,14 @@ set_vendor_namespaces(void)
 
   if (vendor_namespaces && hash_count(vendor_namespaces) > 0 ) {
     hash_scan_begin(&hs, vendor_namespaces);
-    while ((hn = hash_scan_next(&hs))) 
-    {
-      WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
+    while ((hn = hash_scan_next(&hs))) {
+      WsSupportedNamespaces *ns =
+           (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
       ns->class_prefix = (char*)hnode_getkey(hn);
       ns->ns = (char*) hnode_get(hn);
       lnode_t *node = lnode_create(ns);
       list_append(l, node);
-    }  
+    }
   }
   return l;
 }
@@ -121,7 +119,7 @@ get_endpoints( void *self,
   //ifc->namespaces = CimResource_Namespaces;
   ifc->namespaces = set_vendor_namespaces();
   ifc->extraData = NULL;
-  ifc->endPoints = CimResource_EndPoints;	    	   
+  ifc->endPoints = CimResource_EndPoints;
   return;
 }
 
@@ -138,15 +136,14 @@ void cleanup( void *self, void *data )
 void set_config( void *self, dictionary *config )
 {
   debug("reading configuration file options");
-  if (config)
-  {
+  if (config) {
     cim_namespace = iniparser_getstr (config, "cim:default_cim_namespace");
     char *namespaces = iniparser_getstr (config, "cim:vendor_namespaces");
     debug("vendor namespaces: %s", namespaces);
     if (namespaces) {
       hash_t * t = parse_query(namespaces);
       if (t) {
-        vendor_namespaces = t;        
+        vendor_namespaces = t;
       }
       else
         vendor_namespaces = NULL;

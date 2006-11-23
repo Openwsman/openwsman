@@ -505,17 +505,15 @@ wsman_get_enum_mode( WsContextH cntx,
                      WsXmlDocH doc) 
 {
   char *enum_mode = NULL;
-  if ( doc == NULL )
+  if (doc == NULL) {
     doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-  if ( doc )
-  {
+  }
+  if (doc) {
     WsXmlNodeH node = ws_xml_get_soap_body(doc);
-    if ( node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE)) )
-    {
+    if (node && (node = ws_xml_get_child(node, 0,
+                              XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
       WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_ENUM_MODE);
-      if ( opt ) 
-      {
+      if (opt) {
         char *text = ws_xml_get_node_text(opt);
         if (text != NULL)
           enum_mode = text;

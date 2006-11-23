@@ -69,62 +69,6 @@
 
 
 
-#define END_POINT_IDENTIFY(t, ns)                           \
-  { WS_DISP_TYPE_IDENTIFY, NULL, NULL, NULL, NULL,          \
-      t##_TypeInfo, (WsProcType)t##_Identify_EP, ns, NULL}
-
-#define END_POINT_TRANSFER_GET(t, ns)                                \
-  { WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,         \
-      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}
-
-#define END_POINT_TRANSFER_GET_RAW(t, ns)                         \
-  { WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
-      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}     
-
-#define END_POINT_TRANSFER_PUT_RAW(t, ns)                         \
-  { WS_DISP_TYPE_PUT_RAW, NULL, NULL, TRANSFER_ACTION_PUT, NULL,  \
-      t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}     
-
-#define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)                         \
-  { WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
-      t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}     
-
-#define END_POINT_TRANSFER_PUT(t, ns)                          \
-  { WS_DISP_TYPE_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,   \
-      t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}
-
-
-
-
-#define END_POINT_ENUMERATE(t, ns)                                   \
-  { WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL, \
-      t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
-
-#define END_POINT_RELEASE(t, ns)                                  \
-  { WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,  \
-      t##_TypeInfo, (WsProcType)t##_Release_EP, ns, NULL}
-
-#define END_POINT_PULL(t, ns)                               \
-  { WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,  \
-      t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
-
-#define END_POINT_PULL_RAW(t, ns)                              \
-  { WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL, \
-      t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}    
-
-#define END_POINT_PRIVATE_EP(t, a, m, ns)                \
-  { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL,           \
-      t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
-
-#define END_POINT_CUSTOM_METHOD(t, ns)                      \
-  { WS_DISP_TYPE_PRIVATE, NULL, NULL, NULL, NULL,           \
-      t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
-
-#define END_POINT_LAST  { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
-#define NAMESPACE_LAST  { NULL , NULL }
-#define ADD_NAMESPACE( ns , prefix )            \
-  {ns, prefix }
-
 #if 0
 // Selectors
 #define ADD_SELECTOR(n,t,d)                     \
@@ -223,7 +167,7 @@ typedef struct _WS_CONTEXT WS_CONTEXT;
 
 
 typedef void (*WsProcType)(void);
-
+struct __XmlSerializerInfo;
 struct __WsDispatchEndPointInfo
 {
   unsigned long flags; // put/get/create/delete rpc enumerate/release/pull/update/getstatus	

@@ -167,29 +167,29 @@ CimResource_Custom_EP( SoapOpH op,
   SoapH soap = soap_get_op_soap(op);
   in_doc = soap_get_op_doc(op, 1); 
   WsContextH cntx = ws_create_ep_context(soap, in_doc);
-    
+
   op_t *_op = (op_t *)op;
   WsmanMessage *msg = (WsmanMessage *)_op->data;
   if (msg) {
-    cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+    cimclient = CimResource_Init(cntx, msg->auth_data.username,
+                                 msg->auth_data.password);
   }
-  
 
-  if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
+  if ((doc = ws_create_response_envelope(cntx, in_doc, NULL))) {
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     cim_invoke_method(cimclient, cntx, body, &status);
   }
 
   if (status.fault_code != 0) {
     ws_xml_destroy_doc(doc);
-    doc = wsman_generate_fault(cntx, in_doc, status.fault_code, 
+    doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
                                status.fault_detail_code, NULL);
   }
 
-  if ( doc ) {
+  if (doc) {
     soap_set_op_doc(op, doc, 0);
   } else {
-    error( "Invalid doc" );
+    error("Invalid doc");
   }
 
   ws_destroy_context(cntx);
@@ -213,32 +213,32 @@ CimResource_Enumerate_EP( WsContextH cntx,
 
   WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
   CimClientInfo *cimclient = NULL;
-  
- 
-  if ( enumInfo) {   
-    cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+
+  if ( enumInfo) {
+    cimclient = CimResource_Init(cntx, enumInfo->auth_data.username,
+                                             enumInfo->auth_data.password);
   }
 
-  cim_enum_instances (cimclient, enumInfo,  status);
+  cim_enum_instances(cimclient, enumInfo, status);
 
   if (status && status->fault_code != 0) {
     goto err;
   }
 
-  max_elements = wsman_is_optimization(cntx, NULL );
+  max_elements = wsman_is_optimization(cntx, NULL);
 
   enum_mode = wsman_get_enum_mode(cntx, NULL); 
   if (enum_mode)
     wsman_set_enum_mode(enum_mode, enumInfo);
- 
+
   wsman_set_polymorph_mode(cntx, NULL, enumInfo);
-  if (max_elements > 0)
-  {
+  if (max_elements > 0) {
     doc = ws_create_response_envelope(cntx, in_doc , NULL);
-    WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc), XML_NS_ENUMERATION, 
-                                       WSENUM_ENUMERATE_RESP , NULL);       
-    cim_get_enum_items(cimclient, cntx, node, enumInfo, XML_NS_WS_MAN, max_elements);
-    if (doc != NULL ) {
+    WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
+                       XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
+    cim_get_enum_items(cimclient, cntx, node,
+                                    enumInfo, XML_NS_WS_MAN, max_elements);
+    if (doc != NULL) {
       enumInfo->pullResultPtr = doc;
       int index2 = enumInfo->index + 1;
       if (index2 == enumInfo->totalItems)  {
@@ -248,7 +248,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
     else
       enumInfo->pullResultPtr = NULL;
   }
-      
+
   CimResource_destroy(cimclient);
   return 0;
  err:
@@ -275,7 +275,7 @@ CimResource_Pull_EP( WsContextH cntx,
                      WsEnumerateInfo* enumInfo,
                      WsmanStatus *status)
 {
-  debug( "Pull Endpoint Called");      
+  debug( "Pull Endpoint Called");
   WsXmlDocH doc = NULL;
   CimClientInfo *cimclient = NULL;
 
@@ -290,7 +290,7 @@ CimResource_Pull_EP( WsContextH cntx,
   WsXmlNodeH body = ws_xml_get_soap_body(doc);
 
   WsXmlNodeH pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
-                                         WSENUM_PULL_RESP, NULL);       
+                                                 WSENUM_PULL_RESP, NULL);
 
   int max = wsen_get_max_elements(cntx, NULL);
   cim_get_enum_items(cimclient, cntx, pullnode, 
@@ -331,11 +331,13 @@ CimResource_Put_EP( SoapOpH op,
   WsmanMessage *msg = (WsmanMessage *)_op->data;
 
   if (msg) {
-    cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+    cimclient = CimResource_Init(cntx,
+                        msg->auth_data.username, msg->auth_data.password );
   }
 
  
-  if ( (doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL)) ) { 
+  if ((doc = ws_create_response_envelope(cntx,
+                                         soap_get_op_doc(op, 1), NULL))) {
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
     if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
@@ -343,7 +345,6 @@ CimResource_Put_EP( SoapOpH op,
     } else {
       // FIXME: Correct fault
       status.fault_code = WSA_INVALID_MESSAGE_INFORMATION_HEADER;
-      
     }
   }
 
@@ -358,7 +359,7 @@ CimResource_Put_EP( SoapOpH op,
   } else {
     debug( "Invalid doc" );
   }
-    
+
   CimResource_destroy(cimclient);
   ws_destroy_context(cntx);
   return 0;

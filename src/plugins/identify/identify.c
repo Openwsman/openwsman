@@ -44,8 +44,6 @@
 
 #include "wsman-errors.h"
 #include "wsman-xml-api.h"
-#include "wsman-soap.h"
-#include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
 #include "identify.h"
@@ -68,15 +66,15 @@ SER_END_ITEMS("IdentifyResponse", wsmid_identify);
 // Must follow general convention xxx_EndPoints
 //
 
-SER_START_END_POINTS(wsmid_identify)
-END_POINT_IDENTIFY(wsmid_identify, XML_NS_WSMAN_ID ),
-SER_FINISH_END_POINTS(wsmid_identify);
+START_END_POINTS(wsmid_identify)
+  END_POINT_IDENTIFY(wsmid_identify, XML_NS_WSMAN_ID ),
+FINISH_END_POINTS(wsmid_identify);
 
 
 
-SER_START_NAMESPACES(wsmid_identify)
+START_NAMESPACES(wsmid_identify)
     ADD_NAMESPACE( XML_NS_WSMAN_ID, NULL ),
-SER_FINISH_NAMESPACES(wsmid_identify);
+FINISH_NAMESPACES(wsmid_identify);
 
 
 static list_t *
@@ -100,8 +98,8 @@ set_namespaces(void)
 }
 
 
-void get_endpoints(void *self, void **data) 
-{		 		
+void get_endpoints(void *self, void **data)
+{
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
