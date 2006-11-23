@@ -52,11 +52,16 @@ fi
 AM_CONDITIONAL(USE_LIBSOUP_SERV, test "x$with_libsoup" == "xyes")
 AM_CONDITIONAL(USE_SHTTPD, test "x$with_shttpd" == "xyes")
 
-PKG_CHECK_MODULES(CURL, libcurl)
+PKG_CHECK_MODULES([CURL], libcurl)
+AC_SUBST(CURL_CFLAGS)
+AC_SUBST(CURL_LIBS)
+
 
 if test "x$with_libsoup" = "xyes"; then
 
     PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.8.0 )
+    AC_SUBST(GLIB_CFLAGS)
+    AC_SUBST(GLIB_LIBS)
     PKG_CHECK_MODULES(GOBJECT, gobject-2.0)
     PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
     PKG_CHECK_MODULES(SOUP, libsoup-2.2)
@@ -135,6 +140,7 @@ AM_CONDITIONAL(USE_PAM, test x$use_pam = x1)
 
 
 dnl ----------------------------------------------------------------------
+AC_CHECK_HEADERS([crypt.h])
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h sys/signal.h])
 AC_CHECK_HEADERS([ctype.h sys/resource.h sys/socket.h sys/select.h])
 AC_CHECK_HEADERS([netinet/in.h], [], [],
@@ -179,6 +185,8 @@ AM_PROG_LIBTOOL
 AC_FUNC_ALLOCA
 
 PKG_CHECK_MODULES(XML, libxml-2.0)
+    AC_SUBST(XML_CFLAGS)
+    AC_SUBST(XML_LIBS)
 AC_ARG_ENABLE(doxygen-docs,     [  --enable-doxygen-docs     build DOXYGEN documentation (requires Doxygen)],enable_doxygen_docs=$enableval,enable_doxygen_docs=auto)
 
 dnl ***********************
@@ -225,6 +233,8 @@ AC_ARG_ENABLE(ssl,
 
 if test "$enable_ssl" != "no"; then
     PKG_CHECK_MODULES(OPENSSL, openssl , have_ssl="yes", have_ssl="no")
+    AC_SUBST(OPENSSL_CFLAGS)
+    AC_SUBST(OPENSSL_LIBS)
     if test "$have_ssl" != "yes"; then
         if test "$enable_ssl" = "auto"; then
             AC_MSG_WARN(Disabling SSL support);
