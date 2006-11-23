@@ -35,6 +35,10 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 

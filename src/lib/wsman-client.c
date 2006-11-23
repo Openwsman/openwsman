@@ -36,7 +36,6 @@
 #include <wsman_config.h>
 #endif
 
-#include <libxml/uri.h>
 /*
 #include <stdarg.h>
 #include <stdio.h>
