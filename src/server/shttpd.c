@@ -1701,8 +1701,8 @@ readremote(struct conn *c, char *buf, size_t len)
             }
         }
 	} else
-		n = recv(c->sock, buf, len, 0);
 #endif
+		n = recv(c->sock, buf, len, 0);
 	if (n > 0)
 		INCREMENT_KB(n, in, c->ctx->kb_in);
 
