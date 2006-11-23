@@ -35,13 +35,16 @@
 
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
+#else
+#ifndef PACKAGE_STRING
+#define PACKAGE_STRING "WSMANCURL"
+#endif
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "wsman_config.h"
 #include "wsman-client-transport.h"
 #include "wsman-soap.h"
 #include "wsman-client.h"

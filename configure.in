@@ -67,6 +67,7 @@ fi
 if test "x$enable_debug" = "xyes"; then
     test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
     OWSMAN_DEBUG_FLAGS="-DOWSMAN_ENABLE_DEBUG"
+    CFLAGS="$CFLAGS -DDEBUG_VERBOSE"
 else
     if test "x$enable_debug" = "xno"; then
         OWSMAN_DEBUG_FLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS"

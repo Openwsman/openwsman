@@ -35,10 +35,6 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#ifdef HAVE_CONFIG_H
-#include <wsman_config.h>
-#endif
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -79,17 +75,20 @@ void debug_remove_handler (unsigned int id);
 const char * debug_helper (const char *format, ...);
 void debug_full (debug_level_e  level, const char   *format, ...);
 
-// #if 1
+
 #ifdef DEBUG_VERBOSE
 #define debug( format...) \
-        debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
-                debug_helper (format))
+        debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", \
+        DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
+        debug_helper (format))
 #define error( format...) \
-        debug_full(DEBUG_LEVEL_ERROR, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, \
-                debug_helper (format))
+        debug_full(DEBUG_LEVEL_ERROR, "[%d] %s:%d(%s) %s", \
+        DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, \
+        debug_helper (format))
 #define message( format...) \
-        debug_full(DEBUG_LEVEL_MESSAGE, "[%d] %s:%d(%s) %s", DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
-                debug_helper (format))
+        debug_full(DEBUG_LEVEL_MESSAGE, "[%d] %s:%d(%s) %s", \
+        DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
+        debug_helper (format))
 #else
 #define warnings( format...) \
         debug_full(DEBUG_LEVEL_WARNING, format)
