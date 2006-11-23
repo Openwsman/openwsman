@@ -15,6 +15,7 @@
 #include <net/if_arp.h>
 #include <sys/utsname.h>
 #include <sys/socket.h>
+#include <sys/param.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #include <fcntl.h>

@@ -31,21 +31,24 @@
 /**
  * @author Vadim Revyakin
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #define NO_DLLOAD
 
 #include <string.h>
 #include <stdlib.h>
 
-#if defined HAVE_PAM_PAM_APPL_H
+#if defined(HAVE_PAM_PAM_APPL_H)
 #include <pam/pam_appl.h>
-#elif defined HAVE_SECURITY_PAM_APPL_H
+#elif defined(HAVE_SECURITY_PAM_APPL_H)
 #include <security/pam_appl.h>
 #endif
 
-#if defined HAVE_PAM_PAM_MISC_H
+#if defined(HAVE_PAM_PAM_MISC_H)
 #include <pam/pam_misc.h>
-#elif defined HAVE_SECURITY_PAM_MISC_H
+#elif defined(HAVE_SECURITY_PAM_MISC_H)
 #include <security/pam_misc.h>
 #endif
 
