@@ -600,13 +600,14 @@ wsenum_enumerate_stub( SoapOpH op,
                                 XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
           }
 
+          WsContextH soapCntx = ws_get_soap_context(soap);
           if (enumInfo.index == enumInfo.totalItems) {
               ws_serialize_str(epcntx, resp_node,
                                NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);
+              ws_remove_context_val(soapCntx, cntxName); 
           } else {
               ws_serialize_str(epcntx, resp_node, enumId, 
-                            XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-              WsContextH soapCntx = ws_get_soap_context(soap);
+                            XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);             
               set_context_val(soapCntx, cntxName, &enumInfo,
                                 sizeof(enumInfo), 0, WS_CONTEXT_TYPE_BLOB);
           }
@@ -763,34 +764,31 @@ wsenum_pull_raw_stub( SoapOpH op,
     error( "Invalid enumeration context...");
     doc = wsman_generate_fault(soapCntx, _doc, 
                                WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
-  } 
-  else 
-  {
-    if (!wsman_verify_enum_info(op, enumInfo, &status)) 
-    {
+  } else {
+    if (!wsman_verify_enum_info(op, enumInfo, &status)) {
       doc = wsman_generate_fault(soapCntx, _doc, 
                                  status.fault_code, status.fault_detail_code, NULL);  
       goto cleanup;
     }
 
-    if ( (retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status)) ) 
-    {             
+    if ( (retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status)) ) {             
       doc = wsman_generate_fault(soapCntx, _doc, 
                                  status.fault_code, status.fault_detail_code, NULL);
       ws_remove_context_val(soapCntx, cntxName); 	
     } else {
       enumInfo->index++;
-      if ( enumInfo->pullResultPtr )
-      {
+      if ( enumInfo->pullResultPtr ) {
         doc = 	enumInfo->pullResultPtr;
         wsman_set_estimated_total(_doc, doc, enumInfo);
                 
         WsXmlNodeH body =   ws_xml_get_soap_body(doc);
-        WsXmlNodeH response = ws_xml_get_child(body, 0 , XML_NS_ENUMERATION,WSENUM_PULL_RESP);
+        WsXmlNodeH response = ws_xml_get_child(body, 0 , 
+                                               XML_NS_ENUMERATION,WSENUM_PULL_RESP);
                 
-        if (enumInfo->index == enumInfo->totalItems) 
-        {
-          ws_serialize_str(soapCntx, response, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);          
+        if (enumInfo->index == enumInfo->totalItems) {
+          ws_serialize_str(soapCntx, response, NULL, 
+                           XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE); 
+          ws_remove_context_val(soapCntx, cntxName); 
         }
         else if ( enumId ) {
           ws_serialize_str(soapCntx, response, enumId, 
@@ -831,9 +829,7 @@ ws_transfer_get_stub(SoapOpH op,
     warning( "Transfer Get fault");
     doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
                                WSMAN_INVALID_SELECTORS, -1, NULL);
-  } 
-  else 
-  {
+  } else {
     debug( "Creating Response doc");
     doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 
