@@ -225,6 +225,7 @@ server_callback (struct shttpd_arg_t *arg)
     if (wsman_msg->request) {
       // we don't need request any more
       u_buf_free(wsman_msg->request);
+      wsman_msg->request = NULL;
     }
 
     // here we start to handle the response
@@ -265,9 +266,14 @@ DONE:
 
     if (wsman_msg->in_doc != NULL) {
         ws_xml_destroy_doc(wsman_msg->in_doc);
+        wsman_msg->in_doc = NULL;
     }
-    //wsman_soap_message_destroy(wsman_msg);
-    u_free(wsman_msg);
+    if (wsman_msg->response) {
+        u_buf_free(wsman_msg->response);
+        wsman_msg->response = NULL;
+    }
+    wsman_soap_message_destroy(wsman_msg);
+ //   u_free(wsman_msg);
     if (fault_reason == NULL) {
         fault_reason = shttp_reason_phrase(status);
     }
