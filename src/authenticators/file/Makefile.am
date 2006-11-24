@@ -7,6 +7,7 @@ libwsman_file_auth_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu
 
+libwsman_file_auth_la_LIBADD = -lcrypt
 
 auth_LTLIBRARIES= libwsman_file_auth.la
 
