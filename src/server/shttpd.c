@@ -1090,7 +1090,7 @@ setopt(const char *var, const char *val)
 }
 
 
-#ifdef OPENWSMAN
+#if 0
 static void
 sigterm(int signo)
 {
@@ -1120,10 +1120,9 @@ shttpd_init(const char *config_file, ...)
 	}
 	va_end(ap);
 #ifdef OPENWSMAN
-    (void) signal(SIGCHLD, sigchild);
+ //   (void) signal(SIGCHLD, sigchild);
     (void) signal(SIGPIPE, SIG_IGN);
-    (void) signal(SIGTERM, sigterm);
-    (void) signal(SIGINT, sigterm);
+
 #endif
 	return (do_init(config_file, 0, NULL));
 }
