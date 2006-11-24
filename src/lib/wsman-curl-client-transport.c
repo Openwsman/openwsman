@@ -50,6 +50,7 @@
 #include "wsman-client-transport.h"
 
 
+#define DEFAULT_TRANSFER_LEN 32000
 
 extern ws_auth_request_func_t request_func;
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
@@ -112,15 +113,34 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 {
     transfer_ctx_t *ctx = data;
     size_t len;
+    char *buf;
 
     len = size * nmemb;
     if (len >= ctx->len - ctx->ind) {
-        len = ctx->len - ctx->ind -1;
+        debug("Buffer too small. Resize from %d to %d (%d <= %d). recieved %d",
+            ctx->len, ctx->len + 4 * len,
+            ctx->len - ctx->ind -1, len, ctx->ind);
+        if (ctx->len == DEFAULT_TRANSFER_LEN) {
+            // resize static buffer 
+            buf = (char *)malloc(ctx->len + 4 * len);
+            if (buf) {
+                memcpy(buf, ctx->buf, ctx->ind);
+            }
+        } else {
+            buf = realloc(ctx->buf, ctx->len + 4 * len);
+        }
+        if (buf) {
+            ctx->buf = buf;
+            ctx->len = ctx->len + 4 * len;
+        } else {
+            error("Could not extend buffer");
+            len = ctx->len - ctx->ind -1;
+        }
     }
     memcpy(ctx->buf + ctx->ind, ptr, len);
     ctx->ind += len;
     ctx->buf[ctx->ind] = 0;
-    debug("write_handler: recieved %d bytes\n", len);
+    debug("write_handler: recieved %d bytes, all = %d\n", len, ctx->ind);
     return len;
 }
 
@@ -189,7 +209,6 @@ wsman_client_handler( WsManClient *cl,
 #define curl_err(str)  debug("Error = %d (%s); %s", \
                             r, curl_easy_strerror(r), str); \
                        http_code = 400
-
     WsManConnection *con = cl->connection;
     CURL *curl = NULL;
     CURLcode r;
@@ -198,8 +217,8 @@ wsman_client_handler( WsManClient *cl,
     struct curl_slist *headers=NULL;
     char *buf = NULL;
     int len;
-    static char wbuf[32000];  // XXX must be fixed
-    transfer_ctx_t tr_data = {wbuf, 32000, 0};
+    static char wbuf[DEFAULT_TRANSFER_LEN];
+    transfer_ctx_t tr_data = {wbuf, DEFAULT_TRANSFER_LEN, 0};
     long http_code;
     long auth_avail = 0;
     static long auth_set = 0;
@@ -346,11 +365,14 @@ wsman_client_handler( WsManClient *cl,
         goto DONE;
     }
 
-    u_buf_set(con->response, wbuf, tr_data.ind); 
+    u_buf_set(con->response, tr_data.buf, tr_data.ind);
 
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);
+    if (tr_data.len > DEFAULT_TRANSFER_LEN) {
+        u_free(tr_data.buf);
+    }
     u_free(usag);
     u_free(upwd);
     u_free(buf);

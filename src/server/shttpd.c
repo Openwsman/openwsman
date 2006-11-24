@@ -39,6 +39,7 @@
 #ifndef EMBEDDED
 #define EMBEDDED
 #endif
+#include "u/libu.h"
 #include "shttpd.h"
 #endif
 
@@ -301,6 +302,7 @@ struct conn {
 #define	FLAG_CGI                0x0400
 #define	FLAG_KEEP_CONNECTION	0x0800
 #define FLAG_AUTHORIZED         0x1000  /* Already authorized */
+#define FLAG_HAVE_TO_WRITE      0x2000  /* connection have something to write */
 };
 
 #define	FLAG_IO_READY	(FLAG_SOCK_WRITABLE | FLAG_SOCK_READABLE | \
@@ -986,9 +988,10 @@ do_embedded(struct conn *c)
 
 		/* Return if not all POST data buffered */
 		if (c->nposted < c->cclength || c->cclength == 0) {
-                        elog(ERR_DEBUG,"do_embedded: c->nposted = %d; cclength = %d", c->nposted, c->cclength);
+                elog(ERR_DEBUG,"do_embedded: c->nposted = %d; cclength = %d",
+                 c->nposted, c->cclength);
 			return;
-                }
+        }
 		/* Null-terminate query data */
 		c->query[c->cclength] = '\0';
 	}
@@ -1012,7 +1015,11 @@ printf("         end of c->query body\n");
 	if (arg.last) {
 		c->local.done++;
 		c->io = NULL;
-	}
+        c->flags &= ~FLAG_HAVE_TO_WRITE;
+	} else {
+        c->flags |= FLAG_HAVE_TO_WRITE;
+debug("c->flags |= FLAG_HAVE_TO_WRITE");
+    }
 }
 
 const char *
@@ -1082,6 +1089,24 @@ setopt(const char *var, const char *val)
 	opt->tmp = mystrdup(val);
 }
 
+
+#ifdef OPENWSMAN
+static void
+sigterm(int signo)
+{
+    exit_flag = signo;
+}
+
+/*
+ * Grim reaper of innocent children: SIGCHLD signal handler
+ */
+static void
+sigchild(int signo)
+{
+    while (waitpid(-1, &signo, WNOHANG) > 0) ;
+}
+#endif
+
 struct shttpd_ctx *
 shttpd_init(const char *config_file, ...)
 {
@@ -1094,7 +1119,12 @@ shttpd_init(const char *config_file, ...)
 		setopt(opt_name, opt_value);
 	}
 	va_end(ap);
-
+#ifdef OPENWSMAN
+    (void) signal(SIGCHLD, sigchild);
+    (void) signal(SIGPIPE, SIG_IGN);
+    (void) signal(SIGTERM, sigterm);
+    (void) signal(SIGINT, sigterm);
+#endif
 	return (do_init(config_file, 0, NULL));
 }
 
@@ -1259,6 +1289,7 @@ Snprintf(char *buf, size_t buflen, const char *fmt, ...)
 static void
 io_inc_tail(struct io *io, size_t n)
 {
+debug("tail = %d; head = %d", io->tail,io->head);
 	assert(io->tail <= io->head);
 	assert(io->head <= io->bufsize);
 	io->tail += n;
@@ -3744,7 +3775,8 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 
 	/* Read from the local endpoint */
 	if (!(c->flags & FLAG_FINISHED) && c->io &&
-                (c->flags & (FLAG_FD_READABLE | FLAG_SOCK_READABLE))) {
+                (c->flags & (FLAG_FD_READABLE | FLAG_SOCK_READABLE |
+                    FLAG_HAVE_TO_WRITE))) {
 		c->io(c);
 		c->expire += EXPIRE_TIME;
 	}
@@ -3912,8 +3944,9 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 			MERGEFD(c->sock, &read_set);
 
 		/* If there is data in local buffer, add to write set */
-		if (IO_DATALEN(&c->local)) {
-                        elog(ERR_DEBUG, "sock %d ready to write from %d to %d",
+        if ((c->flags & FLAG_HAVE_TO_WRITE) ||
+                            (IO_DATALEN(&c->local))) {
+           elog(ERR_DEBUG, "sock %d ready to write from %d to %d",
                             c->sock, c->local.tail, c->local.head);
 			MERGEFD(c->sock, &write_set);
         }
@@ -3960,6 +3993,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		}
 		if (FD_ISSET(c->sock, &write_set)) {
 			c->flags |= FLAG_SOCK_WRITABLE;
+//            c->flags &= ~FLAG_HAVE_TO_WRITE;
         }
 #if 0
 		if (IO_SPACELEN(&c->local) && ((c->flags & FLAG_ALWAYS_READY) ||
@@ -4189,6 +4223,8 @@ shttpd_fini(struct shttpd_ctx *ctx)
 	if (ctx->accesslog)	(void) fclose(ctx->accesslog);
 	free(ctx);
 }
+
+
 
 #ifndef EMBEDDED
 /*

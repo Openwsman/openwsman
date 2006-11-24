@@ -151,6 +151,10 @@ server_callback (struct shttpd_arg_t *arg)
     int n = 0;
     int k;
 
+    debug("Server callback started %s. len = %d, sent = %d",
+       (shttp_msg == NULL) ? "initialy" : "continue",
+        arg->buflen,
+        (shttp_msg == NULL) ? 0 : shttp_msg->ind);
     if (shttp_msg != NULL) {
         // We already have the response, but server
         // output buffer is smaller then it.
@@ -252,6 +256,7 @@ server_callback (struct shttpd_arg_t *arg)
     }
 
     shttp_msg->length = u_buf_size(wsman_msg->response);
+    debug("message len = %d", shttp_msg->length);
     shttp_msg->response = (char *)u_buf_ptr(wsman_msg->response);
     shttp_msg->ind = 0;
     status = wsman_msg->http_code;
