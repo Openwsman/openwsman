@@ -256,7 +256,7 @@ server_callback (struct shttpd_arg_t *arg)
         goto DONE;
     }
 
-    shttp_msg->length = u_buf_size(wsman_msg->response);
+    shttp_msg->length = u_buf_len(wsman_msg->response);
     debug("message len = %d", shttp_msg->length);
     shttp_msg->response = u_buf_steal(wsman_msg->response);
     shttp_msg->ind = 0;
