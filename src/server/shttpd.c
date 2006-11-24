@@ -41,6 +41,7 @@
 #endif
 #include "u/libu.h"
 #include "shttpd.h"
+#include "wsman_config.h"
 #endif
 
 
@@ -3720,6 +3721,8 @@ serve(struct shttpd_ctx *ctx, void *ptr)
             c->flags = FLAG_FINISHED;
             return;
         }
+memset(c->remote.buf, 'b', c->remote.bufsize);
+c->remote.buf[c->remote.bufsize - 1] = 0;
         c->flags |= FLAG_KEEP_CONNECTION;
     }
     if (c->local.buf == NULL) {
