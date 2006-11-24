@@ -258,7 +258,7 @@ server_callback (struct shttpd_arg_t *arg)
 
     shttp_msg->length = u_buf_size(wsman_msg->response);
     debug("message len = %d", shttp_msg->length);
-    shttp_msg->response = (char *)u_buf_ptr(wsman_msg->response);
+    shttp_msg->response = u_buf_steal(wsman_msg->response);
     shttp_msg->ind = 0;
     status = wsman_msg->http_code;
 
@@ -272,8 +272,8 @@ DONE:
         u_buf_free(wsman_msg->response);
         wsman_msg->response = NULL;
     }
-    wsman_soap_message_destroy(wsman_msg);
- //   u_free(wsman_msg);
+ //   wsman_soap_message_destroy(wsman_msg);
+    u_free(wsman_msg);
     if (fault_reason == NULL) {
         fault_reason = shttp_reason_phrase(status);
     }

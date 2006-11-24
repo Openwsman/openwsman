@@ -17,5 +17,5 @@ int u_buf_reserve(u_buf_t *buf, size_t size);
 void* u_buf_ptr(u_buf_t *buf);
 size_t u_buf_len(u_buf_t *buf);
 size_t u_buf_size(u_buf_t *buf);
-
+char *u_buf_steal(u_buf_t *ubuf);
 #endif

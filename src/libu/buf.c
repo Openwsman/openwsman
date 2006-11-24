@@ -245,6 +245,16 @@ err:
     return ~0;
 }
 
+char *u_buf_steal(u_buf_t *ubuf)
+{
+    char *buf = ubuf->data;
+    ubuf->data = NULL;
+    ubuf->size = 0;
+    ubuf->len = 0;
+    return buf;
+}
+
+
 /**
  * \brief  Return a pointer to the buffer internal momory block
  *
