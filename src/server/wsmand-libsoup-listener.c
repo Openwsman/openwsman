@@ -177,21 +177,20 @@ server_callback ( SoupServerContext *context,
         debug("Encoding: %s", encoding);
     }
 
-    env_t* fw = (env_t*)data;	
+    SoapH soap = (SoapH)data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
 
-    wsman_msg->request.body = (char *)msg->request.body;
-    wsman_msg->request.length = msg->request.length;
+    u_buf_set(wsman_msg->request, (char *)msg->request.body,  msg->request.length);
 
     // Call dispatcher
-    dispatch_inbound_call(fw, wsman_msg);
+    dispatch_inbound_call(soap, wsman_msg);
     
     if ( wsman_fault_occured(wsman_msg) ) {
         char *buf;
         int  len;    		
         if (wsman_msg->in_doc != NULL) {
             wsman_generate_fault_buffer(
-                    fw->cntx, 
+                    soap->cntx, 
                     wsman_msg->in_doc, 
                     wsman_msg->status.fault_code , 
                     wsman_msg->status.fault_detail_code, 
@@ -210,8 +209,8 @@ server_callback ( SoupServerContext *context,
         goto DONE;
     } else {		 	
     	msg->response.owner = SOUP_BUFFER_SYSTEM_OWNED;
-    	msg->response.length = wsman_msg->response.length;
-    	msg->response.body = (char *)wsman_msg->response.body;        
+    	msg->response.length = u_buf_size(wsman_msg->response);
+    	msg->response.body = (char *)u_buf_ptr(wsman_msg->response);
         soup_message_set_status (msg, wsman_msg->http_code);
     }
 
@@ -294,7 +293,7 @@ wsmand_start_server(dictionary *ini)
     }
 
     soup_server_add_handler (server, NULL, &auth_ctx, server_callback,
-                                                        NULL, (env_t *)soap);
+                                                        NULL, soap);
     soup_server_run_async (server);
     g_object_unref (server);
 
