@@ -70,7 +70,7 @@
 
 #define DMTF_WSMAN_SPEC_1
 
-#define SOAP1_2_CONTENT_TYPE       "application/soap+xml; charset=utf-8"
+#define SOAP1_2_CONTENT_TYPE       "application/soap+xml;charset=UTF-8"
 #define SOAP_CONTENT_TYPE          "application/soap+xml"
 
 #define SOAP_SKIP_DEF_FILTERS       0x01
