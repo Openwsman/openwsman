@@ -101,7 +101,7 @@ REQUEST_PASSWORD:
     }
     return choosen_auth;
 }
-
+/*
 typedef struct {
     char *buf;
     size_t len;
@@ -141,6 +141,20 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
     ctx->ind += len;
     ctx->buf[ctx->ind] = 0;
     debug("write_handler: recieved %d bytes, all = %d\n", len, ctx->ind);
+    return len;
+}
+
+*/
+
+static size_t
+write_handler( void *ptr, size_t size, size_t nmemb, void *data)
+{
+    u_buf_t *buf = data;
+    size_t len;
+
+    len = size * nmemb;
+    u_buf_append(buf, ptr, len);
+    debug("write_handler: recieved %d bytes, all = %d\n", len, u_buf_len(buf));
     return len;
 }
 
@@ -217,8 +231,8 @@ wsman_client_handler( WsManClient *cl,
     struct curl_slist *headers=NULL;
     char *buf = NULL;
     int len;
-    static char wbuf[DEFAULT_TRANSFER_LEN];
-    transfer_ctx_t tr_data = {wbuf, DEFAULT_TRANSFER_LEN, 0};
+//    static char wbuf[DEFAULT_TRANSFER_LEN];
+//    transfer_ctx_t tr_data = {wbuf, DEFAULT_TRANSFER_LEN, 0};
     long http_code;
     long auth_avail = 0;
     static long auth_set = 0;
@@ -244,7 +258,8 @@ wsman_client_handler( WsManClient *cl,
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
         goto DONE;
     }
-    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
+//    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
+    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, con->response);
     if (r != CURLE_OK) {
         http_code = 400;
         cl->fault_string = strdup(curl_easy_strerror(r));
@@ -350,7 +365,8 @@ wsman_client_handler( WsManClient *cl,
         }
         auth_set = reauthenticate(auth_set, auth_avail, &cl->data.user,
                             &cl->data.pwd);
-        tr_data.ind = 0;
+//        tr_data.ind = 0;
+        u_buf_clear(con->response);
         if (auth_set == 0) {
             // user wants to cancel authorization
             curl_err("User didn't provide authorization data");
@@ -359,20 +375,22 @@ wsman_client_handler( WsManClient *cl,
     }
 
 
-
+/*
     if (tr_data.ind == 0) {
         // No data transfered
         goto DONE;
     }
 
     u_buf_set(con->response, tr_data.buf, tr_data.ind);
-
+*/
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);
+/*
     if (tr_data.len > DEFAULT_TRANSFER_LEN) {
         u_free(tr_data.buf);
     }
+*/
     u_free(usag);
     u_free(upwd);
     u_free(buf);
