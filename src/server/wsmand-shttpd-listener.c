@@ -210,7 +210,7 @@ server_callback (struct shttpd_arg_t *arg)
         error("NULL request body. len = %d", length);
         goto DONE;
     }
-    u_buf_set( wsman_msg->request, body, length);
+    u_buf_construct( wsman_msg->request, body, length, length);
 
     // some plugins can use credentials for its 
     // own authentication
@@ -224,6 +224,7 @@ server_callback (struct shttpd_arg_t *arg)
 
     if (wsman_msg->request) {
       // we don't need request any more
+      (void) u_buf_steal(wsman_msg->request);
       u_buf_free(wsman_msg->request);
       wsman_msg->request = NULL;
     }

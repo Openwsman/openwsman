@@ -320,6 +320,19 @@ err:
     return ~0;
 }
 
+
+int u_buf_construct(u_buf_t *ubuf, void *ptr, size_t size, size_t len)
+{
+    if (ubuf->data) {
+        free(ubuf->data);
+    }
+    ubuf->data = ptr;
+    ubuf->size = size;
+    ubuf->len  = len;
+    return 0;
+}
+
+
 /**
  *      \}
  */
