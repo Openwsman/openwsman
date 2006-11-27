@@ -696,11 +696,13 @@ cim_getElementAt(CimClientInfo *client,
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
       (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
-    if (objectpath) CMRelease(objectpath);
+   
     retval = 0;
   }
 
+ 
   if (retval) instance2xml(client, instance, itemsNode, enumInfo);
+  if (objectpath) CMRelease(objectpath);
   return retval;
 }
 
@@ -730,7 +732,9 @@ cim_getEprAt( CimClientInfo *client,
 
  
   cim_add_epr(itemsNode, client->resource_uri, objectpath);
-  CMRelease(objectpath);
+  if (instance) CMRelease(instance);
+  if (classname)  CMRelease(classname);   
+  if (objectpath) CMRelease(objectpath);
   return 1;
 }
 
@@ -757,7 +761,9 @@ cim_getEprObjAt(CimClientInfo *client,
   cim_add_epr(item, client->resource_uri, objectpath);
   instance2xml(client, instance, item, enumInfo);
 
-  CMRelease(objectpath);
+  if (instance) CMRelease(instance);
+  if (classname)  CMRelease(classname); 
+  if (objectpath) CMRelease(objectpath);
   return 1;
 }
 
