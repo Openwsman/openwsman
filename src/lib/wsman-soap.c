@@ -657,6 +657,8 @@ wsenum_release_stub( SoapOpH op,
     } else {
       doc = ws_create_response_envelope(soapCntx, _doc, NULL);
       debug("Releasing context: %s", cntxName);
+      u_free(enumInfo->auth_data.username);
+      u_free(enumInfo->auth_data.password);
       ws_remove_context_val(soapCntx, cntxName); 
     }
   }        

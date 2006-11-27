@@ -424,9 +424,11 @@ cim_verify_keys( CMPIObjectPath * objectpath,
   {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
     statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
+    debug("insuffcient selectors");
     goto cleanup;
   } else if (opcount < hash_count(keys)) {
     statusP->fault_code = WSMAN_INVALID_SELECTORS;
+    debug("invalid selectors");
     goto cleanup;
   }
 
@@ -438,6 +440,7 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     if ( rc.rc != 0 ) { // key not found
       statusP->fault_code = WSMAN_INVALID_SELECTORS;
       statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
+      debug("unexpcted selectors");
       break;
     }
     cv=value2Chars(data.type, &data.value);
@@ -448,6 +451,7 @@ cim_verify_keys( CMPIObjectPath * objectpath,
     } else  {
       statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
       statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+      debug("invalid resourceUri");
       u_free(cv);
       break;
     }
@@ -580,6 +584,7 @@ cim_get_op_from_enum( CimClientInfo *client,
   CMPIEnumeration * enumeration;
   CMPIObjectPath * result_op = NULL;
   WsmanStatus statusPP;
+  CMPIArray * enumArr = NULL;
 
   if (client->requested_class) 
     debug("class available");
@@ -592,10 +597,11 @@ cim_get_op_from_enum( CimClientInfo *client,
   if (rc.rc != 0 ) {
     cim_to_wsman_status(rc, statusP);
     //statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+    if (rc.msg) CMRelease(rc.msg);
     goto cleanup;
   }
 
-  CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
+  enumArr =  enumeration->ft->toArray(enumeration, NULL ); 
   int n = CMGetArrayCount(enumArr, NULL);
   wsman_status_init(&statusPP);
   if (n > 0 ) {
@@ -606,15 +612,18 @@ cim_get_op_from_enum( CimClientInfo *client,
       CMPIString *opstr = CMObjectPathToString(op, NULL);
       debug("objectpath: %s", (char *)opstr->hdl );
       if (cim_verify_keys(op, client->selectors, &statusPP) != 0 ) {
+        if (opstr) CMRelease(opstr);
         if (op) CMRelease(op);
         continue;
       } else {
         result_op =  CMClone(data.value.ref, NULL);
         CMSetNameSpace(result_op, client->cim_namespace);
         match = 1;
+        if (opstr) CMRelease(opstr);
         if (op) CMRelease(op);
         break;
       }
+      if (opstr) CMRelease(opstr);
       if (op) CMRelease(op);
     }
     statusP->fault_code = statusPP.fault_code;
@@ -626,6 +635,7 @@ cim_get_op_from_enum( CimClientInfo *client,
   debug("fault: %d %d", statusP->fault_code, statusP->fault_detail_code);
 
  cleanup:
+ 
   if (objectpath) CMRelease(objectpath);
   if (enumeration) CMRelease(enumeration);
   if (match)
@@ -642,9 +652,7 @@ cim_enum_instances (CimClientInfo *client,
   CMPIObjectPath * objectpath;
   CMPIEnumeration * enumeration;
   CMPIStatus rc;
-
   CMCIClient * cc = (CMCIClient *)client->cc;
-
 
   objectpath = newCMPIObjectPath(client->cim_namespace,
                                               client->requested_class , NULL);
@@ -658,11 +666,13 @@ cim_enum_instances (CimClientInfo *client,
   if (rc.rc) {
     debug( "CMCIClient enumInstances() failed");
     cim_to_wsman_status(rc, status);
+    if (rc.msg) CMRelease(rc.msg);
     goto cleanup;
   }
   CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL);
 
   cim_to_wsman_status(rc, status);
+  if (rc.msg) CMRelease(rc.msg);
   if (!enumArr) {
     goto cleanup;
   }
@@ -672,7 +682,11 @@ cim_enum_instances (CimClientInfo *client,
   enumInfo->enumResults = enumArr;
   enumInfo->appEnumContext = enumeration;
 
+  if (objectpath) CMRelease(objectpath);
+  return;
+
  cleanup:
+  if (enumeration) CMRelease(enumeration);
   if (objectpath) CMRelease(objectpath);
   return;
 }
@@ -696,11 +710,10 @@ cim_getElementAt(CimClientInfo *client,
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
       (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
-   
     retval = 0;
   }
 
- 
+  if (classname)  CMRelease(classname);
   if (retval) instance2xml(client, instance, itemsNode, enumInfo);
   if (objectpath) CMRelease(objectpath);
   return retval;
@@ -716,6 +729,7 @@ cim_getEprAt( CimClientInfo *client,
               WsXmlNodeH itemsNode)
 {
 
+  int retval = 1;
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
 
@@ -726,16 +740,17 @@ cim_getEprAt( CimClientInfo *client,
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
       (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
-    if (objectpath) CMRelease(objectpath);
-    return 0;
+    retval = 0;
   }
 
- 
-  cim_add_epr(itemsNode, client->resource_uri, objectpath);
+  if (retval)
+    cim_add_epr(itemsNode, client->resource_uri, objectpath);
+
+  
   if (instance) CMRelease(instance);
-  if (classname)  CMRelease(classname);   
+  if (classname)  CMRelease(classname);
   if (objectpath) CMRelease(objectpath);
-  return 1;
+  return retval;
 }
 
 int 
@@ -743,6 +758,7 @@ cim_getEprObjAt(CimClientInfo *client,
                 WsEnumerateInfo* enumInfo,
                 WsXmlNodeH itemsNode)
 {
+  int retval = 1;
   CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
   CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
 
@@ -753,18 +769,19 @@ cim_getEprObjAt(CimClientInfo *client,
   if (enumInfo && ((enumInfo->flags & 
                         FLAG_POLYMORPHISM_NONE) == FLAG_POLYMORPHISM_NONE) &&
       (strcmp((char *)classname->hdl, client->requested_class) != 0)) {
-    if (objectpath) CMRelease(objectpath);
-    return 0;
+    retval = 0;
   }
 
-  WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM, NULL);
-  cim_add_epr(item, client->resource_uri, objectpath);
-  instance2xml(client, instance, item, enumInfo);
+  if (retval) {
+    WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM, NULL);
+    cim_add_epr(item, client->resource_uri, objectpath);
+    instance2xml(client, instance, item, enumInfo);
+  }
 
   if (instance) CMRelease(instance);
   if (classname)  CMRelease(classname); 
   if (objectpath) CMRelease(objectpath);
-  return 1;
+  return retval;
 }
 
 
@@ -910,13 +927,13 @@ cim_invoke_method (CimClientInfo *client,
                    WsmanStatus *status) 
 {
   CMPIObjectPath * objectpath;    
-  CMPIArgs *argsin = NULL, *argsout = NULL;
+ 
   CMPIStatus rc;
   WsmanStatus statusP;
   CMCIClient * cc = (CMCIClient *)client->cc;
 
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) {
-
+    CMPIArgs *argsin = NULL, *argsout = NULL;
     argsin = newCMPIArgs(NULL);
 
     if (client->method_args && hash_count(client->method_args) > 0) {
@@ -924,16 +941,18 @@ cim_invoke_method (CimClientInfo *client,
     }
     argsout = newCMPIArgs(NULL);
     CMPIData data = cc->ft->invokeMethod( cc, objectpath,
-                                    client->method, argsin, argsout, &rc);
+                                          client->method, argsin, argsout, &rc);
 
     debug( "invokeMethod() rc=%d, msg=%s",
            rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
     WsXmlNodeH method_node = ws_xml_add_empty_child_format(body, 
                       client->resource_uri , "%s_OUTPUT", client->method);
+
     if (rc.rc == 0 ) {
       property2xml( data, "ReturnValue" , method_node, NULL);
     }
+ 
     if (argsout) {
       int count = CMGetArgCount(argsout, NULL);
       int i = 0;
@@ -946,15 +965,16 @@ cim_invoke_method (CimClientInfo *client,
     }
 
     cim_to_wsman_status(rc, status);
-
+    if (rc.msg) CMRelease(rc.msg);
+    if (argsin) CMRelease(argsin);
+    if (argsout) CMRelease(argsout);
   } else {
     status->fault_code = statusP.fault_code;
     status->fault_detail_code = statusP.fault_detail_code;
   }
 
   if (objectpath) CMRelease(objectpath);
-  if (argsin) CMRelease(argsin);
-  if (argsout) CMRelease(argsout);
+
   return;
 }
 
@@ -1038,6 +1058,7 @@ cim_put_instance_from_enum (CimClientInfo *client,
       if (instance)
         instance2xml(client, instance, body, NULL);
     } 
+    if (rc.msg) CMRelease(rc.msg);
     if (instance) CMRelease(instance);
   } else {
     status->fault_code = statusP.fault_code;
@@ -1144,15 +1165,15 @@ cim_to_wsman_status(CMPIStatus rc,
 void
 cim_release_enum_context( WsEnumerateInfo* enumInfo ) 
 {
-  if (enumInfo->appEnumContext) 
-  {
+  if (enumInfo->appEnumContext) {
+    debug("releasing enumInfo->appEnumContext");
     CMPIEnumeration * enumeration =
                          (CMPIEnumeration *)enumInfo->appEnumContext;
-    /*
-      CMPIArray * array = (CMPIArray *)enumInfo->enumResults;
-      if (array) CMRelease(array);
-    */
-    if (enumeration) CMRelease(enumeration);
+    
+    if (enumeration) { 
+      debug("releasing enumInfo->appEnumContext");
+      CMRelease(enumeration);
+    }
   }
 }
 
