@@ -210,7 +210,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
   int max_elements = 0;
   WsXmlDocH doc;
   char *enum_mode;
-
+  int retval = 0; 
   WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
   CimClientInfo *cimclient = NULL;
 
@@ -222,7 +222,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
   cim_enum_instances(cimclient, enumInfo, status);
 
   if (status && status->fault_code != 0) {
-    goto err;
+    retval = 1;
   }
 
   max_elements = wsman_is_optimization(cntx, NULL);
@@ -249,13 +249,9 @@ CimResource_Enumerate_EP( WsContextH cntx,
       enumInfo->pullResultPtr = NULL;
   }
 
-  cim_release_enum_context(enumInfo);
-  debug("enumInfo->appEnumContext: %p", enumInfo->appEnumContext );
+  cim_release_enum_context(enumInfo);  
   CimResource_destroy(cimclient);
-  return 0;
- err:
-  CimResource_destroy(cimclient);
-  return 1;
+  return retval;
 }
 
 

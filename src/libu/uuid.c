@@ -83,7 +83,7 @@
 #include <sys/time.h>
 #include "u/uuid.h"
 
-
+#if 0
 
 /* return the Media Access Control (MAC) address of
    the FIRST network interface card (NIC) */
@@ -179,13 +179,9 @@ static int mac_address(unsigned char *data_ptr, size_t data_len)
     return 0;
 }
 
+#endif
 
 
-
-
-
-
-#if 0
 
 static long
 mac_addr_sys (u_char *addr)
@@ -230,7 +226,6 @@ mac_addr_sys (u_char *addr)
     return 0;
 }
 
-#endif
 
 int 
 generate_uuid ( char* buf, 
@@ -268,7 +263,8 @@ generate_uuid ( char* buf,
     clock_sequence++;
 
     // get mac address
-    if ( mac_address( mac, 6 ) == 0 )
+    //if ( mac_address( mac, 6 ) == 0 )
+    if (mac_addr_sys(mac) == 0 )
     {
         for( i = 0; i < 6; i++ )
             uuid[i] = mac[i];                       // mac address

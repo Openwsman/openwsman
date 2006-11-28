@@ -351,7 +351,7 @@ cim_find_namespace_for_class ( CimClientInfo *client,
   hscan_t hs;
   hnode_t *hn;
 
-  debug("Action: %s", client->method );
+  // debug("Action: %s", client->method );
   if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
       ( strcmp(client->method, TRANSFER_GET) == 0 ||
                      strcmp(client->method, TRANSFER_PUT) == 0)) {
@@ -1171,7 +1171,6 @@ cim_release_enum_context( WsEnumerateInfo* enumInfo )
                          (CMPIEnumeration *)enumInfo->appEnumContext;
     
     if (enumeration) { 
-      debug("releasing enumInfo->appEnumContext");
       CMRelease(enumeration);
     }
   }

@@ -579,6 +579,8 @@ wsenum_enumerate_stub( SoapOpH op,
   if (endPoint && (retVal = endPoint(epcntx, &enumInfo, &status))) {
       doc = wsman_generate_fault(epcntx, _doc, 
                     status.fault_code, status.fault_detail_code, NULL);
+       u_free(enumInfo.auth_data.username);
+       u_free(enumInfo.auth_data.password);
   } else {
       if (enumInfo.pullResultPtr) {
           doc = enumInfo.pullResultPtr;
@@ -604,6 +606,8 @@ wsenum_enumerate_stub( SoapOpH op,
           if (enumInfo.index == enumInfo.totalItems) {
               ws_serialize_str(epcntx, resp_node,
                                NULL, XML_NS_WS_MAN , WSENUM_END_OF_SEQUENCE);
+              u_free(enumInfo.auth_data.username);
+              u_free(enumInfo.auth_data.password);
               ws_remove_context_val(soapCntx, cntxName); 
           } else {
               ws_serialize_str(epcntx, resp_node, enumId, 
@@ -648,9 +652,9 @@ wsenum_release_stub( SoapOpH op,
   {
     doc = wsman_generate_fault(soapCntx, _doc, 
                                WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+    
   } else {
-    if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, &status)) )
-    {            
+    if ( endPoint && (retVal = endPoint(soapCntx, enumInfo, &status)) ) {            
       error( "endPoint error");        		
       doc = wsman_generate_fault(soapCntx, _doc, 
                                  WSMAN_INTERNAL_ERROR, OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);   	            
@@ -723,7 +727,9 @@ wsenum_pull_stub(SoapOpH op, void* appData)
             ws_serializer_free_mem(soapCntx, enumInfo->pullResultPtr, typeInfo);
           } else {
             ws_serialize_str(soapCntx, 
-                             node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE); 
+                             node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+            u_free(enumInfo->auth_data.username);
+            u_free(enumInfo->auth_data.password);
           }
         }
       }
@@ -789,7 +795,9 @@ wsenum_pull_raw_stub( SoapOpH op,
                 
         if (enumInfo->index == enumInfo->totalItems) {
           ws_serialize_str(soapCntx, response, NULL, 
-                           XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE); 
+                           XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+          u_free(enumInfo->auth_data.username);
+          u_free(enumInfo->auth_data.password); 
           ws_remove_context_val(soapCntx, cntxName); 
         }
         else if ( enumId ) {
