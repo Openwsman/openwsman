@@ -79,13 +79,13 @@ authorize(char *username, const char *password)
         char            l[256], u[65], passwd[65];
         char *newpw = NULL ;
 
-        debug( "Checking basic for user: %s; password %s",
-                            username, password);
+        debug( "Checking basic for user: %s; password XXXXX",
+                            username);
 
 
         if ((username == NULL) || (password == NULL)) {
-                debug("No username (%p) or password (%p)",
-                    username, password);
+                debug("No username (%p) or password (XXXXX)",
+                    username);
                 return 0;
         }
         FILE *fp = fopen(filename, "r");
@@ -98,10 +98,10 @@ authorize(char *username, const char *password)
         while (fgets(l, sizeof(l), fp) != NULL) {
                 if (sscanf(l, "%64[^:]:%64s", u, passwd) != 2)
                     continue;       /* Ignore malformed lines */
-                debug( "user: %s,  passwd: %s", u,  passwd);
+                debug( "user: %s,  passwd: XXXX", u);
                 if (!strcmp(username, u)) {
                         newpw = crypt(password, passwd);
-                        debug( "user: %s,  passwd: %s", u,  newpw);
+                        debug( "user: %s,  passwd: XXXXX", u );
                         authorized = ( strcmp (newpw, passwd) == 0 );
                     break;
                 }
