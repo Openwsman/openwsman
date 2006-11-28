@@ -16,3 +16,7 @@ install-data-local: openwsman.pc
 	$(INSTALL_DATA)  openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA)  openwsman-server.pc $(DESTDIR)$(libdir)/pkgconfig
 
+uninstall-local:
+	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman.pc
+	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman-server.pc
+
