@@ -74,6 +74,9 @@ typedef struct  {
 } WsManProxyData;
 
 
+
+
+
 struct _WsManClient {
     void*               hdl;
     int flags;

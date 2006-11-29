@@ -80,7 +80,7 @@ typedef struct {
 } actionOptions;
 
 
-
+  typedef int (*SoapResponseCallback)(WsManClient*, WsXmlDocH, void*);
 
 
   WsManClient*
@@ -130,7 +130,12 @@ typedef struct {
   WsXmlDocH wsman_build_envelope_from_response(WsManClient *cl);
 
 
-
+  int
+  wsenum_enumerate_and_pull(WsManClient* cl,
+                            char *resource_uri,
+                            actionOptions options,
+                            SoapResponseCallback callback,
+                            void *callback_data);
 
   WsXmlDocH 
   wsman_create_request( WsManClient *cl,

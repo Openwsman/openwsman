@@ -101,7 +101,7 @@ make_callback_entry( SoapServiceCallback proc,
 static void free_hentry_func(hnode_t *n, void *arg)
 {
   u_free(hnode_getkey(n));
-  // u_free(hnode_get(n));
+  //u_free(hnode_get(n));
   u_free(n);
 }
 
@@ -444,7 +444,7 @@ wsman_identify_stub(SoapOpH op,
   }
 
   ws_serializer_free_all(cntx);
-  // ws_destroy_context(cntx);
+  ws_destroy_context(cntx);
   u_free(status);
 
   return 0;

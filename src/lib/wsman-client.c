@@ -568,6 +568,48 @@ wsman_identify( WsManClient *cl,
 }
 
 
+int
+wsenum_enumerate_and_pull(WsManClient* cl,
+                          char *resource_uri,
+                          actionOptions options,
+                          SoapResponseCallback callback,
+                          void *callback_data)
+{
+  WsXmlDocH doc;
+  WsXmlDocH enum_response = wsenum_enumerate(cl,
+                                             resource_uri,  options);
+  char *enumContext;
+  
+  if (enum_response) {
+    if (wsman_get_client_response_code(cl) == 200 ||
+        wsman_get_client_response_code(cl) == 400 ||
+        wsman_get_client_response_code(cl) == 500) {
+      callback(cl, enum_response, callback_data);
+    } else {
+      return 0;
+    }
+    enumContext = wsenum_get_enum_context(enum_response);
+    ws_xml_destroy_doc(enum_response);
+  } else {
+    return 0;
+  }
+
+  while (enumContext != NULL) {
+    doc = wsenum_pull(cl, resource_uri, enumContext, options);
+ 
+    if (wsman_get_client_response_code(cl) != 200 &&
+        wsman_get_client_response_code(cl) != 400 &&
+        wsman_get_client_response_code(cl) != 500) {
+      return 0;
+    }
+    callback(cl, doc, callback_data);
+    enumContext = wsenum_get_enum_context(doc);
+    if (doc) {
+      ws_xml_destroy_doc(doc);
+    }
+  }
+  return 1;
+}
 
 WsXmlDocH
 wsenum_enumerate(WsManClient* cl,
