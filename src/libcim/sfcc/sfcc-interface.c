@@ -66,20 +66,20 @@ path2xml(WsXmlNodeH node,
   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
   int numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
 
-  ws_xml_add_child(node, XML_NS_ADDRESSING , "Address" , WSA_TO_ANONYMOUS);
+  ws_xml_add_child(node, XML_NS_ADDRESSING ,  WSA_ADDRESS, WSA_TO_ANONYMOUS);
   WsXmlNodeH refparam = ws_xml_add_child(node,
-                                XML_NS_ADDRESSING, "ReferenceParameters" , NULL);
+                                XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS , NULL);
   ws_xml_add_child_format(refparam, XML_NS_WS_MAN ,
-              "ResourceUri" , "%s/%s", XML_NS_CIM_CLASS, (char *)classname->hdl);
+              WSM_RESOURCE_URI  , "%s/%s", XML_NS_CIM_CLASS, (char *)classname->hdl);
   WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
-                                    XML_NS_WS_MAN , "SelectorSet" , NULL);
+                                    XML_NS_WS_MAN , WSM_SELECTOR_SET , NULL);
 
   if (numkeys) {
     for (i=0; i<numkeys; i++) {
       CMPIString * keyname;
       CMPIData data = objectpath->ft->getKeyAt(objectpath, i, &keyname, NULL);
       WsXmlNodeH s = ws_xml_add_child(wsman_selector_set,
-                          XML_NS_WS_MAN , "Selector" ,
+                          XML_NS_WS_MAN , WSM_SELECTOR ,
                           (char *)value2Chars(data.type, &data.value));
       ws_xml_add_node_attr(s, NULL , "Name" , (char *)keyname->hdl);
       if(cv) free(cv);
@@ -836,14 +836,14 @@ cim_add_epr_details( WsXmlNodeH resource,
   char *cv = NULL;
   int i;
 
-  ws_xml_add_child(resource, XML_NS_ADDRESSING, "Address", WSA_TO_ANONYMOUS);
+  ws_xml_add_child(resource, XML_NS_ADDRESSING, WSA_ADDRESS, WSA_TO_ANONYMOUS);
 
   WsXmlNodeH refparam = ws_xml_add_child(resource,
-                           XML_NS_ADDRESSING, "ReferenceParameters", NULL);
+                           XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, NULL);
   ws_xml_add_child_format(refparam,
-                          XML_NS_WS_MAN, "ResourceUri", "%s", resourceUri );
+                          XML_NS_WS_MAN, WSM_RESOURCE_URI, "%s", resourceUri );
   WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
-                                         XML_NS_WS_MAN, "SelectorSet", NULL);
+                                         XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
 
   if (numkeys) {
     for (i=0; i<numkeys; i++) {
@@ -852,17 +852,17 @@ cim_add_epr_details( WsXmlNodeH resource,
       WsXmlNodeH s = NULL;
       if (data.type ==  CMPI_ref) {
         s = ws_xml_add_child(wsman_selector_set,
-                                         XML_NS_WS_MAN, "Selector", NULL);
+                                         XML_NS_WS_MAN, WSM_SELECTOR, NULL);
         WsXmlNodeH epr =  ws_xml_add_child(s,
-                            XML_NS_ADDRESSING, "EndpointReference", NULL);
+                            XML_NS_ADDRESSING, WSA_EPR, NULL);
         path2xml(epr, resourceUri,  &data.value);
       } else {
         char *valuestr = value2Chars(data.type, &data.value);
         s = ws_xml_add_child(wsman_selector_set,
-                                  XML_NS_WS_MAN, "Selector", valuestr);
+                                  XML_NS_WS_MAN, WSM_SELECTOR, valuestr);
         if (valuestr) free (valuestr);
       }
-      ws_xml_add_node_attr(s, NULL, "Name", (char *)keyname->hdl);
+      ws_xml_add_node_attr(s, NULL, WSM_NAME, (char *)keyname->hdl);
 
 
       if(cv) free(cv);
