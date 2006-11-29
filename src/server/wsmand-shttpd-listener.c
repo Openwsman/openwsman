@@ -190,7 +190,7 @@ server_callback (struct shttpd_arg_t *arg)
     content_type = shttpd_get_header(arg, "Content-Type");
     if (content_type && strncmp(content_type,
                 SOAP_CONTENT_TYPE, strlen(SOAP_CONTENT_TYPE)) != 0 ) {
-        status = WSMAN_STATUS_BAD_REQUEST;
+        status = WSMAN_STATUS_UNSUPPORTED_MEDIA_TYPE;
         fault_reason = "Unsupported content type";
         goto DONE;
     }
