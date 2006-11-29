@@ -37,6 +37,8 @@
 
 #define FAULT_SENDER_CODE "Sender"
 #define FAULT_RECEIVER_CODE "Receiver"
+#define FAULT_SENDER_CODE_NS "s:Sender"
+#define FAULT_RECEIVER_CODE_NS "s:Receiver"
 
 enum __WsmanFaultCodeType 
 {	

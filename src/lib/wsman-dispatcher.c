@@ -422,7 +422,7 @@ process_inbound_operation(op_t* op,
   if ( process_filters(op, 1) ) 
   {
     if (wsman_is_fault_envelope(op->out_doc)) {
-      msg->http_code = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+      msg->http_code = wsman_find_httpcode_for_value(op->out_doc);
     } else {
       msg->http_code = WSMAN_STATUS_OK;
     }
@@ -447,7 +447,7 @@ process_inbound_operation(op_t* op,
     if ( (retVal = process_filters(op, 0)) == 0 ) {
       if (op->out_doc) {
         if (wsman_is_fault_envelope(op->out_doc)) {
-          msg->http_code = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+          msg->http_code = wsman_find_httpcode_for_value(op->out_doc);
         } else {
           msg->http_code = WSMAN_STATUS_OK;
         }
@@ -464,6 +464,25 @@ process_inbound_operation(op_t* op,
   return retVal;
 }
 
+static void
+dispatcher_create_fault(SoapH soap,
+                        WsmanMessage *msg, WsXmlDocH in_doc)
+{       
+    char* buf = NULL;
+    int len;
+    if (wsman_fault_occured(msg)) {
+      wsman_generate_fault_buffer(
+              soap->cntx,
+              in_doc,
+              msg->status.fault_code,
+              msg->status.fault_detail_code,
+              msg->status.fault_msg,
+              &buf, &len);
+      u_buf_set(msg->response, buf, len);
+      u_free(buf);
+      msg->http_code = wsman_find_httpcode_for_fault_code( msg->status.fault_code );
+    }    
+}
 
 
 void
@@ -485,7 +504,6 @@ dispatch_inbound_call(SoapH soap,
         destroy_dispatch_entry(dispatch);
       }
     } else if (!wsman_fault_occured(msg)) {
-      debug("xx");
       wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE, 
                       WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
     }
@@ -494,6 +512,7 @@ dispatch_inbound_call(SoapH soap,
       op->in_doc = in_doc;
       ret = process_inbound_operation(op, msg);
     }
+    dispatcher_create_fault(soap, msg, in_doc);
   }
   ws_xml_destroy_doc(in_doc);
   debug( "Inbound call completed");

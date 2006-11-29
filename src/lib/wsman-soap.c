@@ -241,8 +241,10 @@ ws_create_runtime (list_t *interfaces)
  * @param wsInterface Interface
  * @param dispinfo Dispatcher
  */
-int wsman_register_interface(WsContextH cntx, WsDispatchInterfaceInfo* wsInterface,
-                             WsManDispatcherInfo* dispInfo)
+int 
+wsman_register_interface(WsContextH cntx, 
+                         WsDispatchInterfaceInfo* wsInterface,
+                         WsManDispatcherInfo* dispInfo)
 {
   int retVal = 0;
   int i; 

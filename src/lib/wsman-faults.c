@@ -48,6 +48,9 @@
 #include "wsman-soap-message.h"
 #include "wsman-faults.h"
 
+
+#define FAULT_XPATH_EXPR  "/s:Envelope/s:Body/s:Fault/s:Code/s:Value"
+
 WsmanFaultDetailTable fault_detail_table[] =
 {
     { WSMAN_DETAIL_OK, NULL },
@@ -391,6 +394,44 @@ wsman_is_fault_envelope( WsXmlDocH doc )
         return 0;
 }
 
+WsmanKnownStatusCode
+wsman_find_httpcode_for_value( WsXmlDocH doc ) 
+{
+    WsmanKnownStatusCode httpcode = 200;
+    char *xp = ws_xml_get_xpath_value(doc, FAULT_XPATH_EXPR );
+    if (xp != NULL) {
+        if (strcmp(xp, FAULT_RECEIVER_CODE_NS) == 0 )
+            httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+        else if (strcmp(xp, FAULT_SENDER_CODE_NS) == 0 )
+            httpcode = WSMAN_STATUS_BAD_REQUEST;
+    }
+    return httpcode;
+}
+
+
+WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faultCode )
+{
+    
+    int i;
+    WsmanKnownStatusCode httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+    int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
+    for (i = 0; i < nfaults; i++) 
+    {	
+        if (fault_code_table[i].fault_code == faultCode )
+        {  
+            if (strcmp(fault_code_table[i].code, FAULT_RECEIVER_CODE ) == 0) {
+                httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+                break;
+            }
+            else if (strcmp(fault_code_table[i].code, FAULT_SENDER_CODE ) == 0) {
+                httpcode = WSMAN_STATUS_BAD_REQUEST;
+                break;
+            }
+        }
+    }
+    return httpcode;
+
+}
 
 WsXmlDocH 
 wsman_generate_fault( WsContextH cntx, 

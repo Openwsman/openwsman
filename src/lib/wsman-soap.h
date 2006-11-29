@@ -372,6 +372,10 @@ void ws_serializer_free_all(WsContextH cntx);
 
 int wsman_fault_occured(WsmanMessage *msg);
 
+WsmanKnownStatusCode wsman_find_httpcode_for_value( WsXmlDocH doc );
+
+WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faultCode );
+
 WsXmlDocH wsman_generate_fault(
         WsContextH cntx,
         WsXmlDocH inDoc, 
@@ -391,7 +395,6 @@ void wsman_generate_fault_buffer(
 
 void wsman_status_init(WsmanStatus* s);
 int wsman_check_status( WsmanStatus *s);
-
 
 
 #endif /*SOAP_API_H_*/
