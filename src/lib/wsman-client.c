@@ -427,6 +427,8 @@ wsman_create_request(WsManClient *cl,
                            (char*) hnode_get(hn));
         }
       }
+    } else {
+        ws_xml_add_empty_child_format( body, resource_uri , "%s_INPUT", method);
     }
     break;
   case WSMAN_ACTION_TRANSFER_PUT:
