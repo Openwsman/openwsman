@@ -495,10 +495,7 @@ dispatch_inbound_call(SoapH soap,
       ret = process_inbound_operation(op, msg);
     }
   }
-
-  if (in_doc != NULL) {
-    msg->in_doc = in_doc;
-  }
+  ws_xml_destroy_doc(in_doc);
   debug( "Inbound call completed");
   return;
 }

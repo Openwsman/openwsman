@@ -237,6 +237,7 @@ server_callback (struct shttpd_arg_t *arg)
         fault_reason = "No memory";
         goto DONE;
     }
+        /*
     if (wsman_fault_occured(wsman_msg)) {
         char *buf;
         int  len;
@@ -256,6 +257,7 @@ server_callback (struct shttpd_arg_t *arg)
         status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
         goto DONE;
     }
+        */
 
     shttp_msg->length = u_buf_len(wsman_msg->response);
     debug("message len = %d", shttp_msg->length);
@@ -265,10 +267,6 @@ server_callback (struct shttpd_arg_t *arg)
 
 DONE:
 
-    if (wsman_msg->in_doc != NULL) {
-        ws_xml_destroy_doc(wsman_msg->in_doc);
-        wsman_msg->in_doc = NULL;
-    }
     if (wsman_msg->response) {
         u_buf_free(wsman_msg->response);
         wsman_msg->response = NULL;

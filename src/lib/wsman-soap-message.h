@@ -61,7 +61,6 @@ struct _WsmanMessage {
   WsmanStatus         status;
   u_buf_t     *request;
   u_buf_t     *response;
-  WsXmlDocH           in_doc;
   WsmanKnownStatusCode http_code;
   WsmanAuth           auth_data;
   unsigned int        flags;
