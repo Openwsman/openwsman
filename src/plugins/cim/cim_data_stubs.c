@@ -249,7 +249,6 @@ CimResource_Enumerate_EP( WsContextH cntx,
       enumInfo->pullResultPtr = NULL;
   }
 
-  cim_release_enum_context(enumInfo);  
   CimResource_destroy(cimclient);
   return retval;
 }
@@ -283,7 +282,6 @@ CimResource_Pull_EP( WsContextH cntx,
     cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
   }      
   
-  cim_enum_instances(cimclient, enumInfo, NULL);
   doc = ws_create_response_envelope(cntx, in_doc, NULL);
   WsXmlNodeH body = ws_xml_get_soap_body(doc);
 
@@ -305,7 +303,6 @@ CimResource_Pull_EP( WsContextH cntx,
   }
 
 
-  cim_release_enum_context(enumInfo);
   CimResource_destroy(cimclient);
   ws_destroy_context(cntx);
   return 0;

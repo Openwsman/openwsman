@@ -686,7 +686,7 @@ cim_enum_instances (CimClientInfo *client,
   return;
 
  cleanup:
-  if (enumeration) CMRelease(enumeration);
+  //if (enumeration) CMRelease(enumeration);
   if (objectpath) CMRelease(objectpath);
   return;
 }
@@ -747,7 +747,7 @@ cim_getEprAt( CimClientInfo *client,
     cim_add_epr(itemsNode, client->resource_uri, objectpath);
 
   
-  if (instance) CMRelease(instance);
+  //if (instance) CMRelease(instance);
   if (classname)  CMRelease(classname);
   if (objectpath) CMRelease(objectpath);
   return retval;
@@ -778,7 +778,7 @@ cim_getEprObjAt(CimClientInfo *client,
     instance2xml(client, instance, item, enumInfo);
   }
 
-  if (instance) CMRelease(instance);
+  //if (instance) CMRelease(instance);
   if (classname)  CMRelease(classname); 
   if (objectpath) CMRelease(objectpath);
   return retval;
@@ -1299,11 +1299,10 @@ cim_get_enum_items(CimClientInfo *client,
       } else {
         c = cim_getElementAt(client, enumInfo, itemsNode);
       }
-      if (c == 0) {
+      if (c == 0)
         enumInfo->index++;
-      } else {
+      else
         break;
-      }
     }
     if (c == 0) {
       enumInfo->index--;
