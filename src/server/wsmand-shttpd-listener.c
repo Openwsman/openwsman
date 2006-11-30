@@ -50,6 +50,7 @@
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
+#include "wsman-soap-envelope.h"
 
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h"
@@ -128,6 +129,33 @@ shttp_reason_phrase(int status)
     return "Error";
 }
 
+static int
+invalid_soap_action(const char *action)
+{
+    debug("SoapAction: %s", action);
+    if (!strcmp(action, TRANSFER_ACTION_GET)) {
+        return 0;
+    }
+    if (!strcmp(action, TRANSFER_ACTION_PUT)) {
+        return 0;
+    }
+    if (!strcmp(action, TRANSFER_ACTION_CREATE)) {
+        return 0;
+    }
+
+    if (!strcmp(action, ENUM_ACTION_ENUMERATE)) {
+        return 0;
+    }
+    if (!strcmp(action, ENUM_ACTION_PULL)) {
+        return 0;
+    }
+    if (!strcmp(action, ENUM_ACTION_RELEASE)) {
+        return 0;
+    }
+ //   return 1; XXX how to mention all invoke methods?
+    return 0;
+}
+
 typedef struct {
       char *response;
       int length;
@@ -141,11 +169,14 @@ server_callback (struct shttpd_arg_t *arg)
 {
     const char *method;
     const char *content_type;
+    const char *soapaction;
 //    char *default_path;
 //    const char *path;
 //    const char *encoding;
     int status = WSMAN_STATUS_OK;
     char *fault_reason = NULL;
+    WsmanFaultCodeType fcode = WSMAN_RC_OK;
+    WsmanFaultDetailType fdet;
 
     ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;
     int n = 0;
@@ -194,6 +225,13 @@ server_callback (struct shttpd_arg_t *arg)
         fault_reason = "Unsupported content type";
         goto DONE;
     }
+
+    soapaction = shttpd_get_header(arg, "SOAPAction");
+    if (soapaction && invalid_soap_action(soapaction)) {
+        fcode = WSA_ACTION_NOT_SUPPORTED;
+        fdet  = 0;
+        fault_reason = (char *)soapaction;
+    }
 //    encoding = strchr(content_type, '=') + 1;
 //    debug("Encoding: %s", encoding);
 
@@ -219,14 +257,29 @@ server_callback (struct shttpd_arg_t *arg)
 
 
     // Call dispatcher. Real request handling
-    dispatch_inbound_call(soap, wsman_msg);
+    if ((status == WSMAN_STATUS_OK) && (fcode == WSMAN_RC_OK)) {
+        // dispatch if we didn't find out the error
+        dispatch_inbound_call(soap, wsman_msg);
+        status = wsman_msg->http_code;
+    } else if (fcode != WSMAN_RC_OK) {
+        // create soap fault message 
+        char *buf;
+        int len;
+        WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, wsman_msg);
+        wsman_generate_fault_buffer(soap->cntx, in_doc,
+                    fcode, fdet, fault_reason, &buf, &len);
+        debug("Fault response %d: [%s]", len, buf);
+        u_buf_construct(wsman_msg->response, buf, len, len);
+        ws_xml_destroy_doc(in_doc);
+        status = WSMAN_STATUS_BAD_REQUEST;
+    }
 
 
     if (wsman_msg->request) {
-      // we don't need request any more
-      (void) u_buf_steal(wsman_msg->request);
-      u_buf_free(wsman_msg->request);
-      wsman_msg->request = NULL;
+        // we don't need request any more
+        (void) u_buf_steal(wsman_msg->request);
+        u_buf_free(wsman_msg->request);
+        wsman_msg->request = NULL;
     }
 
     // here we start to handle the response
@@ -237,33 +290,12 @@ server_callback (struct shttpd_arg_t *arg)
         fault_reason = "No memory";
         goto DONE;
     }
-        /*
-    if (wsman_fault_occured(wsman_msg)) {
-        char *buf;
-        int  len;
-        if (wsman_msg->in_doc != NULL) {
-            wsman_generate_fault_buffer(
-                    soap->cntx,
-                    wsman_msg->in_doc,
-                    wsman_msg->status.fault_code,
-                    wsman_msg->status.fault_detail_code,
-                    wsman_msg->status.fault_msg,
-                    &buf, &len);
-            shttp_msg->length = len;
-            shttp_msg->response = buf;
-            shttp_msg->ind = 0;
-        }
-        // According to spec
-        status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-        goto DONE;
-    }
-        */
+
 
     shttp_msg->length = u_buf_len(wsman_msg->response);
     debug("message len = %d", shttp_msg->length);
     shttp_msg->response = u_buf_steal(wsman_msg->response);
     shttp_msg->ind = 0;
-    status = wsman_msg->http_code;
 
 DONE:
 
@@ -276,7 +308,7 @@ DONE:
     if (fault_reason == NULL) {
         fault_reason = shttp_reason_phrase(status);
     }
-    debug("Response (status) %d", status, shttp_reason_phrase(status));
+    debug("Response (status) %d (%s)", status, fault_reason);
 
     // Here we begin to create the http response.
     // Create the headers at first.
@@ -286,7 +318,15 @@ DONE:
                        status, fault_reason);
     n += snprintf(arg->buf + n, arg->buflen -n, "Server: %s/%s\r\n",
                 PACKAGE, VERSION);
-
+/*
+    if (status != WSMAN_STATUS_OK) {
+        n += snprintf(arg->buf + n, arg->buflen -n, "\r\n%d %s\r\n",
+                status, fault_reason);
+        arg->last = 1;
+        u_free(shttp_msg);
+        return n;
+    }
+*/
     if (!shttp_msg || shttp_msg->length == 0) {
         // can't send the body of response or nothing to send
         n += snprintf(arg->buf + n, arg->buflen -n, "\r\n");
