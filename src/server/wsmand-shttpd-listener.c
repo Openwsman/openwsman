@@ -133,26 +133,43 @@ static int
 invalid_soap_action(const char *action)
 {
     debug("SoapAction: %s", action);
-    if (!strcmp(action, TRANSFER_ACTION_GET)) {
-        return 0;
+    if (!strcmp(action, ENUM_ACTION_RENEW)) {
+        return 1;
     }
-    if (!strcmp(action, TRANSFER_ACTION_PUT)) {
-        return 0;
+    if (!strcmp(action, ENUM_ACTION_GETSTATUS)) {
+        return 1;
     }
-    if (!strcmp(action, TRANSFER_ACTION_CREATE)) {
-        return 0;
+    if (!strcmp(action, ENUM_ACTION_ENUMEND)) {
+        return 1;
     }
 
-    if (!strcmp(action, ENUM_ACTION_ENUMERATE)) {
-        return 0;
+    if (!strcmp(action, EVT_ACTION_SUBSCRIBE)) {
+        return 1;
     }
-    if (!strcmp(action, ENUM_ACTION_PULL)) {
-        return 0;
+    if (!strcmp(action, EVT_ACTION_GETSTATUS)) {
+        return 1;
     }
-    if (!strcmp(action, ENUM_ACTION_RELEASE)) {
-        return 0;
+    if (!strcmp(action, EVT_ACTION_UNSUBSCRIBE)) {
+        return 1;
     }
- //   return 1; XXX how to mention all invoke methods?
+    if (!strcmp(action, EVT_ACTION_SUBEND)) {
+        return 1;
+    }
+    if (!strcmp(action, WSMAN_ACTION_EVENTS)) {
+        return 1;
+    }
+    if (!strcmp(action, WSMAN_ACTION_HEARTBEAT)) {
+        return 1;
+    }
+    if (!strcmp(action, WSMAN_ACTION_DROPPEDEVENTS)) {
+        return 1;
+    }
+    if (!strcmp(action, WSMAN_ACTION_ACK)) {
+        return 1;
+    }
+    if (!strcmp(action, WSMAN_ACTION_EVENT)) {
+        return 1;
+    }
     return 0;
 }
 
@@ -204,7 +221,6 @@ server_callback (struct shttpd_arg_t *arg)
         debug( "Unsupported method %s", method);
         status = WSMAN_STATUS_METHOD_NOT_ALLOWED;
         fault_reason = "POST method supported only";
-        goto DONE;
     }
 
 #if 0
@@ -246,7 +262,6 @@ server_callback (struct shttpd_arg_t *arg)
         status = WSMAN_STATUS_BAD_REQUEST;
         fault_reason = "No request body";
         error("NULL request body. len = %d", length);
-        goto DONE;
     }
     u_buf_construct( wsman_msg->request, body, length, length);
 
@@ -266,12 +281,17 @@ server_callback (struct shttpd_arg_t *arg)
         char *buf;
         int len;
         WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, wsman_msg);
-        wsman_generate_fault_buffer(soap->cntx, in_doc,
+        if (in_doc) {
+            wsman_generate_fault_buffer(soap->cntx, in_doc,
                     fcode, fdet, fault_reason, &buf, &len);
-        debug("Fault response %d: [%s]", len, buf);
-        u_buf_construct(wsman_msg->response, buf, len, len);
-        ws_xml_destroy_doc(in_doc);
-        status = WSMAN_STATUS_BAD_REQUEST;
+            debug("Fault response %d: [%s]", len, buf);
+            u_buf_construct(wsman_msg->response, buf, len, len);
+            ws_xml_destroy_doc(in_doc);
+            status = WSMAN_STATUS_BAD_REQUEST;
+        } else {
+            status = WSMAN_STATUS_BAD_REQUEST;
+            fault_reason = "Bad request body";
+        }
     }
 
 

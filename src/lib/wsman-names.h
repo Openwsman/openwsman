@@ -173,6 +173,39 @@
 #define WSENUM_PULL                   "Pull"
 #define WSENUM_PULL_RESP              "PullResponse"
 
+
+#define ENUM_ACTION_RENEW       \
+           "http://schemas.xmlsoap.org/ws/2004/09/enumeration/Renew"
+#define ENUM_ACTION_GETSTATUS    \
+           "http://schemas.xmlsoap.org/ws/2004/09/enumeration/GetStatus"
+#define ENUM_ACTION_ENUMEND       \
+           "http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerationEnd"
+
+
+#define EVT_ACTION_SUBSCRIBE      \
+           "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"
+#define EVT_ACTION_GETSTATUS      \
+           "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStaus"
+#define EVT_ACTION_UNSUBSCRIBE     \
+           "http://schemas.xmlsoap.org/ws/2004/08/eventing/Unsubscribe"
+#define EVT_ACTION_SUBEND           \
+           "http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscriptionEnd"
+
+
+
+#define WSMAN_ACTION_EVENTS       \
+           "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/Events"
+#define WSMAN_ACTION_HEARTBEAT     \
+           "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/Heartbeat"
+#define WSMAN_ACTION_DROPPEDEVENTS     \
+           "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/DroppedEvents"
+#define WSMAN_ACTION_ACK     \
+           "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/Ack"
+#define WSMAN_ACTION_EVENT     \
+           "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/Event"
+
+
+
 #define WSENUM_ACTION_FAULT     \
            "http://schemas.xmlsoap.org/ws/2004/09/enumeration/fault"
 
