@@ -13,9 +13,21 @@
 #include <u/strsep.h>
 #include <u/strtok_r.h>
 
+
+#if defined _WIN32 && ! defined __CYGWIN__
+#define strcasecmp      stricmp
+#define strncasecmp     strnicmp
+#endif /* _WIN32 */
+
+
 #ifdef WIN32
+
 #include <windows.h>
-#define strcasecmp _stricmp
+#include <wtypes.h>
+
+const char * getpass (const char *);
+#define dlclose(handle)         FreeLibrary(handle)
+        
 #define sleep(secs) Sleep( (secs) * 1000 )
 #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
 #define popen _popen
