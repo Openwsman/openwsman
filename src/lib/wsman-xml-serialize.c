@@ -292,11 +292,10 @@ int do_serialize_string(XmlSerializationData* data)
 
 int do_serialize_char_array(XmlSerializationData* data)
 {
-    debug( "Serializing char array...");
-    WsXmlNodeH child;
-    int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
+    WsXmlNodeH child; 
+	int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
     int retVal = sizeof(XML_TYPE_CHAR) * count;
-
+	debug( "Serializing char array...");
     if ( data->mode == XML_SMODE_SERIALIZE )
     {
         XML_TYPE_CHAR* tmp = (char*)xml_serializer_alloc(data, retVal + sizeof(XML_TYPE_CHAR), 0);
@@ -477,11 +476,10 @@ static int calculate_struct_size(XmlSerializationData* data,
 
 int do_serialize_fixed_size_array(XmlSerializationData* data)
 {
-    debug( "Serializing fixed size array...");
     int retVal;
     int savedIndex = data->index;
     int count;
-
+	debug( "Serializing fixed size array...");
     if ( data->index < 0 )
     {
         count = -data->index; 
@@ -589,7 +587,7 @@ XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
 
 int do_serialize_dyn_size_array(XmlSerializationData* data)
 {
-    debug( "Serializing dyn. size array...");
+    
     int retVal = XML_IS_PTR(data->elementInfo) ? 
         sizeof(XML_TYPE_PTR) : sizeof(XmlSerialiseDynamicSizeData);
     void* savedBufPtr = data->elementBuf;
@@ -668,7 +666,6 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
 
 int do_serialize_struct(XmlSerializationData* data)
 {
-    debug( "Serializing Struct...");
     int i;
     int retVal = 0;
     int elementCount = 0;
@@ -862,7 +859,6 @@ int ws_serialize(WsContextH cntx,
 
 int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo* info)
 {
-    debug( "Freeing serializer memory...");
     int retVal;
     XmlSerializationData data;
     initialize_xml_serialization_data(&data, 
@@ -1001,11 +997,10 @@ void* ws_serializer_alloc(WsContextH cntx, int size)
             &&
             (ptr = (WsSerializerMemEntry*)u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL )
     {
+		lnode_t *node;
         ptr->cntx = cntx;
         u_lock(soap);
-        lnode_t *node;
-        if ( ( node = lnode_create(ptr)) == NULL )
-        {
+        if ( ( node = lnode_create(ptr)) == NULL ) {
             u_free(ptr);
             ptr = NULL;
         } else {

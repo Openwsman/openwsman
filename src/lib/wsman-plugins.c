@@ -40,9 +40,13 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include <string.h>
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
+#endif
 
+#ifndef WIN32
 #include <dlfcn.h>
+#endif
 #include "u/libu.h"
 #include "wsman-plugins.h"
 

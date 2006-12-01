@@ -185,10 +185,11 @@ validate_mustunderstand_headers(op_t* op)
   WsXmlNodeH child = NULL;
   WsXmlNodeH header;
   int i;
+  char* nsUri;
     
   header = get_soap_header_element(op->dispatch->fw, 
                                    op->in_doc, NULL, NULL);
-  char* nsUri = ws_xml_get_node_name_ns(header);    
+  nsUri = ws_xml_get_node_name_ns(header);    
 
   for(i = 0; (child = ws_xml_get_child(header, i, NULL, NULL)) != NULL; i++)
   {
@@ -335,9 +336,9 @@ int
 outbound_control_header_filter( SoapOpH opHandle, 
                                 void* data)
 {
-  unsigned long size = 0;
+  unsigned long size = 0, envelope_size = 0;
   char *buf = NULL;
-  int len, envelope_size;
+  int len;
   SoapH soap = soap_get_op_soap(opHandle);
   WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
   WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
@@ -492,10 +493,11 @@ dispatch_inbound_call(SoapH soap,
                       WsmanMessage *msg) 
 {   
   int ret;		 
+  op_t* op = NULL;
   WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, msg);
 
   debug( "Inbound call...");
-  op_t* op = NULL;
+  
 
   if (in_doc != NULL && !wsman_fault_occured(msg)) {
     dispatch_t* dispatch = get_dispatch_entry(soap, in_doc);
@@ -596,12 +598,12 @@ wsman_dispatcher( WsContextH cntx,
 
   while( node != NULL )
   {            
-    WsDispatchInterfaceInfo* interface = (WsDispatchInterfaceInfo*)node->list_data;
+    WsDispatchInterfaceInfo* ifc = (WsDispatchInterfaceInfo*)node->list_data;
     if ( wsman_is_identify_request(doc)) 
     {
-      if ( (ns = wsman_dispatcher_match_ns(interface, XML_NS_WSMAN_ID ) ) ) 
+      if ( (ns = wsman_dispatcher_match_ns(ifc, XML_NS_WSMAN_ID ) ) ) 
       {
-        r = interface;
+        r = ifc;
         resUriMatch = 1;
         break;                    
       }
@@ -611,12 +613,12 @@ wsman_dispatcher( WsContextH cntx,
      * If Resource URI is null then most likely we are dealing with  a generic plugin
      * supporting a namespace with multiple Resource URIs (e.g. CIM)
      */
-    else if (interface->wsmanResourceUri == NULL && ( ns = wsman_dispatcher_match_ns(interface, uri)) ) {
-      r = interface;
+    else if (ifc->wsmanResourceUri == NULL && ( ns = wsman_dispatcher_match_ns(ifc, uri)) ) {
+      r = ifc;
       resUriMatch = 1;
       break;                    
-    } else if (interface->wsmanResourceUri && !strcmp(uri, interface->wsmanResourceUri) ) {     
-      r = interface;
+    } else if (ifc->wsmanResourceUri && !strcmp(uri, ifc->wsmanResourceUri) ) {     
+      r = ifc;
       resUriMatch = 1;
       break;                    
     }
@@ -702,8 +704,9 @@ soap_create_dispatch(SoapH soap,
                      void* callbackData,
                      unsigned long flags)
 {
-  debug("Creating dispatch");
+  
   dispatch_t* disp = NULL;
+  debug("Creating dispatch");
   if ( soap && role == NULL )
   {
     disp = create_dispatch_entry(soap, inboundAction, outboundAction,

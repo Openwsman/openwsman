@@ -182,11 +182,12 @@ xml_parser_get_root(WsXmlDocH doc)
 WsXmlDocH
 xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
 {
+	xmlDocPtr xmlDoc;
     WsXmlDocH Doc = NULL;
     if (soap == NULL) {
         return NULL;
     }
-    xmlDocPtr xmlDoc = xmlReadFile(filename, encoding,
+    xmlDoc = xmlReadFile(filename, encoding,
                         XML_PARSE_NONET | XML_PARSE_NSCLEAN);
     if (xmlDoc == NULL) {
         return NULL;
@@ -209,11 +210,11 @@ xml_parser_memory_to_doc(SoapH soap, char* buf, int size,
                          char* encoding, unsigned long options)
 {
     WsXmlDocH Doc = NULL;
-
+	xmlDocPtr xmlDoc;
     if (!buf || !size || !soap) {
         return NULL;
     }
-    xmlDocPtr xmlDoc = xmlReadMemory(buf, size, NULL, encoding,
+    xmlDoc = xmlReadMemory(buf, size, NULL, encoding,
                                      XML_PARSE_NONET | XML_PARSE_NSCLEAN);
    if (xmlDoc == NULL) {
         return NULL;
@@ -856,13 +857,14 @@ xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
     xmlNodeSetPtr nodeset;
     xmlXPathContextPtr ctxt;
     xmlDocPtr d = (xmlDocPtr)doc->parserDoc; 
+	WsXmlNodeH body;
 
     ctxt = xmlXPathNewContext(d);
     if (ctxt == NULL) {
         error("failed while creating xpath context");
         return NULL;
     }
-    WsXmlNodeH body = ws_xml_get_soap_body(doc);
+    body = ws_xml_get_soap_body(doc);
     register_namespaces(ctxt, doc, xml_parser_get_root(doc));
     if ( ws_xml_get_child(body, 0 , NULL, NULL)) {
         register_namespaces(ctxt, doc,  ws_xml_get_child(body, 0 , NULL, NULL));

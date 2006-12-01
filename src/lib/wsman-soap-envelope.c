@@ -348,9 +348,10 @@ int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc)
 
   int retVal = 0;
   if (msgId) {
+	lnode_t *node;
     debug( "Checking Message ID: %s", msgId);
     u_lock(soap);
-    lnode_t *node = list_first(soap->processedMsgIdList);
+    node = list_first(soap->processedMsgIdList);
 
     while( node != NULL ) {
       if ( !strcmp(msgId, (char*)node->list_data) ) {
@@ -395,8 +396,11 @@ int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc)
  * @param doc XML document
  * @return void
  */
-void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc)
+void 
+wsman_is_valid_envelope(WsmanMessage *msg, 
+						WsXmlDocH doc)
 {
+	char* soapNsUri;
   WsXmlNodeH root = ws_xml_get_doc_root(doc);
 
   if ( strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) != 0) {
@@ -405,7 +409,7 @@ void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc)
                     "No Envelope");
     goto cleanup;
   }
-  char* soapNsUri = ws_xml_get_node_name_ns(root);
+  soapNsUri = ws_xml_get_node_name_ns(root);
   if ( strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0 ) {
     wsman_set_fault(msg, SOAP_FAULT_VERSION_MISMATCH, 0, NULL);
     goto cleanup;
@@ -446,7 +450,13 @@ wsman_create_fault_envelope(WsContextH cntx,
                             char* faultDetail)
 {
   WsXmlDocH doc = NULL;
-
+	WsXmlNodeH header;
+	WsXmlNodeH body;
+	WsXmlNodeH fault;
+  WsXmlNodeH codeNode;
+  WsXmlNodeH node;
+	char uuidBuf[50];
+	char* soapNs;
   if ( rqstDoc ) {
     doc = ws_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT); 
   } else {
@@ -458,13 +468,13 @@ wsman_create_fault_envelope(WsContextH cntx,
   {
     return NULL;
   }
-  char uuidBuf[50];
-  WsXmlNodeH header = ws_xml_get_soap_header(doc);
-  WsXmlNodeH body = ws_xml_get_soap_body(doc);
-  char* soapNs = ws_xml_get_node_name_ns(body);
-  WsXmlNodeH fault = ws_xml_add_child(body, soapNs, SOAP_FAULT, NULL);
-  WsXmlNodeH codeNode = ws_xml_add_child(fault, soapNs, SOAP_CODE, NULL);
-  WsXmlNodeH node = ws_xml_add_child(codeNode, soapNs, SOAP_VALUE, NULL);
+  
+  header = ws_xml_get_soap_header(doc);
+  body = ws_xml_get_soap_body(doc);
+  soapNs = ws_xml_get_node_name_ns(body);
+  fault = ws_xml_add_child(body, soapNs, SOAP_FAULT, NULL);
+  codeNode = ws_xml_add_child(fault, soapNs, SOAP_CODE, NULL);
+  node = ws_xml_add_child(codeNode, soapNs, SOAP_VALUE, NULL);
 
   ws_xml_set_node_qname_val(node, soapNs, code);
 
@@ -692,14 +702,15 @@ wsman_get_method_args ( WsContextH cntx,
   hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
   WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
   if ( doc ) {
+	  WsXmlNodeH in_node;
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     char *mn = wsman_get_method_name (cntx);
     input = u_strdup_printf("%s_INPUT", mn );
-    WsXmlNodeH in_node = ws_xml_get_child(body, 0, resource_uri, input);
+    in_node = ws_xml_get_child(body, 0, resource_uri, input);
     if (in_node) {
-      debug("INPUT found");
       WsXmlNodeH arg;
       int index = 0;
+	  debug("INPUT found");
       while( (arg = ws_xml_get_child(in_node, index++, NULL, NULL)) )
       {
         char *key = ws_xml_get_node_local_name(arg);

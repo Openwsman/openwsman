@@ -677,6 +677,9 @@ WsXmlDocH ws_xml_read_file( SoapH soap, char* filename,
 WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName) 
 {
     WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
+	WsXmlNodeH rootNode;
+	WsXmlNsH ns;
+    char prefix[12];
 
     if (wsDoc == NULL) {
         error("No memory");
@@ -693,9 +696,8 @@ WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName)
         return wsDoc;
     }
 
-    WsXmlNodeH rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
-    WsXmlNsH ns;
-    char prefix[12];
+    rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
+    
 
     ws_xml_make_default_prefix(rootNode, rootNsUri, prefix, sizeof (prefix));
     ns = xml_parser_ns_add(rootNode, rootNsUri, prefix);
@@ -1137,12 +1139,13 @@ ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
 WsXmlNodeH 
 ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
 {
+	WsXmlNodeH newNode;
     va_list args;
     char buf[4096];
     va_start (args, format);
     vsnprintf(buf,4096,format,args);
     va_end(args);
-    WsXmlNodeH newNode = 
+    newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL); 
 
     return newNode;
@@ -1151,12 +1154,13 @@ ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
 WsXmlNodeH 
 ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
 {
+	WsXmlNodeH newNode;
     va_list args;
     char buf[4096];
     va_start (args, format);
     vsnprintf(buf,4096,format,args);
     va_end(args);
-    WsXmlNodeH newNode = 
+    newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, buf); 
 
     return newNode;

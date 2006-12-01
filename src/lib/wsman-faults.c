@@ -490,9 +490,10 @@ wsman_generate_fault_buffer ( WsContextH cntx,
                               char **buf,  
                               int* len)
 {	
-    debug( "Fault Code: %d", faultCode);
+    
     WsXmlDocH doc = wsman_generate_fault(cntx, in_doc, faultCode, faultDetail, fault_msg);   
-    ws_xml_dump_memory_enc(doc, buf, len, NULL);	
+    debug( "Fault Code: %d", faultCode);
+	ws_xml_dump_memory_enc(doc, buf, len, NULL);	
     ws_xml_destroy_doc(doc);
     return;
 }

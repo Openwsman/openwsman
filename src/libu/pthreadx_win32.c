@@ -23,9 +23,12 @@
 ** OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ** SUCH DAMAGE. */
 
-#include "wsman_config.h"
 
-#if WIN32
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
+#ifdef WIN32
 
 #include "u/pthreadx.h"
 

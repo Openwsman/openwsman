@@ -25,6 +25,8 @@
 typedef int ssize_t;
 #endif
 
+#define bzero(p, l) memset(p, 0, l)
+
 #endif
 
 /* Define VA_COPY() to do the right thing for copying va_list variables. */
