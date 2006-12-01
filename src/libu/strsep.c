@@ -49,7 +49,7 @@
  * If *stringp is NULL, strsep returns NULL.
  */
 char *
-strsep( char **stringp;
+strsep( char **stringp,
 	const char *delim)
 {
 	char *s;

@@ -37,6 +37,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <u/os.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +77,7 @@ const char * debug_helper (const char *format, ...);
 void debug_full (debug_level_e  level, const char   *format, ...);
 
 
+
 #ifdef DEBUG_VERBOSE
 #define debug( format...) \
         debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", \
@@ -90,6 +92,20 @@ void debug_full (debug_level_e  level, const char   *format, ...);
         DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
         debug_helper (format))
 #else
+#ifdef WIN32
+
+static __inline void debug(char* format, ...) {
+	debug_full(DEBUG_LEVEL_WARNING, format);
+}
+static __inline void error(char* format, ...) {
+	debug_full(DEBUG_LEVEL_WARNING, format);
+}
+static __inline void message(char* format, ...) {
+	debug_full(DEBUG_LEVEL_WARNING, format);
+}
+
+#else
+
 #define warnings( format...) \
         debug_full(DEBUG_LEVEL_WARNING, format)
 
@@ -101,10 +117,7 @@ void debug_full (debug_level_e  level, const char   *format, ...);
 
 #define message(format...) \
         debug_full(DEBUG_LEVEL_MESSAGE, format)
-#if 0
-#define debug(format...)
-#define message(format...)
-#define error(format...)
+
 #endif
 
 #endif

@@ -16,6 +16,8 @@
 #include <windows.h>
 #define strcasecmp _stricmp
 #define sleep(secs) Sleep( (secs) * 1000 )
+#define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
+#define popen _popen
 #endif
 
 

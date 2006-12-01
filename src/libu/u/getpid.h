@@ -8,6 +8,17 @@
 #ifdef  WIN32
     #include <windows.h>
     typedef DWORD pid_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+pid_t getpid(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 
 

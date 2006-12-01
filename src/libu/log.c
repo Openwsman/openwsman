@@ -26,7 +26,7 @@ static const char rcsid[] =
 #include <u/os.h>
 #include <u/getpid.h>
 
-#include <syslog.h>
+#include <u/syslog.h>
 
 /* applications that use libu will defined their own "int facility" variable */
 extern int facility;
