@@ -6,7 +6,7 @@
 
 
 #ifdef WIN32
-#ifdef HAVE_STRSEP
+#ifndef HAVE_STRSEP
 
 #ifdef __cplusplus
 extern "C" {

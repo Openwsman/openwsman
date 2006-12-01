@@ -18,9 +18,23 @@
 #define sleep(secs) Sleep( (secs) * 1000 )
 #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
 #define popen _popen
+#define pclose _pclose
+#ifndef ssize_t
+typedef int ssize_t;
 #endif
 
+#endif
 
+/* Define VA_COPY() to do the right thing for copying va_list variables. */
+#ifndef VA_COPY
+#  if defined (__GNUC__) && defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
+#    define VA_COPY(ap1, ap2) (*(ap1) = *(ap2))
+#  elif defined (VA_COPY_AS_ARRAY)
+#    define VA_COPY(ap1, ap2) i_memmove ((ap1), (ap2), sizeof (va_list))
+#  else /* va_list is a pointer */
+#    define VA_COPY(ap1, ap2) ((ap1) = (ap2))
+#  endif /* va_list is a pointer */
+#endif
 
 #ifdef __GNUC__
 #define __INLINE__ __inline__

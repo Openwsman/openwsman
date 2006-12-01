@@ -31,7 +31,7 @@ u_strdup_vprintf(const char* format, va_list ap)
     va_list ap2;
     int size;
     char* buffer;
-    va_copy(ap2, ap);
+    VA_COPY(ap2, ap);
     size = vsnprintf(NULL, 0, format, ap2)+1;
     va_end(ap2);
     buffer = malloc(size+1);
