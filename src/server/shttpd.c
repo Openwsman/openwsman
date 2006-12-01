@@ -273,7 +273,6 @@ struct conn {
 	char		*user;		/* Remote user name		*/
 	char		*auth;		/* Authorization		*/
 	char		*useragent;	/* User-Agent:			*/
-    char        *soapaction; /* SOAPAction::          */
 	char		*path;		/* Path for get_dir		*/
 	char		*referer;	/* Referer:			*/
 	char		*cookie;	/* Cookie:			*/
@@ -335,7 +334,6 @@ struct header {
 	size_t		offset;		/* Where to store a header value*/
 	const char	*name;		/* Header name			*/
 } headers[] = {
-    {12, HDR_STRING, OFFSET(soapaction), "SOAPAction: "      },
 	{12, HDR_STRING, OFFSET(useragent),	"User-Agent: "		},
 	{14, HDR_STRING, OFFSET(ctype),		"Content-Type: "	},
 	{16, HDR_INT,	 OFFSET(cclength),	"Content-Length: "	},
