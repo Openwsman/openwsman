@@ -236,7 +236,7 @@ wsman_client_handler( WsManClient *cl,
     struct curl_slist *headers=NULL;
     char *buf = NULL;
     int len;
-    char *soapaction;
+    //char *soapaction;
     char *soapact_header = NULL;
 //    static char wbuf[DEFAULT_TRANSFER_LEN];
 //    transfer_ctx_t tr_data = {wbuf, DEFAULT_TRANSFER_LEN, 0};
@@ -286,6 +286,7 @@ wsman_client_handler( WsManClient *cl,
     sprintf(usag, "User-Agent: %s", wsman_transport_get_agent());
     headers = curl_slist_append(headers, usag);
 
+    /*
     soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
     if (soapaction) {
         soapact_header = malloc(12 + strlen(soapaction) + 1);
@@ -295,6 +296,7 @@ wsman_client_handler( WsManClient *cl,
         }
         u_free(soapaction);
     }
+    */
 
     r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     if (r != CURLE_OK) {
