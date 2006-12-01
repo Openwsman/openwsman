@@ -5,6 +5,7 @@
 #define _LIBU_OS_H_
 
 
+#include <u/pthreadx.h>
 #include <u/syslog.h>
 #include <u/gettimeofday.h>
 #include <u/syslog.h>
@@ -18,6 +19,7 @@
 #define sleep(secs) Sleep( (secs) * 1000 )
 #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
 #define popen _popen
+#define getpid GetCurrentProcessId
 #define pclose _pclose
 #ifndef ssize_t
 typedef int ssize_t;
