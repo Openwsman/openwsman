@@ -60,7 +60,11 @@ int u_env_init (const char *prefix, const char *cfile)
                 continue; /* should never happen... */
             *val++ = 0;
             /* line is the name and val the value */
+#ifdef WIN32
+            SetEnvironmentVariable(line, val);
+#else
             dbg_err_if(setenv(line, val, 1));
+#endif
         }
     }
 
