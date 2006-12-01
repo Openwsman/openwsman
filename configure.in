@@ -104,7 +104,8 @@ syslog \
 sleep \
 fnmatch \
 timegm \
-daemon 
+daemon  \
+va_copy
 )
 
 # check for ssize_t
@@ -141,7 +142,7 @@ AM_CONDITIONAL(USE_PAM, test x$use_pam = x1)
 
 dnl ----------------------------------------------------------------------
 AC_CHECK_HEADERS([crypt.h sys/ioctl.h dirent.h])
-AC_CHECK_HEADERS([varargs.h stdarg.h])
+AC_CHECK_HEADERS([vararg.h stdarg.h])
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h sys/signal.h])
 AC_CHECK_HEADERS([ctype.h sys/resource.h sys/socket.h sys/select.h])
 AC_CHECK_HEADERS([netinet/in.h], [], [],
