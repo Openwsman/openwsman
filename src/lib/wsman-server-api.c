@@ -31,6 +31,10 @@
 /**
  * @author Vadim Revyakin
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include "wsman-types.h"
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"

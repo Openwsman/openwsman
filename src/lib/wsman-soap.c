@@ -32,14 +32,11 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #define _GNU_SOURCE
-
-/*
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>*/
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"

@@ -5,6 +5,10 @@
 static const char rcsid[] =
     "$Id: env.c,v 1.4 2006/01/09 12:38:38 tat Exp $";
 
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

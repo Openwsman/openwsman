@@ -4,6 +4,9 @@
 
 static const char rcsid[] =
     "$Id: log.c,v 1.9 2006/03/11 14:41:16 tat Exp $";
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <sys/types.h>
 #include <errno.h>
@@ -11,11 +14,17 @@ static const char rcsid[] =
 #include <string.h>
 #include <stdarg.h>
 #include <signal.h>
+
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <u/log.h>
 #include <u/carpal.h>
 #include <u/misc.h>
 #include <u/os.h>
+#include <u/getpid.h>
 
 #include <syslog.h>
 

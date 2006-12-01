@@ -99,7 +99,7 @@ void debug_full (debug_level_e  level, const char   *format, ...);
 #define error( format...) \
         debug_full(DEBUG_LEVEL_ERROR, format)
 
-#define message( format...) \
+#define message(format...) \
         debug_full(DEBUG_LEVEL_MESSAGE, format)
 #if 0
 #define debug(format...)

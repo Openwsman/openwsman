@@ -31,11 +31,16 @@
 /**
  * @author Vadim Revyakin
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <curl/curl.h>
 #include <curl/easy.h>

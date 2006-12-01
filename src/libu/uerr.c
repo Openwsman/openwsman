@@ -31,7 +31,9 @@
 /**
  * @author Denis Sadykov
  */
-
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 #include "u/libu.h"
 
 void u_error_new(u_error_t **error, int code, const char *format, ...)

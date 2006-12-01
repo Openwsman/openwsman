@@ -4,6 +4,9 @@
 
 static const char rcsid[] =
     "$Id: str.c,v 1.5 2006/01/09 12:38:38 tat Exp $";
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <stdlib.h>
 #include <errno.h>
@@ -12,6 +15,13 @@ static const char rcsid[] =
 #include <u/misc.h>
 #include <u/carpal.h>
 #include <u/memory.h>
+
+#  ifdef __GNUC__
+#    define INLINE __inline__
+#  elif _WIN32
+#    define INLINE __inline
+#  endif
+
 
 /**
  *  \defgroup string String
@@ -83,7 +93,8 @@ err:
  *
  * \return the string length
  */
-inline size_t u_string_len(u_string_t *s)
+
+INLINE size_t u_string_len(u_string_t *s)
 {
     return s->data_len;
 }
@@ -98,7 +109,7 @@ inline size_t u_string_len(u_string_t *s)
  *
  * \return the string value or NULL if the string is empty
  */
-inline const char *u_string_c(u_string_t *s)
+INLINE const char *u_string_c(u_string_t *s)
 {
     return s->data;
 }
@@ -113,7 +124,7 @@ inline const char *u_string_c(u_string_t *s)
  *
  * \return \c 0 on success, not zero on failure
  */
-inline int u_string_copy(u_string_t *dst, u_string_t *src)
+INLINE int u_string_copy(u_string_t *dst, u_string_t *src)
 {
     u_string_clear(dst);
     return u_string_append(dst, src->data, src->data_len);

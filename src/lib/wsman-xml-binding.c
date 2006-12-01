@@ -32,6 +32,9 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <string.h>
 #include <stdlib.h>

@@ -31,6 +31,9 @@
 /**
  * @author Anas Nashif
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #define _GNU_SOURCE
 #include <string.h>

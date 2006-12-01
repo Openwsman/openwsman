@@ -40,8 +40,56 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <pthread.h>
+
 #include <u/lock.h>
+#include <u/memory.h>
+
+#ifdef _WIN32
+#include <windows.h>
+
+void u_init_lock(void *data)
+{
+	
+	data = u_malloc(sizeof(CRITICAL_SECTION));
+	if ( data != NULL )
+		InitializeCriticalSection((CRITICAL_SECTION*)data);
+}
+
+int u_try_lock(void* data)
+{
+    int try = 0;
+    if ( data ){
+		EnterCriticalSection((CRITICAL_SECTION*)data);
+    }
+    return try;
+}
+
+void u_lock(void* data)
+{
+    if ( data ){
+        EnterCriticalSection((CRITICAL_SECTION*)data);
+    }
+}
+
+
+void u_destroy_lock(void* data)
+{
+    if ( data ){
+        EnterCriticalSection((CRITICAL_SECTION*)data);
+    }
+}
+
+void u_unlock(void* data)
+{
+    if ( data ){	
+		DeleteCriticalSection((CRITICAL_SECTION*)data);
+    }
+}
+
+
+
+#else
+#include <pthread.h>
 
 extern int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 
@@ -89,3 +137,7 @@ void u_unlock(void* data)
         pthread_mutex_unlock((pthread_mutex_t*)data);
     }
 }
+
+#endif
+
+

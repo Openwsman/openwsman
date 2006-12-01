@@ -24,12 +24,18 @@
    								Includes
  ---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include "u/dictionary.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 
 /** Maximum value size for integers and doubles. */

@@ -1,7 +1,9 @@
 #ifndef _U_LIBU_BUF_H_
 #define _U_LIBU_BUF_H_
 #include <stdlib.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 struct u_buf_s;
 typedef struct u_buf_s u_buf_t;

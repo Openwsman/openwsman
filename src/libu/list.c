@@ -17,7 +17,9 @@
  * $Id: list.c,v 1.19.2.1 2000/04/17 01:07:21 kaz Exp $
  * $Name: kazlib_1_20 $
  */
-
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <stdlib.h>
 #include <stddef.h>

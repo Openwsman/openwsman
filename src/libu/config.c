@@ -4,10 +4,19 @@
 
 static const char rcsid[] =
     "$Id: config.c,v 1.11 2006/01/11 14:07:10 tat Exp $";
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <sys/types.h>
 #include <stdlib.h>
+
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+    
 #include <string.h>
 #include <stdio.h>
 #include <stddef.h>

@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>

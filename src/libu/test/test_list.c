@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include <u/libu.h>
 
 int facility = LOG_DAEMON;

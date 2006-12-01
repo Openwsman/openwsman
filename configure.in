@@ -140,7 +140,8 @@ AM_CONDITIONAL(USE_PAM, test x$use_pam = x1)
 
 
 dnl ----------------------------------------------------------------------
-AC_CHECK_HEADERS([crypt.h])
+AC_CHECK_HEADERS([crypt.h sys/ioctl.h dirent.h])
+AC_CHECK_HEADERS([varargs.h stdarg.h])
 AC_CHECK_HEADERS([unistd.h sys/types.h sys/sendfile.h sys/signal.h])
 AC_CHECK_HEADERS([ctype.h sys/resource.h sys/socket.h sys/select.h])
 AC_CHECK_HEADERS([netinet/in.h], [], [],
@@ -149,6 +150,7 @@ AC_CHECK_HEADERS([netinet/in.h], [], [],
 #endif
 ])
 
+AC_HEADER_TIME
 dnl Checks for types
 AC_CHECK_TYPES([sa_family_t, in_port_t, in_addr_t], , ,
 [

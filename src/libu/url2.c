@@ -1,3 +1,6 @@
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <u/libu.h>
 #include <u/url2.h>
@@ -27,12 +30,11 @@ hash_t *parse_query(const char *query)
         /* zero-term the name part and set the value pointer */
         *val++ = 0; 
         if (!hash_lookup(h,key)) {
-            //debug("added: %s", key);
             if ( !hash_alloc_insert(h, key, val)) {
-                debug("hash_alloc_insert failed");
+                fprintf(stderr, "hash_alloc_insert failed");
             }
         } else {
-            debug("duplicate not added to hash");
+            fprintf(stderr, "duplicate not added to hash");
         }
     }
     /*

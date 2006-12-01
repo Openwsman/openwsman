@@ -19,7 +19,9 @@
 /*---------------------------------------------------------------------------
                                 Includes
  ---------------------------------------------------------------------------*/
-
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 #include "u/libu.h"
 
 #define ASCIILINESZ         1024
@@ -94,17 +96,20 @@ hash_t *iniparser_getsec(dictionary * d, char *sec)
     char * lc_key ;
     char * sval;
     hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0 );
+	char *key;
+	hnode_t *hn;
 
     if (d==NULL) return NULL;
     for (i=0 ; i<d->size ; i++) {
         if (d->key[i]==NULL)
             continue ;
 
-        char *key = u_strdup_printf("%s:", sec);
+        
+		key = u_strdup_printf("%s:", sec);
         if (strstr(d->key[i], key)!=NULL) {
             lc_key = strdup(strlwc(d->key[i]));
             sval = dictionary_get(d, lc_key, NULL);
-            hnode_t *hn = hnode_create(sval);
+            hn = hnode_create(sval);
             hash_insert(h, hn, lc_key);
             free(lc_key);
         }

@@ -36,13 +36,6 @@
 #include <wsman_config.h>
 #endif
 
-/*
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>*/
-
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-dispatcher.h"

@@ -61,15 +61,75 @@
  * **  uuid_mac.c: Media Access Control (MAC) resolver implementation
  * */
 
+
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 
+
+#if HAVE_CTYPE_H
+#include <ctype.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <sys/types.h>
 
 #include <assert.h>
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+
+#include <string.h>
+
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#endif
+#include "u/uuid.h"
+#include "u/debug.h"
+
+#ifdef _WIN32
+#include "windows.h"
+#include "rpcdce.h"
+int generate_uuid(char* buf, int size, int bNoPrefix) 
+// don't forget to link with rpcrt4.lib
+{
+        int ret_val = -1;
+        UUID uuid;
+        RPC_STATUS st = UuidCreate(&uuid);
+
+        if ( st == RPC_S_OK || st == RPC_S_UUID_LOCAL_ONLY )
+        {
+                char* str;
+                if ( (st = UuidToString(&uuid, (BYTE**)&str)) != RPC_S_OK ) {
+                        // failed
+                } else{
+                        
+                        int len = 5;
+                        if ( !bNoPrefix && size > (len + 1) )
+                                strcpy(buf, "uuid:");
+                        else
+                                len = 0;
+
+                        strncpy(&buf[len], str, size - len);
+                        RpcStringFree((BYTE**)&str);
+                        ret_val = 0;
+                }
+		} else {
+                // failed
+		}
+        return ret_val;
+}
+
+
+
+#else
 #include <netdb.h>
 #include <net/if_arp.h>
 #include <sys/utsname.h>
@@ -78,10 +138,6 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <fcntl.h>
-#include <string.h>
-
-#include <sys/time.h>
-#include "u/uuid.h"
 
 #if 0
 
@@ -295,3 +351,7 @@ generate_uuid ( char* buf,
     return 1;
 
 }
+
+#endif
+
+

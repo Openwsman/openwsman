@@ -122,7 +122,9 @@ typedef struct DIR {
 #include <sys/mman.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/time.h>		/* Some linuxes put struct timeval there */
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#endif
 
 
 #include <pwd.h>

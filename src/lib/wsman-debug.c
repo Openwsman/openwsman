@@ -31,6 +31,9 @@
 /**
  * @author Vadim Revyakin
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 #include "wsman-debug.h"
 
 static int debug_level = DEBUG_LEVEL_ALWAYS;

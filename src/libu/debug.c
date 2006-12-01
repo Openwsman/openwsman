@@ -31,6 +31,9 @@
 /**
  * @author Anas Nashif
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -45,7 +48,7 @@ debug_add_handler (debug_fn    fn,
                    debug_level_e level,
                    void*     user_data)
 {
-
+	lnode_t *new_node;
     debug_handler_t *handler = (debug_handler_t *)u_malloc(sizeof(debug_handler_t));
     if (!handlers)
         handlers = list_create(LISTCOUNT_T_MAX);
@@ -61,8 +64,8 @@ debug_add_handler (debug_fn    fn,
     else
         handler->id = 1;
 
-    lnode_t *new = lnode_create(handler);
-    list_append(handlers, new);
+    new_node = lnode_create(handler);
+    list_append(handlers, new_node);
 
     return handler->id;
 }
@@ -106,6 +109,7 @@ debug_full (debug_level_e  level,
 {
     va_list args;
     char *str;
+	lnode_t * iter;
     
     if (handlers == NULL) {
         return;
@@ -115,7 +119,7 @@ debug_full (debug_level_e  level,
     str = u_strdup_vprintf (format, args);
     va_end (args);
 
-    lnode_t *iter = list_first(handlers);
+    iter = list_first(handlers);
     while (iter) {
         debug_handler_t *handler = (debug_handler_t *)iter->list_data;
         if ((handler->level == DEBUG_LEVEL_ALWAYS) ||

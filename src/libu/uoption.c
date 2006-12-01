@@ -31,6 +31,9 @@
 /**
  * @author Denis Sadykov
  */
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include "u/libu.h"
 

@@ -5,6 +5,10 @@
 static const char rcsid[] =
     "$Id: misc.c,v 1.16 2006/01/09 12:38:38 tat Exp $";
 
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+    
 #include "libu_conf.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -16,12 +20,20 @@ static const char rcsid[] =
 #include <signal.h>
 #include <ctype.h>
 #include <fcntl.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
+#endif
 
 #include <u/misc.h>
 #include <u/carpal.h>
 #include <u/memory.h>
+#ifndef  HAVE_STRSEP
+#include <u/strsep.h>
+#endif
+
 
 
 /**
@@ -31,7 +43,7 @@ static const char rcsid[] =
 
 /** \brief Returns \c 0 if \p c is neither a space or a tab, not-zero otherwise.
  */
-inline int u_isblank(int c)
+INLINE int u_isblank(int c)
 {
     return c == ' ' || c == '\t';
 }
@@ -63,7 +75,7 @@ void u_trim(char *s)
 /** \brief Returns \c 1 if \p ln is a blank string i.e. a string formed by 
            ONLY spaces and/or tabs characters.
  */
-inline int u_isblank_str(const char *ln)
+INLINE int u_isblank_str(const char *ln)
 {
     for(; *ln; ++ln)
         if(!u_isblank(*ln))
@@ -74,7 +86,7 @@ inline int u_isblank_str(const char *ln)
 /** \brief Returns \c 0 if \p c is neither a CR (\\r) or a LF (\\n), 
      not-zero otherwise.
  */
-inline int u_isnl(int c)
+INLINE int u_isnl(int c)
 {
     return c == '\n' || c == '\r';
 }
@@ -272,7 +284,7 @@ err:
     return ~0;
 }
 
-inline void u_use_unused_args(char *dummy, ...)
+INLINE void u_use_unused_args(char *dummy, ...)
 {
     dummy = 0;
     return;

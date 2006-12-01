@@ -5,9 +5,12 @@
 #define _LIBU_OS_H_
 #include "libu_conf.h"
 
-#include <syslog.h>
-#include <u/fnmatch.h>
-
+#include <u/syslog.h>
+#include <u/gettimeofday.h>
+#include <u/syslog.h>
+#include <u/getpid.h>
+#include <u/strsep.h>
+#include <u/strtok_r.h>
 
 #ifdef OS_WIN
 #include <windows.h>

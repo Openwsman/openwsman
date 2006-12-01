@@ -6,7 +6,9 @@
 #define _U_CARPAL_H_
 #include "libu_conf.h"
 #include <sys/types.h>
+#ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

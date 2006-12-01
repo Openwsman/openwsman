@@ -1,3 +1,8 @@
+
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
+
 #include "libu_conf.h"
 #ifndef HAVE_GETTIMEOFDAY
 #include <u/carpal.h>

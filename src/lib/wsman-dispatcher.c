@@ -32,7 +32,9 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
-
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #define _GNU_SOURCE
 #include <string.h>
@@ -543,7 +545,7 @@ wsman_dispatcher_match_ns( WsDispatchInterfaceInfo* r,
                            char *uri )
 {
   char *ns = NULL;
-  die_if(r == NULL);
+  // die_if(r == NULL);
   if (r->namespaces == NULL) {
     return NULL;
   }

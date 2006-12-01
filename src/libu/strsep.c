@@ -1,7 +1,7 @@
-/*	$NetBSD: fnmatch.h,v 1.12 2005/02/03 04:39:32 perry Exp $	*/
+/*	$NetBSD: strsep.c,v 1.14 2003/08/07 16:43:52 agc Exp $	*/
 
 /*-
- * Copyright (c) 1992, 1993
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,38 +27,55 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)fnmatch.h	8.1 (Berkeley) 6/2/93
  */
 
-#ifndef	_LIBU_FNMATCH_H_
-#define	_LIBU_FNMATCH_H_
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 #include "libu_conf.h"
+#include <string.h>
 
-#ifdef HAVE_FNMATCH
-#include <fnmatch.h>
-#else 
+#ifdef _WIN32
+#ifndef HAVE_STRSEP
+/*
+ * Get next token from string *stringp, where tokens are possibly-empty
+ * strings separated by characters from delim.  
+ *
+ * Writes NULs into the string at *stringp to end tokens.
+ * delim need not remain constant from call to call.
+ * On return, *stringp points past the last NUL written (if there might
+ * be further tokens), or is NULL (if there are definitely no more tokens).
+ *
+ * If *stringp is NULL, strsep returns NULL.
+ */
+char *
+strsep( char **stringp;
+	const char *delim)
+{
+	char *s;
+	const char *spanp;
+	int c, sc;
+	char *tok;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	if ((s = *stringp) == NULL)
+		return (NULL);
 
-#define	FNM_NOMATCH	1	/* Match failed. */
-#define	FNM_NOSYS	2	/* Function not implemented. */
-
-#define	FNM_NOESCAPE	0x01	/* Disable backslash escaping. */
-#define	FNM_PATHNAME	0x02	/* Slash must be matched by slash. */
-#define	FNM_PERIOD	0x04	/* Period must be matched by period. */
-
-#define	FNM_CASEFOLD	0x08	/* Pattern is matched case-insensitive */
-#define	FNM_LEADING_DIR	0x10	/* Ignore /<tail> after Imatch. */
-
-int	 fnmatch(const char *, const char *, int);
-
-#ifdef __cplusplus
+	for (tok = s;;) {
+		c = *s++;
+		spanp = delim;
+		do {
+			if ((sc = *spanp++) == c) {
+				if (c == 0)
+					s = NULL;
+				else
+					s[-1] = 0;
+				*stringp = s;
+				return (tok);
+			}
+		} while (sc != 0);
+	}
+	/* NOTREACHED */
 }
+
 #endif
-
-#endif /* ! HAVE_FNMATCH */
-
-#endif /* ! _LIBU_FNMATCH_H_ */
+#endif

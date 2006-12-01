@@ -32,12 +32,9 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  */
-
-/*
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>*/
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
+#endif
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
