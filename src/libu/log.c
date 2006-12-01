@@ -37,7 +37,7 @@ static void *hook_arg = NULL;
 int facility = LOG_DAEMON;
 
 
-#ifdef OS_WIN
+#ifdef WIN32
 #define err_type DWORD
 #define save_errno(var) var = GetLastError();
 #define restore_errno(var) SetLastError(var);

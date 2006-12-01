@@ -94,7 +94,7 @@
 #include "u/uuid.h"
 #include "u/debug.h"
 
-#ifdef _WIN32
+#ifdef WIN32
 #include "windows.h"
 #include "rpcdce.h"
 int generate_uuid(char* buf, int size, int bNoPrefix) 

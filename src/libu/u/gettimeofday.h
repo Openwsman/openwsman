@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef _WIN32
+#ifdef WIN32
 
 #ifdef __cplusplus
 extern "C" {

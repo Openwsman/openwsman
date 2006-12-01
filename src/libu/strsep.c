@@ -35,7 +35,7 @@
 #include "libu_conf.h"
 #include <string.h>
 
-#ifdef _WIN32
+#ifdef WIN32
 #ifndef HAVE_STRSEP
 /*
  * Get next token from string *stringp, where tokens are possibly-empty

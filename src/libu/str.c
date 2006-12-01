@@ -18,7 +18,7 @@ static const char rcsid[] =
 
 #  ifdef __GNUC__
 #    define INLINE __inline__
-#  elif _WIN32
+#  elif WIN32
 #    define INLINE __inline
 #  endif
 

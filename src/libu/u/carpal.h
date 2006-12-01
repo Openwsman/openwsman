@@ -116,7 +116,7 @@ extern "C" {
     do { msg_ifb(label, expr) { msg_strerror(label, errno); goto err; } } while(0)
 
 /** \brief write a debug message containing the message returned by strerror(errno) */
-#ifdef OS_WIN
+#ifdef WIN32
 #define msg_strerror(label, en)                                     \
     do {                                                            \
         LPVOID lpMsgBuf = NULL;  DWORD dw = GetLastError();         \
@@ -166,7 +166,7 @@ extern "C" {
             }                                                       \
         } while(0)                  
 #endif  
-#endif /* ! def OS_WIN */
+#endif /* ! def WIN32 */
 
 /* nop_ macros */
 #define nop_return_if(expr, err)       do { if(expr) return err; } while(0)

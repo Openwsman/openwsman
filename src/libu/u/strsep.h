@@ -5,7 +5,7 @@
 #define _LIBU_STRSEP_H_
 #include "libu_conf.h"
 
-#ifdef _WIN32
+#ifdef WIN32
 #ifdef HAVE_STRSEP
 
 #ifdef __cplusplus

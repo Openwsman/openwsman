@@ -5,7 +5,7 @@
 #define _LIBU_STRTOK_R_H_
 #include "libu_conf.h"
 
-#ifdef _WIN32
+#ifdef WIN32
 
 #ifdef __cplusplus
 extern "C" {

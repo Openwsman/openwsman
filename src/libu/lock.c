@@ -44,7 +44,7 @@
 #include <u/lock.h>
 #include <u/memory.h>
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <windows.h>
 
 void u_init_lock(void *data)

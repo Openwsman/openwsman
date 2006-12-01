@@ -12,7 +12,7 @@
 #include <u/strsep.h>
 #include <u/strtok_r.h>
 
-#ifdef OS_WIN
+#ifdef WIN32
 #include <windows.h>
 #define strcasecmp _stricmp
 #define sleep(secs) Sleep( (secs) * 1000 )

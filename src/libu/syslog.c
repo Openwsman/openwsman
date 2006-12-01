@@ -7,7 +7,7 @@
 #include <u/os.h>
 #ifndef HAVE_SYSLOG
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <windows.h>
 #include <io.h>
 #include <sys/locking.h>
@@ -64,7 +64,7 @@ void syslog(int priority, const char *fmt, ...)
     va_end(ap);
 }
 
-#endif /* ifdef OS_WIN */
+#endif /* ifdef WIN32 */
 
 #else /* ifndef HAVE_SYSLOG */
 #include <syslog.h>

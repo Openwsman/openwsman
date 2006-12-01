@@ -46,7 +46,7 @@
 #include <wsman_config.h>
 #endif
 
-#ifdef _WIN32
+#ifdef WIN32
 #ifndef HAVE_STRTOK_R
 #include <stddef.h>
 #include <string.h>

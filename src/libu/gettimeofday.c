@@ -8,7 +8,7 @@
 #include <u/carpal.h>
 #include <u/gettimeofday.h>
 
-#ifdef OS_WIN
+#ifdef WIN32
 #include <time.h>
 #include <sys/timeb.h>
 int gettimeofday(struct timeval *tv, struct timezone *tz)

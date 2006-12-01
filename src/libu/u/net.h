@@ -21,7 +21,7 @@
 #endif
 #endif
 
-#ifdef OS_WIN
+#ifdef WIN32
 #include <windows.h>
 #include <winsock.h>
 #include <winsock2.h>
