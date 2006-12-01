@@ -40,7 +40,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#ifndef WIN32
 #include <pthread.h>
+#endif // !WIN32
+
 #include "wsman-client-api.h"
 
 struct _WsManConnection {
