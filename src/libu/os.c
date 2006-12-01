@@ -49,12 +49,11 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include "exits.h"
-#include "winsyslog.h"
 
-extern char *__progname = "";
 
 #endif /* WIN32 */
+
+#include <u/os.h>
 
 #ifdef WIN32
 

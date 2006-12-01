@@ -31,6 +31,8 @@
 #elif defined (WIN32)
 #include <windows.h>
 
+#define PTHREAD_MUTEX_RECURSIVE_NP "0"
+
 typedef HANDLE pthread_t;
 typedef CRITICAL_SECTION pthread_mutex_t;
 
@@ -45,6 +47,7 @@ struct {
 typedef
 struct {
     int attrs; //currently unused. placeholder.
+	int type;
 } pthread_mutexattr_t;
 
 //typedef void * (*pthread_func)(void *);
@@ -62,6 +65,9 @@ extern int pthread_mutex_init(pthread_mutex_t *mp,
 extern int pthread_mutex_lock(pthread_mutex_t *mp);
 extern int pthread_mutex_unlock(pthread_mutex_t *mp);
 extern int pthread_mutex_destroy(pthread_mutex_t *mp);
+extern int pthread_mutexattr_settype(struct pthread_mutexattr_t *attr, int t);
+extern int pthread_mutex_trylock(struct pthread_mutex_t *m);
+extern int pthread_mutexattr_init(struct pthread_mutexattr_t *attr);
 
 #endif  /* WIN32 */
 

@@ -83,6 +83,30 @@ int pthread_mutex_init(pthread_mutex_t *mp,
     return 0;
 }
 
+#if(_WIN32_WINNT >= 0x0400)
+int
+pthread_mutex_trylock(struct pthread_mutex_t *m)
+{
+	if (TryEnterCriticalSection(&m->csMutex) == TRUE)
+		return 0;
+	return -1;
+}
+#endif
+
+int
+pthread_mutexattr_settype(pthread_mutexattr_t *attr, int t)
+{
+	attr->type = t;
+	return 0;
+}
+
+int
+pthread_mutexattr_init(pthread_mutexattr_t *attr)
+{
+	memset(attr, 0, sizeof(*attr));
+	return 0;
+}
+
 int pthread_mutex_lock(pthread_mutex_t *mp)
 {
     EnterCriticalSection(mp);

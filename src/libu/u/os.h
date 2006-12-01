@@ -58,6 +58,9 @@ typedef int ssize_t;
 #define __INLINE__ __inline
 #  endif
 
+#ifndef _PASSWORD_LEN
+#define _PASSWORD_LEN	128
+#endif
 
 #ifndef HAVE_SSIZE_T
 // typedef int ssize_t;
