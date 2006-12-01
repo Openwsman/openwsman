@@ -129,6 +129,7 @@ shttp_reason_phrase(int status)
     return "Error";
 }
 
+#if 0
 static int
 invalid_soap_action(const char *action)
 {
@@ -172,6 +173,7 @@ invalid_soap_action(const char *action)
     }
     return 0;
 }
+#endif
 
 typedef struct {
       char *response;
@@ -186,14 +188,11 @@ server_callback (struct shttpd_arg_t *arg)
 {
     const char *method;
     const char *content_type;
-    const char *soapaction;
 //    char *default_path;
 //    const char *path;
 //    const char *encoding;
     int status = WSMAN_STATUS_OK;
     char *fault_reason = NULL;
-    WsmanFaultCodeType fcode = WSMAN_RC_OK;
-    WsmanFaultDetailType fdet;
 
     ShttpMessage *shttp_msg = (ShttpMessage *)arg->state;
     int n = 0;
@@ -242,18 +241,13 @@ server_callback (struct shttpd_arg_t *arg)
         goto DONE;
     }
 
-    soapaction = shttpd_get_header(arg, "SOAPAction");
-    if (soapaction && invalid_soap_action(soapaction)) {
-        fcode = WSA_ACTION_NOT_SUPPORTED;
-        fdet  = 0;
-        fault_reason = (char *)soapaction;
-    }
 //    encoding = strchr(content_type, '=') + 1;
 //    debug("Encoding: %s", encoding);
 
 
     SoapH soap = (SoapH)arg->user_data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;
+    wsman_msg->http_headers = shttpd_get_all_headers(arg);
 
     // Get request from http server
     size_t length = shttpd_get_post_query_len(arg);
@@ -272,26 +266,10 @@ server_callback (struct shttpd_arg_t *arg)
 
 
     // Call dispatcher. Real request handling
-    if ((status == WSMAN_STATUS_OK) && (fcode == WSMAN_RC_OK)) {
+    if (status == WSMAN_STATUS_OK) {
         // dispatch if we didn't find out the error
         dispatch_inbound_call(soap, wsman_msg);
         status = wsman_msg->http_code;
-    } else if (fcode != WSMAN_RC_OK) {
-        // create soap fault message 
-        char *buf;
-        int len;
-        WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, wsman_msg);
-        if (in_doc) {
-            wsman_generate_fault_buffer(soap->cntx, in_doc,
-                    fcode, fdet, fault_reason, &buf, &len);
-            debug("Fault response %d: [%s]", len, buf);
-            u_buf_construct(wsman_msg->response, buf, len, len);
-            ws_xml_destroy_doc(in_doc);
-            status = WSMAN_STATUS_BAD_REQUEST;
-        } else {
-            status = WSMAN_STATUS_BAD_REQUEST;
-            fault_reason = "Bad request body";
-        }
     }
 
 

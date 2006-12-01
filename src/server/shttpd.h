@@ -132,6 +132,9 @@ extern void		shttpd_poll(struct shttpd_ctx *, int milliseconds);
 extern const char *	shttpd_version(void);
 extern const char *	shttpd_get_var(struct shttpd_arg_t *, const char *var);
 extern const char *	shttpd_get_header(struct shttpd_arg_t *, const char *);
+#ifdef OPENWSMAN
+extern hash_t     *shttpd_get_all_headers(struct shttpd_arg_t *);
+#endif
 extern const char *	shttpd_get_env(struct shttpd_arg_t *, const char *);
 
 extern int		shttpd_get_post_query_len(struct shttpd_arg_t *);

@@ -77,10 +77,14 @@ wsman_soap_message_new()
 void
 wsman_soap_message_destroy(WsmanMessage* wsman_msg)
 {
-  u_buf_free(wsman_msg->response);
-  u_buf_free(wsman_msg->request);
-  if (wsman_msg->status.fault_msg)
-    u_free(wsman_msg->status.fault_msg);		
-	
-  u_free(wsman_msg);
+    u_buf_free(wsman_msg->response);
+    u_buf_free(wsman_msg->request);
+    if (wsman_msg->status.fault_msg) {
+        u_free(wsman_msg->status.fault_msg);
+    }
+    if (wsman_msg->http_headers) {
+        hash_free(wsman_msg->http_headers);
+        wsman_msg->http_headers = NULL;
+    }
+   u_free(wsman_msg);
 }

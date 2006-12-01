@@ -64,6 +64,7 @@ struct _WsmanMessage {
   WsmanKnownStatusCode http_code;
   WsmanAuth           auth_data;
   unsigned int        flags;
+  hash_t     *http_headers;
 };
 typedef struct _WsmanMessage WsmanMessage;
 

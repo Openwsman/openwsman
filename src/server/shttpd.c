@@ -1023,7 +1023,7 @@ printf("         end of c->query body\n");
         c->flags &= ~FLAG_HAVE_TO_WRITE;
 	} else {
         c->flags |= FLAG_HAVE_TO_WRITE;
-debug("c->flags |= FLAG_HAVE_TO_WRITE");
+        // debug("c->flags |= FLAG_HAVE_TO_WRITE");
     }
 }
 
@@ -1050,6 +1050,61 @@ shttpd_get_header(struct shttpd_arg_t *arg, const char *header_name)
 
 	return (NULL);
 }
+
+
+#ifdef OPENWSMAN
+static void
+free_headers_hnode(hnode_t *n, void *arg) {
+    u_free(n->hash_key);
+    u_free(n);
+}
+
+hash_t *
+shttpd_get_all_headers(struct shttpd_arg_t *arg)
+{
+    struct conn *c = arg->priv;
+    char        *p, *s, *e;
+    char *name, *value;
+    hash_t *hash = hash_create(HASHCOUNT_T_MAX, 0, 0);
+
+    hash_set_allocator(hash, NULL, free_headers_hnode, NULL);
+
+    p = strchr(c->saved, '\n') + 1;
+    e = c->saved + c->reqlen;
+    while (p < e) {
+        name = p;
+        if ((s = strchr(p, '\n')) != NULL) {
+            if (s > p && s[-1] == '\r') {
+                s[-1] = '\0';
+            }
+            *s = '\0';
+            p = s + 1;
+        } else {
+            p += strlen(p);
+        }
+        if ((p < e) && (*p == '\0')) {
+            p++;
+        }
+        value = strchr(name, ':');
+        if ((value == NULL) || ((value + 2) >= e) ) {
+            continue;
+        }
+        *value = '\0';
+        name = strdup(name);
+        *value = ':';
+        debug("%s: %s", name, value + 2);
+        if (!hash_alloc_insert(hash, name, value + 2)) {
+            u_free(name);
+        }
+    }
+
+    return hash;
+}
+
+#endif
+
+
+
 
 const char *
 shttpd_get_env(struct shttpd_arg_t *arg, const char *env_name)
@@ -1293,7 +1348,7 @@ Snprintf(char *buf, size_t buflen, const char *fmt, ...)
 static void
 io_inc_tail(struct io *io, size_t n)
 {
-debug("tail = %d; head = %d", io->tail,io->head);
+    // debug("tail = %d; head = %d", io->tail,io->head);
 	assert(io->tail <= io->head);
 	assert(io->head <= io->bufsize);
 	io->tail += n;
