@@ -41,7 +41,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "libu_conf.h"
+
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif

@@ -4,7 +4,7 @@
 
 #ifndef _U_LOG_H_
 #define _U_LOG_H_
-#include "libu_conf.h"
+
 
 #include <stdlib.h>
 #include <stdarg.h>

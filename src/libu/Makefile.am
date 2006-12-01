@@ -1,7 +1,5 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 SUBDIRS = . u test
-wsmanuincludedir = $(includedir)/openwsman/u
-wsmanuinclude_HEADERS = libu_conf.h
 
 libwsman_utils_la_SOURCES = buf.c env.c  \
 		log.c memory.c misc.c str.c  uri.c  uuid.c \

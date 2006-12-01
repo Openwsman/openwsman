@@ -4,7 +4,7 @@
 
 #ifndef _U_URI_H_
 #define _U_URI_H_
-#include "libu_conf.h"
+
 
 #ifdef __cplusplus
 extern "C" {

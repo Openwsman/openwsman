@@ -32,7 +32,7 @@
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
-#include "libu_conf.h"
+
 #include <string.h>
 
 #ifdef WIN32

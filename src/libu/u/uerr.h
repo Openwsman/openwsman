@@ -35,7 +35,7 @@
 #ifndef UERR_H
 #define UERR_H
 
-#include "libu_conf.h"
+
 
 #ifdef __cplusplus
 extern "C" {

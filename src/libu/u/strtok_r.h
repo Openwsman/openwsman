@@ -3,7 +3,7 @@
  */
 #ifndef _LIBU_STRTOK_R_H_
 #define _LIBU_STRTOK_R_H_
-#include "libu_conf.h"
+
 
 #ifdef WIN32
 

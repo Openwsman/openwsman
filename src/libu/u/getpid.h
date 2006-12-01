@@ -3,7 +3,7 @@
  */
 #ifndef _LIBU_GETPID_H_
 #define _LIBU_GETPID_H_
-#include "libu_conf.h"
+
 
 #ifdef  WIN32
     #include <windows.h>

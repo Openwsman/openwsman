@@ -3,7 +3,7 @@
  */
 #ifndef _LIBU_GETTIMEOFDAY_H_
 #define _LIBU_GETTIMEOFDAY_H_
-#include "libu_conf.h"
+
 #include <time.h>
 #ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>

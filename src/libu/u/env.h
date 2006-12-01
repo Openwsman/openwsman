@@ -4,7 +4,7 @@
 
 #ifndef _U_ENV_H_
 #define _U_ENV_H_
-#include "libu_conf.h"
+
 
 #ifdef __cplusplus
 extern "C" {

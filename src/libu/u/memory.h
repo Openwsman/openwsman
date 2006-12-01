@@ -4,7 +4,7 @@
 
 #ifndef _U_ALLOC_H_
 #define _U_ALLOC_H_
-#include "libu_conf.h"
+
 #include <sys/types.h>
 
 #ifdef __cplusplus

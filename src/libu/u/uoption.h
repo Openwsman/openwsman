@@ -35,7 +35,7 @@
 #ifndef UOPTION_H
 #define UOPTION_H
 
-#include "libu_conf.h"
+
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,7 +3,7 @@
  */
 #ifndef _LIBU_STRSEP_H_
 #define _LIBU_STRSEP_H_
-#include "libu_conf.h"
+
 
 #ifdef WIN32
 #ifdef HAVE_STRSEP

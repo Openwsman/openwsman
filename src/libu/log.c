@@ -47,7 +47,7 @@ int facility = LOG_DAEMON;
 #define restore_errno(var) errno = var;
 #endif
 
-static inline const char* u_log_label(int lev)
+static __INLINE__ const char* u_log_label(int lev)
 {
     switch(lev)
     {

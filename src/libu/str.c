@@ -16,11 +16,6 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/memory.h>
 
-#  ifdef __GNUC__
-#    define INLINE __inline__
-#  elif WIN32
-#    define INLINE __inline
-#  endif
 
 
 /**
@@ -94,7 +89,7 @@ err:
  * \return the string length
  */
 
-INLINE size_t u_string_len(u_string_t *s)
+__INLINE__ size_t u_string_len(u_string_t *s)
 {
     return s->data_len;
 }
@@ -109,7 +104,7 @@ INLINE size_t u_string_len(u_string_t *s)
  *
  * \return the string value or NULL if the string is empty
  */
-INLINE const char *u_string_c(u_string_t *s)
+__INLINE__ const char *u_string_c(u_string_t *s)
 {
     return s->data;
 }
@@ -124,7 +119,7 @@ INLINE const char *u_string_c(u_string_t *s)
  *
  * \return \c 0 on success, not zero on failure
  */
-INLINE int u_string_copy(u_string_t *dst, u_string_t *src)
+__INLINE__ int u_string_copy(u_string_t *dst, u_string_t *src)
 {
     u_string_clear(dst);
     return u_string_append(dst, src->data, src->data_len);

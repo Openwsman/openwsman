@@ -4,7 +4,7 @@
 
 #ifndef _U_MISC_H_
 #define _U_MISC_H_
-#include "libu_conf.h"
+
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
