@@ -33,12 +33,17 @@
  * @author Eugene Yarmosh
  */
 
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
+#endif
 
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+
+#ifdef HAVE_CTYPE_H
 #include "ctype.h"
+#endif
 
 #include "u/libu.h"
 
@@ -86,10 +91,11 @@ set_namespaces(void)
   list_t *l = list_create(LISTCOUNT_T_MAX);
   for (i = 0; wsmid_identify_Namespaces[i].ns != NULL; i++)
   {
+	  lnode_t *node;
     WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
     ns->class_prefix = wsmid_identify_Namespaces[i].class_prefix;
     ns->ns = (char*) wsmid_identify_Namespaces[i].ns;
-    lnode_t *node = lnode_create(ns);
+    node = lnode_create(ns);
     list_append(l, node);
   }
 

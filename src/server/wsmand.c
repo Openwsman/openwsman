@@ -32,10 +32,14 @@
  * @author Anas Nashif
  */
  
- 
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
+#endif
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <stdlib.h>
 
 #include <stdio.h>
@@ -47,8 +51,9 @@
 
 #include <string.h>
 #include <sys/stat.h>
+#include <u/libu.h>
 
-#include <syslog.h>
+
 #include <time.h>
 #include <assert.h>
 

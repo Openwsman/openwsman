@@ -31,15 +31,17 @@
 /**
  * @author Anas Nashif
  */
-
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
+#endif
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
 #include <dlfcn.h>
-
+#endif
 #include "u/libu.h"
 #include "wsman-faults.h"
 #include "wsman-xml-api.h"
@@ -60,14 +62,14 @@ WsContextH
 wsman_init_plugins(WsManListenerH *listener)
 {	
   list_t *list = list_create(LISTCOUNT_T_MAX);
-  WsContextH cntx = NULL;	  	
-  wsman_plugins_load(listener);
+  WsContextH cntx = NULL;	  	 
   lnode_t *node = list_first(listener->plugins);
 
+  wsman_plugins_load(listener);
   while (node) 
   {		
     WsManPlugin *p = (WsManPlugin *)node->list_data;
-    p->interface = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
+    p->ifc = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
 
     p->set_config = dlsym(p->p_handle, "set_config");
     p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
@@ -80,13 +82,13 @@ wsman_init_plugins(WsManListenerH *listener)
       debug("no configuration available for plugin: %s",p->p_name);
     }
     if ( p->get_endpoints )
-      p->get_endpoints(p->p_handle, p->interface );
+      p->get_endpoints(p->p_handle, p->ifc );
 
-    if (p->interface) 
+    if (p->ifc) 
     {
-      debug("Plugin version: %s", ((WsDispatchInterfaceInfo *)p->interface)->version );
-      if (strcmp(PACKAGE_VERSION, ((WsDispatchInterfaceInfo *)p->interface)->version ) == 0 ) {
-        lnode_t *i = lnode_create(p->interface);
+      debug("Plugin version: %s", ((WsDispatchInterfaceInfo *)p->ifc)->version );
+      if (strcmp(PACKAGE_VERSION, ((WsDispatchInterfaceInfo *)p->ifc)->version ) == 0 ) {
+        lnode_t *i = lnode_create(p->ifc);
         list_append(list, i);
       } else {
         error("Plugin is not compatible with version of the software or plugin is invalid");

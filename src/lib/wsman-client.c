@@ -385,7 +385,7 @@ wsman_create_request(WsManClient *cl,
   hscan_t hs;
   hnode_t *hn;
   char* _action = NULL;
-	WsXmlNodeH filter;
+  WsXmlNodeH filter;
   
 	if (action == WSMAN_ACTION_IDENTIFY) {
     request = ws_xml_create_envelope(

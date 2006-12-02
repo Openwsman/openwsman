@@ -33,14 +33,19 @@
  */
 
 #define _GNU_SOURCE
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
+#endif
 
 #include <stdlib.h> 
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <glib.h>
 

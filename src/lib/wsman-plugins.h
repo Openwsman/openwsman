@@ -57,7 +57,7 @@ typedef struct _WsManPlugin
     void (*cleanup)( void *self, void *data);
     void (*get_endpoints)( void *self, void *data);
     void (*set_config)( void *self, dictionary *config);
-    void *interface;
+    void *ifc;
 } WsManPlugin;
 
 struct __WsManListenerH {

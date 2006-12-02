@@ -41,7 +41,9 @@
 #endif
 #include "u/libu.h"
 #include "shttpd.h"
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
+#endif
 #endif
 
 

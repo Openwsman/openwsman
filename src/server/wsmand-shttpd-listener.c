@@ -34,17 +34,23 @@
  */
 
 #define _GNU_SOURCE
+#ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
-
+#endif
 
 #include <stdlib.h> 
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
-#include <dlfcn.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifndef WIN32
+#include <dlfcn.h>
+#endif
 
 
 #include "u/libu.h"
@@ -69,8 +75,9 @@
 #define MULTITHREADED_SERVER
 
 #ifdef MULTITHREADED_SERVER
-
+#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
 #include <sys/socket.h>
 
 static pthread_mutex_t      shttpd_mutex;

@@ -65,8 +65,9 @@ scan_files_in_dir ( const char *dir, int (*select)(const struct dirent *))
     } else {
         while (n--)
         {
+			lnode_t *node;
             char *tmp = u_strdup(namelist[n]->d_name);
-            lnode_t *node = lnode_create(tmp);
+            node = lnode_create(tmp);
             list_append(files, node );
             //debug("plugin file found: %s", namelist[n]->d_name );
             u_free(namelist[n]);
@@ -112,8 +113,7 @@ plugin_init(WsManPlugin *self, const char *p_name)
     */
     self->p_name = u_strdup(p_name) ;
     if (NULL != (self->p_handle = dlopen(p_name, RTLD_LAZY)))
-    {
-        
+    {        
         if (  dlsym(self->p_handle, "get_endpoints")
                 &&  dlsym(self->p_handle, "init"))
         {
@@ -139,12 +139,12 @@ plugin_init(WsManPlugin *self, const char *p_name)
 static int
 load_plugin(WsManPlugin *self, const char *p_name)
 {
-    message("Loading plugin: %s", p_name );
-
     int retv = -1;
     WsManPluginError err = plugin_init(self, p_name);
     const char	*plugin_err = dlerror();
-    if( NULL == plugin_err )
+    message("Loading plugin: %s", p_name );
+ 
+	if( NULL == plugin_err )
         plugin_err = "";
     switch( err )
     {
@@ -175,14 +175,15 @@ load_plugin(WsManPlugin *self, const char *p_name)
 static void
 free_plugins(list_t * plugin_list)
 {
+	lnode_t *p;
     if (plugin_list == NULL) {
         return;
     }
     if (list_isempty(plugin_list)) {
         return;
     }
-    lnode_t *p = list_first(plugin_list);
-     while (p) {
+    p = list_first(plugin_list);
+    while (p) {
          WsManPlugin *plugin = (WsManPlugin *)p->list_data;
          plugin_free(plugin);
          p = list_next(plugin_list, p);
@@ -201,9 +202,10 @@ static void
 scan_plugins_in_directory ( WsManListenerH *listener, 
                             const char *dir_name)
 {
+	list_t *files = scan_files_in_dir ( dir_name, select_all_files);
+	lnode_t *node = list_first(files);
     listener->plugins = list_create(LISTCOUNT_T_MAX);
-    list_t *files = scan_files_in_dir ( dir_name, select_all_files);
-    lnode_t *node = list_first(files);
+       
     while (node != NULL)
     {
         const char* entry_name;

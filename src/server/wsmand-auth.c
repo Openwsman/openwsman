@@ -7,7 +7,10 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include "u/libu.h"
 #include <wsmand-auth.h>
@@ -16,6 +19,7 @@
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #endif
+
 #include <time.h>
 
 
@@ -23,6 +27,7 @@ static int
 check_digest_ha1 (WSmanAuthDigest *digest,
 	          char *ha1)
 {
+	char *resp;
 	md5_state_t ctx;
 	md5_byte_t hex_a2[16];
         md5_byte_t o[16];
@@ -67,7 +72,7 @@ check_digest_ha1 (WSmanAuthDigest *digest,
 	md5_append (&ctx,  (const md5_byte_t *)md52char(hex_a2), strlen(md52char(hex_a2)));
 	md5_finish (&ctx, o);
 
-        char *resp = md52char(o);
+        resp = md52char(o);
         debug( "expected: %s, actual: %s", digest->digest_response, resp);
 	return strcmp (resp, digest->digest_response) == 0;
 }
@@ -82,6 +87,7 @@ ws_authorize_digest(char *filename, WSmanAuthDigest *digest)
         debug( "Checking for user: %s in digest", digest->username);
 
         FILE *fp = fopen(filename, "r");
+		debug( "Checking for user: %s in digest", digest->username);
         if (!fp) {
             debug( "Couldn't open digest passwd file %s",
                         filename);

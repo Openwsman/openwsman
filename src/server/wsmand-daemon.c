@@ -32,11 +32,17 @@
  * @author Anas Nashif
  */
 
-
+#ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <string.h>
 
 #include <errno.h>
@@ -85,6 +91,7 @@ static char *config_file = NULL;
 
 int wsmand_parse_options(int argc, char **argv) 
 {
+  char retval;
   u_option_context_t *opt_ctx;
   u_error_t *error = NULL;
 
@@ -109,7 +116,7 @@ int wsmand_parse_options(int argc, char **argv)
   opt_ctx = u_option_context_new("WS-Management Server");
   u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
   u_option_context_add_main_entries(opt_ctx, options, "wsman");  	
-  char retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
+  retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
   if (error) {
     if (error->message)
       printf ("%s\n", error->message);
@@ -300,6 +307,7 @@ wsmand_shutdown_add_handler(WsmandShutdownFn fn,
                             void*     user_data)
 {
   ShutdownHandler *handler;
+  lnode_t *n;
 
   if (fn == NULL) return;
 
@@ -307,7 +315,7 @@ wsmand_shutdown_add_handler(WsmandShutdownFn fn,
   handler->fn = fn;
   handler->user_data = user_data;
 
-  lnode_t *n = lnode_create(handler);
+  n = lnode_create(handler);
 
   if (!shutdown_handlers)
     shutdown_handlers = list_create(LISTCOUNT_T_MAX);
@@ -343,7 +351,7 @@ static int
 shutdown_idle_cb (void* user_data)
 {
   int restart = (int )user_data;
-
+  lnode_t *n;
   if (shutdown_handlers == NULL) {
     goto NULL_SHUTDOWN_HANDLERS;
   }
@@ -352,7 +360,7 @@ shutdown_idle_cb (void* user_data)
     goto EMPTY_LIST;
   }
 
-  lnode_t *n = list_first(shutdown_handlers);
+  n = list_first(shutdown_handlers);
 
   debug ("shutdown_idle_cb started");
 
