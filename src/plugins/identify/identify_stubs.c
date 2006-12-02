@@ -52,7 +52,7 @@
 #include "identify.h"
 
 
-const wsmid_identify g_wsmid_identify = { XML_NS_WS_MAN, "Openwsman Project" ,  PACKAGE_VERSION };
+wsmid_identify g_wsmid_identify = { XML_NS_WS_MAN, "Openwsman Project" ,  PACKAGE_VERSION };
 
 
 wsmid_identify* wsmid_identify_Identify_EP(WsContextH cntx)
