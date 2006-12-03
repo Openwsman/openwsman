@@ -62,10 +62,11 @@ WsContextH
 wsman_init_plugins(WsManListenerH *listener)
 {	
   list_t *list = list_create(LISTCOUNT_T_MAX);
+  lnode_t *node;
   WsContextH cntx = NULL;	  	 
-  lnode_t *node = list_first(listener->plugins);
-
   wsman_plugins_load(listener);
+  node = list_first(listener->plugins);
+
   while (node) 
   {		
     WsManPlugin *p = (WsManPlugin *)node->list_data;
