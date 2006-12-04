@@ -42,7 +42,7 @@ typedef int ssize_t;
 #endif
 
 /* Define VA_COPY() to do the right thing for copying va_list variables. */
-#ifndef VA_COPY
+#ifdef WIN32
 #  if defined (__GNUC__) && defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
 #    define VA_COPY(ap1, ap2) (*(ap1) = *(ap2))
 #  elif defined (VA_COPY_AS_ARRAY)
