@@ -642,7 +642,7 @@ char u_option_context_parse(u_option_context_t *ctx,
 			    char ***argv,
 			    u_error_t **error)
 {
-	char		*tmp_argv[*argc],	*largv[*argc];
+	char		**tmp_argv,		**largv;
 	int		arg_ind = 0,		noopt = 0;
 	char		*optptr = NULL,		*argptr = NULL;
 	char		next_shopt = '\0';
@@ -656,6 +656,9 @@ char u_option_context_parse(u_option_context_t *ctx,
 
 	if (!ctx)
 		return 0;
+
+	tmp_argv = u_zalloc(sizeof(char *) * (*argc));
+	largv = u_zalloc(sizeof(char *) * (*argc));
 
 	optptr = (*argv)[0];
 	while (*optptr != '\0') {
@@ -776,6 +779,8 @@ char u_option_context_parse(u_option_context_t *ctx,
 		for (i = 1; i < *argc; i++)
 			u_free(largv[i]);
 		*argc = noopt + 1;
+		u_free(largv);
+		u_free(tmp_argv);
 		u_free(tmp_data);
 
 	return retval;
