@@ -57,6 +57,7 @@ char *auth_methods[] = {
   "basic",
   "digest",
   "ntlm",
+  "gss",
   NULL,
 };
 
@@ -149,6 +150,7 @@ char *ws_client_transport_get_auth_name(ws_auth_type_t auth)
   case WS_BASIC_AUTH:  return "Basic";
   case WS_DIGEST_AUTH: return "Digest";
   case WS_NTLM_AUTH:   return "NTLM";
+  case WS_GSSNEGOTIATE_AUTH : return "GSS-Negotiate";
   default: ;
   }
   return "Unknown";

@@ -53,6 +53,8 @@
 #include "wsman-xml.h"
 #include "wsman-debug.h"
 #include "wsman-client-transport.h"
+//#include <libxml/xmlmemory.h>
+
 
 
 #define DEFAULT_TRANSFER_LEN 32000
@@ -66,6 +68,12 @@ reauthenticate(long auth_set, long auth_avail, char **username, char **password)
     long choosen_auth = 0;
     ws_auth_type_t ws_auth = WS_NO_AUTH;
 
+    if (auth_avail &  CURLAUTH_GSSNEGOTIATE &&
+            wsman_is_auth_method(WS_GSSNEGOTIATE_AUTH)) {
+        choosen_auth = CURLAUTH_GSSNEGOTIATE;
+        ws_auth = WS_GSSNEGOTIATE_AUTH;
+        goto REQUEST_PASSWORD;
+    }
     if (auth_avail & CURLAUTH_DIGEST &&
             wsman_is_auth_method(WS_DIGEST_AUTH)) {
         choosen_auth = CURLAUTH_DIGEST;
@@ -236,10 +244,7 @@ wsman_client_handler( WsManClient *cl,
     struct curl_slist *headers=NULL;
     char *buf = NULL;
     int len;
-    //char *soapaction;
     char *soapact_header = NULL;
-//    static char wbuf[DEFAULT_TRANSFER_LEN];
-//    transfer_ctx_t tr_data = {wbuf, DEFAULT_TRANSFER_LEN, 0};
     long http_code;
     long auth_avail = 0;
     static long auth_set = 0;
@@ -265,7 +270,7 @@ wsman_client_handler( WsManClient *cl,
         curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
         goto DONE;
     }
-//    r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tr_data);
+
     r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, con->response);
     if (r != CURLE_OK) {
         http_code = 400;
@@ -287,6 +292,7 @@ wsman_client_handler( WsManClient *cl,
     headers = curl_slist_append(headers, usag);
 
     /*
+    char *soapaction;
     soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
     if (soapaction) {
         soapact_header = malloc(12 + strlen(soapaction) + 1);
@@ -384,7 +390,6 @@ wsman_client_handler( WsManClient *cl,
         }
         auth_set = reauthenticate(auth_set, auth_avail, &cl->data.user,
                             &cl->data.pwd);
-//        tr_data.ind = 0;
         u_buf_clear(con->response);
         if (auth_set == 0) {
             // user wants to cancel authorization
@@ -393,27 +398,17 @@ wsman_client_handler( WsManClient *cl,
         }
     }
 
-
-/*
-    if (tr_data.ind == 0) {
-        // No data transfered
-        goto DONE;
-    }
-
-    u_buf_set(con->response, tr_data.buf, tr_data.ind);
-*/
 DONE:
     cl->response_code = http_code;
     curl_slist_free_all(headers);
-/*
-    if (tr_data.len > DEFAULT_TRANSFER_LEN) {
-        u_free(tr_data.buf);
-    }
-*/
     u_free(soapact_header);
     u_free(usag);
     u_free(upwd);
+#ifdef _WIN32
+    xmlFree(buf);
+#else
     u_free(buf);
+#endif
 
     return;
 #undef curl_err
@@ -431,6 +426,9 @@ int wsman_client_transport_init(void *arg)
     } else {
         flags = CURL_GLOBAL_NOTHING;
     }
+#ifdef _WIN32
+      flags |= CURL_GLOBAL_WIN32;
+#endif
     r = curl_global_init(flags);
     if (r != 0) {
         debug("Error = %d (%s); Could not initialize curl globals",

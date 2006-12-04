@@ -51,6 +51,7 @@ typedef enum {
     WS_DIGEST_AUTH,
     WS_NTLM_AUTH,
     WS_MAX_AUTH,
+    WS_GSSNEGOTIATE_AUTH,
 } ws_auth_type_t;
 
 
