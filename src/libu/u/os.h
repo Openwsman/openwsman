@@ -50,6 +50,8 @@ typedef int ssize_t;
 #  else /* va_list is a pointer */
 #    define VA_COPY(ap1, ap2) ((ap1) = (ap2))
 #  endif /* va_list is a pointer */
+#else
+# define VA_COPY va_copy
 #endif
 
 #ifdef __GNUC__
