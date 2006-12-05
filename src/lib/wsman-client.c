@@ -598,7 +598,7 @@ wsenum_enumerate_and_pull(WsManClient* cl,
     return 0;
   }
 
-  while (enumContext != NULL) {
+  while (enumContext != NULL && enumContext[0] != 0 ) {
     doc = wsenum_pull(cl, resource_uri, enumContext, options);
  
     if (wsman_get_client_response_code(cl) != 200 &&
