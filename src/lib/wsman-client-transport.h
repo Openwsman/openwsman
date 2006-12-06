@@ -49,9 +49,10 @@ typedef enum {
     WS_NO_AUTH,
     WS_BASIC_AUTH,
     WS_DIGEST_AUTH,
+    WS_PASS_AUTH,
     WS_NTLM_AUTH,
-    WS_MAX_AUTH,
     WS_GSSNEGOTIATE_AUTH,
+    WS_MAX_AUTH,
 } ws_auth_type_t;
 
 
@@ -64,6 +65,8 @@ typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
 extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t);
 
 extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
+
+extern int ws_client_transport_get_auth_value(void);
 
 extern int wsman_is_auth_method(int method);
 

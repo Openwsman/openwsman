@@ -891,7 +891,7 @@ wsman_create_client( const char *hostname,
 
   wsc->data.hostName    = hostname ? strdup(hostname) : strdup("localhost");
   wsc->data.port        = port;
-
+  wsc->data.path        = strdup(path ? path : "/wsman");
   wsc->data.user        = username ? strdup(username) : NULL;
   wsc->data.pwd         = password ? strdup(password) : NULL;
 
@@ -915,11 +915,14 @@ wsman_release_client(WsManClient * cl)
     u_free(cl->data.hostName);
     cl->data.hostName = NULL;
   }
+  if (cl->data.path) {
+    u_free(cl->data.path);
+    cl->data.path = NULL;
+  }
   if (cl->data.user) {
     u_free(cl->data.user);
     cl->data.user = NULL;
-  }
-  if (cl->data.pwd) {
+  }  if (cl->data.pwd) {
     u_free(cl->data.pwd);
     cl->data.pwd = NULL;
   }

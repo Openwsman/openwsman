@@ -65,6 +65,8 @@ typedef enum {
       WSMAN_ACTION_TEST
 } WsmanAction;
 
+
+
 typedef struct {
     unsigned char       flags;
     char *              filter;

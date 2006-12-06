@@ -56,6 +56,7 @@ char *auth_methods[] = {
   "noauth",
   "basic",
   "digest",
+  "pass",
   "ntlm",
   "gss",
   NULL,
@@ -173,6 +174,21 @@ int wsman_is_auth_method(int method)
                        strlen(authentication_method)));
 }
 
+int ws_client_transport_get_auth_value()
+{
+    char *m = authentication_method;
+    ws_auth_type_t i;
+
+    if (m == NULL) {
+        return 0;
+    }
+    for (i = 0; auth_methods[i] != NULL; i++) {
+        if (!strcasecmp(m, auth_methods[i])) {
+            return i;
+        }
+    }
+    return 0;
+}
 
 char *wsman_transport_get_proxy()
 {

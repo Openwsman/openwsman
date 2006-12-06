@@ -79,7 +79,7 @@ err:
 int u_buf_append(u_buf_t *ubuf, void *data, size_t size)
 {
     dbg_err_if(ubuf == NULL);
-    dbg_err_if(data == NULL);
+//    dbg_err_if(data == NULL);
     dbg_err_if(size == 0);
 
     if(ubuf->size - ubuf->len < size)
@@ -87,15 +87,22 @@ int u_buf_append(u_buf_t *ubuf, void *data, size_t size)
         dbg_err_if(u_buf_reserve(ubuf, ubuf->size + ubuf->len + 2*size));
     }
    
-    memcpy(ubuf->data + ubuf->len, data, size);
-    ubuf->len += size;
+    if (data) {
+        memcpy(ubuf->data + ubuf->len, data, size);
+        ubuf->len += size;
 
-    /* zero term the buffer so it can be used (when applicable) as a string */
-    ubuf->data[ubuf->len] = 0;
+        /* zero term the buffer so it can be used (when applicable) as a string */
+        ubuf->data[ubuf->len] = 0;
+    }
 
     return 0;
 err:
     return ~0;
+}
+
+void u_buf_set_len(u_buf_t *buf, size_t len)
+{
+    buf->len = len;
 }
 
 /**

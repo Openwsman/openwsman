@@ -56,6 +56,7 @@ typedef struct _WsManConnection WsManConnection;
 typedef struct {
     char *hostName;
     unsigned int port;
+    char *path;
     char *user;
     char *pwd;
     char *scheme;
