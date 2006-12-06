@@ -191,29 +191,23 @@ validate_mustunderstand_headers(op_t* op)
                                    op->in_doc, NULL, NULL);
   nsUri = ws_xml_get_node_name_ns(header);    
 
-  for(i = 0; (child = ws_xml_get_child(header, i, NULL, NULL)) != NULL; i++)
-  {
-    if ( ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND) )
-    {
+  for(i = 0; (child = ws_xml_get_child(header, i, NULL, NULL)) != NULL; i++)  {
+    if ( ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND) ) {
       lnode_t* node = list_first(op->processed_headers);
-      while(node != NULL)
-      {
+      while(node != NULL){
         if ( node->list_data == node )
           break;
         node = list_next(op->processed_headers, node);
       }
-      if ( node == NULL )
-      {
-        if ( !is_wk_header(child) )
-        {
+      if ( node == NULL ){
+        if ( !is_wk_header(child) ) {
           break;
         }
       }
     }
   }
 
-  if ( child != NULL ) 
-  {
+  if ( child != NULL ) {
     debug( "Mustunderstand Fault; %s", ws_xml_get_node_text(child) );
   }
   return child;
@@ -248,22 +242,19 @@ process_filters( op_t* op,
   list_t* list;
 
   debug( "Processing Filters: %s", (!inbound) ? "outbound" : "inbound" );
-  if ( !(op->dispatch->flags & SOAP_SKIP_DEF_FILTERS) )
-  {
+  if ( !(op->dispatch->flags & SOAP_SKIP_DEF_FILTERS) ){
     list = (!inbound) ? op->dispatch->fw->outboundFilterList :
       op->dispatch->fw->inboundFilterList;
     retVal = process_filter_chain(op, list); 
   }
 
-  if ( !retVal )
-  {
+  if ( !retVal ){
     list = (!inbound) ? op->dispatch->outboundFilterList :
       op->dispatch->inboundFilterList;
     retVal = process_filter_chain(op, list); 
   }
 
-  if ( !retVal && inbound )
-  {
+  if ( !retVal && inbound ){
         
     WsXmlNodeH notUnderstoodHeader;
     if ( (notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0 ) {        
