@@ -350,7 +350,7 @@ wsmand_shutdown_allow (void)
 static int
 shutdown_idle_cb (void* user_data)
 {
-  int restart = (int )user_data;
+  // int restart = (int )user_data;
   lnode_t *n;
   if (shutdown_handlers == NULL) {
     goto NULL_SHUTDOWN_HANDLERS;
@@ -379,7 +379,7 @@ shutdown_idle_cb (void* user_data)
   // list_destroy (shutdown_handlers);
  NULL_SHUTDOWN_HANDLERS:
 
-  if (!restart) {
+  if (user_data != NULL) {
     /* We should be quitting the main loop (which will cause us to
        exit) in a handler.  If not, we'll throw in an exit just to be
        sure. */
@@ -422,7 +422,11 @@ do_shutdown (int restart)
 #ifdef LIBSOUP_LISTENER
   g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
 #else
-  shutdown_idle_cb((void *) (restart));
+  if (restart) {
+      shutdown_idle_cb((void *)1);
+  } else {
+      shutdown_idle_cb(NULL);
+  }
 #endif
 }
 

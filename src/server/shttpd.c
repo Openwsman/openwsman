@@ -3929,9 +3929,9 @@ do_accept(struct shttpd_ctx *ctx, void *ptr)
         
 	sa.len = sizeof(sa.u.sin);
 
-	sock = inetd ? fileno(stdin) : accept((int) ptr, &sa.u.sa, &sa.len);	
+	sock = inetd ? fileno(stdin) : accept((int)((char *)ptr - (char *)NULL), &sa.u.sa, &sa.len);	
 	if (sock == -1)
-		elog(ERR_INFO, "do_accept(%d): %s", (int) ptr, strerror(ERRNO));
+		elog(ERR_INFO, "do_accept(%d): %s", (int)((char *)ptr - (char *)NULL), strerror(ERRNO));
 	else
 		shttpd_add(ctx, sock);
 }
@@ -3948,7 +3948,7 @@ shttpd_listen(struct shttpd_ctx *ctx, int sock)
 		elog(ERR_FATAL, "shttpd_listen: cannot allocate connection");
 	
 	c->watch	= do_accept;
-	c->watch_data	= (void *) sock;
+	c->watch_data	= (void *)((char *)NULL + sock);
 	c->sock		= sock;
 	c->fd		= -1;
     c->local.bufsize = IO_MAX;

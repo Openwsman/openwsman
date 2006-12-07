@@ -480,7 +480,7 @@ static void *service_connection(void *arg)
             }
         }
         node = list_del_first(request_list);
-        sock = (int)lnode_get(node);
+        sock = (int)((char *)lnode_get(node) - (char *)NULL);
         pthread_mutex_unlock(&shttpd_mutex);
         lnode_destroy(node);
         handle_socket(sock,soap);
@@ -668,7 +668,7 @@ wsmand_start_server(dictionary *ini)
             continue;
         }
         debug("Sock %d accepted", sock);
-        node = lnode_create((void *)sock);
+        node = lnode_create((void *)((char *)NULL + sock));
         if (node == NULL) {
             debug("lnode_create == NULL");
             (void) shutdown(sock, 2);
