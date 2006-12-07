@@ -165,6 +165,8 @@ typedef struct {
   void wsman_set_action_option(actionOptions *options, unsigned int);
   void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
 
+  void wsman_client_add_selector( actionOptions *options, char *key, char *value);
+  void wsman_client_add_property( actionOptions *options, char *key, char *value);
 
             /* Misc */
   char* wsman_make_action(char* uri, char* opName);

@@ -1128,7 +1128,10 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
  * @return New XML node
  */
 WsXmlNodeH 
-ws_xml_add_child(WsXmlNodeH node, char* nsUri, char* localName, char* val)
+ws_xml_add_child(WsXmlNodeH node, 
+                 char* nsUri,
+                 char* localName,
+                 char* val)
 {
     WsXmlNodeH newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 

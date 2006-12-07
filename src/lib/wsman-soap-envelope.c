@@ -572,7 +572,8 @@ wsman_set_polymorph_mode( WsContextH cntx,
         else if (strcmp(mode,   WSMB_NONE) == 0 )
           enumInfo->flags |= FLAG_POLYMORPHISM_NONE;
       } else {
-        enumInfo->flags |= FLAG_IncludeSubClassProperties;
+         enumInfo->flags |= FLAG_IncludeSubClassProperties;
+        // enumInfo->flags |= FLAG_ExcludeSubClassProperties;
         return;
       }
     }
