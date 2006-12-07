@@ -935,6 +935,7 @@ cim_invoke_method (CimClientInfo *client,
   WsmanStatus statusP;
   CMCIClient * cc = (CMCIClient *)client->cc;
 
+  wsman_status_init(&statusP);
   if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) {
     CMPIArgs *argsin = NULL, *argsout = NULL;
     argsin = newCMPIArgs(NULL);
