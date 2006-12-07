@@ -7,6 +7,37 @@
 
 #define MAXTOKENS 64
 
+
+static int unify(char *s)
+{
+    int len = strlen(s);
+    int i, j;
+    char n;
+
+    for (i = 0; i < len; i++) {
+        if (s[i] !='%') {
+            continue;
+        }
+        if (len - i < 3) {
+            return 1;
+        }
+        if (!isxdigit(s[i+1]) || !isxdigit(s[i+2])) {
+            return 1;
+        }
+        n = s[i+3];
+        s[i+3] = '\0';
+        s[i] = (char)strtol(s + i + 1, NULL, 16);
+        s[i + 1] = n;
+        for (j = i + 4; j <= len; j++) {
+            s[j - 2] = s[j];
+        }
+        len -= 2;
+    }
+
+    return 0;
+}
+
+
 hash_t *parse_query(const char *query)
 {
     char *pp, *tok, *src, *q = NULL;
@@ -29,6 +60,11 @@ hash_t *parse_query(const char *query)
 
         /* zero-term the name part and set the value pointer */
         *val++ = 0; 
+        if (unify(key) || unify(val)) {
+            u_free(key);
+            debug("Coud not unify query: %s", tok);
+            continue;
+        }
         if (!hash_lookup(h,key)) {
             if ( !hash_alloc_insert(h, key, val)) {
                 fprintf(stderr, "hash_alloc_insert failed");
