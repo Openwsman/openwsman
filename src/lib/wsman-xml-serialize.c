@@ -99,17 +99,32 @@ void xml_serializer_free_scalar_mem(XmlSerializationData* data)
 }
 
 
-WsXmlNodeH xml_serializer_add_child(XmlSerializationData* data, char* value)
+WsXmlNodeH
+xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = (data->name) ? data->name : data->elementInfo->name;		
     return ws_xml_add_child(data->xmlNode, data->ns, name, value); 
 }
 
 
-WsXmlNodeH xml_serializer_get_child(XmlSerializationData* data)
+WsXmlNodeH
+xml_serializer_get_child(XmlSerializationData* data)
 {
+    WsXmlNodeH node;
     char* name = (data->name) ? data->name : data->elementInfo->name;
-    WsXmlNodeH node = ws_xml_get_child(data->xmlNode, data->index, data->ns, name);
+    /*
+    printf("name: %s %d\n", name, data->index );
+    if (!name) {
+        XmlSerializerInfo* elementInfo = (XmlSerializerInfo*)data->elementInfo->extData;
+        if (elementInfo)
+            node = ws_xml_get_child(elementInfo->xmlNode, elementInfo->index, elementInfo->ns, elementInfo->name);
+        else
+            node = ws_xml_get_child(data->xmlNode, data->index, data->ns, name);
+    } else {
+        node = ws_xml_get_child(data->xmlNode, data->index, data->ns, name);
+    }
+    */
+    node = ws_xml_get_child(data->xmlNode, data->index, data->ns, name);
 
     if ( g_NameNameAliaseTable )
     {
@@ -129,7 +144,8 @@ WsXmlNodeH xml_serializer_get_child(XmlSerializationData* data)
 }
 
 
-int do_serialize_uint(XmlSerializationData* data, int valSize) 
+int 
+do_serialize_uint(XmlSerializationData* data, int valSize) 
 {
     WsXmlNodeH child;
     unsigned long tmp;
@@ -231,78 +247,62 @@ int do_serialize_string(XmlSerializationData* data)
         xml_serializer_free_scalar_mem(data);
     }
     else
-        if ( data->mode == XML_SMODE_SERIALIZE )
-        {
+        if ( data->mode == XML_SMODE_SERIALIZE ) {
             char* valPtr = *((char**)data->elementBuf); 
 
-            if ( (child = xml_serializer_add_child(data, valPtr)) == NULL )
-            {
+            if ( (child = xml_serializer_add_child(data, valPtr)) == NULL ) {
                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
             } else {
-                if ( ws_xml_get_node_text(child) == NULL )
-                {
+                if ( ws_xml_get_node_text(child) == NULL ) {
                     ws_xml_add_node_attr(child, XML_NS_SCHEMA_INSTANCE, XML_SCHEMA_NIL, "true");
                 }
             }
-        } else {
-            if ( data->mode == XML_SMODE_DESERIALIZE )
-            {
-                debug( "De-serializing string...");
-                if ( (child = xml_serializer_get_child(data)) == NULL )
-                {
-                    retVal = WS_ERR_XML_NODE_NOT_FOUND;
-                }
-                else
-                {
-                    char* src = ws_xml_get_node_text(child);
-                    debug( "string: %s", src);
+        } else if ( data->mode == XML_SMODE_DESERIALIZE ) {
+            debug( "De-serializing string...");
+            if ( (child = xml_serializer_get_child(data)) == NULL ) {
+                retVal = WS_ERR_XML_NODE_NOT_FOUND;
+            } else {
+                char* src = ws_xml_get_node_text(child);
+                debug( "string: %s", src);
 
-                    if ( src != NULL && *src != 0 )
-                    {
-                        char* dstPtr;
-                        int dstSize = 1 + strlen(src);
+                if ( src != NULL && *src != 0 ) {
+                    char* dstPtr;
+                    int dstSize = 1 + strlen(src);
 
-                        if ( (dstPtr = (char*)xml_serializer_alloc(data, dstSize, 0)) == NULL )
-                            retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-                        else
-                        {
-                            strncpy(dstPtr, src, dstSize);
-                            *((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
-                            retVal = dstSize;
-                        }
+                    if ( (dstPtr = (char*)xml_serializer_alloc(data, dstSize, 0)) == NULL )
+                        retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+                    else {
+                        strncpy(dstPtr, src, dstSize);
+                        *((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
+                        retVal = dstSize;
                     }
-                    else
-                    {
-                        *((XML_TYPE_PTR*)data->elementBuf) = NULL;
-                        retVal = 0;
-                    }
+                } else {
+                    *((XML_TYPE_PTR*)data->elementBuf) = NULL;
+                    retVal = 0;
                 }
             }
-            else
-            {
-                if ( data->mode != XML_SMODE_BINARY_SIZE )
-                {
-                    retVal = WS_ERR_INVALID_PARAMETER;
-                }
+        } else {
+            if ( data->mode != XML_SMODE_BINARY_SIZE ) {
+                retVal = WS_ERR_INVALID_PARAMETER;
             }
         }
+
 
     return retVal;
 }
 
-int do_serialize_char_array(XmlSerializationData* data)
+int 
+do_serialize_char_array(XmlSerializationData* data)
 {
     WsXmlNodeH child; 
-	int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
+    int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
     int retVal = sizeof(XML_TYPE_CHAR) * count;
-	debug( "Serializing char array...");
-    if ( data->mode == XML_SMODE_SERIALIZE )
-    {
+    debug( "Serializing char array...");
+    if ( data->mode == XML_SMODE_SERIALIZE ) {
         XML_TYPE_CHAR* tmp = (char*)xml_serializer_alloc(data, retVal + sizeof(XML_TYPE_CHAR), 0);
         if ( tmp == NULL )
             retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-        else
-        {
+        else {
             memcpy(tmp, data->elementBuf, retVal);
             tmp[count] = 0;
 
@@ -312,54 +312,44 @@ int do_serialize_char_array(XmlSerializationData* data)
             }
             xml_serializer_free(data, tmp);
         }
-    }
-    else
-        if ( data->mode == XML_SMODE_DESERIALIZE )
-        {
-            if ( (child = xml_serializer_get_child(data)) == NULL ) 
+    } else if ( data->mode == XML_SMODE_DESERIALIZE ) {
+        if ( (child = xml_serializer_get_child(data)) == NULL ) {
+            retVal = WS_ERR_XML_NODE_NOT_FOUND;
+        } else {
+            char* src = ws_xml_get_node_text(child);
+            char* dstPtr = (char*)data->elementBuf;
+            int dstSize = SER_FLAGS_MASK & data->elementInfo->funcMaxCount;
+
+            if ( XML_IS_PTR(data->elementInfo) )
             {
-                retVal = WS_ERR_XML_NODE_NOT_FOUND;
+                dstPtr = xml_serializer_alloc(data, dstSize, 0);
+                *((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
             }
-            else
-            {
-                char* src = ws_xml_get_node_text(child);
-                char* dstPtr = (char*)data->elementBuf;
-                int dstSize = SER_FLAGS_MASK & data->elementInfo->funcMaxCount;
 
-                if ( XML_IS_PTR(data->elementInfo) )
-                {
-                    dstPtr = xml_serializer_alloc(data, dstSize, 0);
-                    *((XML_TYPE_PTR*)data->elementBuf) = dstPtr;
-                }
+            if ( dstPtr ) {
+                if ( src ) {
+                    int len = strlen(src);
 
-                if ( dstPtr )
-                {
-                    if ( src )
-                    {
-                        int len = strlen(src);
-
-                        if ( len < dstSize )
-                            strcpy(dstPtr, src);
-                        else
-                            memcpy(dstPtr, src, dstSize);
-                    }
+                    if ( len < dstSize )
+                        strcpy(dstPtr, src);
                     else
-                        *dstPtr = 0;
+                        memcpy(dstPtr, src, dstSize);
                 }
                 else
-                    retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+                    *dstPtr = 0;
             }
+            else
+                retVal = WS_ERR_INSUFFICIENT_RESOURCES;
         }
-        else
-            if ( data->mode == XML_SMODE_FREE_MEM )
-            {
-                xml_serializer_free_scalar_mem(data);
+    } else {
+        if ( data->mode == XML_SMODE_FREE_MEM ) {
+            xml_serializer_free_scalar_mem(data);
+        }
+        else	
+            if ( data->mode != XML_SMODE_BINARY_SIZE ) {
+                retVal = WS_ERR_INVALID_PARAMETER;
             }
-            else	
-                if ( data->mode != XML_SMODE_BINARY_SIZE )
-                {
-                    retVal = WS_ERR_INVALID_PARAMETER;
-                }
+    }
 
     return retVal;
 }
@@ -548,8 +538,10 @@ int do_serialize_fixed_size_array(XmlSerializationData* data)
 
 
 
-XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
+XmlSerialiseDynamicSizeData* 
+make_dyn_size_data(XmlSerializationData* data)
 {
+    
     XmlSerializerInfo* elementInfo = (XmlSerializerInfo*)data->elementInfo->extData;
     XmlSerialiseDynamicSizeData* dyn = XML_IS_PTR(data->elementInfo) ?
         NULL : (XmlSerialiseDynamicSizeData*)data->elementBuf;
@@ -585,7 +577,8 @@ XmlSerialiseDynamicSizeData* make_dyn_size_data(XmlSerializationData* data)
 }
 
 
-int do_serialize_dyn_size_array(XmlSerializationData* data)
+int
+do_serialize_dyn_size_array(XmlSerializationData* data)
 {
     
     int retVal = XML_IS_PTR(data->elementInfo) ? 
@@ -611,11 +604,12 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
                 // TBD: ??? validation
             }
         }
-        else
+        else {
             if ( XML_IS_PTR(savedElementInfo) )
                 dyn = (XmlSerialiseDynamicSizeData*)*((void**)data->elementBuf);
             else
                 dyn = (XmlSerialiseDynamicSizeData*)data->elementBuf;
+        }
 
         if ( retVal >= 0 && dyn )
         {
@@ -628,9 +622,9 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
             data->elementBuf = dyn->data;
             data->index = -dyn->count;
 
-            if ( (tmp = do_serialize_fixed_size_array(data)) < 0 )
+            if ( (tmp = do_serialize_fixed_size_array(data)) < 0 ) {
                 retVal = tmp;
-            else
+            } else {
                 if ( data->mode == XML_SMODE_FREE_MEM 
                         && 
                         XML_IS_PTR(savedElementInfo) )
@@ -643,6 +637,7 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
                     data->elementBuf = savedBufPtr;
                     xml_serializer_free_scalar_mem(data);
                 }
+            }
         }
     }
     else
@@ -664,7 +659,8 @@ int do_serialize_dyn_size_array(XmlSerializationData* data)
     return retVal;
 }
 
-int do_serialize_struct(XmlSerializationData* data)
+int 
+do_serialize_struct(XmlSerializationData* data)
 {
     int i;
     int retVal = 0;
@@ -676,55 +672,41 @@ int do_serialize_struct(XmlSerializationData* data)
     while(elements[elementCount].proc != NULL)
         elementCount++;
 
-    if ( data->mode == XML_SMODE_BINARY_SIZE )
-    {
+    if ( data->mode == XML_SMODE_BINARY_SIZE ) {
         retVal = calculate_struct_size(data, elementCount, elements);
-    }
-    else
-    {
-        if ( data->mode == XML_SMODE_SERIALIZE 
-                || 
-                data->mode == XML_SMODE_DESERIALIZE
-                || 
-                data->mode == XML_SMODE_FREE_MEM 
-                ||
-                data->mode == XML_SMODE_BINARY_SIZE )
-        {
+    } else {
+        if ( data->mode == XML_SMODE_SERIALIZE || 
+                data->mode == XML_SMODE_DESERIALIZE || 
+                data->mode == XML_SMODE_FREE_MEM || 
+                data->mode == XML_SMODE_BINARY_SIZE ) {
             int savedMode = data->mode;
 
             data->mode = XML_SMODE_BINARY_SIZE;
             retVal = calculate_struct_size(data, elementCount, elements);
             data->mode = savedMode;
 
-            if ( retVal > 0 )
-            {
-                if ( data->mode == XML_SMODE_DESERIALIZE )
-                {
-                    if ( (data->xmlNode = xml_serializer_get_child(data)) == NULL )
-                    {
+            if ( retVal > 0 ) {
+                if ( data->mode == XML_SMODE_DESERIALIZE ) {
+                    if ( (data->xmlNode = xml_serializer_get_child(data)) == NULL ) {
                         retVal = WS_ERR_XML_NODE_NOT_FOUND;
-                    }
-                    else
-                        if ( XML_IS_PTR(data->elementInfo) )
-                        {
+                    } else {
+                        if ( XML_IS_PTR(data->elementInfo) ) {
                             XML_TYPE_PTR ptr = data->elementBuf;
                             if ( (ptr = xml_serializer_alloc(data, retVal, 1)) == NULL )
                                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
                             else
                                 *((XML_TYPE_PTR*)data->elementBuf) = ptr;
                         }
-                }
-                else
-                    if ( data->mode == XML_SMODE_SERIALIZE )
-                    {
-                        if ( (data->xmlNode = xml_serializer_add_child(data, NULL)) == NULL )
-                        {
+                    }
+                } else {
+                    if ( data->mode == XML_SMODE_SERIALIZE ) {
+                        if ( (data->xmlNode = xml_serializer_add_child(data, NULL)) == NULL ) {
                             retVal = WS_ERR_INSUFFICIENT_RESOURCES;
                         }
                     }
+                }
 
-                if ( retVal > 0 )
-                {
+                if ( retVal > 0 ) {
                     int elementSize;
                     char* dstPtr = (char*)data->elementBuf;
                     XmlSerializerInfo* savedElement = data->elementInfo;
@@ -733,39 +715,33 @@ int do_serialize_struct(XmlSerializationData* data)
 
                     data->name = NULL;
 
-                    for(i = 0; retVal > 0 && i < elementCount; i++)
-                    {
+                    for(i = 0; retVal > 0 && i < elementCount; i++) {
                         data->elementInfo = &elements[i];
                         data->index = 0;				
 
-                        if ( (data->elementInfo->funcMaxCount & data->skipFlag) )
-                        {
+                        if ( (data->elementInfo->funcMaxCount & data->skipFlag) ) {
                             data->mode = XML_SMODE_BINARY_SIZE;
                         }
 
-                        while(data->index < XML_MAX_OCCURS(data->elementInfo))
-                        {
+                        while(data->index < XML_MAX_OCCURS(data->elementInfo)) {
                             data->elementBuf = dstPtr;
-
-                            if ( (elementSize = elements[i].proc(data)) < 0 )
-                            {
-                                if ( elementSize != WS_ERR_XML_NODE_NOT_FOUND
-                                        ||
+                            if ( (elementSize = elements[i].proc(data)) < 0 ) {
+                                if ( elementSize != WS_ERR_XML_NODE_NOT_FOUND ||
                                         data->index < XML_MIN_OCCURS(data->elementInfo) )
                                 {
                                     retVal = elementSize;
                                     break;
                                 }
                                 data->mode = XML_SMODE_BINARY_SIZE;
-                                if ( (elementSize = elements[i].proc(data)) < 0 )
-                                {
+                                if ( (elementSize = elements[i].proc(data)) < 0 ) {
                                     retVal = elementSize;
                                     break;
                                 }
                             }
 
-                            if ( XML_IS_PTR(&elements[i]) )
+                            if ( XML_IS_PTR(&elements[i]) ) {
                                 elementSize = sizeof(XML_TYPE_PTR);
+                            }
 
                             dstPtr += get_adjusted_size(elementSize);
 
@@ -932,7 +908,8 @@ void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node)
     }
 }
 
-int ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str, 
+int
+ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str, 
         char* nameNs, char* name)
 {
     WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, str);
@@ -1022,7 +999,6 @@ do_serializer_free(WsContextH cntx,
     if ( soap && ptr != NULL )
     {
         u_lock(soap);
-
         node = list_first(soap->WsSerializerAllocList);
         while( node != NULL )
         {
@@ -1030,8 +1006,9 @@ do_serializer_free(WsContextH cntx,
 
             if ( entry && entry->cntx == cntx && (!ptr || ptr == entry->buf) )
             {
-                lnode_destroy (node);
-                list_delete(soap->WsSerializerAllocList, node);
+                // FIXME
+                //lnode_destroy (node);
+                //list_delete(soap->WsSerializerAllocList, node);
                 if ( ptr != NULL )
                     break;
             }
