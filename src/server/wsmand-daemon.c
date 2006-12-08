@@ -379,7 +379,7 @@ shutdown_idle_cb (void* user_data)
   // list_destroy (shutdown_handlers);
  NULL_SHUTDOWN_HANDLERS:
 
-  if (user_data != NULL) {
+  if (user_data == NULL) {
     /* We should be quitting the main loop (which will cause us to
        exit) in a handler.  If not, we'll throw in an exit just to be
        sure. */

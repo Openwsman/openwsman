@@ -48,6 +48,11 @@
 #include "wsman-client.h"
 
 
+WsXmlDocH
+wsman_create_doc(WsContextH cntx, char *rootname)
+{
+    return ws_xml_create_doc(cntx->soap, NULL, rootname);
+}
 
 long wsman_get_client_response_code(WsManClient *cl)
 {

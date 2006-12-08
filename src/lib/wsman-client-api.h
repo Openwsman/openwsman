@@ -108,6 +108,7 @@ typedef struct {
 
 
             /* Wsman actions handling */
+  WsXmlDocH wsman_create_doc(WsContextH cntx, char *rootname);
   WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action,
                                  char* reply_to_uri, char* resource_uri,
                                  char* to_uri, actionOptions options);

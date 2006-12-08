@@ -46,8 +46,8 @@ extern "C" {
 struct _WsXmlDoc;
 typedef struct _WsXmlDoc* WsXmlDocH;
 
- struct WS_CONTEXT;
- typedef struct WS_CONTEXT* WsContextH;
+ struct _WS_CONTEXT;
+ typedef struct _WS_CONTEXT* WsContextH;
 
 
 
