@@ -579,6 +579,24 @@ ws_transfer_create(WsManClient * cl,
 }
 
 
+WsXmlDocH
+ws_transfer_delete(WsManClient * cl,
+		   char *resource_uri,
+		   actionOptions options)
+{
+
+	WsXmlDocH       response;
+	WsXmlDocH       request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_DELETE,
+					 NULL, resource_uri, options, NULL);
+	if (wsman_send_request(cl, request)) {
+		ws_xml_destroy_doc(request);
+		return NULL;
+	}
+	response = wsman_build_envelope_from_response(cl);
+	ws_xml_destroy_doc(request);
+	return response;
+}
+
 
 WsXmlDocH
 ws_transfer_get(WsManClient * cl,

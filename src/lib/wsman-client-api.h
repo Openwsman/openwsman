@@ -118,6 +118,8 @@ extern          "C" {
 				                     actionOptions options);
 	WsXmlDocH       ws_transfer_create(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
+	WsXmlDocH       ws_transfer_delete(WsManClient * cl, char *resourceUri,
+				                     actionOptions options);				                     
 	WsXmlDocH       wsenum_enumerate(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
 	WsXmlDocH       wsenum_pull(WsManClient * cl, char *resourceUri,

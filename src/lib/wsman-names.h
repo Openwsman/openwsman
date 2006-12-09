@@ -155,6 +155,10 @@
 #define TRANSFER_ACTION_DELETE   \
           "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete"
 #define TRANSFER_DELETE              "Delete"
+#define TRANSFER_ACTION_DELETERESPONSE     \
+          "http://schemas.xmlsoap.org/ws/2004/09/transfer/DeleteResponse"
+#define TRANSFER_DELETE_RESP            "DeleteResponse"
+
 
 #define WSXF_ACTION_FAULT        \
           "http://schemas.xmlsoap.org/ws/2004/09/transfer/fault"
