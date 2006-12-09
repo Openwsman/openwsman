@@ -35,8 +35,6 @@ PKG_CHECK_MODULES([CURL], libcurl)
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
-
-
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then
     test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
@@ -48,7 +46,6 @@ else
     fi
 fi
 
-
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then
     AC_DEFINE(WSMAN_DEBUG_VERBOSE, 1, [Defined if verbose debug logging is requested])
@@ -56,20 +53,6 @@ fi
 AC_SUBST(OWSMAN_DEBUG_FLAGS)
 
 
-
-
-AC_CHECK_FUNCS(strtok_r \
-getpid \
-strsep \
-gettimeofday \
-unlink \
-syslog \
-sleep \
-fnmatch \
-timegm \
-daemon  \
-va_copy
-)
 
 # check for ssize_t
 AC_CHECK_TYPE(ssize_t, int)
@@ -108,6 +91,21 @@ AM_CONDITIONAL(USE_PAM, test x$use_pam = x1)
 dnl ***************************
 dnl *** Checks for programs ***
 dnl ***************************
+
+
+AC_CHECK_FUNCS(strtok_r \
+getpid \
+strsep \
+gettimeofday \
+unlink \
+syslog \
+sleep \
+fnmatch \
+timegm \
+daemon  \
+va_copy
+)
+
 
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -240,6 +238,11 @@ if test "$enable_ssl" != "no"; then
     AC_DEFINE(HAVE_SSL, 1, [Defined if you have SSL support])
 fi
 AM_CONDITIONAL(USE_OPENSSL, test "x$enable_ssl" != "xno")
+
+
+AM_CONDITIONAL(LIBCRYPT, test HAVE_CRYPT_H = "1")
+echo  $platform
+
 
 if test "$prefix" = "NONE"; then
     prefix=$ac_default_prefix;
