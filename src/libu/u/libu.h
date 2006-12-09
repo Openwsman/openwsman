@@ -30,7 +30,7 @@
 
 
 #include <u/hash.h>
-#include <u/uuid.h>
+#include <u/uuuid.h>
 #include <u/lock.h>
 #include <u/strings.h>
 #include <u/uri.h>

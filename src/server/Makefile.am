@@ -6,12 +6,6 @@ INCLUDES =  \
 	   -I$(top_srcdir)/src/libu \
 	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
-if USE_LIBSOUP_SERV
-INCLUDES += $(SOUP_CFLAGS)  \
-	    $(GOBJECT_CFLAGS) \
-	    $(GTHREAD_CFLAGS)
-
-endif
 
 LIBS = \
        $(OPENSSL_LIBS) \
@@ -19,11 +13,6 @@ LIBS = \
        $(top_builddir)/src/libu/libwsman_utils.la \
        $(top_builddir)/src/lib/libwsman_server.la
 
-if USE_LIBSOUP_SERV
-LIBS += $(SOUP_LIBS)  \
-       $(GOBJECT_LIBS) \
-       $(GTHREAD_LIBS)
-endif
 
 if USE_OPENSSL
 INCLUDES += $(OPENSSL_CFLAGS)
@@ -42,16 +31,10 @@ wsmand_SOURCES = \
 		 wsmand-auth.h \
 		 wsmand.c 
 
-if USE_SHTTPD
 wsmand_SOURCES += \
                  shttpd.h \
                  shttpd.c \
 		 wsmand-shttpd-listener.c
 
-else
-wsmand_SOURCES += \
-		 wsmand-libsoup-listener.c
-
-endif
 		
 
