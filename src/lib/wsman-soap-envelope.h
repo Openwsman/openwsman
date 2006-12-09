@@ -100,7 +100,6 @@ void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 
 char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
 
-char* wsman_get_system_uri(WsContextH cntx, WsXmlDocH doc);
 
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 

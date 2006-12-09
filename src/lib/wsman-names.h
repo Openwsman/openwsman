@@ -152,6 +152,10 @@
           "http://schemas.xmlsoap.org/ws/2004/09/transfer/Create"
 #define TRANSFER_CREATE              "Create"
 
+#define TRANSFER_ACTION_DELETE   \
+          "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete"
+#define TRANSFER_DELETE              "Delete"
+
 #define WSXF_ACTION_FAULT        \
           "http://schemas.xmlsoap.org/ws/2004/09/transfer/fault"
 

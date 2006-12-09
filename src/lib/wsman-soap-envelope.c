@@ -679,22 +679,6 @@ wsman_get_resource_uri( WsContextH cntx,
 }
 
 
-char*
-wsman_get_system_uri( WsContextH cntx,
-                      WsXmlDocH doc)
-{
-  char *val = 0;
-	
-  WsXmlNodeH header = ws_xml_get_soap_header(doc);
-  WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SYSTEM);
-  val = (!node) ? NULL : ws_xml_get_node_text(node);
-  return val;
-}
-
-
-
-
-
 hash_t*
 wsman_get_method_args ( WsContextH cntx, 
                         char *resource_uri ) 

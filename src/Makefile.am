@@ -8,6 +8,5 @@ endif
 
 SUBDIRS += plugins 
 
-SUBDIRS += server 
+SUBDIRS += server  authenticators
 
-SUBDIRS += authenticators 

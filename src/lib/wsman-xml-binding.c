@@ -554,6 +554,7 @@ WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which)
 }
 
 
+static 
 int get_ns_count_at_node(xmlNodePtr xmlNode)
 {
     int count = 0;

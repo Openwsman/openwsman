@@ -60,7 +60,7 @@ char *xml_parser_ns_query(WsXmlNsH ns, int what);
 WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char *uri, char *prefix);
 int xml_parser_ns_remove(WsXmlNodeH node, char *nsUri);
 WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which);
-int get_ns_count_at_node(xmlNodePtr xmlNode);
+
 int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree);
 // xmlNodePtr make_new_xml_node(xmlNodePtr base, char *uri, char *name, char *value);
 WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where, char *nsUri, char *localName, char *value);

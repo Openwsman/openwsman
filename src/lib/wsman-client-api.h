@@ -37,8 +37,8 @@
 
 
 #ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+extern          "C" {
+#endif				/* __cplusplus */
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -48,134 +48,127 @@ extern "C" {
 
 
 
-  struct _WsManClient;
-  typedef struct _WsManClient WsManClient;
+	struct _WsManClient;
+	typedef struct _WsManClient WsManClient;
 
 
-typedef enum {
-      WSMAN_ACTION_NONE = 0,
-      WSMAN_ACTION_TRANSFER_GET,
-      WSMAN_ACTION_TRANSFER_PUT,
-      WSMAN_ACTION_ENUMERATION,
-      WSMAN_ACTION_PULL, 
-      WSMAN_ACTION_RELEASE,
-      WSMAN_ACTION_CUSTOM,
-      WSMAN_ACTION_TRANSFER_CREATE,
-      WSMAN_ACTION_IDENTIFY,
-      WSMAN_ACTION_TEST
-} WsmanAction;
-
-
-
-typedef struct {
-    unsigned char       flags;
-    char *              filter;
-    char *              dialect;
-    char *              fragment;
-    char *              cim_ns;
-    hash_t              *selectors;
-    hash_t              *properties;
-    unsigned int        timeout;
-    unsigned int        max_envelope_size;
-    unsigned int        max_elements;
-
-} actionOptions;
-
-
-  typedef int (*SoapResponseCallback)(WsManClient*, WsXmlDocH, void*);
-
-
-  WsManClient*
-  wsman_create_client( const char *hostname,
-                 const int port,
-                 const char *path,
-                 const char *scheme,
-                 const char *username,
-                 const char *password);
-  void wsman_release_client(WsManClient * cl);
-  void reinit_client_connection(WsManClient *cl);
-
-
-            /* WsManClient handling */
-  long wsman_get_client_response_code(WsManClient *cl);
-  char *wsman_client_get_fault_string(WsManClient *cl);
-  WsContextH wsman_client_get_context(WsManClient *cl);
-  WsXmlDocH wsman_client_read_file(WsManClient *cl, char* filename,
-                                 char* encoding, unsigned long options);
-  WsXmlDocH wsman_client_read_memory(WsManClient *cl, char* buf,
-                        int size, char* encoding, unsigned long options);
+	typedef enum {
+		WSMAN_ACTION_NONE = 0,
+		WSMAN_ACTION_TRANSFER_GET,
+		WSMAN_ACTION_TRANSFER_PUT,
+		WSMAN_ACTION_ENUMERATION,
+		WSMAN_ACTION_PULL,
+		WSMAN_ACTION_RELEASE,
+		WSMAN_ACTION_CUSTOM,
+		WSMAN_ACTION_TRANSFER_CREATE,
+		WSMAN_ACTION_TRANSFER_DELETE,
+		WSMAN_ACTION_IDENTIFY,
+		WSMAN_ACTION_TEST
+	}               WsmanAction;
 
 
 
-            /* Wsman actions handling */
-  WsXmlDocH wsman_create_doc(WsContextH cntx, char *rootname);
-  WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action,
-                                 char* reply_to_uri, char* resource_uri,
-                                 char* to_uri, actionOptions options);
-  WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
-  WsXmlDocH ws_transfer_get(WsManClient *cl, char *resourceUri,
-                            actionOptions options); 
-  WsXmlDocH ws_transfer_put(WsManClient *cl, char *resourceUri,
-                            actionOptions options);
-  WsXmlDocH ws_transfer_create(WsManClient *cl, char *resourceUri,
-                               actionOptions options);
-  WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
-                             actionOptions options);
-  WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, 
-                        char *enumContext , actionOptions options);
-  WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
-                           char *enumContext , actionOptions options);
-  WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,char *method,
-                         actionOptions options);
+	typedef struct {
+		unsigned char   flags;
+		char           *filter;
+		char           *dialect;
+		char           *fragment;
+		char           *cim_ns;
+		hash_t         *selectors;
+		hash_t         *properties;
+		unsigned int    timeout;
+		unsigned int    max_envelope_size;
+		unsigned int    max_elements;
+
+	}               actionOptions;
+
+
+	typedef int     (*SoapResponseCallback) (WsManClient *, WsXmlDocH, void *);
+
+
+	WsManClient    *wsman_create_client(const char *hostname,
+	                const int port, const char *path, const char *scheme,
+		                const char *username, const char *password);
+
+	void            wsman_release_client(WsManClient * cl);
+	void            reinit_client_connection(WsManClient * cl);
+
+
+	/* WsManClient handling */
+	long            wsman_get_client_response_code(WsManClient * cl);
+	long            wsman_client_get_response_code(WsManClient * cl);
+	char           *wsman_client_get_fault_string(WsManClient * cl);
+	WsContextH      wsman_client_get_context(WsManClient * cl);
+	WsXmlDocH       wsman_client_read_file(WsManClient * cl, char *filename,
+		                     char *encoding, unsigned long options);
+	WsXmlDocH       wsman_client_read_memory(WsManClient * cl, char *buf,
+	                   int size, char *encoding, unsigned long options);
 
 
 
-  WsXmlDocH wsman_build_envelope_from_response(WsManClient *cl);
-
-
-  int
-  wsenum_enumerate_and_pull(WsManClient* cl,
-                            char *resource_uri,
-                            actionOptions options,
-                            SoapResponseCallback callback,
-                            void *callback_data);
-
-  WsXmlDocH 
-  wsman_create_request( WsManClient *cl,
-                        WsmanAction action,
-                        char *method,
-                        char *resource_uri,
-                        actionOptions options,
-                        void *data);
-
-  char *wsenum_get_enum_context(WsXmlDocH doc);
-  void wsman_add_fragment_transfer( WsXmlDocH doc, char *fragment);
-  void wsman_add_namespace_as_selector( WsXmlDocH doc, char *_namespace);
-  void  wsman_add_selector_from_uri(WsXmlDocH doc, char *resourceUri);
+	/* Wsman actions handling */
+	WsXmlDocH       wsman_create_doc(WsContextH cntx, char *rootname);
+	WsXmlDocH       wsman_build_envelope(WsContextH cntx, char *action,
+		                     char *reply_to_uri, char *resource_uri,
+		                       char *to_uri, actionOptions options);
+	WsXmlDocH       wsman_identify(WsManClient * cl, actionOptions options);
+	WsXmlDocH       ws_transfer_get(WsManClient * cl, char *resourceUri,
+				                     actionOptions options);
+	WsXmlDocH       ws_transfer_put(WsManClient * cl, char *resourceUri,
+				                     actionOptions options);
+	WsXmlDocH       ws_transfer_create(WsManClient * cl, char *resourceUri,
+				                     actionOptions options);
+	WsXmlDocH       wsenum_enumerate(WsManClient * cl, char *resourceUri,
+				                     actionOptions options);
+	WsXmlDocH       wsenum_pull(WsManClient * cl, char *resourceUri,
+		                  char *enumContext, actionOptions options);
+	WsXmlDocH       wsenum_release(WsManClient * cl, char *resourceUri,
+		                  char *enumContext, actionOptions options);
+	WsXmlDocH       wsman_invoke(WsManClient * cl, char *resourceUri, char *method,
+				                     actionOptions options);
 
 
 
-            /* Action options handling */
-  void initialize_action_options(actionOptions *op);
-  void destroy_action_options(actionOptions *op);
-  void wsman_add_selectors_from_query_string(actionOptions *options,
-                                             const char *query_string);
-  void wsman_add_properties_from_query_string( actionOptions *options, 
-                                       const char *query_string);
-  void wsman_add_selector_from_options( WsXmlDocH doc,  actionOptions options);
-  void wsman_set_action_option(actionOptions *options, unsigned int);
-  void wsman_set_options_from_uri( char *resourceUri, actionOptions *options);
+	WsXmlDocH       wsman_build_envelope_from_response(WsManClient * cl);
 
-  void wsman_client_add_selector( actionOptions *options, char *key, char *value);
-  void wsman_client_add_property( actionOptions *options, char *key, char *value);
 
-            /* Misc */
-  char* wsman_make_action(char* uri, char* opName);
-  void wsman_remove_query_string(char * resourceUri, char **result);
-  hash_t *wsman_create_hash_from_query_string(const char *query_string);
+	int             wsenum_enumerate_and_pull(WsManClient * cl, char *resource_uri,
+	                actionOptions options, SoapResponseCallback callback,
+				                       void *callback_data);
+
+	WsXmlDocH       wsman_client_create_request(WsManClient * cl, WsmanAction action, char *method,
+						                    char *resource_uri, actionOptions options, void *data);
+	WsXmlDocH       wsman_create_request(WsManClient * cl, WsmanAction action, char *method,
+					                     char *resource_uri, actionOptions options, void *data);
+
+	char           *wsenum_get_enum_context(WsXmlDocH doc);
+	void            wsman_add_fragment_transfer(WsXmlDocH doc, char *fragment);
+	void            wsman_add_namespace_as_selector(WsXmlDocH doc, char *_namespace);
+	void            wsman_add_selector_from_uri(WsXmlDocH doc, char *resourceUri);
+
+
+
+	/* Action options handling */
+	void            initialize_action_options(actionOptions * op);
+	void            destroy_action_options(actionOptions * op);
+	void            wsman_add_selectors_from_query_string(actionOptions * options,
+				                  const char *query_string);
+	void            wsman_add_properties_from_query_string(actionOptions * options,
+				                  const char *query_string);
+	void            wsman_add_selector_from_options(WsXmlDocH doc, actionOptions options);
+	void            wsman_set_action_option(actionOptions * options, unsigned int);
+	void            wsman_set_options_from_uri(char *resourceUri, actionOptions * options);
+
+	void            wsman_client_add_selector(actionOptions * options, char *key, char *value);
+	void            wsman_client_add_property(actionOptions * options, char *key, char *value);
+
+	/* Misc */
+	char           *wsman_make_action(char *uri, char *opName);
+	void            wsman_remove_query_string(char *resourceUri, char **result);
+	hash_t         *wsman_create_hash_from_query_string(const char *query_string);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif				/* __cplusplus */
 
-#endif /*WSMANCLIENT_H_*/
+#endif				/* WSMANCLIENT_H_ */

@@ -37,75 +37,68 @@
 
 
 #ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+extern          "C" {
+#endif				/* __cplusplus */
 
 #ifndef WIN32
 #include <pthread.h>
-#endif // !WIN32
+#endif				/* // !WIN32 */
 
 #include "wsman-client-api.h"
 
-struct _WsManConnection {
-    u_buf_t*    request;
-    u_buf_t*    response;
-};
-typedef struct _WsManConnection WsManConnection;
+	struct _WsManConnection {
+		u_buf_t        *request;
+		u_buf_t        *response;
+	};
+	typedef struct _WsManConnection WsManConnection;
 
 
-typedef struct {
-    char *hostName;
-    unsigned int port;
-    char *path;
-    char *user;
-    char *pwd;
-    char *scheme;
-    char *endpoint;
-    unsigned int auth_method;
-    int  status;
-} WsManClientData;
+	typedef struct {
+		char           *hostName;
+		unsigned int    port;
+		char           *path;
+		char           *user;
+		char           *pwd;
+		char           *scheme;
+		char           *endpoint;
+		unsigned int    auth_method;
+		int             status;
+	}               WsManClientData;
 
 
-typedef struct  {
-    char * certFile;
-    char * keyFile;
-    unsigned int verify_peer;
-} WsManCredentialData;
+	typedef struct {
+		char           *certFile;
+		char           *keyFile;
+		unsigned int    verify_peer;
+	}               WsManCredentialData;
 
-typedef struct  {
-    char * proxy;
-    char * proxy_auth;
-} WsManProxyData;
+	typedef struct {
+		char           *proxy;
+		char           *proxy_auth;
+	}               WsManProxyData;
 
-
-
-
-
-struct _WsManClient {
-    void*               hdl;
-    int flags;
-    pthread_mutex_t     mutex;
-    WsContextH          wscntx;
-    WsManClientData     data;
-    WsManConnection     *connection;
-    long                response_code;
-    char                *fault_string;
-    void                *transport;
-};
+	struct _WsManClient {
+		void           *hdl;
+		int             flags;
+		pthread_mutex_t mutex;
+		WsContextH      wscntx;
+		WsManClientData data;
+		WsManConnection *connection;
+		long            response_code;
+		char           *fault_string;
+		void           *transport;
+	};
 
 #define WSMAN_CLIENT_BUSY       0x0001
 
 
 
-int wsman_client_lock(WsManClient *cl);
-void wsman_client_unlock(WsManClient *cl);
-
-
-
+	int             wsman_client_lock(WsManClient * cl);
+	void            wsman_client_unlock(WsManClient * cl);
 
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif				/* __cplusplus */
 
-#endif /*WSMANCLIENT_H_*/
+#endif				/* WSMANCLIENT_H_ */
