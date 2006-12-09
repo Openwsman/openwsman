@@ -237,7 +237,8 @@ wsman_set_options_from_uri( char *resource_uri, actionOptions *options)
 {
   u_uri_t *uri;
   if (resource_uri != NULL ) {
-    u_uri_parse((const char *)resource_uri, &uri);
+    if (u_uri_parse((const char *)resource_uri, &uri) != 0 )
+    	return;
   } else {
     return;
   }
@@ -258,7 +259,8 @@ wsman_add_selector_from_uri( WsXmlDocH doc,
   WsXmlNodeH header = ws_xml_get_soap_header(doc);
 
   if (resource_uri != NULL )	
-    u_uri_parse((const char *)resource_uri, &uri);
+    if (u_uri_parse((const char *)resource_uri, &uri) != 0 )
+    	return;
 
   if (uri->query != NULL  ) {
     hash_t * query = parse_query(uri->query);

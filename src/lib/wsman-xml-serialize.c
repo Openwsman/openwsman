@@ -350,7 +350,6 @@ do_serialize_char_array(XmlSerializationData* data)
                 retVal = WS_ERR_INVALID_PARAMETER;
             }
     }
-
     return retVal;
 }
 
@@ -411,7 +410,8 @@ do_serialize_bool(XmlSerializationData* data)
     return retVal;
 }
 
-static int get_adjusted_size(int baseSize)
+static int 
+get_adjusted_size(int baseSize)
 {
     int size = baseSize;
     if ( XML_SADJUSTMENT > 1 )
@@ -422,9 +422,10 @@ static int get_adjusted_size(int baseSize)
     return size;
 }
 
-static int calculate_struct_size(XmlSerializationData* data,
-        int elementCount, 
-        XmlSerializerInfo* elementArray)
+static int 
+calculate_struct_size(XmlSerializationData* data,
+	        		  int elementCount, 
+        			  XmlSerializerInfo* elementArray)
 {
     int totalSize = 0;
     int i;
