@@ -287,7 +287,7 @@ fi
 CHECK_SFCC
 have_sfcc=no
 
-AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc=yes])
+AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [],[have_sfcc=yes])
 AM_CONDITIONAL(BUILD_LIBCIM, test "$have_sfcc" == "yes")
 echo $have_sfcc
 
