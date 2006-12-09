@@ -37,6 +37,12 @@
 #define _WSMAN_PLUGINS_H
 
 
+#ifdef __APPLE__
+#define PLUGIN_EXT ".dylib"
+#else
+#define PLUGIN_EXT ".so"
+#endif
+
 typedef	enum _WsManPluginError
 {
     PLUGIN_ERROR_OK,

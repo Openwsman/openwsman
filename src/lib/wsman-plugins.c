@@ -213,8 +213,8 @@ scan_plugins_in_directory ( WsManListenerH *listener,
         entry_name = (const char*) node->list_data;
         node = list_next(files, node);
 
-        if ((NULL != entry_name) && strlen (entry_name) > 3
-                && (0 == strcmp (&entry_name[strlen(entry_name)-3], ".so")))
+        if ((NULL != entry_name) && strlen (entry_name) > strlen(PLUGIN_EXT)
+                && (0 == strcmp (&entry_name[strlen(entry_name)-strlen(PLUGIN_EXT)], PLUGIN_EXT)))
         {
             char *plugin_path = u_strdup_printf ("%s/%s", dir_name, entry_name);
             WsManPlugin *plugin = plugin_new();

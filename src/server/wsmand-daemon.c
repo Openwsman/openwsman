@@ -51,12 +51,11 @@
 #include "u/libu.h"
 #include "wsmand-daemon.h"
 
-
-#ifdef LIBSOUP_LISTENER
-#include <glib.h>
-#endif
-
+#ifdef __APPLE__
+#define DEFAULT_BASIC_AUTH  "libwsman_file_auth.dylib"
+#else
 #define DEFAULT_BASIC_AUTH  "libwsman_file_auth.so"
+#endif
 
 int facility = LOG_DAEMON;
 
@@ -418,16 +417,12 @@ do_shutdown (int restart)
   }
 
   shutting_down = TRUE;
-
-#ifdef LIBSOUP_LISTENER
-  g_idle_add (shutdown_idle_cb, GINT_TO_POINTER (restart));
-#else
   if (restart) {
       shutdown_idle_cb((void *)1);
   } else {
       shutdown_idle_cb(NULL);
   }
-#endif
+
 }
 
 void
