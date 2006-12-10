@@ -102,8 +102,6 @@ generate_uuid ( char* buf,
             uuid[3], uuid[2], uuid[1], uuid[0] );
             */
     sprintf( ptr , "%s", uuid_unparse_buf );
-    printf("xxxxx\n");
-
     return 1;
 
 }
