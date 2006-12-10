@@ -7,5 +7,5 @@ OWSMAN_INCLUDES = buf.h carpal.h   env.h \
 				uuid.h lock.h strings.h url2.h md5.h list.h \
 				hash.h base64.h strlib.h iniparser.h dictionary.h \
 				debug.h uerr.h uoption.h gettimeofday.h syslog.h \
-				strtok_r.h strsep.h getpid.h pthreadx.h uuuid.h
+				strtok_r.h strsep.h getpid.h pthreadx.h
  
