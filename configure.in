@@ -325,7 +325,6 @@ AC_OUTPUT([
         src/authenticators/pam/Makefile
         src/libu/Makefile
         src/libu/u/Makefile
-        src/libu/u/uuid_types.h
         src/libu/test/Makefile
         doc/Makefile
         doc/specs/Makefile
