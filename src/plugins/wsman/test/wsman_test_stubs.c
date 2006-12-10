@@ -75,7 +75,8 @@ WsManTest* WsManTest_Put_EP(WsContextH cntx)
 
 int WsManTest_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 {
-    debug( "Enumerate Endpoint Called");   
+    debug( "Enumerate Endpoint Called");
+    enumInfo->totalItems = 2;   
     return 0;
 }
 
@@ -88,12 +89,9 @@ int WsManTest_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 { 
     debug( "Pull Endpoint Called"); 
-    if ( enumInfo->index >= 0 && enumInfo->index < 2 )
-    {
+    if ( enumInfo->index >= 0 && enumInfo->index < 2 ){
         enumInfo->pullResultPtr = g_WsManTestArr[enumInfo->index];
-    }
-    else
-    {    	
+    } else {    	
         enumInfo->pullResultPtr = NULL;
     }
 

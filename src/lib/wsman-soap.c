@@ -457,8 +457,8 @@ wsman_identify_stub(SoapOpH op,
 
 	if ((data = endPoint(cntx, status)) == NULL) {
 		error("Identify Fault");
-		//FIXME
-			doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		/* FIXME */
+		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
 					    WSMAN_INTERNAL_ERROR, -1, NULL);
 	} else {
 		doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
@@ -485,6 +485,9 @@ int
 ws_transfer_put_stub(SoapOpH op,
 		     void *appData)
 {
+	int             retVal = 0;
+	WsXmlDocH       doc = NULL;
+	void           *outData = NULL;	
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
 	WsContextH      cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
@@ -495,16 +498,11 @@ ws_transfer_put_stub(SoapOpH op,
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsXmlNodeH      _body = ws_xml_get_soap_body(_doc);
 	WsXmlNodeH      _r = ws_xml_get_child(_body, 0, NULL, NULL);
+	
 
-
-	void           *data = ws_deserialize(cntx,
-			       ws_xml_get_soap_body(soap_get_op_doc(op, 1)),
-				   typeInfo, ws_xml_get_node_local_name(_r),
-			    (char *) info->data, (char *) info->data, 0, 0);
-
-	int             retVal = 0;
-	WsXmlDocH       doc = NULL;
-	void           *outData = NULL;
+	void  *data = ws_deserialize(cntx, _body, typeInfo, 
+					ws_xml_get_node_local_name(_r),
+			    	(char *) info->data, (char *) info->data, 0, 0);
 
 	if ((retVal = endPoint(cntx, data, &outData, &status))) {
 		doc = wsman_generate_fault(cntx, _doc, status.fault_code,
@@ -517,6 +515,7 @@ ws_transfer_put_stub(SoapOpH op,
 			ws_serializer_free_mem(cntx, outData, typeInfo);
 		}
 	}
+	
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	}
@@ -527,8 +526,7 @@ ws_transfer_put_stub(SoapOpH op,
 
 static void
 wsman_set_enum_info(SoapOpH op,
-		    WsEnumerateInfo * enumInfo
-)
+		    WsEnumerateInfo * enumInfo)
 {
 	struct timeval  tv;
 	op_t           *_op = (op_t *) op;
@@ -550,14 +548,10 @@ wsman_set_enum_info(SoapOpH op,
 
 }
 
-
-
-
 static int
 wsman_verify_enum_info(SoapOpH op,
 		       WsEnumerateInfo * enumInfo,
-		       WsmanStatus * status
-)
+		       WsmanStatus * status)
 {
 
 	op_t           *_op = (op_t *) op;
@@ -591,8 +585,9 @@ wsenum_enumerate_stub(SoapOpH op,
 	int             retVal = 0;
 	WsEnumerateInfo enumInfo;
 	WsmanStatus     status;
-
-
+	WsXmlNodeH      resp_node;
+	WsXmlNodeH      body;
+	WsContextH      soapCntx;
 	SoapH           soap = soap_get_op_soap(op);
 
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
@@ -611,47 +606,46 @@ wsenum_enumerate_stub(SoapOpH op,
 			 status.fault_code, status.fault_detail_code, NULL);
 		u_free(enumInfo.auth_data.username);
 		u_free(enumInfo.auth_data.password);
+		goto DONE;
+	}
+	if (enumInfo.pullResultPtr) {
+		doc = enumInfo.pullResultPtr;
+		enumInfo.index++;
 	} else {
-		if (enumInfo.pullResultPtr) {
-			doc = enumInfo.pullResultPtr;
-			enumInfo.index++;
-		} else {
-			doc = ws_create_response_envelope(epcntx, _doc, NULL);
-		}
-
-		if (doc) {
-			WsXmlNodeH      resp_node;
-			WsXmlNodeH      body;
-			WsContextH      soapCntx;
-			wsman_set_estimated_total(_doc, doc, &enumInfo);
-			body = ws_xml_get_soap_body(doc);
-
-			if (enumInfo.pullResultPtr == NULL) {
-				resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION,
-					       WSENUM_ENUMERATE_RESP, NULL);
-			} else {
-				resp_node = ws_xml_get_child(body, 0,
-				 XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
-			}
-
-			soapCntx = ws_get_soap_context(soap);
-			if (enumInfo.index == enumInfo.totalItems) {
-				ws_serialize_str(epcntx, resp_node, NULL,
-						 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-				ws_serialize_str(epcntx, resp_node,
-				NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE);
-				u_free(enumInfo.auth_data.username);
-				u_free(enumInfo.auth_data.password);
-				ws_remove_context_val(soapCntx, cntxName);
-			} else {
-				ws_serialize_str(epcntx, resp_node, enumId,
-						 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-				set_context_val(soapCntx, cntxName, &enumInfo,
-				 sizeof(enumInfo), 0, WS_CONTEXT_TYPE_BLOB);
-			}
-		}
+		doc = ws_create_response_envelope(epcntx, _doc, NULL);
 	}
 
+	if (!doc)
+		goto DONE;
+
+	wsman_set_estimated_total(_doc, doc, &enumInfo);
+	body = ws_xml_get_soap_body(doc);
+
+	if (enumInfo.pullResultPtr == NULL) {
+		resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION,
+					     WSENUM_ENUMERATE_RESP, NULL);
+	} else {
+		resp_node = ws_xml_get_child(body, 0,
+				 XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+	}
+
+	soapCntx = ws_get_soap_context(soap);
+	if (enumInfo.index == enumInfo.totalItems) {
+		ws_serialize_str(epcntx, resp_node, NULL,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		ws_serialize_str(epcntx, resp_node,
+			       NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE);
+		u_free(enumInfo.auth_data.username);
+		u_free(enumInfo.auth_data.password);
+		ws_remove_context_val(soapCntx, cntxName);
+	} else {
+		ws_serialize_str(epcntx, resp_node, enumId,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		set_context_val(soapCntx, cntxName, &enumInfo,
+				sizeof(enumInfo), 0, WS_CONTEXT_TYPE_BLOB);
+	}
+
+DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	}
@@ -659,7 +653,6 @@ wsenum_enumerate_stub(SoapOpH op,
 	ws_destroy_context(epcntx);
 	return retVal;
 }
-
 
 int
 wsenum_release_stub(SoapOpH op,
@@ -705,10 +698,14 @@ wsenum_release_stub(SoapOpH op,
 	return retVal;
 }
 
+
+
+
+
 int
 wsenum_pull_stub(SoapOpH op, void *appData)
 {
-
+	WsXmlNodeH      node;
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
 	WsContextH      soapCntx = ws_get_soap_context(soap);
@@ -730,50 +727,52 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 	if (enumInfo == NULL) {
 		doc = wsman_generate_fault(soapCntx, _doc,
 				WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
-	} else {
-		if ((retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status))) {
-			doc = wsman_generate_fault(soapCntx, _doc,
+		goto DONE;
+	}
+	if ((retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status))) {
+		doc = wsman_generate_fault(soapCntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
-			ws_remove_context_val(soapCntx, cntxName);
-		} else {
-			enumInfo->index++;
-			if ((doc = ws_create_response_envelope(soapCntx, _doc, NULL))) {
-				WsXmlNodeH      node;
-				wsman_set_estimated_total(_doc, doc, enumInfo);
-				node = ws_xml_add_child(ws_xml_get_soap_body(doc),
+		ws_remove_context_val(soapCntx, cntxName);
+		goto DONE;
+	}
+	enumInfo->index++;
+	doc = ws_create_response_envelope(soapCntx, _doc, NULL);
+	if (!doc)
+		goto DONE;
+
+
+	wsman_set_estimated_total(_doc, doc, enumInfo);
+	node = ws_xml_add_child(ws_xml_get_soap_body(doc),
 				XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
-				if (node != NULL) {
-					if (enumInfo->pullResultPtr) {
-						WsXmlNodeH      itemsNode = ws_xml_add_child(node,
-											     XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
-						ws_serialize(soapCntx, itemsNode, enumInfo->pullResultPtr,
-							     typeInfo, ep->respName, (char *) ep->data, (char *) ep->data, 1);
-						if (enumId) {
-							ws_serialize_str(soapCntx, node, enumId,
-									 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-						}
-						ws_serializer_free_mem(soapCntx, enumInfo->pullResultPtr, typeInfo);
-					} else {
-						ws_serialize_str(soapCntx, node, NULL,
-								 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-						ws_serialize_str(soapCntx,
-								 node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
-						u_free(enumInfo->auth_data.username);
-						u_free(enumInfo->auth_data.password);
-					}
-				}
-			}
+
+	if (node == NULL)
+		goto DONE;
+
+	if (enumInfo->pullResultPtr) {
+		WsXmlNodeH      itemsNode = ws_xml_add_child(node,
+				    XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
+		ws_serialize(soapCntx, itemsNode, enumInfo->pullResultPtr,
+			     typeInfo, ep->respName, (char *) ep->data, (char *) ep->data, 1);
+		if (enumId) {
+			ws_serialize_str(soapCntx, node, enumId,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
 		}
+		ws_serializer_free_mem(soapCntx, enumInfo->pullResultPtr, typeInfo);
+	} else {
+		ws_serialize_str(soapCntx, node, NULL,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		ws_serialize_str(soapCntx,
+		    node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+		u_free(enumInfo->auth_data.username);
+		u_free(enumInfo->auth_data.password);
 	}
 
+DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	}
 	return retVal;
 }
-
-
-
 
 int
 wsenum_pull_raw_stub(SoapOpH op,
@@ -800,44 +799,46 @@ wsenum_pull_raw_stub(SoapOpH op,
 		error("Invalid enumeration context...");
 		doc = wsman_generate_fault(soapCntx, _doc,
 				WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
-	} else {
-		if (!wsman_verify_enum_info(op, enumInfo, &status)) {
-			doc = wsman_generate_fault(soapCntx, _doc,
+		goto cleanup;
+	}
+	
+	if (!wsman_verify_enum_info(op, enumInfo, &status)) {
+		doc = wsman_generate_fault(soapCntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
-			goto cleanup;
-		}
-		if ((retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status))) {
-			doc = wsman_generate_fault(soapCntx, _doc,
+		goto cleanup;
+	}
+	
+	if ((retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status))) {
+		doc = wsman_generate_fault(soapCntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
-			ws_remove_context_val(soapCntx, cntxName);
-		} else {
-			enumInfo->index++;
-			if (enumInfo->pullResultPtr) {
-				WsXmlNodeH      body;
-				WsXmlNodeH      response;
-				doc = enumInfo->pullResultPtr;
-				wsman_set_estimated_total(_doc, doc, enumInfo);
+		ws_remove_context_val(soapCntx, cntxName);
+		goto cleanup;
+	}
+	
+	enumInfo->index++;
+	if (enumInfo->pullResultPtr) {
+		WsXmlNodeH      body;
+		WsXmlNodeH      response;
+		doc = enumInfo->pullResultPtr;
+		wsman_set_estimated_total(_doc, doc, enumInfo);
 
-				body = ws_xml_get_soap_body(doc);
-				response = ws_xml_get_child(body, 0,
+		body = ws_xml_get_soap_body(doc);
+		response = ws_xml_get_child(body, 0,
 				      XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 
-				if (enumInfo->index == enumInfo->totalItems) {
-					ws_serialize_str(soapCntx, response, NULL,
-							 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-					ws_serialize_str(soapCntx, response, NULL,
-							 XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
-					u_free(enumInfo->auth_data.username);
-					u_free(enumInfo->auth_data.password);
-					ws_remove_context_val(soapCntx, cntxName);
-				} else if (enumId) {
-					ws_serialize_str(soapCntx, response, enumId,
-							 XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-				}
-			}
+		if (enumInfo->index == enumInfo->totalItems) {
+			ws_serialize_str(soapCntx, response, NULL,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			ws_serialize_str(soapCntx, response, NULL,
+				XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+			u_free(enumInfo->auth_data.username);
+			u_free(enumInfo->auth_data.password);
+			ws_remove_context_val(soapCntx, cntxName);
+		} else if (enumId) {
+			ws_serialize_str(soapCntx, response, enumId,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
 		}
 	}
-
 cleanup:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
