@@ -46,8 +46,6 @@ extern          "C" {
 #include "wsman-types.h"
 
 
-
-
 	struct _WsManClient;
 	typedef struct _WsManClient WsManClient;
 
@@ -117,7 +115,8 @@ extern          "C" {
 	WsXmlDocH       ws_transfer_put(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
 	WsXmlDocH       ws_transfer_create(WsManClient * cl, char *resourceUri,
-				                     actionOptions options);
+										void *data, void* typeInfo,
+				                        actionOptions options);
 	WsXmlDocH       ws_transfer_delete(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);				                     
 	WsXmlDocH       wsenum_enumerate(WsManClient * cl, char *resourceUri,

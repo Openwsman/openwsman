@@ -96,7 +96,9 @@ WsXmlNodeH xml_serializer_add_child(XmlSerializationData *data, char *value);
 WsXmlNodeH xml_serializer_get_child(XmlSerializationData *data);
 
 XmlSerialiseDynamicSizeData *make_dyn_size_data(XmlSerializationData *data);
-
-void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cntx, XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode, char *nameNs, char *ns, WsXmlNodeH xmlNode);
-
+/*
+void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cntx, 
+			XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode,
+			char *nameNs, char *ns, WsXmlNodeH xmlNode);
+*/
 #endif //WS_XML_SERIALIZATION_H

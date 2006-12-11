@@ -339,7 +339,7 @@ wsman_make_action(char *uri, char *op_name)
 	}
 	return ptr;
 }
-
+/*
 static void
 wsman_set_transfer_create_properties(WsXmlDocH request,
 				     actionOptions options)
@@ -360,6 +360,7 @@ wsman_set_transfer_create_properties(WsXmlDocH request,
 				 resource_uri, (char *) hnode_getkey(hn), (char *) hnode_get(hn));
 	}
 }
+*/
 
 
 
@@ -506,9 +507,6 @@ wsman_client_create_request(WsManClient * cl,
 	case WSMAN_ACTION_TRANSFER_PUT:
 		wsman_set_transfer_put_properties((WsXmlDocH) data, request, options);
 		break;	
-	case WSMAN_ACTION_TRANSFER_CREATE:
-		wsman_set_transfer_create_properties(request, options);
-		break;
 	case WSMAN_ACTION_ENUMERATION:
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
@@ -531,6 +529,7 @@ wsman_client_create_request(WsManClient * cl,
 		}
 		break;
 	case WSMAN_ACTION_NONE:
+	case WSMAN_ACTION_TRANSFER_CREATE:	
 	case WSMAN_ACTION_TEST:
 	case WSMAN_ACTION_TRANSFER_GET:
 	case WSMAN_ACTION_TRANSFER_DELETE:
@@ -554,8 +553,10 @@ wsman_client_create_request(WsManClient * cl,
 			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options.dialect);
 		}
 	}
-	if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+	if (action != WSMAN_ACTION_TRANSFER_CREATE) {
+		if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+			ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+		}
 	}
 	return request;
 }
@@ -563,12 +564,24 @@ wsman_client_create_request(WsManClient * cl,
 WsXmlDocH
 ws_transfer_create(WsManClient * cl,
 		   char *resource_uri,
+		   void *data,
+		   void* typeInfo,		   
 		   actionOptions options)
 {
-
 	WsXmlDocH       response;
 	WsXmlDocH       request = wsman_create_request(cl, WSMAN_ACTION_TRANSFER_CREATE,
 					 NULL, resource_uri, options, NULL);
+				
+	if (data && typeInfo) {		
+		char *class = u_strdup(strrchr(resource_uri, '/') + 1);
+		
+		ws_serialize(cl->wscntx, ws_xml_get_soap_body(request), data, (XmlSerializerInfo *)typeInfo,
+			 class , resource_uri, resource_uri, 1);
+		ws_serializer_free_mem(cl->wscntx, data, (XmlSerializerInfo *)typeInfo);
+		if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+			ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+		}
+	}	 
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
