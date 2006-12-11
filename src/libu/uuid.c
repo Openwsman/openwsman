@@ -97,35 +97,32 @@
 #ifdef WIN32
 #include "windows.h"
 #include "rpcdce.h"
-int generate_uuid(char* buf, int size, int bNoPrefix) 
-// don't forget to link with rpcrt4.lib
+/* don't forget to link with rpcrt4.lib */
+int 
+generate_uuid(char *buf, int size, int bNoPrefix)
 {
-        int ret_val = -1;
-        UUID uuid;
-        RPC_STATUS st = UuidCreate(&uuid);
+	int             ret_val = -1;
+	UUID            uuid;
+	RPC_STATUS      st = UuidCreate(&uuid);
 
-        if ( st == RPC_S_OK || st == RPC_S_UUID_LOCAL_ONLY )
-        {
-                char* str;
-                if ( (st = UuidToString(&uuid, (BYTE**)&str)) != RPC_S_OK ) {
-                        // failed
-                } else{
-                        
-                        int len = 5;
-                        if ( !bNoPrefix && size > (len + 1) )
-                                strcpy(buf, "uuid:");
-                        else
-                                len = 0;
-
-                        strncpy(&buf[len], str, size - len);
-                        RpcStringFree((BYTE**)&str);
-                        ret_val = 0;
-                }
+	if (st == RPC_S_OK || st == RPC_S_UUID_LOCAL_ONLY) {
+		char           *str;
+		if ((st = UuidToString(&uuid, (BYTE **) & str)) != RPC_S_OK) {
+			//failed
 		} else {
-                // failed
+			int             len = 5;
+			if (!bNoPrefix && size > (len + 1))
+				strcpy(buf, "uuid:");
+			else
+				len = 0;
+			strncpy(&buf[len], str, size - len);
+			RpcStringFree((BYTE **) & str);
+			ret_val = 0;
 		}
-        return ret_val;
-}
+	} else {
+		//failed
+	}
+	return ret_val;
 
 
 
@@ -139,7 +136,7 @@ int generate_uuid(char* buf, int size, int bNoPrefix)
 #include <net/if.h>
 #include <fcntl.h>
 
-#if 0
+#ifdef __APPLE__
 
 /* return the Media Access Control (MAC) address of
    the FIRST network interface card (NIC) */
@@ -235,9 +232,11 @@ static int mac_address(unsigned char *data_ptr, size_t data_len)
     return 0;
 }
 
-#endif
 
 
+
+
+#else
 
 static long
 mac_addr_sys (u_char *addr)
@@ -281,7 +280,7 @@ mac_addr_sys (u_char *addr)
     }
     return 0;
 }
-
+#endif
 
 int 
 generate_uuid ( char* buf, 
@@ -319,8 +318,11 @@ generate_uuid ( char* buf,
     clock_sequence++;
 
     // get mac address
-    //if ( mac_address( mac, 6 ) == 0 )
+#ifdef __APPLE__
+    if ( mac_address( mac, 6 ) == 0 )
+#else    
     if (mac_addr_sys(mac) == 0 )
+#endif    
     {
         for( i = 0; i < 6; i++ )
             uuid[i] = mac[i];                       // mac address
