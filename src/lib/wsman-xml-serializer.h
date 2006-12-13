@@ -76,6 +76,8 @@ typedef char* XML_TYPE_STR;
 #define XML_MIN_OCCURS(x) ((int)((unsigned short)((x)->flagsMinCount & (~SER_FLAGS_MASK))))
 
 #define XML_IS_PTR(x) ((x)->flagsMinCount & SER_PTR)
+#define XML_SET_PTR(x) ((x)->flagsMinCount = (x)->flagsMinCount | SER_PTR)
+#define XML_UNSET_PTR(x) ((x)->flagsMinCount = (x)->flagsMinCount & ~SER_PTR)
 #define XML_IS_SKIP(x) ((x)->flagsMinCount & SER_SKIP)
 
 #define XML_IS_IN(x) ((x)->funcMaxCount & SER_IN)
@@ -230,6 +232,8 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), (x), (y), do_serialize_uint32, NULL}
 #define SER_BOOL(n, x, y)\
 	{(n), (x), (y), do_serialize_bool, NULL}
+#define SER_STR(n, x, y)\
+    {(n), (x), (y), do_serialize_string, NULL}
 
 #define SER_UINT8_PTR (n, x, y)\
 	{(n), SER_PTR | (x), (y), do_serialize_uint8, NULL}
@@ -239,9 +243,8 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), SER_PTR | (x), (y), do_serialize_uint32, NULL}
 #define SER_BOOL_PTR(n, x, y)\
 	{(n), SER_PTR | (x), (y), do_serialize_bool, NULL}
-
-#define SER_STR(n, x, y)\
-	{(n), SER_PTR | (x), (y), do_serialize_string, NULL}
+#define SER_STR_PTR(n, x, y)\
+    {(n), SER_PTR | (x), (y), do_serialize_string, NULL}
 
 #define SER_STRUCT(n, x, y, t)\
 	{(n), (x), (y), do_serialize_struct, t##_TypeItems}

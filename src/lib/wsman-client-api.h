@@ -103,12 +103,8 @@ extern          "C" {
 	                   int size, char *encoding, unsigned long options);
 
 
-
+#if 0
 	/* Wsman actions handling */
-	WsXmlDocH       wsman_create_doc(WsContextH cntx, char *rootname);
-	WsXmlDocH       wsman_build_envelope(WsContextH cntx, char *action,
-		                     char *reply_to_uri, char *resource_uri,
-		                       char *to_uri, actionOptions options);
 	WsXmlDocH       wsman_identify(WsManClient * cl, actionOptions options);
 	WsXmlDocH       ws_transfer_get(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
@@ -118,7 +114,7 @@ extern          "C" {
 										void *data, void* typeInfo,
 				                        actionOptions options);
 	WsXmlDocH       ws_transfer_delete(WsManClient * cl, char *resourceUri,
-				                     actionOptions options);				                     
+				                     actionOptions options);
 	WsXmlDocH       wsenum_enumerate(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
 	WsXmlDocH       wsenum_pull(WsManClient * cl, char *resourceUri,
@@ -127,25 +123,53 @@ extern          "C" {
 		                  char *enumContext, actionOptions options);
 	WsXmlDocH       wsman_invoke(WsManClient * cl, char *resourceUri, char *method,
 				                     actionOptions options);
+#endif
+            /* Creating objects */
+  WsContextH wsman_create_runtime (void);
+  WsXmlDocH wsman_create_doc(WsContextH cntx, char *rootname);
+  WsXmlDocH wsman_build_envelope(WsContextH cntx, char* action,
+                                 char* reply_to_uri, char* resource_uri,
+                                 char* to_uri, actionOptions options);
+    WsXmlDocH       wsman_build_envelope_from_response(WsManClient * cl);
+
+
+            /* Wsman actions handling */
+  WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
+  WsXmlDocH ws_transfer_get(WsManClient *cl, char *resourceUri,
+                            actionOptions options); 
+  WsXmlDocH ws_transfer_put(WsManClient *cl, char *resourceUri,
+                            actionOptions options);
+  WsXmlDocH ws_transfer_create(WsManClient * cl, char *resourceUri,
+                               void *data, void* typeInfo,
+                               actionOptions options);
+  WsXmlDocH ws_transfer_delete(WsManClient * cl, char *resourceUri,
+                                     actionOptions options);
+  WsXmlDocH wsenum_enumerate(WsManClient *cl, char *resourceUri,
+                             actionOptions options);
+  WsXmlDocH wsenum_pull(WsManClient *cl, char *resourceUri, 
+                        char *enumContext , actionOptions options);
+  WsXmlDocH wsenum_release(WsManClient *cl, char *resourceUri,
+                           char *enumContext , actionOptions options);
+  WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,char *method,
+                         actionOptions options);
 
 
 
-	WsXmlDocH       wsman_build_envelope_from_response(WsManClient * cl);
 
+  int            wsenum_enumerate_and_pull(WsManClient * cl, char *resource_uri,
+                                      actionOptions options,
+                                      SoapResponseCallback callback,
+                                      void *callback_data);
 
-	int             wsenum_enumerate_and_pull(WsManClient * cl, char *resource_uri,
-	                actionOptions options, SoapResponseCallback callback,
-				                       void *callback_data);
-
-	WsXmlDocH       wsman_client_create_request(WsManClient * cl, WsmanAction action, char *method,
-						                    char *resource_uri, actionOptions options, void *data);
-	WsXmlDocH       wsman_create_request(WsManClient * cl, WsmanAction action, char *method,
-					                     char *resource_uri, actionOptions options, void *data);
-
-	char           *wsenum_get_enum_context(WsXmlDocH doc);
-	void            wsman_add_fragment_transfer(WsXmlDocH doc, char *fragment);
-	void            wsman_add_namespace_as_selector(WsXmlDocH doc, char *_namespace);
-	void            wsman_add_selector_from_uri(WsXmlDocH doc, char *resourceUri);
+  WsXmlDocH      wsman_client_create_request(WsManClient * cl,
+                                        WsmanAction action,
+                                        char *method, char *resource_uri,
+                                        actionOptions options, void *data);
+  char            *wsenum_get_enum_context(WsXmlDocH doc);
+  void            wsman_add_fragment_transfer(WsXmlDocH doc, char *fragment);
+  void            wsman_add_namespace_as_selector(WsXmlDocH doc,
+                                                  char *_namespace);
+  void            wsman_add_selector_from_uri(WsXmlDocH doc, char *resourceUri);
 
 
 
