@@ -234,6 +234,11 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), (x), (y), do_serialize_bool, NULL}
 #define SER_STR(n, x, y)\
     {(n), (x), (y), do_serialize_string, NULL}
+#define SER_STRUCT(n, x, y, t)\
+    {(n), (x), (y), do_serialize_struct, t##_TypeItems}
+#define SER_DYN_ARRAY(t)\
+    {NULL, 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
+
 
 #define SER_UINT8_PTR (n, x, y)\
 	{(n), SER_PTR | (x), (y), do_serialize_uint8, NULL}
@@ -245,15 +250,8 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), SER_PTR | (x), (y), do_serialize_bool, NULL}
 #define SER_STR_PTR(n, x, y)\
     {(n), SER_PTR | (x), (y), do_serialize_string, NULL}
-
-#define SER_STRUCT(n, x, y, t)\
-	{(n), (x), (y), do_serialize_struct, t##_TypeItems}
-	
 #define SER_DYN_ARRAY_PTR(t)\
 	{NULL, SER_PTR, 1, do_serialize_dyn_size_array, t##_TypeInfo}
-
-#define SER_DYN_ARRAY(t)\
-	{NULL, 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
 
 
 #define SER_IN_UINT8 (n)\
@@ -265,19 +263,17 @@ void *ws_deserialize(WsContextH cntx,
 #define SER_IN_BOOL(n)\
 	{(n), 1, 1 | SER_IN, do_serialize_bool, NULL}
 
-#define SER_IN_UINT8_PTR (n)\
+#define SER_IN_UINT8_PTR(n) \
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint8, NULL}
-#define SER_IN_UINT16_PTR(n)\
+#define SER_IN_UINT16_PTR(n) \
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint16, NULL}
-#define SER_IN_UINT32_PTR(n)\
+#define SER_IN_UINT32_PTR(n) \
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_uint32, NULL}
 #define SER_IN_BOOL_PTR(n)\
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_bool, NULL}
-
-#define SER_IN_STR(n)\
+#define SER_IN_STR(n) \
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_string, NULL}
-
-#define SER_IN_STRUCT_PTR(n, t)\
+#define SER_IN_STRUCT_PTR(n, t) \
 	{(n), SER_PTR | 1, 1 | SER_IN, do_serialize_struct, t##_TypeItems}
 
 
@@ -298,37 +294,37 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_uint32, NULL}
 #define SER_OUT_BOOL_PTR(n)\
 	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_bool, NULL}
-
 #define SER_OUT_STR(n)\
 	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_string, NULL}
-
 #define SER_OUT_STRUCT_PTR(n, t)\
 	{(n), SER_PTR | 1, 1 | SER_OUT, do_serialize_struct, t##_TypeItems}
 
 
-#define SER_INOUT_UINT8 (n)\
-	{(n), 1, 1 | SER_INOUT, do_serialize_uint8, NULL}
-#define SER_INOUT_UINT16 (n)\
-	{(n), 1, 1 | SER_INOUT, do_serialize_uint16, NULL}
+#define SER_INOUT_UINT8(n)\
+	{(n), 1, 1 | SER_IN_OUT, do_serialize_uint8, NULL}
+#define SER_INOUT_UINT16(n)\
+	{(n), 1, 1 | SER_IN_OUT, do_serialize_uint16, NULL}
 #define SER_INOUT_UINT32(n)\
-	{(n), 1, 1 | SER_INOUT, do_serialize_uint32, NULL}
+	{(n), 1, 1 | SER_IN_OUT, do_serialize_uint32, NULL}
 #define SER_INOUT_BOOL(n)\
-	{(n), 1, 1 | SER_INOUT, do_serialize_bool, NULL}
+	{(n), 1, 1 | SER_IN_OUT, do_serialize_bool, NULL}
+#define SER_INOUT_STR(n) \
+    {(n), 1, 1 | SER_IN_OUT, do_serialize_string, NULL}
+#define SER_INOUT_STRUCT(n, t)\
+    {(n), 1, 1 | SER_IN_OUT, do_serialize_struct, t##_TypeItems}
 
-#define SER_INOUT_UINT8_PTR (n)\
-	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint8, NULL}
-#define SER_INOUT_UINT16_PTR (n)\
-	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint16, NULL}
+#define SER_INOUT_UINT8_PTR(n) \
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_uint8, NULL}
+#define SER_INOUT_UINT16_PTR (n) \
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_uint16, NULL}
 #define SER_INOUT_UINT32_PTR(n)\
-	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_uint32, NULL}
-#define SER_INOUT_BOOL_PTR(n)\
-	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_bool, NULL}
-
-#define SER_INOUT_STR(n)\
-	{(n), SER_INOUT_PTR | 1, 1 | SER_INOUT, do_serialize_string, NULL}
-
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_uint32, NULL}
+#define SER_INOUT_BOOL_PTR(n) \
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_bool, NULL}
+#define SER_INOUT_STR_PTR(n) \
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_string, NULL}
 #define SER_INOUT_STRUCT_PTR(n, t)\
-	{(n), SER_PTR | 1, 1 | SER_INOUT, do_serialize_struct, t##_TypeItems}
+	{(n), SER_PTR | 1, 1 | SER_IN_OUT, do_serialize_struct, t##_TypeItems}
 
 
 #define SER_RET_VAL_UINT8 (n)\
@@ -356,9 +352,41 @@ void *ws_deserialize(WsContextH cntx,
 	{(n), SER_PTR | 1, 1 | SER_RET_VAL, do_serialize_struct, t##_TypeItems}
 
 
+
+
+#define SER_TYPEINFO_UINT8 \
+struct __XmlSerializerInfo uint8_TypeInfo[] = {\
+    SER_UINT8("uint8", 1, 1), \
+    {NULL, 0, 0, NULL, NULL} \
+}
+#define SER_TYPEINFO_UINT16 \
+struct __XmlSerializerInfo uint16_TypeInfo[] = {\
+    SER_UINT8("uint16", 1, 1), \
+    {NULL, 0, 0, NULL, NULL} \
+}
+#define SER_TYPEINFO_UINT32 \
+struct __XmlSerializerInfo uint32_TypeInfo[] = {\
+    SER_UINT32("uint32", 1, 1), \
+    {NULL, 0, 0, NULL, NULL} \
+}
+#define SER_TYPEINFO_BOOL \
+struct __XmlSerializerInfo bool_TypeInfo[] = {\
+    SER_BOOL("bool", 1, 1), \
+    {NULL, 0, 0, NULL, NULL} \
+}
+#define SER_TYPEINFO_STRING \
+struct __XmlSerializerInfo string_TypeInfo[] = {\
+    SER_UINT8("string", 1, 1), \
+    {NULL, 0, 0, NULL, NULL} \
+}
+
+
+
 #define SER_TYPE_STRUCT(n, t)\
 struct __XmlSerializerInfo t##_TypeInfo[] = {\
-{(n), 1, 1, do_serialize_struct, t##_TypeItems} }
+    {(n), 1, 1, do_serialize_struct, t##_TypeItems}, \
+    {NULL, 0, 0, NULL, NULL}\
+}
 
 
 #define SER_START_ITEMS(n, t)\

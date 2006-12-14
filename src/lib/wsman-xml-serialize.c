@@ -109,9 +109,9 @@ xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = (data->name) ? data->name : data->elementInfo->name;
     TRACE_ENTER;
-    TRACE_DETAILS(name);
-    TRACE_EXIT;		
+    TRACE_DETAILS("name = %s; value(%p) = %s", name, value, value);
     return ws_xml_add_child(data->xmlNode, data->ns, name, value); 
+    TRACE_EXIT;
 }
 
 
@@ -549,6 +549,7 @@ calculate_struct_size(XmlSerializationData* data,
     int totalSize = 0;
     int i;
     XmlSerializerInfo* savedElement = data->elementInfo;
+    void *savedElementBuf = data->elementBuf;
 	TRACE_ENTER;
     for(i = 0; totalSize >= 0 && i < elementCount; i++) {
         int j;
@@ -574,6 +575,7 @@ calculate_struct_size(XmlSerializationData* data,
         }
     }
     data->elementInfo = savedElement;
+    data->elementBuf = savedElementBuf;
 	TRACE_EXIT;
     return totalSize;
 }
@@ -647,30 +649,45 @@ make_dyn_size_data(XmlSerializationData* data)
     XmlSerializerInfo* elementInfo = (XmlSerializerInfo*)data->elementInfo->extData;
     XmlSerialiseDynamicSizeData* dyn = XML_IS_PTR(data->elementInfo) ?
         NULL : (XmlSerialiseDynamicSizeData*)data->elementBuf;
+    int savedIndex = data->index;
 
 	TRACE_ENTER;
-    if ( dyn || (dyn = xml_serializer_alloc(data,
-                sizeof(XmlSerialiseDynamicSizeData), 1)) != NULL ) {
-        while( xml_serializer_get_child(data) != NULL ) {
-            dyn->count++;
-        }
-        if ( dyn->count ) {
-            int size;
+    if (dyn == NULL) {
+        dyn = xml_serializer_alloc(data,
+                sizeof(XmlSerialiseDynamicSizeData), 1);
+    }
+    if (dyn == NULL) {
+        goto DONE;
+    }
 
-            data->mode = XML_SMODE_BINARY_SIZE;
-            size = elementInfo->proc(data);
-            data->mode = XML_SMODE_DESERIALIZE;
+    data->index = 0;
+    while( xml_serializer_get_child(data) != NULL ) {
+        data->index++;
+    }
+    dyn->count = data->index;
+    data->index = savedIndex;
+    if (dyn->count == 0) {
+        goto DONE;
+    }
 
-            if ( size > 0 ) {
-                size = dyn->count * get_adjusted_size(size);
-                if ( (dyn->data = xml_serializer_alloc(data, size, 1)) == NULL ) {
-                    if ( XML_IS_PTR(data->elementInfo) )
-                        xml_serializer_free(data, dyn);
-                    dyn = NULL;
-                }
+    int size;
+
+    data->mode = XML_SMODE_BINARY_SIZE;
+    size = elementInfo->proc(data);
+    data->mode = XML_SMODE_DESERIALIZE;
+
+    if (size > 0) {
+        size = dyn->count * get_adjusted_size(size);
+        dyn->data = xml_serializer_alloc(data, size, 1);
+        if (dyn->data == NULL) {
+            if (XML_IS_PTR(data->elementInfo)) {
+                xml_serializer_free(data, dyn);
             }
+            dyn = NULL;
         }
     }
+
+DONE:
 	TRACE_EXIT;
     return dyn;
 }
@@ -793,7 +810,7 @@ do_serialize_struct(XmlSerializationData * data)
                 *((XML_TYPE_PTR *) data->elementBuf) = NULL;
         }
 	} else if (data->mode == XML_SMODE_DESERIALIZE) {
-	   TRACE_DETAILS("deserialize");
+	   TRACE_DETAILS("Struct deserialize");
 	   if ((data->xmlNode = xml_serializer_get_child(data)) == NULL) {
 		    retVal = WS_ERR_XML_NODE_NOT_FOUND;
             goto DONE;
@@ -807,7 +824,7 @@ do_serialize_struct(XmlSerializationData * data)
 		   *((XML_TYPE_PTR *) data->elementBuf) = ptr;
         }
 	} else if (data->mode == XML_SMODE_SERIALIZE) {
-		TRACE_DETAILS("serialize");
+		TRACE_DETAILS("Struct serialize");
 		if ((data->xmlNode = xml_serializer_add_child(data, NULL)) == NULL) {
 			retVal = WS_ERR_INSUFFICIENT_RESOURCES;
             goto DONE;
@@ -824,7 +841,7 @@ do_serialize_struct(XmlSerializationData * data)
 	char           *savedName = data->name;
 
 	data->name = NULL;
-	TRACE_DETAILS("before for loop");
+	TRACE_DETAILS("before for loop. Struct = %p", dstPtr);
 	for (i = 0; retVal > 0 && i < elementCount; i++) {
 		data->elementInfo = &elements[i];
 		data->index = 0;
