@@ -48,6 +48,19 @@
 #include "wsman-client.h"
 
 
+static char*
+wsman_make_action(char *uri, char *op_name)
+{
+	int             len = strlen(uri) + strlen(op_name) + 2;
+	char           *ptr = (char *) malloc(len);
+	if (ptr) {
+		sprintf(ptr, "%s/%s", uri, op_name);
+	}
+	return ptr;
+}
+
+
+
 WsContextH
 wsman_create_runtime (void)
 {
@@ -133,35 +146,7 @@ wsman_set_action_option(actionOptions * options, unsigned int flag)
 }
 
 
-void
-wsman_remove_query_string(char *s, char **result)
-{
-    char           *r = 0;
-    const char     *q;
-    char           *buf = 0;
 
-    buf = u_strndup(s, strlen(s));
-    if ((q = strchr(buf, '?')) != NULL) {
-        r = u_strndup(s, q - buf);
-        *result = r;
-    } else {
-        *result = s;
-    }
-
-    U_FREE(buf);
-}
-
-hash_t*
-wsman_create_hash_from_query_string(const char *query_string)
-{
-    if (query_string) {
-        hash_t         *query = parse_query(query_string);
-        if (query) {
-            return (query);
-        }
-    }
-    return NULL;
-}
 
 void
 wsman_client_add_property(actionOptions * options,
@@ -248,8 +233,6 @@ wsman_add_namespace_as_selector(WsXmlDocH doc,
     return;
 }
 
-
-
 void
 wsman_set_options_from_uri(char *resource_uri, actionOptions * options)
 {
@@ -335,39 +318,6 @@ wsman_create_action_str(WsmanAction action)
     }
     return action_str;
 }
-
-char*
-wsman_make_action(char *uri, char *op_name)
-{
-    int             len = strlen(uri) + strlen(op_name) + 2;
-    char           *ptr = (char *) malloc(len);
-    if (ptr) {
-        sprintf(ptr, "%s/%s", uri, op_name);
-    }
-    return ptr;
-}
-/*
-static void
-wsman_set_transfer_create_properties(WsXmlDocH request,
-                     actionOptions options)
-{
-    hscan_t         hs;
-    hnode_t        *hn;
-    char           *resource_uri = NULL, *class = NULL;
-    WsXmlNodeH      body = ws_xml_get_soap_body(request);
-
-    WsXmlNodeH      resource = ws_xml_add_child(body, resource_uri, class, NULL);
-
-    if (!options.properties) {
-        return;
-    }
-    hash_scan_begin(&hs, options.properties);
-    while ((hn = hash_scan_next(&hs))) {
-        ws_xml_add_child(resource,
-                 resource_uri, (char *) hnode_getkey(hn), (char *) hnode_get(hn));
-    }
-}
-*/
 
 
 
@@ -632,7 +582,7 @@ ws_transfer_put(WsManClient * cl,
     WsXmlDocH       put_request;
     WsXmlDocH       put_response;
     WsXmlDocH       get_response = ws_transfer_get(cl, resource_uri, options);
-
+ 
     if (!get_response) {
         error("ws_transfer_get returned NULL doc");
         return NULL;
@@ -1080,4 +1030,23 @@ wsman_client_unlock(WsManClient * cl)
     pthread_mutex_lock(&cl->mutex);
     cl->flags &= ~WSMAN_CLIENT_BUSY;
     pthread_mutex_unlock(&cl->mutex);
+}
+
+
+void
+wsman_remove_query_string(char *s, char **result)
+{
+    char           *r = 0;
+    const char     *q;
+    char           *buf = 0;
+
+    buf = u_strndup(s, strlen(s));
+    if ((q = strchr(buf, '?')) != NULL) {
+        r = u_strndup(s, q - buf);
+        *result = r;
+    } else {
+        *result = s;
+    }
+
+    U_FREE(buf);
 }

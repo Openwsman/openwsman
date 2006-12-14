@@ -182,11 +182,12 @@ int main(int argc, char** argv)
                                  sd[0].username,
                                  sd[0].password);
         initialize_action_options(&options);
-
-        if (tests[i].selectors != NULL)
-            options.selectors = wsman_create_hash_from_query_string (tests[i].selectors);
-        if (tests[i].properties != NULL)
-            options.properties = wsman_create_hash_from_query_string (tests[i].properties);
+        
+		
+		if (tests[i].selectors != NULL)
+			wsman_add_selectors_from_query_string(&options, tests[i].selectors);
+		if (tests[i].properties != NULL)
+			wsman_add_properties_from_query_string(&options, tests[i].properties);		
 
         doc = wsman_invoke(cl, (char *)tests[i].resource_uri, (char *)tests[i].method, options);
         if (!doc) {

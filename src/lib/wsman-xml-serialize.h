@@ -87,7 +87,7 @@ void *xml_serializer_alloc(XmlSerializationData *data, int size, int zeroInit);
 
 int xml_serializer_free(XmlSerializationData *data, void *buf);
 
-XML_TYPE_PTR make_dst_ptr(XmlSerializationData *data, int size);
+//XML_TYPE_PTR make_dst_ptr(XmlSerializationData *data, int size);
 
 void xml_serializer_free_scalar_mem(XmlSerializationData *data);
 

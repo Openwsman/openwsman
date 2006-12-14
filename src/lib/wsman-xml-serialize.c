@@ -56,7 +56,8 @@
 #include "wsman-xml-serialize.h"
 #include "wsman-soap-envelope.h"
 
-void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
+void* 
+xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 {
     void* ptr = ws_serializer_alloc(data->cntx, size);
 	TRACE_ENTER;
@@ -67,13 +68,15 @@ void* xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 }
 
 
-int xml_serializer_free(XmlSerializationData* data, void* buf)
+int 
+xml_serializer_free(XmlSerializationData* data, void* buf)
 {
     return ws_serializer_free(data->cntx, buf);
 }
 
 
-XML_TYPE_PTR make_dst_ptr(XmlSerializationData* data, int size)
+static XML_TYPE_PTR 
+make_dst_ptr(XmlSerializationData* data, int size)
 {
     void* ptr = data->elementBuf;
     TRACE_ENTER;
@@ -214,18 +217,21 @@ DONE:
 
 
 
-int do_serialize_uint8(XmlSerializationData* data)
+int 
+do_serialize_uint8(XmlSerializationData* data)
 {
     return do_serialize_uint(data, sizeof(XML_TYPE_UINT8));
 }
 
 
-int do_serialize_uint16(XmlSerializationData* data)
+int 
+do_serialize_uint16(XmlSerializationData* data)
 {
     return do_serialize_uint(data, sizeof(XML_TYPE_UINT16));
 }
 
-int do_serialize_uint32(XmlSerializationData* data)
+int 
+do_serialize_uint32(XmlSerializationData* data)
 {
     return do_serialize_uint(data, sizeof(XML_TYPE_UINT32));
 }

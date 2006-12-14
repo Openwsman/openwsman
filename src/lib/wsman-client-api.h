@@ -83,22 +83,87 @@ extern          "C" {
 
 	typedef int     (*SoapResponseCallback) (WsManClient *, WsXmlDocH, void *);
 
-
+	/**
+ 	* Create client and initialize context
+ 	* @param hostname Hostname or IP
+ 	* @param port port
+ 	* @param path HTTP path, for example /wsman
+ 	* @param scheme scheme, HTTP or HTTPS
+ 	* @param username User name
+ 	* @param password Passwrod
+ 	* @return client handle 
+ 	*/
 	WsManClient    *wsman_create_client(const char *hostname,
 	                const int port, const char *path, const char *scheme,
 		                const char *username, const char *password);
 
+	/*
+	 * Release client
+	 * @param cl Client handle that was created with wsman_create_client
+	 * @return void
+	 */
 	void            wsman_release_client(WsManClient * cl);
+	/*
+	 * Reset client connection and prepare handle for a new connection
+	 * @param cl Client handle
+	 * @return void
+	 */
 	void            reinit_client_connection(WsManClient * cl);
 
 
 	/* WsManClient handling */
+	
+	
 	long            wsman_get_client_response_code(WsManClient * cl);
+	
+	
+	/*
+	 * Get last response code from client
+	 * @param cl Client handle
+	 * @return HTTP return code 
+	 */
 	long            wsman_client_get_response_code(WsManClient * cl);
+	
+	/*
+	 * Destroy session options
+	 * @param op session options
+	 * @return void
+	 */
+	void            destroy_action_options(actionOptions * op);
+	
+	/**
+	 * Get client error string
+	 * @param cl Client handle
+	 * @return error string
+	 */
 	char           *wsman_client_get_fault_string(WsManClient * cl);
+	
+	/**
+	 * Get client context
+	 * @param cl Client handle
+	 * @return Context
+	 */
 	WsContextH      wsman_client_get_context(WsManClient * cl);
+	
+	/**
+	 * Read XML file 
+	 * @param cl Client handle
+	 * @param filename File name
+	 * @param encoding Encoding
+	 * @param XML options
+	 * @retunr XML document
+	 */
 	WsXmlDocH       wsman_client_read_file(WsManClient * cl, char *filename,
 		                     char *encoding, unsigned long options);
+	/**
+	 * Read buffer into an XML document 
+	 * @param cl Client handle
+	 * @param buf Buffer with xml text
+	 * @param size Size of buffer
+	 * @param encoding Encoding
+	 * @param XML options
+	 * @retunr XML document
+	 */			                     
 	WsXmlDocH       wsman_client_read_memory(WsManClient * cl, char *buf,
 	                   int size, char *encoding, unsigned long options);
 
@@ -153,8 +218,7 @@ extern          "C" {
   WsXmlDocH wsman_invoke(WsManClient *cl, char *resourceUri,char *method,
                          actionOptions options);
 
-
-
+  WsXmlDocH       wsman_client_build_envelope_from_response(WsManClient * cl);
 
   int            wsenum_enumerate_and_pull(WsManClient * cl, char *resource_uri,
                                       actionOptions options,
@@ -175,7 +239,6 @@ extern          "C" {
 
 	/* Action options handling */
 	void            initialize_action_options(actionOptions * op);
-	void            destroy_action_options(actionOptions * op);
 	void            wsman_add_selectors_from_query_string(actionOptions * options,
 				                  const char *query_string);
 	void            wsman_add_properties_from_query_string(actionOptions * options,
@@ -188,9 +251,9 @@ extern          "C" {
 	void            wsman_client_add_property(actionOptions * options, char *key, char *value);
 
 	/* Misc */
-	char           *wsman_make_action(char *uri, char *opName);
+	// char           *wsman_make_action(char *uri, char *opName);
 	void            wsman_remove_query_string(char *resourceUri, char **result);
-	hash_t         *wsman_create_hash_from_query_string(const char *query_string);
+	// hash_t         *wsman_create_hash_from_query_string(const char *query_string);
 
 #ifdef __cplusplus
 }

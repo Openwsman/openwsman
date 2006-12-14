@@ -174,9 +174,9 @@ int main(int argc, char** argv)
 		initialize_action_options(&options);
 		
 		if (tests[i].selectors != NULL)
-			options.selectors = wsman_create_hash_from_query_string (tests[i].selectors);
+			wsman_add_selectors_from_query_string(&options, tests[i].selectors);
 		if (tests[i].properties != NULL)
-			options.properties = wsman_create_hash_from_query_string (tests[i].properties);		
+			wsman_add_properties_from_query_string(&options, tests[i].properties);		
 		 
 		doc = ws_transfer_put(cl, (char *)tests[i].resource_uri, options);
         if (!doc) {
