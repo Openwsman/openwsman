@@ -240,7 +240,16 @@ fi
 AM_CONDITIONAL(USE_OPENSSL, test "x$enable_ssl" != "xno")
 
 
-AM_CONDITIONAL(LIBCRYPT, test HAVE_CRYPT_H = "1")
+AH_TEMPLATE(HAVE_LIBCRYPT, [libcrypt library present])
+AC_CHECK_FUNCS([crypt], HAVE_LIBC_CRYPT="true")
+if test -z "$HAVE_LIBC_CRYPT"; then
+       AC_CHECK_LIB(crypt, crypt,
+             CRYPT_LIBS="-lcrypt"
+             [AC_DEFINE(HAVE_LIBCRYPT)], ,)
+fi
+
+AC_SUBST(CRYPT_LIBS)
+
 echo  $platform
 
 
