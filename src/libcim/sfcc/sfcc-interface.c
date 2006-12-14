@@ -777,8 +777,8 @@ cim_getEprObjAt(CimClientInfo *client,
 
   if (retval) {
     WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM, NULL);
-    cim_add_epr(item, client->resource_uri, objectpath);
     instance2xml(client, instance, item, enumInfo);
+    cim_add_epr(item, client->resource_uri, objectpath);
   }
 
   //if (instance) CMRelease(instance);
