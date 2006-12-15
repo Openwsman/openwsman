@@ -236,22 +236,22 @@ void *ws_deserialize(WsContextH cntx,
     {(n), (x), (y), do_serialize_string, NULL}
 #define SER_STRUCT(n, x, y, t)\
     {(n), (x), (y), do_serialize_struct, t##_TypeItems}
-#define SER_DYN_ARRAY(t)\
-    {NULL, 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
+#define SER_DYN_ARRAY(n, t)\
+    {(n), 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
 
 
-#define SER_UINT8_PTR (n, x, y)\
+#define SER_UINT8_PTR (n, x, y) \
 	{(n), SER_PTR | (x), (y), do_serialize_uint8, NULL}
-#define SER_UINT16_PTR (n, x, y)\
+#define SER_UINT16_PTR (n, x, y) \
 	{(n), SER_PTR | (x), (y), do_serialize_uint16, NULL}
-#define SER_UINT32_PTR(n, x, y)\
+#define SER_UINT32_PTR(n, x, y) \
 	{(n), SER_PTR | (x), (y), do_serialize_uint32, NULL}
-#define SER_BOOL_PTR(n, x, y)\
+#define SER_BOOL_PTR(n, x, y) \
 	{(n), SER_PTR | (x), (y), do_serialize_bool, NULL}
-#define SER_STR_PTR(n, x, y)\
+#define SER_STR_PTR(n, x, y) \
     {(n), SER_PTR | (x), (y), do_serialize_string, NULL}
-#define SER_DYN_ARRAY_PTR(t)\
-	{NULL, SER_PTR, 1, do_serialize_dyn_size_array, t##_TypeInfo}
+#define SER_DYN_ARRAY_PTR(n, t) \
+	{(n), SER_PTR, 1, do_serialize_dyn_size_array, t##_TypeInfo}
 
 
 #define SER_IN_UINT8 (n)\
@@ -361,7 +361,7 @@ struct __XmlSerializerInfo uint8_TypeInfo[] = {\
 }
 #define SER_TYPEINFO_UINT16 \
 struct __XmlSerializerInfo uint16_TypeInfo[] = {\
-    SER_UINT8("uint16", 1, 1), \
+    SER_UINT16("uint16", 1, 1), \
     {NULL, 0, 0, NULL, NULL} \
 }
 #define SER_TYPEINFO_UINT32 \
@@ -376,7 +376,7 @@ struct __XmlSerializerInfo bool_TypeInfo[] = {\
 }
 #define SER_TYPEINFO_STRING \
 struct __XmlSerializerInfo string_TypeInfo[] = {\
-    SER_UINT8("string", 1, 1), \
+    SER_STR("string", 1, 1), \
     {NULL, 0, 0, NULL, NULL} \
 }
 

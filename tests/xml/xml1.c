@@ -21,16 +21,19 @@ struct __CIM_ComputerSystem {
     XmlSerialiseDynamicSizeData* foo;
 };
 typedef struct __CIM_ComputerSystem CIM_ComputerSystem;
-
+/*
 struct __XmlSerializerInfo foo_TypeInfo[] =
 {
       SER_STR("foo", 1, 1)
 };
+*/
+
+SER_TYPEINFO_STRING;
 
 SER_START_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem)
 SER_STR("NameFormat",0,1),
 SER_STR("test", 0, 2 ),
-SER_DYN_ARRAY_PTR(foo),
+SER_DYN_ARRAY_PTR("foo", string),
 SER_END_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem);
 
 
@@ -49,9 +52,22 @@ int main(void)
                                      NS, NS,
                                      0, 0);
 
-    printf("%s\n", cs->NameFormat);
-    printf("%s\n", cs->test[1]);
-    printf("%d\n", cs->foo->count);
-
+    if (cs == NULL) {
+        printf("No cs\n");
+        return 1;
+    }
+    printf("NameFormat = <%s>\n", cs->NameFormat);
+    printf("test[0] <%s>\n", cs->test[0]);
+    printf("test[1] <%s>\n", cs->test[1]);    if (cs->foo == NULL) {
+        printf("No cs->foo at %p\n", &cs->foo);
+        return 1;
+    }
+    printf("cs->foo->count = %d\n", cs->foo->count);
+    int i;
+    char **p = (char **)cs->foo->data;
+    for (i = 0; i < cs->foo->count; i++) {
+        printf("      foo[%d] = <%s>\n", i, *p);
+        p++;
+    }
     return 0;
 }
