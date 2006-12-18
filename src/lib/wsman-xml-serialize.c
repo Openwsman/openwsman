@@ -56,6 +56,26 @@
 #include "wsman-xml-serialize.h"
 #include "wsman-soap-envelope.h"
 
+
+
+struct __WsSerializerMemEntry
+{
+    WsContextH cntx;
+    char buf[1];
+};
+typedef struct __WsSerializerMemEntry WsSerializerMemEntry;
+
+
+struct __dummy
+{
+    char __x;
+};
+
+#define XML_SADJUSTMENT     (sizeof(struct __dummy))
+
+
+
+
 void* 
 xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
 {
@@ -414,7 +434,7 @@ int
 do_serialize_char_array(XmlSerializationData* data)
 {
     WsXmlNodeH child; 
-    int count = data->elementInfo->funcMaxCount & SER_FLAGS_MASK;
+    int count = XML_MAX_OCCURS(data->elementInfo);
     int retVal = sizeof(XML_TYPE_CHAR) * count;
     TRACE_ENTER;
     if ( data->mode == XML_SMODE_SERIALIZE ) {
@@ -438,7 +458,7 @@ do_serialize_char_array(XmlSerializationData* data)
         } else {
             char* src = ws_xml_get_node_text(child);
             char* dstPtr = (char*)data->elementBuf;
-            int dstSize = SER_FLAGS_MASK & data->elementInfo->funcMaxCount;
+            int dstSize = XML_MAX_OCCURS(data->elementInfo);
 
             if ( XML_IS_PTR(data->elementInfo) )
             {

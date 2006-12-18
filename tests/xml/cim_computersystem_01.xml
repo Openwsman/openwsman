@@ -11,10 +11,10 @@
           <p:NameFormat>IP</p:NameFormat>
           <p:test>test 1</p:test>
           <p:test>test 2</p:test>
+          <p:foo>foo 1</p:foo>
           <p:foo>foo 2</p:foo>
-          <p:foo>foo 2</p:foo>
-          <p:foo>foo 2</p:foo>
-          <p:foo>foo 2</p:foo>
+          <p:foo>foo 3</p:foo>
+          <p:foo>foo 4</p:foo>
         </p:CIM_ComputerSystem>
   </s:Body>
 </s:Envelope>

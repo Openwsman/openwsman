@@ -30,11 +30,13 @@
 
 /** 
  * @author Eugene Yarmosh
+ * @author Vadim Revyakin
  */
 
 #ifndef WS_XML_SERIALIZATION_H
 #define WS_XML_SERIALIZATION_H
 
+#include "wsman-xml-serializer.h"
 //struct __XmlSerializationTypeInfo;
 //struct __XmlSerializerInfo;
 
@@ -101,4 +103,9 @@ void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cn
 			XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode,
 			char *nameNs, char *ns, WsXmlNodeH xmlNode);
 */
+
+
+
+
+
 #endif //WS_XML_SERIALIZATION_H

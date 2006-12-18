@@ -44,6 +44,7 @@
 
 #include "wsman-dispatcher.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-xml-serialize.h"
 #include "wsman-client.h"
 #include "wsman-soap-envelope.h"
 #include "wsman-faults.h"
