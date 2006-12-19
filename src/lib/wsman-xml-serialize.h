@@ -73,7 +73,7 @@ struct __NameAliase
         char* aliase;
 };
 typedef struct __NameAliase NameAliase;
-NameAliase* g_NameNameAliaseTable;
+// NameAliase* g_NameNameAliaseTable;
 
 
 

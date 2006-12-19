@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 		if (tests[i].properties != NULL)
 			wsman_add_properties_from_query_string(&options, tests[i].properties);		
 		 
-		doc = ws_transfer_put(cl, (char *)tests[i].resource_uri, options);
+		doc = ws_transfer_put1(cl, (char *)tests[i].resource_uri, options);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;

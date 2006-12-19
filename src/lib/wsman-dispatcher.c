@@ -151,7 +151,7 @@ validate_control_headers(op_t * op)
 {
 	unsigned long   size = 0;
 	WsXmlNodeH      header =
-	get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
+	wsman_get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
 	if (ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
 		size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
 		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
@@ -178,7 +178,7 @@ validate_mustunderstand_headers(op_t * op)
 	int             i;
 	char           *nsUri;
 
-	header = get_soap_header_element(op->dispatch->fw,
+	header = wsman_get_soap_header_element(op->dispatch->fw,
 					 op->in_doc, NULL, NULL);
 	nsUri = ws_xml_get_node_name_ns(header);
 
@@ -318,7 +318,7 @@ outbound_control_header_filter(SoapOpH opHandle,
 	SoapH           soap = soap_get_op_soap(opHandle);
 	WsXmlDocH       in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH       out_doc = soap_get_op_doc(opHandle, 0);
-	WsXmlNodeH      inHeaders = get_soap_header_element(soap, in_doc, NULL, NULL);
+	WsXmlNodeH      inHeaders = wsman_get_soap_header_element(soap, in_doc, NULL, NULL);
 
 	if (inHeaders) {
 		if (ws_xml_get_child(inHeaders, 0,
@@ -344,7 +344,7 @@ outbound_addressing_filter(SoapOpH opHandle,
 	WsXmlDocH       in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH       out_doc = soap_get_op_doc(opHandle, 0);
 
-	WsXmlNodeH      outHeaders = get_soap_header_element(soap, out_doc, NULL, NULL);
+	WsXmlNodeH      outHeaders = wsman_get_soap_header_element(soap, out_doc, NULL, NULL);
 
 	if (outHeaders) {
 		if (ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,
@@ -356,7 +356,7 @@ outbound_addressing_filter(SoapOpH opHandle,
 		}
 		if (in_doc != NULL) {
 			WsXmlNodeH      inMsgIdNode;
-			inMsgIdNode = get_soap_header_element(soap, in_doc,
+			inMsgIdNode = wsman_get_soap_header_element(soap, in_doc,
 					 XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 			if (inMsgIdNode != NULL && !ws_xml_get_child(outHeaders, 0,
 				       XML_NS_ADDRESSING, WSA_RELATES_TO)) {
@@ -561,7 +561,7 @@ wsman_dispatcher(WsContextH cntx,
 		goto cleanup;
 	} else {
 		uri = wsman_get_resource_uri(cntx, doc);
-		action = ws_addressing_get_action(cntx, doc);
+		action = wsman_get_action(cntx, doc);
 		if ((!uri || !action) && !wsman_is_identify_request(doc)) {
 			goto cleanup;
 		}

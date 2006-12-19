@@ -39,21 +39,21 @@
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
-void wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
+int wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
 
 int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc);
 
-char* get_soap_header_value(SoapH soap, WsXmlDocH doc, char* nsUri, char* name);
+char* wsman_get_soap_header_value(SoapH soap, WsXmlDocH doc, char* nsUri, char* name);
 
-WsXmlNodeH get_soap_header_element(SoapH soap,
+WsXmlNodeH wsman_get_soap_header_element(SoapH soap,
         WsXmlDocH doc, char* nsUri, char* name);
 
-WsXmlDocH build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri, 
+WsXmlDocH wsman_build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri, 
         char *code, char *subCode, char *reason, char *detail);
 
-void build_soap_version_fault(SoapH soap);
+void wsman_build_soap_version_fault(SoapH soap);
 
-WsXmlDocH ws_create_response_envelope(WsContextH cntx, 
+WsXmlDocH wsman_create_response_envelope(WsContextH cntx, 
         WsXmlDocH rqstDoc, 
         char* action);
 
@@ -80,7 +80,7 @@ char* wsman_get_method_name ( WsContextH cntx );
 
 hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );
 
-int wsen_get_max_elements(WsContextH cntx, WsXmlDocH doc);
+int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
 void wsman_set_estimated_total(WsXmlDocH in_doc,
                                WsXmlDocH out_doc,
@@ -98,7 +98,7 @@ hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
 void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 
-char* ws_addressing_get_action(WsContextH cntx, WsXmlDocH doc);
+char* wsman_get_action(WsContextH cntx, WsXmlDocH doc);
 
 
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
@@ -115,5 +115,5 @@ int wsman_is_identify_request(WsXmlDocH doc);
 void wsman_set_polymorph_mode(WsContextH cntx,
                               WsXmlDocH doc,
                               WsEnumerateInfo *enumInfo);
-
+int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 #endif

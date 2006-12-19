@@ -462,7 +462,7 @@ wsman_identify_stub(SoapOpH op,
 		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
 					    WSMAN_INTERNAL_ERROR, -1, NULL);
 	} else {
-		doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			 NULL, (char *) info->data, (char *) info->data, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
@@ -509,7 +509,7 @@ ws_transfer_put_stub(SoapOpH op,
 		doc = wsman_generate_fault(cntx, _doc, status.fault_code,
 					   status.fault_detail_code, NULL);
 	} else {
-		doc = ws_create_response_envelope(cntx, _doc, NULL);
+		doc = wsman_create_response_envelope(cntx, _doc, NULL);
 		if (outData) {
 			ws_serialize(cntx, ws_xml_get_soap_body(doc), outData,
 				     typeInfo, NULL, (char *) info->data, (char *) info->data, 1);
@@ -613,7 +613,7 @@ wsenum_enumerate_stub(SoapOpH op,
 		doc = enumInfo.pullResultPtr;
 		enumInfo.index++;
 	} else {
-		doc = ws_create_response_envelope(epcntx, _doc, NULL);
+		doc = wsman_create_response_envelope(epcntx, _doc, NULL);
 	}
 
 	if (!doc)
@@ -686,7 +686,7 @@ wsenum_release_stub(SoapOpH op,
 			doc = wsman_generate_fault(soapCntx, _doc,
 						   WSMAN_INTERNAL_ERROR, OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);
 		} else {
-			doc = ws_create_response_envelope(soapCntx, _doc, NULL);
+			doc = wsman_create_response_envelope(soapCntx, _doc, NULL);
 			debug("Releasing context: %s", cntxName);
 			u_free(enumInfo->auth_data.username);
 			u_free(enumInfo->auth_data.password);
@@ -737,7 +737,7 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 		goto DONE;
 	}
 	enumInfo->index++;
-	doc = ws_create_response_envelope(soapCntx, _doc, NULL);
+	doc = wsman_create_response_envelope(soapCntx, _doc, NULL);
 	if (!doc)
 		goto DONE;
 
@@ -873,7 +873,7 @@ ws_transfer_get_stub(SoapOpH op,
 					 WSMAN_INVALID_SELECTORS, -1, NULL);
 	} else {
 		debug("Creating Response doc");
-		doc = ws_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			 NULL, (char *) info->data, (char *) info->data, 1);

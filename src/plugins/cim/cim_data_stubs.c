@@ -130,7 +130,7 @@ CimResource_Get_EP( SoapOpH op,
   }
 
 
-  if ( (doc = ws_create_response_envelope(cntx, in_doc, NULL)) ) {    		
+  if ( (doc = wsman_create_response_envelope(cntx, in_doc, NULL)) ) {    		
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     cim_get_instance_from_enum(cimclient, cntx, body, &status);
   }
@@ -175,7 +175,7 @@ CimResource_Custom_EP( SoapOpH op,
                                  msg->auth_data.password);
   }
 
-  if ((doc = ws_create_response_envelope(cntx, in_doc, NULL))) {
+  if ((doc = wsman_create_response_envelope(cntx, in_doc, NULL))) {
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     cim_invoke_method(cimclient, cntx, body, &status);
   }
@@ -233,7 +233,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 
   wsman_set_polymorph_mode(cntx, NULL, enumInfo);
   if (max_elements > 0) {
-    doc = ws_create_response_envelope(cntx, in_doc , NULL);
+    doc = wsman_create_response_envelope(cntx, in_doc , NULL);
     WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
                        XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
     cim_get_enum_items(cimclient, cntx, node,
@@ -282,13 +282,13 @@ CimResource_Pull_EP( WsContextH cntx,
     cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
   }      
   
-  doc = ws_create_response_envelope(cntx, in_doc, NULL);
+  doc = wsman_create_response_envelope(cntx, in_doc, NULL);
   WsXmlNodeH body = ws_xml_get_soap_body(doc);
 
   WsXmlNodeH pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
                                                  WSENUM_PULL_RESP, NULL);
 
-  int max = wsen_get_max_elements(cntx, NULL);
+  int max = wsman_get_max_elements(cntx, NULL);
   cim_get_enum_items(cimclient, cntx, pullnode, 
                      enumInfo, XML_NS_ENUMERATION,  max);
     
@@ -331,7 +331,7 @@ CimResource_Put_EP( SoapOpH op,
   }
 
  
-  if ((doc = ws_create_response_envelope(cntx,
+  if ((doc = wsman_create_response_envelope(cntx,
                                          soap_get_op_doc(op, 1), NULL))) {
     WsXmlNodeH body = ws_xml_get_soap_body(doc);
     WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));

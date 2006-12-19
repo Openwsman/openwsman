@@ -56,7 +56,7 @@
 #include "wsman-xml-serialize.h"
 #include "wsman-soap-envelope.h"
 
-
+NameAliase* g_NameNameAliaseTable;
 
 struct __WsSerializerMemEntry
 {

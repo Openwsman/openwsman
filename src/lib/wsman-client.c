@@ -450,7 +450,7 @@ wsman_client_create_request(WsManClient * cl,
         }
         break;
     case WSMAN_ACTION_TRANSFER_PUT:
-        wsman_set_transfer_put_properties((WsXmlDocH) data, request, options);
+        //wsman_set_transfer_put_properties((WsXmlDocH) data, request, options);
         break;  
     case WSMAN_ACTION_ENUMERATION:
         node = ws_xml_add_child(ws_xml_get_soap_body(request),
@@ -526,7 +526,9 @@ ws_transfer_create(WsManClient * cl,
         if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
         }
-    }    
+    } else if (data != NULL ) {
+    	
+    }
     if (wsman_send_request(cl, request)) {
         ws_xml_destroy_doc(request);
         return NULL;
@@ -535,6 +537,53 @@ ws_transfer_create(WsManClient * cl,
     ws_xml_destroy_doc(request);
     return response;
 }
+
+
+WsXmlDocH
+ws_transfer_put(WsManClient * cl,
+           char *resource_uri,
+           void *data,
+           void* typeInfo,         
+           actionOptions options)
+{
+    WsXmlDocH       response;
+    WsXmlDocH       request = wsman_client_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
+                     NULL, resource_uri, options, NULL);
+                
+    if (data && typeInfo) {     
+        char *class = u_strdup(strrchr(resource_uri, '/') + 1);
+        
+        ws_serialize(cl->wscntx, ws_xml_get_soap_body(request), data, (XmlSerializerInfo *)typeInfo,
+             class , resource_uri, resource_uri, 1);
+        ws_serializer_free_mem(cl->wscntx, data, (XmlSerializerInfo *)typeInfo);
+        if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+            ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+        }
+        u_free(class);
+    } else if (data != NULL ) {
+    	WsXmlDocH r = (WsXmlDocH )data;
+        if (wsman_is_valid_xml_envelope(r) != 0 ) {
+            /* 
+             * input is a SOAP envelope, we will extract the resource
+             * data and create the PUT request making sure the envelope
+             * is a GetResponse with the same resource URI used for this 
+             * PUT request.
+             */
+             
+             
+        }
+    	
+    }
+    if (wsman_send_request(cl, request)) {
+        ws_xml_destroy_doc(request);
+        return NULL;
+    }
+    response = wsman_build_envelope_from_response(cl);
+    ws_xml_destroy_doc(request);
+    return response;
+}
+
+
 
 
 WsXmlDocH
@@ -575,7 +624,7 @@ ws_transfer_get(WsManClient * cl,
 
 
 WsXmlDocH
-ws_transfer_put(WsManClient * cl,
+ws_transfer_put1(WsManClient * cl,
         char *resource_uri,
         actionOptions options)
 {
@@ -592,6 +641,8 @@ ws_transfer_put(WsManClient * cl,
     }
     put_request = wsman_client_create_request(cl, WSMAN_ACTION_TRANSFER_PUT,
             NULL, resource_uri, options, (void *) get_response);
+            
+    wsman_set_transfer_put_properties(get_response, put_request, options);
     //ws_xml_destroy_doc(get_response);
     if (wsman_send_request(cl, put_request)) {
         ws_xml_destroy_doc(put_request);
@@ -602,6 +653,9 @@ ws_transfer_put(WsManClient * cl,
     //ws_xml_destroy_doc(put_request);
     return put_response;
 }
+
+
+
 
 WsXmlDocH
 wsman_invoke(WsManClient * cl,

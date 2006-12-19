@@ -202,7 +202,9 @@ extern          "C" {
   WsXmlDocH wsman_identify(WsManClient *cl, actionOptions options);
   WsXmlDocH ws_transfer_get(WsManClient *cl, char *resourceUri,
                             actionOptions options); 
-  WsXmlDocH ws_transfer_put(WsManClient *cl, char *resourceUri,
+  WsXmlDocH ws_transfer_put(WsManClient * cl, char *resource_uri, void *data,
+  							void* typeInfo, actionOptions options);
+  WsXmlDocH ws_transfer_put1(WsManClient *cl, char *resourceUri,
                             actionOptions options);
   WsXmlDocH ws_transfer_create(WsManClient * cl, char *resourceUri,
                                void *data, void* typeInfo,
