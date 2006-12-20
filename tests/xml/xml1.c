@@ -18,7 +18,7 @@
 struct __CIM_ComputerSystem {
     char *NameFormat;
     char *test[2];
-    XmlSerialiseDynamicSizeData* foo;
+    XmlSerialiseDynamicSizeData foo;
 };
 typedef struct __CIM_ComputerSystem CIM_ComputerSystem;
 /*
@@ -31,9 +31,9 @@ struct __XmlSerializerInfo foo_TypeInfo[] =
 SER_TYPEINFO_STRING;
 
 SER_START_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem)
-SER_STR("NameFormat",0,1),
-SER_STR("test", 0, 2 ),
-SER_DYN_ARRAY_PTR("foo", string),
+SER_STR("NameFormat", 1),
+SER_STR("test", 2),
+SER_DYN_ARRAY("foo", string),
 SER_END_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem);
 
 
@@ -43,12 +43,14 @@ int main(void)
 {
     WsContextH cntx = ws_create_runtime(NULL);
     SoapH soap = ws_context_get_runtime(cntx);
-    
-    WsXmlDocH doc = ws_xml_read_file(soap, "cim_computersystem_01.xml", "UTF-8", 0 ); 
+
+    WsXmlDocH doc = ws_xml_read_file(soap, "cim_computersystem_01.xml",
+                                     "UTF-8", 0 ); 
     WsXmlNodeH node = ws_xml_get_soap_body(doc);
     CIM_ComputerSystem *cs  = ws_deserialize(cntx,
                                      node,
-                                     CIM_ComputerSystem_TypeInfo,"CIM_ComputerSystem",
+                                     CIM_ComputerSystem_TypeInfo,
+                                     "CIM_ComputerSystem",
                                      NS, NS,
                                      0, 0);
 
@@ -58,14 +60,16 @@ int main(void)
     }
     printf("NameFormat = <%s>\n", cs->NameFormat);
     printf("test[0] <%s>\n", cs->test[0]);
-    printf("test[1] <%s>\n", cs->test[1]);    if (cs->foo == NULL) {
-        printf("No cs->foo at %p\n", &cs->foo);
+    printf("test[1] <%s>\n", cs->test[1]);
+
+    printf("cs->foo.count = %d\n", cs->foo.count);
+    if (cs->foo.data == NULL) {
+        printf("No cs->foo.data\n");
         return 1;
     }
-    printf("cs->foo->count = %d\n", cs->foo->count);
     int i;
-    char **p = (char **)cs->foo->data;
-    for (i = 0; i < cs->foo->count; i++) {
+    char **p = (char **)cs->foo.data;
+    for (i = 0; i < cs->foo.count; i++) {
         printf("      foo[%d] = <%s>\n", i, *p);
         p++;
     }

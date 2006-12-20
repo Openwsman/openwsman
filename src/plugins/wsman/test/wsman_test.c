@@ -17,14 +17,14 @@
 #include "wsman_test.h"
 
 SER_START_ITEMS("Test", WsManTestResult)
-SER_UINT8("result1", 1, 1), 
-SER_UINT8("result2", 1, 1), 
+SER_UINT8("result1", 1), 
+SER_UINT8("result2", 1), 
 SER_END_ITEMS("Test", WsManTestResult);
 
 
 SER_START_ITEMS("Test", WsManTest)
-SER_STR("Simple", 1, 1), 
-SER_STRUCT("Result", 1, 1, WsManTestResult), 
+SER_STR("Simple", 1), 
+SER_STRUCT("Result", 1, WsManTestResult), 
 SER_END_ITEMS("Test", WsManTest);
 
 

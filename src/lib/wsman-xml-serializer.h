@@ -46,13 +46,21 @@
 #include "wsman-types.h"
 #include "wsman-names.h"
 
+typedef void* XML_TYPE_PTR;
+
+typedef struct __XmlSerialiseDynamicSizeData
+{
+    int count;
+    XML_TYPE_PTR data;
+}  XmlSerialiseDynamicSizeData;
+
 typedef unsigned char XML_TYPE_UINT8;
 typedef unsigned short XML_TYPE_UINT16;
 typedef unsigned long XML_TYPE_UINT32;
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
-typedef void* XML_TYPE_PTR;
 typedef char* XML_TYPE_STR;
+typedef XmlSerialiseDynamicSizeData XML_TYPE_DYN_ARRAY;
 
 #define SER_ENUMERATOR_PREFIX	"_XmlSerializeEnum"
 
@@ -64,14 +72,17 @@ typedef char* XML_TYPE_STR;
  * 0 for dynamic array. 
  */
 
+
+
 struct __XmlSerializationData;
 typedef int (*XmlSerializationProc)(struct __XmlSerializationData* data);
 
 struct __XmlSerializerInfo
 {
     char* name;
-    unsigned short flagsMinCount; /**< Minimal Count */
-    unsigned short funcMaxCount; /**< Maximal Count */
+    size_t count; /**< Maximal Count */
+    size_t size;          /**< size of serialized/deserialized element */
+    unsigned int flags; /**< Minimal Count */
     XmlSerializationProc proc; /**< Serialization Processor */
     XML_TYPE_PTR extData; /**< External Data */
 };
@@ -79,202 +90,134 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
 
 
-typedef struct __XmlSerialiseDynamicSizeData
-{
-    int count;
-    XML_TYPE_PTR data;
-}  XmlSerialiseDynamicSizeData;
 
-//#define SER_ALIGNMENT_MASK	0x000F
+#define SER_IN            0x8000
+#define SER_OUT           0x4000
+#define SER_SKIP          0x2000
+#define SER_HEAD          0x1000
 
-        // flags in funcMaxCount
-#define SER_IN				((unsigned short)0x8000)
-#define SER_OUT				((unsigned short)0x4000)
-
-#define SER_IN_OUT			(SER_OUT | SER_IN)
-#define SER_MAXCOUNT_FLAGS_MASK   (SER_OUT | SER_IN)
+#define XML_NUM_OCCURS(x) (x)->count
+#define XML_IS_SKIP(x) ((x)->flags & SER_SKIP)
+#define XML_IS_IN(x)   ((x)->flags & SER_IN)
+#define XML_IS_OUT(x)  ((x)->flags & SER_OUT)
+#define XML_IS_HEAD(x)  ((x)->flags & SER_HEAD)
 
 
-        // flags in flagsMinCount
-#define SER_PTR				0x8000
-#define SER_SKIP			0x4000
+#define SER_NULL {NULL, 0, 0, 0, NULL, NULL}
+        // Serializer Info base defines
 
-#define SER_MINCOUNT_FLAGS_MASK   (SER_PTR | SER_SKIP)
-
-
-
-
-#define XML_MAX_OCCURS(x) \
-      ((int)((unsigned short)((x)->funcMaxCount & ~SER_MAXCOUNT_FLAGS_MASK)))
-#define XML_MIN_OCCURS(x) \
-      ((int)((unsigned short)((x)->flagsMinCount & ~SER_MINCOUNT_FLAGS_MASK)))
-
-#define XML_IS_PTR(x) ((x)->flagsMinCount & SER_PTR)
-#define XML_SET_PTR(x) ((x)->flagsMinCount = (x)->flagsMinCount | SER_PTR)
-#define XML_UNSET_PTR(x) ((x)->flagsMinCount = (x)->flagsMinCount & ~SER_PTR)
-#define XML_IS_SKIP(x) ((x)->flagsMinCount & SER_SKIP)
-
-#define XML_IS_IN(x) ((x)->funcMaxCount & SER_IN)
-#define XML_IS_OUT(x) ((x)->funcMaxCount & SER_OUT)
-//#define XML_IS_RETURN(x) ((x)->funcMaxCount & SER_RET_FLAG)
+#define SER_UINT8_FLAGS(n, x, flags) \
+	{(n), (x),  sizeof (XML_TYPE_UINT8), flags, do_serialize_uint8, NULL}
+#define SER_UINT16_FLAGS(n, x, flags) \
+	{(n), (x), sizeof (XML_TYPE_UINT16), flags, do_serialize_uint16, NULL}
+#define SER_UINT32_FLAGS(n, x, flags) \
+	{(n), (x), sizeof (XML_TYPE_UINT32), flags, do_serialize_uint32, NULL}
+#define SER_BOOL_FLAGS(n, x, flags) \
+	{(n), (x), sizeof (XML_TYPE_BOOL), flags, do_serialize_bool, NULL}
+#define SER_STR_FLAGS(n, x, flags)\
+    {(n), (x), sizeof (XML_TYPE_STR), flags, do_serialize_string, NULL}
+#define SER_STRUCT_FLAGS(n, x, flags, t)\
+    {(n), (x), sizeof (t), flags, do_serialize_struct, t##_TypeItems}
+#define SER_DYN_ARRAY_FLAGS(n, flags, t)\
+    {(n), 1, sizeof (XmlSerialiseDynamicSizeData), flags, \
+         do_serialize_dyn_size_array, t##_TypeInfo \
+    }
 
 
-
-        // Serializer Info for different types
-
-#define SER_UINT8(n, x, y)\
-	{(n), (x), (y), do_serialize_uint8, NULL}
-#define SER_UINT16(n, x, y)\
-	{(n), (x), (y), do_serialize_uint16, NULL}
-#define SER_UINT32(n, x, y)\
-	{(n), (x), (y), do_serialize_uint32, NULL}
-#define SER_BOOL(n, x, y)\
-	{(n), (x), (y), do_serialize_bool, NULL}
-#define SER_STR(n, x, y)\
-    {(n), (x), (y), do_serialize_string, NULL}
-#define SER_STRUCT(n, x, y, t)\
-    {(n), (x), (y), do_serialize_struct, t##_TypeItems}
-#define SER_DYN_ARRAY(n, t)\
-    {(n), 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
-
-
-#define SER_UINT8_PTR (n, x, y)       SER_UINT8(n, SER_PTR | (x), y)
-#define SER_UINT16_PTR (n, x, y)      SER_UINT16(n, SER_PTR | (x), y)
-#define SER_UINT32_PTR(n, x, y)       SER_UINT32(n, SER_PTR | (x), y)
-#define SER_BOOL_PTR(n, x, y)         SER_BOOL(n, SER_PTR | (x), y)
-#define SER_STR_PTR(n, x, y)          SER_STR(n, SER_PTR | (x), y)
-#define SER_DYN_ARRAY_PTR(n, t)  \
-    {(n), SER_PTR | 1, 1, do_serialize_dyn_size_array, t##_TypeInfo}
-
+        // Serialization Info for different types
+#define SER_UINT8(n, x)               SER_UINT8_FLAGS(n, x, 0)
+#define SER_UINT16(n, x)              SER_UINT16_FLAGS(n, x, 0)
+#define SER_UINT32(n, x)              SER_UINT32_FLAGS(n, x, 0)
+#define SER_BOOL(n, x)                SER_BOOL_FLAGS(n, x, 0)
+#define SER_STR(n, x)                 SER_STR_FLAGS(n, x, 0)
+#define SER_STRUCT(n, x, t)           SER_STRUCT_FLAGS(n, x, 0, t)
+#define SER_DYN_ARRAY(n, t)           SER_DYN_ARRAY_FLAGS(n, 0, t)
 
 
         // Serialization Info to skip in 
 
-#define SER_IN_UINT8(n)               SER_UINT8(n, 1, 1 | SER_IN)
-#define SER_IN_UINT16(n)              SER_UINT16(n, 1, 1 | SER_IN)
-#define SER_IN_UINT32(n)              SER_UINT32(n, 1, 1 | SER_IN)
-#define SER_IN_BOOL(n)                SER_BOOL(n, 1, 1 | SER_IN)
-#define SER_IN_STR(n)                 SER_STR(n, 1, 1 | SER_IN)
-#define SER_IN_STRUCT(n, t)           SER_STRUCT(n, 1, 1 | SER_IN, t)
-#define SER_IN_DYN_ARRAY(n, t)        SER_DYN_ARRAY(n, 1, 1 | SER_IN, t)
+#define SER_IN_UINT8(n, x)            SER_UINT8_FLAGS(n, x, SER_IN)
+#define SER_IN_UINT16(n, x)           SER_UINT16_FLAGS(n, x, SER_IN)
+#define SER_IN_UINT32(n, x)           SER_UINT32_FLAGS(n, x, SER_IN)
+#define SER_IN_BOOL(n, x)             SER_BOOL_FLAGS(n, x, SER_IN)
+#define SER_IN_STR(n, x)              SER_STR_FLAGS(n, x, SER_IN)
+#define SER_IN_STRUCT(n, x, t)        SER_STRUCT_FLAGS(n, x, SER_IN, t)
+#define SER_IN_DYN_ARRAY(n, t)        SER_DYN_ARRAY_FLAGS(n, SER_IN, t)
 
-#define SER_IN_UINT8_PTR(n)           SER_UINT8_PTR(n, 1, 1 | SER_IN)
-#define SER_IN_UINT16_PTR(n)          SER_UINT16_PTR(n, 1, 1 | SER_IN)
-#define SER_IN_UINT32_PTR(n)          SER_UINT32_PTR(n, 1, 1 | SER_IN)
-#define SER_IN_BOOL_PTR(n)            SER_BOOL_PTR(n, 1, 1 | SER_IN)
-#define SER_IN_STR_PTR(n)             SER_STR_PTR(n, 1, 1 | SER_IN)
-#define SER_IN_DYN_ARRAY_PTR(n, t)    SER_DYN_ARRAY_PTR(n, 1, 1 | SER_IN)
 
         // Serialization Info to skip in 
-
-#define SER_OUT_UINT8(n)              SER_UINT8(n, 1, 1 | SER_OUT)
-#define SER_OUT_UINT16(n)             SER_UINT16(n, 1, 1 | SER_OUT)
-#define SER_OUT_UINT32(n)             SER_UINT32(n, 1, 1 | SER_OUT)
-#define SER_OUT_BOOL(n)               SER_BOOL(n, 1, 1 | SER_OUT)
-#define SER_OUT_STR(n)                SER_STR(n, 1, 1 | SER_OUT)
-#define SER_OUT_STRUCT(n, t)          SER_STRUCT(n, 1, 1 | SER_OUT, t)
-#define SER_OUT_DYN_ARRAY(n, t)       SER_DYN_ARRAY(n, 1, 1 | SER_OUT, t)
-
-#define SER_OUT_UINT8_PTR(n)          SER_UINT8_PTR(n, 1, 1 | SER_OUT)
-#define SER_OUT_UINT16_PTR(n)         SER_UINT16_PTR(n, 1, 1 | SER_OUT)
-#define SER_OUT_UINT32_PTR(n)         SER_UINT32_PTR(n, 1, 1 | SER_OUT)
-#define SER_OUT_BOOL_PTR(n)           SER_BOOL_PTR(n, 1, 1 | SER_OUT)
-#define SER_OUT_STR_PTR(n)            SER_STR_PTR(n, 1, 1 | SER_OUT)
-#define SER_OUT_DYN_ARRAY_PTR(n, t)   SER_DYN_ARRAY_PTR(n, 1, 1 | SER_OUT)
-
-
+#define SER_OUT_UINT8(n, x)           SER_UINT8_FLAGS(n, x, SER_OUT)
+#define SER_OUT_UINT16(n, x)          SER_UINT16_FLAGS(n, x, SER_OUT)
+#define SER_OUT_UINT32(n, x)          SER_UINT32_FLAGS(n, x, SER_OUT)
+#define SER_OUT_BOOL(n, x)            SER_BOOL_FLAGS(n, x, SER_OUT)
+#define SER_OUT_STR(n, x)             SER_STR_FLAGS(n, x, SER_OUT)
+#define SER_OUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_OUT, t)
+#define SER_OUT_DYN_ARRAY(n, t)       SER_DYN_ARRAY_FLAGS(n, SER_OUT, t)
 
         // Serialization Info to skip in
 
-#define SER_INOUT_UINT8(n)            SER_UINT8(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_UINT16(n)           SER_UINT16(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_UINT32(n)           SER_UINT32(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_BOOL(n)             SER_BOOL(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_STR(n)              SER_STR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_STRUCT(n, t)        SER_STRUCT(n, 1, 1 | SER_IN_OUT, t)
-#define SER_INOUT_DYN_ARRAY(n, t)     SER_DYN_ARRAY(n, 1, 1 | SER_IN_OUT, t)
-
-#define SER_INOUT_UINT8_PTR(n)        SER_UINT8_PTR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_UINT16_PTR(n)       SER_UINT16_PTR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_UINT32_PTR(n)       SER_UINT32_PTR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_BOOL_PTR(n)         SER_BOOL_PTR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_STR_PTR(n)          SER_STR_PTR(n, 1, 1 | SER_IN_OUT)
-#define SER_INOUT_DYN_ARRAY_PTR(n, t) SER_DYN_ARRAY_PTR(n, 1, 1 | SER_IN_OUT)
+#define SER_INOUT_UINT8(n, x)           SER_UINT8_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_UINT16(n, x)          SER_UINT16_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_UINT32(n, x)          SER_UINT32_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_BOOL(n, x)            SER_BOOL_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_STR(n, x)             SER_STR_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_IN | SER_OUT, t)
+#define SER_INOUT_DYN_ARRAY(n, t)       SER_DYN_ARRAY_FLAGS(n, SER_IN | SER_OUT, t)
 
 
-/*
-#define SER_RET_VAL_UINT8 (n)\
-	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint8, NULL}
-#define SER_RET_VAL_UINT16 (n)\
-	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint16, NULL}
-#define SER_RET_VAL_UINT32(n)\
-	{(n), 1, 1 | SER_RET_VAL, do_serialize_uint32, NULL}
-#define SER_RET_VAL_BOOL(n)\
-	{(n), 1, 1 | SER_RET_VAL, do_serialize_bool, NULL}
-
-#define SER_RET_VAL_UINT8_PTR (n)\
-	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint8, NULL}
-#define SER_RET_VAL_UINT16_PTR (n)\
-	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint16, NULL}
-#define SER_RET_VAL_UINT32_PTR(n)\
-	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_uint32, NULL}
-#define SER_RET_VAL_BOOL_PTR(n)\
-	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_bool, NULL}
-
-#define SER_RET_VAL_STR(n)\
-	{(n), SER_RET_VAL_PTR | 1, 1 | SER_RET_VAL, do_serialize_string, NULL}
-
-#define SER_RET_VAL_STRUCT_PTR(n, t)\
-	{(n), SER_PTR | 1, 1 | SER_RET_VAL, do_serialize_struct, t##_TypeItems}
-
-
-*/
+        // TypeInfo structures for base types
 
 #define SER_TYPEINFO_UINT8 \
 XmlSerializerInfo uint8_TypeInfo[] = {\
-    SER_UINT8("uint8", 1, 1), \
-    {NULL, 0, 0, NULL, NULL} \
+    SER_UINT8("uint8", 1), \
+    SER_NULL \
 }
 #define SER_TYPEINFO_UINT16 \
 XmlSerializerInfo uint16_TypeInfo[] = {\
-    SER_UINT16("uint16", 1, 1), \
-    {NULL, 0, 0, NULL, NULL} \
+    SER_UINT16("uint16", 1), \
+    SER_NULL \
 }
 #define SER_TYPEINFO_UINT32 \
 XmlSerializerInfo uint32_TypeInfo[] = {\
-    SER_UINT32("uint32", 1, 1), \
-    {NULL, 0, 0, NULL, NULL} \
+    SER_UINT32("uint32", 1), \
+    SER_NULL \
 }
 #define SER_TYPEINFO_BOOL \
 XmlSerializerInfo bool_TypeInfo[] = {\
-    SER_BOOL("bool", 1, 1), \
-    {NULL, 0, 0, NULL, NULL} \
+    SER_BOOL("bool", 1), \
+    SER_NULL \
 }
 #define SER_TYPEINFO_STRING \
 XmlSerializerInfo string_TypeInfo[] = { \
-    SER_STR("string", 1, 1), \
-    {NULL, 0, 0, NULL, NULL} \
+    SER_STR("string", 1), \
+    SER_NULL \
 }
 
 
 
-#define SER_TYPE_STRUCT(n, t) \
-XmlSerializerInfo t##_TypeInfo[] = {\
-    {(n), 1, 1, do_serialize_struct, t##_TypeItems}, \
-    {NULL, 0, 0, NULL, NULL}\
-}
 
-
-#define SER_START_ITEMS(n, t) \
-XmlSerializerInfo t##_TypeItems[] = {
-
-#define SER_END_ITEMS(n, t)\
-	{NULL, 0, 0, NULL, NULL} };\
-	SER_TYPE_STRUCT(n, t)
+        // Define to declare TypeInfo for structures
 
 #define SER_DECLARE_TYPE(t)\
 extern XmlSerializerInfo t##_TypeInfo[];\
 extern XmlSerializerInfo t##_TypeItems[]
+
+
+        // Defines to define TypeInfo for structures
+
+#define SER_START_ITEMS(n, t) \
+XmlSerializerInfo t##_TypeItems[] = \
+{
+
+#define SER_END_ITEMS(n, t)\
+	SER_NULL \
+};\
+XmlSerializerInfo t##_TypeInfo[] = {\
+    SER_STRUCT_FLAGS(n, 1, 0, t), \
+    SER_NULL \
+}
+
+
 
 
 
@@ -287,14 +230,35 @@ int do_serialize_uint8(struct __XmlSerializationData* data);
 int do_serialize_uint16(struct __XmlSerializationData* data);
 int do_serialize_uint32(struct __XmlSerializationData* data);
 int do_serialize_string(struct __XmlSerializationData* data);
-int do_serialize_char_array(struct __XmlSerializationData* data);
+//int do_serialize_char_array(struct __XmlSerializationData* data);
 int do_serialize_bool(struct __XmlSerializationData* data);
-int do_serialize_fixed_size_array(struct __XmlSerializationData* data);
+//int do_serialize_fixed_size_array(struct __XmlSerializationData* data);
 int do_serialize_dyn_size_array(struct __XmlSerializationData* data);
 int do_serialize_struct(struct __XmlSerializationData* data);
 
 
+
+
         // Serializer user interface
+
+int ws_serialize(WsContextH cntx, 
+                WsXmlNodeH xmlNode, 
+                XML_TYPE_PTR dataPtr, 
+                XmlSerializerInfo *info, 
+                char *name, 
+                char *nameNs, 
+                char *elementNs, 
+                int output);
+
+void *ws_deserialize(WsContextH cntx, 
+                WsXmlNodeH xmlParent, 
+                XmlSerializerInfo *info, 
+                char *name, 
+                char *nameNs, 
+                char *elementNs, 
+                int index, 
+                int output);
+
 
 
 int ws_serialize_str(WsContextH cntx, 
@@ -323,27 +287,11 @@ unsigned long ws_deserialize_uint32(
                 char *nameNs, 
                 char *name);
 
-int ws_serialize(WsContextH cntx, 
-                WsXmlNodeH xmlNode, 
-                XML_TYPE_PTR dataPtr, 
-                XmlSerializerInfo *info, 
-                char *name, 
-                char *nameNs, 
-                char *elementNs, 
-                int output);
-
 int ws_serializer_free_mem(WsContextH cntx, 
                 XML_TYPE_PTR buf, 
                 XmlSerializerInfo *info);
 
-void *ws_deserialize(WsContextH cntx, 
-                WsXmlNodeH xmlParent, 
-                XmlSerializerInfo *info, 
-                char *name, 
-                char *nameNs, 
-                char *elementNs, 
-                int index, 
-                int output);
+
 
 
 

@@ -60,9 +60,9 @@
 // It can be used in calls to WsSerialize and WsDeserialize 
 //
 SER_START_ITEMS("IdentifyResponse", wsmid_identify)
-SER_STR("ProtocolVersion", 1, 1), 
-SER_STR("ProductVendor", 1, 1),
-SER_STR("ProductVersion", 1, 1),
+SER_STR("ProtocolVersion", 1), 
+SER_STR("ProductVendor", 1),
+SER_STR("ProductVersion", 1),
 SER_END_ITEMS("IdentifyResponse", wsmid_identify);
 
 

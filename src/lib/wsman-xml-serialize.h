@@ -45,13 +45,14 @@
 #define XML_SMODE_BINARY_SIZE	3
 #define XML_SMODE_XML_SIZE		4 // reserved
 #define XML_SMODE_FREE_MEM		5 
+#define XML_SMODE_SKIP          6 
 
 struct __XmlSerializationData
 {
 	//XML_TYPE_PTR appData;
 	WsContextH cntx;
 	XML_TYPE_PTR elementBuf; 
-	//int elementBufSize;
+	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
 	char* ns;
 	char* name; // optional can be NULL
@@ -66,6 +67,16 @@ struct __XmlSerializationData
 };
 typedef struct __XmlSerializationData XmlSerializationData;
 
+#define DATA_SIZE(d) (d)->elementInfo->size
+#define DATA_COUNT(d) (d)->elementInfo->count
+#define DATA_ALL_SIZE(d) (DATA_SIZE(d) * DATA_COUNT(d))
+#define DATA_MUST_BE_SKIPPED(d) ( \
+    (data->mode == XML_SMODE_SKIP) || \
+    ((d->mode == XML_SMODE_SERIALIZE) && XML_IS_IN(d->elementInfo)) || \
+    ((d->mode == XML_SMODE_DESERIALIZE) && XML_IS_OUT(d->elementInfo)) \
+)
+
+
 
 struct __NameAliase
 {
@@ -79,7 +90,7 @@ typedef struct __NameAliase NameAliase;
 
 void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
 
-int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
+//int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
 
 void* ws_serializer_alloc(WsContextH cntx, int size);
 //int do_serializer_free(WsContextH cntx, void* ptr);
