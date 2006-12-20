@@ -33,7 +33,7 @@ SER_TYPEINFO_STRING;
 SER_START_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem)
 SER_STR("NameFormat", 1),
 SER_STR("test", 2),
-SER_DYN_ARRAY("foo", string),
+SER_DYN_ARRAY("foo", 1, 100, string),
 SER_END_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem);
 
 

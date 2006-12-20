@@ -80,11 +80,12 @@ typedef int (*XmlSerializationProc)(struct __XmlSerializationData* data);
 struct __XmlSerializerInfo
 {
     char* name;
-    size_t count; /**< Maximal Count */
-    size_t size;          /**< size of serialized/deserialized element */
-    unsigned int flags; /**< Minimal Count */
+    size_t mincount;    /**< Minimal Count */
+    size_t count;       /**< Maximal Count */
+    size_t size;        /**< size of serialized/deserialized element */
+    unsigned int flags; /**< flags */
     XmlSerializationProc proc; /**< Serialization Processor */
-    XML_TYPE_PTR extData; /**< External Data */
+    XML_TYPE_PTR extData;      /**< External Data */
 };
 typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
@@ -103,23 +104,23 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define XML_IS_HEAD(x)  ((x)->flags & SER_HEAD)
 
 
-#define SER_NULL {NULL, 0, 0, 0, NULL, NULL}
+#define SER_NULL {NULL, 0, 0, 0, 0, NULL, NULL}
         // Serializer Info base defines
 
 #define SER_UINT8_FLAGS(n, x, flags) \
-	{(n), (x),  sizeof (XML_TYPE_UINT8), flags, do_serialize_uint8, NULL}
+	{(n), (x), (x),  sizeof (XML_TYPE_UINT8), flags, do_serialize_uint8, NULL}
 #define SER_UINT16_FLAGS(n, x, flags) \
-	{(n), (x), sizeof (XML_TYPE_UINT16), flags, do_serialize_uint16, NULL}
+	{(n), (x), (x), sizeof (XML_TYPE_UINT16), flags, do_serialize_uint16, NULL}
 #define SER_UINT32_FLAGS(n, x, flags) \
-	{(n), (x), sizeof (XML_TYPE_UINT32), flags, do_serialize_uint32, NULL}
+	{(n), (x), (x), sizeof (XML_TYPE_UINT32), flags, do_serialize_uint32, NULL}
 #define SER_BOOL_FLAGS(n, x, flags) \
-	{(n), (x), sizeof (XML_TYPE_BOOL), flags, do_serialize_bool, NULL}
+	{(n), (x), (x), sizeof (XML_TYPE_BOOL), flags, do_serialize_bool, NULL}
 #define SER_STR_FLAGS(n, x, flags)\
-    {(n), (x), sizeof (XML_TYPE_STR), flags, do_serialize_string, NULL}
+    {(n), (x), (x), sizeof (XML_TYPE_STR), flags, do_serialize_string, NULL}
 #define SER_STRUCT_FLAGS(n, x, flags, t)\
-    {(n), (x), sizeof (t), flags, do_serialize_struct, t##_TypeItems}
-#define SER_DYN_ARRAY_FLAGS(n, flags, t)\
-    {(n), 1, sizeof (XmlSerialiseDynamicSizeData), flags, \
+    {(n), (x), (x), sizeof (t), flags, do_serialize_struct, t##_TypeItems}
+#define SER_DYN_ARRAY_FLAGS(n, min, max, flags, t)\
+    {(n), (min), (max), sizeof (XmlSerialiseDynamicSizeData), flags, \
          do_serialize_dyn_size_array, t##_TypeInfo \
     }
 
@@ -131,7 +132,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_BOOL(n, x)                SER_BOOL_FLAGS(n, x, 0)
 #define SER_STR(n, x)                 SER_STR_FLAGS(n, x, 0)
 #define SER_STRUCT(n, x, t)           SER_STRUCT_FLAGS(n, x, 0, t)
-#define SER_DYN_ARRAY(n, t)           SER_DYN_ARRAY_FLAGS(n, 0, t)
+#define SER_DYN_ARRAY(n, mn, mx, t)   SER_DYN_ARRAY_FLAGS(n, mn, mx, 0, t)
 
 
         // Serialization Info to skip in 
@@ -142,7 +143,8 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_IN_BOOL(n, x)             SER_BOOL_FLAGS(n, x, SER_IN)
 #define SER_IN_STR(n, x)              SER_STR_FLAGS(n, x, SER_IN)
 #define SER_IN_STRUCT(n, x, t)        SER_STRUCT_FLAGS(n, x, SER_IN, t)
-#define SER_IN_DYN_ARRAY(n, t)        SER_DYN_ARRAY_FLAGS(n, SER_IN, t)
+#define SER_IN_DYN_ARRAY(n, mn, mx, t)  \
+                                      SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN, t)
 
 
         // Serialization Info to skip in 
@@ -152,7 +154,8 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_OUT_BOOL(n, x)            SER_BOOL_FLAGS(n, x, SER_OUT)
 #define SER_OUT_STR(n, x)             SER_STR_FLAGS(n, x, SER_OUT)
 #define SER_OUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_OUT, t)
-#define SER_OUT_DYN_ARRAY(n, t)       SER_DYN_ARRAY_FLAGS(n, SER_OUT, t)
+#define SER_OUT_DYN_ARRAY(n, mn, mx, t)   \
+                                      SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_OUT, t)
 
         // Serialization Info to skip in
 
@@ -162,7 +165,9 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_INOUT_BOOL(n, x)            SER_BOOL_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_STR(n, x)             SER_STR_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_IN | SER_OUT, t)
-#define SER_INOUT_DYN_ARRAY(n, t)       SER_DYN_ARRAY_FLAGS(n, SER_IN | SER_OUT, t)
+#define SER_INOUT_DYN_ARRAY(n, mn, mx, t)  \
+                             SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN | SER_OUT, t)
+
 
 
         // TypeInfo structures for base types
