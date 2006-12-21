@@ -98,6 +98,8 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_HEAD          0x1000
 
 #define XML_NUM_OCCURS(x) (x)->count
+#define XML_MAX_OCCURS(x) (x)->count
+#define XML_MIN_OCCURS(x) (x)->mincount
 #define XML_IS_SKIP(x) ((x)->flags & SER_SKIP)
 #define XML_IS_IN(x)   ((x)->flags & SER_IN)
 #define XML_IS_OUT(x)  ((x)->flags & SER_OUT)

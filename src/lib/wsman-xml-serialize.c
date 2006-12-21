@@ -180,16 +180,27 @@ do_serialize_uint(XmlSerializationData * data, int valSize)
 {
     WsXmlNodeH      child;
     unsigned long   tmp;
-    int             retVal = 0;
+    int             retVal = DATA_ALL_SIZE(data);
 
     TRACE_ENTER;
     debug("handle %d UINT%d %s;", DATA_COUNT(data),
         8 * valSize, data->elementInfo->name);
+    if (DATA_BUF(data) + retVal > data->stopper) {
+        debug("size of %d structures %s exceeds stopper (%p > %p)",
+                DATA_COUNT(data), DATA_ELNAME(data),
+                DATA_BUF(data) + retVal, data->stopper);
+        return WS_ERR_INVALID_PARAMETER;
+    }
+    if (DATA_MUST_BE_SKIPPED(data)) {
+        DATA_BUF(data) = DATA_BUF(data) + retVal;
+        return retVal;
+    }
     if (data->mode == XML_SMODE_FREE_MEM) {
         goto DONE;
     }
     if ((data->mode != XML_SMODE_DESERIALIZE &&
              data->mode != XML_SMODE_SERIALIZE)) {
+        debug("invalid mode %d", data->mode);
         retVal = WS_ERR_INVALID_PARAMETER;
         goto DONE;
     }
@@ -207,12 +218,15 @@ do_serialize_uint(XmlSerializationData * data, int valSize)
             else if (valSize == 4)
                 tmp = *((XML_TYPE_UINT32 *)data->elementBuf);
             else {
+                debug("unsupported uint size + %d", 8 * valSize);
                 retVal = WS_ERR_INVALID_PARAMETER;
                 goto DONE;
             }
 
             if (((child = xml_serializer_add_child(data, NULL)) == NULL) ||
                             (ws_xml_set_node_ulong(child, tmp)) != 0) {
+                debug("could not add child %s[%d]",
+                             DATA_ELNAME(data), data->index);
                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
                 goto DONE;
             }
@@ -221,11 +235,14 @@ do_serialize_uint(XmlSerializationData * data, int valSize)
              char  *str;
 
             if ((child = xml_serializer_get_child(data)) == NULL) {
-                // just move data->elementBuf
-                data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
-                continue;
+                debug("not enough (%d < %d) instances of element %s",
+                       data->index, DATA_COUNT(data), DATA_ELNAME(data));
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
             }
             if ((str = ws_xml_get_node_text(child)) == NULL) {
+                debug("No text of node %s[%d]",
+                             DATA_ELNAME(data), data->index);
                 retVal = WS_ERR_XML_PARSING;
                 goto DONE;
             }
@@ -241,13 +258,20 @@ do_serialize_uint(XmlSerializationData * data, int valSize)
             } else if (valSize == 4) {
                 *((XML_TYPE_UINT32 *)data->elementBuf) = (XML_TYPE_UINT32)tmp;
             } else {
+                debug("unsupported uint size + %d", 8 * valSize);
                 retVal = WS_ERR_INVALID_PARAMETER;
                 goto DONE;
             }
         }
-        data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
+        DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
     }
-
+    if ((data->mode == XML_SMODE_DESERIALIZE) &&
+                            xml_serializer_get_child(data)) {
+        debug("too many (%d > %d) instances of element %s", data->index,
+                        DATA_COUNT(data), DATA_ELNAME(data));
+        retVal = WS_ERR_XML_PARSING;
+        goto DONE;
+    }
 DONE:
     TRACE_EXIT;
     return retVal;
@@ -260,19 +284,7 @@ DONE:
 int 
 do_serialize_uint8(XmlSerializationData* data)
 {
-    int retVal = DATA_ALL_SIZE(data);
-    if ((char *)data->elementBuf + retVal > data->stopper) {
-        return WS_ERR_INVALID_PARAMETER;
-    }
-    if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
-        return retVal;
-    }
-    int tmp = do_serialize_uint(data, sizeof(XML_TYPE_UINT8));
-    if (tmp < 0) {
-        retVal = tmp;
-    }
-    return retVal;
+    return  do_serialize_uint(data, sizeof(XML_TYPE_UINT8));
 }
 
 
@@ -284,23 +296,16 @@ do_serialize_uint16(XmlSerializationData* data)
         XML_TYPE_UINT16 b;
     } dummy;
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    size_t pad = (unsigned long)data->elementBuf % al;
+    size_t pad = (unsigned long)DATA_BUF(data) % al;
 
     if (pad) {
         pad = al - pad;
     }
-    int retVal = pad + DATA_ALL_SIZE(data);
-    if ((char *)data->elementBuf + retVal > data->stopper) {
-        return WS_ERR_INVALID_PARAMETER;
-    }
-    if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
-        return retVal;
-    }
-    data->elementBuf = (char *)data->elementBuf + pad;
-    int tmp = do_serialize_uint(data, sizeof(XML_TYPE_UINT16));
-    if (tmp < 0) {
-        retVal = tmp;
+
+    DATA_BUF(data) = DATA_BUF(data) + pad;
+    int retVal = do_serialize_uint(data, DATA_SIZE(data));
+    if (retVal >= 0) {
+        retVal += pad;
     }
     return retVal;
 }
@@ -317,18 +322,11 @@ do_serialize_uint32(XmlSerializationData* data)
     if (pad) {
         pad = al - pad;
     }
-    int retVal = pad + DATA_ALL_SIZE(data);
-    if ((char *)data->elementBuf + retVal > data->stopper) {
-        return WS_ERR_INVALID_PARAMETER;
-    }
-    if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
-        return retVal;
-    }
-    data->elementBuf = (char *)data->elementBuf + pad;
-    int tmp = do_serialize_uint(data, sizeof(XML_TYPE_UINT32));
-    if (retVal < 0) {
-        retVal = tmp;
+
+    DATA_BUF(data) = DATA_BUF(data) + pad;
+    int retVal = do_serialize_uint(data, DATA_SIZE(data));
+    if (retVal >= 0) {
+        retVal += pad;
     }
     return retVal;
 }
@@ -445,39 +443,27 @@ do_serialize_string(XmlSerializationData * data)
     debug("handle %d strings %s = %p", DATA_COUNT(data),
                     data->elementInfo->name, data->elementBuf);
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    size_t pad = (unsigned long)data->elementBuf % al;
+    size_t pad = (unsigned long)DATA_BUF(data) % al;
     if (pad) {
         pad = al - pad;
     }
     retVal += pad;
-    if ((char *)data->elementBuf + retVal > data->stopper) {
+    if (DATA_BUF(data) + retVal > data->stopper) {
         return WS_ERR_INVALID_PARAMETER;
     }
     if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
+        data->elementBuf = DATA_BUF(data) + retVal;
         return retVal;
     }
-    data->elementBuf = (char *)data->elementBuf + pad;
+    DATA_BUF(data) = DATA_BUF(data) + pad;
     debug("adjusted elementBuf = %p", data->elementBuf);
 
-#if 0
-    if (XML_IS_PTR(data->elementInfo)) {
-        if (data->mode == XML_SMODE_SERIALIZE) {
-            retVal = ws_serilize_string_array(data);
-        } else if (data->mode == XML_SMODE_DESERIALIZE) {
-            retVal = ws_deserilize_string_array(data);
-        } else {
-            retVal = WS_ERR_INVALID_PARAMETER;
-        }
-        goto DONE;
-    }
-#endif
     for (data->index = 0; data->index < DATA_COUNT(data); data->index++) {
         if (data->mode == XML_SMODE_FREE_MEM) {
-             xml_serializer_free(data, data->elementBuf);
-            *((XML_TYPE_STR *)data->elementBuf) = NULL;
+             xml_serializer_free(data, DATA_BUF(data));
+            *(XML_TYPE_STR *)DATA_BUF(data) = NULL;
         } else if (data->mode == XML_SMODE_SERIALIZE) {
-            char *valPtr = *((char **)data->elementBuf);
+            char *valPtr = *((char **)DATA_BUF(data));
             child = xml_serializer_add_child(data, valPtr);
             if (child == NULL) {
                 debug("xml_serializer_add_child failed.");
@@ -490,9 +476,10 @@ do_serialize_string(XmlSerializationData * data)
             }
         } else if (data->mode == XML_SMODE_DESERIALIZE) {
             if ((child = xml_serializer_get_child(data)) == NULL) {
-                // no such node. just move pointer
-                data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
-                continue;
+                debug("not enough (%d < %d) instances of element %s",
+                       data->index, DATA_COUNT(data), DATA_ELNAME(data));
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
             }
 
             char *src = ws_xml_get_node_text(child);
@@ -505,15 +492,21 @@ do_serialize_string(XmlSerializationData * data)
                     goto DONE;
                 }
                 strncpy(dstPtr, src, dstSize);
-                *((XML_TYPE_PTR *)data->elementBuf) = dstPtr;
+                *((XML_TYPE_PTR *)DATA_BUF(data)) = dstPtr;
             }
 	    } else {
             retVal = WS_ERR_INVALID_PARAMETER;
             goto DONE;
         }
-        data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
+        DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
     }
-
+    if ((data->mode == XML_SMODE_DESERIALIZE) &&
+                            xml_serializer_get_child(data)) {
+        debug("too many (%d > %d) instances of element %s", data->index,
+                        DATA_COUNT(data), DATA_ELNAME(data));
+        retVal = WS_ERR_XML_PARSING;
+        goto DONE;
+    }
 DONE:
     TRACE_EXIT;
     return retVal;
@@ -586,7 +579,7 @@ do_serialize_char_array(XmlSerializationData* data)
 int
 do_serialize_bool(XmlSerializationData * data)
 {
-    int             retVal = DATA_ALL_SIZE(data);
+    int  retVal = DATA_ALL_SIZE(data);
     typedef struct {
         XML_TYPE_UINT8 a;
         XML_TYPE_BOOL b;
@@ -594,32 +587,31 @@ do_serialize_bool(XmlSerializationData * data)
 
     TRACE_ENTER;
     debug("handle %d booleans %s; ptr = %p", DATA_COUNT(data),
-                    data->elementInfo->name, data->elementBuf);
+                    DATA_ELNAME(data), DATA_BUF(data));
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    size_t pad = (unsigned long)data->elementBuf % al;
+    size_t pad = (unsigned long)DATA_BUF(data) % al;
     if (pad) {
         pad = al - pad;
     }
     retVal += pad;
-    if ((char *)data->elementBuf + retVal > data->stopper) {
+    if (DATA_BUF(data) + retVal > data->stopper) {
         return WS_ERR_INVALID_PARAMETER;
     }
     if (DATA_MUST_BE_SKIPPED(data) ||
         data->mode == XML_SMODE_FREE_MEM) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
+        data->elementBuf = DATA_BUF(data) + retVal;
         return retVal;
     }
-    data->elementBuf = (char *)data->elementBuf + pad;
+    DATA_BUF(data) = DATA_BUF(data) + pad;
     debug("adjusted elementBuf = %p", data->elementBuf);
 
     for (data->index = 0; data->index < DATA_COUNT(data); data->index++) {
-        debug("%s[%d] = %p", data->elementInfo->name, data->index,
-                        data->elementBuf); 
+        debug("%s[%d] = %p", DATA_ELNAME(data), data->index, DATA_BUF(data));
         if (data->mode == XML_SMODE_SERIALIZE) {
             WsXmlNodeH      child;
             XML_TYPE_BOOL   tmp;
 
-            tmp = *((XML_TYPE_BOOL *) data->elementBuf);	
+            tmp = *((XML_TYPE_BOOL *)DATA_BUF(data));	
             if ((child = xml_serializer_add_child(data,
                          (tmp==0) ? "false" : "true")) == NULL) {
                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
@@ -627,12 +619,13 @@ do_serialize_bool(XmlSerializationData * data)
             }
         } else if (data->mode == XML_SMODE_DESERIALIZE) {
             WsXmlNodeH      child;
-            XML_TYPE_PTR    dataPtr = data->elementBuf;
+            XML_TYPE_PTR    dataPtr = (XML_TYPE_PTR)DATA_BUF(data);
 
             if ((child = xml_serializer_get_child(data)) == NULL) {
-                // no data. default is false
-                data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
-                continue;
+                debug("not enough (%d < %d) instances of element %s",
+                       data->index, DATA_COUNT(data), DATA_ELNAME(data));
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
             }
             XML_TYPE_BOOL  tmp = -1;
             char           *src = ws_xml_get_node_text(child);
@@ -661,7 +654,14 @@ do_serialize_bool(XmlSerializationData * data)
             retVal = WS_ERR_INVALID_PARAMETER;
             goto DONE;
         }
-        data->elementBuf = (char *)data->elementBuf + DATA_SIZE(data);
+        DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
+    }
+    if ((data->mode == XML_SMODE_DESERIALIZE) &&
+                            xml_serializer_get_child(data)) {
+        debug("too many (%d > %d) instances of element %s", data->index,
+                        DATA_COUNT(data), DATA_ELNAME(data));
+        retVal = WS_ERR_XML_PARSING;
+        goto DONE;
     }
 DONE:
     TRACE_EXIT;
@@ -765,15 +765,14 @@ DONE:
 #endif
 
 
-XmlSerialiseDynamicSizeData* 
-make_dyn_size_data(XmlSerializationData* data)
+static XmlSerialiseDynamicSizeData* 
+make_dyn_size_data(XmlSerializationData* data, int *retValp)
 {
     XmlSerialiseDynamicSizeData* dyn =
                 (XmlSerialiseDynamicSizeData*)data->elementBuf;
     TRACE_ENTER;
 
-    debug("name = <%s>, elname = <%s>",
-            data->name, data->elementInfo->name);
+    debug("name = <%s>, elname = <%s>", data->name, DATA_ELNAME(data));
     int savedIndex = data->index;
     data->index = 0;
     while (xml_serializer_get_child(data) != NULL ) {
@@ -781,7 +780,20 @@ make_dyn_size_data(XmlSerializationData* data)
     }
     dyn->count = data->index;
     data->index = savedIndex;
-
+    if (dyn->count < DATA_MIN_COUNT(data)) {
+        debug("not enough (%d < %d) elements %s", dyn->count,
+               DATA_MIN_COUNT(data), DATA_ELNAME(data)); 
+        *retValp = WS_ERR_XML_PARSING;
+        dyn = NULL;
+        goto DONE;
+    }
+    if ((DATA_MAX_COUNT(data) > 0) && dyn->count > DATA_MAX_COUNT(data)) {
+        debug("too many (%d > %d) elements %s", dyn->count,
+               DATA_MAX_COUNT(data), DATA_ELNAME(data)); 
+        *retValp = WS_ERR_XML_PARSING;
+        dyn = NULL;
+        goto DONE;
+    }
     debug("count = %d", dyn->count);
     if (dyn->count == 0) {
         goto DONE;
@@ -790,6 +802,7 @@ make_dyn_size_data(XmlSerializationData* data)
     int size = DATA_SIZE(data) * dyn->count;
     dyn->data = xml_serializer_alloc(data, size, 1);
     if (dyn->data == NULL) {
+        *retValp = WS_ERR_INSUFFICIENT_RESOURCES;
         dyn = NULL;
     }
 
@@ -815,18 +828,18 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
     if (pad) {
         pad = al - pad;
     }
-    int  retVal = sizeof(XmlSerialiseDynamicSizeData) + pad;
-    if ((char *)data->elementBuf + retVal > data->stopper) {
+    int  retVal = DATA_SIZE(data) + pad;
+    if (DATA_BUF(data) + retVal > data->stopper) {
         return WS_ERR_INVALID_PARAMETER;
     }
     if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
+        DATA_BUF(data) = DATA_BUF(data) + retVal;
         return retVal;
     }
-    data->elementBuf = (char *)data->elementBuf + pad;
+    DATA_BUF(data) = DATA_BUF(data) + pad;
     debug("adjusted elementBuf = %p", data->elementBuf);
 
-    void *savedBufPtr = data->elementBuf;
+    char *savedBufPtr = DATA_BUF(data);
     XmlSerializerInfo *savedElementInfo = data->elementInfo;
 
     if (data->mode != XML_SMODE_SERIALIZE &&
@@ -839,13 +852,25 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
     XmlSerialiseDynamicSizeData *dyn = NULL;
 
     if (data->mode == XML_SMODE_DESERIALIZE) {
-        if ((dyn = make_dyn_size_data(data)) == NULL) {
-            retVal = WS_ERR_INSUFFICIENT_RESOURCES;
-                //TBD:      ? ? ? validation
+        if ((dyn = make_dyn_size_data(data, &retVal)) == NULL) {
             goto DONE;
         }
     } else {
         dyn = (XmlSerialiseDynamicSizeData *) data->elementBuf;
+        if (data->mode == XML_SMODE_SERIALIZE) {
+            if (dyn->count < DATA_MIN_COUNT(data)) {
+                debug("not enough (%d < %d) elements %s", dyn->count,
+                        DATA_MIN_COUNT(data), DATA_ELNAME(data)); 
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
+            }
+            if ((DATA_MAX_COUNT(data) > 0) && dyn->count > DATA_MAX_COUNT(data)) {
+                debug("too many (%d > %d) elements %s", dyn->count,
+                        DATA_MAX_COUNT(data), DATA_ELNAME(data)); 
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
+            }
+        }
     }
 
     if ((data->mode == XML_SMODE_FREE_MEM) && dyn->data) {
@@ -868,14 +893,14 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
 
     data->stopper = (char *)dyn->data + DATA_SIZE(data) * dyn->count;
     data->elementInfo = &myinfo;
-    data->elementBuf = dyn->data;
+    DATA_BUF(data) = dyn->data;
     data->index = 0;
 
     debug("dyn = %p, dyn->data = %p", dyn, dyn->data);
     tmp = data->elementInfo->proc(data);
 
     data->index = savedIndex;
-    data->elementBuf = savedBufPtr;
+    DATA_BUF(data) = savedBufPtr;
     data->elementInfo = savedElementInfo;
     data->stopper = savedStopper;
     if (tmp < 0) {
@@ -884,8 +909,7 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
         goto DONE;
     }
 DONE:
-    data->elementBuf = (char *)data->elementBuf +
-                sizeof (XmlSerialiseDynamicSizeData);
+    DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
     TRACE_EXIT;
     return retVal;
 }
@@ -927,20 +951,24 @@ do_serialize_struct(XmlSerializationData * data)
             goto DONE;
     }
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    size_t pad = (unsigned long)data->elementBuf % al;
+    size_t pad = (unsigned long)DATA_BUF(data) % al;
     if (pad) {
         pad = al - pad;
     }
     retVal = pad + XML_IS_HEAD(savedElement) ?
                            DATA_SIZE(data) :DATA_ALL_SIZE(data);
-    if ((char *)data->elementBuf + retVal > data->stopper) {
+    if ((char *)DATA_BUF(data) + retVal > data->stopper) {
+        debug("size of %d structures %s exceeds stopper (%p > %p)",
+                DATA_COUNT(data), DATA_ELNAME(data),
+                (char *)DATA_BUF(data) + retVal, data->stopper);
         return WS_ERR_INVALID_PARAMETER;
     }
     if (DATA_MUST_BE_SKIPPED(data)) {
-        data->elementBuf = (char *)data->elementBuf + retVal;
+        debug(" %d elements %s skipped", DATA_COUNT(data), DATA_ELNAME(data));
+        DATA_BUF(data) = DATA_BUF(data) + retVal;
         return retVal;
     }
-    data->elementBuf = (char *)data->elementBuf + pad;
+    DATA_BUF(data) = DATA_BUF(data) + pad;
     debug("adjusted ptr= %p", data->elementBuf);
 
     while (elements[elementCount].proc != NULL) {
@@ -959,32 +987,29 @@ do_serialize_struct(XmlSerializationData * data)
     char *savedLocalElementBuf;
     for (; data->index < count; data->index++) {
         savedLocalIndex = data->index;
-        savedLocalElementBuf = (char *)data->elementBuf;
+        savedLocalElementBuf = DATA_BUF(data);
         data->stopper = savedLocalElementBuf + DATA_SIZE(data);
-        debug("%s[%d] = %p", data->elementInfo->name,
-                data->index, data->elementBuf);
+        debug("%s[%d] = %p", DATA_ELNAME(data), data->index, DATA_BUF(data));
         if (data->mode == XML_SMODE_SERIALIZE) {
             data->xmlNode = xml_serializer_add_child(data, NULL);
             if (data->xmlNode == NULL) {
+                debug("cant add child");
                 retVal = WS_ERR_INSUFFICIENT_RESOURCES;
                 goto DONE;
             }
         } else {
             if ((data->xmlNode = xml_serializer_get_child(data)) == NULL) {
-                if (XML_IS_HEAD(savedElement)) {
-                    // first structure must be
-                    retVal = WS_ERR_INVALID_PARAMETER;
-                    goto DONE;
-                }
-                // no data, skip
-                goto CONTINUE;
+                debug("not enough (%d < %d) instances of element %s",
+                       data->index, DATA_COUNT(data), DATA_ELNAME(data));
+                retVal = WS_ERR_XML_PARSING;
+                goto DONE;
             }
         }
 
         int tmp = 0;
 
         debug("before for loop. Struct %s = %p",
-                        savedElement->name, data->elementBuf);
+                        savedElement->name, DATA_BUF(data));
 
         for (i = 0; retVal > 0 && i < elementCount; i++) {
             data->elementInfo = &elements[i];
@@ -1000,18 +1025,18 @@ do_serialize_struct(XmlSerializationData * data)
             tmp = data->elementInfo->proc(data);
 
             if (tmp < 0) {
+                debug("handling element %s failed = %d", DATA_ELNAME(data), tmp);
                 retVal = tmp;
                 goto DONE;
             }
         }
-CONTINUE:
         data->elementInfo = savedElement;
         data->elementBuf = savedLocalElementBuf + struct_size;
         data->index = savedLocalIndex;
         data->mode = savedMode;
         data->xmlNode = savedXmlNode;
     }
-    debug("after for loop");
+    TRACE_DETAILS("after for loop");
 DONE:
     data->stopper = savedStopper;
     data->elementInfo = savedElement;
@@ -1113,7 +1138,7 @@ int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo*
             NULL);
 
     if ( (retVal = info->proc(&data)) >= 0 ) {
-        xml_serializer_free(&data, buf);		
+        xml_serializer_free(&data, buf);
     }
     TRACE_EXIT;
     return retVal;

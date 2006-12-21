@@ -51,7 +51,7 @@ struct __XmlSerializationData
 {
 	//XML_TYPE_PTR appData;
 	WsContextH cntx;
-	XML_TYPE_PTR elementBuf; 
+	char *elementBuf; 
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
 	char* ns;
@@ -69,12 +69,16 @@ typedef struct __XmlSerializationData XmlSerializationData;
 
 #define DATA_SIZE(d) (d)->elementInfo->size
 #define DATA_COUNT(d) (d)->elementInfo->count
+#define DATA_MAX_COUNT(d) (d)->elementInfo->count
+#define DATA_MIN_COUNT(d) (d)->elementInfo->mincount
 #define DATA_ALL_SIZE(d) (DATA_SIZE(d) * DATA_COUNT(d))
 #define DATA_MUST_BE_SKIPPED(d) ( \
     (data->mode == XML_SMODE_SKIP) || \
     ((d->mode == XML_SMODE_SERIALIZE) && XML_IS_IN(d->elementInfo)) || \
     ((d->mode == XML_SMODE_DESERIALIZE) && XML_IS_OUT(d->elementInfo)) \
 )
+#define DATA_ELNAME(d) ((d)->elementInfo->name)
+#define DATA_BUF(d) ((d)->elementBuf)
 
 
 
@@ -108,7 +112,7 @@ WsXmlNodeH xml_serializer_add_child(XmlSerializationData *data, char *value);
 
 WsXmlNodeH xml_serializer_get_child(XmlSerializationData *data);
 
-XmlSerialiseDynamicSizeData *make_dyn_size_data(XmlSerializationData *data);
+//XmlSerialiseDynamicSizeData *make_dyn_size_data(XmlSerializationData *data);
 /*
 void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cntx, 
 			XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode,
