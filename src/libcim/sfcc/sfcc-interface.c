@@ -899,14 +899,15 @@ add_cim_location ( WsXmlNodeH resource,
 
 CMCIClient *
 cim_connect_to_cimom(char *cim_host,
+                     char *cim_port,
                      char *cim_host_userid, 
                      char *cim_host_passwd, 
                      WsmanStatus *status)
 {
 
   CMPIStatus rc;
-  CMCIClient *cimclient = cmciConnect(cim_host, NULL, DEFAULT_HTTP_CIMOM_PORT,
-                                      cim_host_userid, cim_host_passwd, &rc);
+  CMCIClient *cimclient = cmciConnect(cim_host, NULL, cim_port,
+                                     cim_host_userid, cim_host_passwd, &rc);
   if (cimclient == NULL) {
     debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
   }

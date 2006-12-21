@@ -75,5 +75,7 @@ void set_config( void *self, dictionary *config );
 char *get_cim_namespace(void);
 
 hash_t* get_vendor_namespaces(void);
+char *get_cim_host(void);
+char *get_cim_port(void);
 
 #endif // __CIM_DATA_H__

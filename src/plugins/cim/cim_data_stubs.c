@@ -67,7 +67,8 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
   wsman_status_init(&status);
   r = wsman_get_resource_uri(cntx, NULL);
   debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
-  cimclient->cc = (void *)cim_connect_to_cimom( "localhost", username, password , &status);
+  cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
+                get_cim_port(), username, password , &status);
   cimclient->namespaces = get_vendor_namespaces();
   cimclient->selectors = wsman_get_selector_list(cntx, NULL);
   cimclient->requested_class = wsman_get_class_name(cntx);

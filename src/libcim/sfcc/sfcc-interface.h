@@ -15,7 +15,7 @@ CMPICount cim_enum_totalItems (CMPIArray * enumArr);
 
 void cim_release_enum_context( WsEnumerateInfo* enumInfo );
 
-CMCIClient* cim_connect_to_cimom( char *cim_host, 
+CMCIClient* cim_connect_to_cimom( char *cim_host, char *cim_port,
 	char *cim_host_userid, 
 	char *cim_host_passwd, WsmanStatus *status);
 
