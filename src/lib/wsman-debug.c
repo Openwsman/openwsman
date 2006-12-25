@@ -58,3 +58,19 @@ wsman_debug_level_debugged(debug_level_e level)
 }
 
 
+void
+wsman_debug_message_handler(const char *str, debug_level_e level, void *user_data)
+{
+    if (wsman_debug_level_debugged(level)) {
+        struct tm      *tm;
+        time_t          now;
+        char            timestr[128];
+
+        time(&now);
+        tm = localtime(&now);
+        strftime(timestr, 128, "%b %e %T", tm);
+        fprintf(stderr, "%s  %s\n", timestr, str);
+    }
+}
+
+
