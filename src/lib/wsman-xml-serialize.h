@@ -74,8 +74,8 @@ typedef struct __XmlSerializationData XmlSerializationData;
 #define DATA_ALL_SIZE(d) (DATA_SIZE(d) * DATA_COUNT(d))
 #define DATA_MUST_BE_SKIPPED(d) ( \
     (data->mode == XML_SMODE_SKIP) || \
-    ((d->mode == XML_SMODE_SERIALIZE) && XML_IS_IN(d->elementInfo)) || \
-    ((d->mode == XML_SMODE_DESERIALIZE) && XML_IS_OUT(d->elementInfo)) \
+    ((d->mode == XML_SMODE_SERIALIZE) && XML_IS_OUT(d->elementInfo)) || \
+    ((d->mode == XML_SMODE_DESERIALIZE) && XML_IS_IN(d->elementInfo)) \
 )
 #define DATA_ELNAME(d) ((d)->elementInfo->name)
 #define DATA_BUF(d) ((d)->elementBuf)
