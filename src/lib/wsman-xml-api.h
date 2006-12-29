@@ -102,7 +102,7 @@ char *ws_xml_get_xpath_value (WsXmlDocH doc, char *expression);
 
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
-void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
+int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 

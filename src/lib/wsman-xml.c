@@ -324,7 +324,7 @@ void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  * @param dstNode Destination XML node
  * @param srcNode Source XML node
  */
-void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
+int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
     int i;
     WsXmlNodeH child;
@@ -332,6 +332,7 @@ void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
     {
         ws_xml_duplicate_tree(dstNode, child);
     }
+    return i;
 }
 
 
@@ -342,16 +343,22 @@ void ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  */
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
-    if ( srcNode && dstNode )
-    {
-        WsXmlNodeH node = ws_xml_add_child(dstNode, ws_xml_get_node_name_ns(srcNode),
-                ws_xml_get_node_local_name(srcNode), ws_xml_get_node_text(srcNode)); 
-
-        ws_xml_duplicate_attr(node, srcNode);
-
-        if ( node ) {
-            ws_xml_duplicate_children(node, srcNode);
-        }
+    if (!srcNode || !dstNode) {
+        error("NULL arguments: dst = %p; src = %p", dstNode, srcNode);
+        return;
+    }
+    WsXmlNodeH node = ws_xml_add_child(dstNode,
+                    ws_xml_get_node_name_ns(srcNode),
+                    ws_xml_get_node_local_name(srcNode), NULL);
+    if (!node) {
+        error("could not add node");
+        return;
+    }
+    ws_xml_duplicate_attr(node, srcNode);
+    int i = ws_xml_duplicate_children(node, srcNode);
+    if (i == 0) {
+        // no children
+        ws_xml_set_node_text(node, ws_xml_get_node_text(srcNode));
     }
 }
 
