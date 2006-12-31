@@ -45,7 +45,7 @@ if test $want_SFCC = yes; then
                 AC_FIND_FILE([CimClientLib/cimcClient.h], $SFCC_incdirs, SFCC_incdir)
                 ac_SFCC_includes="$SFCC_incdir"
 
-                SFCC_libdirs="/usr/lib${libsuff} /usr/local/lib /usr/sfcc/lib /usr/local/sfcc/lib $prefix/lib $exec_prefix/lib"
+                SFCC_libdirs="/usr/lib${libsuff} /usr/local/lib${libsuff} /usr/sfcc/lib /usr/local/sfcc/lib $prefix/lib${libsuff} $exec_prefix/lib${libsuff}"
                 if test ! "$ac_SFCC_libraries" = "NO"; then
                         SFCC_libdirs="$ac_SFCC_libraries $SFCC_libdirs"
                 fi

@@ -2,8 +2,6 @@
 #include <wsman_config.h>
 #endif
 
-
-
 #include <u/os.h>
 #ifndef HAVE_SYSLOG
 
@@ -17,7 +15,7 @@
 
 void vsyslog(int priority, const char *fmt, va_list ap)
 {
-    #define KLONED_WIN_LOGFILE "kloned.log"
+    #define WSMAND_WIN_LOGFILE "wsmand.log"
     enum { BUFSZ = 1024 };
     static FILE *df = NULL, *lock = NULL;
     char buf[BUFSZ];
@@ -26,8 +24,8 @@ void vsyslog(int priority, const char *fmt, va_list ap)
     /* first time open the log file and the lock file */
     if(df == NULL)
     {
-        df = fopen(KLONED_WIN_LOGFILE, "a+");
-        lock = fopen(KLONED_WIN_LOGFILE ".lock", "a+");
+        df = fopen(WSMAND_WIN_LOGFILE, "a+");
+        lock = fopen(WSMAND_WIN_LOGFILE ".lock", "a+");
         if(df == NULL || lock == NULL)
             exit(1);
     }
@@ -69,6 +67,6 @@ void syslog(int priority, const char *fmt, ...)
 #else /* ifndef HAVE_SYSLOG */
 #include <syslog.h>
 #include <stdarg.h>
-void syslog(int priority, const char *fmt, ...);
-void vsyslog(int priority, const char *fmt, va_list args);
+//void syslog(int priority, const char *fmt, ...);
+//void vsyslog(int priority, const char *fmt, va_list args);
 #endif 

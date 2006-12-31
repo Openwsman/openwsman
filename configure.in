@@ -270,6 +270,21 @@ AC_SUBST(PACKAGE_AUTH_DIR)
 
 
 
+
+CHECK_SFCC
+dnl have_sfcc=no
+
+AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [],[have_sfcc=yes])
+AM_CONDITIONAL(BUILD_LIBCIM, test "$have_sfcc" == "yes")
+
+have_cunit=no
+AC_CHECK_HEADERS([CUnit/Basic.h], have_cunit="yes" )
+
+AM_CONDITIONAL(BUILD_CUNIT_TESTS, test "$have_cunit" == "yes")
+
+
+
+
 dnl *************************************
 dnl *** Warnings to show if using GCC ***
 dnl *************************************
@@ -289,18 +304,6 @@ if test "$os_win32" != yes; then
 	# Use reentrant functions (FIXME!)
 	CFLAGS="$CFLAGS -D_REENTRANT"
 fi
-
-
-CHECK_SFCC
-have_sfcc=no
-
-AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [],[have_sfcc=yes])
-AM_CONDITIONAL(BUILD_LIBCIM, test "$have_sfcc" == "yes")
-
-have_cunit=no
-AC_CHECK_HEADERS([CUnit/Basic.h], have_cunit="yes" )
-
-AM_CONDITIONAL(BUILD_CUNIT_TESTS, test "$have_cunit" == "yes")
 
 dnl *************************
 dnl *** Output Everything ***

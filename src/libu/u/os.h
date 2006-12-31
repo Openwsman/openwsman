@@ -14,13 +14,9 @@
 #include <u/strtok_r.h>
 
 
-#if defined _WIN32 && ! defined __CYGWIN__
+#if defined WIN32 && ! defined __CYGWIN__
 #define strcasecmp      stricmp
 #define strncasecmp     strnicmp
-#endif /* _WIN32 */
-
-
-#ifdef WIN32
 
 #include <windows.h>
 #include <wtypes.h>
