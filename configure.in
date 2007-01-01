@@ -274,7 +274,7 @@ AC_SUBST(PACKAGE_AUTH_DIR)
 CHECK_SFCC
 dnl have_sfcc=no
 
-AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [],[have_sfcc=yes])
+AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc="yes"],[have_sfcc="no"])
 AM_CONDITIONAL(BUILD_LIBCIM, test "$have_sfcc" == "yes")
 
 have_cunit=no
