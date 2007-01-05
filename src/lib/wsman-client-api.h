@@ -184,6 +184,10 @@ extern          "C" {
 				                     
 	WsXmlDocH       ws_transfer_put(WsManClient * cl, char *resource_uri, void *data,
 		                    actionOptions options);
+		                    
+	WsXmlDocH		ws_transfer_put_serialized(WsManClient * cl,
+           					char *resource_uri, void *data, void *typeInfo, 
+           					actionOptions options);		                    
 		                     
 	WsXmlDocH       ws_transfer_get_and_put(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
