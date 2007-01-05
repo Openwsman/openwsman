@@ -496,34 +496,59 @@ wsman_client_create_request(WsManClient * cl,
 
 
 
+static          WsXmlDocH
+_ws_transfer_create(WsManClient * cl,
+		    char *resource_uri,
+		    void *data,
+		    void *typeInfo,
+		    actionOptions options)
+{
+	WsXmlDocH       response;
+	WsXmlDocH       request = wsman_client_create_request(cl, WSMAN_ACTION_TRANSFER_CREATE,
+					 NULL, resource_uri, options, NULL);
+	if (data && typeInfo) {
+		char           *class = u_strdup(strrchr(resource_uri, '/') + 1);
+		ws_serialize(cl->wscntx, ws_xml_get_soap_body(request), data, (XmlSerializerInfo *) typeInfo,
+			     class, resource_uri, resource_uri, 1);
+		ws_serializer_free_mem(cl->wscntx, data, (XmlSerializerInfo *) typeInfo);
+		u_free(class);
+	} else if (data != NULL) {
+		if (wsman_is_valid_xml_envelope((WsXmlDocH) data)) {
+			WsXmlNodeH      body = ws_xml_get_soap_body((WsXmlDocH) data);
+			ws_xml_duplicate_tree(ws_xml_get_soap_body(request), ws_xml_get_child(body, 0, NULL, NULL));
+		} else {
+			ws_xml_duplicate_tree(ws_xml_get_soap_body(request), ws_xml_get_doc_root((WsXmlDocH) data));
+		}
+	}
+	if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+	}
+	if (wsman_send_request(cl, request)) {
+		ws_xml_destroy_doc(request);
+		return NULL;
+	}
+	response = wsman_build_envelope_from_response(cl);
+	ws_xml_destroy_doc(request);
+	return response;
+}
+
 WsXmlDocH
 ws_transfer_create(WsManClient * cl,
            char *resource_uri,
-           void *data,       
-           actionOptions options)
+           void *data, 
+           actionOptions options) 
 {
-    WsXmlDocH       response;
-    WsXmlDocH       request = wsman_client_create_request(cl, WSMAN_ACTION_TRANSFER_CREATE,
-                     NULL, resource_uri, options, NULL);
-                
-   if (data ) {  
-    	if (wsman_is_valid_xml_envelope( (WsXmlDocH)data ) ) {  
-    		WsXmlNodeH body = ws_xml_get_soap_body( (WsXmlDocH )data);
-			ws_xml_duplicate_tree(ws_xml_get_soap_body(request), ws_xml_get_child(body, 0, NULL, NULL));
-    	} else {
-    		ws_xml_duplicate_tree(ws_xml_get_soap_body(request), ws_xml_get_doc_root( (WsXmlDocH )data));
-    	}
-    }
-    if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-    	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
-    }
-    if (wsman_send_request(cl, request)) {
-        ws_xml_destroy_doc(request);
-        return NULL;
-    }
-    response = wsman_build_envelope_from_response(cl);
-    ws_xml_destroy_doc(request);
-    return response;
+	return _ws_transfer_create(cl, resource_uri, data, NULL, options);	
+}
+
+WsXmlDocH
+ws_transfer_create_serialized(WsManClient * cl,
+           char *resource_uri,
+           void *data, 
+           void *typeInfo,
+           actionOptions options) 
+{
+	return _ws_transfer_create(cl, resource_uri, data, typeInfo, options);	
 }
 
 

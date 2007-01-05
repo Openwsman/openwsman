@@ -191,6 +191,10 @@ extern          "C" {
 	WsXmlDocH       ws_transfer_create(WsManClient * cl, char *resourceUri,
 				                 void *data, actionOptions options);
 				                     
+	WsXmlDocH		ws_transfer_create_serialized(WsManClient * cl,
+           					char *resource_uri, void *data, void *typeInfo, 
+           					actionOptions options);			
+           						                     
 	WsXmlDocH       ws_transfer_delete(WsManClient * cl, char *resourceUri,
 				                     actionOptions options);
 				                     
