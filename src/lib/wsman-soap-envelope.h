@@ -100,7 +100,6 @@ void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 
 char* wsman_get_action(WsContextH cntx, WsXmlDocH doc);
 
-
 char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
 int wsman_is_fault_envelope(WsXmlDocH doc);
@@ -116,4 +115,9 @@ void wsman_set_polymorph_mode(WsContextH cntx,
                               WsXmlDocH doc,
                               WsEnumerateInfo *enumInfo);
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
+
+void            wsman_add_namespace_as_selector(WsXmlDocH doc,
+					                  char *_namespace);
+					                  
+
 #endif

@@ -848,6 +848,21 @@ wsman_set_estimated_total(WsXmlDocH in_doc,
 	return;
 }
 
+
+
+void
+wsman_add_namespace_as_selector(WsXmlDocH doc,
+                char *_namespace)
+{
+    WsXmlNodeH      header = ws_xml_get_soap_header(doc);
+    wsman_add_selector(header,
+               CIM_NAMESPACE_SELECTOR, _namespace);
+
+    return;
+}
+
+
+
 int
 wsman_is_identify_request(WsXmlDocH doc)
 {
