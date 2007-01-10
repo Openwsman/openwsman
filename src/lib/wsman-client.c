@@ -1021,6 +1021,7 @@ wsman_create_client(const char *hostname,
     }
     wsc->wscntx = ws_create_runtime(NULL);
 
+    wsc->data.scheme = strdup(scheme ? scheme : "http");
     wsc->data.hostName = hostname ? strdup(hostname) : strdup("localhost");
     wsc->data.port = port;
     wsc->data.path = strdup(path ? path : "/wsman");
@@ -1043,6 +1044,10 @@ void
 wsman_release_client(WsManClient * cl)
 {
 
+    if (cl->data.scheme) {
+	u_free(cl->data.scheme);
+	cl->data.scheme = NULL;
+    }
     if (cl->data.hostName) {
         u_free(cl->data.hostName);
         cl->data.hostName = NULL;
