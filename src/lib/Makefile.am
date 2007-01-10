@@ -8,6 +8,7 @@ wsmaninclude_HEADERS = \
 	wsman-debug.h \
 	wsman-errors.h \
 	wsman-xml-api.h \
+	wsman-client.h  \
 	wsman-client-api.h \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h \
@@ -29,7 +30,6 @@ OWSMAN_INCLUDES = \
 	wsman-xml.h \
 	wsman-xml-binding.h \
 	wsman-xml-serialize.h \
-	wsman-client.h  \
 	wsman-soap-message.h \
 	$(wsmaninclude_HEADERS)
 
