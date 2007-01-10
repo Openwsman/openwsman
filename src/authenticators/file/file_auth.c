@@ -59,7 +59,7 @@ int initialize(void *arg) {
         return 1;
     }
     filename = (char *)arg;
-    debug("Basic File authentecation uses password file: %s", filename);
+    debug("Basic File authentication uses password file: %s", filename);
 
     fp = fopen(filename, "r");
     if (fp == NULL) {
