@@ -7,6 +7,9 @@ libwsman_file_auth_la_SOURCES = \
 INCLUDES = -I$(top_srcdir)/src/lib \
 	   -I$(top_srcdir)/src/libu
 
+#if LIBCRYPT
+libwsman_file_auth_la_LIBADD = -lcrypt
+#endif
 
 libwsman_file_auth_la_LIBADD = $(CRYPT_LIBS)
 
