@@ -51,12 +51,12 @@
 static char*
 wsman_make_action(char *uri, char *op_name)
 {
-	int             len = strlen(uri) + strlen(op_name) + 2;
-	char           *ptr = (char *) malloc(len);
-	if (ptr) {
-		sprintf(ptr, "%s/%s", uri, op_name);
-	}
-	return ptr;
+    int     len = strlen(uri) + strlen(op_name) + 2;
+    char    *ptr = (char *) malloc(len);
+    if (ptr) {
+        sprintf(ptr, "%s/%s", uri, op_name);
+    }
+    return ptr;
 }
 
 
@@ -74,12 +74,15 @@ wsman_create_doc(WsContextH cntx, char *rootname)
     return ws_xml_create_doc(cntx->soap, NULL, rootname);
 }
 
-//Obsoleted
+
+    // Access to client elements
+
 long
-wsman_get_client_response_code(WsManClient * cl)
+wsman_get_client_response_code(WsManClient * cl)  //Obsoleted
 {
     return wsman_client_get_response_code(cl);
 }
+
 
 long
 wsman_client_get_response_code(WsManClient * cl)
@@ -98,6 +101,56 @@ wsman_client_get_context(WsManClient * cl)
 {
     return cl->wscntx;
 }
+
+
+char *
+wsman_client_get_hostname(WsManClient * cl)
+{
+    return cl->data.hostName;
+}
+
+
+unsigned int
+wsman_client_get_port(WsManClient * cl)
+{
+    return cl->data.port;
+}
+
+char *
+wsman_client_get_scheme(WsManClient * cl)
+{
+    return cl->data.scheme;
+}
+
+
+char *
+wsman_client_get_path(WsManClient * cl)
+{
+    return cl->data.path;
+}
+
+
+char *
+wsman_client_get_user(WsManClient * cl)
+{
+    return cl->data.user;
+}
+
+
+char *
+wsman_client_get_endpoint(WsManClient * cl)
+{
+    return cl->data.endpoint;
+}
+
+
+
+
+
+
+
+
+
 
 WsXmlDocH
 wsman_client_read_file(WsManClient * cl, char *filename,
