@@ -464,7 +464,7 @@ wsman_identify_stub(SoapOpH op,
 	} else {
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
-			 NULL, (char *) info->data, (char *) info->data, 1);
+             WSMID_IDENTIFY_RESPONSE, (char *) info->data, (char *) info->data, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
 	}
 
@@ -876,7 +876,7 @@ ws_transfer_get_stub(SoapOpH op,
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
-			 NULL, (char *) info->data, (char *) info->data, 1);
+			 TRANSFER_GET_RESP, (char *) info->data, (char *) info->data, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
 	}
 
