@@ -21,20 +21,15 @@ struct __CIM_ComputerSystem {
     XmlSerialiseDynamicSizeData foo;
 };
 typedef struct __CIM_ComputerSystem CIM_ComputerSystem;
-/*
-struct __XmlSerializerInfo foo_TypeInfo[] =
-{
-      SER_STR("foo", 1, 1)
-};
-*/
+
 
 SER_TYPEINFO_STRING;
 
-SER_START_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem)
+SER_START_ITEMS(CIM_ComputerSystem)
 SER_STR("NameFormat", 1),
 SER_STR("test", 2),
 SER_DYN_ARRAY("foo", 1, 100, string),
-SER_END_ITEMS("CIM_ComputerSystem", CIM_ComputerSystem);
+SER_END_ITEMS(CIM_ComputerSystem);
 
 
 #define NS "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"

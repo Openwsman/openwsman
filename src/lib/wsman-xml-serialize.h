@@ -40,12 +40,12 @@
 //struct __XmlSerializationTypeInfo;
 //struct __XmlSerializerInfo;
 
-#define XML_SMODE_SERIALIZE		1
-#define XML_SMODE_DESERIALIZE	2
-#define XML_SMODE_BINARY_SIZE	3
-#define XML_SMODE_XML_SIZE		4 // reserved
-#define XML_SMODE_FREE_MEM		5 
-#define XML_SMODE_SKIP          6 
+#define XML_SMODE_SERIALIZE     1
+#define XML_SMODE_DESERIALIZE   2
+#define XML_SMODE_BINARY_SIZE   3
+#define XML_SMODE_XML_SIZE      4 // reserved
+#define XML_SMODE_FREE_MEM      5
+#define XML_SMODE_SKIP          6
 
 struct __XmlSerializationData
 {

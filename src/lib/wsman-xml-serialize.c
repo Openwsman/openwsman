@@ -30,6 +30,7 @@
 
 /** 
  * @author Eugene Yarmosh
+ * @author Vadim Revyakin
  */
 
 #ifdef HAVE_CONFIG_H
@@ -90,12 +91,13 @@ WsXmlNodeH
 xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = (data->name) ? data->name : data->elementInfo->name;
+    char *ns   = (data->elementInfo->ns) ? data->elementInfo->ns : data->ns;
     WsXmlNodeH node;
     TRACE_ENTER;
     debug("data->name = %s; data->elementInfo->name = %s",
                 data->name, data->elementInfo->name);
     debug("name = %s; value(%p) = %s", name, value, value);
-    node = ws_xml_add_child(data->xmlNode, data->ns, name, value); 
+    node = ws_xml_add_child(data->xmlNode, ns, name, value); 
     TRACE_EXIT;
     return node;
 }
@@ -107,13 +109,14 @@ xml_serializer_get_child(XmlSerializationData* data)
 {
     WsXmlNodeH node;
     char* name = (data->name) ? data->name : data->elementInfo->name;
+    char *ns   = (data->elementInfo->ns) ? data->elementInfo->ns : data->ns;
     TRACE_ENTER;
     debug("name = %s; elname = %s", data->name,
                                     data->elementInfo->name);
-    debug("name = %s in %s [%d]", name,
+    debug("name = %s:%s in %s [%d]", ns, name,
                     ws_xml_get_node_local_name(data->xmlNode),
                     data->index);
-    node = ws_xml_get_child(data->xmlNode, data->index, data->ns, name);
+    node = ws_xml_get_child(data->xmlNode, data->index, ns, name);
 
     if ( g_NameNameAliaseTable ) {
         int index = 0;
@@ -122,7 +125,7 @@ xml_serializer_get_child(XmlSerializationData* data)
             if ( !strcmp(g_NameNameAliaseTable[index].name, name) )
                 node = ws_xml_get_child(data->xmlNode, 
                         data->index, 
-                        data->ns, 
+                        ns, 
                         g_NameNameAliaseTable[index].aliase);
             index++;
         }
@@ -131,6 +134,115 @@ xml_serializer_get_child(XmlSerializationData* data)
                 node, node?ws_xml_get_node_local_name(node):"");
     TRACE_EXIT;
     return node;
+}
+
+
+
+static int
+handle_attrs(struct __XmlSerializationData* data,
+             WsXmlNodeH node,
+             size_t sz)
+{
+    int ret = 0;
+    char *savedBufPtr = DATA_BUF(data);
+
+    TRACE_ENTER;
+    if (!XML_IS_ATTRS(data->elementInfo)) {
+        debug("No attrs");
+        goto DONE;
+    }
+
+    typedef struct {
+        XML_TYPE_UINT8 a;
+        XML_NODE_ATTR * b;
+    } dummy;
+
+    DATA_BUF(data) = DATA_BUF(data) + sz;
+    size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
+    size_t pad = (unsigned long)DATA_BUF(data) % al;
+    if (pad) {
+        pad = al - pad;
+    }
+    DATA_BUF(data) = DATA_BUF(data) + pad;
+    debug("alligned databuf = %p", DATA_BUF(data));
+
+    if (data->mode == XML_SMODE_SERIALIZE) {
+        XML_NODE_ATTR *attrs = *((XML_NODE_ATTR **)DATA_BUF(data));
+        while (attrs) {
+            debug("add attr. %s:%s = %s",
+                    attrs->ns, attrs->name, attrs->value);
+            if (ws_xml_add_node_attr(node,
+                    attrs->ns, attrs->name, attrs->value) == NULL) {
+                error("could not add attr. %s:%s = %s",
+                    attrs->ns, attrs->name, attrs->value);
+                ret = 1;
+                goto DONE;
+            }
+            attrs = attrs->next;
+        }
+        goto DONE;
+    }
+    // XML_SMODE_DESERIALIZE
+    int i;
+    XML_NODE_ATTR **attrsp = (XML_NODE_ATTR **)DATA_BUF(data);
+    XML_NODE_ATTR *attr;
+    WsXmlAttrH xmlattr;
+    char   *src, *dstPtr;
+    int    dstSize;
+    *attrsp = NULL;
+    for (i = 0; i < ws_xml_get_node_attr_count(node); i++) {
+        attr = xml_serializer_alloc(data, sizeof (XML_NODE_ATTR), 1);
+        if (attr == NULL) {
+            error("no memory");
+            ret = 1;
+            goto DONE;
+        }
+        xmlattr = ws_xml_get_node_attr(node, i);
+        if (xmlattr == NULL) {
+            error("could not get attr %d", i);
+            ret = 1;
+            goto DONE;
+        }
+        src = ws_xml_get_attr_ns(xmlattr);
+        if (!(src == NULL || *src == 0)) {
+            dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
+            if (dstPtr == NULL) {
+                error("no memory");
+                ret = 1;
+                goto DONE;
+            }
+            strncpy(dstPtr, src, dstSize);
+            attr->ns = dstPtr;
+        }
+        src = ws_xml_get_attr_name(xmlattr);
+        if (!(src == NULL || *src == 0)) {
+            dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
+            if (dstPtr == NULL) {
+                error("no memory");
+                ret = 1;
+                goto DONE;
+            }
+            strncpy(dstPtr, src, dstSize);
+            attr->name = dstPtr;
+        }
+        src = ws_xml_get_attr_value(xmlattr);
+        if (!(src == NULL || *src == 0)) {
+            dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
+            if (dstPtr == NULL) {
+                error("no memory");
+                ret = 1;
+                goto DONE;
+            }
+            strncpy(dstPtr, src, dstSize);
+            attr->value = dstPtr;
+        }
+        attr->next = *attrsp;
+        *attrsp = attr;
+    }
+DONE:
+    DATA_BUF(data) = savedBufPtr;
+    TRACE_EXIT;
+    return ret;
 }
 
 
@@ -337,6 +449,8 @@ do_serialize_string(XmlSerializationData * data)
     }
     retVal += pad;
     if (DATA_BUF(data) + retVal > data->stopper) {
+        error("stopper: %p > %p",
+                   DATA_BUF(data) + retVal, data->stopper);
         return WS_ERR_INVALID_PARAMETER;
     }
     if (DATA_MUST_BE_SKIPPED(data)) {
@@ -376,6 +490,7 @@ do_serialize_string(XmlSerializationData * data)
                 int    dstSize = 1 + strlen(src);
                 dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
                 if (dstPtr == NULL) {
+                    error("no memory");
                     retVal = WS_ERR_INSUFFICIENT_RESOURCES;
                     goto DONE;
                 }
@@ -383,9 +498,11 @@ do_serialize_string(XmlSerializationData * data)
                 *((XML_TYPE_PTR *)DATA_BUF(data)) = dstPtr;
             }
 	    } else {
+            error("invalid mode");
             retVal = WS_ERR_INVALID_PARAMETER;
             goto DONE;
         }
+        handle_attrs(data, child, sizeof (XML_TYPE_STR));
         DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
     }
     if ((data->mode == XML_SMODE_DESERIALIZE) &&
@@ -496,7 +613,6 @@ DONE:
 
 
 
-
 static XmlSerialiseDynamicSizeData* 
 make_dyn_size_data(XmlSerializationData* data, int *retValp)
 {
@@ -526,7 +642,7 @@ make_dyn_size_data(XmlSerializationData* data, int *retValp)
         dyn = NULL;
         goto DONE;
     }
-    debug("count = %d", dyn->count);
+    debug("count = %d of %d sizes", dyn->count, DATA_SIZE(data));
     if (dyn->count == 0) {
         goto DONE;
     }
@@ -534,6 +650,7 @@ make_dyn_size_data(XmlSerializationData* data, int *retValp)
     int size = DATA_SIZE(data) * dyn->count;
     dyn->data = xml_serializer_alloc(data, size, 1);
     if (dyn->data == NULL) {
+        error("no memory");
         *retValp = WS_ERR_INSUFFICIENT_RESOURCES;
         dyn = NULL;
     }
@@ -617,13 +734,15 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
     memcpy(&myinfo, savedElementInfo->extData, sizeof(XmlSerializerInfo));
     myinfo.count = dyn->count;
     myinfo.name = data->elementInfo->name;
+    myinfo.ns  = data->elementInfo->ns;
 
     data->stopper = (char *)dyn->data + DATA_SIZE(data) * dyn->count;
     data->elementInfo = &myinfo;
     DATA_BUF(data) = dyn->data;
     data->index = 0;
 
-    debug("dyn = %p, dyn->data = %p", dyn, dyn->data);
+    debug("dyn = %p, dyn->data = %p + 0x%x",
+                  dyn, dyn->data, DATA_SIZE(data) * dyn->count);
     tmp = data->elementInfo->proc(data);
 
     data->index = savedIndex;

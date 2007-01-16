@@ -56,14 +56,14 @@
 //
 // ************ Serialization type information for resource ************
 //
-// It creates an array of items with name StateDescription_TypeInfo 
+// It creates an array of items with name wsmid_identify_TypeInfo 
 // It can be used in calls to WsSerialize and WsDeserialize 
 //
-SER_START_ITEMS("IdentifyResponse", wsmid_identify)
+SER_START_ITEMS(wsmid_identify)
 SER_STR("ProtocolVersion", 1), 
 SER_STR("ProductVendor", 1),
 SER_STR("ProductVersion", 1),
-SER_END_ITEMS("IdentifyResponse", wsmid_identify);
+SER_END_ITEMS(wsmid_identify);
 
 
 // ************** Array of end points for resource ****************

@@ -53,8 +53,8 @@ hash_t *vendor_namespaces = NULL;
 char *cim_host = "localhost";
 char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
 
-SER_START_ITEMS("CIM", CimResource)
-SER_END_ITEMS("CIM", CimResource);
+SER_START_ITEMS(CimResource)
+SER_END_ITEMS(CimResource);
 
 START_END_POINTS(CimResource)
   END_POINT_TRANSFER_GET_RAW(CimResource, XML_NS_CIM_CLASS),
