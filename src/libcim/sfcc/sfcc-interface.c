@@ -799,10 +799,8 @@ xml2instance( CMPIInstance *instance,
   CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
 
   int numproperties = instance->ft->getPropertyCount(instance, NULL);
-  debug( "properties: %d", numproperties);
-  debug("class: %s namespace: %s", (char *)classname->hdl, resourceUri );
+  // debug( "properties: %d", numproperties);
 
-  //WsXmlNodeH r = ws_xml_get_child(body, 0, NULL, NULL);
   WsXmlNodeH r = ws_xml_get_child(body, 0, resourceUri, (char *)classname->hdl);
        
   if (numproperties) {
@@ -810,14 +808,11 @@ xml2instance( CMPIInstance *instance,
       CMPIString * propertyname;
       CMPIData data = instance->ft->getPropertyAt(instance,
                                                 i, &propertyname, NULL);
-      debug( "property: %s", (char *)propertyname->hdl);
-      /*
+      // debug( "property: %s", (char *)propertyname->hdl);
       WsXmlNodeH child  = ws_xml_get_child(r, 0,
                                  resourceUri, (char *)propertyname->hdl);
-                                 */
-      WsXmlNodeH child  = ws_xml_get_child(r, i, NULL, NULL );
       char *value =  ws_xml_get_node_text(child);
-      debug( "property value: %s", value);
+      // debug( "property value: %s", value);
       if (value) {
         xml2property(instance, data, (char *)propertyname->hdl, value );
       }
