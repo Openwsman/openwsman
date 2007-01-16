@@ -166,6 +166,10 @@ handle_attrs(struct __XmlSerializationData* data,
     DATA_BUF(data) = DATA_BUF(data) + pad;
     debug("alligned databuf = %p", DATA_BUF(data));
 
+    if (data->mode == XML_SMODE_FREE_MEM) {
+            // XXXXX   free memory 
+        goto DONE;
+    }
     if (data->mode == XML_SMODE_SERIALIZE) {
         XML_NODE_ATTR *attrs = *((XML_NODE_ATTR **)DATA_BUF(data));
         while (attrs) {
@@ -205,6 +209,7 @@ handle_attrs(struct __XmlSerializationData* data,
         }
         src = ws_xml_get_attr_ns(xmlattr);
         if (!(src == NULL || *src == 0)) {
+            dstSize = 1 + strlen(src);
             dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
             if (dstPtr == NULL) {
                 error("no memory");
@@ -216,6 +221,7 @@ handle_attrs(struct __XmlSerializationData* data,
         }
         src = ws_xml_get_attr_name(xmlattr);
         if (!(src == NULL || *src == 0)) {
+            dstSize = 1 + strlen(src);
             dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
             if (dstPtr == NULL) {
                 error("no memory");
@@ -227,6 +233,7 @@ handle_attrs(struct __XmlSerializationData* data,
         }
         src = ws_xml_get_attr_value(xmlattr);
         if (!(src == NULL || *src == 0)) {
+            dstSize = 1 + strlen(src);
             dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
             if (dstPtr == NULL) {
                 error("no memory");
@@ -431,7 +438,7 @@ do_serialize_uint32(XmlSerializationData* data)
 int
 do_serialize_string(XmlSerializationData * data)
 {
-    WsXmlNodeH      child;
+    WsXmlNodeH      child = NULL;
     int             retVal = DATA_ALL_SIZE(data);
 
     typedef struct {
