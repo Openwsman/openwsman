@@ -41,7 +41,7 @@
 
 int wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
 
-int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc);
+// int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc);
 
 char* wsman_get_soap_header_value(SoapH soap, WsXmlDocH doc, char* nsUri, char* name);
 

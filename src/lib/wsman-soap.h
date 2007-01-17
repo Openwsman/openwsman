@@ -364,6 +364,8 @@ WsmanKnownStatusCode wsman_find_httpcode_for_value(WsXmlDocH doc);
 
 WsmanKnownStatusCode wsman_find_httpcode_for_fault_code(WsmanFaultCodeType faultCode);
 
+
+
 WsXmlDocH 
 wsman_generate_fault(
 		     WsContextH cntx,

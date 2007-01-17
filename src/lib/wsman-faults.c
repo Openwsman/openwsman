@@ -516,7 +516,6 @@ wsman_generate_notunderstood_fault( op_t* op,
             NULL
             );
 
-
     header = ws_xml_get_soap_header(op->out_doc);
 
     child = ws_xml_add_child(header, XML_NS_SOAP_1_2, "NotUnderstood", NULL);

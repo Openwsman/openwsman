@@ -144,7 +144,6 @@ WsXmlDocH
 wsman_build_inbound_envelope(SoapH soap,
 			     WsmanMessage * msg)
 {
-
 	WsXmlDocH       doc = ws_xml_read_memory(soap, u_buf_ptr(msg->request),
 					  u_buf_len(msg->request), NULL, 0);
 
@@ -152,17 +151,8 @@ wsman_build_inbound_envelope(SoapH soap,
 
 		if (wsman_is_identify_request(doc)) {
 			wsman_set_message_flags(msg, FLAG_IDENTIFY_REQUEST);
-			wsman_is_valid_envelope(msg, doc);
-			return doc;
 		}
 		wsman_is_valid_envelope(msg, doc);
-
-		if (wsman_is_duplicate_message_id(soap, doc) &&
-		    !wsman_fault_occured(msg)) {
-			wsman_set_fault(msg,
-				     WSA_INVALID_MESSAGE_INFORMATION_HEADER,
-				     WSA_DETAIL_DUPLICATE_MESSAGE_ID, NULL);
-		}
 	} else {
 		wsman_set_fault(msg,
 			   WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
@@ -318,59 +308,6 @@ wsman_build_soap_version_fault(SoapH soap)
 
 
 
-/**
- * Check for duplicate Message ID
- * @param  fw SOAP Framework handle
- * @param doc XML document
- * @return status
- */
-int
-wsman_is_duplicate_message_id(SoapH soap, WsXmlDocH doc)
-{
-	char           *msgId = wsman_get_soap_header_value(soap, doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
-
-	int             retVal = 0;
-	if (msgId) {
-		lnode_t        *node;
-		debug("Checking Message ID: %s", msgId);
-		u_lock(soap);
-		node = list_first(soap->processedMsgIdList);
-
-		while (node != NULL) {
-			if (!strcmp(msgId, (char *) node->list_data)) {
-				debug("Duplicate Message ID: %s", msgId);
-				retVal = 1;
-				break;
-			}
-			node = list_next(soap->processedMsgIdList, node);
-		}
-
-		if (!retVal) {
-			while (list_count(soap->processedMsgIdList) >=
-			       PROCESSED_MSG_ID_MAX_SIZE) {
-				node = list_del_first(soap->processedMsgIdList);
-				u_free(node->list_data);
-				u_free(node);
-			}
-
-			node = lnode_create(NULL);
-			if (node) {
-				node->list_data = u_str_clone(msgId);
-				if (node->list_data == NULL) {
-					u_free(node);
-				} else {
-					list_append(soap->processedMsgIdList, node);
-				}
-			}
-		}
-		u_unlock(soap);
-	} else {
-		debug("No MessageId found");
-	}
-	free(msgId);
-
-	return retVal;
-}
 
 
 /**
@@ -385,60 +322,40 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 {
 	int             retval = 1;
 	char           *soapNsUri;
+        WsXmlNodeH      header;
 	WsXmlNodeH      root = ws_xml_get_doc_root(doc);
-	WsXmlNodeH      header, node, selector;
-	int             index = 0;
-	hash_t         *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
 	if (strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) != 0) {
 		wsman_set_fault(msg,
 				WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0,
 				"No Envelope");
 		retval = 0;
+                debug("no envelope");
 		goto cleanup;
 	}
 	soapNsUri = ws_xml_get_node_name_ns(root);
 	if (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0) {
 		wsman_set_fault(msg, SOAP_FAULT_VERSION_MISMATCH, 0, NULL);
 		retval = 0;
+                debug("version mismatch");
 		goto cleanup;
 	}
 	if (ws_xml_get_soap_body(doc) == NULL) {
 		wsman_set_fault(msg,
 		      WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, "No Body");
 		retval = 0;
+                debug("no body");
 		goto cleanup;
 	}
-	header = ws_xml_get_soap_body(doc);
+	header = ws_xml_get_soap_header(doc);
 	if (!header) {
 		wsman_set_fault(msg,
 		    WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, "No Header");
 		retval = 0;
+                debug("no header");
 		goto cleanup;
 	}
-	node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-	if (node) {
-		while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
-			char           *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-			if (attrVal == NULL)
-				attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
-			if (attrVal) {
-				if (!hash_lookup(h, attrVal)) {
-					if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
-						error("hash_alloc_insert failed");
-					}
-				} else {
-					wsman_set_fault(msg,
-							WSMAN_INVALID_SELECTORS, WSMAN_DETAIL_DUPLICATE_SELECTORS, NULL);
-					retval = 0;
-					goto cleanup;
-
-				}
-			}
-		}
-	}
 cleanup:
-	hash_destroy(h);
 	return retval;
 }
 

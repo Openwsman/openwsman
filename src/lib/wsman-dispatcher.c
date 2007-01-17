@@ -146,12 +146,48 @@ wsman_generate_op_fault(op_t * op,
 	return;
 }
 
+
+
+
+static int 
+check_for_duplicate_selectors(op_t * op)
+{
+	WsXmlNodeH      header, node, selector;
+        int retval = 1;
+        int index = 0;
+        
+	header = wsman_get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
+	if ( (node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET) ) != NULL) {
+	    hash_t         *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+            while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
+                char           *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
+                attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+                if (!attrVal) 
+                    continue;
+                if (!hash_lookup(h, attrVal)) {
+                    if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
+                        error("hash_alloc_insert failed");
+                    }
+                } else {
+                    wsman_generate_op_fault(op, WSMAN_INVALID_SELECTORS, WSMAN_DETAIL_DUPLICATE_SELECTORS );
+                    retval = 0;
+                    break;
+
+                }
+            }
+            hash_free_nodes(h);
+	    hash_destroy(h);
+	}
+	return retval;
+}
+
 static int 
 validate_control_headers(op_t * op)
 {
 	unsigned long   size = 0;
-	WsXmlNodeH      header =
-	wsman_get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
+	WsXmlNodeH      header;
+        
+	header = wsman_get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
 	if (ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
 		size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
 		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
@@ -204,6 +240,66 @@ validate_mustunderstand_headers(op_t * op)
 	return child;
 }
 
+/**
+ * Check for duplicate Message ID
+ * @param op operation
+ * @return status
+ */
+static int
+wsman_is_duplicate_message_id(op_t * op)
+{
+	WsXmlNodeH header = wsman_get_soap_header_element(op->dispatch->fw,
+					 op->in_doc, NULL, NULL);
+	int             retVal = 0;
+        SoapH           soap;
+        WsXmlNodeH      msgIdNode;
+        soap = op->dispatch->fw;
+
+	if ( (msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) ) != NULL) {
+		lnode_t        *node;
+	        char           *msgId;
+
+                msgId = ws_xml_get_node_text(msgIdNode);
+		debug("Checking Message ID: %s", msgId);
+		u_lock(soap);
+		node = list_first(soap->processedMsgIdList);
+		while (node != NULL) {
+			if (!strcmp(msgId, (char *) node->list_data)) {
+				debug("Duplicate Message ID: %s", msgId);
+				retVal = 1;
+                                wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSA_DETAIL_DUPLICATE_MESSAGE_ID );
+				break;
+			}
+			node = list_next(soap->processedMsgIdList, node);
+		}
+
+		if (!retVal) {
+			while (list_count(soap->processedMsgIdList) >=
+			       PROCESSED_MSG_ID_MAX_SIZE) {
+				node = list_del_first(soap->processedMsgIdList);
+				u_free(node->list_data);
+				u_free(node);
+			}
+
+			node = lnode_create(NULL);
+			if (node) {
+				node->list_data = u_str_clone(msgId);
+				if (node->list_data == NULL) {
+					u_free(node);
+				} else {
+					list_append(soap->processedMsgIdList, node);
+				}
+			}
+		}
+		u_unlock(soap);
+	} else {
+                wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0 );
+		debug("No MessageId found");
+                return 1;
+	}
+
+	return retVal;
+}
 
 static int
 process_filter_chain(op_t * op,
@@ -222,7 +318,7 @@ process_filter_chain(op_t * op,
  * Process Filters
  * @param op SOAP operation
  * @param inbound Direction of message, 0 for outbound  and 1 for inbound.
- * @return 0 on sucesses, 1 on error.
+ * @return 0 on success, 1 on error.
  **/
 static int
 process_filters(op_t * op,
@@ -247,14 +343,17 @@ process_filters(op_t * op,
 		WsXmlNodeH      notUnderstoodHeader;
 		if ((notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0) {
 			wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
-			retVal = 1;
+			return 1;
+		} 
+		if (wsman_is_duplicate_message_id(op)) {
+			return 1;
 		}
 		if (!validate_control_headers(op)) {
-			retVal = 1;
+			return 1;
 		}
-	}
-	if (retVal) {
-		debug("Filteres Processed");
+		if (!check_for_duplicate_selectors(op)) {
+			return 1;
+		}
 	}
 	return retVal;
 }
@@ -408,7 +507,6 @@ process_inbound_operation(op_t * op,
 		if (op->out_doc) {
 			ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");
 			u_buf_set(msg->response, buf, len);
-
 			ws_xml_destroy_doc(op->out_doc);
 			u_free(buf);
 			destroy_op_entry(op);
@@ -485,9 +583,7 @@ dispatch_inbound_call(SoapH soap,
 	int             ret;
 	op_t           *op = NULL;
 	WsXmlDocH       in_doc = wsman_build_inbound_envelope(soap, msg);
-
 	debug("Inbound call...");
-
 
 	if (in_doc != NULL && !wsman_fault_occured(msg)) {
 		dispatch_t     *dispatch = get_dispatch_entry(soap, in_doc);
@@ -506,14 +602,14 @@ dispatch_inbound_call(SoapH soap,
 			ret = process_inbound_operation(op, msg);
 		}
 		dispatcher_create_fault(soap, msg, in_doc);
-	}
+	} else {
+		dispatcher_create_fault(soap, msg, in_doc);
+		msg->http_code = wsman_find_httpcode_for_fault_code( msg->status.fault_code );
+        }
 	ws_xml_destroy_doc(in_doc);
 	debug("Inbound call completed");
 	return;
 }
-
-
-
 
 
 static char    *
@@ -740,5 +836,7 @@ wsman_dispatch_entry_new()
 
 
 }
+
+
 
 /** @} */
