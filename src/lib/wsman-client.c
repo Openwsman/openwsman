@@ -209,10 +209,10 @@ wsman_client_add_property(actionOptions * options,
         options->properties = hash_create(HASHCOUNT_T_MAX, 0, 0);
     if (!hash_lookup(options->properties, key)) {
         if (!hash_alloc_insert(options->properties, key, value)) {
-            fprintf(stderr, "hash_alloc_insert failed");
+            error("hash_alloc_insert failed");
         }
     } else {
-        fprintf(stderr, "duplicate not added to hash");
+        error("duplicate not added to hash");
     }
 }
 
@@ -225,10 +225,10 @@ wsman_client_add_selector(actionOptions * options,
         options->selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
     if (!hash_lookup(options->selectors, key)) {
         if (!hash_alloc_insert(options->selectors, key, value)) {
-            fprintf(stderr, "hash_alloc_insert failed");
+            error( "hash_alloc_insert failed");
         }
     } else {
-        fprintf(stderr, "duplicate not added to hash");
+        error( "duplicate not added to hash");
     }
 }
 

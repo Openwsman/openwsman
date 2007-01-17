@@ -11,7 +11,6 @@ INCLUDES = -I$(top_srcdir)/src/lib \
 libwsman_file_auth_la_LIBADD = -lcrypt
 #endif
 
-libwsman_file_auth_la_LIBADD = $(CRYPT_LIBS)
 
 auth_LTLIBRARIES= libwsman_file_auth.la
 

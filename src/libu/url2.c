@@ -67,10 +67,10 @@ hash_t *parse_query(const char *query)
         }
         if (!hash_lookup(h,key)) {
             if ( !hash_alloc_insert(h, key, val)) {
-                fprintf(stderr, "hash_alloc_insert failed");
+                error("hash_alloc_insert failed");
             }
         } else {
-            fprintf(stderr, "duplicate not added to hash");
+            error("duplicate not added to hash");
         }
     }
     /*
