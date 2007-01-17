@@ -339,8 +339,8 @@ CimResource_Put_EP( SoapOpH op,
     if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
       cim_put_instance_from_enum(cimclient, cntx , in_body, body, &status);
     } else {
-      // FIXME: Correct fault
-      status.fault_code = WSA_INVALID_MESSAGE_INFORMATION_HEADER;
+      status.fault_code = WXF_INVALID_REPRESENTATION;
+      status.fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
     }
   }
 

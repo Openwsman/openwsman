@@ -458,7 +458,6 @@ wsman_identify_stub(SoapOpH op,
 
 	if ((data = endPoint(cntx, status)) == NULL) {
 		error("Identify Fault");
-		/* FIXME */
 		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
 					    WSMAN_INTERNAL_ERROR, -1, NULL);
 	} else {
