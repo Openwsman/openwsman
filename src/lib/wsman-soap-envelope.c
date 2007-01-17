@@ -386,6 +386,9 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 	int             retval = 1;
 	char           *soapNsUri;
 	WsXmlNodeH      root = ws_xml_get_doc_root(doc);
+	WsXmlNodeH      header, node, selector;
+	int             index = 0;
+	hash_t         *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
 	if (strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) != 0) {
 		wsman_set_fault(msg,
@@ -406,7 +409,36 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 		retval = 0;
 		goto cleanup;
 	}
+	header = ws_xml_get_soap_body(doc);
+	if (!header) {
+		wsman_set_fault(msg,
+		    WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, "No Header");
+		retval = 0;
+		goto cleanup;
+	}
+	node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	if (node) {
+		while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
+			char           *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
+			if (attrVal == NULL)
+				attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+			if (attrVal) {
+				if (!hash_lookup(h, attrVal)) {
+					if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
+						error("hash_alloc_insert failed");
+					}
+				} else {
+					wsman_set_fault(msg,
+							WSMAN_INVALID_SELECTORS, WSMAN_DETAIL_DUPLICATE_SELECTORS, NULL);
+					retval = 0;
+					goto cleanup;
+
+				}
+			}
+		}
+	}
 cleanup:
+	hash_destroy(h);
 	return retval;
 }
 
@@ -726,38 +758,49 @@ hash_t         *
 wsman_get_selector_list(WsContextH cntx,
 			WsXmlDocH doc)
 {
+	WsXmlNodeH      header;
+	WsXmlNodeH      node;
+	WsXmlNodeH      selector;
+	int             index = 0;
 	hash_t         *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+
 	if (doc == NULL)
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
-	if (doc) {
-		WsXmlNodeH      header = ws_xml_get_soap_header(doc);
-		WsXmlNodeH      node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-		if (node) {
-			WsXmlNodeH      selector;
-			int             index = 0;
-			while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
-				char           *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-				if (attrVal == NULL)
-					attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+	if (!doc)
+		return NULL;
 
-				debug("Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
-				if (attrVal) {
-					if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
-						error("hash_alloc_insert failed");
-					}
+	header = ws_xml_get_soap_header(doc);
+	node = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	if (!node) {
+		debug("no SelectorSet defined");
+		return NULL;
+	}
+	while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
+		char           *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
+		if (attrVal == NULL)
+			attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+
+		debug("Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
+		if (attrVal) {
+			if (!hash_lookup(h, attrVal)) {
+				if (!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
+					error("hash_alloc_insert failed");
 				}
+			} else {
+				error("duplicate selector");
 			}
 		}
-	} else {
-		error("doc is null");
 	}
+
 	if (!hash_isempty(h))
 		return h;
 
 	hash_destroy(h);
 	return NULL;
 }
+
+
 
 char           *
 wsman_get_selector(WsContextH cntx,

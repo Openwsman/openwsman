@@ -477,7 +477,7 @@ wsman_client_create_request(WsManClient * cl,
                  XML_NS_WSMAN_ID, WSMID_IDENTIFY, NULL);
         break;
     case WSMAN_ACTION_CUSTOM:
-        if (options.properties) {
+        if (hash_count(options.properties) > 0 ) {
             if (method) {
                 node = ws_xml_add_empty_child_format(body, resource_uri, "%s_INPUT", method);
                 hash_scan_begin(&hs, options.properties);
