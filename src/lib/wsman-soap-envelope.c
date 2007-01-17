@@ -277,7 +277,6 @@ wsman_build_soap_version_fault(SoapH soap)
 	WsXmlDocH       fault = wsman_build_soap_fault(soap, NULL, XML_NS_SOAP_1_2,
 						    "VersionMismatch", NULL,
 						  "Version Mismatch", NULL);
-
 	if (fault != NULL) {
 		WsXmlNodeH      upgrade;
 		WsXmlNodeH      h = ws_xml_get_soap_header(fault);
@@ -300,8 +299,8 @@ wsman_build_soap_version_fault(SoapH soap)
 				ws_xml_add_qname_attr(node, NULL, "qname", XML_NS_SOAP_1_1, SOAP_ENVELOPE);
 			}
 		}
-//FIXME:	Send fault
-			ws_xml_destroy_doc(fault);
+                // FIXME:	Send fault
+		ws_xml_destroy_doc(fault);
 	}
 }
 

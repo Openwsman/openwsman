@@ -255,7 +255,8 @@ wsman_is_duplicate_message_id(op_t * op)
         WsXmlNodeH      msgIdNode;
         soap = op->dispatch->fw;
 
-	if ( (msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID) ) != NULL) {
+        msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+	if ( msgIdNode!= NULL) {
 		lnode_t        *node;
 	        char           *msgId;
 
@@ -292,7 +293,7 @@ wsman_is_duplicate_message_id(op_t * op)
 			}
 		}
 		u_unlock(soap);
-	} else {
+	} else if (!wsman_is_identify_request(op->in_doc)) {
                 wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0 );
 		debug("No MessageId found");
                 return 1;
