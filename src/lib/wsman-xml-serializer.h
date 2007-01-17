@@ -154,27 +154,27 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
             // nodes with attributes
 #define SER_ATTR_NS_UINT8_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT8 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, NULL \
+        flags | SER_ATTRS, do_serialize_uint8, NULL \
     }
 #define SER_ATTR_NS_UINT16_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT16 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, NULL \
+        flags | SER_ATTRS, do_serialize_uint16, NULL \
     }
 #define SER_ATTR_NS_UINT32_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT32 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, NULL \
+        flags | SER_ATTRS, do_serialize_uint32, NULL \
     }
 #define SER_ATTR_NS_BOOL_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_BOOL s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, NULL \
+        flags | SER_ATTRS, do_serialize_bool, NULL \
     }
 #define SER_ATTR_NS_STR_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_STR s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_string, NULL \
     }
 #define SER_ATTR_NS_STRUCT_FLAGS(ns, n, x, flags, t) \
-    {(ns), (n), (x), (x), sizeof (struct {t## s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, t##_TypeItems \
+    {(ns), (n), (x), (x), sizeof (struct {t s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_struct, t##_TypeItems \
     }
 
 
@@ -343,9 +343,10 @@ extern XmlSerializerInfo t##_TypeItems[]
 XmlSerializerInfo t##_TypeItems[] = \
 {
 
-#define SER_END_ITEMS(t)\
+#define SER_END_ITEMS(t) \
 	SER_NULL \
-};\
+}; \
+ \
 XmlSerializerInfo t##_TypeInfo[] = {\
     SER_STRUCT_FLAGS(NULL, 1, 0, t), \
     SER_NULL \
