@@ -895,6 +895,7 @@ do_serialize_struct(XmlSerializationData * data)
                 retVal = WS_ERR_XML_PARSING;
                 goto DONE;
             }
+            data->xmlNode = child;
         }
 
         int tmp = 0;
