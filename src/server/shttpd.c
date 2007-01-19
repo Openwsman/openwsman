@@ -3705,12 +3705,10 @@ handle(struct conn *c)
 		do_get(c);
 	} else {
 		senderr(c, 500, "Error", "", "Internal Error");
-		c->flags |= FLAG_FINISHED;
 	}
 #else // OPENWSMAN
         } else {
-		senderr(c, 501, "Not Implemented", "", "Is not supported");
-		c->flags |= FLAG_FINISHED;
+		senderr(c, 405, "Method not allowed", "", "Method not allowed");
 	}
 #endif // OPENWSMAN
 }
