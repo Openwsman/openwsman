@@ -309,6 +309,9 @@ DONE:
         wsman_msg->response = NULL;
     }
  //   wsman_soap_message_destroy(wsman_msg);
+    if (wsman_msg->http_headers) {
+        hash_free(wsman_msg->http_headers);
+    }
     u_free(wsman_msg);
     if (fault_reason == NULL) {
         fault_reason = shttp_reason_phrase(status);
