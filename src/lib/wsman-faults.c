@@ -62,6 +62,7 @@ WsmanFaultDetailTable fault_detail_table[] =
     { WSMAN_DETAIL_ALREADY_EXISTS, "AlreadyExists" },
     { WSMAN_DETAIL_AMBIGUOUS_SELECTORS, "AmbigousSelectors" },
     { WSMAN_DETAIL_ASYNCHRONOUS_REQUEST, "AsynchronousRequest" },
+    { WSMAN_DETAIL_ADDRESSING_MODE, "AddressingMode" },
     { WSMAN_DETAIL_AUTHERIZATION_MODE, "AutherizationMode" },
     { WSMAN_DETAIL_BOOKMARKS, "Bookmarks" },
     { WSMAN_DETAIL_CHARECHTER_SET, "CharechterSet" },
@@ -353,6 +354,14 @@ WsmanFaultCodeTable fault_code_table[] =
     FAULT_RECEIVER_CODE,
     "UnsupportedExpirationType", 
     "The specified expiration type is not supported." 
+},
+{ 
+    WSMAN_UNSUPPORTED_FEATURE,
+    WSMAN_ACTION_FAULT,
+    XML_NS_WS_MAN,
+    FAULT_RECEIVER_CODE,
+    "UnsupportedFeature", 
+    "The specified feature is not supported." 
 },
 { 
     WSMAN_UNSUPPORTED_FEATURE,

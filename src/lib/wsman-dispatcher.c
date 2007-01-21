@@ -240,6 +240,31 @@ validate_mustunderstand_headers(op_t * op)
 	return child;
 }
 
+
+
+/**
+ * Check for duplicate Message ID
+ * @param op operation
+ * @return status
+ */
+static int
+wsman_check_unsupported_features(op_t * op)
+{
+	WsXmlNodeH header = wsman_get_soap_header_element(op->dispatch->fw,
+					 op->in_doc, NULL, NULL);
+	int             retVal = 0;
+        SoapH           soap;
+        WsXmlNodeH      n;
+        soap = op->dispatch->fw;
+
+        n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
+	if ( n!= NULL) {
+    	        retVal = 1;
+                wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE );
+        }
+	return retVal;
+}
+
 /**
  * Check for duplicate Message ID
  * @param op operation
@@ -347,6 +372,9 @@ process_filters(op_t * op,
 			return 1;
 		} 
 		if (wsman_is_duplicate_message_id(op)) {
+			return 1;
+		}
+		if (wsman_check_unsupported_features(op)) {
 			return 1;
 		}
 		if (!validate_control_headers(op)) {
