@@ -235,6 +235,31 @@ extern          "C" {
 
 	void            wsman_remove_query_string(char *resourceUri, char **result);
 
+/*---------------- Advanced client API --------------------------------------*/
+
+typedef struct {
+	WsXmlDocH	request;
+	WsXmlDocH	response;
+	char		*fault_message;
+	int		response_code;
+} wsman_data_t;
+
+
+int wsman_session_open(const char *server,
+			int port,
+			const char *path,
+			const char *scheme,
+			const char *username,
+			const char *password);
+
+void wsman_session_close(int session_id);
+
+int wsman_session_uri_set(int session_id, const char *resource_uri);
+char* wsmcl_session_resource_uri_get(int session_id);
+
+wsman_data_t* wsman_session_request_create(int session_id, WsmanAction action);
+wsman_data_t* wsman_session_request_send(int session_id, char *request);
+
 
 #ifdef __cplusplus
 }

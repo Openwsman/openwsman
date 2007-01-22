@@ -59,7 +59,8 @@ libwsman_curl_client_transport_la_SOURCES = \
 
 
 libwsman_client_la_SOURCES = \
-	wsman-client.c 
+	wsman-client.c \
+	wsman_advanced_client.c
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src/libu \
