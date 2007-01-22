@@ -1326,7 +1326,8 @@ Snprintf(char *buf, size_t buflen, const char *fmt, ...)
 	va_list		ap;
 	int		n;
 
-	if (buflen == 0)
+	
+if (buflen == 0)
 		return (0);
 
 	va_start(ap, fmt);
@@ -2811,14 +2812,37 @@ getauth(struct conn *c, struct digest *dig)
 			fetchfield(&p, dig->uri, sizeof(dig->uri), 4);
 		else if (ncasecmp(p, "qop=", 4) == 0)
 			fetchfield(&p, dig->qop, sizeof(dig->qop), 4);
-		else if (ncasecmp(p, "cnonce=", 7) == 0)
-			fetchfield(&p, dig->cnonce, sizeof(dig->cnonce), 7);
-		else if (ncasecmp(p, "nc=", 3) == 0)
-			fetchfield(&p, dig->nc, sizeof(dig->cnonce), 3);
+		else if (ncasecmp(p, "cnonce=", 7) == 0) {
+#ifdef OPENWSMAN
+            if (*(p + 7) != '"') {
+                return 0;
+            }
+            char *pp = strchr(p+8, '"');
+            if (pp == NULL) {
+                return 0;
+            }
+            size_t L = (pp - p) - 7;
+            char *bb = malloc(L + 1);
+            if (bb == NULL) {
+                return 0;
+            }
+			fetchfield(&p, bb, L + 1, 7);
+//            p = pp + L;
+            dig->cnonce = bb;
+#else
+            fetchfield(&p, dig->cnonce, sizeof(dig->cnonce), 7);
+#endif
+		} else if (ncasecmp(p, "nc=", 3) == 0) {
+			fetchfield(&p, dig->nc, sizeof(dig->nc), 3);
+        }
 
 	elog(ERR_DEBUG, "[%s] [%s] [%s] [%s] [%s] [%s]",
 	    dig->user, dig->uri, dig->resp, dig->qop, dig->cnonce, dig->nc);
-
+#ifdef OPENWSMAN
+    if (dig->cnonce == NULL) {
+        return 0;
+    }
+#endif
 	return (1);
 }
 
@@ -2973,6 +2997,7 @@ checkauth(struct conn *c, const char *path)
                 if (res) {
                     c->flags |= FLAG_AUTHORIZED;
                 }
+                u_free(di.cnonce);
                 return res;
         }
 

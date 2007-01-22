@@ -62,7 +62,7 @@ struct shttpd_ctx;
 struct digest {
 	char		user[USER_MAX];
 	char		uri[IO_MAX];
-	char		cnonce[64];
+	char		*cnonce;
 	char		nonce[33];
 	char		resp[33];
 	char		qop[16];
