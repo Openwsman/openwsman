@@ -73,8 +73,6 @@ debug_add_handler (debug_fn fn,
                       void* user_data);
 
 void debug_remove_handler (unsigned int id);
-const char * debug_helper (const char *format, ...);
-void debug_full (debug_level_e  level, const char   *format, ...);
 
 #ifdef ENABLE_TRACING
 #define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
@@ -87,49 +85,54 @@ void debug_full (debug_level_e  level, const char   *format, ...);
 #endif
 
 
-#ifdef DEBUG_VERBOSE
-#define debug( format...) \
-        debug_full(DEBUG_LEVEL_DEBUG, "[%d] %s:%d(%s) %s", \
-        DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, \
-        debug_helper (format))
-#define error( format...) \
-        debug_full(DEBUG_LEVEL_ERROR, "[%d] %s:%d(%s) %s", \
-        DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, \
-        debug_helper (format))
-#define message( format...) \
-        debug_full(DEBUG_LEVEL_MESSAGE, "[%d] %s:%d(%s) %s", \
-        DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, \
-        debug_helper (format))
-#else
+
+
 #ifdef WIN32
 
+void debug_full(debug_level_e  level, const char *format, ...);
+
 static __inline void debug(char* format, ...) {
-	debug_full(DEBUG_LEVEL_WARNING, format);
+    debug_full(DEBUG_LEVEL_WARNING, format);
 }
 static __inline void error(char* format, ...) {
-	debug_full(DEBUG_LEVEL_WARNING, format);
+    debug_full(DEBUG_LEVEL_WARNING, format);
 }
 static __inline void message(char* format, ...) {
-	debug_full(DEBUG_LEVEL_WARNING, format);
+    debug_full(DEBUG_LEVEL_WARNING, format);
 }
 
-#else
+#else // WIN32
 
-#define warnings( format...) \
+#ifdef DEBUG_VERBOSE
+
+void debug_full(debug_level_e  level, char *file,
+                 int line, const char *proc, const char *format, ...);
+#define debug(format...) \
+        debug_full(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
+#define error(format...) \
+        debug_full(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, format)
+#define message(format...) \
+        debug_full(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
+
+#else // DEBUG_VERBOSE
+
+void debug_full(debug_level_e  level, const char *format, ...);
+
+#define warnings(format...) \
         debug_full(DEBUG_LEVEL_WARNING, format)
 
-#define debug( format...) \
+#define debug(format...) \
         debug_full(DEBUG_LEVEL_DEBUG, format)
 
-#define error( format...) \
+#define error(format...) \
         debug_full(DEBUG_LEVEL_ERROR, format)
 
 #define message(format...) \
         debug_full(DEBUG_LEVEL_MESSAGE, format)
 
-#endif
+#endif // DEBUG_VERBOSE
 
-#endif
+#endif // WIN32
 
 
 
@@ -138,3 +141,4 @@ static __inline void message(char* format, ...) {
 #endif /* __cplusplus */
 
 #endif /*DEBUG_H_*/
+

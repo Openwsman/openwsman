@@ -62,7 +62,7 @@ hash_t *parse_query(const char *query)
         *val++ = 0; 
         if (unify(key) || unify(val)) {
             u_free(key);
-            debug("Coud not unify query: %s", tok);
+            debug("Could not unify query: %s", tok);
             continue;
         }
         if (!hash_lookup(h,key)) {
