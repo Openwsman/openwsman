@@ -101,9 +101,6 @@ debug_full (debug_level_e  level,
                ...)
 {
     va_list args;
-#ifdef DEBUG_VERBOSE
-    char *header, *body;
-#endif
     char *str;
     lnode_t * iter;
 
@@ -111,19 +108,16 @@ debug_full (debug_level_e  level,
         return;
     }
 
-#ifdef DEBUG_VERBOSE
-    header = u_strdup_printf("[%d] %s:%d(%s)", level, file, line, proc);
+    char *body;
     va_start (args, format);
     body = u_strdup_vprintf (format, args);
     va_end (args);
-
-    str = u_strdup_printf("%s %s", header, body);
-    u_free(header);
+#ifdef DEBUG_VERBOSE
+    str = u_strdup_printf("[%d] %s:%d(%s) %s",
+                      level, file, line, proc, body);
     u_free(body);
 #else
-    va_start (args, format);
-    str = u_strdup_vprintf (format, args);
-    va_end (args);
+    str = body;
 #endif
 
     iter = list_first(handlers);
