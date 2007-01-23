@@ -32,7 +32,12 @@
  * @author Vadim Revyakin
  */
 
+#include "u/libu.h"
+#include "wsman-types.h"
+#include "wsman-names.h"
 #include "wsman-client-api.h"
 #include "wsman-xml-api.h"
 #include "wsman-client-transport.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-debug.h"
+#include "wsman-errors.h"
