@@ -92,11 +92,40 @@ debug_remove_handler (unsigned int id)
 
 void
 debug_full (debug_level_e  level,
-#ifdef DEBUG_VERBOSE
+            const char   *format,
+               ...)
+{
+    va_list args;
+    char *str;
+    lnode_t * iter;
+
+    if (handlers == NULL) {
+        return;
+    }
+
+    va_start (args, format);
+    str = u_strdup_vprintf (format, args);
+    va_end (args);
+
+
+    iter = list_first(handlers);
+    while (iter) {
+        debug_handler_t *handler = (debug_handler_t *)iter->list_data;
+        if ((handler->level == DEBUG_LEVEL_ALWAYS) ||
+            (level <= handler->level))
+            handler->fn (str, level, handler->user_data);
+        iter = list_next(handlers, iter);
+    }
+    u_free (str);
+}
+
+
+
+void
+debug_full_verbouse (debug_level_e  level,
             char *file,
             int line,
             const char *proc,
-#endif
             const char   *format,
                ...)
 {
@@ -112,13 +141,10 @@ debug_full (debug_level_e  level,
     va_start (args, format);
     body = u_strdup_vprintf (format, args);
     va_end (args);
-#ifdef DEBUG_VERBOSE
     str = u_strdup_printf("[%d] %s:%d(%s) %s",
                       level, file, line, proc, body);
     u_free(body);
-#else
-    str = body;
-#endif
+
 
     iter = list_first(handlers);
     while (iter) {
@@ -130,5 +156,3 @@ debug_full (debug_level_e  level,
     }
     u_free (str);
 }
-
-
