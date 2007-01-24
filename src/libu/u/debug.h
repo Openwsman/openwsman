@@ -75,7 +75,7 @@ debug_add_handler (debug_fn fn,
 void debug_remove_handler (unsigned int id);
 
 void debug_full(debug_level_e  level, const char *format, ...);
-void debug_full_verbouse(debug_level_e  level, char *file,
+void debug_full_verbose(debug_level_e  level, char *file,
                  int line, const char *proc, const char *format, ...);
 #ifdef ENABLE_TRACING
 #define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
@@ -107,11 +107,11 @@ static __inline void message(char* format, ...) {
 #ifdef DEBUG_VERBOSE
 
 #define debug(format...) \
-        debug_full_verbouse(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
+        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
 #define error(format...) \
-        debug_full_verbouse(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, format)
+        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, format)
 #define message(format...) \
-        debug_full_verbouse(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
+        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
 
 #else // DEBUG_VERBOSE
 

@@ -87,7 +87,7 @@ static int _session_server_set(session_t *s,
 static session_t* get_session_by_id(int sid)
 {
 	lnode_t		*snode;
-	session_t	*s;
+	session_t	*s = NULL;
 
 	pthread_mutex_lock(&lock);
 	snode = list_find(sessions, &sid, compare_id);

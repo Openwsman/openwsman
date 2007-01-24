@@ -127,7 +127,7 @@ debug_full (debug_level_e  level,
 
 
 void
-debug_full_verbouse (debug_level_e  level,
+debug_full_verbose (debug_level_e  level,
             char *file,
             int line,
             const char *proc,
