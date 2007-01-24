@@ -47,7 +47,7 @@ static int compare_id(const void *node_data, const void *key)
 	int	key_id = *(int *)key;
 	int	node_id = ((session_t *)node_data)->id;
 
-	return key_id == node_id ? 0 : -1;
+	return key_id == node_id ? 0 : 1;
 }
 
 static int get_free_id(void)
@@ -201,7 +201,7 @@ int wsman_session_uri_set(int session_id, const char *resource_uri)
 	return 1;
 }
 
-char* wsmcl_session_resource_uri_get(int session_id)
+char* wsman_session_resource_uri_get(int session_id)
 {
 	session_t	*s;
 
@@ -211,25 +211,24 @@ char* wsmcl_session_resource_uri_get(int session_id)
 		return NULL;
 	}
 
-	return u_strdup(s->resource_uri);
+	if (s->resource_uri)
+		return u_strdup(s->resource_uri);
+	else
+		return NULL;
 }
 
-static wsman_data_t* _request_create(session_t *s, WsmanAction action)
+static WsXmlDocH _request_create(session_t *s, WsmanAction action)
 {
-	wsman_data_t		*data;
 
-	data = u_zalloc(sizeof(wsman_data_t));
-
-	data->request = wsman_client_create_request(s->client, action, NULL,
+	return wsman_client_create_request(s->client, action, NULL,
 				s->resource_uri, s->options, s->enum_context);
 
-	return data;
 }
 
-wsman_data_t* wsman_session_request_create(int session_id, WsmanAction action)
+WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action)
 {
 	session_t		*s;
-	wsman_data_t		*data;
+	WsXmlDocH		req;
 
 	s = get_session_by_id(session_id);
 	if (!s) {
@@ -237,37 +236,19 @@ wsman_data_t* wsman_session_request_create(int session_id, WsmanAction action)
 	}
 
 	pthread_mutex_lock(&s->mutex);
-	data = _request_create(s, action);
+	req = _request_create(s, action);
 	pthread_mutex_unlock(&s->mutex);
 
-	return data;
+	return req;
 }
 
-wsman_data_t* wsman_session_request_send(int session_id, char *request)
+static wsman_data_t* _request_send(session_t *s, WsXmlDocH request)
 {
-	session_t		*s;
 	wsman_data_t		*data;
-
-	s = get_session_by_id(session_id);
-	if (!s) {
-		return NULL;
-	}
-
-	if (!request)
-		return NULL;
 
 	data = u_zalloc(sizeof(wsman_data_t));
 
-	pthread_mutex_lock(&s->mutex);
-	data->request = wsman_client_read_memory(s->client,
-					request, strlen(request),
-					NULL, 0);
-
-	if(!data->request) {
-		pthread_mutex_unlock(&s->mutex);
-		u_free(data);
-		return NULL;
-	}
+	data->request = request;
 
 	wsman_send_request(s->client, data->request);
 
@@ -280,8 +261,41 @@ wsman_data_t* wsman_session_request_send(int session_id, char *request)
 		data->fault_message = wsman_client_get_fault_string(s->client);
 	}
 
+	return data;
+}
+
+wsman_data_t* wsman_session_request_send(int session_id, WsXmlDocH request)
+{
+	session_t		*s;
+	wsman_data_t		*data;
+
+	s = get_session_by_id(session_id);
+	if (!s) {
+		return NULL;
+	}
+
+	pthread_mutex_lock(&s->mutex);
+	data = _request_send(s, request);
 	pthread_mutex_unlock(&s->mutex);
 
 	return data;
 }
 
+wsman_data_t* wsman_session_do_action(int session_id, WsmanAction action)
+{
+	session_t		*s;
+	WsXmlDocH		request;
+	wsman_data_t		*data;
+
+	s = get_session_by_id(session_id);
+	if (!s) {
+		return NULL;
+	}
+
+	pthread_mutex_lock(&s->mutex);
+	request = _request_create(s, action);
+	data = _request_send(s, request);
+	pthread_mutex_unlock(&s->mutex);
+
+	return data;
+}

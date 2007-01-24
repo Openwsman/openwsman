@@ -255,10 +255,11 @@ int wsman_session_open(const char *server,
 void wsman_session_close(int session_id);
 
 int wsman_session_uri_set(int session_id, const char *resource_uri);
-char* wsmcl_session_resource_uri_get(int session_id);
+char* wsman_session_resource_uri_get(int session_id);
 
-wsman_data_t* wsman_session_request_create(int session_id, WsmanAction action);
-wsman_data_t* wsman_session_request_send(int session_id, char *request);
+WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action);
+wsman_data_t* wsman_session_request_send(int session_id, WsXmlDocH request);
+wsman_data_t* wsman_session_do_action(int session_id, WsmanAction action);
 
 
 #ifdef __cplusplus
