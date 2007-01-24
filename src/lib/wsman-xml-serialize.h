@@ -54,15 +54,16 @@ struct __XmlSerializationData
 	char *elementBuf; 
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
-	char* ns;
-	char* name; // optional can be NULL
-	char* nameNs;
+//	char* ns;
+//	char* name; // optional can be NULL
+//	char* nameNs;
 	int mode;
 	int index;
 	WsXmlNodeH xmlNode;
-	int indentCount;
-	int error;
-	char* faultDetail;
+    XML_NODE_ATTR *attrs;
+//	int indentCount;
+//	int error;
+//	char* faultDetail;
 	int skipFlag;
 };
 typedef struct __XmlSerializationData XmlSerializationData;

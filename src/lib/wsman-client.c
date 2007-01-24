@@ -558,7 +558,7 @@ handle_resource_request(WsManClient * cl, WsXmlDocH request,
 	if (data && typeInfo) {
 		char           *class = u_strdup(strrchr(resource_uri, '/') + 1);
 		ws_serialize(cl->wscntx, ws_xml_get_soap_body(request), data, (XmlSerializerInfo *) typeInfo,
-			     class, resource_uri, resource_uri, 1);
+			     class, resource_uri, NULL, 1);
 		ws_serializer_free_mem(cl->wscntx, data, (XmlSerializerInfo *) typeInfo);
 		u_free(class);
 	} else if (data != NULL) {

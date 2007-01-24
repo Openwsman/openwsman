@@ -46,7 +46,7 @@ int main(void)
                                      node,
                                      CIM_ComputerSystem_TypeInfo,
                                      "CIM_ComputerSystem",
-                                     NS, NS,
+                                     NS, NULL,
                                      0, 0);
 
     if (cs == NULL) {

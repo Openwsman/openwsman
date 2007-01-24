@@ -90,12 +90,11 @@ xml_serializer_free(XmlSerializationData* data, void* buf)
 WsXmlNodeH
 xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
-    char* name = (data->name) ? data->name : data->elementInfo->name;
-    char *ns   = (data->elementInfo->ns) ? data->elementInfo->ns : data->ns;
+    char* name = data->elementInfo->name;
+    char *ns   = data->elementInfo->ns;
     WsXmlNodeH node;
+
     TRACE_ENTER;
-    debug("data->name = %s; data->elementInfo->name = %s",
-                data->name, data->elementInfo->name);
     debug("name = %s; value(%p) = %s", name, value, value);
     node = ws_xml_add_child(data->xmlNode, ns, name, value); 
     TRACE_EXIT;
@@ -108,11 +107,10 @@ WsXmlNodeH
 xml_serializer_get_child(XmlSerializationData* data)
 {
     WsXmlNodeH node;
-    char* name = (data->name) ? data->name : data->elementInfo->name;
-    char *ns   = (data->elementInfo->ns) ? data->elementInfo->ns : data->ns;
+    char* name = data->elementInfo->name;
+    char *ns   = data->elementInfo->ns;
+
     TRACE_ENTER;
-    debug("name = %s; elname = %s", data->name,
-                                    data->elementInfo->name);
     debug("name = %s:%s in %s [%d]", ns, name,
                     ws_xml_get_node_local_name(data->xmlNode),
                     data->index);
@@ -678,7 +676,7 @@ make_dyn_size_data(XmlSerializationData* data, int *retValp)
     int size;
 
     TRACE_ENTER;
-    debug("name = <%s>, elname = <%s>", data->name, DATA_ELNAME(data));    data->index = 0;
+    data->index = 0;
     while (xml_serializer_get_child(data) != NULL ) {
         data->index++;
     }
@@ -964,8 +962,7 @@ initialize_xml_serialization_data(
         XmlSerializerInfo* elementInfo,
         XML_TYPE_PTR dataBuf,
         int mode,
-        char* nameNs,
-        char* ns,
+        XML_NODE_ATTR *attrs,
         WsXmlNodeH xmlNode)
 {
     debug( "Initialize XML Serialization..."); 
@@ -975,8 +972,7 @@ initialize_xml_serialization_data(
     data->elementInfo = elementInfo;
     data->elementBuf = dataBuf;
     data->mode = mode;
-    data->ns = ns;
-    data->nameNs = nameNs;
+    data->attrs = attrs;
     data->xmlNode = xmlNode;
 
     debug( "Finished initializing XML Serialization..."); 
@@ -991,8 +987,8 @@ int ws_serialize(WsContextH cntx,
         XML_TYPE_PTR dataPtr, 
         XmlSerializerInfo* info,
         char* name,
-        char* nameNs,
-        char* elementNs,
+        char* ns,
+        XML_NODE_ATTR *attrs,
         int output)
 {
     int retVal = WS_ERR_INSUFFICIENT_RESOURCES;
@@ -1005,17 +1001,19 @@ int ws_serialize(WsContextH cntx,
         goto DONE;
     }
     memcpy(&myinfo, info, sizeof (XmlSerializerInfo));
-    if (name) {
-        myinfo.name = name;
+    if (name == NULL) {
+        error("name == NULL");
+        goto DONE;
     }
+    myinfo.name = name;
+    myinfo.ns = ns;
     myinfo.flags |= SER_HEAD;
     initialize_xml_serialization_data(&data,
             cntx,
             &myinfo,
             dataPtr,
-            XML_SMODE_SERIALIZE, 
-            nameNs,
-            elementNs,
+            XML_SMODE_SERIALIZE,
+            attrs,
             xmlNode);
 
     data.stopper = (char *)dataPtr + myinfo.size;
@@ -1036,13 +1034,17 @@ int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo*
 {
     int retVal;
     XmlSerializationData data;
+    XmlSerializerInfo myinfo;
+
     TRACE_ENTER;
+    memcpy(&myinfo, info, sizeof (XmlSerializerInfo));
+    myinfo.flags |= SER_HEAD;
     initialize_xml_serialization_data(&data, 
             cntx,
-            info, 
-            buf, 
-            XML_SMODE_FREE_MEM, 
-            NULL, NULL,
+            &myinfo,
+            buf,
+            XML_SMODE_FREE_MEM,
+            NULL,
             NULL);
 
     if ( (retVal = info->proc(&data)) >= 0 ) {
@@ -1058,8 +1060,8 @@ ws_deserialize(WsContextH cntx,
                WsXmlNodeH xmlParent,
                XmlSerializerInfo* info,
                char* name,
-               char* nameNs,
-               char* elementNs,
+               char *ns,
+               XML_NODE_ATTR **attrs,
                int index,
                int output)
 {
@@ -1070,12 +1072,16 @@ ws_deserialize(WsContextH cntx,
 
     TRACE_ENTER;
     memcpy(&myinfo, info, sizeof (XmlSerializerInfo));
-    if (name) {
-        myinfo.name = name;
+    if (name == NULL) {
+        error("name == NULL");
     }
+    myinfo.name = name;
+    myinfo.ns = ns;
     myinfo.flags |= SER_HEAD;
     initialize_xml_serialization_data(&data, cntx,  &myinfo, NULL,
-                         XML_SMODE_BINARY_SIZE, nameNs, elementNs, xmlParent);
+                         XML_SMODE_DESERIALIZE,
+                        NULL,
+                        xmlParent);
 
     data.index = index;
 
@@ -1086,7 +1092,6 @@ ws_deserialize(WsContextH cntx,
     }
 
     size = myinfo.size;
-    data.mode = XML_SMODE_DESERIALIZE;
     if ((data.elementBuf = xml_serializer_alloc(&data, size, 1)) != NULL ) {
         retPtr = data.elementBuf;
         data.stopper = (char *)retPtr + size;

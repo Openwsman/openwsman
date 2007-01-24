@@ -377,22 +377,22 @@ int do_serialize_attrs(struct __XmlSerializationData* data);
 
         // Serializer user interface
 
-int ws_serialize(WsContextH cntx, 
-                WsXmlNodeH xmlNode, 
-                XML_TYPE_PTR dataPtr, 
-                XmlSerializerInfo *info, 
-                char *name, 
-                char *nameNs, 
-                char *elementNs, 
+int ws_serialize(WsContextH cntx,
+                WsXmlNodeH xmlNode,
+                XML_TYPE_PTR dataPtr,
+                XmlSerializerInfo *info,
+                char *name,
+                char *ns,
+                XML_NODE_ATTR *attrs,
                 int output);
 
-void *ws_deserialize(WsContextH cntx, 
-                WsXmlNodeH xmlParent, 
-                XmlSerializerInfo *info, 
-                char *name, 
-                char *nameNs, 
-                char *elementNs, 
-                int index, 
+void *ws_deserialize(WsContextH cntx,
+                WsXmlNodeH xmlParent,
+                XmlSerializerInfo *info,
+                char *name,
+                char *ns,
+                XML_NODE_ATTR **attrs,
+                int index,
                 int output);
 
 

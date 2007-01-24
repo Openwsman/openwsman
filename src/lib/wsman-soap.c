@@ -463,7 +463,7 @@ wsman_identify_stub(SoapOpH op,
 	} else {
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
-             WSMID_IDENTIFY_RESPONSE, (char *) info->data, (char *) info->data, 1);
+             WSMID_IDENTIFY_RESPONSE, (char *) info->data, NULL, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
 	}
 
@@ -500,9 +500,9 @@ ws_transfer_put_stub(SoapOpH op,
 	WsXmlNodeH      _r = ws_xml_get_child(_body, 0, NULL, NULL);
 	
 
-	void  *data = ws_deserialize(cntx, _body, typeInfo, 
+	void  *data = ws_deserialize(cntx, _body, typeInfo,
 					ws_xml_get_node_local_name(_r),
-			    	(char *) info->data, (char *) info->data, 0, 0);
+			    	(char *) info->data, NULL, 0, 0);
 
 	if ((retVal = endPoint(cntx, data, &outData, &status))) {
 		doc = wsman_generate_fault(cntx, _doc, status.fault_code,
@@ -511,7 +511,8 @@ ws_transfer_put_stub(SoapOpH op,
 		doc = wsman_create_response_envelope(cntx, _doc, NULL);
 		if (outData) {
 			ws_serialize(cntx, ws_xml_get_soap_body(doc), outData,
-				     typeInfo, NULL, (char *) info->data, (char *) info->data, 1);
+				     typeInfo, TRANSFER_PUT_RESP,
+                     (char *) info->data, NULL, 1);
 			ws_serializer_free_mem(cntx, outData, typeInfo);
 		}
 	}
@@ -752,7 +753,7 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 		WsXmlNodeH      itemsNode = ws_xml_add_child(node,
 				    XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
 		ws_serialize(soapCntx, itemsNode, enumInfo->pullResultPtr,
-			     typeInfo, ep->respName, (char *) ep->data, (char *) ep->data, 1);
+			     typeInfo, ep->respName, (char *) ep->data, NULL, 1);
 		if (enumId) {
 			ws_serialize_str(soapCntx, node, enumId,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
@@ -875,7 +876,7 @@ ws_transfer_get_stub(SoapOpH op,
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
-			 TRANSFER_GET_RESP, (char *) info->data, (char *) info->data, 1);
+			 TRANSFER_GET_RESP, (char *) info->data, NULL, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
 	}
 
