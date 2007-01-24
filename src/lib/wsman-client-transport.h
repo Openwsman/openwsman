@@ -60,9 +60,9 @@ typedef enum {
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 
-typedef void (*ws_auth_request_func_t)(ws_auth_type_t, char **, char **);
+typedef void (*ws_auth_request_func_t)(ws_auth_type_t t, char **usr, char **pwd);
 
-extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t);
+extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t f);
 
 extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
 
@@ -70,7 +70,7 @@ extern int ws_client_transport_get_auth_value(void);
 
 extern int wsman_is_auth_method(int method);
 
-extern int wsman_client_transport_init(void *);
+extern int wsman_client_transport_init(void *arg);
 
 extern void wsman_client_transport_fini(void);
 
@@ -86,17 +86,17 @@ extern int wsman_transport_get_no_verify_peer (void);
 
 extern char *wsman_transport_get_cafile(void);
 
-extern void wsman_transport_set_proxy(char *);
+extern void wsman_transport_set_proxy(char *proxy);
 
-extern void wsman_transport_set_proxyauth(char *);
+extern void wsman_transport_set_proxyauth(char *pauth);
 
-extern void wsman_transport_set_agent (char *);
+extern void wsman_transport_set_agent(char *agent);
 
-extern void wsman_transport_set_auth_method (char *);
+extern void wsman_transport_set_auth_method(char *am);
 
-extern void wsman_transport_set_no_verify_peer (int);
+extern void wsman_transport_set_no_verify_peer(int value);
 
-extern void wsman_transport_set_cafile(char *);
+extern void wsman_transport_set_cafile(char *caf);
 
 
 extern void wsman_transport_close_transport(WsManClient *cl);

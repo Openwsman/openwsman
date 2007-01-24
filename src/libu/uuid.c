@@ -106,7 +106,7 @@ generate_uuid(char *buf, int size, int bNoPrefix)
 	RPC_STATUS      st = UuidCreate(&uuid);
 
 	if (st == RPC_S_OK || st == RPC_S_UUID_LOCAL_ONLY) {
-		char           *str;
+		char           *str = NULL;
 		if ((st = UuidToString(&uuid, (BYTE **) & str)) != RPC_S_OK) {
 			//failed
 		} else {
@@ -115,7 +115,7 @@ generate_uuid(char *buf, int size, int bNoPrefix)
 				strcpy(buf, "uuid:");
 			else
 				len = 0;
-			strncpy(&buf[len], str, size - len);
+			strncpy(buf +len, str, size - len);
 			RpcStringFree((BYTE **) & str);
 			ret_val = 0;
 		}
@@ -123,7 +123,7 @@ generate_uuid(char *buf, int size, int bNoPrefix)
 		//failed
 	}
 	return ret_val;
-
+}
 
 
 #else

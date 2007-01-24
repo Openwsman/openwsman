@@ -328,8 +328,7 @@ int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
     int i;
     WsXmlNodeH child;
-    for(i = 0; (child = ws_xml_get_child(srcNode, i, NULL, NULL)) != NULL; i++)
-    {
+    for(i = 0; (child = ws_xml_get_child(srcNode, i, NULL, NULL)) != NULL; i++) {
         ws_xml_duplicate_tree(dstNode, child);
     }
     return i;
@@ -343,11 +342,12 @@ int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  */
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
+    WsXmlNodeH node;
     if (!srcNode || !dstNode) {
         error("NULL arguments: dst = %p; src = %p", dstNode, srcNode);
         return;
     }
-    WsXmlNodeH node = ws_xml_add_child(dstNode,
+    node = ws_xml_add_child(dstNode,
                     ws_xml_get_node_name_ns(srcNode),
                     ws_xml_get_node_local_name(srcNode), NULL);
     if (!node) {
@@ -355,8 +355,7 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
         return;
     }
     ws_xml_duplicate_attr(node, srcNode);
-    int i = ws_xml_duplicate_children(node, srcNode);
-    if (i == 0) {
+    if (ws_xml_duplicate_children(node, srcNode) == 0) {
         // no children
         ws_xml_set_node_text(node, ws_xml_get_node_text(srcNode));
     }
