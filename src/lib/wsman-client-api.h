@@ -83,6 +83,17 @@ extern          "C" {
 
 	typedef int     (*SoapResponseCallback) (WsManClient *, WsXmlDocH, void *);
 
+
+
+
+	/**
+	 * Create a client using an endpoint as the argument
+	 * @param endpoint an URI describing the endpoint, with user/pass, port and path
+	 * @return client handle
+	 */
+	WsManClient    *wsman_create_client_from_uri(const char* endpoint);
+
+
 	/**
  	* Create client and initialize context
  	* @param hostname Hostname or IP
@@ -200,7 +211,7 @@ extern          "C" {
 		                  char *enumContext, actionOptions options);
 	WsXmlDocH       wsenum_release(WsManClient * cl, char *resourceUri,
 		                  char *enumContext, actionOptions options);
-	WsXmlDocH       wsman_invoke(WsManClient * cl, char *resourceUri, char *method,
+	WsXmlDocH       wsman_invoke(WsManClient * cl, char *resourceUri, char *method, void *data,
 				                     actionOptions options);
 	int             wsenum_enumerate_and_pull(WsManClient * cl, char *resource_uri,
 				                      actionOptions options,
@@ -232,8 +243,11 @@ extern          "C" {
 	void            wsman_client_add_property(actionOptions * options, char *key, char *value);
 
                /* Misc */
-
+               
+    /* Place holder */
+	int				wsman_client_get_last_error(WsManClient * cl);
 	void            wsman_remove_query_string(char *resourceUri, char **result);
+	int 			wsman_client_check_for_fault(WsXmlDocH doc );
 
 /*---------------- Advanced client API --------------------------------------*/
 

@@ -733,11 +733,17 @@ WsXmlDocH
 wsman_invoke(WsManClient * cl,
          char *resource_uri,
          char *method,
+         void *data,
          actionOptions options)
 {
     WsXmlDocH       response;
     WsXmlDocH       request = wsman_client_create_request(cl, WSMAN_ACTION_CUSTOM, method,
                            resource_uri, options, NULL);
+    if (hash_count(options.properties) == 0 && data != NULL) {
+    	WsXmlNodeH n = ws_xml_get_doc_root((WsXmlDocH) data);
+		ws_xml_copy_node(n, ws_xml_get_soap_body(request)) ;
+    }
+    
     if (wsman_send_request(cl, request)) {
         ws_xml_destroy_doc(request);
         return NULL;
@@ -746,6 +752,9 @@ wsman_invoke(WsManClient * cl,
     ws_xml_destroy_doc(request);
     return response;
 }
+
+
+
 
 
 WsXmlDocH
@@ -981,6 +990,13 @@ wsman_build_envelope(WsContextH cntx,
 }
 
 
+int
+wsman_client_get_last_error(WsManClient * cl)
+{
+	return 0;
+}
+
+
 
 /**
  * Buid Inbound Envelope from Response
@@ -1057,6 +1073,26 @@ init_client_connection(WsManClient * cl)
 }
 
 
+WsManClient*
+wsman_create_client_from_uri(const char* endpoint) {
+	u_uri_t *uri;
+	if (uri != NULL)
+    	    if (u_uri_parse((const char *) endpoint, &uri) != 0 )
+                return NULL;
+    WsManClient* cl = wsman_create_client( uri->host,
+        uri->port,
+        uri->path,
+        uri->scheme,
+        uri->user,
+        uri->pwd);
+        	        
+    return cl;
+}
+
+
+int wsman_client_check_for_fault(WsXmlDocH doc ) {
+	return wsman_is_fault_envelope(doc);
+}
 
 WsManClient*
 wsman_create_client(const char *hostname,
@@ -1064,8 +1100,7 @@ wsman_create_client(const char *hostname,
             const char *path,
             const char *scheme,
             const char *username,
-            const char *password)
-{
+            const char *password) {
     WsManClient    *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
     wsc->hdl = &wsc->data;
     if (pthread_mutex_init(&wsc->mutex, NULL)) {

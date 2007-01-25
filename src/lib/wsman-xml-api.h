@@ -87,10 +87,13 @@
 
 
 typedef int (*WsXmlEnumCallback)(WsXmlNodeH, void*);
+
 typedef int (*WsXmlNsEnumCallback)(WsXmlNodeH, WsXmlNsH, void*);
 
 void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node);
+
 void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char** buf, int* ptrSize);
+
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
 
 WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc);
@@ -99,13 +102,11 @@ void ws_xml_destroy_doc(WsXmlDocH doc);
 
 char *ws_xml_get_xpath_value (WsXmlDocH doc, char *expression);
 
-
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
-
 
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc);
 
@@ -123,6 +124,7 @@ WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc);
 
 char *ws_xml_get_node_text(WsXmlNodeH node);
 
+void ws_xml_free_memory(void* ptr);
 
 int ws_xml_set_node_name(WsXmlNodeH node, char *nsUri, char *name);
 
