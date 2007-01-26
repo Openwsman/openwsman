@@ -100,6 +100,9 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name);
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive);
 */
 
+WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node );
+
+
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 /*
 WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc);

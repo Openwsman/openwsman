@@ -635,6 +635,27 @@ make_new_xml_node( xmlNodePtr base,
 }
 
 
+
+WsXmlDocH 
+xml_parser_create_doc_by_import(WsXmlNodeH node ) {
+    xmlDocPtr doc;
+    xmlNodePtr rootNode;
+
+    if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL )
+    {
+        if (doc)
+            xmlFreeDoc(doc);
+        return NULL;
+    } else {    
+    	rootNode = xmlDocCopyNode((xmlNodePtr ) node, doc, 1 );
+        xmlDocSetRootElement(doc, rootNode);
+        return (WsXmlDocH) doc;        
+    }	
+}
+
+
+
+
 WsXmlNodeH
 xml_parser_node_add(WsXmlNodeH base, 
                     int where, 
@@ -666,7 +687,8 @@ xml_parser_node_add(WsXmlNodeH base,
 
 }
 
-int xml_parser_node_remove(WsXmlNodeH node)
+int 
+xml_parser_node_remove(WsXmlNodeH node)
 {
     destroy_node_private_data(((xmlNodePtr)node)->_private);
     xmlUnlinkNode((xmlNodePtr)node);
@@ -706,7 +728,8 @@ xml_parser_attr_add( WsXmlNodeH node,
 
 
 
-int xml_parser_attr_remove(WsXmlAttrH attr)
+int 
+xml_parser_attr_remove(WsXmlAttrH attr)
 {
     xmlAttrPtr xmlAttr = (xmlAttrPtr)attr;
     xmlNodePtr xmlNode = (xmlNodePtr)xmlAttr->parent;
@@ -730,7 +753,8 @@ int xml_parser_attr_remove(WsXmlAttrH attr)
     return 0;
 }
 
-char* xml_parser_attr_query(WsXmlAttrH attr, int what)
+char* 
+xml_parser_attr_query(WsXmlAttrH attr, int what)
 {
     char* ptr = NULL;
     xmlAttrPtr xmlAttr = (xmlAttrPtr)attr;
@@ -909,4 +933,8 @@ int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr) {
 
     return 0;
 }
+
+
+
+
 

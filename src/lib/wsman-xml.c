@@ -1529,15 +1529,28 @@ ws_xml_ns_add( WsXmlNodeH node,
 
 
 
-int check_xpath(WsXmlNodeH node, char *xpath_expr) {
+int 
+check_xpath(WsXmlNodeH node, char *xpath_expr) {
     //return xml_parser_check_xpath(node, xpath_expr);
     return 0;
 }
 
 
-char *ws_xml_get_xpath_value (WsXmlDocH doc, char *expression)
+char *
+ws_xml_get_xpath_value (WsXmlDocH doc, char *expression)
 {    
     return xml_parser_get_xpath_value(doc, expression);
 }
+
+
+
+WsXmlDocH 
+ws_xml_create_doc_by_import(WsXmlNodeH node ) {
+	return xml_parser_create_doc_by_import( node );
+}
+
+
+
+
 
 /** @} */
