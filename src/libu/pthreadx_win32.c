@@ -85,7 +85,7 @@ int pthread_mutex_init(pthread_mutex_t *mp,
 
 #if(_WIN32_WINNT >= 0x0400)
 int
-pthread_mutex_trylock(struct pthread_mutex_t *m)
+pthread_mutex_trylock(pthread_mutex_t *m)
 {
 	if (TryEnterCriticalSection(&m->csMutex) == TRUE)
 		return 0;
