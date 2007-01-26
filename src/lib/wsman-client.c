@@ -370,10 +370,6 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
     if ((options.flags & FLAG_ENUMERATION_OPTIMIZATION) ==
         FLAG_ENUMERATION_OPTIMIZATION) {
         ws_xml_add_child(node, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
-        if (options.max_elements > 0) {
-            ws_xml_add_child_format(node, XML_NS_WS_MAN,
-               WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
-        }
     }
     if ((options.flags & FLAG_ENUMERATION_ENUM_EPR) ==
         FLAG_ENUMERATION_ENUM_EPR) {
@@ -428,6 +424,15 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
 }
 
 
+char*
+wsman_client_node_to_buf(WsXmlNodeH node) {
+   char *buf;
+   int   len;
+   WsXmlDocH doc = ws_xml_create_doc_by_import( node);
+   ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+   ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
+   return buf;
+}
 
 
 
@@ -523,10 +528,15 @@ wsman_client_create_request(WsManClient * cl,
     }
 
     if (action == WSMAN_ACTION_PULL || action == WSMAN_ACTION_ENUMERATION) {
-        if (options.max_elements > 0) {
+        if (options.max_elements > 0 ) {
             node = ws_xml_get_child(body, 0, NULL, NULL);
-            ws_xml_add_child_format(node, XML_NS_ENUMERATION,
-               WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
+            if ((options.flags & FLAG_ENUMERATION_OPTIMIZATION) == FLAG_ENUMERATION_OPTIMIZATION ) {
+                ws_xml_add_child_format(node, XML_NS_WS_MAN,
+                    WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
+            } else {
+                ws_xml_add_child_format(node, XML_NS_ENUMERATION,
+                    WSENUM_MAX_ELEMENTS, "%d", options.max_elements);
+            }
         }
         if ((options.flags & FLAG_ENUMERATION_COUNT_ESTIMATION) ==
             FLAG_ENUMERATION_COUNT_ESTIMATION) {

@@ -680,8 +680,10 @@ WsXmlDocH ws_xml_read_file( SoapH soap, char* filename,
  * @param rootName Root node name
  * @return XML document
  */
-WsXmlDocH ws_xml_create_doc( SoapH soap, char* rootNsUri, char* rootName) 
-{
+WsXmlDocH 
+ws_xml_create_doc( SoapH soap, 
+                   char* rootNsUri,
+                   char* rootName) {
     WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
 	WsXmlNodeH rootNode;
 	WsXmlNsH ns;
@@ -1545,8 +1547,10 @@ ws_xml_get_xpath_value (WsXmlDocH doc, char *expression)
 
 
 WsXmlDocH 
-ws_xml_create_doc_by_import(WsXmlNodeH node ) {
-	return xml_parser_create_doc_by_import( node );
+ws_xml_create_doc_by_import( WsXmlNodeH node ) {
+        WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
+	xml_parser_create_doc_by_import( wsDoc,  node );
+        return wsDoc;
 }
 
 

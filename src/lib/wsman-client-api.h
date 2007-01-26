@@ -245,9 +245,10 @@ extern          "C" {
                /* Misc */
                
     /* Place holder */
-	int				wsman_client_get_last_error(WsManClient * cl);
+	int		wsman_client_get_last_error(WsManClient * cl);
 	void            wsman_remove_query_string(char *resourceUri, char **result);
-	int 			wsman_client_check_for_fault(WsXmlDocH doc );
+	int 		wsman_client_check_for_fault(WsXmlDocH doc );
+        char            *wsman_client_node_to_buf(WsXmlNodeH node);
 
 /*---------------- Advanced client API --------------------------------------*/
 

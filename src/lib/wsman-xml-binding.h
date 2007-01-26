@@ -85,6 +85,6 @@ int xml_parser_utf8_strlen(char *buf);
 
 char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression);
 
-WsXmlDocH xml_parser_create_doc_by_import(WsXmlNodeH node );
+int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node ) ;
 
 #endif /*XML_BINDING_LIBXML2_H_*/

@@ -131,6 +131,28 @@ void xml_parser_free_memory(void* ptr)
         xmlFree(ptr);
 }
 
+
+
+int 
+xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node ) {
+    xmlDocPtr doc;
+    xmlNodePtr rootNode;
+
+    if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL )
+    {
+        if (doc)
+            xmlFreeDoc(doc);
+        return 0;
+    } else {    
+        doc->_private = wsDoc;
+        wsDoc->parserDoc = doc;
+    	rootNode = xmlDocCopyNode((xmlNodePtr ) node, doc, 1 );
+        xmlDocSetRootElement(doc, rootNode);
+        return 1;        
+    }	
+}
+
+
 int xml_parser_create_doc(WsXmlDocH wsDoc, char* rootName)
 {
     int retVal = -1;
@@ -635,23 +657,6 @@ make_new_xml_node( xmlNodePtr base,
 }
 
 
-
-WsXmlDocH 
-xml_parser_create_doc_by_import(WsXmlNodeH node ) {
-    xmlDocPtr doc;
-    xmlNodePtr rootNode;
-
-    if ( (doc = xmlNewDoc(BAD_CAST "1.0")) == NULL )
-    {
-        if (doc)
-            xmlFreeDoc(doc);
-        return NULL;
-    } else {    
-    	rootNode = xmlDocCopyNode((xmlNodePtr ) node, doc, 1 );
-        xmlDocSetRootElement(doc, rootNode);
-        return (WsXmlDocH) doc;        
-    }	
-}
 
 
 
