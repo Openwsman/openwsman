@@ -51,11 +51,13 @@ int xml_parser_create_doc(WsXmlDocH Doc, char *rootName);
 void xml_parser_destroy_doc(WsXmlDocH Doc);
 WsXmlDocH xml_parser_get_doc(WsXmlNodeH node);
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc);
-WsXmlDocH xml_parser_memory_to_doc(SoapH soap, char *buf, int size, char *encoding, unsigned long options);
+WsXmlDocH xml_parser_memory_to_doc(SoapH soap, char *buf, size_t size,
+                                 char *encoding, unsigned long options);
 char *xml_parser_node_query(WsXmlNodeH node, int what);
 int xml_parser_node_set(WsXmlNodeH node, int what, char *str);
 WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which);
-WsXmlNsH xml_parser_ns_find(WsXmlNodeH node, char *uri, char *prefix, int bWalkUpTree, int bAddAtRootIfNotFound);
+WsXmlNsH xml_parser_ns_find(WsXmlNodeH node, char *uri,
+             char *prefix, int bWalkUpTree, int bAddAtRootIfNotFound);
 char *xml_parser_ns_query(WsXmlNsH ns, int what);
 WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, char *uri, char *prefix);
 int xml_parser_ns_remove(WsXmlNodeH node, char *nsUri);
@@ -63,17 +65,21 @@ WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which);
 
 int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree);
 // xmlNodePtr make_new_xml_node(xmlNodePtr base, char *uri, char *name, char *value);
-WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where, char *nsUri, char *localName, char *value);
+WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where,
+                           char *nsUri, char *localName, char *value);
 int xml_parser_node_remove(WsXmlNodeH node);
-WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char *uri, char *name, char *value);
+WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, char *uri,
+                                        char *name, char *value);
 int xml_parser_attr_remove(WsXmlAttrH attr);
-WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options);
+WsXmlDocH xml_parser_file_to_doc(SoapH soap, char* filename,
+                                     char* encoding, unsigned long options);
 
 char* xml_parser_attr_query(WsXmlAttrH attr, int what);
 WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
 
 void xml_parser_free_memory(void* ptr);
-void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding);
+void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf,
+                                             int* ptrSize, char* encoding);
 
 void xml_parser_doc_dump(FILE* f, WsXmlDocH doc);
 void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize);
