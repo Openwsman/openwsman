@@ -117,17 +117,21 @@ char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
 
 char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
-WsXmlDocH ws_xml_read_file(SoapH soap, char* filename, char* encoding, unsigned long options);
-WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, int size, char *encoding, unsigned long options);
+WsXmlDocH ws_xml_read_file(SoapH soap, char* filename,
+                                char* encoding, unsigned long options);
+WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, size_t size,
+                                 char *encoding, unsigned long options);
 
 WsXmlDocH ws_xml_create_doc(SoapH soap, char *rootNsUri, char *rootName);
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char *uri, char *prefix);
 
 WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix);
 
-WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...);
+WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri,
+                                      char* localName, char* format, ...);
 
-WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...);
+WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
+                                char* nsUri, char* format, ...);
 
 int check_xpath(WsXmlNodeH node, char *xpath_expr);
 

@@ -86,7 +86,8 @@ init_DTable(void)
 void
 ws_base64_encode(const char *from, int len, char *to)
 {
-	int n, i;
+	int i;
+	size_t n;
 	char	in[3] = {0};
 	char	out[4];
 	const char *s = from;

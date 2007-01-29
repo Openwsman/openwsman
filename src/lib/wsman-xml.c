@@ -659,7 +659,7 @@ char* ws_xml_get_node_text(WsXmlNodeH node) {
 WsXmlDocH ws_xml_read_memory(
         SoapH soap, 
         char* buf, 
-        int size, 
+        size_t size, 
         char* encoding, 
         unsigned long options)
 {
