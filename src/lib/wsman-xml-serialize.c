@@ -37,15 +37,15 @@
 #include <wsman_config.h>
 #endif
 
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #include <ctype.h>
-#include "assert.h"
+#include <assert.h>
 
 
-#include "u/libu.h"
+#include <u/libu.h>
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -346,7 +346,7 @@ do_serialize_uint(XmlSerializationData * data, int valSize)
                 retVal = WS_ERR_XML_PARSING;
                 goto DONE;
             }
-            tmp = strtoull(str, &end, 10);
+            tmp = strtoul(str, &end, 10);
             if (errno) {
                 error("strtoul(%s) failed; errno = #d", str, errno);
                 retVal = WS_ERR_XML_PARSING;

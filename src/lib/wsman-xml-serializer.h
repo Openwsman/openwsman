@@ -54,11 +54,20 @@ typedef struct __XmlSerialiseDynamicSizeData
     XML_TYPE_PTR data;
 }  XmlSerialiseDynamicSizeData;
 
+#ifdef _WIN32
 typedef unsigned char XML_TYPE_UINT8;
 typedef unsigned short XML_TYPE_UINT16;
 typedef unsigned long XML_TYPE_UINT32;
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
+#else
+#include <sys/types.h>
+typedef u_int8_t XML_TYPE_UINT8;
+typedef u_int16_t XML_TYPE_UINT16;
+typedef u_int32_t XML_TYPE_UINT32;
+typedef int XML_TYPE_BOOL;
+typedef char XML_TYPE_CHAR;
+#endif
 typedef char* XML_TYPE_STR;
 typedef XmlSerialiseDynamicSizeData XML_TYPE_DYN_ARRAY;
 struct _XML_NODE_ATTR;
