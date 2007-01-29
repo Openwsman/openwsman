@@ -42,6 +42,7 @@
 
 #include <u/libu.h>
 #include "wsman-xml-api.h"
+#include "wsman-client-api.h"
 #include "wsman-soap.h"
 #include "wsman-dispatcher.h"
 

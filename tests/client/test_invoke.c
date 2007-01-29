@@ -189,14 +189,15 @@ int main(int argc, char** argv)
 		if (tests[i].properties != NULL)
 			wsman_add_properties_from_query_string(&options, tests[i].properties);		
 
-        doc = wsman_invoke(cl, (char *)tests[i].resource_uri, (char *)tests[i].method, options);
+        doc = wsman_invoke(cl, (char *)tests[i].resource_uri,
+                           options, (char *)tests[i].method, NULL);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-        if (tests[i].final_status != wsman_get_client_response_code(cl)) {
+        if (tests[i].final_status != wsman_client_get_response_code(cl)) {
             printf("Status = %ld \t\t\t\033[22;31mFAILED\033[m\n",
-                                wsman_get_client_response_code(cl));
+                                wsman_client_get_response_code(cl));
             goto CONTINUE;
         }
 

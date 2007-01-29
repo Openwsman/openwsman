@@ -91,10 +91,10 @@ string WsmanClient::Create(const string &resourceUri, const string &data)
 	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)data.c_str(),
 					  data.length(), NULL, 0);
 	
-	WsXmlDocH createResponse = ws_transfer_create(	cl, 
-							(char *)resourceUri.c_str(),
-							input,
-        					options);
+	WsXmlDocH createResponse = ws_transfer_create(cl, 
+							resourceUri.c_str(),
+							options,
+							input);
 	
 	destroy_action_options(&options);
 	string error;
@@ -231,7 +231,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 	ws_xml_destroy_doc(enum_response);
 
 	while (enumContext != NULL) {
-		doc = wsenum_pull(cl, (char *)resourceUri.c_str(), enumContext, options);
+		doc = wsenum_pull(cl, resourceUri.c_str(), options, enumContext);
 		// Check for success (500,400 are OK??)
 		if (! CheckClientResponseCode(cl, code, lastErr, error))
 		{
@@ -339,7 +339,7 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 	}
 	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)content.c_str(),
 					  content.length(), NULL, 0);
-	doc = ws_transfer_put(cl, (char *)resourceUri.c_str(), input, options);
+	doc = ws_transfer_put(cl, resourceUri.c_str(), options, input);
 
 	destroy_action_options(&options);
 	string error;
@@ -395,7 +395,8 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 
 	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)content.c_str(),
 					  content.length(), NULL, 0);
-	doc = wsman_invoke(cl, (char *)resourceUri.c_str(), (char *)methodName.c_str(), input, options);
+	doc = wsman_invoke(cl, resourceUri.c_str(), options,
+                             (char *)methodName.c_str(), input);
 
 	destroy_action_options(&options);
 	long code;
@@ -494,7 +495,7 @@ void SetDefaultOptions(actionOptions *options)
 /// </summary>
 bool CheckClientResponseCode(WsManClient* cl, long &responseCode, int &lastError, string &error)
 {
-	responseCode = wsman_get_client_response_code(cl);
+	responseCode = wsman_client_get_response_code(cl);
 	lastError = wsman_client_get_last_error(cl);
 	if (lastError)
 	{

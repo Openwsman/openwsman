@@ -251,32 +251,33 @@ int main(int argc, char** argv)
                goto CONTINUE;
         }			//wsman_output(enum_response);
 		if ((char *)tests[i].expected_value != NULL) {
-			    char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
+			    char *xp = ws_xml_get_xpath_value(enum_response,
+                                   (char *)tests[i].xpath_expression);
 			    if (xp) {
                     if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
                          printf("\t\t\033[22;32mPASSED\033[m\n");
                      else
                          printf("\t\t\033[22;31mFAILED\033[m\n");	
-                    u_free(xp);		            
-			    }			    
-		}			
+                    u_free(xp);
+			    }
+		}
 		enumContext = wsenum_get_enum_context(enum_response);
 		ws_xml_destroy_doc(enum_response);
 
 		while (enumContext != NULL)
 		{ 			
-			docp = wsenum_pull(cl, (char *)tests[i].resource_uri, enumContext,
-				 options);
+			docp = wsenum_pull(cl, (char *)tests[i].resource_uri,
+                             options, enumContext);
             if (!docp) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
             }
-			wsman_output(docp);							
+			wsman_output(docp);	
 			enumContext = wsenum_get_enum_context(docp);
 			ws_xml_destroy_doc(docp);
 		}
 CONTINUE:
-		destroy_action_options(&options);		
+		destroy_action_options(&options);
     	wsman_release_client(cl);
 	}
 

@@ -85,8 +85,9 @@ extern          "C" {
 		WsManClientData data;
 		WsManConnection *connection;
 		long            response_code;
-		char           *fault_string;
-		void           *transport;
+		char            *fault_string;
+        int             last_error;
+		void            *transport;
 	};
 
 #define WSMAN_CLIENT_BUSY       0x0001

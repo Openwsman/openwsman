@@ -285,8 +285,9 @@ int main(int argc, char** argv)
     ws_xml_destroy_doc(enum_response);	
     if (enumContext) {
       printf ("Test %d: %70s:", i + 1, "Check Release Response:");
-      WsXmlDocH release_response = wsenum_release(cl, (char *)tests[i].resource_uri , enumContext,
-                                                  options);
+      WsXmlDocH release_response = wsenum_release(cl,
+                        (char *)tests[i].resource_uri,
+                        options, enumContext);
 
       if (!release_response) {
            printf("\t\t\033[22;31mUNRESOLVED\033[m\n");

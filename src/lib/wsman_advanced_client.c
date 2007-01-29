@@ -219,10 +219,8 @@ char* wsman_session_resource_uri_get(int session_id)
 
 static WsXmlDocH _request_create(session_t *s, WsmanAction action)
 {
-
-	return wsman_client_create_request(s->client, action, NULL,
-				s->resource_uri, s->options, s->enum_context);
-
+    return wsman_client_create_request(s->client, s->resource_uri,
+                   s->options, action, NULL,  s->enum_context);
 }
 
 WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action)
@@ -253,7 +251,7 @@ static wsman_data_t* _request_send(session_t *s, WsXmlDocH request)
 	wsman_send_request(s->client, data->request);
 
 	data->response = wsman_build_envelope_from_response(s->client);
-	data->response_code = wsman_get_client_response_code(s->client);
+	data->response_code = wsman_client_get_response_code(s->client);
 
 	if (data->response) {
 		s->enum_context = wsenum_get_enum_context(data->response);
