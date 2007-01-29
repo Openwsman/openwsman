@@ -562,7 +562,9 @@ wsman_client_create_request(WsManClient * cl,
             ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options.dialect);
         }
     }
-    if (action != WSMAN_ACTION_TRANSFER_CREATE && action != WSMAN_ACTION_TRANSFER_PUT) {
+    if (action != WSMAN_ACTION_TRANSFER_CREATE &&
+                     action != WSMAN_ACTION_TRANSFER_PUT &&
+                     action != WSMAN_ACTION_CUSTOM) {
         if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
             ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
         }
@@ -1154,23 +1156,16 @@ WsXmlDocH
 wsman_build_envelope_from_response(WsManClient * cl)
 {
     WsXmlDocH       doc = NULL;
-    u_buf_t        *buffer;
+    u_buf_t        *buffer = cl->connection->response;
 
-    SoapH           soap = ws_context_get_runtime(cl->wscntx);
-    char           *response = (char *) u_buf_ptr(cl->connection->response);
-    if (response) {
-        if (u_buf_create(&buffer) != 0) {
-            error("Error while creating buffer");
-        } else {
-            u_buf_set(buffer, response, strlen(response));
-        }
-
-        doc = ws_xml_read_memory(soap, u_buf_ptr(buffer),
-                     u_buf_size(buffer), NULL, 0);
-        if (doc != NULL) {
-            debug("xml doc received...");
-        }
-        u_buf_free(buffer);
+    if (!buffer || !u_buf_ptr(buffer)) {
+        error("NULL response");
+        return NULL;
+    }
+    doc = ws_xml_read_memory(ws_context_get_runtime(cl->wscntx),
+                   u_buf_ptr(buffer), u_buf_len(buffer), NULL, 0);
+    if (doc == NULL) {
+        error("could not create xmldoc from response");
     }
     return doc;
 }
