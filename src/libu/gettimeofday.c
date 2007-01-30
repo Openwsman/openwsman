@@ -21,7 +21,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
     _ftime(&tb);
 
     /* set the timeval struct */
-    tv->tv_sec = tb.time;
+    tv->tv_sec = (long)tb.time;
     tv->tv_usec = 1000 * tb.millitm;
 
     if(tz == NULL)

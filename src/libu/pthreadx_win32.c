@@ -66,7 +66,7 @@ int pthread_cancel(pthread_t target_thread)
 int pthread_join(pthread_t target_thread, void **status)
 {
     DWORD dwResult = WaitForSingleObject(target_thread, INFINITE);
-    (*status) = (void *)dwResult;
+    *((DWORD *)status) = dwResult;
     return 0;
 }
 

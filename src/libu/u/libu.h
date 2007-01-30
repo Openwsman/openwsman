@@ -44,7 +44,13 @@
 #include <u/uerr.h>
 #include <u/uoption.h>
 
-
+#ifdef WIN32
+#define strdup _strdup
+#define stricmp _stricmp
+#define strnicmp _strnicmp
+#define fileno _fileno
+#define cputs _cputs
+#endif
 #ifndef TRUE
 #define TRUE    1
 #endif  /* TRUE */

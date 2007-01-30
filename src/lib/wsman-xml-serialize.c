@@ -175,7 +175,7 @@ handle_attrs(struct __XmlSerializationData* data,
 
     DATA_BUF(data) = DATA_BUF(data) + sz;
     al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    pad = (unsigned long)DATA_BUF(data) % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     if (pad) {
         pad = al - pad;
     }
@@ -402,7 +402,7 @@ do_serialize_uint8(XmlSerializationData* data)
 {
     if (XML_IS_ATTRS(data->elementInfo)) {
         size_t al = get_struct_align();
-        size_t pad = (unsigned long)DATA_BUF(data) % al;
+        size_t pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
         if (pad) {
             pad = al - pad;
         }
@@ -428,7 +428,7 @@ do_serialize_uint16(XmlSerializationData* data)
     } else {
         al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
     }
-    pad = (unsigned long)DATA_BUF(data) % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
 
     if (pad) {
         pad = al - pad;
@@ -457,7 +457,7 @@ do_serialize_uint32(XmlSerializationData* data)
     } else {
         al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
     }
-    pad = (unsigned long)data->elementBuf % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     if (pad) {
         pad = al - pad;
     }
@@ -491,7 +491,7 @@ do_serialize_string(XmlSerializationData * data)
     } else {
         al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
     }
-    pad = (unsigned long)DATA_BUF(data) % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     if (pad) {
         pad = al - pad;
     }
@@ -588,7 +588,7 @@ do_serialize_bool(XmlSerializationData * data)
     } else {
         al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
     }
-    pad = (unsigned long)DATA_BUF(data) % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     if (pad) {
         pad = al - pad;
     }
@@ -723,12 +723,12 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
         XmlSerialiseDynamicSizeData b;
     } dummy;
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
-    size_t pad = (unsigned long)data->elementBuf % al;
+    size_t pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     size_t  retVal;
     char *savedBufPtr;
     XmlSerializerInfo *savedElementInfo;
     XmlSerialiseDynamicSizeData *dyn = NULL;
-    int   tmp;
+    size_t   tmp;
     XmlSerializerInfo myinfo;
     int savedIndex;
     char *savedStopper;
@@ -838,7 +838,7 @@ do_serialize_struct(XmlSerializationData * data)
     int savedIndex = data->index;
     void *savedStopper = data->stopper;
     size_t al = get_struct_align();
-    size_t pad = (unsigned long)DATA_BUF(data) % al;
+    size_t pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     size_t count;
     size_t struct_size;
     int savedLocalIndex;
@@ -857,7 +857,7 @@ do_serialize_struct(XmlSerializationData * data)
             goto DONE;
     }
     al = get_struct_align();
-    pad = (unsigned long)DATA_BUF(data) % al;
+    pad = (size_t)((unsigned long long)DATA_BUF(data) % al);
     if (pad) {
         pad = al - pad;
     }
@@ -982,7 +982,7 @@ initialize_xml_serialization_data(
 
 
 
-int ws_serialize(WsContextH cntx, 
+size_t ws_serialize(WsContextH cntx, 
         WsXmlNodeH xmlNode, 
         XML_TYPE_PTR dataPtr, 
         XmlSerializerInfo* info,
@@ -991,7 +991,7 @@ int ws_serialize(WsContextH cntx,
         XML_NODE_ATTR *attrs,
         int output)
 {
-    int retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+    size_t retVal = WS_ERR_INSUFFICIENT_RESOURCES;
     XmlSerializerInfo myinfo;
     XmlSerializationData data;
 
@@ -1030,9 +1030,9 @@ DONE:
 }
 
 
-int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo* info)
+size_t ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf, XmlSerializerInfo* info)
 {
-    int retVal;
+    size_t retVal;
     XmlSerializationData data;
     XmlSerializerInfo myinfo;
 

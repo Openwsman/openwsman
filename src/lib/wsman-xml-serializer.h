@@ -54,7 +54,7 @@ typedef struct __XmlSerialiseDynamicSizeData
     XML_TYPE_PTR data;
 }  XmlSerialiseDynamicSizeData;
 
-#ifdef _WIN32
+#ifdef WIN32
 typedef unsigned char XML_TYPE_UINT8;
 typedef unsigned short XML_TYPE_UINT16;
 typedef unsigned long XML_TYPE_UINT32;
@@ -386,7 +386,7 @@ size_t do_serialize_attrs(struct __XmlSerializationData* data);
 
         // Serializer user interface
 
-int ws_serialize(WsContextH cntx,
+size_t ws_serialize(WsContextH cntx,
                 WsXmlNodeH xmlNode,
                 XML_TYPE_PTR dataPtr,
                 XmlSerializerInfo *info,
@@ -432,7 +432,7 @@ unsigned long ws_deserialize_uint32(
                 char *nameNs, 
                 char *name);
 
-int ws_serializer_free_mem(WsContextH cntx, 
+size_t ws_serializer_free_mem(WsContextH cntx, 
                 XML_TYPE_PTR buf, 
                 XmlSerializerInfo *info);
 

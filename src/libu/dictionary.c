@@ -36,6 +36,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef WIN32
+#define strdup _strdup
+#endif
 
 
 /** Maximum value size for integers and doubles. */

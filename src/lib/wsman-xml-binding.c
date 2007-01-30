@@ -236,7 +236,7 @@ xml_parser_memory_to_doc(SoapH soap, char* buf, size_t size,
     if (!buf || !size || !soap) {
         return NULL;
     }
-    xmlDoc = xmlReadMemory(buf, size, NULL, encoding,
+    xmlDoc = xmlReadMemory(buf, (int)size, NULL, encoding,
                                      XML_PARSE_NONET | XML_PARSE_NSCLEAN);
    if (xmlDoc == NULL) {
         return NULL;

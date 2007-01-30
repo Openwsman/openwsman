@@ -49,7 +49,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-
+#define cputs _cputs
 
 #endif /* WIN32 */
 

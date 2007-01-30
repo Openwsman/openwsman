@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define fileno _fileno
 
 void vsyslog(int priority, const char *fmt, va_list ap)
 {
