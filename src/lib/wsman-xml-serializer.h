@@ -92,7 +92,7 @@ typedef struct _XML_NODE_ATTR XML_NODE_ATTR;
 
 
 struct __XmlSerializationData;
-typedef int (*XmlSerializationProc)(struct __XmlSerializationData* data);
+typedef size_t (*XmlSerializationProc)(struct __XmlSerializationData* data);
 
 struct __XmlSerializerInfo
 {
