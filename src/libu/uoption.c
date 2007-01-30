@@ -291,7 +291,7 @@ static char fill_tmp_data(struct tmp_buf *data,
 			  u_option_entry_t *entry,
 			  u_error_t **error)
 {
-	unsigned int	nd;
+	int	nd;
 	unsigned int	count;
 	char		**pptr;
 	long int	val;
@@ -408,7 +408,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 {
 	lnode_t			*node;
 	u_option_group_t	*grp;
-	int			e;
+	unsigned int			e;
 	size_t			nlen;
 
 	if (!ctx) {
@@ -446,7 +446,7 @@ static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 {
 	lnode_t			*node;
 	u_option_group_t	*grp;
-	int			e;
+	unsigned int			e;
 
 	if (!ctx) {
 		return NULL;

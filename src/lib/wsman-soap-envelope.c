@@ -114,7 +114,7 @@ wsman_create_response_envelope(WsContextH cntx,
 		} else {
 			if ((srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_ACTION)) != NULL) {
 				if ((action = ws_xml_get_node_text(srcNode)) != NULL) {
-					int             len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
+					size_t             len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
 					char           *tmp = (char *) u_malloc(sizeof(char) * len);
 					if (tmp) {
 						sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);

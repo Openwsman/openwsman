@@ -163,7 +163,7 @@ extern          "C" {
 	 * @return XML document
 	 */
 	WsXmlDocH       wsman_client_read_memory(WsManClient * cl, char *buf,
-	                   int size, char *encoding, unsigned long options);
+	                   size_t size, char *encoding, unsigned long options);
 
 
 

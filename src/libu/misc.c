@@ -264,7 +264,8 @@ err:
 int u_path_snprintf(char *buf, size_t sz, char sep, const char *fmt, ...)
 {
     va_list ap;
-    int wr, i, len;
+    int wr;
+	size_t i, len;
 
     va_start(ap, fmt);
 

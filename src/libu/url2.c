@@ -10,8 +10,8 @@
 
 static int unify(char *s)
 {
-    int len = strlen(s);
-    int i, j;
+    size_t len = strlen(s);
+    size_t i, j;
     char n;
 
     for (i = 0; i < len; i++) {

@@ -31,7 +31,7 @@
 #elif defined (WIN32)
 #include <windows.h>
 
-#define PTHREAD_MUTEX_RECURSIVE_NP "0"
+#define PTHREAD_MUTEX_RECURSIVE_NP 0
 
 typedef HANDLE pthread_t;
 typedef CRITICAL_SECTION pthread_mutex_t;

@@ -136,7 +136,7 @@ make_qname( WsXmlNodeH node,
     char* buf = NULL; 
     if ( name && uri && name )
     {
-        int len = 1 + strlen(name);
+        size_t len = 1 + strlen(name);
         WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1); 
         char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
 

@@ -50,7 +50,7 @@ typedef void* XML_TYPE_PTR;
 
 typedef struct __XmlSerialiseDynamicSizeData
 {
-    int count;
+    unsigned int count;
     XML_TYPE_PTR data;
 }  XmlSerialiseDynamicSizeData;
 
@@ -372,14 +372,14 @@ XmlSerializerInfo t##_TypeInfo[] = {\
 
         // XmlSerializationProc functions for different types
 
-int do_serialize_uint8(struct __XmlSerializationData* data);
-int do_serialize_uint16(struct __XmlSerializationData* data);
-int do_serialize_uint32(struct __XmlSerializationData* data);
-int do_serialize_string(struct __XmlSerializationData* data);
-int do_serialize_bool(struct __XmlSerializationData* data);
-int do_serialize_dyn_size_array(struct __XmlSerializationData* data);
-int do_serialize_struct(struct __XmlSerializationData* data);
-int do_serialize_attrs(struct __XmlSerializationData* data);
+size_t do_serialize_uint8(struct __XmlSerializationData* data);
+size_t do_serialize_uint16(struct __XmlSerializationData* data);
+size_t do_serialize_uint32(struct __XmlSerializationData* data);
+size_t do_serialize_string(struct __XmlSerializationData* data);
+size_t do_serialize_bool(struct __XmlSerializationData* data);
+size_t do_serialize_dyn_size_array(struct __XmlSerializationData* data);
+size_t do_serialize_struct(struct __XmlSerializationData* data);
+size_t do_serialize_attrs(struct __XmlSerializationData* data);
 
 
 

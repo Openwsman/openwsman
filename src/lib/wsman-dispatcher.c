@@ -728,7 +728,7 @@ wsman_dispatcher(WsContextH cntx,
 	         * we are dealing with a custom action
 	         */
 		if (ns != NULL) {
-			int             len = strlen(ns);
+			size_t             len = strlen(ns);
 			if (!strncmp(action, ns, len) && action[len] == '/')
 				ptr = &action[len + 1];
 		}

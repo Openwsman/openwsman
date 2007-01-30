@@ -140,7 +140,7 @@ request_usr_pwd(ws_auth_type_t auth,
     *username = NULL;
   }
 
-  pw = getpass("Password: ");
+  pw = (char *)getpass("Password: ");
   *password = u_strdup_printf ("%s", pw);
 }
 

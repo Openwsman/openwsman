@@ -8,13 +8,13 @@ char* u_str_clone(char* str)
 {
     char* buf = NULL;
     if ( str ) {
-        int size = strlen(str) + 1;
+        size_t size = strlen(str) + 1;
         buf = u_clone(str, size);
     }
     return buf;
 }
 
-void* u_clone(void* buf, int size)
+void* u_clone(void* buf, size_t size)
 {
     void* clone = NULL;
     if ( buf ) {

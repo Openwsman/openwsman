@@ -82,8 +82,14 @@ void debug_full_verbose(debug_level_e  level, char *file,
 #define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __FUNCTION__, __FILE__, __LINE__ , debug_helper (format));
 #define TRACE_EXIT  printf("TRACE: Leaving %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
 #else
-#define TRACE_ENTER 
+#define TRACE_ENTER
+#ifdef _WIN32
+static __inline void TRACE_DETAILS(char* format, ...) {
+    return;
+}
+#else
 #define TRACE_DETAILS(format...)
+#endif
 #define TRACE_EXIT
 #endif
 

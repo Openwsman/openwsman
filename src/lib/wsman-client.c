@@ -51,7 +51,7 @@
 static char*
 wsman_make_action(char *uri, char *op_name)
 {
-    int     len = strlen(uri) + strlen(op_name) + 2;
+    size_t     len = strlen(uri) + strlen(op_name) + 2;
     char    *ptr = (char *) malloc(len);
     if (ptr) {
         sprintf(ptr, "%s/%s", uri, op_name);
@@ -170,7 +170,7 @@ wsman_client_read_file(WsManClient * cl, char *filename,
 
 WsXmlDocH
 wsman_client_read_memory(WsManClient * cl, char *buf,
-             int size, char *encoding, unsigned long options)
+             size_t size, char *encoding, unsigned long options)
 {
     return ws_xml_read_memory(ws_context_get_runtime(cl->wscntx),
                   buf, size, encoding, options);
@@ -850,12 +850,13 @@ wsman_invoke_fromtext(WsManClient * cl,
     if ((!options.properties || hash_count(options.properties) == 0) && data != NULL) {
         WsXmlDocH doc = wsman_client_read_memory(cl,
                                       (char *)data, size, (char *)encoding, 0);
+		WsXmlNodeH n;
         if (doc == NULL) {
             error("could not wsman_client_read_memory");
             ws_xml_destroy_doc(request);
             return NULL;
         }
-        WsXmlNodeH n = ws_xml_get_doc_root(doc);
+        n = ws_xml_get_doc_root(doc);
         ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
         ws_xml_destroy_doc(doc);
     }
@@ -1217,11 +1218,12 @@ init_client_connection(WsManClient * cl)
 
 WsManClient*
 wsman_create_client_from_uri(const char* endpoint) {
-	u_uri_t *uri;
-	if (uri != NULL)
+	u_uri_t *uri = NULL;
+	WsManClient* cl;
+	if (endpoint != NULL)
     	    if (u_uri_parse((const char *) endpoint, &uri) != 0 )
                 return NULL;
-    WsManClient* cl = wsman_create_client( uri->host,
+    cl = wsman_create_client( uri->host,
         uri->port,
         uri->path,
         uri->scheme,

@@ -69,7 +69,7 @@ typedef struct __WsSerializerMemEntry WsSerializerMemEntry;
 
 
 void* 
-xml_serializer_alloc(XmlSerializationData* data, int size, int zeroInit)
+xml_serializer_alloc(XmlSerializationData* data, size_t size, int zeroInit)
 {
     void* ptr = ws_serializer_alloc(data->cntx, size);
 	TRACE_ENTER;
@@ -164,7 +164,7 @@ handle_attrs(struct __XmlSerializationData* data,
     XML_NODE_ATTR *attr;
     WsXmlAttrH xmlattr;
     char   *src, *dstPtr;
-    int    dstSize;
+    size_t    dstSize;
     TRACE_ENTER;
     debug("node name = %s", ws_xml_get_node_local_name(node));
     if (!XML_IS_ATTRS(data->elementInfo)) {
@@ -267,12 +267,12 @@ DONE:
 }
 
 
-static int
+static size_t
 do_serialize_uint(XmlSerializationData * data, int valSize)
 {
     WsXmlNodeH      child = NULL;
     XML_TYPE_UINT32   tmp;
-    int             retVal = DATA_ALL_SIZE(data);
+    size_t             retVal = DATA_ALL_SIZE(data);
     char *end;
     char *str;
 
@@ -397,7 +397,7 @@ DONE:
 
 
 
-int 
+size_t 
 do_serialize_uint8(XmlSerializationData* data)
 {
     if (XML_IS_ATTRS(data->elementInfo)) {
@@ -413,7 +413,7 @@ do_serialize_uint8(XmlSerializationData* data)
 }
 
 
-int 
+size_t 
 do_serialize_uint16(XmlSerializationData* data)
 {
     typedef struct {
@@ -422,7 +422,7 @@ do_serialize_uint16(XmlSerializationData* data)
     } dummy;
     size_t al;
     size_t pad;
-    int retVal;
+    size_t retVal;
     if (XML_IS_ATTRS(data->elementInfo)) {
         al = get_struct_align();
     } else {
@@ -442,7 +442,7 @@ do_serialize_uint16(XmlSerializationData* data)
     return retVal;
 }
 
-int 
+size_t 
 do_serialize_uint32(XmlSerializationData* data)
 {
    typedef struct {
@@ -451,7 +451,7 @@ do_serialize_uint32(XmlSerializationData* data)
     } dummy;
     size_t al;
     size_t pad;
-    int retVal;
+    size_t retVal;
     if (XML_IS_ATTRS(data->elementInfo)) {
         al = get_struct_align();
     } else {
@@ -471,11 +471,11 @@ do_serialize_uint32(XmlSerializationData* data)
 }
 
 
-int
+size_t
 do_serialize_string(XmlSerializationData * data)
 {
     WsXmlNodeH      child = NULL;
-    int             retVal = DATA_ALL_SIZE(data);
+    size_t             retVal = DATA_ALL_SIZE(data);
     size_t al;
     size_t pad;
     typedef struct {
@@ -536,7 +536,7 @@ do_serialize_string(XmlSerializationData * data)
             src = ws_xml_get_node_text(child);
             if (src != NULL || *src != 0) {
                 char   *dstPtr;
-                int    dstSize = 1 + strlen(src);
+                size_t    dstSize = 1 + strlen(src);
                 dstPtr = (char *)xml_serializer_alloc(data, dstSize, 1);
                 if (dstPtr == NULL) {
                     error("no memory");
@@ -568,10 +568,10 @@ DONE:
 
 
 
-int
+size_t
 do_serialize_bool(XmlSerializationData * data)
 {
-    int  retVal = DATA_ALL_SIZE(data);
+    size_t  retVal = DATA_ALL_SIZE(data);
     typedef struct {
         XML_TYPE_UINT8 a;
         XML_TYPE_BOOL b;
@@ -668,12 +668,12 @@ DONE:
 
 
 static XmlSerialiseDynamicSizeData* 
-make_dyn_size_data(XmlSerializationData* data, int *retValp)
+make_dyn_size_data(XmlSerializationData* data, size_t *retValp)
 {
     XmlSerialiseDynamicSizeData* dyn =
                 (XmlSerialiseDynamicSizeData*)data->elementBuf;
     int savedIndex = data->index;
-    int size;
+    size_t size;
 
     TRACE_ENTER;
     data->index = 0;
@@ -715,7 +715,7 @@ DONE:
 }
 
 
-int
+size_t
 do_serialize_dyn_size_array(XmlSerializationData * data)
 {
     typedef struct {
@@ -724,7 +724,7 @@ do_serialize_dyn_size_array(XmlSerializationData * data)
     } dummy;
     size_t al = (char *)&(((dummy *)NULL)->b) - (char *)NULL;
     size_t pad = (unsigned long)data->elementBuf % al;
-    int  retVal;
+    size_t  retVal;
     char *savedBufPtr;
     XmlSerializerInfo *savedElementInfo;
     XmlSerialiseDynamicSizeData *dyn = NULL;
@@ -824,10 +824,10 @@ DONE:
 
 
 
-int
+size_t
 do_serialize_struct(XmlSerializationData * data)
 {
-    int retVal = 0;
+    size_t retVal = 0;
     int             i;
     int             elementCount = 0;
     XmlSerializerInfo *elements =
@@ -890,9 +890,9 @@ do_serialize_struct(XmlSerializationData * data)
     }
 
     for (; data->index < count; data->index++) {
+		size_t tmp;
         child = NULL;
-        int tmp = 0;
-       savedLocalIndex = data->index;
+        savedLocalIndex = data->index;
         savedLocalElementBuf = DATA_BUF(data);
         data->stopper = savedLocalElementBuf + DATA_SIZE(data);
         debug("%s[%d] = %p", DATA_ELNAME(data), data->index, DATA_BUF(data));
@@ -1065,7 +1065,7 @@ ws_deserialize(WsContextH cntx,
                int index,
                int output)
 {
-    int size;
+    size_t size;
     void* retPtr = NULL;
     XmlSerializationData data;
     XmlSerializerInfo myinfo;
@@ -1150,7 +1150,7 @@ char* ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
     if ( node ) {
         str = ws_xml_get_node_text(node);
         if ( cntx && str ) {
-            int len = strlen(str) + 1;
+            size_t len = strlen(str) + 1;
             char* tmp = str;
             if ( (str = ws_serializer_alloc(cntx, len * sizeof(char))) )
                 strcpy(str, tmp);
@@ -1174,7 +1174,7 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
 }
 
 
-void* ws_serializer_alloc(WsContextH cntx, int size)
+void* ws_serializer_alloc(WsContextH cntx, size_t size)
 {
     SoapH soap = ws_context_get_runtime(cntx);
     WsSerializerMemEntry* ptr = NULL;
