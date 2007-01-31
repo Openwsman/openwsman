@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 
 using namespace std;
 
@@ -28,6 +29,9 @@ namespace WsmanClientNamespace
 	/// </summary>
 	typedef std::map<std::string, std::string>				NameValuePairs;
 	typedef std::map<std::string, std::string>::iterator	PairsIterator;
+
+
+
 
 	// Exception thrown when transport error occurs
 	class TransportException : public std::exception

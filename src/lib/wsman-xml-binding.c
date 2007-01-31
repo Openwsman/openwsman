@@ -255,7 +255,8 @@ xml_parser_memory_to_doc(SoapH soap, char* buf, size_t size,
 }
 
 
-char* xml_parser_node_query(WsXmlNodeH node, int what)
+char* 
+xml_parser_node_query(WsXmlNodeH node, int what)
 {
     char* ptr = NULL;
     xmlNodePtr xmlNode = (xmlNodePtr)node;
@@ -295,7 +296,8 @@ char* xml_parser_node_query(WsXmlNodeH node, int what)
 }
 
 
-int xml_parser_node_set(WsXmlNodeH node, int what, char* str)
+int 
+xml_parser_node_set(WsXmlNodeH node, int what, char* str)
 {
     int retVal = -1;
     xmlNodePtr xmlNode = (xmlNodePtr)node;
@@ -344,7 +346,8 @@ int xml_parser_node_set(WsXmlNodeH node, int what, char* str)
 
 
 
-WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which)
+WsXmlNodeH 
+xml_parser_node_get(WsXmlNodeH node, int which)
 {
     xmlNodePtr xmlNode = NULL;
     xmlNodePtr base = (xmlNodePtr)node;

@@ -88,13 +88,10 @@ string WsmanClient::Create(const string &resourceUri, const string &data)
     actionOptions options;
 	SetDefaultOptions(&options);
 	
-	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)data.c_str(),
-					  data.length(), NULL, 0);
-	
-	WsXmlDocH createResponse = ws_transfer_create(cl, 
+	WsXmlDocH createResponse = ws_transfer_create_fromtext(cl, 
 							resourceUri.c_str(),
 							options,
-							input);
+							data.c_str(), data.length(), WSMAN_ENCODING);
 	
 	destroy_action_options(&options);
 	string error;
@@ -337,9 +334,8 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 	{
 		if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
-	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)content.c_str(),
-					  content.length(), NULL, 0);
-	doc = ws_transfer_put(cl, resourceUri.c_str(), options, input);
+	
+	doc = ws_transfer_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
 
 	destroy_action_options(&options);
 	string error;
@@ -393,10 +389,9 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 		if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
-	WsXmlDocH  input = wsman_client_read_memory(cl, (char *)content.c_str(),
-					  content.length(), NULL, 0);
-	doc = wsman_invoke(cl, resourceUri.c_str(), options,
-                             (char *)methodName.c_str(), input);
+	doc = wsman_invoke_fromtext(cl, resourceUri.c_str(), options,
+                             (char *)methodName.c_str(), content.c_str(),
+					  content.length(), WSMAN_ENCODING);
 
 	destroy_action_options(&options);
 	long code;
