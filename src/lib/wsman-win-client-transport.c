@@ -516,7 +516,7 @@ wsman_client_handler( WsManClient *cl,
     }
 DONE:
 	cl->response_code = dwStatusCode;
-	cl->lastError = lastErr;
+	cl->last_error = lastErr;
     ws_xml_free_memory(buf);
     if (request) {
         WinHttpCloseHandle(request);
