@@ -251,8 +251,10 @@ validate_mustunderstand_headers(op_t * op)
 static int
 wsman_check_unsupported_features(op_t * op)
 {
+        WsXmlNodeH      enumurate;
 	WsXmlNodeH      header = wsman_get_soap_header_element(op->dispatch->fw,
 						    op->in_doc, NULL, NULL);
+	WsXmlNodeH      body = ws_xml_get_soap_body(op->in_doc);
 	int             retVal = 0;
 	SoapH           soap;
 	WsXmlNodeH      n;
@@ -263,12 +265,13 @@ wsman_check_unsupported_features(op_t * op)
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
 	}
-	n = ws_xml_get_child(header, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	enumurate = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
 	if (n != NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_EXPIRATION_TIME);
 	}
-	n = ws_xml_get_child(header, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
+	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
 	if (n != NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
