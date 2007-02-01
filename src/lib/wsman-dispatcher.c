@@ -251,7 +251,7 @@ validate_mustunderstand_headers(op_t * op)
 static int
 wsman_check_unsupported_features(op_t * op)
 {
-        WsXmlNodeH      enumurate;
+        WsXmlNodeH      enumurate, m;
 	WsXmlNodeH      header = wsman_get_soap_header_element(op->dispatch->fw,
 						    op->in_doc, NULL, NULL);
 	WsXmlNodeH      body = ws_xml_get_soap_body(op->in_doc);
@@ -275,6 +275,12 @@ wsman_check_unsupported_features(op_t * op)
 	if (n != NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
+	}	
+	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_FILTER);
+	m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER);
+	if (n != NULL && m!= NULL) {
+		retVal = 1;
+		wsman_generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
 	}	
 
 	return retVal;

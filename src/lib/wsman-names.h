@@ -266,6 +266,7 @@
 #define WSM_MAX_ENVELOPE_SIZE           "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT           "OperationTimeout"
 #define WSM_FAULT_SUBCODE               "FaultSubCode"
+#define WSM_FILTER                      "Filter"
 
 
 
