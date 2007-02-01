@@ -82,9 +82,7 @@ wsman_destroy_doc(WsXmlDocH doc)
 
 
 
-    // Access to client elements
-
-
+// Access to client elements
 int
 wsman_client_get_last_error(WsManClient * cl)
 {
@@ -150,12 +148,6 @@ wsman_client_get_endpoint(WsManClient * cl)
 {
     return cl->data.endpoint;
 }
-
-
-
-
-
-
 
 
 
@@ -241,6 +233,7 @@ wsman_client_add_selector(actionOptions * options,
         error( "duplicate not added to hash");
     }
 }
+
 
 void
 wsman_add_selectors_from_query_string(actionOptions * options,
@@ -1192,7 +1185,7 @@ release_connection(WsManConnection * conn)
 
 
 void
-reinit_client_connection(WsManClient * cl)
+reinit_client_connection(WsManClient * cl) 
 {
     u_buf_clear(cl->connection->response);
     u_buf_clear(cl->connection->request);
@@ -1217,7 +1210,8 @@ init_client_connection(WsManClient * cl)
 
 
 WsManClient*
-wsman_create_client_from_uri(const char* endpoint) {
+wsman_create_client_from_uri(const char* endpoint) 
+{
 	u_uri_t *uri = NULL;
 	WsManClient* cl;
 	if (endpoint != NULL)
@@ -1234,9 +1228,66 @@ wsman_create_client_from_uri(const char* endpoint) {
 }
 
 
-int wsman_client_check_for_fault(WsXmlDocH doc ) {
+int
+wsman_client_check_for_fault(WsXmlDocH doc ) 
+{
 	return wsman_is_fault_envelope(doc);
 }
+
+
+WsManFault *
+wsman_client_fault_new(void)
+{
+	WsManFault     *fault =
+	(WsManFault *) u_zalloc(sizeof(WsManFault));
+
+	if (fault)
+		return fault;
+	else
+		return NULL;
+}
+
+
+
+void
+wsman_client_get_fault_data(WsXmlDocH doc, 
+					        WsManFault *fault)
+{
+	if (wsman_client_check_for_fault(doc) == 0 || !fault )
+		return;
+		
+	WsXmlNodeH body = ws_xml_get_soap_body(doc);	
+	WsXmlNodeH fault_node = ws_xml_get_child(body, 0, NULL, SOAP_FAULT);
+	if (fault_node) {
+		WsXmlNodeH code;
+		WsXmlNodeH reason;
+		WsXmlNodeH detail;
+		
+		code = ws_xml_get_child(fault_node, 0, NULL, SOAP_CODE);
+		if (code) {
+			WsXmlNodeH code_v = ws_xml_get_child(code, 0 , NULL, SOAP_VALUE);
+			WsXmlNodeH subcode = ws_xml_get_child(code, 0 , NULL, SOAP_SUBCODE);
+			WsXmlNodeH subcode_v = ws_xml_get_child(subcode, 0 , NULL, SOAP_VALUE);
+			fault->code = ws_xml_get_node_text(code_v);
+			fault->subcode = ws_xml_get_node_text(subcode_v);
+		}
+		reason = ws_xml_get_child(fault_node, 0, NULL, SOAP_REASON);
+		if (reason) {
+			WsXmlNodeH reason_text = ws_xml_get_child(reason, 0 , NULL, SOAP_TEXT);
+			fault->reason = ws_xml_get_node_text(reason_text);		
+		}
+		detail = ws_xml_get_child(fault_node, 0, NULL, SOAP_DETAIL);
+		if (detail) {
+			WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , NULL, SOAP_TEXT);
+			fault->fault_detail = ws_xml_get_node_text(fault_detail);		
+		}		
+						
+	}
+	
+	return;			
+}
+
+
 
 WsManClient*
 wsman_create_client(const char *hostname,
@@ -1244,7 +1295,8 @@ wsman_create_client(const char *hostname,
             const char *path,
             const char *scheme,
             const char *username,
-            const char *password) {
+            const char *password) 
+{
     WsManClient    *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
     wsc->hdl = &wsc->data;
     if (pthread_mutex_init(&wsc->mutex, NULL)) {

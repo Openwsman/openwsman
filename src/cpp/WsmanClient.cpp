@@ -442,17 +442,17 @@ string WsmanClient::ExtractPayload(string xml)
 void WsmanClient::GetWsmanFault(string xml, WsmanException &e)
 {
 	const char *subcode, *code, *reason, *detail;
-	 
+	WsManFault *fault = wsman_client_fault_new();
 	WsXmlDocH  doc = wsman_client_read_memory(cl, (char *)xml.c_str(),
 					  xml.length(), NULL, 0);
-	subcode = ws_xml_get_xpath_value(doc, "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value");
-	string subcode_s = string(subcode);	
-	code = ws_xml_get_xpath_value(doc, "/s:Envelope/s:Body/s:Fault/s:Code/s:Value");
-	string code_s = string(code);
-	reason = ws_xml_get_xpath_value(doc, "/s:Envelope/s:Body/s:Fault/s:Reason");
-	string reason_s = string(reason);
-	detail = reason = ws_xml_get_xpath_value(doc, "/s:Envelope/s:Body/s:Fault/s:Detail");
-	string detail_s = string(detail);
+	
+	wsman_client_get_fault_data(doc, fault);
+					  					  
+	string subcode_s = string(fault->subcode);	
+	string code_s = string(fault->code);
+	string reason_s = string(fault->reason);
+	string detail_s = string(fault->fault_detail);
+
 	e.SetWsmanFaultFields(code_s, subcode_s, reason_s, detail_s);
 }
 

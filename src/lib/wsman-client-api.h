@@ -84,6 +84,14 @@ extern          "C" {
 	typedef int     (*SoapResponseCallback) (WsManClient *, WsXmlDocH, void *);
 
 
+	struct _WsManFault{
+		const char *code;
+		const char *subcode;
+		const char *reason;
+		const char *fault_detail;
+	};
+	typedef struct _WsManFault WsManFault;
+
 
 
 	/**
@@ -136,11 +144,6 @@ extern          "C" {
     long          wsman_client_get_response_code(WsManClient * cl);
     char *        wsman_client_get_fault_string(WsManClient * cl);
     int           wsman_client_get_last_error(WsManClient * cl);
-
-
-
-
-
 
 
 	/**
@@ -268,8 +271,8 @@ extern          "C" {
     void             wsman_remove_query_string(const char *resourceUri, char **result);
     int              wsman_client_check_for_fault(WsXmlDocH doc );
     char            *wsman_client_node_to_buf(WsXmlNodeH node);
-
-
+	void 			wsman_client_get_fault_data(WsXmlDocH doc, WsManFault *fault);
+	WsManFault *	wsman_client_fault_new(void);
 
 /*---------------- Advanced client API --------------------------------------*/
 

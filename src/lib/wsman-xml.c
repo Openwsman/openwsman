@@ -639,7 +639,8 @@ WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc)
  * @param node XML node
  * @return XML node text
  */
-char* ws_xml_get_node_text(WsXmlNodeH node) {
+char* 
+ws_xml_get_node_text(WsXmlNodeH node) {
     char* text = NULL;
     if ( node ) {
         text = xml_parser_node_query(node, XML_TEXT_VALUE);
