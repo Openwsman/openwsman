@@ -251,18 +251,29 @@ validate_mustunderstand_headers(op_t * op)
 static int
 wsman_check_unsupported_features(op_t * op)
 {
-	WsXmlNodeH header = wsman_get_soap_header_element(op->dispatch->fw,
-					 op->in_doc, NULL, NULL);
+	WsXmlNodeH      header = wsman_get_soap_header_element(op->dispatch->fw,
+						    op->in_doc, NULL, NULL);
 	int             retVal = 0;
-        SoapH           soap;
-        WsXmlNodeH      n;
-        soap = op->dispatch->fw;
+	SoapH           soap;
+	WsXmlNodeH      n;
+	soap = op->dispatch->fw;
 
-        n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
-	if ( n!= NULL) {
-    	        retVal = 1;
-                wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE );
-        }
+	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
+	if (n != NULL) {
+		retVal = 1;
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
+	}
+	n = ws_xml_get_child(header, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	if (n != NULL) {
+		retVal = 1;
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_EXPIRATION_TIME);
+	}
+	n = ws_xml_get_child(header, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
+	if (n != NULL) {
+		retVal = 1;
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
+	}	
+
 	return retVal;
 }
 
@@ -349,7 +360,7 @@ process_filter_chain(op_t * op,
  **/
 static int
 process_filters(op_t * op,
-		int inbound)
+				int inbound)
 {
 	int             retVal = 0;
 	list_t         *list;
@@ -360,6 +371,7 @@ process_filters(op_t * op,
 			op->dispatch->fw->inboundFilterList;
 		retVal = process_filter_chain(op, list);
 	}
+	
 	if (!retVal) {
 		list = (!inbound) ? op->dispatch->outboundFilterList :
 			op->dispatch->inboundFilterList;
@@ -854,8 +866,7 @@ soap_start_dispatch(SoapDispatchH disp)
 
 
 dispatch_t     *
-wsman_dispatch_entry_new()
-{
+wsman_dispatch_entry_new(void) {
 	dispatch_t     *entry =
 	(dispatch_t *) u_zalloc(sizeof(dispatch_t));
 
@@ -863,8 +874,6 @@ wsman_dispatch_entry_new()
 		return entry;
 	else
 		return NULL;
-
-
 }
 
 
