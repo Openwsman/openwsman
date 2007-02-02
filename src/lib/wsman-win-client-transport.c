@@ -99,7 +99,7 @@ int wsman_client_transport_init(void *arg)
     if (agent == NULL) {
         return 1;
     }
-	session = WinHttpOpen(wsman_transport_get_agent(),
+	session = WinHttpOpen(agent,
 		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, 
 		WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0 );
     u_free(agent);
@@ -314,8 +314,9 @@ wsman_client_handler( WsManClient *cl,
 	}
     while (!bDone) {
         bResult = WinHttpSendRequest(request,
-                        WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                        buf, errLen, errLen, NULL);
+                        WINHTTP_NO_ADDITIONAL_HEADERS, (DWORD)0,
+                        (LPVOID)buf, (DWORD)errLen, (DWORD)errLen,
+						(DWORD_PTR)NULL);
         if(bResult) {
              bResults = WinHttpReceiveResponse(request, NULL);
         }
@@ -360,7 +361,8 @@ wsman_client_handler( WsManClient *cl,
 				
                 bResults = WinHttpSetOption(request,
                                 WINHTTP_OPTION_CLIENT_CERT_CONTEXT,
-                                certificate,sizeof(CERT_CONTEXT));
+                                (LPVOID)certificate,
+								(DWORD)(sizeof (CERT_CONTEXT)));
                 if (!bResults) { 
 					lastErr = GetLastError();
                      bDone = TRUE;
@@ -539,7 +541,7 @@ static BOOL find_cert(const _TCHAR * certName,
    // amtOID = { NUM_OF_OIDS, oids };
    
 
-    if (!(hStoreHandle = CertOpenSystemStore(NULL, "MY"))) {
+    if (!(hStoreHandle = CertOpenSystemStore((HCRYPTPROV)NULL, "MY"))) {
          /* Cannot open the certificates store - exit immediately */
 		lastErr = GetLastError();
          error("error %d in CertOpenSystemStore", lastErr);
