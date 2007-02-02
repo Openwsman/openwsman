@@ -114,50 +114,69 @@ REQUEST_PASSWORD:
     }
     return choosen_auth;
 }
-/*
-typedef struct {
-    char *buf;
-    size_t len;
-    size_t ind;
-} transfer_ctx_t;
 
-static size_t
-write_handler( void *ptr, size_t size, size_t nmemb, void *data)
+
+static WS_LASTERR_Code
+convert_to_last_error(CURLcode r)
 {
-    transfer_ctx_t *ctx = data;
-    size_t len;
-    char *buf;
-
-    len = size * nmemb;
-    if (len >= ctx->len - ctx->ind) {
-        debug("Buffer too small. Resize from %d to %d (%d <= %d). recieved %d",
-            ctx->len, ctx->len + 4 * len,
-            ctx->len - ctx->ind -1, len, ctx->ind);
-        if (ctx->len == DEFAULT_TRANSFER_LEN) {
-            // resize static buffer 
-            buf = (char *)malloc(ctx->len + 4 * len);
-            if (buf) {
-                memcpy(buf, ctx->buf, ctx->ind);
-            }
-        } else {
-            buf = realloc(ctx->buf, ctx->len + 4 * len);
-        }
-        if (buf) {
-            ctx->buf = buf;
-            ctx->len = ctx->len + 4 * len;
-        } else {
-            error("Could not extend buffer");
-            len = ctx->len - ctx->ind -1;
-        }
+    switch (r) {
+        case CURLE_OK:
+            return WS_LASTERR_OK;
+        case CURLE_FAILED_INIT:
+            return WS_LASTERR_FAILED_INIT;
+        case CURLE_UNSUPPORTED_PROTOCOL:
+            return WS_LASTERR_UNSUPPORTED_PROTOCOL;
+        case CURLE_URL_MALFORMAT:
+            return WS_LASTERR_URL_MALFORMAT;
+        case CURLE_COULDNT_RESOLVE_PROXY:
+            return WS_LASTERR_COULDNT_RESOLVE_PROXY;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            return WS_LASTERR_COULDNT_RESOLVE_HOST;
+        case CURLE_COULDNT_CONNECT:
+            return WS_LASTERR_COULDNT_CONNECT;
+        case CURLE_HTTP_RETURNED_ERROR:
+            return WS_LASTERR_HTTP_RETURNED_ERROR;
+        case CURLE_WRITE_ERROR:
+            return WS_LASTERR_WRITE_ERROR;
+        case CURLE_READ_ERROR:
+            return WS_LASTERR_READ_ERROR;
+        case CURLE_OUT_OF_MEMORY:
+            return WS_LASTERR_OUT_OF_MEMORY;
+        case CURLE_OPERATION_TIMEOUTED:
+            return WS_LASTERR_OPERATION_TIMEOUTED;
+        case CURLE_HTTP_POST_ERROR:
+            return WS_LASTERR_HTTP_POST_ERROR;
+        case CURLE_BAD_DOWNLOAD_RESUME:
+            return WS_LASTERR_BAD_DOWNLOAD_RESUME;
+        case CURLE_TOO_MANY_REDIRECTS:
+            return WS_LASTERR_TOO_MANY_REDIRECTS;
+        case CURLE_SSL_CONNECT_ERROR:
+            return WS_LASTERR_SSL_CONNECT_ERROR;
+        case CURLE_SSL_PEER_CERTIFICATE:
+            return WS_LASTERR_SSL_PEER_CERTIFICATE;
+        case CURLE_SSL_ENGINE_NOTFOUND:
+            return WS_LASTERR_SSL_ENGINE_NOTFOUND;
+        case CURLE_SSL_ENGINE_SETFAILED:
+            return WS_LASTERR_SSL_ENGINE_SETFAILED;
+        case CURLE_SSL_CERTPROBLEM:
+            return WS_LASTERR_SSL_CERTPROBLEM;
+        case CURLE_SSL_CACERT:
+            return WS_LASTERR_SSL_CACERT;
+        case CURLE_SSL_ENGINE_INITFAILED:
+            return WS_LASTERR_SSL_ENGINE_INITFAILED;
+        case CURLE_SEND_ERROR:
+            return WS_LASTERR_SEND_ERROR;
+        case CURLE_RECV_ERROR:
+            return WS_LASTERR_RECV_ERROR;
+        case CURLE_BAD_CONTENT_ENCODING:
+            return WS_LASTERR_BAD_CONTENT_ENCODING;
+        case CURLE_LOGIN_DENIED:
+            return WS_LASTERR_LOGIN_DENIED;
+        default:
+            return WS_LASTERR_OTHER_ERROR;
     }
-    memcpy(ctx->buf + ctx->ind, ptr, len);
-    ctx->ind += len;
-    ctx->buf[ctx->ind] = 0;
-    debug("write_handler: recieved %d bytes, all = %d\n", len, ctx->ind);
-    return len;
+    return WS_LASTERR_OTHER_ERROR;
 }
-
-*/
 
 static size_t
 write_handler( void *ptr, size_t size, size_t nmemb, void *data)
@@ -175,14 +194,15 @@ static void *
 init_curl_transport(WsManClient *cl)
 {
     CURL *curl;
-    CURLcode r;
+    CURLcode r = CURLE_OK;
 #define curl_err(str)  debug("Error = %d (%s); %s", \
                             r, curl_easy_strerror(r), str);
     curl = curl_easy_init();
     if (curl == NULL) {
+        r = CURLE_FAILED_INIT;
         curl_global_cleanup();
         debug("Could not init easy curl");
-        return NULL;
+        goto DONE;
     }
     if (wsman_transport_get_proxy()) {
         r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy());
@@ -223,6 +243,7 @@ init_curl_transport(WsManClient *cl)
     }
     return (void *)curl;
 DONE:
+        cl->last_error = convert_to_last_error(r);
         curl_easy_cleanup(curl);
         return NULL;
 #undef curl_err
@@ -253,6 +274,9 @@ wsman_client_handler( WsManClient *cl,
         cl->transport = init_curl_transport(cl);
     }
     curl = (CURL *)cl->transport;
+    if (curl == NULL) {
+        return;
+    }
 
     r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
     if (r != CURLE_OK) {
@@ -282,6 +306,7 @@ wsman_client_handler( WsManClient *cl,
         "Content-Type: application/soap+xml;charset=UTF-8");
     usag = malloc(12 + strlen(wsman_transport_get_agent()) + 1);
     if (usag == NULL) {
+        r = CURLE_OUT_OF_MEMORY;
         http_code = 400;
         cl->fault_string = strdup("Could not malloc memory");
         curl_err("Could not malloc memory");
@@ -334,6 +359,7 @@ wsman_client_handler( WsManClient *cl,
             u_free(upwd);
             upwd = malloc(strlen(cl->data.user) + strlen(cl->data.pwd) + 2);
             if (!upwd) {
+                r = CURLE_OUT_OF_MEMORY;
                 http_code = 400;
                 cl->fault_string = strdup("Could not malloc memory");
                 curl_err("Could not malloc memory");
@@ -393,6 +419,7 @@ wsman_client_handler( WsManClient *cl,
         u_buf_clear(con->response);
         if (auth_set == 0) {
             // user wants to cancel authorization
+            r = CURLE_LOGIN_DENIED;
             curl_err("User didn't provide authorization data");
             goto DONE;
         }
@@ -400,6 +427,7 @@ wsman_client_handler( WsManClient *cl,
 
 DONE:
     cl->response_code = http_code;
+    cl->last_error = convert_to_last_error(r);
     curl_slist_free_all(headers);
     u_free(soapact_header);
     u_free(usag);

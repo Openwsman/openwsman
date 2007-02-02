@@ -83,7 +83,7 @@ wsman_destroy_doc(WsXmlDocH doc)
 
 
 // Access to client elements
-int
+WS_LASTERR_Code
 wsman_client_get_last_error(WsManClient * cl)
 {
     return cl->last_error;

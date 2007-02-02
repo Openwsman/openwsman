@@ -86,7 +86,7 @@ extern          "C" {
 		WsManConnection *connection;
 		long            response_code;
 		char            *fault_string;
-        int             last_error;
+        WS_LASTERR_Code  last_error;
 		void            *transport;
 	};
 

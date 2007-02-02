@@ -49,6 +49,39 @@ extern          "C" {
 	struct _WsManClient;
 	typedef struct _WsManClient WsManClient;
 
+    typedef enum {
+        WS_LASTERR_OK = 0,
+        WS_LASTERR_OTHER_ERROR,            // not recognized error
+        WS_LASTERR_FAILED_INIT,
+        WS_LASTERR_UNSUPPORTED_PROTOCOL,
+        WS_LASTERR_URL_MALFORMAT,
+        WS_LASTERR_COULDNT_RESOLVE_PROXY,
+        WS_LASTERR_COULDNT_RESOLVE_HOST,
+        WS_LASTERR_COULDNT_CONNECT,
+        WS_LASTERR_HTTP_RETURNED_ERROR,
+        WS_LASTERR_WRITE_ERROR,
+        WS_LASTERR_READ_ERROR,
+        WS_LASTERR_OUT_OF_MEMORY,
+        WS_LASTERR_OPERATION_TIMEOUTED,     // the timeout time was reached
+        WS_LASTERR_HTTP_POST_ERROR,
+        WS_LASTERR_BAD_DOWNLOAD_RESUME,     //couldn't resume download
+        WS_LASTERR_TOO_MANY_REDIRECTS ,     // catch endless re-direct loops
+        WS_LASTERR_SSL_CONNECT_ERROR,
+        WS_LASTERR_SSL_PEER_CERTIFICATE,    // peer's certificate wasn't ok
+        WS_LASTERR_SSL_ENGINE_NOTFOUND,     // SSL crypto engine not found
+        WS_LASTERR_SSL_ENGINE_SETFAILED, // can't set SSL crypto engine default
+        WS_LASTERR_SSL_CERTPROBLEM,      // problem with the local certificate
+        WS_LASTERR_SSL_CACERT,           // problem with the CA cert (path?)
+        WS_LASTERR_SSL_ENGINE_INITFAILED,   // failed to initialise ENGINE
+        WS_LASTERR_SEND_ERROR,           // failed sending network data
+        WS_LASTERR_RECV_ERROR,           // failure in receiving network data
+        WS_LASTERR_BAD_CONTENT_ENCODING, // Unrecognized transfer encoding
+        WS_LASTERR_LOGIN_DENIED,         // user, password or similar was not
+                                         // accepted and we failed to login
+
+        WS_LASTERR_LAST                     // never use!
+    } WS_LASTERR_Code;
+
 
 	typedef enum {
 		WSMAN_ACTION_NONE = 0,
@@ -132,18 +165,18 @@ extern          "C" {
 
            /* WsManClient handling */
 
-    WsContextH      wsman_client_get_context(WsManClient * cl);
+    WsContextH       wsman_client_get_context(WsManClient * cl);
 
-    char *        wsman_client_get_hostname(WsManClient * cl);
-    unsigned int  wsman_client_get_port(WsManClient * cl);
-    char *        wsman_client_get_path(WsManClient * cl);
-    char *        wsman_client_get_scheme(WsManClient * cl);
-    char *        wsman_client_get_user(WsManClient * cl);
-    char *        wsman_client_get_endpoint(WsManClient * cl);
+    char             *wsman_client_get_hostname(WsManClient * cl);
+    unsigned int      wsman_client_get_port(WsManClient * cl);
+    char             *wsman_client_get_path(WsManClient * cl);
+    char             *wsman_client_get_scheme(WsManClient * cl);
+    char             *wsman_client_get_user(WsManClient * cl);
+    char             *wsman_client_get_endpoint(WsManClient * cl);
 
-    long          wsman_client_get_response_code(WsManClient * cl);
-    char *        wsman_client_get_fault_string(WsManClient * cl);
-    int           wsman_client_get_last_error(WsManClient * cl);
+    long              wsman_client_get_response_code(WsManClient * cl);
+    char             *wsman_client_get_fault_string(WsManClient * cl);
+    WS_LASTERR_Code   wsman_client_get_last_error(WsManClient * cl);
 
 
 	/**

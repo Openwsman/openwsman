@@ -252,6 +252,70 @@ void wsman_transport_set_cafile(char *arg)
 }
 
 
+char *
+wsman_transport_get_last_error_string(WS_LASTERR_Code err)
+{
+    switch (err) {
+        case WS_LASTERR_OK:
+            return "Everithing OK";
+        case WS_LASTERR_FAILED_INIT:
+            return "Trnasport initailization failed";
+        case WS_LASTERR_UNSUPPORTED_PROTOCOL:
+            return "Unsupported protocol";
+        case WS_LASTERR_URL_MALFORMAT:
+            return "URL malformat";
+        case WS_LASTERR_COULDNT_RESOLVE_PROXY:
+            return "Could not resolve proxy";
+        case WS_LASTERR_COULDNT_RESOLVE_HOST:
+            return "Could not resolve host";
+        case WS_LASTERR_COULDNT_CONNECT:
+            return "Could not connect";
+        case WS_LASTERR_HTTP_RETURNED_ERROR:
+            return "HTTP returned error";
+        case WS_LASTERR_WRITE_ERROR:
+            return "Write error";
+        case WS_LASTERR_READ_ERROR:
+            return "Read error";
+        case WS_LASTERR_OUT_OF_MEMORY:
+            return "Could not alloc memory";
+        case WS_LASTERR_OPERATION_TIMEOUTED:
+            return "Operation timeout reached";
+        case WS_LASTERR_HTTP_POST_ERROR:
+            return "HTTP POST error";
+        case WS_LASTERR_BAD_DOWNLOAD_RESUME:
+            return "Couldn't resume download";
+        case WS_LASTERR_TOO_MANY_REDIRECTS:
+            return "Catch endless re-direct loop";
+        case WS_LASTERR_SSL_CONNECT_ERROR:
+            return "SSL connection error";
+        case WS_LASTERR_SSL_PEER_CERTIFICATE:
+            return "Peer's certificate wasn't OK";
+        case WS_LASTERR_SSL_ENGINE_NOTFOUND:
+            return "SSL crypto engine not found";
+        case WS_LASTERR_SSL_ENGINE_SETFAILED:
+            return "Can't set SSL crypto engine default";
+        case WS_LASTERR_SSL_CERTPROBLEM:
+            return "Problem with the local certificate";
+        case WS_LASTERR_SSL_CACERT:
+            return "Problem with the CA certificate";
+        case WS_LASTERR_SSL_ENGINE_INITFAILED:
+            return " failed to initialise SSL engine";
+        case WS_LASTERR_SEND_ERROR:
+            return "Failed sending network data";
+        case WS_LASTERR_RECV_ERROR:
+            return "Failure in receiving network data";
+        case WS_LASTERR_BAD_CONTENT_ENCODING:
+            return "Unrecognized transfer encoding";
+        case WS_LASTERR_LOGIN_DENIED:
+            return "User, password or similar was not accepted";
+        default:
+            return "Unrecognized error";
+    }
+}
+
+
+
+
 
 
 

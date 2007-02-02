@@ -101,8 +101,9 @@ extern void wsman_transport_set_cafile(char *caf);
 
 extern void wsman_transport_close_transport(WsManClient *cl);
 
-  long long get_transfer_time(void);
+long long get_transfer_time(void);
 
+char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 
