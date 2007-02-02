@@ -1253,11 +1253,13 @@ void
 wsman_client_get_fault_data(WsXmlDocH doc, 
 					        WsManFault *fault)
 {
+	WsXmlNodeH body;
+    WsXmlNodeH fault_node;
 	if (wsman_client_check_for_fault(doc) == 0 || !fault )
 		return;
 		
-	WsXmlNodeH body = ws_xml_get_soap_body(doc);	
-	WsXmlNodeH fault_node = ws_xml_get_child(body, 0, NULL, SOAP_FAULT);
+	body = ws_xml_get_soap_body(doc);	
+	fault_node = ws_xml_get_child(body, 0, NULL, SOAP_FAULT);
 	if (fault_node) {
 		WsXmlNodeH code;
 		WsXmlNodeH reason;
