@@ -603,6 +603,7 @@ wsenum_enumerate_stub(SoapOpH op,
 	wsman_set_enum_info(op, &enumInfo);
 
 	if (endPoint && (retVal = endPoint(epcntx, &enumInfo, &status))) {
+                debug("enumeration fault");
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
 		u_free(enumInfo.auth_data.username);

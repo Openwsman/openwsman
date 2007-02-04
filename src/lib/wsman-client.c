@@ -814,6 +814,9 @@ wsman_invoke(WsManClient * cl,
         WsXmlNodeH n = ws_xml_get_doc_root(data);
         ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
     }
+    if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+        ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+    }
 
     if (wsman_send_request(cl, request)) {
         ws_xml_destroy_doc(request);

@@ -345,6 +345,38 @@ cim_add_args( CMPIArgs *argsin,
 }
 
 
+#if 0
+static  int
+cim_is_base_class ( CimClientInfo *client,
+                               char *class) 
+{
+  char *ns = NULL;
+  char *sub;
+  hscan_t hs;
+  hnode_t *hn;
+
+  if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
+      ( strcmp(client->method, TRANSFER_GET) == 0 ||
+                     strcmp(client->method, TRANSFER_PUT) == 0)) {
+    ns = u_strdup(client->resource_uri);
+    return ns;
+  }
+  if (class && client->namespaces) {
+    hash_scan_begin(&hs, client->namespaces);
+    while ((hn = hash_scan_next(&hs))) {
+      if ( (sub = strstr(class,  (char*) hnode_getkey(hn)))) {
+        ns = u_strdup_printf("%s/%s", (char*) hnode_get(hn), class);
+        break;
+      }
+    }
+  }
+  if (!ns)
+    ns = u_strdup_printf("%s/%s", XML_NS_CIM_CLASS, class);
+  return ns;
+}
+#endif
+
+
 static char * 
 cim_find_namespace_for_class ( CimClientInfo *client,
                                char *class) 
@@ -1011,7 +1043,6 @@ cim_get_instance_from_enum ( CimClientInfo *client,
     }
     debug( "getInstance rc=%d, msg=%s", rc.rc,
                                    (rc.msg)? (char *)rc.msg->hdl : NULL);
-
     if (instance) CMRelease(instance);
   } else {
     status->fault_code = statusP.fault_code;
