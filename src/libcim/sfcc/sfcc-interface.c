@@ -968,7 +968,17 @@ cim_invoke_method (CimClientInfo *client,
   CMCIClient * cc = (CMCIClient *)client->cc;
 
   wsman_status_init(&statusP);
-  if ( (objectpath = cim_get_op_from_enum(client, &statusP )) != NULL ) {
+  if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
+      objectpath = cim_get_op_from_enum(client, &statusP );
+  } else {
+      debug("no base class, getting instance directly with getInstance");
+      objectpath = newCMPIObjectPath(client->cim_namespace,
+              client->requested_class, NULL);
+      if (objectpath != NULL)
+        cim_add_keys(objectpath, client->selectors);
+  }
+
+  if ( objectpath != NULL ) {
     CMPIArgs *argsin = NULL, *argsout = NULL;
     argsin = newCMPIArgs(NULL);
 
@@ -1071,8 +1081,17 @@ cim_put_instance_from_enum (CimClientInfo *client,
   wsman_status_init(&statusP);
 
   CMCIClient * cc = (CMCIClient *)client->cc;
+  if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
+      objectpath = cim_get_op_from_enum(client, &statusP );
+  } else {
+      debug("no base class, getting instance directly with getInstance");
+      objectpath = newCMPIObjectPath(client->cim_namespace,
+              client->requested_class, NULL);
+      if (objectpath != NULL)
+        cim_add_keys(objectpath, client->selectors);
+  }
 
-  if ((objectpath = cim_get_op_from_enum(client, &statusP )) != NULL) {
+  if (objectpath != NULL) {
     instance = cc->ft->getInstance(cc,
                       objectpath, CMPI_FLAG_DeepInheritance, NULL, &rc);
     debug( "getInstance() rc=%d, msg=%s", rc.rc,
@@ -1172,6 +1191,8 @@ cim_to_wsman_status(CMPIStatus rc,
     status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
     break;
   case CMPI_RC_ERR_NOT_SUPPORTED:
+    status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+    break;
   case CMPI_RC_ERR_CLASS_HAS_CHILDREN:
   case CMPI_RC_ERR_CLASS_HAS_INSTANCES:
   case CMPI_RC_ERR_INVALID_SUPERCLASS:
