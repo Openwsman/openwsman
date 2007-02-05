@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -61,6 +62,10 @@
 
 extern ws_auth_request_func_t request_func;
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+
+static int initialized = 0;
+static pthread_mutex_t curl_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 static long
 reauthenticate(long auth_set, long auth_avail, char **username, char **password)
@@ -270,11 +275,16 @@ wsman_client_handler( WsManClient *cl,
     long auth_avail = 0;
     static long auth_set = 0;
 
+    if (!initialized && wsman_client_transport_init(NULL)) {
+        cl->last_error = WS_LASTERR_FAILED_INIT;
+        return;
+    }
     if (cl->transport == NULL) {
         cl->transport = init_curl_transport(cl);
     }
     curl = (CURL *)cl->transport;
     if (curl == NULL) {
+        cl->last_error = WS_LASTERR_FAILED_INIT;
         return;
     }
 
@@ -449,6 +459,12 @@ int wsman_client_transport_init(void *arg)
     CURLcode r;
     long flags;
 
+
+    pthread_mutex_lock(&curl_mutex);
+    if (initialized) {
+        pthread_mutex_unlock(&curl_mutex);
+        return 0;
+    }
     if (wsman_transport_get_cafile() != NULL) {
         flags = CURL_GLOBAL_SSL;
     } else {
@@ -458,17 +474,28 @@ int wsman_client_transport_init(void *arg)
       flags |= CURL_GLOBAL_WIN32;
 #endif
     r = curl_global_init(flags);
-    if (r != 0) {
+    if (r == CURLE_OK) {
+        initialized = 1;
+    }
+    pthread_mutex_unlock(&curl_mutex);
+    if (r != CURLE_OK) {
         debug("Error = %d (%s); Could not initialize curl globals",
                             r, curl_easy_strerror(r));
-        return 1;
     }
-    return 0;
+    return (r == CURLE_OK ? 0 : 1);
 }
 
 void wsman_client_transport_fini()
 {
+    pthread_mutex_lock(&curl_mutex);
+    if (!initialized) {
+        pthread_mutex_unlock(&curl_mutex);
+        return;
+    }
     curl_global_cleanup();
+    initialized = 0;
+    pthread_mutex_unlock(&curl_mutex);
+
 }
 
 void
