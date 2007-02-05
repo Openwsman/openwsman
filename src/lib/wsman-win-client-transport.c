@@ -40,7 +40,10 @@
 #include <crtdbg.h>
 #include <winhttp.h>
 #include <tchar.h>
+#include <stdio.h>
+#include <intrin.h>
 
+#pragma intrinsic(_InterlockedExchange)
 
 /* local */
 #include "u/libu.h"
@@ -92,28 +95,43 @@ convert_to_unicode(char * str)
     }
     return unicode_str;
 }
+
+
 int wsman_client_transport_init(void *arg)
 {
-    wchar_t *agent = convert_to_unicode(
+    wchar_t *agent;
+	static long lock;
+
+	if (session != NULL) {
+		return 0;
+	}
+    agent = convert_to_unicode(
                         wsman_transport_get_agent());
     if (agent == NULL) {
         return 1;
     }
+	while (InterlockedExchange(&lock, 1L));
+	if (session != NULL) {
+		lock = 0L;
+		return 0;
+	}
 	session = WinHttpOpen(agent,
 		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, 
 		WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0 );
-    u_free(agent);
+	lock = 0L;
+	u_free(agent);
 	if (session == NULL) {
 		error("Could not open session");
-		return 1;
 	}
-	return 0;
+
+	return session ? 0 : 1;
 }
 
 
 void wsman_client_transport_fini()
 {
-	WinHttpCloseHandle(session);
+	if (session) 
+		WinHttpCloseHandle(session);
 }
 
 void wsman_transport_close_transport(WsManClient *cl)
@@ -132,12 +150,14 @@ init_win_transport(WsManClient *cl)
     wchar_t *host = convert_to_unicode(cl->data.hostName);
 
     if (host == NULL) {
+		error("No host");
         return NULL;
     }
-    if (session == NULL) {
-        error("session is not initialized");
-        return NULL;
-    }
+	if (session == NULL) {
+		error("could not initialize session");
+		return NULL;
+	}
+
     connect = WinHttpConnect(session,
                              host,
                              cl->data.port,
@@ -255,7 +275,12 @@ wsman_client_handler( WsManClient *cl,
 	u_buf_t *ubuf;
 	PCCERT_CONTEXT      certificate;
 
-    if (cl->transport == NULL) {
+	if (session == NULL && wsman_client_transport_init(NULL)) {
+		error("could not initialize transport");
+		lastErr = GetLastError();
+        goto DONE;
+    }
+	if (cl->transport == NULL) {
         init_win_transport(cl);
     }
     if (cl->transport == NULL) {

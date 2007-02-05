@@ -441,7 +441,7 @@ string WsmanClient::ExtractPayload(string xml)
 
 void WsmanClient::GetWsmanFault(string xml, WsmanException &e)
 {
-	const char *subcode, *code, *reason, *detail;
+//	const char *subcode, *code, *reason, *detail;
 	WsManFault *fault = wsman_client_fault_new();
 	WsXmlDocH  doc = wsman_client_read_memory(cl, (char *)xml.c_str(),
 					  xml.length(), NULL, 0);
