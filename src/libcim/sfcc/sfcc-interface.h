@@ -41,9 +41,13 @@ void cim_invoke_method (CimClientInfo* client, WsContextH cntx, WsXmlNodeH node,
 
 void cim_get_instance (CimClientInfo* client, WsContextH cntx, WsXmlNodeH body, WsmanStatus *status);
 
+void cim_delete_instance (CimClientInfo *client, WsmanStatus *status);
+
 void cim_enum_instances (CimClientInfo* client, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 
-void cim_put_instance_from_enum (CimClientInfo* client, WsContextH cntx,  WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus *status); 
+void cim_put_instance (CimClientInfo* client, WsContextH cntx,  WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus *status); 
+
+void cim_create_instance (CimClientInfo* client, WsContextH cntx,  WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus *status); 
 
 CMPIArray *cim_enum_instancenames(CimClientInfo* client, char *class_name, WsmanStatus *status );
 

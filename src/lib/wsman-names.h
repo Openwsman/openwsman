@@ -269,6 +269,7 @@
 #define WSM_FILTER                      "Filter"
 
 
+#define WXF_RESOURCE_CREATED                      "ResourceCreated"
 
 
 // WSMB - Binding

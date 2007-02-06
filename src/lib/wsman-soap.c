@@ -328,12 +328,17 @@ wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo * wsInterface,
 		action = ep->inAction;
 		callbackProc = wsenum_release_stub;
 		break;
+	case WS_DISP_TYPE_DELETE:
+		debug("Registering endpoint for Delete");
+		action = ep->inAction;
+		callbackProc = ws_transfer_delete_stub;
+		break;
 	case WS_DISP_TYPE_PULL:
 		debug("Registering endpoint for Pull");
 		action = ep->inAction;
 		callbackProc = wsenum_pull_stub;
 		break;
-	case WS_DISP_TYPE_PULL_RAW:
+	case WS_DISP_TYPE_DIRECT_PULL:
 		debug("Registering endpoint for Pull Raw");
 		action = ep->inAction;
 		callbackProc = wsenum_pull_raw_stub;
@@ -343,13 +348,23 @@ wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo * wsInterface,
 		action = ep->inAction;
 		callbackProc = ws_transfer_get_stub;
 		break;
-	case WS_DISP_TYPE_GET_RAW:
-		debug("Registering endpoint for Get Raw");
+	case WS_DISP_TYPE_DIRECT_GET:
+		debug("Registering endpoint for direct Get");
 		action = ep->inAction;
 		callbackProc = (SoapServiceCallback) ep->serviceEndPoint;
 		break;
-	case WS_DISP_TYPE_PUT_RAW:
-		debug("Registering endpoint for Put Raw");
+	case WS_DISP_TYPE_DIRECT_DELETE:
+		debug("Registering endpoint for Delete");
+		action = ep->inAction;
+		callbackProc = (SoapServiceCallback) ep->serviceEndPoint;
+		break;
+	case WS_DISP_TYPE_DIRECT_PUT:
+		debug("Registering endpoint for direct Put");
+		action = ep->inAction;
+		callbackProc = (SoapServiceCallback) ep->serviceEndPoint;
+		break;
+	case WS_DISP_TYPE_DIRECT_CREATE:
+		debug("Registering endpoint for direct Create");
 		action = ep->inAction;
 		callbackProc = (SoapServiceCallback) ep->serviceEndPoint;
 		break;
@@ -850,6 +865,51 @@ cleanup:
 
 	return retVal;
 }
+
+
+
+
+
+int
+ws_transfer_delete_stub(SoapOpH op,
+		     void *appData)
+{
+	WsmanStatus     status;
+	SoapH           soap = soap_get_op_soap(op);
+	WsContextH      cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+
+	WsDispatchEndPointInfo *info = (WsDispatchEndPointInfo *) appData;
+	WsEndPointGet   endPoint = (WsEndPointGet) info->serviceEndPoint;
+
+	void           *data;
+	WsXmlDocH       doc = NULL;
+	wsman_status_init(&status);
+	if ((data = endPoint(cntx, &status)) == NULL) {
+		warning("Transfer Delete fault");
+		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+					 WSMAN_INVALID_SELECTORS, -1, NULL);
+	} else {
+		debug("Creating Response doc");
+		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
+	}
+
+	if (doc) {
+		soap_set_op_doc(op, doc, 0);
+	} else {
+		error("Response doc invalid");
+	}
+	ws_destroy_context(cntx);
+	return 0;
+}
+
+
+
+
+
+
+
+
+
 
 int
 ws_transfer_get_stub(SoapOpH op,

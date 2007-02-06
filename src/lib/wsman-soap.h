@@ -59,12 +59,14 @@
 #define WS_DISP_TYPE_UPDATE         8
 #define WS_DISP_TYPE_GETSTATUS      9
 #define WS_DISP_TYPE_COUNT              11
-#define WS_DISP_TYPE_PULL_RAW         12
-#define WS_DISP_TYPE_GET_RAW            13
+#define WS_DISP_TYPE_DIRECT_PULL         12
+#define WS_DISP_TYPE_DIRECT_GET            13
 #define WS_DISP_TYPE_GET_NAMESPACE  14
 #define WS_DISP_TYPE_CUSTOM_METHOD  15
-#define WS_DISP_TYPE_PUT_RAW            16
+#define WS_DISP_TYPE_DIRECT_PUT            16
 #define WS_DISP_TYPE_IDENTIFY           17
+#define WS_DISP_TYPE_DIRECT_CREATE           18
+#define WS_DISP_TYPE_DIRECT_DELETE           19
 #define WS_DISP_TYPE_PRIVATE                0xfffe
 
 
@@ -293,6 +295,7 @@ wsman_register_endpoint(WsContextH cntx,
 
 
 int             ws_transfer_put_stub(SoapOpH op, void *appData);
+int             ws_transfer_delete_stub(SoapOpH op, void *appData);
 int             wsman_identify_stub(SoapOpH op, void *appData);
 int             wsenum_enumerate_stub(SoapOpH op, void *appData);
 int             ws_transfer_get_stub(SoapOpH op, void *appData);

@@ -50,13 +50,29 @@
   { WS_DISP_TYPE_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,         \
       t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}
 
-#define END_POINT_TRANSFER_GET_RAW(t, ns)                         \
-  { WS_DISP_TYPE_GET_RAW, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
+#define END_POINT_TRANSFER_DELETE(t, ns)                                \
+  { WS_DISP_TYPE_DELETE, NULL, NULL, TRANSFER_ACTION_DELETE, NULL,         \
+      t##_TypeInfo, (WsProcType)t##_Delete_EP, ns, NULL}
+
+#define END_POINT_TRANSFER_CREATE(t, ns)                                \
+  { WS_DISP_TYPE_CREATE, NULL, NULL, TRANSFER_ACTION_CREATE, NULL,         \
+      t##_TypeInfo, (WsProcType)t##_Create_EP, ns, NULL}
+
+#define END_POINT_TRANSFER_DIRECT_GET(t, ns)                         \
+  { WS_DISP_TYPE_DIRECT_GET, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
       t##_TypeInfo, (WsProcType)t##_Get_EP, ns, NULL}     
 
-#define END_POINT_TRANSFER_PUT_RAW(t, ns)                         \
-  { WS_DISP_TYPE_PUT_RAW, NULL, NULL, TRANSFER_ACTION_PUT, NULL,  \
+#define END_POINT_TRANSFER_DIRECT_PUT(t, ns)                         \
+  { WS_DISP_TYPE_DIRECT_PUT, NULL, NULL, TRANSFER_ACTION_PUT, NULL,  \
       t##_TypeInfo, (WsProcType)t##_Put_EP, ns, NULL}     
+
+#define END_POINT_TRANSFER_DIRECT_DELETE(t, ns)                         \
+  { WS_DISP_TYPE_DIRECT_DELETE, NULL, NULL, TRANSFER_ACTION_DELETE, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Delete_EP, ns, NULL}     
+    
+#define END_POINT_TRANSFER_DIRECT_CREATE(t, ns)                         \
+  { WS_DISP_TYPE_DIRECT_CREATE, NULL, NULL, TRANSFER_ACTION_CREATE, NULL,  \
+      t##_TypeInfo, (WsProcType)t##_Create_EP, ns, NULL}     
 
 #define END_POINT_TRANSFER_GET_NAMESPACE(t, ns)                         \
   { WS_DISP_TYPE_GET_NAMESPACE, NULL, NULL, TRANSFER_ACTION_GET, NULL,  \
@@ -78,8 +94,8 @@
   { WS_DISP_TYPE_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL,  \
       t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}
 
-#define END_POINT_PULL_RAW(t, ns)                              \
-  { WS_DISP_TYPE_PULL_RAW, NULL, NULL, ENUM_ACTION_PULL, NULL, \
+#define END_POINT_DIRECT_PULL(t, ns)                              \
+  { WS_DISP_TYPE_DIRECT_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL, \
       t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}    
 
 #define END_POINT_PRIVATE_EP(t, a, m, ns)                \

@@ -61,6 +61,10 @@ int CimResource_Custom_EP(SoapOpH op, void* appData);
 
 int CimResource_Put_EP(SoapOpH op, void* appData);
 
+int CimResource_Create_EP(SoapOpH op, void* appData);
+
+int CimResource_Delete_EP(SoapOpH op, void* appData);
+
 SER_DECLARE_TYPE(CimResource);
 DECLARE_EP_ARRAY(CimResource);
 
