@@ -288,6 +288,7 @@ wsman_set_options_from_uri(const char *resource_uri, actionOptions * options)
         return;
     }
     if (uri->query != NULL) {
+    	debug("query: %s", uri->query);
         wsman_add_selectors_from_query_string(options, uri->query);
     }
     if (uri) {

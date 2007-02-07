@@ -1152,10 +1152,6 @@ cim_create_instance (CimClientInfo *client,
         } else {
             cim_to_wsman_status(rc, status);
         }
-        if (rc.rc == 0 ) {
-            if (instance)
-                instance2xml(client, instance, body, NULL);
-        } 
         if (rc.msg) CMRelease(rc.msg);
         if (instance) CMRelease(instance);
     } else {
@@ -1260,6 +1256,8 @@ cim_to_wsman_status(CMPIStatus rc,
     case CMPI_RC_ERR_CLASS_HAS_INSTANCES:
     case CMPI_RC_ERR_INVALID_SUPERCLASS:
     case CMPI_RC_ERR_ALREADY_EXISTS:
+        status->fault_code =  WSMAN_ALREADY_EXISTS;
+	break;
     case CMPI_RC_ERR_NO_SUCH_PROPERTY:
     case CMPI_RC_ERR_TYPE_MISMATCH:
     case CMPI_RC_ERR_QUERY_LANGUAGE_NOT_SUPPORTED:

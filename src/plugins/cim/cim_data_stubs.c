@@ -142,6 +142,7 @@ CimResource_Delete_EP( SoapOpH op,
     op_t *_op = (op_t *)op;
     WsmanMessage *msg = (WsmanMessage *)_op->data;
     WsXmlDocH in_doc = NULL;
+    WsXmlDocH doc;
     WsContextH cntx;
     debug( "Delete Endpoint Called");
     wsman_status_init(&status);
@@ -157,8 +158,23 @@ CimResource_Delete_EP( SoapOpH op,
         status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
         return 1;
     } else {
-        cim_delete_instance(cimclient, &status);
+        if ((doc = wsman_create_response_envelope(cntx, in_doc, NULL))) {
+        	cim_delete_instance(cimclient, &status);
+        }
+
+        if (status.fault_code != 0) {
+            ws_xml_destroy_doc(doc);
+            doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+                    status.fault_detail_code, NULL);
+        }
     }
+
+    if (doc) {
+        soap_set_op_doc(op, doc, 0);
+    } else {
+        error("Invalid doc");
+    }
+
 
     CimResource_destroy(cimclient);
     ws_destroy_context(cntx);
