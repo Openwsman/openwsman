@@ -65,6 +65,7 @@ WsXmlNsData     g_wsNsData[] =
 	{XML_NS_WS_MAN, "wsman"},
 	{XML_NS_CIM_BINDING, "wsmb"},
 	{XML_NS_OPENWSMAN, "owsman"},
+	{XML_NS_TRANSFER, "wxf"},
 	{NULL, NULL}
 };
 
