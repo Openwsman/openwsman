@@ -148,18 +148,15 @@ wsman_build_inbound_envelope(SoapH soap,
 	WsXmlDocH       doc = ws_xml_read_memory(soap, u_buf_ptr(msg->request),
 					  u_buf_len(msg->request), NULL, 0);
 
-	if (doc != NULL) {
-
-		if (wsman_is_identify_request(doc)) {
-			wsman_set_message_flags(msg, FLAG_IDENTIFY_REQUEST);
-		}
-		wsman_is_valid_envelope(msg, doc);
-	} else {
+	if (doc == NULL) {
 		wsman_set_fault(msg,
 			   WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
-		ws_xml_destroy_doc(doc);
-		doc = NULL;
+		return NULL;
 	}
+	if (wsman_is_identify_request(doc)) {
+			wsman_set_message_flags(msg, FLAG_IDENTIFY_REQUEST);
+	}
+	wsman_is_valid_envelope(msg, doc);
 	return doc;
 }
 

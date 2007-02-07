@@ -390,9 +390,11 @@ wsman_set_fault( WsmanMessage *msg,
                  WsmanFaultDetailType fault_detail_code, 
                  const char *details) 
 {
-    msg->status.fault_code = fault_code;
-    msg->status.fault_detail_code = fault_detail_code;
-    if (details) msg->status.fault_msg = strdup(details);
+    if (!wsman_fault_occured(msg)) {
+       msg->status.fault_code = fault_code;
+       msg->status.fault_detail_code = fault_detail_code;
+       if (details) msg->status.fault_msg = strdup(details);
+    }
     return;
 }
 
