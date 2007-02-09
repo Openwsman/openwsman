@@ -31,14 +31,12 @@ static string GetSubString(const string& xml, const string& start, const string&
 static string GetSubString(const string& xml, const string& start, const string& end)
 {
 	size_t begin = xml.find(start);
-	if(begin < 0)
-	{
+	if(begin < 0) {
 		return "";
 	}
 	begin += start.length();
 	size_t finish = xml.find(end, begin);
-	if(finish < 0)
-	{
+	if(finish < 0) {
 		return "";
 	}
 	return xml.substr(begin, finish - begin);	
@@ -46,22 +44,22 @@ static string GetSubString(const string& xml, const string& start, const string&
 
 // Construct from params.
 WsmanClient::WsmanClient(const char *endpoint,
-						const	char	*cert,
-						const   char *oid,
-						const	char *auth_method)
+		const	char	*cert,
+		const   char *oid,
+		const	char *auth_method)
 {	
 	cl = wsman_create_client_from_uri(endpoint);
-	
+
 	wsman_transport_set_auth_method ((char *)auth_method);
 	if (ws_client_transport_get_auth_value() == 0 ) {
 		// Authentication method not supported, reverting to digest
 		wsman_transport_set_auth_method("digest");
 	}
-	
+
 	if (cert) {
 		wsman_transport_set_cafile((char*)cert);
 	}
-	
+
 	// TO-DO: support tls and kerberos.
 }
 
@@ -74,9 +72,9 @@ void WsmanClient::Init()
 // Destructor.
 WsmanClient::~WsmanClient() 
 {
-    wsman_release_client(cl);
+	wsman_release_client(cl);
 }
-	
+
 /// <summary>
 /// Creates a new instance of a resource and returns the URI of the new object.
 /// </summary>
@@ -85,38 +83,32 @@ WsmanClient::~WsmanClient()
 /// <returns>string - xml represantation EndpointReference of the created object</returns>
 string WsmanClient::Create(const string &resourceUri, const string &data)
 {
-    actionOptions options;
+	actionOptions options;
 	SetDefaultOptions(&options);
-	
+
 	WsXmlDocH createResponse = ws_transfer_create_fromtext(cl, 
-							resourceUri.c_str(),
-							options,
-							data.c_str(), data.length(), WSMAN_ENCODING);
-	
+			resourceUri.c_str(),
+			options,
+			data.c_str(), data.length(), WSMAN_ENCODING);
+
 	destroy_action_options(&options);
 	string error;
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(createResponse);
-		if(lastErr)
-		{
-			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		if(lastErr) {
+			throw(TransportException(lastErr, error));
+		} else {
 			throw HttpException(code, error);
 		}
 	}
 	else if (!createResponse) {
 		ws_xml_destroy_doc(createResponse);
 		// throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(createResponse))
-	{
+	} else if (wsman_client_check_for_fault(createResponse)) {
 		WsmanException e(code, error);
-        GetWsmanFault(XmlDocToString(createResponse), e);
+		GetWsmanFault(XmlDocToString(createResponse), e);
 		ws_xml_destroy_doc(createResponse);
 		throw e;
 	}
@@ -135,38 +127,31 @@ void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 {
 	actionOptions options;
 	SetDefaultOptions(&options);
-	
+
 	// Add selectors.
-	for (PairsIterator p = s.begin(); p != s.end(); ++p) 
-	{
-			if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
+		if(p->second != "")
+			wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
 	WsXmlDocH deleteResponse = ws_transfer_delete(	cl, 
-													(char *)resourceUri.c_str(),
-													options);
+			(char *)resourceUri.c_str(),
+			options);
 	destroy_action_options(&options);
 	string error;
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(deleteResponse);
-		if(lastErr)
-		{
+		if(lastErr) {
 			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		} else {
 			throw HttpException(code, error);
 		}
-	}
-	else if (!deleteResponse) {
+	} else if (!deleteResponse) {
 		ws_xml_destroy_doc(deleteResponse);
 		// throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(deleteResponse))
-	{
+	} else if (wsman_client_check_for_fault(deleteResponse)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(deleteResponse), e);
 		ws_xml_destroy_doc(deleteResponse);
@@ -187,59 +172,45 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 	WsXmlDocH doc;
 	char *enumContext;
 	WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)resourceUri.c_str(),  options);
-	
+
 	string error;
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(enum_response);
 		destroy_action_options(&options);
-		if(lastErr)
-		{
-			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		if(lastErr) {
+			throw(TransportException(lastErr, error));
+		} else {
 			throw HttpException(code, error);
 		}
-	}
-	else if (!enum_response) {
+	} else if (!enum_response) {
 		destroy_action_options(&options);
 		ws_xml_destroy_doc(enum_response);
 		// throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(enum_response))
-	{
+	} else if (wsman_client_check_for_fault(enum_response)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(enum_response), e);
 		ws_xml_destroy_doc(enum_response);
 		destroy_action_options(&options);
-		if(e.GetFaultSubcode().compare("EndpointUnavailable") != 0)
-		{
+		if(e.GetFaultSubcode().compare("EndpointUnavailable") != 0) {
 			throw e;
-		}
-		else
-		{
+		} else {
 			return;
 		}
 	}
 	enumContext = wsenum_get_enum_context(enum_response);
 	ws_xml_destroy_doc(enum_response);
 
-	while (enumContext != NULL) {
+	while (enumContext != NULL && enumContext[0] != 0 ) {
 		doc = wsenum_pull(cl, resourceUri.c_str(), options, enumContext);
 		// Check for success (500,400 are OK??)
-		if (! CheckClientResponseCode(cl, code, lastErr, error))
-		{
+		if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 			ws_xml_destroy_doc(doc);
 			destroy_action_options(&options);
-			if(lastErr)
-			{
-				throw TransportException(lastErr, error);
-			}
-			else
-			{
+			if(lastErr) {
+				throw(TransportException(lastErr, error));
+			} else {
 				throw HttpException(code, error);
 			}
 		}
@@ -247,16 +218,14 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 			ws_xml_destroy_doc(doc);
 			destroy_action_options(&options);
 			// throw exception("WsmanClient: unknown error has occured");
-		}
-		else if (wsman_client_check_for_fault(doc))
-		{
+		} else if (wsman_client_check_for_fault(doc)) {
 			WsmanException e(code, error);
 			GetWsmanFault(XmlDocToString(doc), e);
 			destroy_action_options(&options);
 			ws_xml_destroy_doc(doc);
 			throw e;			
 		}
-		enumRes.push_back(GetSubString(XmlDocToString(doc), ":Items>", ":Items>"));
+		enumRes.push_back(ExtractItems((XmlDocToString(doc))));
 		enumContext = wsenum_get_enum_context(doc);    
 	}
 	destroy_action_options(&options);
@@ -276,35 +245,27 @@ string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 	WsXmlDocH doc;
 	// Add selectors.
 	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) 
-		{
+		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
 			if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 		}
 	}
 	doc = ws_transfer_get(cl, (char *)resourceUri.c_str(), options);
-	
+
 	destroy_action_options(&options);
 	string error;
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(doc);
-		if (lastErr)
-		{
-			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		if (lastErr) {
+			throw(TransportException(lastErr, error));
+		} else {
 			throw HttpException(code, error);
 		}
-	}
-	else if (!doc) {
+	} else if (!doc) {
 		ws_xml_destroy_doc(doc);
 		//throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(doc))
-	{
+	} else if (wsman_client_check_for_fault(doc)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(doc), e);
 		ws_xml_destroy_doc(doc);
@@ -328,37 +289,31 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 	actionOptions options;
 	SetDefaultOptions(&options);
 	WsXmlDocH doc;
-		
+
 	// Add selectors.
-	for (PairsIterator p = s.begin(); p != s.end(); ++p) 
-	{
-		if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
+		if(p->second != "")
+			wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
-	
+
 	doc = ws_transfer_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
 
 	destroy_action_options(&options);
 	string error;
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(doc);
-		if(lastErr)
-		{
-			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		if(lastErr) {
+			throw(TransportException(lastErr, error));
+		} else {
 			throw HttpException(code, error);
 		}
 	}
 	else if (!doc) {
 		ws_xml_destroy_doc(doc);
 		// throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(doc))
-	{
+	} else if (wsman_client_check_for_fault(doc)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(doc), e);
 		ws_xml_destroy_doc(doc);
@@ -382,38 +337,30 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 	SetDefaultOptions(&options);
 	WsXmlDocH doc;
 	string error;
-	
+
 	// Add selectors.
-	for (PairsIterator p = s.begin(); p != s.end(); ++p) 
-	{
+	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
 		if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
 	doc = wsman_invoke_fromtext(cl, resourceUri.c_str(), options,
-                             (char *)methodName.c_str(), content.c_str(),
-					  content.length(), WSMAN_ENCODING);
+			(char *)methodName.c_str(), content.c_str(),
+			content.length(), WSMAN_ENCODING);
 
 	destroy_action_options(&options);
 	long code;
 	int lastErr;
-	if (! CheckClientResponseCode(cl, code, lastErr, error))
-	{
+	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(doc);
-		if(lastErr)
-		{
-			throw TransportException(lastErr, error);
-		}
-		else
-		{
+		if(lastErr) {
+			throw(TransportException(lastErr, error));
+		} else {
 			throw HttpException(code, error);
 		}
-	}
-	else if (!doc) {
+	} else if (!doc) {
 		ws_xml_destroy_doc(doc);
 		//throw exception("WsmanClient: unknown error has occured");
-	}
-	else if (wsman_client_check_for_fault(doc))
-	{
+	} else if (wsman_client_check_for_fault(doc)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(doc), e);
 		ws_xml_destroy_doc(doc);
@@ -427,9 +374,9 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 
 string WsmanClient::ExtractPayload(string xml)
 {
-	 
+
 	WsXmlDocH  doc = wsman_client_read_memory(cl, (char *)xml.c_str(),
-					  xml.length(), NULL, 0);
+			xml.length(), NULL, 0);
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);	  
 	WsXmlNodeH payloadNode = ws_xml_get_child(bodyNode, 0, NULL, NULL);
 	char *buf = wsman_client_node_to_buf( payloadNode);
@@ -438,16 +385,30 @@ string WsmanClient::ExtractPayload(string xml)
 	return payload;
 }
 
+string WsmanClient::ExtractItems(string xml)
+{
+
+	WsXmlDocH  doc = wsman_client_read_memory(cl, (char *)xml.c_str(),
+			xml.length(), NULL, 0);
+	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
+	WsXmlNodeH pullResponse = ws_xml_get_child(bodyNode, 0, XML_NS_ENUMERATION, WSENUM_PULL_RESP);
+	WsXmlNodeH itemsNode = ws_xml_get_child(pullResponse, 0, XML_NS_ENUMERATION, WSENUM_ITEMS);
+	char *buf = wsman_client_node_to_buf( ws_xml_get_child(itemsNode, 0 , NULL, NULL ));
+	string payload = string(buf);
+	u_free(buf);
+	return payload;
+}
+
+
 
 void WsmanClient::GetWsmanFault(string xml, WsmanException &e)
 {
-//	const char *subcode, *code, *reason, *detail;
 	WsManFault *fault = wsman_client_fault_new();
 	WsXmlDocH  doc = wsman_client_read_memory(cl, (char *)xml.c_str(),
-					  xml.length(), NULL, 0);
-	
+			xml.length(), NULL, 0);
+
 	wsman_client_get_fault_data(doc, fault);
-					  					  
+
 	string subcode_s = string(fault->subcode);	
 	string code_s = string(fault->code);
 	string reason_s = string(fault->reason);
@@ -469,9 +430,9 @@ string XmlDocToString(WsXmlDocH doc) {
 	string str = string(buf);	// This constructor copies the data.
 	if (buf)
 #ifdef _WIN32
-    	ws_xml_free_memory(buf);
+		ws_xml_free_memory(buf);
 #else
-    	u_free(buf);
+	u_free(buf);
 #endif
 	return str;
 }
@@ -492,36 +453,34 @@ bool CheckClientResponseCode(WsManClient* cl, long &responseCode, int &lastError
 {
 	responseCode = wsman_client_get_response_code(cl);
 	lastError = wsman_client_get_last_error(cl);
-	if (lastError)
-	{
+	if (lastError) {
 		error = "Failed to establish a connection with service\n";
 #ifdef _WIN32
 		error.append("Last Windows ");
 #endif 
 		error.append("Error Code = ");
 		char buffer[65];
-                snprintf(buffer,sizeof(buffer),"%d",lastError);
+		snprintf(buffer,sizeof(buffer),"%d",lastError);
 		error.append(buffer);
 		error.append("\n");		
 		return false;
 	}
-	if (responseCode == 200){
+	if (responseCode == 200) {
 		error = "WsmanClient recieved: 200 HTTP OK\n"; 
 		return true;
 	}
-	if (responseCode == 400){
+	if (responseCode == 400) {
 		error = "WsmanClient recieved: 400 Bad Request\n" \
-				"The request could not be understood by the server due to malformed syntax.\n";
+			 "The request could not be understood by the server due to malformed syntax.\n";
 		return true;
-	}
-	else if (responseCode == 500){
+	} else if (responseCode == 500) {
 		error = "WsmanClient recieved: 500 Internal Server Error\n" \
-				"The server encountered an unexpected condition which prevented it from fulfilling the request.\n"; 
+			 "The server encountered an unexpected condition which prevented it from fulfilling the request.\n"; 
 		return true;
 	}
 	error = "Failed to establish a connection with service\nHttp Error = ";
 	char buffer[65];
-        snprintf(buffer,sizeof(buffer),"%d",responseCode);
+	snprintf(buffer,sizeof(buffer),"%d",responseCode);
 	error.append(buffer);
 	error.append("\n");	
 	return false;		

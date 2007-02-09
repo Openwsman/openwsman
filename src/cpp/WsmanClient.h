@@ -16,6 +16,8 @@
 #include <map>
 #include <stdexcept>
 
+#include "Exception.h"
+
 using namespace std;
 
 struct _WsManClient;
@@ -33,67 +35,13 @@ namespace WsmanClientNamespace
 
 
 
-	// Exception thrown when transport error occurs
-	class TransportException : public std::exception
-	{
-	private:
-		int transferErrorCode;
-	public:
-		TransportException(int error, string what = "") : transferErrorCode(error){}
-		virtual const char* what() const throw();
-		~TransportException() throw(){}
-		int GetTransportReturnCode() {return transferErrorCode;}
-	};
-
-	
-	// Exception thrown when http error occurs
-	class HttpException : public exception
-	{
-	private:
-		long errorCode;
-	public:
-		HttpException(long error, string what = "") : errorCode(error){}
-		  virtual const char* what() const throw();
-		  ~HttpException() throw(){}
-		  long GetErrorCode() {return errorCode;}
-	};
-
-	// Exception thrown when server error occurs
-	class WsmanException : public exception
-	{
-	private:
-		long httpCode;
-		string codeValue;
-		string subcodeValue;
-		string reason;
-		string detail;
-	public:
-		WsmanException(long errorC, string what = "") : 
-		  httpCode(errorC), codeValue(""),
-			  subcodeValue(""), reason(""), detail(""){}
-		  virtual const char* what() const throw();
-		  ~WsmanException() throw(){}
-		  long GetHttpReturnCode() {return httpCode;}
-		  void SetWsmanFaultFields(string& faultCode, string& faultSubcode,
-			  string& faultReason, string& faultDetail)
-		  {
-			  codeValue = faultCode;
-			  subcodeValue = faultSubcode;
-			  reason = faultReason;
-			  detail = faultDetail;
-		  }
-		  string GetFaultCode(){return codeValue;}
-		  string GetFaultSubcode(){return subcodeValue;}
-		  string GetFaultReason(){return reason;}
-		  string GetFaultDetail(){return detail;}
-	};
-
 	class WsmanClient
 	{
 	private:
 		WsManClient* cl;
 		void GetWsmanFault(string xml, WsmanException &e);
 		string ExtractPayload(string xml);
+		string ExtractItems(string xml);
 	public:
 		// Construct from params.
 		WsmanClient(const char *endpoint,
