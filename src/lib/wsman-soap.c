@@ -475,7 +475,7 @@ wsman_identify_stub(SoapOpH op,
 	if ((data = endPoint(cntx, status)) == NULL) {
 		error("Identify Fault");
 		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
-					    WSMAN_INTERNAL_ERROR, -1, NULL);
+					    WSMAN_INTERNAL_ERROR, 0, NULL);
 	} else {
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
@@ -579,7 +579,7 @@ wsman_verify_enum_info(SoapOpH op,
 		if (strcmp(msg->auth_data.username, enumInfo->auth_data.username) != 0 &&
 		    strcmp(msg->auth_data.password, enumInfo->auth_data.password) != 0) {
 			status->fault_code = WSMAN_ACCESS_DENIED;
-			status->fault_detail_code = -1;
+			status->fault_detail_code = 0;
 			return 0;
 		}
 	}
@@ -695,7 +695,7 @@ wsenum_release_stub(SoapOpH op,
 	wsman_status_init(&status);
 	if (enumInfo == NULL) {
 		doc = wsman_generate_fault(soapCntx, _doc,
-				WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+				WSEN_INVALID_ENUMERATION_CONTEXT, 0, NULL);
 
 	} else {
 		if (endPoint && (retVal = endPoint(soapCntx, enumInfo, &status))) {
@@ -744,7 +744,7 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 
 	if (enumInfo == NULL) {
 		doc = wsman_generate_fault(soapCntx, _doc,
-				WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+				WSEN_INVALID_ENUMERATION_CONTEXT, 0, NULL);
 		goto DONE;
 	}
 	if ((retVal = endPoint(ws_create_ep_context(soap, _doc), enumInfo, &status))) {
@@ -816,7 +816,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 	if (enumInfo == NULL) {
 		error("Invalid enumeration context...");
 		doc = wsman_generate_fault(soapCntx, _doc,
-				WSEN_INVALID_ENUMERATION_CONTEXT, -1, NULL);
+				WSEN_INVALID_ENUMERATION_CONTEXT, 0, NULL);
 		goto cleanup;
 	}
 	
@@ -888,7 +888,7 @@ ws_transfer_delete_stub(SoapOpH op,
 	if ((data = endPoint(cntx, &status)) == NULL) {
 		warning("Transfer Delete fault");
 		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
-					 WSMAN_INVALID_SELECTORS, -1, NULL);
+					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
 		debug("Creating Response doc");
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
@@ -932,7 +932,7 @@ ws_transfer_get_stub(SoapOpH op,
 	if ((data = endPoint(cntx, &status)) == NULL) {
 		warning("Transfer Get fault");
 		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
-					 WSMAN_INVALID_SELECTORS, -1, NULL);
+					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
 		debug("Creating Response doc");
 		doc = wsman_create_response_envelope(cntx, soap_get_op_doc(op, 1), NULL);
