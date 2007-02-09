@@ -1,4 +1,3 @@
-
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
@@ -14,6 +13,7 @@ typedef struct {
 	char			*resource_uri;
 	char			*enum_context;
 	list_t			*eprs;
+	char			*fault;
 	pthread_mutex_t		mutex;
 } session_t;
 
@@ -24,90 +24,6 @@ static void default_auth_callback(ws_auth_type_t auth, char **user, char **pwd)
 {
 	*user = strdup("");
 }
-
-
-static void _collect_epr(session_t *s, WsXmlDocH doc)
-{
-	WsXmlNodeH		node, resu, selector;
-	char			*resource_uri = NULL, *name, *value, *it;
-	int			index = 0;
-	epr_t			*epr;
-	selector_t		*sel;
-
-	if (!doc || !s) {
-		return;
-	}
-
-	node = ws_xml_get_soap_body(doc);
-
-	if (node != NULL) {
-		node = ws_xml_get_child(node, 0,
-				XML_NS_ENUMERATION, WSENUM_PULL_RESP);
-	} else {
-		return;
-	}
-
-	if (node != NULL ) {
-		node = ws_xml_get_child(node, 0,
-				XML_NS_ENUMERATION, WSENUM_ITEMS);
-	} else {
-		return;
-	}
-
-	if (node != NULL) {
-		it = ws_xml_get_node_text(node);
-		node =  ws_xml_get_child(node, 0,  XML_NS_ADDRESSING, WSA_EPR);
-	} else {
-		return;
-	}
-
-	if (node != NULL) {
-		node =  ws_xml_get_child(node, 0,
-				XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
-	} else {
-		return;
-	}
-
-	if (node != NULL) {
-		resu = ws_xml_get_child(node, 0,
-				XML_NS_WS_MAN, WSM_RESOURCE_URI);
-		if (resu) {
-			resource_uri = ws_xml_get_node_text(resu);
-		}
-		node = ws_xml_get_child(node, 0,
-				XML_NS_WS_MAN, WSM_SELECTOR_SET);
-		if (!node) {
-			return;
-		}
-	} else { 
-		return;
-	}
-
-	epr = u_malloc(sizeof(epr_t));
-	epr->resource_uri = u_strdup(resource_uri);
-	epr->selectors = list_create(LISTCOUNT_T_MAX);
-
-	while ((selector = ws_xml_get_child(node, index++,
-					XML_NS_WS_MAN, WSM_SELECTOR))) {
-		name = ws_xml_find_attr_value(selector,
-					XML_NS_WS_MAN, WSM_NAME);
-		if (name == NULL) {
-			name = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
-			if (name) {
-				value = ws_xml_get_node_text(selector);
-				sel = u_malloc(sizeof(selector_t));
-				sel->key = u_strdup(name);
-				sel->value = u_strdup(value);
-				list_append(epr->selectors, lnode_create(sel));
-			}
-		}
-	}
-
-	list_append(s->eprs, lnode_create(epr));
-
-	return;
-}
-
 
 static void _init(void)
 {
@@ -190,7 +106,8 @@ int wsman_session_open(const char *server,
 			const char *path,
 			const char *scheme,
 			const char *username,
-			const char *password)
+			const char *password,
+			int flags)
 {
 	session_t		*s;
 	int			sid;
@@ -276,84 +193,56 @@ char wsman_session_set_server(int session_id,
 	return ret;
 }
 
-int wsman_session_uri_set(int session_id, const char *resource_uri)
+char* wsman_session_error(int session_id)
 {
-	session_t	*s;
 
-	if (!resource_uri) {
-		return 0;
-	}
+	session_t	*s;
+	char		*fault;
 
 	s = get_session_by_id(session_id);
 
 	if (!s) {
-		return 0;
+		return NULL;
 	}
 
 	pthread_mutex_lock(&s->mutex);
-	if (s->resource_uri && resource_uri) {
-		if (!strcasecmp(s->resource_uri, resource_uri)) {
-			pthread_mutex_unlock(&s->mutex);
-			return 1;
-		}
-	}
 
-//	wsman_session_enum_context_free(session_id);
-/* FIX ME */
-	if (s->resource_uri)
-		u_free(s->resource_uri);
-	if (resource_uri) {
-		s->resource_uri = u_strdup(resource_uri);
-	} else {
-		s->resource_uri = NULL;
+	fault = wsman_client_get_fault_string(s->client);
+	if (!fault && s->fault) {
+		fault = u_strdup(s->fault);
 	}
 
 	pthread_mutex_unlock(&s->mutex);
 
-	return 1;
+	return fault;
 }
 
-char* wsman_session_resource_uri_get(int session_id)
+static char* _subcode_from_doc(WsXmlDocH doc)
 {
-	session_t	*s;
+	WsManFault	fault;
+	char		*subcode = NULL;
 
-	s = get_session_by_id(session_id);
+	wsman_client_get_fault_data(doc, &fault);
 
-	if (!s) {
-		return NULL;
+	if (fault.subcode && strlen(fault.subcode) > 1) {
+		subcode = u_strdup(fault.subcode);
 	}
 
-	if (s->resource_uri)
-		return u_strdup(s->resource_uri);
-	else
-		return NULL;
+	return subcode;
 }
 
-list_t* wsman_session_get_eprs(int session_id)
+
+char* wsman_session_enumerate(  int session_id,
+				const char *resource_uri,
+				const char *filter,
+				const char *dialect,
+				int flags)
 {
 	session_t	*s;
-
-	s = get_session_by_id(session_id);
-
-	if (!s) {
-		return NULL;
-	}
-
-	return s->eprs;
-}
-
-static WsXmlDocH _request_create(session_t *s, WsmanAction action)
-{
-								/* FIX ME */
-	return wsman_client_create_request(s->client, s->resource_uri,
-				s->options, action, NULL, s->enum_context);
-
-}
-
-WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action)
-{
-	session_t		*s;
-	WsXmlDocH		req;
+	WsXmlDocH	request, response;
+	actionOptions	options;
+	char		*str = NULL;
+	int		size;
 
 	s = get_session_by_id(session_id);
 	if (!s) {
@@ -361,206 +250,136 @@ WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action)
 	}
 
 	pthread_mutex_lock(&s->mutex);
-	req = _request_create(s, action);
-	pthread_mutex_unlock(&s->mutex);
 
-	return req;
-}
-
-static WsmanAction _get_action_from_doc(WsXmlDocH doc)
-{
-	char           *ptr = NULL,	*act;
-	WsXmlNodeH	node;
-
-	if (doc) {
-		node = ws_xml_get_soap_header(doc);
-		node = ws_xml_get_child(node, 0,
-					XML_NS_ADDRESSING, WSA_ACTION);
-		ptr = (!node) ? NULL : ws_xml_get_node_text(node);
+	if (s->fault) {
+		u_free(s->fault);
+		s->fault = NULL;
+	}
+	if (s->enum_context) {
+		u_free(s->enum_context);
+		s->enum_context = NULL;
 	}
 
-	if (ptr) {
-		act = strrchr(ptr, '/') + 1;
-		if (!strcmp(act, WSENUM_ENUMERATE)) {
-			return WSMAN_ACTION_ENUMERATION;
-		} else if (!strcmp(act, WSENUM_PULL)) {
-			return WSMAN_ACTION_PULL;
-		} else {
-			return WSMAN_ACTION_NONE;
-		}
-		u_free(ptr);
-	} else {
-	}
+	initialize_action_options(&options);
 
-	return WSMAN_ACTION_NONE;
-}
+	if (filter)
+		options.filter = u_strdup(filter);
+	if (dialect)
+		options.dialect = u_strdup(dialect);
+	options.flags = flags;
+	request = wsman_client_create_request(s->client, resource_uri,
+					s->options, WSMAN_ACTION_ENUMERATION,
+					NULL, NULL);
 
-static void _request_send(session_t *s, WsXmlDocH request, wsman_data_t	**dtp)
-{
-	wsman_data_t		*data = *dtp;
-	req_resp_t		*reqresp;
+	if (options.filter)
+		u_free(options.filter);
+	if (options.dialect)
+		u_free(options.dialect);
 
-	if (!data) {
-		data = u_zalloc(sizeof(wsman_data_t));
-		data->reqresp = list_create(LISTCOUNT_T_MAX);
-		*dtp = data;
-	}
-	reqresp = u_zalloc(sizeof(req_resp_t));
-	list_append(data->reqresp, lnode_create(reqresp));
-
-	reqresp->request = request;
+	if (!request) {
+		pthread_mutex_unlock(&s->mutex);
+		return NULL;
+	}	
 
 	wsman_send_request(s->client, request);
+	ws_xml_destroy_doc(request);
 
-	reqresp->response = wsman_build_envelope_from_response(s->client);
-	data->response_code = wsman_client_get_response_code(s->client);
-
-	if (reqresp->response) {
-		switch (_get_action_from_doc(request)) {
-		case WSMAN_ACTION_ENUMERATION:
-		case WSMAN_ACTION_PULL:
-			_collect_epr(s, reqresp->response);
-			s->enum_context =
-				wsenum_get_enum_context(reqresp->response);
-						/* FIX ME */
-			break;
-		default:
-			break;
-		}
-	} else {
-		data->fault_message = wsman_client_get_fault_string(s->client);
-	}
-}
-
-wsman_data_t* wsman_session_request_send(int session_id, WsXmlDocH request)
-{
-	session_t		*s;
-	wsman_data_t		*data = NULL;
-
-	s = get_session_by_id(session_id);
-	if (!s) {
-		return NULL;
-	}
-
-	pthread_mutex_lock(&s->mutex);
-	_request_send(s, request, &data);
-	pthread_mutex_unlock(&s->mutex);
-
-	return data;
-}
-
-static void _do_action(session_t *s, WsmanAction action, wsman_data_t **dtp)
-{
-	_request_send(s, _request_create(s, action), dtp);
-}
-
-wsman_data_t* wsman_session_do_action(int session_id, WsmanAction action)
-{
-	session_t		*s;
-	wsman_data_t		*data = NULL;
-
-	s = get_session_by_id(session_id);
-	if (!s) {
-		return NULL;
-	}
-
-	pthread_mutex_lock(&s->mutex);
-	_do_action(s, action, &data);
-	pthread_mutex_unlock(&s->mutex);
-
-	return data;
-}
-
-wsman_data_t* wsman_session_pull_all(int session_id)
-{
-	session_t		*s;
-	wsman_data_t		*data = NULL;
-
-	s = get_session_by_id(session_id);
-	if (!s) {
-		return NULL;
-	}
-
-	pthread_mutex_lock(&s->mutex);
-
-	wsman_set_action_option(&(s->options), FLAG_ENUMERATION_ENUM_EPR);
-	list_destroy_nodes(s->eprs); /* FIX ME */
-
-	_do_action(s, WSMAN_ACTION_ENUMERATION, &data);
-	wsman_set_action_option(&(s->options), FLAG_ENUMERATION_ENUM_EPR);
-					/* FIX ME */
-
-	while (s->enum_context) {
-		_do_action(s, WSMAN_ACTION_PULL, &data);
-	}
-
-	pthread_mutex_unlock(&s->mutex);
-
-	return data;
-}
-
-
-
-
-/* ------------------------------------------------------------------------- */
-
-void wsmanu_print_data(wsman_data_t *data, char **request, char **response)
-{
-	char		*req = NULL, *resp = NULL;
-	int		size;
-	lnode_t		*node;
-	req_resp_t	*reqresp;
-
-	if (!data || !(data->reqresp)) {
-		return;
-	}
-	if (!request && !response) {
-		return;
-	}
-
-	node = list_first(data->reqresp);
-
-/* FIX ME */
-		reqresp = (req_resp_t *)node->list_data;
-		ws_xml_dump_memory_node_tree(
-			ws_xml_get_doc_root(reqresp->request), &req, &size);
-
-		if (reqresp->response) {
-			ws_xml_dump_memory_node_tree(
-				ws_xml_get_doc_root(reqresp->response),
-				&resp, &size);
-		}
-
-	if (request) {
-		*request = req;
-	} else {
-		if (req)
-			u_free(req);
-	}
+	response = wsman_build_envelope_from_response(s->client);
 
 	if (response) {
-		*response = resp;
-	} else {
-		if (resp)
-			u_free(resp);
+		if (wsman_client_check_for_fault(response)) {
+			s->fault = _subcode_from_doc(response);
+			ws_xml_destroy_doc(response);
+			pthread_mutex_unlock(&s->mutex);
+			return NULL;
+		}
+		ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(response),
+								&str, &size);
+		s->enum_context = wsenum_get_enum_context(response);
+		if (s->enum_context && resource_uri) {
+			s->resource_uri = u_strdup(resource_uri);
+		}
+		ws_xml_destroy_doc(response);
 	}
+
+	pthread_mutex_unlock(&s->mutex);
+
+	return str;
 }
 
-
-char* wsmanu_print_request(wsman_data_t *data)
+char* wsman_session_enumerator_pull(int session_id)
 {
-	char		*buf;
+	session_t	*s;
+	WsXmlDocH	request, response;
+	actionOptions	options;
+	char		*item = NULL;
+	int		size;
 
-	wsmanu_print_data(data, &buf, NULL);
+	s = get_session_by_id(session_id);
+	if (!s) {
+		return 0;
+	}
 
-	return buf;
+	pthread_mutex_lock(&s->mutex);
+
+	if (s->fault) {
+		u_free(s->fault);
+		s->fault = NULL;
+	}
+
+	initialize_action_options(&options);
+	request = wsman_client_create_request(s->client, s->resource_uri,
+					s->options, WSMAN_ACTION_PULL,
+					NULL, s->enum_context);
+
+	if (s->enum_context) {
+		u_free(s->enum_context);
+		s->enum_context = NULL;
+	}
+
+	if (!request) {
+		pthread_mutex_unlock(&s->mutex);
+		return NULL;
+	}	
+
+	wsman_send_request(s->client, request);
+	ws_xml_destroy_doc(request);
+
+	response = wsman_build_envelope_from_response(s->client);
+
+	if (response) {
+		if (wsman_client_check_for_fault(response)) {
+			s->fault = _subcode_from_doc(response);
+			ws_xml_destroy_doc(response);
+			pthread_mutex_unlock(&s->mutex);
+			return NULL;
+		}
+		ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(response),
+								&item, &size);
+		s->enum_context = wsenum_get_enum_context(response);
+		if (!s->enum_context && s->resource_uri) {
+			u_free(s->resource_uri);
+		}
+		ws_xml_destroy_doc(response);
+	}
+
+	pthread_mutex_unlock(&s->mutex);
+
+	return item;
 }
 
-char* wsmanu_print_response(wsman_data_t *data)
+char wsman_session_enumerator_end(int session_id)
 {
-	char		*buf;
+	session_t	*s;
 
-	wsmanu_print_data(data, NULL, &buf);
+	s = get_session_by_id(session_id);
+	if (!s) {
+		return 0;
+	}
 
-	return buf;
+	if (s->enum_context)
+		return 1;
+
+	return 0;
 }
+

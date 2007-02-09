@@ -309,36 +309,18 @@ extern          "C" {
 
 /*---------------- Advanced client API --------------------------------------*/
 
-typedef struct {
-	char		*key;
-	char		*value;
-} selector_t;
-
-typedef struct {
-	char		*resource_uri;
-	list_t		*selectors;
-} epr_t;
-
-typedef struct {
-	WsXmlDocH	request;
-	WsXmlDocH	response;
-} req_resp_t;
-
-typedef struct {
-	list_t		*reqresp;
-	char		*fault_message;
-	int		response_code;
-} wsman_data_t;
-
 
 int wsman_session_open(const char *server,
 			int port,
 			const char *path,
 			const char *scheme,
 			const char *username,
-			const char *password);
+			const char *password,
+			int flags);
 
 void wsman_session_close(int session_id);
+
+char* wsman_session_error(int session_id);
 
 char wsman_session_set_server(int sid,
 				const char *server,
@@ -348,21 +330,14 @@ char wsman_session_set_server(int sid,
 				const char *username,
 				const char *password);
 
-int wsman_session_uri_set(int session_id, const char *resource_uri);
-char* wsman_session_resource_uri_get(int session_id);
-list_t* wsman_session_get_eprs(int session_id);
+char* wsman_session_enumerate(  int session_id,
+				const char *resource_uri,
+				const char *filter,
+				const char *dialect,
+				int flags);
 
-WsXmlDocH wsman_session_request_create(int session_id, WsmanAction action);
-wsman_data_t* wsman_session_request_send(int session_id, WsXmlDocH request);
-wsman_data_t* wsman_session_do_action(int session_id, WsmanAction action);
-
-wsman_data_t* wsman_session_pull_all(int session_id);
-
-
-void wsmanu_print_data(wsman_data_t *data, char **request, char **response);
-char* wsmanu_print_request(wsman_data_t *data);
-char* wsmanu_print_response(wsman_data_t *data);
-
+char wsman_session_enumerator_end(int session_id);
+char* wsman_session_enumerator_pull(int session_id);
 
 #ifdef __cplusplus
 }
