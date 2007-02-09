@@ -420,6 +420,12 @@ int ws_serialize_uint32(
                 unsigned long val, 
                 char *nameNs, 
                 char *name);
+int ws_deserialize_duration(WsContextH cntx, 
+                WsXmlNodeH parent,
+                int index,
+                char* nameNs,
+                char* name,
+                long *value);
 
 char *ws_deserialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 

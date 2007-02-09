@@ -205,22 +205,39 @@ static int
 validate_control_headers(op_t * op)
 {
 	unsigned long   size = 0;
+	long duration;
 	WsXmlNodeH      header;
 
-	header = wsman_get_soap_header_element(op->dispatch->fw, op->in_doc, NULL, NULL);
-	if (ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
-		size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+	header = wsman_get_soap_header_element(
+				op->dispatch->fw, op->in_doc, NULL, NULL);
+	if (ws_xml_get_child(header, 0,
+				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
+		size = ws_deserialize_uint32(NULL, header,
+						0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
 		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
-			wsman_generate_op_fault(op, WSMAN_ENCODING_LIMIT, WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
+			wsman_generate_op_fault(op, WSMAN_ENCODING_LIMIT,
+					 WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
 			return 0;
 		}
 	}
-	if (ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT) != NULL) {
-		size = ws_deserialize_uint32(NULL, header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
-		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
-			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_OPERATION_TIMEOUT);
+	if (ws_xml_get_child(header, 0,
+				XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT) != NULL) {
+		if (ws_deserialize_duration(NULL, header,
+					0, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT, &duration)) {
+			wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER,
+					 WSMAN_DETAIL_OPERATION_TIMEOUT);
 			return 0;
 		}
+		if (duration <= 0) {
+			wsman_generate_op_fault(op, WSMAN_TIMED_OUT, 0);
+			return 0;
+		}
+		op->timeoutTicks = (unsigned long)duration;
+		// Not supported now
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+						WSMAN_DETAIL_OPERATION_TIMEOUT);
+		return 0;
+
 	}
 	return 1;
 }

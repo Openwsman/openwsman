@@ -44,7 +44,6 @@
 #include <ctype.h>
 #include <assert.h>
 
-
 #include <u/libu.h>
 
 #include "wsman-xml-api.h"
@@ -1173,6 +1172,151 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
     return val;
 }
 
+    /*
+    * Returns duration in seconds in <value> argument
+    */
+int ws_deserialize_duration(WsContextH cntx, 
+        WsXmlNodeH parent, int index, char* nameNs, char* name,
+        long *value)
+{
+    long years = 0;
+    long months = 0;
+    long days = 0;
+    long hours = 0;
+    long mins = 0;
+    long secs = 0;
+    long v;
+    double f;
+    char *text = NULL;
+    char *t;
+    char *e;
+    int got = 0;
+    int res = 0;
+    int time_handeled = 0;
+    int negative = 0;
+    WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
+
+    TRACE_ENTER;
+    if (node == NULL) {
+        error("node == NULL");
+        res = 1;
+        goto DONE;
+    }
+    text = ws_xml_get_node_text(node);
+    if (t == NULL) {
+        debug("node text == NULL");
+        res = 1;
+        goto DONE;
+    }
+
+    t = text;
+    if (t[0] == '-') {
+        negative = 1;
+        t++;
+    }
+    if (t[0] != 'P') {
+        debug("Wrong begining of duration");
+        res = 1;
+        goto DONE;
+    }
+    t++;
+    while (strlen(t) > 0) {
+        if (t[0] == 'T') {
+            time_handeled = 1;
+            t++;
+            continue;
+        }
+        v = strtol(t, &e, 10);
+        if (time_handeled && (e[0] == '.')) {
+                f = strtod(t, &e);
+                if (e[0] != 'S') {
+                    debug("float but not secs");
+                    res = 1;
+                    goto DONE;
+                }
+                if (f > v) {
+                    v++;
+                }
+        }
+        switch (e[0]) {
+        case 'Y':
+            if (got >= 32 || time_handeled) {
+                debug("wrong order Y");
+                res = 1;
+                goto DONE;
+            }
+            years = v;
+            got |= 32;
+            break;
+        case 'M':
+            if (!time_handeled) { // months
+                if (got >= 16) {
+                    debug("wrong order M");
+                    res = 1;
+                    goto DONE;
+                }
+                months = v;
+                got |= 16;
+                break;
+            }
+            // minutes
+            if (got >= 2 || !time_handeled) {
+                debug("wrong order M");
+                res = 1;
+                goto DONE;
+            }
+            mins = v;
+            got |= 2;
+            break;
+        case 'D':
+            if (got >= 8 || time_handeled) {
+                debug("wrong order D");
+                res = 1;
+                goto DONE;
+            }
+            days = v;
+            got |= 8;
+            break;
+        case 'H':
+            if (got >= 4 || !time_handeled) {
+                debug("wrong order H");
+                res = 1;
+                goto DONE;
+            }
+            hours = v;
+            got |= 4;
+            break;
+        case 'S':
+            if (got >= 1 || !time_handeled) {
+                debug("wrong order S");
+                res = 1;
+                goto DONE;
+            }
+            secs = v;
+            got |= 1;
+            break;
+        default:
+            debug("wrong format %c", e[0]);
+            res = 1;
+            goto DONE;
+        }
+        t = e + 1;
+    }
+
+
+    // We don't know exact date and time of the sender.
+    // For simplicity comsider 1 month = 30days;
+
+    v = secs + 60*mins + 60*60*hours + 60*60*24*days +
+        60*60*24*30*months + 60*60*24*30*12*years;
+    if (negative) {
+        v = 0 - v;
+    }
+    *value = v;
+DONE:
+    TRACE_EXIT;
+    return res;
+}
 
 void* ws_serializer_alloc(WsContextH cntx, size_t size)
 {
