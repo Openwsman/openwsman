@@ -56,6 +56,11 @@
 #include "sfcc-interface.h"
 #include "cim-interface.h"
 
+typedef struct _sfcc_enumcontext {
+  CimClientInfo   * ecClient;
+  CMPIEnumeration * ecEnumeration;
+} sfcc_enumcontext;
+
 void
 path2xml(WsXmlNodeH node,
 		char *resourceUri,
@@ -689,6 +694,7 @@ cim_enum_instances (CimClientInfo *client,
 	CMPIEnumeration * enumeration;
 	CMPIStatus rc;
 	CMCIClient * cc = (CMCIClient *)client->cc;
+	sfcc_enumcontext * enumcontext;
 
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class , NULL);
@@ -715,8 +721,11 @@ cim_enum_instances (CimClientInfo *client,
 
 	enumInfo->totalItems = cim_enum_totalItems(enumArr);
 	debug( "Total items: %d", enumInfo->totalItems );
+   	enumcontext = u_zalloc(sizeof(sfcc_enumcontext));
+   	enumcontext->ecClient = client;
+   	enumcontext->ecEnumeration = enumeration;
 	enumInfo->enumResults = enumArr;
-	enumInfo->appEnumContext = enumeration;
+	enumInfo->appEnumContext = enumcontext;
 
 	if (objectpath) CMRelease(objectpath);
 	return;
@@ -939,6 +948,9 @@ cim_connect_to_cimom(char *cim_host,
 			cim_host_userid, cim_host_passwd, &rc);
 	if (cimclient == NULL) {
 		debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
+	} else {
+		debug( "new cimclient: 0x%8x\n",cimclient);
+		debug( "new cimclient: %d\n",cimclient->ft->ftVersion);
 	}
 	cim_to_wsman_status(rc, status);		
 	return cimclient;
@@ -1283,15 +1295,32 @@ cim_to_wsman_status(CMPIStatus rc,
 void
 cim_release_enum_context( WsEnumerateInfo* enumInfo ) 
 {
-	if (enumInfo->appEnumContext) {
-		debug("releasing enumInfo->appEnumContext");
-		CMPIEnumeration * enumeration =
-			(CMPIEnumeration *)enumInfo->appEnumContext;
+	if (!enumInfo->appEnumContext) 
+		return;
 
-		if (enumeration) { 
-			CMRelease(enumeration);
-		}
+	debug("releasing enumInfo->appEnumContext");
+	sfcc_enumcontext * enumcontext = enumInfo->appEnumContext;
+	CMPIEnumeration  * enumeration;
+	CimClientInfo    * client;
+
+	enumeration = enumcontext->ecEnumeration;
+	client = enumcontext->ecClient;
+
+	if (enumeration) { 
+		CMRelease(enumeration);
 	}
+	u_free(enumcontext);
+}
+
+CimClientInfo* 
+cim_getclient_from_enum_context( WsEnumerateInfo* enumInfo )
+{
+	CimClientInfo *cimclient = NULL;
+	if (enumInfo && enumInfo->appEnumContext) {
+		sfcc_enumcontext * enumcontext = (sfcc_enumcontext*) enumInfo->appEnumContext;
+		cimclient = enumcontext->ecClient;
+	}
+	return cimclient;
 }
 
 CMPIArray* 

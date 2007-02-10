@@ -115,9 +115,8 @@ verify_class_namespace(CimClientInfo *client)
 	hscan_t hs;
 	hnode_t *hn;
 	int rv = 0;
-	if ( (strstr(client->requested_class, "CIM") != NULL ) &&
-			(strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL ) )
-	{
+	if ( client && (strstr(client->requested_class, "CIM") != NULL ) &&
+			(strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL ) ) {
 		return 1;
 	}
 
@@ -319,10 +318,9 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	CimClientInfo *cimclient = NULL;
 
-	if ( enumInfo) {
-		cimclient = CimResource_Init(cntx, enumInfo->auth_data.username,
-				enumInfo->auth_data.password);
-	}
+	if ( enumInfo )
+    		cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+
 	if (!verify_class_namespace(cimclient) ) {
 		error("resource uri namespace mismatch");
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -356,13 +354,17 @@ CimResource_Enumerate_EP( WsContextH cntx,
 			int index2 = enumInfo->index + 1;
 			if (index2 == enumInfo->totalItems)  {
 				cim_release_enum_context(enumInfo);
+				CimResource_destroy(cimclient);
 			}
 		}
-		else
+		else {
 			enumInfo->pullResultPtr = NULL;
+		}
 	}
 cleanup:
-	CimResource_destroy(cimclient);
+	if (retval) {
+		CimResource_destroy(cimclient);  
+	}
 	return retval;
 }
 
@@ -375,7 +377,11 @@ CimResource_Release_EP( WsContextH cntx,
 		WsmanStatus *status)
 {
 	debug( "Release Endpoint Called");      
+	CimClientInfo * cimclient = cim_getclient_from_enum_context(enumInfo);
 	cim_release_enum_context(enumInfo);
+	if (cimclient) {
+		CimResource_destroy(cimclient);
+	}
 	return 0;
 }
 
@@ -423,7 +429,9 @@ cleanup:
 	}
 
 
-	CimResource_destroy(cimclient);
+	if (cimclient) {
+		CimResource_destroy(cimclient);
+	}
 	ws_destroy_context(cntx);
 	return 0;
 }
