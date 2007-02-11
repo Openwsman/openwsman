@@ -29,11 +29,8 @@ namespace WsmanClientNamespace
 	/// <summary>
 	/// Class for holding selectors.
 	/// </summary>
-	typedef std::map<std::string, std::string>				NameValuePairs;
+	typedef std::map<std::string, std::string>	NameValuePairs;
 	typedef std::map<std::string, std::string>::iterator	PairsIterator;
-
-
-
 
 	class WsmanClient
 	{

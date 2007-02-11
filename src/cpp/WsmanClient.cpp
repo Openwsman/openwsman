@@ -25,22 +25,6 @@ using namespace WsmanClientNamespace;
 static string	XmlDocToString			(WsXmlDocH		doc);
 static void	SetDefaultOptions		(actionOptions *options);
 static bool	CheckClientResponseCode	(WsManClient* cl, long &returnCode, int &lastErr, string &error);
-static string GetSubString(const string& xml, const string& start, const string& end);
-
-
-static string GetSubString(const string& xml, const string& start, const string& end)
-{
-	size_t begin = xml.find(start);
-	if(begin < 0) {
-		return "";
-	}
-	begin += start.length();
-	size_t finish = xml.find(end, begin);
-	if(finish < 0) {
-		return "";
-	}
-	return xml.substr(begin, finish - begin);	
-}
 
 // Construct from params.
 WsmanClient::WsmanClient(const char *endpoint,

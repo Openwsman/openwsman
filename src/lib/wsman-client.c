@@ -433,7 +433,7 @@ wsman_client_node_to_buf(WsXmlNodeH node) {
 	char *buf;
 	int   len;
 	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
-	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+	//ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
 	ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
 	return buf;
 }
