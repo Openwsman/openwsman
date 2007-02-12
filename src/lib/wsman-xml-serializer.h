@@ -70,6 +70,13 @@ typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
 #define PTRTOINT unsigned long
 #endif
+typedef struct {
+    struct tm tm;
+    struct {
+        int h;      // hours shift to GMT
+        int m;      // minutes shift to GMT
+    } tz;
+} XML_DATETIME;
 typedef char* XML_TYPE_STR;
 typedef XmlSerialiseDynamicSizeData XML_TYPE_DYN_ARRAY;
 struct _XML_NODE_ATTR;
@@ -426,6 +433,13 @@ int ws_deserialize_duration(WsContextH cntx,
                 char* nameNs,
                 char* name,
                 long *value);
+
+int ws_deserialize_datetime(WsContextH cntx, 
+                WsXmlNodeH parent,
+                int index,
+                char* nameNs,
+                char* name,
+                XML_DATETIME *value);
 
 char *ws_deserialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 

@@ -1203,13 +1203,13 @@ int ws_deserialize_duration(WsContextH cntx,
         goto DONE;
     }
     text = ws_xml_get_node_text(node);
+    t = text;
     if (t == NULL) {
         debug("node text == NULL");
         res = 1;
         goto DONE;
     }
 
-    t = text;
     if (t[0] == '-') {
         negative = 1;
         t++;
@@ -1317,6 +1317,48 @@ DONE:
     TRACE_EXIT;
     return res;
 }
+
+
+int ws_deserialize_datetime(WsContextH cntx, 
+                WsXmlNodeH parent,
+                int index,
+                char* nameNs,
+                char* name,
+                XML_DATETIME *tmx)
+{
+    int res = 0;
+    int r;
+    char *text;
+    WsXmlNodeH node;
+
+    TRACE_ENTER;
+    node = ws_xml_get_child(parent, index, nameNs, name);
+    if (node == NULL) {
+        error("node == NULL");
+        res = 1;
+        goto DONE;
+    }
+    text = ws_xml_get_node_text(node);
+    if (text == NULL) {
+        debug("node text == NULL");
+        res = 1;
+        goto DONE;
+    }
+
+    r = sscanf(text, "%u-%u-%uT%u:%u:%u-%u:%u", &tmx->tm.tm_year,
+           &tmx->tm.tm_mon, &tmx->tm.tm_mday,
+           &tmx->tm.tm_hour, &tmx->tm.tm_min, &tmx->tm.tm_sec,
+           &tmx->tz.h, &tmx->tz.m);
+    if (r != 8) {
+        debug("wrong body of datetime: %s", text);
+        res = 1;
+        goto DONE;
+    }
+DONE:
+    return res;
+}
+
+
 
 void* ws_serializer_alloc(WsContextH cntx, size_t size)
 {
