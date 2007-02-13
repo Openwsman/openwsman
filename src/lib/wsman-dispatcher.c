@@ -207,6 +207,7 @@ validate_control_headers(op_t * op)
 	unsigned long   size = 0;
 	long duration;
 	WsXmlNodeH      header;
+	WsXmlNodeH      child;
 
 	header = wsman_get_soap_header_element(
 				op->dispatch->fw, op->in_doc, NULL, NULL);
@@ -220,10 +221,11 @@ validate_control_headers(op_t * op)
 			return 0;
 		}
 	}
-	if (ws_xml_get_child(header, 0,
-				XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT) != NULL) {
-		if (ws_deserialize_duration(NULL, header,
-					0, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT, &duration)) {
+	child = ws_xml_get_child(header, 0,
+				XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
+	if (child != NULL) {
+		char *text =  ws_xml_get_node_text(child);
+		if (text == NULL || ws_deserialize_duration(text, &duration)) {
 			wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER,
 					 WSMAN_DETAIL_OPERATION_TIMEOUT);
 			return 0;

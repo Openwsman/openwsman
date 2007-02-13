@@ -1175,9 +1175,7 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
     /*
     * Returns duration in seconds in <value> argument
     */
-int ws_deserialize_duration(WsContextH cntx, 
-        WsXmlNodeH parent, int index, char* nameNs, char* name,
-        long *value)
+int ws_deserialize_duration(char *t, long *value)
 {
     long years = 0;
     long months = 0;
@@ -1187,23 +1185,13 @@ int ws_deserialize_duration(WsContextH cntx,
     long secs = 0;
     long v;
     double f;
-    char *text = NULL;
-    char *t;
     char *e;
     int got = 0;
     int res = 0;
     int time_handeled = 0;
     int negative = 0;
-    WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
 
     TRACE_ENTER;
-    if (node == NULL) {
-        error("node == NULL");
-        res = 1;
-        goto DONE;
-    }
-    text = ws_xml_get_node_text(node);
-    t = text;
     if (t == NULL) {
         debug("node text == NULL");
         res = 1;
@@ -1319,40 +1307,35 @@ DONE:
 }
 
 
-int ws_deserialize_datetime(WsContextH cntx, 
-                WsXmlNodeH parent,
-                int index,
-                char* nameNs,
-                char* name,
+int ws_deserialize_datetime(char *text,
                 XML_DATETIME *tmx)
 {
     int res = 0;
     int r;
-    char *text;
-    WsXmlNodeH node;
+    int hours;
+    int mins;
 
     TRACE_ENTER;
-    node = ws_xml_get_child(parent, index, nameNs, name);
-    if (node == NULL) {
-        error("node == NULL");
-        res = 1;
-        goto DONE;
-    }
-    text = ws_xml_get_node_text(node);
     if (text == NULL) {
         debug("node text == NULL");
         res = 1;
         goto DONE;
     }
+    bzero(tmx, sizeof (XML_DATETIME));
 
-    r = sscanf(text, "%u-%u-%uT%u:%u:%u-%u:%u", &tmx->tm.tm_year,
+    r = sscanf(text, "%u-%u-%uT%u:%u:%u%d:%u", &tmx->tm.tm_year,
            &tmx->tm.tm_mon, &tmx->tm.tm_mday,
            &tmx->tm.tm_hour, &tmx->tm.tm_min, &tmx->tm.tm_sec,
-           &tmx->tz.h, &tmx->tz.m);
+           &hours, &mins);
     if (r != 8) {
-        debug("wrong body of datetime: %s", text);
+        debug("wrong body of datetime(%d): %s", r, text);
         res = 1;
         goto DONE;
+    }
+    if (hours < 0) {
+        tmx->tz_min = 60*hours - mins;
+    } else {
+        tmx->tz_min = 60*hours + mins;
     }
 DONE:
     return res;

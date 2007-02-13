@@ -541,13 +541,47 @@ ws_transfer_put_stub(SoapOpH op,
 }
 
 
-static void
-wsman_set_enum_info(SoapOpH op,
-		    WsEnumerateInfo * enumInfo)
+static WsXmlDocH
+wsman_set_enum_info(SoapOpH op, WsContextH epcntx,
+              WsXmlDocH indoc, WsEnumerateInfo * enumInfo)
 {
+	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
+	WsXmlNodeH  child;
+	WsXmlDocH outdoc = NULL;
 	struct timeval  tv;
 	op_t           *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
+	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
+	WsmanFaultDetailType fault_detail_code;
+	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+	child = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	if (child) {
+		long timeout;
+		fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
+		char *text = ws_xml_get_node_text(child);
+		if (text == NULL) {
+			fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			goto DONE;
+		}
+		if (text[0] == 'P') {
+			//  xml duration
+			if (ws_deserialize_duration(text, &timeout)) {
+				fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			} else {
+				//	XML_DATETIME tmz;
+				// not supported now
+				fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
+				goto DONE;
+			}
+		}
+		if (timeout <= 0) {
+			fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			goto DONE;
+		}
+		enumInfo->timeout = (unsigned long)timeout;
+		// not supported now
+		fault_code = WSMAN_UNSUPPORTED_FEATURE;
+	}
 
 	gettimeofday(&tv, NULL);
 	enumInfo->timeStamp = tv.tv_sec * 10000000 + tv.tv_usec;
@@ -562,7 +596,12 @@ wsman_set_enum_info(SoapOpH op,
 		enumInfo->auth_data.username = NULL;
 		enumInfo->auth_data.password = NULL;
 	}
-
+DONE:
+	if (fault_code != WSMAN_RC_OK) {
+		outdoc = wsman_generate_fault(epcntx, indoc,
+			 fault_code, fault_detail_code, NULL);
+	}
+	return outdoc;
 }
 
 static int
@@ -611,12 +650,18 @@ wsenum_enumerate_stub(SoapOpH op,
 	WsEndPointEnumerate endPoint = (WsEndPointEnumerate) ep->serviceEndPoint;
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
-	WsContextH      epcntx = ws_create_ep_context(soap, _doc);
+	WsContextH      epcntx;
 
+	
 	wsman_status_init(&status);
 	memset(&enumInfo, 0, sizeof(enumInfo));
+	epcntx = ws_create_ep_context(soap, _doc);
+	doc = wsman_set_enum_info(op, epcntx, _doc, &enumInfo);
+	if (doc != NULL) {
+		// wrong enum elements met. Fault message generated
+		goto DONE;
+	}
 	generate_uuid(enumId, sizeof(cntxName) - sizeof(WSFW_ENUM_PREFIX), 1);
-	wsman_set_enum_info(op, &enumInfo);
 
 	if (endPoint && (retVal = endPoint(epcntx, &enumInfo, &status))) {
                 debug("enumeration fault");

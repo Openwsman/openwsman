@@ -72,10 +72,7 @@ typedef char XML_TYPE_CHAR;
 #endif
 typedef struct {
     struct tm tm;
-    struct {
-        int h;      // hours shift to GMT
-        int m;      // minutes shift to GMT
-    } tz;
+    int    tz_min; // timezone GMT shift in minutes 
 } XML_DATETIME;
 typedef char* XML_TYPE_STR;
 typedef XmlSerialiseDynamicSizeData XML_TYPE_DYN_ARRAY;
@@ -427,19 +424,6 @@ int ws_serialize_uint32(
                 unsigned long val, 
                 char *nameNs, 
                 char *name);
-int ws_deserialize_duration(WsContextH cntx, 
-                WsXmlNodeH parent,
-                int index,
-                char* nameNs,
-                char* name,
-                long *value);
-
-int ws_deserialize_datetime(WsContextH cntx, 
-                WsXmlNodeH parent,
-                int index,
-                char* nameNs,
-                char* name,
-                XML_DATETIME *value);
 
 char *ws_deserialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 
@@ -453,6 +437,15 @@ unsigned long ws_deserialize_uint32(
                 int index, 
                 char *nameNs, 
                 char *name);
+
+int ws_deserialize_duration(
+                char* text,
+                long *value);
+
+int ws_deserialize_datetime(
+                char *text,
+                XML_DATETIME *tmx);
+
 
 size_t ws_serializer_free_mem(WsContextH cntx, 
                 XML_TYPE_PTR buf, 
