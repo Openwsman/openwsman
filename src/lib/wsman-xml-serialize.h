@@ -93,7 +93,7 @@ typedef struct __NameAliase NameAliase;
 
 
 
-void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
+//void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
 
 //int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
 

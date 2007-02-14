@@ -1104,36 +1104,39 @@ ws_deserialize(WsContextH cntx,
     return retPtr;
 }
 
-void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node)
+static void
+enforce_mustunderstand(WsXmlNodeH node)
 {
-    if ( node && ws_get_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND) ) {
-        WsXmlDocH doc = ws_xml_get_node_doc(node);
-        char* ns = ws_xml_get_node_name_ns(ws_xml_get_doc_root(doc));
-        ws_xml_add_node_attr(node, ns, SOAP_MUST_UNDERSTAND, "true");
-    }
+    WsXmlDocH doc = ws_xml_get_node_doc(node);
+    char* ns = ws_xml_get_node_name_ns(ws_xml_get_doc_root(doc));
+    ws_xml_add_node_attr(node, ns, SOAP_MUST_UNDERSTAND, "true");
 }
 
 int
 ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str, 
-        char* nameNs, char* name)
+        char* nameNs, char* name, int mustunderstand)
 {
     WsXmlNodeH node;
     TRACE_ENTER;
     node = ws_xml_add_child(parent, nameNs, name, str);
-    enforce_mustunderstand_if_needed(cntx, node);
+    if (node && mustunderstand) {
+        enforce_mustunderstand(node);
+    }
     TRACE_EXIT;
     return (node == NULL);
 }
 
 
 int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent, unsigned long val, 
-        char* nameNs, char* name)
+        char* nameNs, char* name, int mustunderstand)
 {
     WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
     TRACE_ENTER;
-    if ( node ) {
+    if (node) {
         ws_xml_set_node_ulong(node, val);
-        enforce_mustunderstand_if_needed(cntx, node);
+        if (mustunderstand) {
+            enforce_mustunderstand(node);
+        }
     }
 	TRACE_EXIT;
     return (node == NULL);

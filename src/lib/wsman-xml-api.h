@@ -67,18 +67,6 @@
 #define XML_COUNT_ATTR          12
 
 
-#define FLAG_NONE                            0
-#define FLAG_ENUMERATION_COUNT_ESTIMATION    1
-#define FLAG_ENUMERATION_OPTIMIZATION        2
-#define FLAG_ENUMERATION_ENUM_EPR            4
-#define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    8
-#define FLAG_DUMP_REQUEST                    16
-#define FLAG_IncludeSubClassProperties       32
-#define FLAG_ExcludeSubClassProperties       64
-#define FLAG_POLYMORPHISM_NONE               128
-
-
-
 #define PROCESSED_MSG_ID_MAX_SIZE            200
 #define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST  8192
 

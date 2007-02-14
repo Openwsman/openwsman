@@ -695,15 +695,15 @@ wsenum_enumerate_stub(SoapOpH op,
 	soapCntx = ws_get_soap_context(soap);
 	if (enumInfo.index == enumInfo.totalItems) {
 		ws_serialize_str(epcntx, resp_node, NULL,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		ws_serialize_str(epcntx, resp_node,
-			       NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE);
+			       NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE, 0);
 		u_free(enumInfo.auth_data.username);
 		u_free(enumInfo.auth_data.password);
 		ws_remove_context_val(soapCntx, cntxName);
 	} else {
 		ws_serialize_str(epcntx, resp_node, enumId,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		set_context_val(soapCntx, cntxName, &enumInfo,
 				sizeof(enumInfo), 0, WS_CONTEXT_TYPE_BLOB);
 	}
@@ -818,14 +818,14 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 			     typeInfo, ep->respName, (char *) ep->data, NULL, 1);
 		if (enumId) {
 			ws_serialize_str(soapCntx, node, enumId,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		}
 		ws_serializer_free_mem(soapCntx, enumInfo->pullResultPtr, typeInfo);
 	} else {
 		ws_serialize_str(soapCntx, node, NULL,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		ws_serialize_str(soapCntx,
-		    node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+		    node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
 		u_free(enumInfo->auth_data.username);
 		u_free(enumInfo->auth_data.password);
 	}
@@ -891,15 +891,15 @@ wsenum_pull_raw_stub(SoapOpH op,
 
 		if (enumInfo->index == enumInfo->totalItems) {
 			ws_serialize_str(soapCntx, response, NULL,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 			ws_serialize_str(soapCntx, response, NULL,
-				XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE);
+				XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
 			u_free(enumInfo->auth_data.username);
 			u_free(enumInfo->auth_data.password);
 			ws_remove_context_val(soapCntx, cntxName);
 		} else if (enumId) {
 			ws_serialize_str(soapCntx, response, enumId,
-			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		}
 	}
 cleanup:

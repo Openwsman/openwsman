@@ -1079,17 +1079,14 @@ wsman_build_envelope(WsContextH cntx,
 	WsXmlNodeH      node;
 	char            uuidBuf[100];
 	WsXmlNodeH      header;
-	unsigned long   savedMustUnderstand;
 	WsXmlDocH       doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
 	if (!doc) {
 		return NULL;
 	}
-	savedMustUnderstand = ws_get_context_ulong_val(cntx,
-			ENFORCE_MUST_UNDERSTAND);
+
 	header = ws_xml_get_soap_header(doc);
 
 	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
-	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, 1);
 
 	if (reply_to_uri == NULL) {
 		reply_to_uri = WSA_TO_ANONYMOUS;
@@ -1098,35 +1095,40 @@ wsman_build_envelope(WsContextH cntx,
 		to_uri = WSA_TO_ANONYMOUS;
 	}
 	if (action != NULL) {
-		ws_serialize_str(cntx, header, (char *)action, XML_NS_ADDRESSING, WSA_ACTION);
+		ws_serialize_str(cntx, header,
+			(char *)action, XML_NS_ADDRESSING, WSA_ACTION, 1);
 	}
 	//    u_free((char *)action);
 
 	if (to_uri) {
-		ws_serialize_str(cntx, header, (char *)to_uri, XML_NS_ADDRESSING, WSA_TO);
+		ws_serialize_str(cntx, header, (char *)to_uri,
+			XML_NS_ADDRESSING, WSA_TO, 1);
 	}
 	if (resource_uri) {
 		ws_serialize_str(cntx, header, (char *)resource_uri,
-				XML_NS_WS_MAN, WSM_RESOURCE_URI);
+				XML_NS_WS_MAN, WSM_RESOURCE_URI, 1);
 	}
 	if (uuidBuf[0] != 0) {
-		ws_serialize_str(cntx, header, uuidBuf, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+		ws_serialize_str(cntx, header, uuidBuf,
+			XML_NS_ADDRESSING, WSA_MESSAGE_ID, 1);
 	}
 	if (options.timeout) {
 		char            buf[20];
 		sprintf(buf, "PT%u.%uS", (unsigned int) options.timeout / 1000,
 				(unsigned int) options.timeout % 1000);
-		ws_serialize_str(cntx, header, buf, XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
+		ws_serialize_str(cntx, header, buf,
+			XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT, 0);
 	}
 	if (options.max_envelope_size) {
 		ws_serialize_uint32(cntx, header, options.max_envelope_size,
-				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE,
+				options.flags & FLAG_MUND_MAX_ESIZE);
 	}
 	if (options.fragment) {
 		ws_serialize_str(cntx, header, options.fragment,
-				XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER);
+				XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER,
+				options.flags & FLAG_MUND_FRAGMENT);
 	}
-	ws_set_context_ulong_val(cntx, ENFORCE_MUST_UNDERSTAND, savedMustUnderstand);
 
 	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);

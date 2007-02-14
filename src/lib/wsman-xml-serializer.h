@@ -416,14 +416,16 @@ int ws_serialize_str(WsContextH cntx,
                 WsXmlNodeH parent, 
                 char *str, 
                 char *nameNs, 
-                char *name);
+                char *name,
+                int mustunderstand);
 
 int ws_serialize_uint32(
                 WsContextH cntx, 
                 WsXmlNodeH parent, 
                 unsigned long val, 
                 char *nameNs, 
-                char *name);
+                char *name,
+                int mustunderstand);
 
 char *ws_deserialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 
