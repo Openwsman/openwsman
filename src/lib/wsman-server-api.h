@@ -41,7 +41,7 @@ extern "C" {
 #endif /* __cplusplus */
 #include "u/libu.h"
 
-void *wsman_server_create_config(void);
+void *wsman_server_create_config(char *config_file);
 void wsman_server_get_response(void *arg, WsmanMessage *msg);
 
 #ifdef __cplusplus

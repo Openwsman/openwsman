@@ -63,11 +63,20 @@ debug_message_handler (const char *str,
 
 
 void *
-wsman_server_create_config(void)
+wsman_server_create_config(char *config_file)
 {
     SoapH soap = NULL;
+    dictionary       *ini;
     WsManListenerH *listener = wsman_dispatch_list_new();
-    WsContextH cntx = wsman_init_plugins(listener);
+    WsContextH cntx;
+
+    if (config_file) {
+    	ini = iniparser_load(config_file);
+	if (ini) {
+		listener->config = ini;
+	}
+    }
+    cntx = wsman_init_plugins(listener);
     if (cntx != NULL) {
         soap = ws_context_get_runtime(cntx);
     }
