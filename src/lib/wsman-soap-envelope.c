@@ -97,7 +97,7 @@ wsman_create_response_envelope(WsContextH cntx,
 			       WsXmlDocH rqstDoc,
 			       char *action)
 {
-	SoapH           soap = ((WS_CONTEXT *) cntx)->soap;
+	SoapH           soap = cntx->soap;
 	char           *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
 	WsXmlDocH       doc = ws_xml_create_envelope(soap, soapNs);
 	if (wsman_is_identify_request(rqstDoc)) {
@@ -422,7 +422,7 @@ wsman_create_fault_envelope(WsContextH cntx,
 	if (rqstDoc) {
 		doc = wsman_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT);
 	} else {
-		SoapH           soap = ((WS_CONTEXT *) cntx)->soap;
+		SoapH           soap = cntx->soap;
 		doc = ws_xml_create_envelope(soap, NULL);
 	}
 
@@ -454,8 +454,8 @@ wsman_create_fault_envelope(WsContextH cntx,
 	}
 	if (faultDetail) {
 		WsXmlNodeH      d = ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);
-		node = ws_xml_add_child_format(d, XML_NS_WS_MAN,
-					       SOAP_FAULT_DETAIL, "%s/%s", XML_NS_WSMAN_FAULT_DETAIL, faultDetail);
+		node = ws_xml_add_child_format(d, XML_NS_WS_MAN, SOAP_FAULT_DETAIL,
+				"%s/%s", XML_NS_WSMAN_FAULT_DETAIL, faultDetail);
 	}
 	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 	ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
@@ -479,9 +479,10 @@ wsman_get_enum_mode(WsContextH cntx,
 		WsXmlNodeH      node = ws_xml_get_soap_body(doc);
 		if (node && (node = ws_xml_get_child(node, 0,
 				   XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
-			WsXmlNodeH      opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_ENUM_MODE);
+			WsXmlNodeH opt = ws_xml_get_child(node,
+					0, XML_NS_WS_MAN, WSM_ENUM_MODE);
 			if (opt) {
-				char           *text = ws_xml_get_node_text(opt);
+				char *text = ws_xml_get_node_text(opt);
 				if (text != NULL)
 					enum_mode = text;
 			}
@@ -514,8 +515,10 @@ wsman_set_polymorph_mode(WsContextH cntx,
 	if (doc) {
 		WsXmlNodeH      node = ws_xml_get_soap_body(doc);
 
-		if (node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
-			WsXmlNodeH      opt = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE);
+		if (node && (node = ws_xml_get_child(node, 0,
+				XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
+			WsXmlNodeH opt = ws_xml_get_child(node, 0,
+					XML_NS_CIM_BINDING, WSMB_POLYMORPHISM_MODE);
 			if (opt) {
 				char           *mode = ws_xml_get_node_text(opt);
 				if (strcmp(mode, WSMB_EXCLUDE_SUBCLASS_PROP) == 0)

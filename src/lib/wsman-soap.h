@@ -133,7 +133,7 @@ typedef struct __Soap *SoapH;
 struct _WsXmlDoc {
 	void           *parserDoc;
 	SoapH           fw;
-	unsigned long   prefixIndex;
+	unsigned long   prefixIndex; // to enumerate not well known namespaces
 };
 
 
@@ -154,14 +154,14 @@ typedef struct _WS_CONTEXT_ENTRY WS_CONTEXT_ENTRY;
 
 struct _WS_CONTEXT {
 	SoapH           soap;
+	WsXmlDocH	indoc;
 	hash_t         *entries;
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
 	/* the fields below are for optimization */
 	WS_CONTEXT_ENTRY *last_entry;
-	int             last_get_name_idx;
+//	int             last_get_name_idx;
 };
-typedef struct _WS_CONTEXT WS_CONTEXT;
 
 
 typedef void    (*WsProcType) (void);

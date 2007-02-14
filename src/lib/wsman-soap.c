@@ -106,13 +106,12 @@ free_hentry_func(hnode_t * n, void *arg)
 
 
 void
-ws_initialize_context(WsContextH hCntx,
+ws_initialize_context(WsContextH cntx,
 		      SoapH soap)
 {
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	cntx->entries = hash_create(HASHCOUNT_T_MAX, 0, 0);
 	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
-	cntx->last_get_name_idx = -1;
+//	cntx->last_get_name_idx = -1;
 	cntx->owner = 1;
 	cntx->soap = soap;
 }
@@ -120,11 +119,11 @@ ws_initialize_context(WsContextH hCntx,
 WsContextH
 ws_create_context(SoapH soap)
 {
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) u_zalloc(sizeof(WS_CONTEXT));
+	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
 	if (cntx) {
-		ws_initialize_context((WsContextH) cntx, soap);
+		ws_initialize_context(cntx, soap);
 	}
-	return (WsContextH) cntx;
+	return cntx;
 }
 
 SoapH
@@ -265,7 +264,7 @@ wsman_register_interface(WsContextH cntx,
 
 
 static int
-set_context_val(WsContextH hCntx,
+set_context_val(WsContextH cntx,
 		char *name,
 		void *val,
 		int size,
@@ -273,7 +272,6 @@ set_context_val(WsContextH hCntx,
 		unsigned long type)
 {
 	int             retVal = 1;
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	debug("Setting context value: %s", name);
 	if (cntx && name) {
 		void           *ptr = val;
@@ -285,7 +283,7 @@ set_context_val(WsContextH hCntx,
 		}
 		if (ptr || val == NULL) {
 			u_lock(cntx->soap);
-			ws_remove_context_val(hCntx, name);
+			ws_remove_context_val(cntx, name);
 			if (create_context_entry(cntx->entries, name, ptr)) {
 				retVal = 0;
 			}
@@ -1042,16 +1040,15 @@ ws_clear_context_entries(WsContextH hCntx)
 	if (!hCntx) {
 		return;
 	}
-	h = ((WS_CONTEXT *) hCntx)->entries;
+	h = hCntx->entries;
 	hash_free(h);
 }
 
 int
-ws_remove_context_val(WsContextH hCntx,
+ws_remove_context_val(WsContextH cntx,
 		      char *name)
 {
 	int             retVal = 1;
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	if (cntx && name) {
 		hnode_t        *hn;
 		u_lock(cntx->soap);
@@ -1084,9 +1081,13 @@ ws_set_context_xml_doc_val(WsContextH cntx,
 			   char *name,
 			   WsXmlDocH val)
 {
+/*
 	int retVal = set_context_val(cntx, name,
 		(void *) val, 0, 1, WS_CONTEXT_TYPE_XMLDOC);
 	return retVal;
+*/
+	cntx->indoc = val;
+	return 0;
 }
 
 WsContextH
@@ -1101,12 +1102,11 @@ ws_create_ep_context(SoapH soap,
 
 
 int
-ws_destroy_context(WsContextH hCntx)
+ws_destroy_context(WsContextH cntx)
 {
 	int             retVal = 1;
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	if (cntx && cntx->owner) {
-		ws_clear_context_entries(hCntx);
+		ws_clear_context_entries(cntx);
 		u_free(cntx);
 		retVal = 0;
 	}
@@ -1126,20 +1126,18 @@ create_context_entry(hash_t * h,
 }
 
 SoapH
-ws_context_get_runtime(WsContextH hCntx)
+ws_context_get_runtime(WsContextH cntx)
 {
 	SoapH           soap = NULL;
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	if (cntx)
 		soap = cntx->soap;
 	return soap;
 }
 
 void           *
-get_context_val(WsContextH hCntx, char *name)
+get_context_val(WsContextH cntx, char *name)
 {
 	char           *val = NULL;
-	WS_CONTEXT     *cntx = (WS_CONTEXT *) hCntx;
 	if (cntx && name) {
 		u_lock(cntx->soap);
 		if (cntx->entries) {
@@ -1385,7 +1383,8 @@ WsXmlDocH
 ws_get_context_xml_doc_val(WsContextH cntx,
 			   char *name)
 {
-	return (WsXmlDocH) get_context_val(cntx, name);
+//	return (WsXmlDocH) get_context_val(cntx, name);
+	return cntx->indoc;
 }
 
 
