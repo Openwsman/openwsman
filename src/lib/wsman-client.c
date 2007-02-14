@@ -439,6 +439,15 @@ wsman_client_node_to_buf(WsXmlNodeH node) {
 }
 
 
+char*
+wsman_client_node_to_formatbuf(WsXmlNodeH node) {
+	char *buf;
+	int   len;
+	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
+	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
+	return buf;
+}
+
 
 WsXmlDocH
 wsman_client_create_request(WsManClient * cl,

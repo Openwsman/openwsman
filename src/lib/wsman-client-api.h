@@ -319,6 +319,7 @@ extern          "C" {
     void             wsman_remove_query_string(const char *resourceUri, char **result);
     int              wsman_client_check_for_fault(WsXmlDocH doc );
     char            *wsman_client_node_to_buf(WsXmlNodeH node);
+    char*           wsman_client_node_to_formatbuf(WsXmlNodeH node);
 	void 			wsman_client_get_fault_data(WsXmlDocH doc, WsManFault *fault);
 	WsManFault *	wsman_client_fault_new(void);
 
@@ -345,6 +346,17 @@ char wsman_session_set_server(int sid,
 				const char *username,
 				const char *password);
 
+const char* wsman_session_locator_resource_uri( int session_id,
+						const char *resource_uri);
+char wsman_session_locator_add_selector(int session_id,
+					const char *name,
+					const char *value);
+char wsman_session_locator_clear_selectors(int session_id);
+char wsman_session_locator_add_property(int session_id,
+					const char *name,
+					const char *value);
+char wsman_session_locator_clear_properties(int session_id);
+
 char* wsman_session_enumerate(  int session_id,
 				const char *resource_uri,
 				const char *filter,
@@ -353,6 +365,10 @@ char* wsman_session_enumerate(  int session_id,
 
 char wsman_session_enumerator_end(int session_id);
 char* wsman_session_enumerator_pull(int session_id);
+
+char* wsman_session_transfer_get(int session_id,
+				const char *resource_uri,
+				int flags);
 
 #ifdef __cplusplus
 }
