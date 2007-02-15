@@ -1186,7 +1186,8 @@ int ws_deserialize_duration(char *t, time_t *value)
     long hours = 0;
     long mins = 0;
     long secs = 0;
-    time_t v;
+    time_t vs;
+	int v;
     double f;
     char *e;
     int got = 0;
@@ -1298,12 +1299,12 @@ int ws_deserialize_duration(char *t, time_t *value)
     // We don't know exact date and time of the sender.
     // For simplicity comsider 1 month = 30days;
 
-    v = secs + 60*mins + 60*60*hours + 60*60*24*days +
+    vs = secs + 60*mins + 60*60*hours + 60*60*24*days +
         60*60*24*30*months + 60*60*24*30*12*years;
     if (negative) {
-        v = 0 - v;
+        vs = 0 - vs;
     }
-    *value = v;
+    *value = vs;
 DONE:
     TRACE_EXIT;
     return res;

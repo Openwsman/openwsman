@@ -587,7 +587,7 @@ wsman_get_enum_times(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout -= __timezone;
+	timeout -= (time_t)__timezone;
 	enumInfo->expires = timeout;
 DONE:
 	// not supported now
