@@ -61,7 +61,7 @@ struct __dispatch_t {
 
 struct __op_t {
 	SoapDispatchH dispatch;
-	unsigned long   timeoutTicks;
+	time_t          expires;
 	unsigned long   submittedTicks;
 	WsContextH      cntx;
 	WsXmlDocH       in_doc;
@@ -96,7 +96,7 @@ SoapDispatchH   wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
 void            destroy_op_entry(op_t * entry);
 
 op_t*           create_op_entry(SoapH soap, SoapDispatchH dispatch,
-				WsmanMessage * data, unsigned long timeout);
+				WsmanMessage * data);
 
 int             unlink_response_entry(SoapH soap, op_t * entry);
 op_t           *find_response_entry(SoapH soap, char *id);

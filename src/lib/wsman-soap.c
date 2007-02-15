@@ -412,44 +412,8 @@ wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo * wsInterface,
 }
 
 
-WsEnumerateInfo *
-get_enum_info(WsContextH cntx,
-	      WsXmlDocH doc,
-	      char *cntxName,
-	      int cntxNameLen,
-	      char *op,
-	      char **enumIdPtr)
-{
-	WsEnumerateInfo *enumInfo = NULL;
-	char           *enumId = NULL;
-	WsXmlNodeH      node = ws_xml_get_soap_body(doc);
 
-	if (node && (node = ws_xml_get_child(node,
-					0, XML_NS_ENUMERATION, op))) {
-		node = ws_xml_get_child(node, 0,
-			XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-		if (node) {
-			enumId = ws_xml_get_node_text(node);
-			if (enumIdPtr != NULL) {
-				*enumIdPtr = enumId;
-			}
-		}
-	}
-	debug("enum context: %s", enumId);
 
-	if (enumId != NULL) {
-		strcpy(cntxName, WSFW_ENUM_PREFIX);
-		strncpy(&cntxName[sizeof(WSFW_ENUM_PREFIX) - 1],
-			enumId,
-			cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
-		debug("enum context: %s", cntxName);
-		enumInfo = (WsEnumerateInfo *)ws_get_context_val(
-						cntx, cntxName, NULL);
-		if (!enumInfo)
-			error("enumInfo is null");
-	}
-	return enumInfo;
-}
 
 
 
@@ -544,52 +508,111 @@ ws_transfer_put_stub(SoapOpH op,
 }
 
 
+
+WsEnumerateInfo *
+get_enum_info(WsContextH cntx,
+	      WsXmlDocH doc,
+	      char *cntxName,
+	      int cntxNameLen,
+	      char *op,
+	      char **enumIdPtr)
+{
+	WsEnumerateInfo *enumInfo = NULL;
+	char           *enumId = NULL;
+	WsXmlNodeH      node = ws_xml_get_soap_body(doc);
+
+	if (node && (node = ws_xml_get_child(node,
+					0, XML_NS_ENUMERATION, op))) {
+		node = ws_xml_get_child(node, 0,
+			XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		if (node) {
+			enumId = ws_xml_get_node_text(node);
+			if (enumIdPtr != NULL) {
+				*enumIdPtr = enumId;
+			}
+		}
+	}
+	debug("enum context: %s", enumId);
+
+	if (enumId != NULL) {
+		strcpy(cntxName, WSFW_ENUM_PREFIX);
+		strncpy(&cntxName[sizeof(WSFW_ENUM_PREFIX) - 1],
+			enumId,
+			cntxNameLen - sizeof(WSFW_ENUM_PREFIX));
+		debug("enum context: %s", cntxName);
+		enumInfo = (WsEnumerateInfo *)ws_get_context_val(
+						cntx, cntxName, NULL);
+		if (!enumInfo)
+			error("enumInfo is null");
+	}
+	return enumInfo;
+}
+
+static void
+wsman_get_enum_times(WsXmlNodeH  node,
+                    WsEnumerateInfo * enumInfo,
+                    WsmanFaultCodeType *fault_code)
+{
+	struct timeval  tv;
+	time_t timeout;
+	char *text;
+	WsXmlNodeH  child;
+	XML_DATETIME tmx;
+	gettimeofday(&tv, NULL);
+	enumInfo->timeStamp = tv.tv_sec * 10000000 + tv.tv_usec;
+	child = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	if (child == NULL) {
+		enumInfo->expires = tv.tv_sec + 365 * 24 * 60 * 60;
+		return;
+	}
+	text = ws_xml_get_node_text(child);
+	if (text == NULL) {
+		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+		return;
+	}
+	if (text[0] == 'P') {
+		//  xml duration
+		if (ws_deserialize_duration(text, &timeout)) {
+			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			goto DONE;
+		}
+		enumInfo->expires = tv.tv_sec + timeout +
+			tv.tv_usec ? 1 : 0;
+		goto DONE;
+	}
+
+	// timeout must be XML datetime type
+	if (ws_deserialize_datetime(text, &tmx)) {
+		*fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
+		goto DONE;
+	}
+	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
+	timeout -= __timezone;
+	enumInfo->expires = timeout;
+DONE:
+	// not supported now
+	*fault_code = WSMAN_UNSUPPORTED_FEATURE;
+}
+
+
+
 static WsXmlDocH
 wsman_set_enum_info(SoapOpH op, WsContextH epcntx,
               WsXmlDocH indoc, WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
-	WsXmlNodeH  child;
 	WsXmlDocH outdoc = NULL;
-	struct timeval  tv;
 	op_t           *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
 	WsmanFaultDetailType fault_detail_code;
+
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-	child = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
-	if (child) {
-		long timeout;
+	wsman_get_enum_times(node, enumInfo, &fault_code);
+	if (fault_code != WSMAN_RC_OK) {
 		fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
-		char *text = ws_xml_get_node_text(child);
-		if (text == NULL) {
-			fault_code = WSEN_INVALID_EXPIRATION_TIME;
-			goto DONE;
-		}
-		if (text[0] == 'P') {
-			//  xml duration
-			if (ws_deserialize_duration(text, &timeout)) {
-				fault_code = WSEN_INVALID_EXPIRATION_TIME;
-			} else {
-				//	XML_DATETIME tmz;
-				// not supported now
-				fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
-				goto DONE;
-			}
-		}
-		if (timeout <= 0) {
-			fault_code = WSEN_INVALID_EXPIRATION_TIME;
-			goto DONE;
-		}
-		enumInfo->timeout = (unsigned long)timeout;
-		// not supported now
-		fault_code = WSMAN_UNSUPPORTED_FEATURE;
+		goto DONE;
 	}
-
-	gettimeofday(&tv, NULL);
-	enumInfo->timeStamp = tv.tv_sec * 10000000 + tv.tv_usec;
-
-
 
 	if (msg->auth_data.username != NULL) {
 		enumInfo->auth_data.username =
@@ -630,6 +653,9 @@ wsman_verify_enum_info(SoapOpH op,
 	}
 	return 1;
 }
+
+
+
 
 /**
  * Enumeration Stub for processing enumeration requests
@@ -1176,8 +1202,7 @@ soap_create_op(SoapH soap,
 	       char *role,
 	       SoapServiceCallback callbackProc,
 	       void *callbackData,
-	       unsigned long flags,
-	       unsigned long timeout)
+	       unsigned long flags)
 {
 	SoapDispatchH  disp = NULL;
 	op_t           *entry = NULL;
@@ -1185,7 +1210,7 @@ soap_create_op(SoapH soap,
 	if ((disp = soap_create_dispatch(soap, inboundAction, outboundAction,
 			      NULL, //reserved, must be NULL
 			      callbackProc, callbackData, flags)) != NULL) {
-		entry = create_op_entry(soap, disp, NULL, timeout);
+		entry = create_op_entry(soap, disp, NULL);
 	}
 	return (SoapOpH) entry;
 }
@@ -1304,12 +1329,10 @@ soap_destroy_op(SoapOpH op)
 op_t           *
 create_op_entry(SoapH soap,
 		SoapDispatchH dispatch,
-		WsmanMessage * data,
-		unsigned long timeout)
+		WsmanMessage * data)
 {
 	op_t           *entry = (op_t *) u_zalloc(sizeof(op_t));
 	if (entry) {
-		entry->timeoutTicks = timeout;
 		entry->dispatch = dispatch;
 		entry->cntx = ws_create_context(soap);
 		entry->data = data;

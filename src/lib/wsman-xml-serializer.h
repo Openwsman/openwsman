@@ -442,7 +442,7 @@ unsigned long ws_deserialize_uint32(
 
 int ws_deserialize_duration(
                 char* text,
-                long *value);
+                time_t *value);
 
 int ws_deserialize_datetime(
                 char *text,

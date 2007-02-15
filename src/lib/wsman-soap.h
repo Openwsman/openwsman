@@ -220,7 +220,7 @@ typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
 struct __WsEnumerateInfo {
 
 	unsigned long   timeStamp;
-	unsigned long   timeout;
+	time_t          expires; // expiration seconds  since  the epoch
 	unsigned int    totalItems;
 	unsigned int    maxItems;
 	unsigned char   flags;
@@ -318,8 +318,7 @@ soap_create_op(SoapH soap,
 	       char *role,
 	       SoapServiceCallback callbackProc,
 	       void *callbackData,
-	       unsigned long flags,
-	       unsigned long timeout);
+	       unsigned long flags);
 void            soap_destroy_op(SoapOpH op);
 WsXmlDocH       soap_get_op_doc(SoapOpH op, int inbound);
 WsXmlDocH       soap_detach_op_doc(SoapOpH op, int inbound);

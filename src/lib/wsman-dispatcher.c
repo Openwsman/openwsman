@@ -205,7 +205,7 @@ static int
 validate_control_headers(op_t * op)
 {
 	unsigned long   size = 0;
-	long duration;
+	time_t duration;
 	WsXmlNodeH      header;
 	WsXmlNodeH      child;
 
@@ -234,7 +234,7 @@ validate_control_headers(op_t * op)
 			wsman_generate_op_fault(op, WSMAN_TIMED_OUT, 0);
 			return 0;
 		}
-		op->timeoutTicks = (unsigned long)duration;
+		op->expires = duration;
 		// Not supported now
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_OPERATION_TIMEOUT);
@@ -721,7 +721,7 @@ dispatch_inbound_call(SoapH soap,
 		debug("dispatch == NULL");
 		goto DONE;
 	}
-	op = create_op_entry(soap, dispatch, msg, 0);
+	op = create_op_entry(soap, dispatch, msg);
 	if (op == NULL) {
 		wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE,
 				    WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);

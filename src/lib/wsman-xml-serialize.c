@@ -1178,7 +1178,7 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
     /*
     * Returns duration in seconds in <value> argument
     */
-int ws_deserialize_duration(char *t, long *value)
+int ws_deserialize_duration(char *t, time_t *value)
 {
     long years = 0;
     long months = 0;
@@ -1186,7 +1186,7 @@ int ws_deserialize_duration(char *t, long *value)
     long hours = 0;
     long mins = 0;
     long secs = 0;
-    long v;
+    time_t v;
     double f;
     char *e;
     int got = 0;
