@@ -1179,11 +1179,11 @@ soap_create_op(SoapH soap,
 	       unsigned long flags,
 	       unsigned long timeout)
 {
-	dispatch_t     *disp = NULL;
+	SoapDispatchH  disp = NULL;
 	op_t           *entry = NULL;
 
-	if ((disp = (dispatch_t *) soap_create_dispatch(soap,
-	       inboundAction, outboundAction, NULL, //reserved, must be NULL
+	if ((disp = soap_create_dispatch(soap, inboundAction, outboundAction,
+			      NULL, //reserved, must be NULL
 			      callbackProc, callbackData, flags)) != NULL) {
 		entry = create_op_entry(soap, disp, NULL, timeout);
 	}
@@ -1303,7 +1303,7 @@ soap_destroy_op(SoapOpH op)
 
 op_t           *
 create_op_entry(SoapH soap,
-		dispatch_t * dispatch,
+		SoapDispatchH dispatch,
 		WsmanMessage * data,
 		unsigned long timeout)
 {
@@ -1347,7 +1347,7 @@ NULL_SOAP:
 }
 
 void
-destroy_dispatch_entry(dispatch_t * entry)
+destroy_dispatch_entry(SoapDispatchH entry)
 {
 	int             usageCount;
 
@@ -1411,7 +1411,7 @@ soap_destroy_fw(SoapH soap)
 	if (soap->dispatchList) {
 		while (!list_isempty(soap->dispatchList)) {
 			destroy_dispatch_entry(
-				(dispatch_t *)list_first(soap->dispatchList));
+				(SoapDispatchH)list_first(soap->dispatchList));
 		}
 		list_destroy(soap->dispatchList);
 	}

@@ -58,10 +58,9 @@ struct __dispatch_t {
 	list_t         *inboundFilterList;
 	list_t         *outboundFilterList;
 };
-typedef struct __dispatch_t dispatch_t;
 
 struct __op_t {
-	dispatch_t     *dispatch;
+	SoapDispatchH dispatch;
 	unsigned long   timeoutTicks;
 	unsigned long   submittedTicks;
 	WsContextH      cntx;
@@ -96,12 +95,12 @@ SoapDispatchH   wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
 
 void            destroy_op_entry(op_t * entry);
 
-op_t*   		create_op_entry(SoapH soap,	dispatch_t * dispatch,	WsmanMessage * data,
-						unsigned long timeout);
+op_t*           create_op_entry(SoapH soap, SoapDispatchH dispatch,
+				WsmanMessage * data, unsigned long timeout);
 
 int             unlink_response_entry(SoapH soap, op_t * entry);
 op_t           *find_response_entry(SoapH soap, char *id);
-void            destroy_dispatch_entry(dispatch_t * entry);
+void            destroy_dispatch_entry(SoapDispatchH entry);
 
 void            add_response_entry(SoapH soap, op_t * op);
 
@@ -119,7 +118,7 @@ SoapDispatchH   soap_create_dispatch(SoapH soap, char *inboundAction,
 		     		void *callbackData,
 		     		unsigned long flags);
 
-dispatch_t     *wsman_dispatch_entry_new(void);
+SoapDispatchH  wsman_dispatch_entry_new(void);
 
 /** @} */
 #endif				/* WS_DISPATCHER_H_ */

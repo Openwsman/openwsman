@@ -87,10 +87,8 @@
 
 
 
-struct __SoapDispatch {
-	unsigned        __undefined;
-};
-typedef struct __SoapDispatch *SoapDispatchH;
+struct __dispatch_t;
+typedef struct __dispatch_t *SoapDispatchH;
 
 typedef         SoapDispatchH(*DispatcherCallback) (WsContextH, void *, WsXmlDocH);
 

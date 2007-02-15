@@ -289,13 +289,13 @@ validate_mustunderstand_headers(op_t * op)
 static int
 wsman_check_unsupported_features(op_t * op)
 {
-        WsXmlNodeH      enumurate, m;
+	WsXmlNodeH      enumurate;
 	WsXmlNodeH      header = wsman_get_soap_header_element(op->dispatch->fw,
 						    op->in_doc, NULL, NULL);
 	WsXmlNodeH      body = ws_xml_get_soap_body(op->in_doc);
 	int             retVal = 0;
 	SoapH           soap;
-	WsXmlNodeH      n;
+	WsXmlNodeH      n, m;
 	soap = op->dispatch->fw;
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
@@ -304,11 +304,13 @@ wsman_check_unsupported_features(op_t * op)
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
 	}
 	enumurate = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+/*
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
 	if (n != NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_EXPIRATION_TIME);
 	}
+*/
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
 	if (n != NULL) {
 		retVal = 1;
@@ -469,8 +471,7 @@ soap_add_disp_filter(SoapDispatchH disp,
 	callback_t     *entry = NULL;
 	if (disp) {
 		list_t         *list = (!inbound) ?
-		((dispatch_t *) disp)->outboundFilterList :
-		((dispatch_t *) disp)->inboundFilterList;
+		disp->outboundFilterList : disp->inboundFilterList;
 		entry = make_callback_entry(callbackProc, callbackData, list);
 	}
 	return (entry == NULL);
@@ -682,12 +683,12 @@ GENERATE_FAULT:
 }
 
 
-static dispatch_t     *
+static SoapDispatchH
 get_dispatch_entry(SoapH soap, WsXmlDocH doc)
 {
-	dispatch_t     *dispatch = NULL;
+	SoapDispatchH dispatch = NULL;
 	if (soap->dispatcherProc) {
-		dispatch = (dispatch_t *) soap->dispatcherProc(soap->cntx,
+		dispatch = soap->dispatcherProc(soap->cntx,
 						 soap->dispatcherData, doc);
 	}
 	if (dispatch == NULL) {
@@ -705,7 +706,7 @@ dispatch_inbound_call(SoapH soap,
 //	int             ret;
 	op_t           *op = NULL;
 	WsXmlDocH       in_doc = wsman_build_inbound_envelope(soap, msg);
-	dispatch_t     *dispatch = NULL;
+	SoapDispatchH dispatch = NULL;
 	debug("Inbound call...");
 
 	if (wsman_fault_occured(msg)) {
@@ -744,14 +745,14 @@ wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
 			  char *uri)
 {
 	char           *ns = NULL;
-	//die_if(r == NULL);
 	if (r->namespaces == NULL) {
 		return NULL;
 	}
 	if (uri) {
-		lnode_t        *node = list_first(r->namespaces);
+		lnode_t *node = list_first(r->namespaces);
 		while (node) {
-			WsSupportedNamespaces *sns = (WsSupportedNamespaces *) node->list_data;
+			WsSupportedNamespaces *sns =
+				(WsSupportedNamespaces *) node->list_data;
 			if (sns->ns != NULL && strstr(uri, sns->ns)) {
 				ns = u_strdup(sns->ns);
 				break;
@@ -800,15 +801,18 @@ wsman_dispatcher(WsContextH cntx,
 			}
 			debug("ns did not match");
 		}
-		/*
-	         * If Resource URI is null then most likely we are dealing with  a generic plugin
-	         * supporting a namespace with multiple Resource URIs (e.g. CIM)
+		 /*
+	         * If Resource URI is null then most likely we are dealing
+		  * with  a generic plugin supporting a namespace with
+		  *  multiple Resource URIs (e.g. CIM)
 	         */
-		else if (ifc->wsmanResourceUri == NULL && (ns = wsman_dispatcher_match_ns(ifc, uri))) {
+		else if (ifc->wsmanResourceUri == NULL &&
+				(ns = wsman_dispatcher_match_ns(ifc, uri))) {
 			r = ifc;
 			resUriMatch = 1;
 			break;
-		} else if (ifc->wsmanResourceUri && !strcmp(uri, ifc->wsmanResourceUri)) {
+		} else if (ifc->wsmanResourceUri &&
+				!strcmp(uri, ifc->wsmanResourceUri)) {
 			r = ifc;
 			resUriMatch = 1;
 			break;
@@ -830,7 +834,8 @@ wsman_dispatcher(WsContextH cntx,
 				ptr = &action[len + 1];
 		}
 		for (i = 0; r->endPoints[i].serviceEndPoint != NULL; i++) {
-			if (r->endPoints[i].inAction != NULL && !strcmp(ptr, r->endPoints[i].inAction)) {
+			if (r->endPoints[i].inAction != NULL &&
+				    !strcmp(ptr, r->endPoints[i].inAction)) {
 				ep = &r->endPoints[i];
 				break;
 			} else if (r->endPoints[i].inAction == NULL) {
@@ -879,7 +884,7 @@ cleanup:
  * @param flags Flags
  * @return Dispatch Entry
  */
-static dispatch_t     *
+static SoapDispatchH
 create_dispatch_entry(SoapH soap,
 		      char *inboundAction,
 		      char *outboundAction,
@@ -889,7 +894,7 @@ create_dispatch_entry(SoapH soap,
 		      unsigned long flags)
 {
 
-	dispatch_t     *entry = wsman_dispatch_entry_new();
+	SoapDispatchH entry = wsman_dispatch_entry_new();
 	if (entry) {
 		entry->fw = soap;
 		entry->flags = flags;
@@ -927,13 +932,13 @@ soap_create_dispatch(SoapH soap,
 		     unsigned long flags)
 {
 
-	dispatch_t     *disp = NULL;
+	SoapDispatchH disp = NULL;
 	debug("Creating dispatch");
 	if (soap && role == NULL) {
 		disp = create_dispatch_entry(soap, inboundAction, outboundAction,
 				   role, callbackProc, callbackData, flags);
 	}
-	return (SoapDispatchH) disp;
+	return disp;
 }
 
 /*
@@ -943,22 +948,16 @@ void
 soap_start_dispatch(SoapDispatchH disp)
 {
 	if (disp) {
-		list_append(((dispatch_t *) disp)->fw->dispatchList,
-			    &((dispatch_t *) disp)->node);
+		list_append(disp->fw->dispatchList,
+			    &(disp)->node);
 	}
 }
 
 
 
-dispatch_t     *
+SoapDispatchH
 wsman_dispatch_entry_new(void) {
-	dispatch_t     *entry =
-	(dispatch_t *) u_zalloc(sizeof(dispatch_t));
-
-	if (entry)
-		return entry;
-	else
-		return NULL;
+	return (SoapDispatchH)u_zalloc(sizeof (struct __dispatch_t));
 }
 
 
