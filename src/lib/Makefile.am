@@ -8,6 +8,7 @@ wsmaninclude_HEADERS = \
 	wsman-errors.h \
 	wsman-client.h  \
 	wsman-client-api.h \
+	wsman-xml-api.h \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h \
     wsman-server-api.h \
