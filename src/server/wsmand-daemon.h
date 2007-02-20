@@ -78,7 +78,7 @@ char *wsmand_default_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator_arg(void);
 char* wsmand_options_get_pid_file (void);
-
+unsigned long wsmand_options_get_enumIdleTimeout(void);
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug (void);
 

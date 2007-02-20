@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string.h>
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 #ifndef WIN32
 #include <dlfcn.h>
 #endif
@@ -47,6 +51,7 @@
 #include "wsman-xml-api.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
+#include "wsman-soap.h"
 #include "wsman-dispatcher.h"
 
 
@@ -102,4 +107,42 @@ wsman_init_plugins(WsManListenerH *listener)
   cntx = ws_create_runtime(list);
   return cntx;
 }
+
+
+void *
+wsman_server_auxiliary_loop_thread(void *arg)
+{
+    WsContextH cntx = (WsContextH)arg;
+    int r;
+    pthread_mutex_t      mutex;
+    pthread_cond_t       cond;
+    struct timespec timespec;
+    struct timeval tv;
+
+    if ((r = pthread_cond_init(&cond, NULL)) != 0) {
+        error("pthread_cond_init failed = %d", r); 
+        return NULL;
+    }
+    if ((r = pthread_mutex_init(&mutex, NULL)) != 0) {
+        error("pthread_mutex_init failed = %d", r); 
+        return NULL;
+    }
+
+    while (continue_working) {	
+        pthread_mutex_lock(&mutex);
+        gettimeofday(&tv, NULL);
+        timespec.tv_sec = tv.tv_sec + 1;
+        timespec.tv_nsec = tv.tv_usec * 1000;
+        pthread_cond_timedwait(&cond, &mutex, &timespec);
+        pthread_mutex_unlock(&mutex);
+
+        wsman_timeouts_manager(cntx);
+    }
+    return NULL;
+}
+
+
+
+
+
 

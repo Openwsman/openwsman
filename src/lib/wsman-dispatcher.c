@@ -549,21 +549,24 @@ outbound_addressing_filter(SoapOpH opHandle,
 	WsXmlNodeH      outHeaders = wsman_get_soap_header_element(soap, out_doc, NULL, NULL);
 
 	if (outHeaders) {
-		if (ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,
-				     WSA_MESSAGE_ID) == NULL && !wsman_is_identify_request(in_doc)) {
+		if (ws_xml_get_child(outHeaders, 0,
+				XML_NS_ADDRESSING, WSA_MESSAGE_ID) == NULL &&
+				!wsman_is_identify_request(in_doc)) {
 			char            uuidBuf[100];
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
-			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_MESSAGE_ID, uuidBuf);
+			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,
+						 WSA_MESSAGE_ID, uuidBuf);
 			debug("Adding message id: %s", uuidBuf);
 		}
 		if (in_doc != NULL) {
 			WsXmlNodeH      inMsgIdNode;
-			inMsgIdNode = wsman_get_soap_header_element(soap, in_doc,
-					 XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+			inMsgIdNode = wsman_get_soap_header_element(soap,
+				in_doc, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 			if (inMsgIdNode != NULL && !ws_xml_get_child(outHeaders, 0,
 				       XML_NS_ADDRESSING, WSA_RELATES_TO)) {
 				ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,
-						 WSA_RELATES_TO, ws_xml_get_node_text(inMsgIdNode));
+					WSA_RELATES_TO,
+					ws_xml_get_node_text(inMsgIdNode));
 			}
 		}
 	}
@@ -582,8 +585,10 @@ wsman_dispatcher_list(list_t * interfaces)
 {
 	lnode_t        *node = list_first(interfaces);
 	while (node) {
-		WsDispatchInterfaceInfo *interface = (WsDispatchInterfaceInfo *) node->list_data;
-		debug("Listing Dispatcher: interface->wsmanResourceUri: %s", interface->wsmanResourceUri);
+		WsDispatchInterfaceInfo *interface =
+				(WsDispatchInterfaceInfo *) node->list_data;
+		debug("Listing Dispatcher: interface->wsmanResourceUri: %s",
+			 interface->wsmanResourceUri);
 		node = list_next(interfaces, node);
 	}
 }
@@ -764,6 +769,72 @@ wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
 	return ns;
 }
 
+
+WsEndPointRelease
+wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
+{
+	WsManDispatcherInfo *dispInfo =
+		(WsManDispatcherInfo *)cntx->soap->dispatcherData;
+	char           *uri = NULL;
+	lnode_t        *node = list_first((list_t *)dispInfo->interfaces);
+	WsDispatchInterfaceInfo *r = NULL;	
+	WsDispatchEndPointInfo *ep = NULL;
+	uri = wsman_get_resource_uri(cntx, doc);
+	char           *ns = NULL;
+	char           *ptr = ENUM_ACTION_RELEASE;
+	int i;
+
+	while (node != NULL) {
+		WsDispatchInterfaceInfo *ifc =
+			(WsDispatchInterfaceInfo *) node->list_data;
+debug("handle ifc %s", ifc->wsmanResourceUri);
+		if (ifc->wsmanResourceUri == NULL &&
+				(ns = wsman_dispatcher_match_ns(ifc, uri))) {
+debug("ifc match ns: %s", ns);
+			r = ifc;
+			break;
+		}
+		if (ifc->wsmanResourceUri &&
+				!strcmp(uri, ifc->wsmanResourceUri)) {
+			r = ifc;
+			break;
+		}
+		node = list_next((list_t *) dispInfo->interfaces, node);
+	}
+	if (r == NULL) {
+		debug("no ifc");
+		return NULL;
+	}
+	/*
+        * See if the action is part of the namespace which means that
+        * we are dealing with a custom action
+        */
+	if (ns != NULL) {
+		size_t             len = strlen(ns);
+		if (!strncmp(ptr, ns, len) && ptr[len] == '/') {
+			ptr += len + 1;
+		}
+	}
+	for (i = 0; r->endPoints[i].serviceEndPoint != NULL; i++) {
+		if (r->endPoints[i].inAction != NULL &&
+		     !strcmp(ptr, r->endPoints[i].inAction)) {
+			ep = &r->endPoints[i];
+			break;
+		}
+	}
+
+	if (ep == NULL) {
+		debug("no ep");
+		return NULL;
+	}
+	debug("Release endpoint: %p", ep->serviceEndPoint);
+	return (WsEndPointRelease)ep->serviceEndPoint;
+}
+
+
+
+
+
 SoapDispatchH
 wsman_dispatcher(WsContextH cntx,
 		 void *data,
@@ -784,12 +855,11 @@ wsman_dispatcher(WsContextH cntx,
 		error("doc is null");
 		u_free(data);
 		goto cleanup;
-	} else {
-		uri = wsman_get_resource_uri(cntx, doc);
-		action = wsman_get_action(cntx, doc);
-		if ((!uri || !action) && !wsman_is_identify_request(doc)) {
-			goto cleanup;
-		}
+	}
+	uri = wsman_get_resource_uri(cntx, doc);
+	action = wsman_get_action(cntx, doc);
+	if ((!uri || !action) && !wsman_is_identify_request(doc)) {
+		goto cleanup;
 	}
 
 	while (node != NULL) {

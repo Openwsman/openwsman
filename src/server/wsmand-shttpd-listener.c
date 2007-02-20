@@ -90,7 +90,7 @@ static int                  idle_threads = 0;
 
 #endif
 
-static int continue_working = 1;
+int continue_working = 1;
 static int (*basic_auth_callback)(char *, char *) = NULL;
 
 
@@ -474,8 +474,6 @@ static void *service_connection(void *arg)
                 break;
             } else {
                 idle_threads++;
-//                timespec.tv_sec = 1;
-//                timespec.tv_nsec = 0;
                 debug("Thread %d goes to idle state", pthread_self());
                 (void) pthread_cond_wait(&shttpd_cond, &shttpd_mutex);
                 idle_threads--;
@@ -596,7 +594,8 @@ wsmand_start_server(dictionary *ini)
     }
 #endif
     SoapH soap = ws_context_get_runtime(cntx);
-
+    ws_set_context_enumIdleTimeout(cntx,
+		wsmand_options_get_enumIdleTimeout());
     if (initialize_basic_authenticator()) {
         return listener;
     }
@@ -665,6 +664,9 @@ wsmand_start_server(dictionary *ini)
 
     min_threads = wsmand_options_get_min_threads();
     max_threads = wsmand_options_get_max_threads();
+
+    pthread_create(&thr_id, &pattrs,
+                   wsman_server_auxiliary_loop_thread, cntx);
 
     while( continue_working) {
         if ((sock = shttpd_accept(lsn, 1000)) == -1) {

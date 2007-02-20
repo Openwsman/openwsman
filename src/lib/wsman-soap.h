@@ -152,7 +152,9 @@ typedef struct _WS_CONTEXT_ENTRY WS_CONTEXT_ENTRY;
 
 struct _WS_CONTEXT {
 	SoapH           soap;
+	unsigned long   enumIdleTimeout;
 	WsXmlDocH	indoc;
+	hash_t         *enuninfos;
 	hash_t         *entries;
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
@@ -217,19 +219,6 @@ struct __WsManDispatcherInfo {
 typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
 
 
-struct __WsEnumerateInfo {
-
-	unsigned long   timeStamp;
-	time_t          expires; // expiration seconds  since  the epoch
-	unsigned int    totalItems;
-	unsigned int    maxItems;
-	unsigned char   flags;
-	int             index;
-	void           *enumResults;
-	void           *pullResultPtr;
-	void           *appEnumContext;
-	WsmanAuth       auth_data;
-};
 
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
@@ -243,6 +232,23 @@ typedef int     (*WsEndPointPut) (WsContextH, void *, void **, WsmanStatus *);
 
 typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
+
+#define EUIDLEN		64
+#define WSMAN_ENUMINFO_INWORK_FLAG	0x010000
+struct __WsEnumerateInfo {
+	int flags;
+	char            enumId[EUIDLEN];
+	unsigned long   timeStamp; // in msecs
+	unsigned long   expires; // expiration time in msecs  since  the epoch
+	unsigned int    totalItems;
+	unsigned int    maxItems;
+	int             index;
+	void           *enumResults;
+	void           *pullResultPtr;
+	void           *appEnumContext;
+	WsmanAuth       auth_data;
+	WsEndPointRelease releaseproc;
+};
 
 enum __WsmanFilterDialect {
 	WSMAN_FILTER_XPATH,
@@ -276,6 +282,8 @@ make_callback_entry(SoapServiceCallback proc,
 
 
 SoapH           ws_soap_initialize(void);
+void            ws_set_context_enumIdleTimeout(WsContextH cntx,
+                            unsigned long timeout);
 void            soap_destroy_fw(SoapH soap);
 SoapH           ws_context_get_runtime(WsContextH hCntx);
 
@@ -300,15 +308,6 @@ int             ws_transfer_get_stub(SoapOpH op, void *appData);
 int             wsenum_pull_stub(SoapOpH op, void *appData);
 int             wsenum_pull_raw_stub(SoapOpH op, void *appData);
 int             wsenum_release_stub(SoapOpH op, void *appData);
-
-WsEnumerateInfo *
-get_enum_info(WsContextH cntx,
-	      WsXmlDocH doc,
-	      char *cntxName,
-	      int cntxNameLen,
-	      char *op,
-	      char **enumIdPtr);
-
 
 
 SoapOpH 
@@ -387,6 +386,8 @@ wsman_generate_fault_buffer(
 
 void            wsman_status_init(WsmanStatus * s);
 int             wsman_check_status(WsmanStatus * s);
+
+void  wsman_timeouts_manager(WsContextH cntx);
 
 
 #endif				/* SOAP_API_H_ */

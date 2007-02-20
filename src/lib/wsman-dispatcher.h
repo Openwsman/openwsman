@@ -92,6 +92,7 @@ void            dispatch_inbound_call(SoapH soap, WsmanMessage * msg);
 void            wsman_dispatcher_list(list_t * interfaces);
 
 SoapDispatchH   wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
+WsEndPointRelease wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc);
 
 void            destroy_op_entry(op_t * entry);
 

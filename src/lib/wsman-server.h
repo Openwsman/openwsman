@@ -37,7 +37,10 @@
 
 #include "wsman-plugins.h"
 
+int continue_working;
+
 WsContextH wsman_init_plugins(WsManListenerH *listener);
 WsManListenerH *wsman_dispatch_list_new(void);
+void *wsman_server_auxiliary_loop_thread(void *arg);
 
 #endif
