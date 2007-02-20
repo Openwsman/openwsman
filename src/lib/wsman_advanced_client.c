@@ -3,9 +3,15 @@
 #endif
 
 #include "wsman-xml-api.h"
+#include "wsman-soap.h"
+#include "wsman-dispatcher.h"
+#include "wsman-soap-envelope.h"
+
+#include "wsman-xml.h"
+#include "wsman-xml-serialize.h"
 #include "wsman-client-transport.h"
+#include "wsman-faults.h"
 #include "wsman-client.h"
-#include "wsman-client-api.h"
 
 enum {
 	WSMAN_SESSION = 0,
@@ -265,11 +271,16 @@ char* wsman_session_error(int session_id)
 }
 
 int wsman_session_resource_locator_create(int session_id,
-					const char *resource_uri)
+					const char *epr)
 {
 	session_t	*s;
+	char		*resource_uri, *name, *value;
+	WsXmlDocH	doc;
+	WsXmlNodeH	node, resuri_node, selector;
+	int		sid;
+	int		index = 0;
 
-	if (!resource_uri) {
+	if (!epr) {
 		return -1;
 	}
 
@@ -282,7 +293,49 @@ int wsman_session_resource_locator_create(int session_id,
 		return -1;
 	}
 
-	return _session_clone(s, WSMAN_RESOURCE_LOCATOR, resource_uri, NULL);
+	doc = wsman_client_read_memory(s->client,
+				u_strdup(epr),
+				strlen(epr),
+				NULL, 0);
+	if (!doc) {
+		return _session_clone(s, WSMAN_RESOURCE_LOCATOR,
+					epr, NULL);
+	};
+
+	node =  ws_xml_get_child(ws_xml_get_doc_root(doc), 0,
+				XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
+
+	if (node != NULL) {
+		resuri_node = ws_xml_get_child(node, 0,
+				XML_NS_WS_MAN, WSM_RESOURCE_URI);
+		if (resuri_node) {
+			resource_uri = ws_xml_get_node_text(resuri_node);
+		} else {
+			return -1;
+		}
+		node = ws_xml_get_child(node, 0,
+				XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	} 
+
+	sid = _session_clone(s, WSMAN_RESOURCE_LOCATOR, resource_uri, NULL);
+	u_free(resource_uri);
+
+	while ((selector = ws_xml_get_child(node, index++,
+					XML_NS_WS_MAN, WSM_SELECTOR))) {
+		name = ws_xml_find_attr_value(selector,
+					XML_NS_WS_MAN, WSM_NAME);
+		if (name == NULL) {
+			name = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+			if (name) {
+				value = ws_xml_get_node_text(selector);
+				wsman_resource_locator_add_selector(sid,
+								name,
+								value);
+			}
+		}
+	}
+
+	return sid;
 }
 
 char wsman_resource_locator_remove(int locator_id)
@@ -572,6 +625,81 @@ char* wsman_resource_locator_transfer_get(int locator_id,
 
 	wsman_send_request(s->client, request);
 	ws_xml_destroy_doc(request);
+
+	response = wsman_build_envelope_from_response(s->client);
+
+	if (response) {
+		if (wsman_client_check_for_fault(response)) {
+			s->fault = _subcode_from_doc(response);
+			ws_xml_destroy_doc(response);
+			pthread_mutex_unlock(&s->lock);
+			return NULL;
+		}
+		node = ws_xml_get_soap_body(response);
+		resource = wsman_client_node_to_formatbuf(
+				ws_xml_get_child(node, 0 , NULL, NULL ));
+		ws_xml_destroy_doc(response);
+	}
+
+	pthread_mutex_unlock(&s->lock);
+
+	return resource;
+}
+
+char* wsman_resource_locator_transfer_put(int locator_id,
+					const char *xml_content,
+					int flags)
+{
+	session_t	*s;
+	WsXmlDocH	request,	response;
+	WsXmlDocH 	doc_content;
+	WsXmlNodeH	node;
+	actionOptions	options;
+	char		*resource = NULL;
+
+	s = get_session_by_id(locator_id);
+	if (!s) {
+		return NULL;
+	}
+	if (s->type != WSMAN_RESOURCE_LOCATOR) {
+		return NULL;
+	}
+
+	pthread_mutex_lock(&s->lock);
+
+	doc_content = wsman_client_read_memory(s->client,
+					u_strdup(xml_content),
+					strlen(xml_content),
+					NULL, 0);
+	if (!doc_content) {
+		pthread_mutex_unlock(&s->lock);
+		return NULL;
+	};
+
+	initialize_action_options(&options);
+	options.selectors = s->selectors;
+
+	if (s->fault) {
+		u_free(s->fault);
+		s->fault = NULL;
+	}
+
+	request = wsman_client_create_request(s->client, s->resource_uri,
+					options, WSMAN_ACTION_TRANSFER_PUT,
+					NULL, NULL);
+	if (!request) {
+		ws_xml_destroy_doc(doc_content);
+		pthread_mutex_unlock(&s->lock);
+		return NULL;
+	}
+
+	ws_xml_copy_node(ws_xml_get_doc_root(doc_content),
+			ws_xml_get_soap_body(request));
+
+	wsman_send_request(s->client, request);
+
+//	ws_xml_destroy_doc(doc_content);
+//	ws_xml_destroy_doc(request);
 
 	response = wsman_build_envelope_from_response(s->client);
 

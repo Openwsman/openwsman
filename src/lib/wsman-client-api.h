@@ -367,6 +367,9 @@ char* wsman_enumerator_pull(int enumerator_id);
 
 char* wsman_resource_locator_transfer_get(int locator_id,
 					int flags);
+char* wsman_resource_locator_transfer_put(int locator_id,
+					const char *xml_content,
+					int flags);
 
 #ifdef __cplusplus
 }
