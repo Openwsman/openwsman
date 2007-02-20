@@ -682,8 +682,8 @@ get_locked_enuminfo(WsContextH cntx,
 
 	if (status->fault_code != WSMAN_RC_OK) {
 		eInfo = NULL;
-		u_unlock(cntx->soap);
 	}
+	u_unlock(cntx->soap);
 	return eInfo;
 }
 
