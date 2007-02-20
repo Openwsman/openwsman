@@ -334,7 +334,7 @@ int wsman_session_open(const char *server,
 			const char *password,
 			int flags);
 
-void wsman_session_close(int session_id);
+char wsman_session_close(int session_id);
 
 char* wsman_session_error(int session_id);
 
@@ -346,29 +346,27 @@ char wsman_session_set_server(int sid,
 				const char *username,
 				const char *password);
 
-const char* wsman_session_locator_resource_uri( int session_id,
-						const char *resource_uri);
-char wsman_session_locator_add_selector(int session_id,
+int wsman_session_resource_locator_create(int session_id,
+					const char *resource_uri);
+
+char wsman_resource_locator_remove(int locator_id);
+char wsman_resource_locator_add_selector(int locator_id,
 					const char *name,
 					const char *value);
-char wsman_session_locator_clear_selectors(int session_id);
-char wsman_session_locator_add_property(int session_id,
-					const char *name,
-					const char *value);
-char wsman_session_locator_clear_properties(int session_id);
+char wsman_resource_locator_clear_selectors(int locator_id);
 
-char* wsman_session_enumerate(  int session_id,
-				const char *resource_uri,
-				const char *filter,
-				const char *dialect,
-				int flags);
+int wsman_session_enumerate(int session_id,
+			const char *resource_uri,
+			const char *filter,
+			const char *dialect,
+			int flags);
 
-char wsman_session_enumerator_end(int session_id);
-char* wsman_session_enumerator_pull(int session_id);
+char wsman_enumerator_release(int enumerator_id);
+char wsman_enumerator_end(int enumerator_id);
+char* wsman_enumerator_pull(int enumerator_id);
 
-char* wsman_session_transfer_get(int session_id,
-				const char *resource_uri,
-				int flags);
+char* wsman_resource_locator_transfer_get(int locator_id,
+					int flags);
 
 #ifdef __cplusplus
 }
