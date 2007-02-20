@@ -432,6 +432,9 @@ cim_add_keys( CMPIObjectPath * objectpath,
 {
 	hscan_t hs;
 	hnode_t *hn;
+	if (keys == NULL) {
+		return;
+	}
 	hash_scan_begin(&hs, keys);
 	while ((hn = hash_scan_next(&hs))) {
 		CMAddKey(objectpath,  (char*) hnode_getkey(hn),
