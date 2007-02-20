@@ -684,7 +684,8 @@ GENERATE_FAULT:
 
 
 static SoapDispatchH
-get_dispatch_entry(SoapH soap, WsXmlDocH doc)
+get_dispatch_entry(SoapH soap, 
+		   WsXmlDocH doc)
 {
 	SoapDispatchH dispatch = NULL;
 	if (soap->dispatcherProc) {
@@ -802,10 +803,10 @@ wsman_dispatcher(WsContextH cntx,
 			debug("ns did not match");
 		}
 		 /*
-	         * If Resource URI is null then most likely we are dealing
+	          * If Resource URI is null then most likely we are dealing
 		  * with  a generic plugin supporting a namespace with
 		  *  multiple Resource URIs (e.g. CIM)
-	         */
+	          **/
 		else if (ifc->wsmanResourceUri == NULL &&
 				(ns = wsman_dispatcher_match_ns(ifc, uri))) {
 			r = ifc;

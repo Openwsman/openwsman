@@ -351,6 +351,41 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 		retval = 0;
                 debug("no header");
 		goto cleanup;
+	} else {
+		if (!wsman_is_identify_request(doc)) {
+			WsXmlNodeH      resource_uri = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
+			WsXmlNodeH      action = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_ACTION);
+			WsXmlNodeH      reply = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
+			WsXmlNodeH      to = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO);
+			if (!resource_uri) {
+				wsman_set_fault(msg,
+						WSA_DESTINATION_UNREACHABLE, WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
+				retval = 0;
+				debug("no wsman:ResourceURI");
+				goto cleanup;
+			}
+			if (!action) {
+				wsman_set_fault(msg,
+						WSA_ACTION_NOT_SUPPORTED, 0, NULL);
+				retval = 0;
+				debug("no wsa:Action");
+				goto cleanup;
+			}
+			if (!reply) {
+				wsman_set_fault(msg,
+						WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
+				retval = 0;
+				debug("no wsa:ReplyTo");
+				goto cleanup;
+			}
+			if (!to) {
+				wsman_set_fault(msg,
+						WSA_DESTINATION_UNREACHABLE, 0, NULL);
+				retval = 0;
+				debug("no wsa:To");
+				goto cleanup;
+			}
+		}
 	}
 cleanup:
 	return retval;
@@ -407,6 +442,7 @@ wsman_create_fault_envelope(WsContextH cntx,
 			    char *code,
 			    char *subCodeNs,
 			    char *subCode,
+			    char *fault_action,
 			    char *lang,
 			    char *reason,
 			    char *faultDetail)
@@ -420,7 +456,7 @@ wsman_create_fault_envelope(WsContextH cntx,
 	char            uuidBuf[50];
 	char           *soapNs;
 	if (rqstDoc) {
-		doc = wsman_create_response_envelope(cntx, rqstDoc, WSA_ACTION_FAULT);
+		doc = wsman_create_response_envelope(cntx, rqstDoc, fault_action);
 	} else {
 		SoapH           soap = cntx->soap;
 		doc = ws_xml_create_envelope(soap, NULL);
@@ -598,6 +634,7 @@ wsman_get_method_name(WsContextH cntx)
 {
 	char           *m = wsman_get_action(cntx, NULL);
 	char           *method = u_strdup(strrchr(m, '/') + 1);
+	debug("method or action: %s", method );
 	return method;
 }
 

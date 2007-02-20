@@ -186,12 +186,6 @@ CimResource_Delete_EP( SoapOpH op,
 }
 
 
-
-
-
-
-
-
 int
 CimResource_Get_EP( SoapOpH op,
 		void* appData )
@@ -259,6 +253,7 @@ CimResource_Custom_EP( SoapOpH op,
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
 	WsXmlDocH in_doc = NULL;
+	char *action;
 
 	wsman_status_init(&status);
 	SoapH soap = soap_get_op_soap(op);
@@ -267,9 +262,18 @@ CimResource_Custom_EP( SoapOpH op,
 
 	op_t *_op = (op_t *)op;
 	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	action = wsman_get_action(cntx, in_doc );
 	if (msg) {
 		cimclient = CimResource_Init(cntx, msg->auth_data.username,
 				msg->auth_data.password);
+	}
+	if (!strstr(action, cimclient->resource_uri)) {
+		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
+		status.fault_detail_code = OWSMAN_NO_DETAILS;
+		doc = wsman_generate_fault(cntx, in_doc, status.fault_code, 
+				status.fault_detail_code, NULL);
+		debug("action not supported");
+		goto cleanup;
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -290,6 +294,7 @@ CimResource_Custom_EP( SoapOpH op,
 		}
 	}
 
+cleanup:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	} else {
@@ -298,7 +303,6 @@ CimResource_Custom_EP( SoapOpH op,
 
 	ws_destroy_context(cntx);
 	CimResource_destroy(cimclient);
-
 	return 0;
 }
 

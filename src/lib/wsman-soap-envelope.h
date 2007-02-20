@@ -70,6 +70,7 @@ WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
             char* code,
             char* subCodeNs,
             char* subCode,
+	    char *fault_action,
             char* lang,
             char* reason,
             char* faultDetail);

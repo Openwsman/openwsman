@@ -177,11 +177,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 		GetWsmanFault(XmlDocToString(enum_response), e);
 		ws_xml_destroy_doc(enum_response);
 		destroy_action_options(&options);
-		if(e.GetFaultSubcode().compare("EndpointUnavailable") != 0) {
-			throw e;
-		} else {
-			return;
-		}
+		throw e;
 	}
 	enumContext = wsenum_get_enum_context(enum_response);
 	ws_xml_destroy_doc(enum_response);

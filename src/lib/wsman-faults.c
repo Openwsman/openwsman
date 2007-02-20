@@ -482,6 +482,7 @@ wsman_generate_fault( WsContextH cntx,
                 fault_code_table[i].code,
                 fault_code_table[i].subCodeNs,                 
                 fault_code_table[i].subCode,
+		fault_code_table[i].fault_action,
                 NULL,
                 reason, 
                 detail);

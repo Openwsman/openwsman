@@ -303,8 +303,10 @@ set_context_val(WsContextH cntx,
  * @param dispInfo Dispatcher information
  */
 int 
-wsman_register_endpoint(WsContextH cntx, WsDispatchInterfaceInfo * wsInterface,
-		WsDispatchEndPointInfo * ep, WsManDispatcherInfo * dispInfo)
+wsman_register_endpoint(WsContextH cntx, 
+			WsDispatchInterfaceInfo * wsInterface,
+			WsDispatchEndPointInfo * ep, 
+			WsManDispatcherInfo * dispInfo)
 {
 	SoapDispatchH   disp = NULL;
 	unsigned long   flags = SOAP_CUSTOM_DISPATCHER;
