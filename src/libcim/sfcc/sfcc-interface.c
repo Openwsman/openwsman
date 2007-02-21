@@ -79,7 +79,7 @@ path2xml(WsXmlNodeH node,
 	WsXmlNodeH refparam = ws_xml_add_child(node,
 			XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS , NULL);
 	ws_xml_add_child_format(refparam, XML_NS_WS_MAN ,
-			WSM_RESOURCE_URI  , "%s/%s", XML_NS_CIM_CLASS, (char *)classname->hdl);
+			WSM_RESOURCE_URI  , "%s", resourceUri);
 	WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
 			XML_NS_WS_MAN , WSM_SELECTOR_SET , NULL);
 
@@ -779,6 +779,7 @@ cim_getEprAt( CimClientInfo *client,
 {
 
 	int retval = 1;
+	char *target_class = NULL;
 	CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
 	CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
 
@@ -791,12 +792,22 @@ cim_getEprAt( CimClientInfo *client,
 			(strcmp((char *)classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
+	if (enumInfo && ( (enumInfo->flags & 
+					FLAG_ExcludeSubClassProperties) ==
+				FLAG_ExcludeSubClassProperties)) {
+		target_class = client->requested_class;
+	} else {
+		target_class = (char *)classname->hdl;
+	}
+	if (target_class) {
+		char *uri;
+		uri = cim_find_namespace_for_class(client, target_class);
+		if (retval)
+			cim_add_epr(itemsNode, uri, objectpath);
+		u_free(uri);
+	}
 
-	if (retval)
-		cim_add_epr(itemsNode, client->resource_uri, objectpath);
 
-
-	//if (instance) CMRelease(instance);
 	if (classname)  CMRelease(classname);
 	if (objectpath) CMRelease(objectpath);
 	return retval;
@@ -808,6 +819,7 @@ cim_getEprObjAt(CimClientInfo *client,
 		WsXmlNodeH itemsNode)
 {
 	int retval = 1;
+	char *target_class = NULL;
 	CMPIArray * results = (CMPIArray *)enumInfo->enumResults;
 	CMPIData data = results->ft->getElementAt(results, enumInfo->index, NULL);
 
@@ -820,14 +832,25 @@ cim_getEprObjAt(CimClientInfo *client,
 			(strcmp((char *)classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
+	if (enumInfo && ( (enumInfo->flags & 
+					FLAG_ExcludeSubClassProperties) ==
+				FLAG_ExcludeSubClassProperties)) {
+		target_class = client->requested_class;
+	} else {
+		target_class = (char *)classname->hdl;
+	}
+	if (target_class) {
+		char *uri;
+		uri = cim_find_namespace_for_class(client, target_class);
 
-	if (retval) {
-		WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM, NULL);
-		instance2xml(client, instance, item, enumInfo);
-		cim_add_epr(item, client->resource_uri, objectpath);
+		if (retval) {
+			WsXmlNodeH item = ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM, NULL);
+			instance2xml(client, instance, item, enumInfo);
+			cim_add_epr(item, uri, objectpath);
+		}
+		u_free(uri);
 	}
 
-	//if (instance) CMRelease(instance);
 	if (classname)  CMRelease(classname); 
 	if (objectpath) CMRelease(objectpath);
 	return retval;
@@ -1095,7 +1118,6 @@ cim_put_instance (CimClientInfo *client,
 	wsman_status_init(&statusP);
 
 	CMCIClient * cc = (CMCIClient *)client->cc;
-	debug("no base class, getting instance directly with getInstance");
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
 	if (objectpath != NULL)
@@ -1107,12 +1129,13 @@ cim_put_instance (CimClientInfo *client,
 		debug( "getInstance() rc=%d, msg=%s", rc.rc,
 				(rc.msg)? (char *)rc.msg->hdl : NULL);
 
-		xml2instance(instance, in_body, client->resource_uri);
+		if (instance) {
+			xml2instance(instance, in_body, client->resource_uri);
 
-		rc = cc->ft->setInstance(cc, objectpath, instance,  0, NULL);
-		debug( "modifyInstance() rc=%d, msg=%s", rc.rc,
-				(rc.msg)? (char *)rc.msg->hdl : NULL);
-
+			rc = cc->ft->setInstance(cc, objectpath, instance,  0, NULL);
+			debug( "modifyInstance() rc=%d, msg=%s", rc.rc,
+					(rc.msg)? (char *)rc.msg->hdl : NULL);
+		}
 		if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 		} else {

@@ -274,7 +274,7 @@ int wsman_session_resource_locator_create(int session_id,
 					const char *epr)
 {
 	session_t	*s;
-	char		*resource_uri, *name, *value;
+	char		*resource_uri = NULL, *name, *value;
 	WsXmlDocH	doc;
 	WsXmlNodeH	node, resuri_node, selector;
 	int		sid;
