@@ -234,7 +234,11 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
 
 #define EUIDLEN		64
-#define WSMAN_ENUMINFO_INWORK_FLAG	0x010000
+#define WSMAN_ENUMINFO_INWORK_FLAG	   0x010000
+#define FLAG_IncludeSubClassProperties     0x000020
+#define FLAG_ExcludeSubClassProperties     0x000040
+#define FLAG_POLYMORPHISM_NONE             0x000080
+
 struct __WsEnumerateInfo {
 	int flags;
 	char            enumId[EUIDLEN];
