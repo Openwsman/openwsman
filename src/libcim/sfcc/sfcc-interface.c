@@ -495,7 +495,8 @@ cim_verify_keys( CMPIObjectPath * objectpath,
 		} else  {
 			statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 			statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-			debug("invalid resourceUri");
+			debug("invalid resourceUri %s != %s",
+				cv, (char*) hnode_get(hn));
 			u_free(cv);
 			break;
 		}
