@@ -124,7 +124,7 @@ extern int		shttpd_open_port(int port);
 extern void		shttpd_listen(struct shttpd_ctx *ctx, int sock);
 extern void		shttpd_register_url(struct shttpd_ctx *ctx,
 				const char *url, shttpd_callback_t callback,
-				void *user_data);
+				int authnotneeded, void *user_data);
 extern void		shttpd_protect_url(struct shttpd_ctx *ctx,
 				const char *url, const char *file);
 extern void		shttpd_poll(struct shttpd_ctx *, int milliseconds);

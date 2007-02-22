@@ -414,8 +414,7 @@ create_shttpd_context(SoapH soap)
         return NULL;
     }
     shttpd_register_url(ctx, wsmand_options_get_service_path(),
-                                    server_callback, (void *) soap);
-
+                                    server_callback, 0, (void *) soap);
     if (wsmand_options_get_digest_password_file()) {
        shttpd_register_dauth_callback(ctx, digest_auth_callback);
         debug( "Using Digest Authorization");

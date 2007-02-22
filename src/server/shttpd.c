@@ -429,6 +429,7 @@ struct userurl {
 #ifdef EMBEDDED
 	shttpd_callback_t	func;
 #endif /* EMBEDDED */
+	int authnotneeded;
 	void			*data;
 };
 
@@ -919,6 +920,7 @@ isregistered(struct shttpd_ctx *ctx, const char *url)
 	return (NULL);
 }
 
+#ifndef OPENWSMAN
 static struct mountpoint *
 ismountpoint(struct shttpd_ctx *ctx, const char *url)
 {
@@ -930,6 +932,7 @@ ismountpoint(struct shttpd_ctx *ctx, const char *url)
 
 	return (NULL);
 }
+#endif
 
 #ifdef EMBEDDED
 /*
@@ -1123,13 +1126,15 @@ shttpd_get_env(struct shttpd_arg_t *arg, const char *env_name)
 
 void
 shttpd_register_url(struct shttpd_ctx *ctx,
-		const char *url, shttpd_callback_t cb, void *data)
+		const char *url, shttpd_callback_t cb,
+		int authnotneeded, void *data)
 {
 	struct userurl	*p;
 
 	if ((p = calloc(1, sizeof(*p))) != NULL) {
 		p->func		= cb;
 		p->data		= data;
+		p->authnotneeded = authnotneeded;
 		p->url		= mystrdup(url);
 		p->next		= ctx->urls;
 		ctx->urls	= p;
@@ -3624,118 +3629,35 @@ static void
 handle(struct conn *c)
 {
 	char			path[FILENAME_MAX + IO_MAX];
-#ifndef OPENWSMAN
-        char                    buf[1024];
-	FILE			*fp = NULL;
-#endif
-	struct mountpoint	*mp;
 	struct userurl		*userurl;
+	char *p;
 
 	elog(ERR_DEBUG, "handle: [%s]", c->remote.buf);
 
-	if ((c->query = strchr(c->uri, '?')) != NULL) {
-		*c->query++ = '\0';
-#ifdef EMBEDDED
-		c->query = c->http_method == METHOD_GET ?
-			mystrdup(c->query) : NULL;
-#else
-		c->query = mystrdup(c->query);
-#endif
+	if ((p = strchr(c->uri, '?')) != NULL) {
+		*p++ = '\0';
 	}
+	if (c->http_method != METHOD_POST) {
+		senderr(c, 405, "Method not allowed", "", "Must be POST");
+		return;
+	}
+
+	c->query = NULL;
 	urldecode(c->uri, c->uri);
 	killdots(c->uri);
 	(void) Snprintf(path, sizeof(path), "%s%s", c->ctx->root, c->uri);
 
-	/* User may use the aliases - check URI for mount point */
-	if ((mp = ismountpoint(c->ctx, c->uri)) != NULL) {
-		(void) Snprintf(path, sizeof(path), "%s%s", mp->path,
-		    c->uri + strlen(mp->mountpoint));
+	if ((userurl = isregistered(c->ctx, c->uri)) == NULL) {
+		senderr(c, 405, "Unknown uri", "", c->uri);
+		return;
 	}
-	if (checkauth(c, path) != 1) {
+	if (!userurl->authnotneeded && checkauth(c, path) != 1) {
 		send_authorization_request(c);
-	} else if ((userurl = isregistered(c->ctx, c->uri)) != NULL) {
-		c->userurl = userurl;
-		c->io = do_embedded;
-		c->flags |= FLAG_ALWAYS_READY;
-#ifndef OPENWSMAN
-	} else if (strstr(path, HTPASSWD)) {
-		senderr(c, 403, "Forbidden","", "Permission Denied");
-	} else if ((c->http_method == METHOD_PUT || c->http_method == METHOD_DELETE) &&
-			(c->ctx->put_auth == NULL ||
-	    		(fp = fopen(c->ctx->put_auth, "r")) == NULL ||
-			!authorize(c, fp))) {
-		if (fp != NULL) {
-			(void) fclose(fp);
-		}
-		send_authorization_request(c);
-	} else if (c->http_method == METHOD_PUT) {
-		int	rc;
-		c->status = stat(path, &c->st) == 0 ? 200 : 201;
-
-		if (c->range != NULL) {
-			senderr(c, 501, "Not Implemented",
-			    "","Range for PUT not implemented");
-		} else if ((rc = put_dir(path)) == 0) {
-			senderr(c, 200, "OK","","");
-		} else if (rc == -1) {
-			senderr(c, 500, "Error","","%s", strerror(errno));
-		} else if (c->cclength == 0) {
-			senderr(c, 411, "Length Required","","Length Required");
-		} else if ((c->fd = Open(path, O_WRONLY | O_BINARY |
-		    O_CREAT | O_NONBLOCK | O_TRUNC, 0644)) == -1) {
-			elog(ERR_INFO, "handle: open(%s): %s",
-			    path, strerror(errno));
-			senderr(c, 500, "Error","","PUT error");
-		} else {
-			io_inc_tail(&c->remote, c->reqlen);
-			c->io = put_file;
-		}
-	} else if (c->http_method == METHOD_DELETE) {
-		if (remove(path) == 0)
-			senderr(c, 200, "OK", "", "");
-		else
-			senderr(c, 500, "Error", "", "%s", strerror(errno));
-	} else if (get_path_info(c, path) != 0) {
-		senderr(c, 404, "Not Found","", "Not Found: [%s]", c->uri);
-	} else if (S_ISDIR(c->st.st_mode) && path[strlen(path) - 1] != '/') {
-		(void) snprintf(buf, sizeof(buf), "Location: %s/", c->uri);
-		senderr(c, 301, "Moved Permanently", buf, "Moved, %s", buf);
-	} else if (S_ISDIR(c->st.st_mode) &&
-	    useindex(c, path, sizeof(path) - 1) == -1 && c->ctx->dirlist == 0) {
-		senderr(c, 403, "Forbidden", "", "Directory Listing Denied");
-	} else if (S_ISDIR(c->st.st_mode) && c->ctx->dirlist) {
-		if ((c->path = mystrdup(path)) != NULL)
-			do_dir(c);
-		else
-			senderr(c, 500, "Error", "", "strdup");
-	} else if (S_ISDIR(c->st.st_mode) && c->ctx->dirlist == 0) {
-		elog(ERR_INFO, "handle: %s: Denied", path);
-		senderr(c, 403, "Forbidden", "", "Directory listing denied");
-#ifndef NO_CGI
-	} else if (iscgi(c->ctx, path)) {
-		if ((spawncgi(c, path)) == -1) {
-			senderr(c, 500, "Server Error", "", "Cannot exec CGI");
-		} else {
-			c->remote.tail = c->reqlen;
-			io_inc_tail(&c->remote, 0);
-			if (c->http_method == METHOD_GET)
-				c->remote.head = 0;
-			c->io = get_cgi;
-			c->flags |= FLAG_CGI;
-		}
-#endif /* NO_CGI */
-	} else if (c->ims && c->st.st_mtime <= c->ims) {
-		senderr(c, 304, "Not Modified", "", "");
-	} else if ((c->fd = Open(path, O_RDONLY | O_BINARY, 0644)) != -1) {
-		do_get(c);
-	} else {
-		senderr(c, 500, "Error", "", "Internal Error");
+		return;
 	}
-#else // OPENWSMAN
-        } else {
-		senderr(c, 405, "Method not allowed", "", "Method not allowed");
-	}
-#endif // OPENWSMAN
+	c->userurl = userurl;
+	c->io = do_embedded;
+	c->flags |= FLAG_ALWAYS_READY;
 }
 
 /*
