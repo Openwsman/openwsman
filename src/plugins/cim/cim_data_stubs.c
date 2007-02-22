@@ -148,7 +148,7 @@ CimResource_Delete_EP( SoapOpH op,
 	op_t *_op = (op_t *)op;
 	WsmanMessage *msg = (WsmanMessage *)_op->data;
 	WsXmlDocH in_doc = NULL;
-	WsXmlDocH doc;
+	WsXmlDocH doc = NULL;
 	WsContextH cntx;
 	debug( "Delete Endpoint Called");
 	wsman_status_init(&status);
