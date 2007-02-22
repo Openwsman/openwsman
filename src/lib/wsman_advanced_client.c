@@ -13,15 +13,8 @@
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
-enum {
-	WSMAN_SESSION = 0,
-	WSMAN_ENUMERATOR,
-	WSMAN_RESOURCE_LOCATOR
-};
-
 typedef struct {
 	int			id;
-	int			type;
 	WsManClient		*client;
 	int			flags;
 	char			*resource_uri;
@@ -122,7 +115,6 @@ static int session_open(const char *server,
 			const char *username,
 			const char *password,
 			int flags,
-			int type,
 			const char *resource_uri,
 			char *enum_context)
 {
@@ -144,19 +136,12 @@ static int session_open(const char *server,
 
 	_set_server(s, server, port, path, scheme, username, password);
 	s->flags = flags;
-	s->type = type;
-	switch(type) {
-	case WSMAN_RESOURCE_LOCATOR:
+	s->selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
+
+	if (resource_uri) {
 		s->resource_uri = u_strdup(resource_uri);
-		s->selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
-		break;
-	case WSMAN_ENUMERATOR:
-		s->resource_uri = u_strdup(resource_uri);
-		s->enum_context = enum_context;
-		break;
-	default:
-		break;
 	}
+	s->enum_context = enum_context;
 
 	pthread_mutex_unlock(&lock);
 
@@ -177,11 +162,10 @@ int wsman_session_open(const char *server,
 	}
 
 	return session_open(server, port, path, scheme, user, pwd, flags,
-				WSMAN_SESSION, NULL, NULL);
+				NULL, NULL);
 }
 
 static int _session_clone(session_t *s,
-			int type,
 			const char *resource_uri,
 			char *enum_context)
 {
@@ -190,7 +174,7 @@ static int _session_clone(session_t *s,
 	return session_open(cl->data.hostName, cl->data.port,
 				cl->data.path, cl->data.scheme,
 				cl->data.user, cl->data.pwd, s->flags,
-				type, resource_uri, enum_context);
+				resource_uri, enum_context);
 }
 
 char wsman_session_close(int session_id)
@@ -270,37 +254,49 @@ char* wsman_session_error(int session_id)
 	return fault;
 }
 
-int wsman_session_resource_locator_create(int session_id,
+static char _resource_locator_add_selector(session_t *s,
+					const char *name,
+					const char *value)
+{
+	if (!hash_lookup(s->selectors, name)) {
+		if (!hash_alloc_insert(s->selectors, (char *)name,
+							(char *)value)) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+char wsman_session_resource_locator_set(int session_id,
 					const char *epr)
 {
 	session_t	*s;
-	char		*resource_uri = NULL, *name, *value;
+	char		*name, *value;
 	WsXmlDocH	doc;
 	WsXmlNodeH	node, resuri_node, selector;
-	int		sid;
 	int		index = 0;
 
 	if (!epr) {
-		return -1;
+		return 0;
 	}
 
 	s = get_session_by_id(session_id);
 	if (!s) {
-		return -1;
+		return 0;
 	}
 
-	if (s->type != WSMAN_SESSION) {
-		return -1;
-	}
+	pthread_mutex_lock(&s->lock);
 
 	doc = wsman_client_read_memory(s->client,
 				u_strdup(epr),
 				strlen(epr),
 				NULL, 0);
 	if (!doc) {
-		return _session_clone(s, WSMAN_RESOURCE_LOCATOR,
-					epr, NULL);
-	};
+		s->resource_uri = u_strdup(epr);
+		pthread_mutex_unlock(&s->lock);
+		return 1;
+	}
 
 	node =  ws_xml_get_child(ws_xml_get_doc_root(doc), 0,
 				XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
@@ -309,16 +305,19 @@ int wsman_session_resource_locator_create(int session_id,
 		resuri_node = ws_xml_get_child(node, 0,
 				XML_NS_WS_MAN, WSM_RESOURCE_URI);
 		if (resuri_node) {
-			resource_uri = ws_xml_get_node_text(resuri_node);
+			s->resource_uri = ws_xml_get_node_text(resuri_node);
 		} else {
-			return -1;
+			pthread_mutex_unlock(&s->lock);
+			return 0;
 		}
 		node = ws_xml_get_child(node, 0,
 				XML_NS_WS_MAN, WSM_SELECTOR_SET);
-	} 
+	}
 
-	sid = _session_clone(s, WSMAN_RESOURCE_LOCATOR, resource_uri, NULL);
-	u_free(resource_uri);
+	if (!s->resource_uri) {
+		pthread_mutex_unlock(&s->lock);
+		return 0;
+	}
 
 	while ((selector = ws_xml_get_child(node, index++,
 					XML_NS_WS_MAN, WSM_SELECTOR))) {
@@ -328,41 +327,8 @@ int wsman_session_resource_locator_create(int session_id,
 			name = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
 			if (name) {
 				value = ws_xml_get_node_text(selector);
-				wsman_resource_locator_add_selector(sid,
-								name,
-								value);
+				_resource_locator_add_selector(s, name, value);
 			}
-		}
-	}
-
-	return sid;
-}
-
-char wsman_resource_locator_remove(int locator_id)
-{
-	return wsman_session_close(locator_id);
-}
-
-char wsman_resource_locator_add_selector(int locator_id,
-					const char *name,
-					const char *value)
-{
-	session_t	*s;
-
-	s = get_session_by_id(locator_id);
-	if (!s) {
-		return 0;
-	}
-	if (s->type != WSMAN_RESOURCE_LOCATOR) {
-		return 0;
-	}
-
-	pthread_mutex_lock(&s->lock);
-	if (!hash_lookup(s->selectors, name)) {
-		if (!hash_alloc_insert(s->selectors, (char *)name,
-							(char *)value)) {
-			pthread_mutex_unlock(&s->lock);
-			return 0;
 		}
 	}
 	pthread_mutex_unlock(&s->lock);
@@ -370,15 +336,54 @@ char wsman_resource_locator_add_selector(int locator_id,
 	return 1;
 }
 
-char wsman_resource_locator_clear_selectors(int locator_id)
+int wsman_session_resource_locator_new(int session_id, const char *epr)
 {
 	session_t	*s;
+	int		newid;
 
-	s = get_session_by_id(locator_id);
+	s = get_session_by_id(session_id);
 	if (!s) {
 		return 0;
 	}
-	if (s->type != WSMAN_RESOURCE_LOCATOR) {
+
+	newid = _session_clone(s, NULL, NULL);
+
+	if (wsman_session_resource_locator_set(newid, epr)) {
+		return newid;
+	} else {
+		wsman_session_close(newid);	
+		return -1;
+	}
+}
+
+char wsman_session_resource_locator_add_selector(int session_id,
+						const char *name,
+						const char *value)
+{
+	session_t	*s;
+
+	if (!name || !value) {
+		return 0;
+	}
+
+	s = get_session_by_id(session_id);
+	if (!s) {
+		return 0;
+	}
+
+	pthread_mutex_lock(&s->lock);
+	_resource_locator_add_selector(s, name, value);
+	pthread_mutex_unlock(&s->lock);
+
+	return 1;
+}
+
+char wsman_session_resource_locator_clear_selectors(int session_id)
+{
+	session_t	*s;
+
+	s = get_session_by_id(session_id);
+	if (!s) {
 		return 0;
 	}
 
@@ -423,10 +428,6 @@ int wsman_session_enumerate(int session_id,
 
 	s = get_session_by_id(session_id);
 	if (!s) {
-		return -1;
-	}
-
-	if (s->type != WSMAN_SESSION) {
 		return -1;
 	}
 
@@ -482,8 +483,7 @@ int wsman_session_enumerate(int session_id,
 		}
 		enum_context = wsenum_get_enum_context(response);
 		if (enum_context) {
-			eid = _session_clone(s, WSMAN_ENUMERATOR,
-					resource_uri, enum_context);
+			eid = _session_clone(s, resource_uri, enum_context);
 		}
 		ws_xml_destroy_doc(response);
 	}
@@ -521,9 +521,6 @@ char* wsman_enumerator_pull(int enumerator_id)
 
 	s = get_session_by_id(enumerator_id);
 	if (!s) {
-		return NULL;
-	}
-	if (s->type != WSMAN_ENUMERATOR) {
 		return NULL;
 	}
 
@@ -580,9 +577,6 @@ char wsman_enumerator_end(int enumerator_id)
 	if (!s) {
 		return 0;
 	}
-	if (s->type != WSMAN_ENUMERATOR) {
-		return 0;
-	}
 
 	if (s->enum_context) {
 		return 1;
@@ -593,8 +587,8 @@ char wsman_enumerator_end(int enumerator_id)
 	return 0;
 }
 
-char* wsman_resource_locator_transfer_get(int locator_id,
-					int flags)
+char* wsman_session_transfer_get(int session_id,
+				int flags)
 {
 	session_t	*s;
 	WsXmlDocH	request, response;
@@ -602,11 +596,8 @@ char* wsman_resource_locator_transfer_get(int locator_id,
 	actionOptions	options;
 	char		*resource = NULL;
 
-	s = get_session_by_id(locator_id);
+	s = get_session_by_id(session_id);
 	if (!s) {
-		return NULL;
-	}
-	if (s->type != WSMAN_RESOURCE_LOCATOR) {
 		return NULL;
 	}
 
@@ -646,9 +637,9 @@ char* wsman_resource_locator_transfer_get(int locator_id,
 	return resource;
 }
 
-char* wsman_resource_locator_transfer_put(int locator_id,
-					const char *xml_content,
-					int flags)
+char* wsman_session_transfer_put(int session_id,
+				const char *xml_content,
+				int flags)
 {
 	session_t	*s;
 	WsXmlDocH	request,	response;
@@ -657,11 +648,8 @@ char* wsman_resource_locator_transfer_put(int locator_id,
 	actionOptions	options;
 	char		*resource = NULL;
 
-	s = get_session_by_id(locator_id);
+	s = get_session_by_id(session_id);
 	if (!s) {
-		return NULL;
-	}
-	if (s->type != WSMAN_RESOURCE_LOCATOR) {
 		return NULL;
 	}
 
