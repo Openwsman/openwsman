@@ -1443,7 +1443,7 @@ cim_get_enum_items(CimClientInfo *client,
 	if (node == NULL) {
 		return;
 	}
-	itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);     	
+	itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);
 	debug( "Total items: %d", enumInfo->totalItems );
 
 	if (max > 0) {
@@ -1463,8 +1463,7 @@ cim_get_enum_items(CimClientInfo *client,
 		}
 		enumInfo->index--;
 	} else {
-		while(  enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems)
-		{
+		while (enumInfo->index >= 0 && enumInfo->index < enumInfo->totalItems) {
 			if ((enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) ==
 					FLAG_ENUMERATION_ENUM_EPR) {
 				c = cim_getEprAt(client, enumInfo, itemsNode);

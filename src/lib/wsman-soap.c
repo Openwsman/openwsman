@@ -591,6 +591,11 @@ ws_transfer_get_stub(SoapOpH op,
 		//    ENUMERATION STUFF
 
 
+#define ENUM_EXPIRED(enuminfo, mytime) \
+	((enumInfo->expires > 0) &&        \
+	(enumInfo->expires > mytime))
+
+
 static int
 wsman_verify_enum_info(SoapOpH op,
 		       WsEnumerateInfo * enumInfo,
