@@ -60,9 +60,6 @@ typedef int ssize_t;
 #define _PASSWORD_LEN	128
 #endif
 
-#ifndef HAVE_SSIZE_T
-// typedef int ssize_t;
-#endif
 
 /* on VxWorks/DCC there's not extern declaration (even if the var is available
    into library files) */

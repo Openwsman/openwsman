@@ -18,8 +18,6 @@
 #include <u/str.h>
 #include <u/uri.h>
 #include <u/os.h>
-/* always include net.h even if NO_NET is set */
-// #include <u/net.h>
 #ifndef NO_ENV
 #include <u/env.h>
 #endif

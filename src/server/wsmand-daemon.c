@@ -143,6 +143,7 @@ int wsmand_read_config (dictionary *ini)
   server_port = iniparser_getint (ini, "server:port", 8889);
   server_ssl_port =  iniparser_getint(ini, "server:ssl_port", 8888);
   debug_level = iniparser_getint (ini, "server:debug_level", 0);
+  enumIdleTimeout = (unsigned long )iniparser_getint (ini, "server:enum_idle_timeout", 100* 1000);
   service_path = iniparser_getstring (ini, "server:service_path", "/wsman");
   ssl_key_file = iniparser_getstr (ini, "server:ssl_key_file");
   ssl_cert_file = iniparser_getstr (ini, "server:ssl_cert_file");

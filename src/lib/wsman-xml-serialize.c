@@ -90,8 +90,7 @@ WsXmlNodeH
 xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = data->elementInfo->name;
-    char *ns =  (data->elementInfo->flags & SER_NS) ?
-                    data->elementInfo->ns : data->ns;
+    char *ns   = data->elementInfo->ns;
     WsXmlNodeH node;
 
     TRACE_ENTER;
@@ -108,8 +107,7 @@ xml_serializer_get_child(XmlSerializationData* data)
 {
     WsXmlNodeH node;
     char* name = data->elementInfo->name;
-    char *ns =  (data->elementInfo->flags & SER_NS) ?
-                    data->elementInfo->ns : data->ns;
+    char *ns   = data->elementInfo->ns;
 
     TRACE_ENTER;
     debug("name = %s:%s in %s [%d]", ns, name,
@@ -265,16 +263,6 @@ DONE:
     DATA_BUF(data) = savedBufPtr;
     TRACE_EXIT;
     return ret;
-}
-
-
-
-
-size_t
-do_serialize_default_ns(XmlSerializationData * data)
-{
-	data->ns = data->elementInfo->ns;
-	return 0;
 }
 
 
@@ -848,7 +836,6 @@ do_serialize_struct(XmlSerializationData * data)
     int             savedMode = data->mode;
     int savedIndex = data->index;
     void *savedStopper = data->stopper;
-    char *savedDefaultNs = data->ns;
     size_t al = get_struct_align();
     size_t pad = (size_t)((PTRTOINT)DATA_BUF(data) % al);
     size_t count;
@@ -961,7 +948,6 @@ DONE:
     data->index = savedIndex;
     data->mode = savedMode;
     data->xmlNode = savedXmlNode;
-    data->ns = savedDefaultNs;
     TRACE_EXIT;
     return retVal;
 }
@@ -987,7 +973,6 @@ initialize_xml_serialization_data(
     data->mode = mode;
     data->attrs = attrs;
     data->xmlNode = xmlNode;
-    data->ns = NULL;
 
     debug( "Finished initializing XML Serialization..."); 
     TRACE_EXIT;

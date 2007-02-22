@@ -934,9 +934,10 @@ wsenum_release_stub(SoapOpH op,
 
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
+	WsEnumerateInfo *enumInfo;
 
 	wsman_status_init(&status);
-	WsEnumerateInfo *enumInfo = get_locked_enuminfo(soapCntx, _doc,
+	enumInfo = get_locked_enuminfo(soapCntx, _doc,
 		op, WSENUM_RELEASE, &status);
 
 	if (enumInfo == NULL) {

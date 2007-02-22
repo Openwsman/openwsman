@@ -69,6 +69,8 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
 	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
 			get_cim_port(), username, password , &status);
+	if (!cimclient->cc) 
+		return NULL;
 	cimclient->namespaces = get_vendor_namespaces();
 	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
 	cimclient->requested_class = wsman_get_class_name(cntx);
@@ -155,7 +157,15 @@ CimResource_Delete_EP( SoapOpH op,
 	cntx = ws_create_ep_context(soap, in_doc);
 
 	if (msg) {
-		cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+		cimclient = CimResource_Init(cntx, 
+				msg->auth_data.username, 
+				msg->auth_data.password );
+		if (!cimclient) {
+			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status.fault_detail_code = 0;
+			goto cleanup;
+		}
+
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -172,13 +182,17 @@ CimResource_Delete_EP( SoapOpH op,
 					status.fault_detail_code, NULL);
 		}
 	}
-
+cleanup:
+	if (wsman_check_status(&status) != 0) {
+		ws_xml_destroy_doc(doc);
+		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
+				status.fault_code, status.fault_detail_code, NULL);
+	}
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	} else {
 		error("Invalid doc");
 	}
-
 
 	CimResource_destroy(cimclient);
 	ws_destroy_context(cntx);
@@ -207,7 +221,14 @@ CimResource_Get_EP( SoapOpH op,
 	op_t *_op = (op_t *)op;
 	WsmanMessage *msg = (WsmanMessage *)_op->data;
 	if (msg) {
-		cimclient = CimResource_Init(cntx,  msg->auth_data.username, msg->auth_data.password );
+		cimclient = CimResource_Init(cntx, 
+				msg->auth_data.username, 
+				msg->auth_data.password );
+		if (!cimclient) {
+			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status.fault_detail_code = 0;
+			goto cleanup;
+		}
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -232,7 +253,12 @@ CimResource_Get_EP( SoapOpH op,
 					status.fault_detail_code, NULL);
 		}
 	}
-
+cleanup:
+	if (wsman_check_status(&status) != 0) {
+		ws_xml_destroy_doc(doc);
+		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1), 
+				status.fault_code, status.fault_detail_code, NULL);
+	}
 	if ( doc ) {
 		soap_set_op_doc(op, doc, 0);
 	} else {
@@ -266,6 +292,11 @@ CimResource_Custom_EP( SoapOpH op,
 	if (msg) {
 		cimclient = CimResource_Init(cntx, msg->auth_data.username,
 				msg->auth_data.password);
+		if (!cimclient) {
+			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status.fault_detail_code = 0;
+			goto cleanup;
+		}
 	}
 	if (!strstr(action, cimclient->resource_uri)) {
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
@@ -322,8 +353,17 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	CimClientInfo *cimclient = NULL;
 
-	if ( enumInfo )
-    		cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+	if ( enumInfo ) {
+		cimclient = CimResource_Init(cntx,
+				enumInfo->auth_data.username, 
+				enumInfo->auth_data.password );
+		if (!cimclient) {
+			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status->fault_detail_code = 0;
+			retval = 1;
+			goto cleanup;
+		}
+	}
 
 	if (!verify_class_namespace(cimclient) ) {
 		error("resource uri namespace mismatch");
@@ -401,7 +441,16 @@ CimResource_Pull_EP( WsContextH cntx,
 	WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
 	if ( enumInfo) {   
-		cimclient = CimResource_Init(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password );
+		cimclient = CimResource_Init(cntx, 
+				enumInfo->auth_data.username, 
+				enumInfo->auth_data.password );
+		if (!cimclient) {
+			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status->fault_detail_code = 0;
+			doc = wsman_generate_fault(cntx, in_doc, status->fault_code, 
+				status->fault_detail_code, NULL);
+			goto cleanup;
+		}
 	}      
 	if (!verify_class_namespace(cimclient) ) {
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -458,6 +507,11 @@ CimResource_Create_EP( SoapOpH op,
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
 				msg->auth_data.username, msg->auth_data.password );
+		if (!cimclient) {
+			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status.fault_detail_code = 0;
+			goto cleanup;
+		}
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -515,11 +569,15 @@ CimResource_Put_EP( SoapOpH op,
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
 				msg->auth_data.username, msg->auth_data.password );
+		if (!cimclient) {
+			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status.fault_detail_code = 0;
+			goto cleanup;
+		}
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		goto cleanup;
 	} 
 
 
