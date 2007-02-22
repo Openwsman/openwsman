@@ -90,7 +90,7 @@ WsXmlNodeH
 xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
     char* name = data->elementInfo->name;
-    char *ns   = data->elementInfo->ns ?
+    char *ns =  (data->elementInfo->flags & SER_NS) ?
                     data->elementInfo->ns : data->ns;
     WsXmlNodeH node;
 
@@ -108,7 +108,7 @@ xml_serializer_get_child(XmlSerializationData* data)
 {
     WsXmlNodeH node;
     char* name = data->elementInfo->name;
-    char *ns   = data->elementInfo->ns ?
+    char *ns =  (data->elementInfo->flags & SER_NS) ?
                     data->elementInfo->ns : data->ns;
 
     TRACE_ENTER;

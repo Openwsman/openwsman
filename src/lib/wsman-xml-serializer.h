@@ -120,6 +120,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_SKIP          0x2000
 #define SER_HEAD          0x1000
 #define SER_ATTRS         0x0800
+#define SER_NS            0x0400
 
 #define XML_NUM_OCCURS(x) (x)->count
 #define XML_MAX_OCCURS(x) (x)->count
@@ -168,31 +169,73 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
     }
 
 
-            // nodes with attributes
+            // nodes namespace prefix and with attributes
 #define SER_ATTR_NS_UINT8_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT8 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_uint8, NULL \
+        flags | SER_ATTRS | SER_NS, do_serialize_uint8, NULL \
     }
 #define SER_ATTR_NS_UINT16_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT16 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_uint16, NULL \
+        flags | SER_ATTRS | SER_NS, do_serialize_uint16, NULL \
     }
 #define SER_ATTR_NS_UINT32_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT32 s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_uint32, NULL \
+        flags | SER_ATTRS | SER_NS, do_serialize_uint32, NULL \
     }
 #define SER_ATTR_NS_BOOL_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_BOOL s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_bool, NULL \
+        flags | SER_ATTRS | SER_NS, do_serialize_bool, NULL \
     }
 #define SER_ATTR_NS_STR_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_STR s; XML_NODE_ATTR *a;}), \
-        flags | SER_ATTRS, do_serialize_string, NULL \
+        flags | SER_ATTRS | SER_NS, do_serialize_string, NULL \
     }
 #define SER_ATTR_NS_STRUCT_FLAGS(ns, n, x, flags, t) \
     {(ns), (n), (x), (x), sizeof (struct {t s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS | SER_NS, do_serialize_struct, t##_TypeItems \
+    }
+
+#define SER_ATTR_NS_UINT8(ns, n, x)     SER_ATTR_NS_UINT8_FLAGS(ns, n, x, 0)
+#define SER_ATTR_NS_UINT16(ns, n, x)    SER_ATTR_NS_UINT16_FLAGS(ns, n, x, 0)
+#define SER_ATTR_NS_UINT32(ns, n, x)    SER_ATTR_NS_UINT32_FLAGS(ns, n, x, flags, 0)
+#define SER_ATTR_NS_BOOL(ns, n, x)      SER_ATTR_NS_BOOL_FLAGS(ns, n, x, flags, 0)
+#define SER_ATTR_NS_STR(ns, n, x)       SER_ATTR_NS_STR_FLAGS(ns, n, x, flags, 0)
+#define SER_ATTR_NS_STRUCT(ns, n, x, t) SER_ATTR_NS_STRUCT_FLAGS(ns, n, x, 0, t)
+
+
+            // nodes with attributes
+#define SER_ATTR_UINT8_FLAGS(n, x, flags) \
+    {NULL, (n), (x), (x), sizeof (struct {XML_TYPE_UINT8 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_uint8, NULL \
+    }
+#define SER_ATTR_UINT16_FLAGS(n, x, flags) \
+    {NULL, (n), (x), (x), sizeof (struct {XML_TYPE_UINT16 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_uint16, NULL \
+    }
+#define SER_ATTR_UINT32_FLAGS(n, x, flags) \
+    {NULL, (n), (x), (x), sizeof (struct {XML_TYPE_UINT32 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_uint32, NULL \
+    }
+#define SER_ATTR_BOOL_FLAGS(n, x, flags) \
+    {NULL, (n), (x), (x), sizeof (struct {XML_TYPE_BOOL s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_bool, NULL \
+    }
+#define SER_ATTR_STR_FLAGS(n, x, flags) \
+    {NULL, (n), (x), (x), sizeof (struct {XML_TYPE_STR s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_string, NULL \
+    }
+#define SER_ATTR_STRUCT_FLAGS(ns, n, x, flags, t) \
+    {NULL, (n), (x), (x), sizeof (struct {t s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_struct, t##_TypeItems \
     }
+
+#define SER_ATTR_UINT8(n, x)         SER_ATTR_UINT8_FLAGS(n, x, 0)
+#define SER_ATTR_UINT16(n, x)        SER_ATTR_UINT16_FLAGS(n, x, 0)
+#define SER_ATTR_UINT32(n, x)        SER_ATTR_UINT32_FLAGS(n, x, 0)
+#define SER_ATTR_BOOL(n, x)          SER_ATTR_BOOL_FLAGS(n, x, 0)
+#define SER_ATTR_STR(n, x)           SER_ATTR_STR_FLAGS(n, x, 0)
+#define SER_ATTR_STRUCT(ns, n, x, t) SER_ATTR_STRUCT_FLAGS(ns, n, x, 0, t)
+
 
 
         // No namespace defines
@@ -215,14 +258,14 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_STR(n, x)                 SER_STR_FLAGS(n, x, 0)
 #define SER_STRUCT(n, x, t)           SER_STRUCT_FLAGS(n, x, 0, t)
 #define SER_DYN_ARRAY(n, mn, mx, t)   SER_DYN_ARRAY_FLAGS(n, mn, mx, 0, t)
-#define SER_NS_UINT8(ns, n, x)        SER_NS_UINT8_FLAGS(ns, n, x, 0)
-#define SER_NS_UINT16(ns, n, x)       SER_NS_UINT16_FLAGS(ns, n, x, 0)
-#define SER_NS_UINT32(ns, n, x)       SER_NS_UINT32_FLAGS(ns, n, x, 0)
-#define SER_NS_BOOL(ns, n, x)         SER_NS_BOOL_FLAGS(ns, n, x, 0)
-#define SER_NS_STR(ns, n, x)          SER_NS_STR_FLAGS(ns, n, x, 0)
-#define SER_NS_STRUCT(ns, n, x, t)    SER_NS_STRUCT_FLAGS(ns, n, x, 0, t)
+#define SER_NS_UINT8(ns, n, x)        SER_NS_UINT8_FLAGS(ns, n, x, SER_NS)
+#define SER_NS_UINT16(ns, n, x)       SER_NS_UINT16_FLAGS(ns, n, x, SER_NS)
+#define SER_NS_UINT32(ns, n, x)       SER_NS_UINT32_FLAGS(ns, n, x, SER_NS)
+#define SER_NS_BOOL(ns, n, x)         SER_NS_BOOL_FLAGS(ns, n, x, SER_NS)
+#define SER_NS_STR(ns, n, x)          SER_NS_STR_FLAGS(ns, n, x, SER_NS)
+#define SER_NS_STRUCT(ns, n, x, t)    SER_NS_STRUCT_FLAGS(ns, n, x, SER_NS, t)
 #define SER_NS_DYN_ARRAY(ns, n, mn, mx, t)   \
-                                 SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, 0, t)
+                                 SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_NS, t)
 
 
         // Serialization Info to skip in 
@@ -235,12 +278,12 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_IN_STRUCT(n, x, t)        SER_STRUCT_FLAGS(n, x, SER_IN, t)
 #define SER_IN_DYN_ARRAY(n, mn, mx, t)  \
                                SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN, t)
-#define SER_NS_IN_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_IN)
-#define SER_NS_IN_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_IN)
-#define SER_NS_IN_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_IN)
-#define SER_NS_IN_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_IN)
-#define SER_NS_IN_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_IN)
-#define SER_NS_IN_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_IN, t)
+#define SER_NS_IN_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_IN | SER_NS)
+#define SER_NS_IN_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_IN | SER_NS)
+#define SER_NS_IN_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_IN | SER_NS)
+#define SER_NS_IN_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_IN | SER_NS)
+#define SER_NS_IN_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_IN | SER_NS)
+#define SER_NS_IN_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_IN | SER_NS, t)
 #define SER_NS_IN_DYN_ARRAY(ns, n, mn, mx, t)  \
                                SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_IN, t)
 
@@ -253,14 +296,14 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_OUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_OUT, t)
 #define SER_OUT_DYN_ARRAY(n, mn, mx, t)   \
                                       SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_OUT, t)
-#define SER_NS_OUT_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_OUT)
-#define SER_NS_OUT_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_OUT)
-#define SER_NS_OUT_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_OUT)
-#define SER_NS_OUT_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_OUT)
-#define SER_NS_OUT_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_OUT)
-#define SER_NS_OUT_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_OUT, t)
+#define SER_NS_OUT_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_OUT | SER_NS)
+#define SER_NS_OUT_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_OUT | SER_NS)
+#define SER_NS_OUT_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_OUT | SER_NS)
+#define SER_NS_OUT_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_OUT | SER_NS)
+#define SER_NS_OUT_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_OUT | SER_NS)
+#define SER_NS_OUT_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_OUT | SER_NS, t)
 #define SER_NS_OUT_DYN_ARRAY(ns, n, mn, mx, t)   \
-                              SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_OUT, t)
+                              SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_OUT | SER_NS, t)
 
 
         // Serialization Info to skip inout
@@ -274,19 +317,19 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 #define SER_INOUT_DYN_ARRAY(n, mn, mx, t)  \
                              SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN | SER_OUT, t)
 #define SER_NS_INOUT_UINT8(ns, n, x)            \
-                        SER_NS_UINT8_FLAGS(ns, n, x, SER_IN | SER_OUT)
+                        SER_NS_UINT8_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS)
 #define SER_NS_INOUT_UINT16(ns, n, x)           \
-                        SER_NS_UINT16_FLAGS(ns, n, x, SER_IN | SER_OUT)
+                        SER_NS_UINT16_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS)
 #define SER_NS_INOUT_UINT32(ns, n, x)           \
-                        SER_NS_UINT32_FLAGS(ns, n, x, SER_IN | SER_OUT)
+                        SER_NS_UINT32_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS)
 #define SER_NS_INOUT_BOOL(ns, n, x)             \
-                        SER_NS_BOOL_FLAGS(ns, n, x, SER_IN | SER_OUT)
+                        SER_NS_BOOL_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS)
 #define SER_NS_INOUT_STR(ns, n, x)              \
-                        SER_NS_STR_FLAGS(ns, n, x, SER_IN | SER_OUT)
+                        SER_NS_STR_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS)
 #define SER_NS_INOUT_STRUCT(ns, n, x, t)         \
-                        SER_NS_STRUCT_FLAGS(ns, n, x, SER_IN | SER_OUT, t)
+                        SER_NS_STRUCT_FLAGS(ns, n, x, SER_IN | SER_OUT | SER_NS, t)
 #define SER_NS_INOUT_DYN_ARRAY(ns, n, mn, mx, t)  \
-                        SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_IN | SER_OUT, t)
+                        SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_IN | SER_OUT | SER_NS, t)
 
 
         // TypeInfo structures for base types
