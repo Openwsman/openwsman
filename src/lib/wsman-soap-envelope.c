@@ -106,7 +106,6 @@ wsman_create_response_envelope(WsContextH cntx,
 		WsXmlNodeH      dstHeader = ws_xml_get_soap_header(doc);
 		WsXmlNodeH      srcHeader = ws_xml_get_soap_header(rqstDoc);
 		WsXmlNodeH      srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
-
 		wsman_epr_from_request_to_response(dstHeader, srcNode);
 
 		if (action != NULL) {
@@ -373,7 +372,7 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 			}
 			if (!reply) {
 				wsman_set_fault(msg,
-						WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
+						WSA_MESSAGE_INFORMATION_HEADER_REQUIRED, 0, NULL);
 				retval = 0;
 				debug("no wsa:ReplyTo");
 				goto cleanup;
