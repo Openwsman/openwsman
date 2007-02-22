@@ -132,6 +132,8 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
 
 #define SER_NULL {NULL, NULL, 0, 0, 0, 0, NULL, NULL}
+#define SER_DEFAULT_NS(ns) {ns, NULL, 1, 1, 0, 0, \
+                               do_serialize_default_ns, NULL}
 
         // Serializer Info base defines
 
@@ -378,6 +380,7 @@ XmlSerializerInfo t##_TypeInfo[] = {\
 
         // XmlSerializationProc functions for different types
 
+size_t do_serialize_default_ns(struct __XmlSerializationData* data);
 size_t do_serialize_uint8(struct __XmlSerializationData* data);
 size_t do_serialize_uint16(struct __XmlSerializationData* data);
 size_t do_serialize_uint32(struct __XmlSerializationData* data);

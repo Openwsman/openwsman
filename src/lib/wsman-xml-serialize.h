@@ -54,7 +54,7 @@ struct __XmlSerializationData
 	char *elementBuf; 
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
-//	char* ns;
+	char* ns;
 //	char* name; // optional can be NULL
 //	char* nameNs;
 	int mode;
