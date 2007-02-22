@@ -648,7 +648,7 @@ get_locked_enuminfo(WsContextH cntx,
                     WsmanStatus *status)
 {
 	hnode_t *hn;
-	WsEnumerateInfo *eInfo;
+	WsEnumerateInfo *eInfo = NULL;
 	char            *enumId = NULL;
 	WsXmlNodeH      node = ws_xml_get_soap_body(doc);
 
