@@ -252,6 +252,9 @@ struct __WsEnumerateInfo {
 	void           *appEnumContext;
 	WsmanAuth       auth_data;
 	WsEndPointRelease releaseproc;
+	// FIXME: Should have an EPR struct here later
+	char *		epr_to;
+	char *		epr_uri;
 };
 
 enum __WsmanFilterDialect {

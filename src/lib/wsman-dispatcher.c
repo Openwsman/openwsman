@@ -81,7 +81,6 @@ is_wk_header(WsXmlNodeH header)
 		{XML_NS_ADDRESSING, WSA_RELATES_TO},
 		{XML_NS_ADDRESSING, WSA_ACTION},
 		{XML_NS_ADDRESSING, WSA_REPLY_TO},
-		{XML_NS_ADDRESSING, WSA_TO},
 		{XML_NS_ADDRESSING, WSA_FROM},
 		{XML_NS_WS_MAN, WSM_RESOURCE_URI},
 		{XML_NS_WS_MAN, WSM_SELECTOR_SET},
@@ -327,7 +326,8 @@ wsman_check_unsupported_features(op_t * op)
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
 	if (n != NULL) {
 		retVal = 1;
-		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+				WSMAN_DETAIL_ADDRESSING_MODE);
 	}
 	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_LOCALE);
 	if (n != NULL) {
@@ -335,7 +335,8 @@ wsman_check_unsupported_features(op_t * op)
 		char *mu = ws_xml_find_attr_value(n, XML_NS_SOAP_1_2 , SOAP_MUST_UNDERSTAND);
 		if (mu != NULL && strcmp(mu, "true") == 0 ) {
 			retVal = 1;
-			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_LOCALE);
+			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+					WSMAN_DETAIL_LOCALE);
 		}
 	}
 
@@ -343,7 +344,8 @@ wsman_check_unsupported_features(op_t * op)
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
 	if (n != NULL) {
 		retVal = 1;
-		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
+		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, 
+				WSMAN_DETAIL_ADDRESSING_MODE);
 	}	
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_FILTER);
 	m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER);
@@ -370,7 +372,8 @@ wsman_is_duplicate_message_id(op_t * op)
 	WsXmlNodeH      msgIdNode;
 	soap = op->dispatch->fw;
 
-	msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+	msgIdNode = ws_xml_get_child(header, 0,
+		      XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 	if (msgIdNode!= NULL) {
 		lnode_t        *node;
 		char           *msgId;

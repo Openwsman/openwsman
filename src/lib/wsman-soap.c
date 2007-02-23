@@ -599,13 +599,27 @@ ws_transfer_get_stub(SoapOpH op,
 static int
 wsman_verify_enum_info(SoapOpH op,
 		       WsEnumerateInfo * enumInfo,
+		       WsXmlDocH doc,
 		       WsmanStatus * status)
 {
 
 	op_t           *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
+	WsXmlNodeH  header = ws_xml_get_soap_header(doc);
+	char *to =  ws_xml_get_node_text( 
+			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
+	char *uri=  ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
 
-	debug("verifying enumeration context");
+	debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
+	debug("verifying enumeration context: SHOULD uri: %s, to: %s", enumInfo->epr_uri, enumInfo->epr_to);
+	if (strcmp(enumInfo->epr_to, to) != 0 ||
+			strcmp(enumInfo->epr_uri, uri) != 0 ) {
+		status->fault_code = WSA_MESSAGE_INFORMATION_HEADER_REQUIRED;
+		status->fault_detail_code = 0;
+		return 0;
+	}
+
 	if (msg->auth_data.username && msg->auth_data.password) {
 		if (strcmp(msg->auth_data.username,
 				enumInfo->auth_data.username) != 0 &&
@@ -674,7 +688,7 @@ get_locked_enuminfo(WsContextH cntx,
 			error("enum context mismatch: %s == %s",
 			     eInfo->enumId, enumId);
 			status->fault_code = WSMAN_INTERNAL_ERROR;
-		} else if (wsman_verify_enum_info(op, eInfo, status)) {
+		} else if (wsman_verify_enum_info(op, eInfo, doc,status)) {
 			if (eInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG) {
 				status->fault_code = WSMAN_CONCURRENCY;
 			} else {
@@ -778,16 +792,20 @@ DONE:
 
 
 static WsXmlDocH
-create_enum_info(SoapOpH op, WsContextH epcntx,
-              WsXmlDocH indoc, WsEnumerateInfo **eInfo)
+create_enum_info(SoapOpH op, 
+		 WsContextH epcntx,
+              	 WsXmlDocH indoc, 
+		 WsEnumerateInfo **eInfo)
 {
 	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
+	WsXmlNodeH  header = ws_xml_get_soap_header(indoc);
 	WsXmlDocH outdoc = NULL;
 	WsEnumerateInfo *enumInfo;
 	op_t           *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
 	WsmanFaultDetailType fault_detail_code;
+	char *uri, *to;
 
 	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
 	if (enumInfo == NULL) {
@@ -796,6 +814,13 @@ create_enum_info(SoapOpH op, WsContextH epcntx,
 		goto DONE;
 	}
 	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
+	to = ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
+	uri =  ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
+
+	enumInfo->epr_to = u_strdup(to);
+	enumInfo->epr_uri = u_strdup(uri);
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
 	wsman_set_enum_expiretime(node, enumInfo, &fault_code);
 	if (fault_code != WSMAN_RC_OK) {
@@ -830,6 +855,8 @@ destroy_enuminfo(WsEnumerateInfo * enumInfo)
 {
 	u_free(enumInfo->auth_data.username);
 	u_free(enumInfo->auth_data.password);
+	u_free(enumInfo->epr_to);
+	u_free(enumInfo->epr_uri);
 	u_free(enumInfo);
 }
 

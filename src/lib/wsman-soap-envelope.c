@@ -64,7 +64,8 @@ wsman_epr_from_request_to_response(WsXmlNodeH dstHeader,
 {
 	int             i;
 	WsXmlNodeH      child;
-	WsXmlNodeH      node = !epr ? NULL : ws_xml_get_child(epr, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
+	WsXmlNodeH      node = !epr ? NULL : ws_xml_get_child(epr, 0, 
+			XML_NS_ADDRESSING, WSA_ADDRESS);
 	ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_TO,
 		     !node ? WSA_TO_ANONYMOUS : ws_xml_get_node_text(node));
 
@@ -352,13 +353,18 @@ wsman_is_valid_envelope(WsmanMessage * msg,
 		goto cleanup;
 	} else {
 		if (!wsman_is_identify_request(doc)) {
-			WsXmlNodeH      resource_uri = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
-			WsXmlNodeH      action = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_ACTION);
-			WsXmlNodeH      reply = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
-			WsXmlNodeH      to = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO);
+			WsXmlNodeH      resource_uri = ws_xml_get_child(header, 0, 
+					XML_NS_WS_MAN, WSM_RESOURCE_URI);
+			WsXmlNodeH      action = ws_xml_get_child(header, 0, 
+					XML_NS_ADDRESSING, WSA_ACTION);
+			WsXmlNodeH      reply = ws_xml_get_child(header, 0, 
+					XML_NS_ADDRESSING, WSA_REPLY_TO);
+			WsXmlNodeH      to = ws_xml_get_child(header, 0,
+					XML_NS_ADDRESSING, WSA_TO);
 			if (!resource_uri) {
 				wsman_set_fault(msg,
-						WSA_DESTINATION_UNREACHABLE, WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
+						WSA_DESTINATION_UNREACHABLE, 
+						WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
 				retval = 0;
 				debug("no wsman:ResourceURI");
 				goto cleanup;
