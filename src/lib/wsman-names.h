@@ -248,6 +248,7 @@
 
 
 #define WSM_SYSTEM                     "System"
+#define WSM_LOCALE                     "Locale"
 #define WSM_RESOURCE_URI               "ResourceURI"
 #define WSM_SELECTOR_SET               "SelectorSet"
 #define WSM_SELECTOR                   "Selector"

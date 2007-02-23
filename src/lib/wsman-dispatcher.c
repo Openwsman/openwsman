@@ -134,7 +134,6 @@ unlink_response_entry(SoapH soap, op_t * entry)
 }
 
 
-
 static void
 wsman_generate_op_fault(op_t * op,
 			WsmanFaultCodeType faultCode,
@@ -149,6 +148,33 @@ wsman_generate_op_fault(op_t * op,
 	}
 	op->out_doc = wsman_generate_fault(op->cntx, op->in_doc, faultCode,
 					   faultDetail, NULL);
+	return;
+}
+
+void 
+wsman_generate_notunderstood_fault( op_t* op, 
+		WsXmlNodeH notUnderstoodHeader) 
+{
+	WsXmlNodeH child;
+	WsXmlNodeH header;
+
+	if (op->in_doc == NULL)
+		return;
+	wsman_generate_op_fault(op,
+			SOAP_FAULT_MUSTUNDERSTAND,
+			SOAP_DETAIL_HEADER_NOT_UNDERSTOOD);
+
+	if (op->out_doc != NULL) {
+		header = ws_xml_get_soap_header(op->out_doc);
+		if (header) {
+			child = ws_xml_add_child(header, XML_NS_SOAP_1_2, "NotUnderstood", NULL);
+			ws_xml_add_qname_attr(child, NULL, "qname", ws_xml_get_node_name_ns(notUnderstoodHeader),
+					ws_xml_get_node_local_name(notUnderstoodHeader));
+		}
+	} else {
+		debug("cant generate fault");
+	}
+
 	return;
 }
 
@@ -274,7 +300,7 @@ validate_mustunderstand_headers(op_t * op)
 	}
 
 	if (child != NULL) {
-		debug("Mustunderstand Fault; %s", ws_xml_get_node_text(child));
+		debug("Mustunderstand Fault: %s", ws_xml_get_node_text(child));
 	}
 	return child;
 }
@@ -303,14 +329,17 @@ wsman_check_unsupported_features(op_t * op)
 		retVal = 1;
 		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_ADDRESSING_MODE);
 	}
-	enumurate = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-/*
-	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_LOCALE);
 	if (n != NULL) {
-		retVal = 1;
-		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_EXPIRATION_TIME);
+		debug("Locale header found");
+		char *mu = ws_xml_find_attr_value(n, XML_NS_SOAP_1_2 , SOAP_MUST_UNDERSTAND);
+		if (mu != NULL && strcmp(mu, "true") == 0 ) {
+			retVal = 1;
+			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_LOCALE);
+		}
 	}
-*/
+
+	enumurate = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_END_TO);
 	if (n != NULL) {
 		retVal = 1;
@@ -437,11 +466,6 @@ process_filters(op_t * op,
 
 	if (inbound) {
 		WsXmlNodeH      notUnderstoodHeader;
-		if ((notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0) {
-			wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
-			debug("validate_mustunderstand_headers");
-			return 1;
-		} 
 		if (wsman_is_duplicate_message_id(op)) {
 			debug("wsman_is_duplicate_message_id");
 			return 1;
@@ -450,6 +474,11 @@ process_filters(op_t * op,
 			debug("wsman_check_unsupported_features");
 			return 1;
 		}
+		if ((notUnderstoodHeader = validate_mustunderstand_headers(op)) != 0) {
+			wsman_generate_notunderstood_fault(op, notUnderstoodHeader);
+			debug("validate_mustunderstand_headers");
+			return 1;
+		} 
 		if (!validate_control_headers(op)) {
 			debug("validate_control_headers");
 			return 1;
