@@ -370,6 +370,11 @@ char* wsman_session_transfer_get(int session_id, int flags);
 char* wsman_session_transfer_put(int session_id,
 				const char *xml_content,
 				int flags);
+char* wsman_session_transfer_create(int session_id,
+				const char *xml_content,
+				int flag);
+
+char* wsman_session_serialize(int sid, void *data, void *type_info);
 
 #ifdef __cplusplus
 }
