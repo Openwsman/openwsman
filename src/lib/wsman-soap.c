@@ -611,12 +611,12 @@ wsman_verify_enum_info(SoapOpH op,
 	char *uri=  ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
 
-	debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
-	debug("verifying enumeration context: SHOULD uri: %s, to: %s", enumInfo->epr_uri, enumInfo->epr_to);
 	if (strcmp(enumInfo->epr_to, to) != 0 ||
 			strcmp(enumInfo->epr_uri, uri) != 0 ) {
 		status->fault_code = WSA_MESSAGE_INFORMATION_HEADER_REQUIRED;
 		status->fault_detail_code = 0;
+		debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
+		debug("verifying enumeration context: SHOULD uri: %s, to: %s", enumInfo->epr_uri, enumInfo->epr_to);
 		return 0;
 	}
 

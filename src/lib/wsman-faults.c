@@ -471,7 +471,6 @@ wsman_generate_fault( WsContextH cntx,
 	for (i = 0; i < nfaults; i++) 
 	{	
 		if (fault_code_table[i].fault_code == faultCode ) {        
-			debug("here+++++++++++++++++++++++++++++++++++++++++++++++++");
 			if (fault_msg!= NULL ) {
 				reason = fault_msg;
 			} else {

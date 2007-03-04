@@ -101,35 +101,38 @@ wsman_create_response_envelope(WsContextH cntx,
 	SoapH           soap = cntx->soap;
 	char           *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
 	WsXmlDocH       doc = ws_xml_create_envelope(soap, soapNs);
-	if (wsman_is_identify_request(rqstDoc)) {
+	WsXmlNodeH	dstHeader, srcHeader, srcNode;
+	if (wsman_is_identify_request(rqstDoc)) 
 		return doc;
-	} else if (doc) {
-		WsXmlNodeH      dstHeader = ws_xml_get_soap_header(doc);
-		WsXmlNodeH      srcHeader = ws_xml_get_soap_header(rqstDoc);
-		WsXmlNodeH      srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
-		wsman_epr_from_request_to_response(dstHeader, srcNode);
+	if (!doc)
+		return NULL;
 
-		if (action != NULL) {
-			ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, action);
-		} else {
-			if ((srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_ACTION)) != NULL) {
-				if ((action = ws_xml_get_node_text(srcNode)) != NULL) {
-					size_t             len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
-					char           *tmp = (char *) u_malloc(sizeof(char) * len);
-					if (tmp) {
-						sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);
-						ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, tmp);
-						u_free(tmp);
-					}
+	dstHeader = ws_xml_get_soap_header(doc);
+	srcHeader = ws_xml_get_soap_header(rqstDoc);
+
+	srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_REPLY_TO);
+	wsman_epr_from_request_to_response(dstHeader, srcNode);
+
+	if (action != NULL) {
+		ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, action);
+	} else {
+		if ((srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING, WSA_ACTION)) != NULL) {
+			if ((action = ws_xml_get_node_text(srcNode)) != NULL) {
+				size_t             len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
+				char           *tmp = (char *) u_malloc(sizeof(char) * len);
+				if (tmp) {
+					sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);
+					ws_xml_add_child(dstHeader, XML_NS_ADDRESSING, WSA_ACTION, tmp);
+					u_free(tmp);
 				}
 			}
 		}
+	}
 
-		if ((srcNode = ws_xml_get_child(srcHeader, 0,
-			      XML_NS_ADDRESSING, WSA_MESSAGE_ID)) != NULL) {
-			ws_xml_add_child(dstHeader, XML_NS_ADDRESSING,
-			     WSA_RELATES_TO, ws_xml_get_node_text(srcNode));
-		}
+	if ((srcNode = ws_xml_get_child(srcHeader, 0,
+					XML_NS_ADDRESSING, WSA_MESSAGE_ID)) != NULL) {
+		ws_xml_add_child(dstHeader, XML_NS_ADDRESSING,
+				WSA_RELATES_TO, ws_xml_get_node_text(srcNode));
 	}
 	return doc;
 }

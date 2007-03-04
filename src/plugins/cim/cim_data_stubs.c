@@ -105,6 +105,7 @@ CimResource_destroy(CimClientInfo *cimclient)
 	}
 	cim_release_client(cimclient);
 	u_free(cimclient);
+	debug("cimclient destroyed");
 	return;
 }
 
@@ -117,16 +118,20 @@ verify_class_namespace(CimClientInfo *client)
 	hscan_t hs;
 	hnode_t *hn;
 	int rv = 0;
+	debug("Requested Class: %s", client->requested_class );
 	if ( client && (strstr(client->requested_class, "CIM") != NULL ) &&
-			(strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL ) ) {
+			(strstr(client->resource_uri , 
+				XML_NS_CIM_CLASS) != NULL ) ) {
 		return 1;
 	}
 
 	if (client->requested_class && client->namespaces) {
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
-			if ( ( strstr(client->requested_class,  (char*) hnode_getkey(hn)) != NULL) &&
-					(strstr(client->resource_uri , (char*) hnode_get(hn) ) != NULL) ) {
+			if ( ( strstr(client->requested_class,  
+							(char*) hnode_getkey(hn)) != NULL) &&
+					(strstr(client->resource_uri , 
+						(char*) hnode_get(hn) ) != NULL) ) {
 				rv = 1;
 				break;
 			}
@@ -441,9 +446,12 @@ CimResource_Pull_EP( WsContextH cntx,
 	WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
 	if ( enumInfo) {   
+		/*
 		cimclient = CimResource_Init(cntx, 
 				enumInfo->auth_data.username, 
 				enumInfo->auth_data.password );
+				*/
+		cimclient = cim_getclient_from_enum_context(enumInfo);
 		if (!cimclient) {
 			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
 			status->fault_detail_code = 0;
@@ -452,6 +460,8 @@ CimResource_Pull_EP( WsContextH cntx,
 			goto cleanup;
 		}
 	}      
+	if (!cimclient)
+		goto cleanup;
 	if (!verify_class_namespace(cimclient) ) {
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -479,12 +489,11 @@ cleanup:
 	if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) 
 	{
 		cim_release_enum_context(enumInfo);
+		if (cimclient) {
+			CimResource_destroy(cimclient);
+		}
 	}
 
-
-	if (cimclient) {
-		CimResource_destroy(cimclient);
-	}
 	ws_destroy_context(cntx);
 	return 0;
 }
