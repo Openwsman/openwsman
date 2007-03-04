@@ -1,0 +1,126 @@
+
+         HOW TO USE SERIALIZATION / DE-SERIALIZATION
+		==============================================
+
+   Serialization/deserialization of unsignedByte, unsignedShort,
+unsignedInt, boolean and string built-n XML Schema types is now supported.
+It is possible to serialize/deserialize structures, static and dynamic
+size arrays constructed from these types.
+
+  For example, let us have the following schema:
+  <xsd:element name="SAMPLE">
+     <xsd:complexType>
+       <xsd:sequence>
+         <xsd:element name="STRING" type="xsd:string"/>
+         <xsd:element name="BOOL" type="xsd:boolean"/>
+         <xsd:element name="BYTE" type="xsd:unsignedByte"/>
+         <xsd:element name="SHORT" type="xsd:unsignedShort"/>
+         <xsd:element name="INT" type="xsd:unsignedInt"/>
+         <xsd:element name="SHORTS" type="xsd:unsignedShort" minOccurs="3" maxOccurs="3"/>
+         <xsd:element name="INTS" type="xsd:unsignedInt" minOccurs="0" maxOccurs="5"/>
+         <xsd:element ref="FOO"  maxOccurs="unbounded"/>
+       </xsd:sequence>
+     </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="FOO">
+     <xsd:complexType>
+       <xsd:sequence>
+         <xsd:element name="FooSTRING" type="xsd:string"/>
+         <xsd:element name="FooINT" type="xsd:unsignedInt"/>
+         <xsd:element name="FooBOOL" type="xsd:boolean"/>
+       </xsd:sequence>
+     </xsd:complexType>
+  </xsd:element>
+
+
+  Each complex element is represented in the C program by 2 objects - target
+  structure (TS) definition and type description object (TDO) - the null
+  terminated array of type XmlSerializerInfo elements. The following name
+  convention exists: TDO for Foo is named Foo_TypeInfo.
+  For our example these structures look the following:
+
+   target structures:
+
+   typedef struct {
+       XML_TYPE_STR     FooString;
+       XML_TYPE_UINT32  FooInt;
+       XML_TYPE_BOOL    FooBoolean;
+   } Foo;
+
+   typedef struct {
+       XML_TYPE_STR     String;
+       XML_TYPE_BOOL    Boolean;
+       XML_TYPE_UINT8   Byte;
+       XML_TYPE_UINT16  Short;
+       XML_TYPE_UINT32  Int;
+       XML_TYPE_UINT16  Shorts[3];
+       XML_TYPE_DYN_ARRAY  Ints;
+       XML_TYPE_DYN_ARRAY  Foos;
+  } Sample;
+
+  Note, that the field 'Shorts' in Sample is defined as built-in array because
+  the number of elements in schema is strictly defined. Elements Ints
+  and Foos are defined as dynamic arrays because the number of these elements
+ in the document is variable.
+
+  For each TS an TDO is defined. Each TDS is defined by the sequence of
+  defines described in wsman-xml-serializer.h. The order of defines in TDO
+  must be same as the order of fields in TS.
+
+ SER_START_ITEMS("FOO", Foo)
+           // This is the beginning of the description. The first argument is the
+           // name of an element in the XML schema, the second one is the name
+           // of the TS type.
+    SER_STR("FooSTRING", 1),
+    SER_UINT32("FooINT", 1),
+    SER_BOOL("FooBOOL", 1),
+           // These 3 defines are for string, unsignedInt and boolean XML types
+           // accordingly. The first argument is the name of an element in the XML
+           // schema, the second one is the number of elements.
+ SER_END_ITEMS("FOO", Foo);
+           // This Define completes the definition. The arguments are same as
+           // for SER_START_ITEMS.
+
+  So if we define The TDO for Foo type. It looks like:
+      XmlSerializerInfo Foo_TypeInfo[] = {
+        ................
+      };
+  There are some Defines to add XmlSerializerInfo's for basic types XML_TYPE_UINT8,
+  XML_TYPE_UINT16, XML_TYPE_UINT32, XML_TYPE_BOOL and XML_TYPE_STR:
+      SER_TYPEINFO_UINT8;
+      SER_TYPEINFO_UINT16;
+      SER_TYPEINFO_UINT32;
+      SER_TYPEINFO_BOOL;
+      SER_TYPEINFO_STR;
+  If you use dymanic arrays of basic types you must define the corespondent
+  XmlSerializerInfo before defining TDO including this dynamic array. You will
+  refer to these TDOs in SER_DYN_ARRAY define and use the fourth argument for
+  these types uint8, uint16, uint32, bool and string as the last argument (see
+  below). 
+
+ Let's do the same for the Sample type.
+
+   SER_START_ITEMS(sample)
+      SER_STR("STRING", 1),
+      SER_BOOL("BOOL", 1),
+      SER_UINT8("BYTE", 1),
+      SER_UINT16("SHORT", 1),
+      SER_UINT32("INT", 1),
+      SER_UINT16("SHORTS", 3),
+      SER_DYN_ARRAY("INTS", 0, 5, uint32),
+           // This dynamic array describes XML element INTS of type unsignedInt
+           // with minOccurs=0 and maxOccurs=5.
+      SER_DYN_ARRAY("FOOS", 1, 0, Foo),
+           // Dynamic array of Foo type elements. maxOccures=0 means
+           // "unbounded" in XML schema
+   SER_END_ITEMS(sample);
+
+
+  These objects can be used in ws_serialize() and ws_deserialize() API.
+
+  There are 2 sets of defines SER_IN_* and SER_OUT_*. These defines are used
+  if you want to skip the elements while de-serialization(serialization). If
+  define SER_INOUT_* is used the element is skipped always.
+
+  If element name is a QName (with name space prefix) the
+      SER_NS_*(ns, name, ..) define set must be used.
