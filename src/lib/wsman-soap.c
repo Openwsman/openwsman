@@ -1057,8 +1057,10 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 		ws_serializer_free_mem(soapCntx,
 			enumInfo->pullResultPtr, typeInfo);
 	} else {
+		/*
 		ws_serialize_str(soapCntx, node, NULL,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+			    */
 		ws_serialize_str(soapCntx,
 		    node, NULL, XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
 		remove_locked_enuminfo(soapCntx, enumInfo);
@@ -1124,8 +1126,10 @@ wsenum_pull_raw_stub(SoapOpH op,
 				      XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 
 		if (enumInfo->index == enumInfo->totalItems) {
+			/*
 			ws_serialize_str(soapCntx, response, NULL,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+			    */
 			ws_serialize_str(soapCntx, response, NULL,
 				XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
 			remove_locked_enuminfo(soapCntx, enumInfo);

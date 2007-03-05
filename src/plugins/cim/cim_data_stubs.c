@@ -411,7 +411,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		}
 	}
 cleanup:
-	if (retval) {
+	if (retval && cimclient) {
 		CimResource_destroy(cimclient);  
 	}
 	return retval;

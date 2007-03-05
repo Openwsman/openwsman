@@ -441,6 +441,72 @@ cim_add_keys( CMPIObjectPath * objectpath,
 				(char*) hnode_get(hn) , CMPI_chars);
 	}
 }
+#if 0
+static int
+cim_verify_class_keys( CMPIConstClass * class,
+		hash_t *keys,
+		WsmanStatus *statusP)
+{
+	debug("verify class selectors");
+	CMPIStatus rc;
+	hscan_t hs;
+	hnode_t *hn;
+	int count, ccount;
+
+	if (!keys) {
+		count = 0;
+	} else {
+		count = (int)hash_count(keys);
+	}
+	CMPIArray *k_arr = class->ft->getKeyList(class);
+	ccount = k_arr->ft->getSize(k_arr, NULL );
+
+
+	debug("selector count from user: %d, in object path: %d", count, ccount);
+	if (ccount >  count ) {
+		statusP->fault_code = WSMAN_INVALID_SELECTORS;
+		statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
+		debug("insuffcient selectors");
+		goto cleanup;
+	} else if (ccount < hash_count(keys)) {
+		statusP->fault_code = WSMAN_INVALID_SELECTORS;
+		debug("invalid selectors");
+		goto cleanup;
+	}
+#if 0
+	hash_scan_begin(&hs, keys);
+	char *cv;
+	while ((hn = hash_scan_next(&hs))) 
+	{    	
+		CMPIData data = CMGetKey(objectpath, (char*) hnode_getkey(hn), &rc);
+		if ( rc.rc != 0 ) { // key not found
+			statusP->fault_code = WSMAN_INVALID_SELECTORS;
+			statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
+			debug("unexpcted selectors");
+			break;
+		}
+		cv=value2Chars(data.type, &data.value);
+		if (strcmp(cv, (char*) hnode_get(hn)) == 0 )  {
+			statusP->fault_code = WSMAN_RC_OK;
+			statusP->fault_detail_code = WSMAN_DETAIL_OK;
+			u_free(cv);
+		} else  {
+			statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
+			statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+			debug("invalid resourceUri %s != %s",
+				cv, (char*) hnode_get(hn));
+			u_free(cv);
+			break;
+		}
+	}
+#endif
+cleanup:
+	debug( "getKey rc=%d, msg=%s",
+			rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+	return  statusP->fault_code;
+}
+
+#endif
 
 static int
 cim_verify_keys( CMPIObjectPath * objectpath,
@@ -529,7 +595,6 @@ cim_get_class (CimClientInfo *client,
 			rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 	cim_to_wsman_status(rc, status);
 	if (op) CMRelease(op);
-	// if (cc) CMRelease(cc);
 	return _class;
 }
 
@@ -972,13 +1037,14 @@ cim_connect_to_cimom(char *cim_host,
 {
 
 	CMPIStatus rc;
+	//setenv("SFCC_CLIENT", "SfcbLocal", 1);
 	CMCIClient *cimclient = cmciConnect(cim_host, NULL, cim_port,
 			cim_host_userid, cim_host_passwd, &rc);
 	if (cimclient == NULL) {
-		debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
+		//debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
 	} else {
-		debug( "new cimclient: 0x%8x\n",cimclient);
-		debug( "new cimclient: %d\n",cimclient->ft->ftVersion);
+		debug( "new cimclient: 0x%8x",cimclient);
+		debug( "new cimclient: %d",cimclient->ft->ftVersion);
 	}
 	cim_to_wsman_status(rc, status);		
 	return cimclient;
