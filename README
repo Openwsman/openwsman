@@ -1,6 +1,6 @@
 
 
-How to run openwsman from CVS? (Valid for version 0.09)
+How to run openwsman from CVS? (Valid for version 0.7.1)
 ===============================
 
 After checking out the project from CVS run ./autoconfiscate in the TOP directory and 
