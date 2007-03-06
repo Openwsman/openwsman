@@ -441,28 +441,72 @@ cim_add_keys( CMPIObjectPath * objectpath,
 				(char*) hnode_get(hn) , CMPI_chars);
 	}
 }
+
+
 #if 0
+static char *CMPIState_str(CMPIValueState state)
+{
+    char *retval;
+
+    switch (state) {
+    case CMPI_goodValue:
+        retval = "CMPI_goodValue";
+        break;
+
+    case CMPI_nullValue:
+        retval = "CMPI_nullValue";
+        break;
+
+    case CMPI_keyValue:
+        retval = "CMPI_keyValue";
+        break;
+
+    case CMPI_notFound:
+        retval = "CMPI_notFound";
+        break;
+
+    case CMPI_badValue:
+        retval = "CMPI_badValue";
+        break;
+
+    default:
+        retval = "!Unknown CMPIValueState!";
+        break;
+    }
+
+    return retval;
+}
+#endif
+
 static int
 cim_verify_class_keys( CMPIConstClass * class,
 		hash_t *keys,
 		WsmanStatus *statusP)
 {
-	debug("verify class selectors");
 	CMPIStatus rc;
-	hscan_t hs;
-	hnode_t *hn;
-	int count, ccount;
+	//hscan_t hs;
+	//hnode_t *hn;
+	int count, ccount = 0;
+	int numproperties, i;
+	debug("verify class selectors");
 
 	if (!keys) {
 		count = 0;
 	} else {
 		count = (int)hash_count(keys);
 	}
-	CMPIArray *k_arr = class->ft->getKeyList(class);
-	ccount = k_arr->ft->getSize(k_arr, NULL );
+	numproperties = class->ft->getPropertyCount(class, NULL);    
+	debug("number of prop in class: %d", numproperties );
+	for (i=0; i<numproperties; i++) {
+		CMPIString * propertyname;
+		CMPIData data;
+		class->ft->getPropertyAt(class, i, &propertyname, NULL);
+		data = class->ft->getPropertyQualifier(class, (char *)propertyname->hdl , "KEY", &rc);
+		if (rc.rc == 0 )
+			ccount++;
+	}
 
-
-	debug("selector count from user: %d, in object path: %d", count, ccount);
+	debug("selector count from user: %d, in class definition: %d", count, ccount);
 	if (ccount >  count ) {
 		statusP->fault_code = WSMAN_INVALID_SELECTORS;
 		statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
@@ -470,6 +514,7 @@ cim_verify_class_keys( CMPIConstClass * class,
 		goto cleanup;
 	} else if (ccount < hash_count(keys)) {
 		statusP->fault_code = WSMAN_INVALID_SELECTORS;
+		statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
 		debug("invalid selectors");
 		goto cleanup;
 	}
@@ -501,12 +546,9 @@ cim_verify_class_keys( CMPIConstClass * class,
 	}
 #endif
 cleanup:
-	debug( "getKey rc=%d, msg=%s",
-			rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 	return  statusP->fault_code;
 }
 
-#endif
 
 static int
 cim_verify_keys( CMPIObjectPath * objectpath,
@@ -578,6 +620,7 @@ cleanup:
 static CMPIConstClass*
 cim_get_class (CimClientInfo *client,
 		const char *class, 
+		CMPIFlags flags,
 		WsmanStatus *status) 
 {
 	CMPIObjectPath * op;    
@@ -588,7 +631,7 @@ cim_get_class (CimClientInfo *client,
 
 	op = newCMPIObjectPath(CIM_NAMESPACE, class,  NULL);
 
-	_class = cc->ft->getClass(cc, op, 0, NULL, &rc);
+	_class = cc->ft->getClass(cc, op, flags , NULL, &rc);
 
 	/* Print the results */
 	debug( "getClass() rc=%d, msg=%s",
@@ -615,7 +658,7 @@ instance2xml( CimClientInfo *client,
 	CMPIConstClass* _class = NULL;
 	char *target_class;
 	char *final_class = NULL;
-	int numproperties = instance->ft->getPropertyCount(instance, NULL);
+	int numproperties;
 
 
 	if (enumInfo && ( (enumInfo->flags & 
@@ -640,7 +683,7 @@ instance2xml( CimClientInfo *client,
 					FLAG_ExcludeSubClassProperties) ==
 				FLAG_ExcludeSubClassProperties)) {
 		debug("class name: %s", client->requested_class );
-		_class = cim_get_class(client, client->requested_class , NULL);
+		_class = cim_get_class(client, client->requested_class , 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);    
 	} else {
@@ -1302,6 +1345,17 @@ cim_get_instance (CimClientInfo *client,
 	CMPIStatus rc;
 
 	CMCIClient * cc = (CMCIClient *)client->cc;
+
+	CMPIConstClass* class = cim_get_class(client, client->requested_class, CMPI_FLAG_IncludeQualifiers,
+			status);
+	if (!class)
+		goto cleanup;
+
+	cim_verify_class_keys(class,  client->selectors,
+		       status);	
+	if (status->fault_code != 0 )
+		goto cleanup;
+
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
 
@@ -1317,6 +1371,9 @@ cim_get_instance (CimClientInfo *client,
 	cim_to_wsman_status(rc, status);
 	if (objectpath) CMRelease(objectpath);
 	if (instance) CMRelease(instance);
+	if (class) CMRelease(class);
+cleanup:
+	return;
 
 }
 
