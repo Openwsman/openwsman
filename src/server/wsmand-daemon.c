@@ -95,10 +95,12 @@ int wsmand_parse_options(int argc, char **argv)
   u_error_t *error = NULL;
 
   u_option_entry_t options[] = {
+#if 0
     { "no-plugins",     'n', U_OPTION_ARG_NONE, &no_plugin_flag,
       "Do not load any plugins", NULL },
+#endif
     { "ssl",     'S', U_OPTION_ARG_NONE, &use_ssl,
-      "Work through SSL port", NULL },
+      "Use SSL port", NULL },
     { "debug",          'd', U_OPTION_ARG_NONE, 	&foreground_debug,
       "Start daemon in foreground and turn on debugging", NULL },
     { "syslog",         's', U_OPTION_ARG_INT, &syslog_level,

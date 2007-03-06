@@ -57,12 +57,6 @@
 #include <time.h>
 #include <assert.h>
 
-
-#ifdef LIBSOUP_LISTENER
-#include <glib.h>
-#include <glib-object.h>
-#endif
-
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -276,11 +270,6 @@ main (int argc, char **argv)
   char *filename;
   WsManListenerH *listener = NULL;
 
-#ifdef LIBSOUP_LISTENER
-  GMainLoop *loop;
-  g_type_init ();
-  g_thread_init (NULL); 
-#endif
   if (!wsmand_parse_options(argc, argv)) {
     fprintf(stderr, "Failed to parse command line options\n");
     exit(EXIT_FAILURE);
@@ -319,10 +308,6 @@ main (int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-#ifdef LIBSOUP_LISTENER
-  loop = g_main_loop_new (NULL, TRUE);
-  g_main_loop_run (loop);
-#endif
   wsman_plugins_unload(listener);
   u_free(listener);
   iniparser_freedict(ini);
