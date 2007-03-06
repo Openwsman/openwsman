@@ -640,9 +640,12 @@ wsman_get_max_elements(WsContextH cntx,
 char*
 wsman_get_method_name(WsContextH cntx)
 {
-	char           *m = wsman_get_action(cntx, NULL);
-	char           *method = u_strdup(strrchr(m, '/') + 1);
-	debug("method or action: %s", method );
+	char *m, *method = NULL;
+	m = wsman_get_action(cntx, NULL);
+	if (m != NULL && m[0] != 0 ) {
+		method = u_strdup(strrchr(m, '/') + 1);
+		debug("method or action: %s", method );
+	}
 	return method;
 }
 
