@@ -1134,9 +1134,13 @@ wsman_build_envelope(WsContextH cntx,
 				options.flags & FLAG_MUND_MAX_ESIZE);
 	}
 	if (options.fragment) {
+		int mu = 0;
+		if ((options.flags & FLAG_MUND_FRAGMENT) ==
+				FLAG_MUND_FRAGMENT) 
+			mu = 1;
 		ws_serialize_str(cntx, header, options.fragment,
 				XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER,
-				options.flags & FLAG_MUND_FRAGMENT);
+				1);
 	}
 
 	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);

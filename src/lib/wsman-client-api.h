@@ -99,7 +99,7 @@ extern          "C" {
 
 
 
-		// options flags values
+// options flags values
 #define FLAG_NONE                            0x0000
 #define FLAG_ENUMERATION_COUNT_ESTIMATION    0x0001
 #define FLAG_ENUMERATION_OPTIMIZATION        0x0002
