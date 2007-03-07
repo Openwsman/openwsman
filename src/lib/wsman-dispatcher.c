@@ -86,6 +86,7 @@ is_wk_header(WsXmlNodeH header)
 		{XML_NS_WS_MAN, WSM_SELECTOR_SET},
 		{XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE},
 		{XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT},
+		{XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER},
 		{NULL, NULL}
 	};
 
@@ -341,6 +342,16 @@ wsman_check_unsupported_features(op_t * op)
 			retVal = 1;
 			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 					WSMAN_DETAIL_LOCALE);
+		}
+	}
+	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER);
+	if (n != NULL) {
+		debug("FragmentTransfer header found");
+		char *mu = ws_xml_find_attr_value(n, XML_NS_SOAP_1_2 , SOAP_MUST_UNDERSTAND);
+		if (mu != NULL && strcmp(mu, "true") == 0 ) {
+			retVal = 1;
+			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+					WSMAN_DETAIL_FRAGMENT_LEVEL_ACCESS);
 		}
 	}
 

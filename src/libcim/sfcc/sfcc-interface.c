@@ -980,13 +980,14 @@ xml2instance( CMPIInstance *instance,
 
 	WsXmlNodeH r = ws_xml_get_child(body, 0, resourceUri, (char *)classname->hdl);
 
-	if (numproperties) {
+	if (numproperties ) {
 		for (i=0; i<numproperties; i++) {
 			CMPIString * propertyname;
 			CMPIData data = instance->ft->getPropertyAt(instance,
 					i, &propertyname, NULL);
 			WsXmlNodeH child  = ws_xml_get_child(r, 0,
 					resourceUri, (char *)propertyname->hdl);
+
 			char *value =  ws_xml_get_node_text(child);
 			if (value) {
 				xml2property(instance, data, (char *)propertyname->hdl, value );

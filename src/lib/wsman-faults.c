@@ -76,7 +76,7 @@ WsmanFaultDetailTable fault_detail_table[] =
 	{ WSMAN_DETAIL_FILTERING_REQUIRED, "FilteringRequired" },
 	{ WSMAN_DETAIL_FORMAT_MISMATCH, "FormatMismatch" },
 	{ WSMAN_DETAIL_FORMAT_SECURITY_TOKEN, "FormatSecurityTocken" },
-	{ WSMAN_DETAIL_FRAGMENT_LEVEL_ACCESS, "FragmentLevelAcceess" },
+	{ WSMAN_DETAIL_FRAGMENT_LEVEL_ACCESS, "FragmentLevelAccess" },
 	{ WSMAN_DETAIL_HEARTBEATS, "Heartbeats" },
 	{ WSMAN_DETAIL_INSECURE_ADDRESS, "InsecureAddress" },
 	{ WSMAN_DETAIL_INSUFFICIENT_SELECTORS, "InsufficientSelectors" },

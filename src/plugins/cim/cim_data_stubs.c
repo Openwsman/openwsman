@@ -533,6 +533,7 @@ CimResource_Create_EP( SoapOpH op,
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
 		WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
 		if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
+
 			cim_create_instance(cimclient, cntx , in_body, body, &status);
 		} else {
 			status.fault_code = WXF_INVALID_REPRESENTATION;
