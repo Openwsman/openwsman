@@ -86,7 +86,6 @@ is_wk_header(WsXmlNodeH header)
 		{XML_NS_WS_MAN, WSM_SELECTOR_SET},
 		{XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE},
 		{XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT},
-
 		{NULL, NULL}
 	};
 
@@ -242,7 +241,7 @@ validate_control_headers(op_t * op)
 						0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
 		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
 			wsman_generate_op_fault(op, WSMAN_ENCODING_LIMIT,
-					 WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
+					 WSMAN_DETAIL_MINIMUM_ENVELOPE_LIMIT);
 			return 0;
 		}
 	}
@@ -250,6 +249,7 @@ validate_control_headers(op_t * op)
 				XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
 	if (child != NULL) {
 		char *text =  ws_xml_get_node_text(child);
+		char *nsUri = ws_xml_get_node_name_ns(header);
 		if (text == NULL || ws_deserialize_duration(text, &duration)) {
 			wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER,
 					 WSMAN_DETAIL_OPERATION_TIMEOUT);
@@ -261,10 +261,14 @@ validate_control_headers(op_t * op)
 		}
 		op->expires = duration;
 		// Not supported now
-		wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+		if (ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND)) {
+			wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER,
+						0);
+		} else {
+			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_OPERATION_TIMEOUT);
+		}
 		return 0;
-
 	}
 	return 1;
 }
@@ -741,7 +745,6 @@ void
 dispatch_inbound_call(SoapH soap,
 		      WsmanMessage * msg)
 {
-//	int             ret;
 	op_t           *op = NULL;
 	WsXmlDocH       in_doc = wsman_build_inbound_envelope(soap, msg);
 	SoapDispatchH dispatch = NULL;
