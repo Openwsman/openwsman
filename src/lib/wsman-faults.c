@@ -101,7 +101,7 @@ WsmanFaultDetailTable fault_detail_table[] =
 	{ WSMAN_DETAIL_MINIMUM_ENVELOPE_LIMIT, "MinimumEnvelopeLimit" },
 	{ WSMAN_DETAIL_MISSING_VALUES, "MissingValues" },
 	{ WSMAN_DETAIL_NOT_SUPPORTED, "NotSupported" },
-	{ WSMAN_DETAIL_OPERATION_TIMEOUT, "OpertationTimeout" },
+	{ WSMAN_DETAIL_OPERATION_TIMEOUT, "OperationTimeout" },
 	{ WSMAN_DETAIL_OPTION_LIMIT, "OptionLimit" },
 	{ WSMAN_DETAIL_OPTION_SET, "OptionSet" },
 	{ WSMAN_DETAIL_READ_ONLY, "ReadOnly" },
