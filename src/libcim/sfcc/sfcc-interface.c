@@ -658,8 +658,7 @@ instance2xml( CimClientInfo *client,
 	CMPIConstClass* _class = NULL;
 	char *target_class;
 	char *final_class = NULL;
-	int numproperties;
-
+	int numproperties = 0 ;
 
 	if (enumInfo && ( (enumInfo->flags & 
 					FLAG_ExcludeSubClassProperties) ==
