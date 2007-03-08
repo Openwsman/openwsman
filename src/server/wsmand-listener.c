@@ -72,7 +72,7 @@
 #include "wsman-server.h"
 #include "wsman-plugins.h"
 
-#define MULTITHREADED_SERVER
+#define MULTITHREADED_SERVER 
 
 #ifdef MULTITHREADED_SERVER
 #ifdef HAVE_PTHREAD_H
@@ -136,51 +136,6 @@ shttp_reason_phrase(int status)
     return "Error";
 }
 
-#if 0
-static int
-invalid_soap_action(const char *action)
-{
-    debug("SoapAction: %s", action);
-    if (!strcmp(action, ENUM_ACTION_RENEW)) {
-        return 1;
-    }
-    if (!strcmp(action, ENUM_ACTION_GETSTATUS)) {
-        return 1;
-    }
-    if (!strcmp(action, ENUM_ACTION_ENUMEND)) {
-        return 1;
-    }
-
-    if (!strcmp(action, EVT_ACTION_SUBSCRIBE)) {
-        return 1;
-    }
-    if (!strcmp(action, EVT_ACTION_GETSTATUS)) {
-        return 1;
-    }
-    if (!strcmp(action, EVT_ACTION_UNSUBSCRIBE)) {
-        return 1;
-    }
-    if (!strcmp(action, EVT_ACTION_SUBEND)) {
-        return 1;
-    }
-    if (!strcmp(action, WSMAN_ACTION_EVENTS)) {
-        return 1;
-    }
-    if (!strcmp(action, WSMAN_ACTION_HEARTBEAT)) {
-        return 1;
-    }
-    if (!strcmp(action, WSMAN_ACTION_DROPPEDEVENTS)) {
-        return 1;
-    }
-    if (!strcmp(action, WSMAN_ACTION_ACK)) {
-        return 1;
-    }
-    if (!strcmp(action, WSMAN_ACTION_EVENT)) {
-        return 1;
-    }
-    return 0;
-}
-#endif
 
 typedef struct {
       char *response;
@@ -229,16 +184,6 @@ server_callback (struct shttpd_arg_t *arg)
         fault_reason = "POST method supported only";
     }
 
-#if 0
-    // Redundant check. Server must work correctly
-    path = shttpd_get_uri(arg);
-    default_path = wsmand_options_get_service_path();
-    if (!path || (strcmp(path, default_path) != 0 )) {
-        status = WSMAN_STATUS_NOT_ACCEPTABLE;
-        fault_reason = "Wrong URI";
-        goto DONE;
-    }
-#endif
 
     content_type = shttpd_get_header(arg, "Content-Type");
     if (content_type && strncmp(content_type,
@@ -247,10 +192,6 @@ server_callback (struct shttpd_arg_t *arg)
         fault_reason = "Unsupported content type";
         goto DONE;
     }
-
-//    encoding = strchr(content_type, '=') + 1;
-//    debug("Encoding: %s", encoding);
-
 
     SoapH soap = (SoapH)arg->user_data;	
     wsman_msg->status.fault_code = WSMAN_RC_OK;

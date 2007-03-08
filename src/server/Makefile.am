@@ -34,7 +34,7 @@ wsmand_SOURCES = \
 wsmand_SOURCES += \
                  shttpd.h \
                  shttpd.c \
-		 wsmand-shttpd-listener.c
+		 wsmand-listener.c
 
 		
 
