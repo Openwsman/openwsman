@@ -2127,11 +2127,10 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 			if (n == 0) {
 				// connection closed by peer 
 				c->flags &= ~FLAG_KEEP_CONNECTION;
-			} else if (n < 0 ) {
-				c->flags &= ~FLAG_KEEP_CONNECTION;
 			}
 			c->flags |= FLAG_FINISHED;
-		} else if (n < 0 ) {
+		}
+		if (n < 0 ) {
 			c->flags &= ~FLAG_KEEP_CONNECTION;
 		}
 		elog(ERR_DEBUG, "serve: readremote returned %d", n);
