@@ -1118,7 +1118,7 @@ ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str,
 {
 	WsXmlNodeH node;
 	TRACE_ENTER;
-	printf("mustunderstand flag for %s: %d\n", name, mustunderstand );
+	//printf("mustunderstand flag for %s: %d\n", name, mustunderstand );
 	node = ws_xml_add_child(parent, nameNs, name, str);
 	if (node && mustunderstand) {
 		enforce_mustunderstand(node);

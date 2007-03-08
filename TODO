@@ -1,15 +1,3 @@
 
-- Bugs
-    * uuid generation if no IP is configured fails
-    * parsing of resource uri with spaces
 
-- High Priority
-    * PAM authentication
-    * Authenticate with CIMOM using credintials of openwsman
-    * Create
-    * Delete 
-
-- Low Priority
-
-- Wish list
-    * set CIMOM ports and other parameters in configuration file.
+ - Fix SSL
