@@ -833,10 +833,8 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 	while (node != NULL) {
 		WsDispatchInterfaceInfo *ifc =
 			(WsDispatchInterfaceInfo *) node->list_data;
-debug("handle ifc %s", ifc->wsmanResourceUri);
 		if (ifc->wsmanResourceUri == NULL &&
 				(ns = wsman_dispatcher_match_ns(ifc, uri))) {
-debug("ifc match ns: %s", ns);
 			r = ifc;
 			break;
 		}

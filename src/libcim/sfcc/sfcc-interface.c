@@ -1402,13 +1402,13 @@ cim_to_wsman_status(CMPIStatus rc,
 	case CMPI_RC_ERR_METHOD_NOT_FOUND:
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 		break;
+	case CMPI_RC_ERR_INVALID_NAMESPACE:
 	case CMPI_RC_ERR_NOT_FOUND:
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		break;
 	case CMPI_RC_ERR_ACCESS_DENIED:
 		status->fault_code = WSMAN_ACCESS_DENIED;
 		break;
-	case CMPI_RC_ERR_INVALID_NAMESPACE:
 	case CMPI_RC_ERR_INVALID_PARAMETER:
 		status->fault_code = WSMAN_INVALID_PARAMERTER;
 		status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
