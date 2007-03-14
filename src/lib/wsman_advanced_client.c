@@ -354,7 +354,7 @@ char wsman_session_resource_locator_set(int session_id,
 	session_t	*s;
 	char		*name, *value;
 	WsXmlDocH	doc;
-	WsXmlNodeH	node, resuri_node, selector;
+	WsXmlNodeH	node, resuri_node = NULL, selector;
 	char		*my_epr;
 	int		index = 0;
 
@@ -512,7 +512,7 @@ char* wsman_session_identify(int session_id, int flag)
 	WsXmlDocH	request, response;
 	WsXmlNodeH	node;
 	actionOptions	options;
-	char		*res;
+	char		*res = NULL;
 
 	s = get_session_by_id(session_id);
 	if (!s) {

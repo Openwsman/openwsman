@@ -64,7 +64,7 @@ typedef struct _sfcc_enumcontext {
 
 void
 path2xml(WsXmlNodeH node,
-		char *resourceUri,
+		char *class_namespace,
 		CMPIValue * val)
 {
 	int i;
@@ -79,7 +79,7 @@ path2xml(WsXmlNodeH node,
 	WsXmlNodeH refparam = ws_xml_add_child(node,
 			XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS , NULL);
 	ws_xml_add_child_format(refparam, XML_NS_WS_MAN ,
-			WSM_RESOURCE_URI  , "%s", resourceUri);
+			WSM_RESOURCE_URI  , "%s/%s", class_namespace, (char *)classname->hdl);
 	WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
 			XML_NS_WS_MAN , WSM_SELECTOR_SET , NULL);
 
@@ -107,7 +107,7 @@ path2xml(WsXmlNodeH node,
 
 
 
-
+#if 0
 void
 class2xml( CMPIConstClass* class,
 		WsXmlNodeH node,
@@ -146,6 +146,7 @@ class2xml( CMPIConstClass* class,
 	}
 }
 
+#endif
 
 
 
@@ -382,6 +383,33 @@ cim_is_base_class ( CimClientInfo *client,
 }
 #endif
 
+static char * 
+cim_find_namespace ( CimClientInfo *client,
+		char *class) 
+{
+	char *ns = NULL;
+	char *sub;
+	hscan_t hs;
+	hnode_t *hn;
+
+	if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
+			( strcmp(client->method, TRANSFER_GET) == 0 ||
+			  strcmp(client->method, TRANSFER_PUT) == 0)) {
+		return XML_NS_CIM_CLASS;
+	}
+	if (class && client->namespaces) {
+		hash_scan_begin(&hs, client->namespaces);
+		while ((hn = hash_scan_next(&hs))) {
+			if ( (sub = strstr(class,  (char*) hnode_getkey(hn)))) {
+				ns = u_strdup_printf("%s", (char*) hnode_get(hn));
+				break;
+			}
+		}
+	}
+	if (!ns)
+		ns = u_strdup_printf("%s", XML_NS_CIM_CLASS);
+	return ns;
+}
 
 static char * 
 cim_find_namespace_for_class ( CimClientInfo *client,
@@ -651,7 +679,7 @@ instance2xml( CimClientInfo *client,
 		WsEnumerateInfo* enumInfo)
 {
 	int i;
-	char *new_ns = NULL;
+	char *new_ns = NULL, *class_ns = NULL;
 	CMPIObjectPath * objectpath = instance->ft->getObjectPath(instance, NULL);
 	CMPIString * namespace = objectpath->ft->getNameSpace(objectpath, NULL);
 	CMPIString * classname = objectpath->ft->getClassName(objectpath, NULL);
@@ -668,6 +696,7 @@ instance2xml( CimClientInfo *client,
 		target_class = (char *)classname->hdl;
 	}
 	new_ns = cim_find_namespace_for_class(client, target_class);
+	class_ns = cim_find_namespace(client, target_class);
 	final_class = u_strdup(strrchr(new_ns, '/') + 1);
 	WsXmlNodeH r = ws_xml_add_child(body, NULL, final_class , NULL);
 
@@ -706,7 +735,7 @@ instance2xml( CimClientInfo *client,
 			else
 				data = instance->ft->getPropertyAt(instance, i, &propertyname, NULL);
 
-			property2xml( data, (char *)propertyname->hdl , r, new_ns);
+			property2xml( data, (char *)propertyname->hdl , r, class_ns);
 			CMRelease(propertyname);
 		}
 	}

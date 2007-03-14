@@ -804,7 +804,7 @@ create_enum_info(SoapOpH op,
 	op_t           *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
-	WsmanFaultDetailType fault_detail_code;
+	WsmanFaultDetailType fault_detail_code = WSMAN_DETAIL_OK;
 	char *uri, *to;
 
 	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
