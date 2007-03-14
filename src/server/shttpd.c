@@ -1405,12 +1405,10 @@ writeremote(struct conn *c, const char *buf, size_t len)
 #ifdef HAVE_SSL
 	if (c->ssl) {
 		n = SSL_write(c->ssl, buf, len);
-		debug("blah");
 	}
 	else {
 #endif
 		n = send(c->sock, buf, len, 0);
-		debug("blah 2");
 	}
 
 	if (n > 0) {
