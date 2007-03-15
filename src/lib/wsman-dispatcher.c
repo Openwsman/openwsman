@@ -263,13 +263,14 @@ validate_control_headers(op_t * op)
 		op->expires = duration;
 		// Not supported now
 		if (ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND)) {
+			/*
 			wsman_generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER,
 						0);
-		} else {
+		} else {*/
 			wsman_generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_OPERATION_TIMEOUT);
+			return 0;
 		}
-		return 0;
 	}
 	return 1;
 }
