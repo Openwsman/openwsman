@@ -1406,10 +1406,9 @@ writeremote(struct conn *c, const char *buf, size_t len)
 	if (c->ssl) {
 		n = SSL_write(c->ssl, buf, len);
 	}
-	else {
+	else 
 #endif
 		n = send(c->sock, buf, len, 0);
-	}
 
 	if (n > 0) {
 		c->nsent += n;
