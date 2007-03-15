@@ -96,7 +96,6 @@ WsmanFaultDetailTable fault_detail_table[] =
 	{ WSMAN_DETAIL_MAX_ELEMENTS, "MaxElements" },
 	{ WSMAN_DETAIL_MAX_ENVELOPE_POLICY, "MaxEnvelopePolicy" },
 	{ WSMAN_DETAIL_MAX_ENVELOPE_SIZE, "MaxEnvelopeSize" },
-	{ WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED, "MaxEnvelopeSizeExceeded" },
 	{ WSMAN_DETAIL_MAX_TIME, "MaxTime" },
 	{ WSMAN_DETAIL_MINIMUM_ENVELOPE_LIMIT, "MinimumEnvelopeLimit" },
 	{ WSMAN_DETAIL_MISSING_VALUES, "MissingValues" },

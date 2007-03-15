@@ -232,12 +232,14 @@ validate_control_headers(op_t * op)
 	unsigned long   size = 0;
 	time_t duration;
 	WsXmlNodeH      header;
-	WsXmlNodeH      child;
+	WsXmlNodeH      child, maxsize;
+	char *mu = NULL;
 
 	header = wsman_get_soap_header_element(
 				op->dispatch->fw, op->in_doc, NULL, NULL);
-	if (ws_xml_get_child(header, 0,
-				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
+	maxsize = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+	mu = ws_xml_find_attr_value(maxsize, XML_NS_SOAP_1_2 , SOAP_MUST_UNDERSTAND);
+	if (mu != NULL && strcmp(mu, "true") == 0 ) {
 		size = ws_deserialize_uint32(NULL, header,
 						0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
 		if (size < WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST) {
@@ -565,23 +567,28 @@ outbound_control_header_filter(SoapOpH opHandle,
 	unsigned long   size = 0, envelope_size = 0;
 	char           *buf = NULL;
 	int             len;
+	char *mu	= NULL;
 	SoapH           soap = soap_get_op_soap(opHandle);
 	WsXmlDocH       in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH       out_doc = soap_get_op_doc(opHandle, 0);
 	WsXmlNodeH      inHeaders = wsman_get_soap_header_element(soap, in_doc, NULL, NULL);
+	WsXmlNodeH	maxsize;
 
-	if (inHeaders) {
-		if (ws_xml_get_child(inHeaders, 0,
-			    XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE) != NULL) {
-			size = ws_deserialize_uint32(NULL, inHeaders, 0,
-				      XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
-			ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
-			envelope_size = ws_xml_utf8_strlen(buf);
-			if (envelope_size > size) {
-				wsman_generate_op_fault((op_t *) opHandle, WSMAN_ENCODING_LIMIT,
-				   WSMAN_DETAIL_MAX_ENVELOPE_SIZE_EXCEEDED);
-			}
+	if (!inHeaders) 
+		return 0;
+
+	maxsize = ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+	mu = ws_xml_find_attr_value(maxsize, XML_NS_SOAP_1_2 , SOAP_MUST_UNDERSTAND);
+	if (mu != NULL && strcmp(mu, "true") == 0 ) {
+		size = ws_deserialize_uint32(NULL, inHeaders, 0,
+				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE);
+		ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
+		envelope_size = ws_xml_utf8_strlen(buf);
+		if (envelope_size > size) {
+			wsman_generate_op_fault((op_t *) opHandle, WSMAN_ENCODING_LIMIT,
+					WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
 		}
+		u_free(buf);
 	}
 	return 0;
 }
