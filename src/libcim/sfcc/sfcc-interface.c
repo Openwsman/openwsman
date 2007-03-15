@@ -657,7 +657,7 @@ cim_get_class (CimClientInfo *client,
 
 	CMCIClient * cc = (CMCIClient *)client->cc;
 
-	op = newCMPIObjectPath(CIM_NAMESPACE, class,  NULL);
+	op = newCMPIObjectPath(client->cim_namespace, class,  NULL);
 
 	_class = cc->ft->getClass(cc, op, flags , NULL, &rc);
 
@@ -1514,7 +1514,7 @@ cim_enum_instancenames (CimClientInfo *client,
 
 	CMCIClient * cc = (CMCIClient *)client->cc;
 
-	objectpath = newCMPIObjectPath(CIM_NAMESPACE, class_name, NULL);
+	objectpath = newCMPIObjectPath(client->cim_namespace, class_name, NULL);
 
 	enumeration = cc->ft->enumInstanceNames(cc, objectpath, &rc);
 	debug( "enumInstanceNames() rc=%d, msg=%s",
