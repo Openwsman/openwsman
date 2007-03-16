@@ -79,8 +79,11 @@ cim_find_namespace_for_class ( CimClientInfo *client,
 		target_class = classname;
 	}
 
+	debug("target class:%s", target_class );
+
 	if (strstr(client->resource_uri , XML_NS_CIM_CLASS ) != NULL  && 
 			( strcmp(client->method, TRANSFER_GET) == 0 ||
+			 strcmp(client->method, TRANSFER_DELETE) == 0 ||
 			  strcmp(client->method, TRANSFER_PUT) == 0)) {
 		ns = u_strdup(client->resource_uri);
 		return ns;
@@ -88,8 +91,10 @@ cim_find_namespace_for_class ( CimClientInfo *client,
 	if (target_class && client->namespaces) {
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
+			debug("namespace=%s", (char*) hnode_get(hn) );
 			if ( (sub = strstr(target_class,  (char*) hnode_getkey(hn)))) {
 				ns = u_strdup_printf("%s/%s", (char*) hnode_get(hn), target_class);
+				debug("vendor namespace match...");
 				break;
 			}
 		}
