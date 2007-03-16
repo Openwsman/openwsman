@@ -29,13 +29,13 @@ void xml2instance( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri);
 
 void xml2property( CMPIInstance *instance, CMPIData data , char *name , char *value);
 
-void property2xml( CMPIData data, char *name , WsXmlNodeH node, char *resourceUri);
+void property2xml( CimClientInfo *client, CMPIData data, char *name , WsXmlNodeH node, char *resourceUri);
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);
 
 void class2xml( CMPIConstClass * class, WsXmlNodeH node, char *resourceUri );
 
-void path2xml(  WsXmlNodeH node, char *resourceUri ,  CMPIValue *val);
+void path2xml( CimClientInfo *client, WsXmlNodeH node, char *resourceUri ,  CMPIValue *val);
 
 void add_cim_location ( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
 
@@ -57,9 +57,9 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus *status);
 
 void cim_get_enum_items(CimClientInfo* client, WsContextH cntx, WsXmlNodeH node, WsEnumerateInfo* enumInfo, char *namespace, int max);
 
-void cim_add_epr( WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
+void cim_add_epr( CimClientInfo *client, WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
 
-void cim_add_epr_details(WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
+void cim_add_epr_details(CimClientInfo *client, WsXmlNodeH resource , char *resourceUri,  CMPIObjectPath * objectpath);
 
 int cim_getEprObjAt(CimClientInfo* client, WsEnumerateInfo* enumInfo, WsXmlNodeH itemsNode);
 

@@ -278,6 +278,7 @@
 #define WSMB_INCLUDE_SUBCLASS_PROP      "IncludeSubClassProperties"
 #define WSMB_EXCLUDE_SUBCLASS_PROP      "ExcludeSubClassProperties"
 #define WSMB_NONE      "None"
+#define WSMB_DERIVED_REPRESENTATION     "DerivedRepresentation"
 
 
 // Catalog
