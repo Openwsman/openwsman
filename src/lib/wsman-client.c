@@ -501,7 +501,7 @@ wsman_client_create_request(WsManClient * cl,
 						(char *)resource_uri, "%s_INPUT", method);
 				hash_scan_begin(&hs, options.properties);
 				while ((hn = hash_scan_next(&hs))) {
-					ws_xml_add_child(node, NULL, (char *) hnode_getkey(hn),
+					ws_xml_add_child(node,  (char *)resource_uri, (char *) hnode_getkey(hn),
 							(char *) hnode_get(hn));
 				}
 			}
