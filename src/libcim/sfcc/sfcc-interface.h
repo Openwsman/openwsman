@@ -25,7 +25,18 @@ void
 cim_release_client(CimClientInfo* cimclient);
 
 
-void xml2instance( CMPIInstance *instance, WsXmlNodeH body, char *resourceUri);
+void
+create_instance_from_xml( CMPIInstance *instance,
+		CMPIConstClass* class ,
+                WsXmlNodeH body,
+                char *resource_uri,
+                WsmanStatus *status);
+
+// void xml2instance( CMPIInstance *instance, CMPIConstClass* class , WsXmlNodeH body, char *resourceUri,  WsmanStatus *status);
+void
+xml2instance( CMPIInstance *instance,
+		WsXmlNodeH body,
+		char *resourceUri);
 
 void xml2property( CMPIInstance *instance, CMPIData data , char *name , char *value);
 
@@ -70,6 +81,9 @@ int cim_getElementAt(CimClientInfo* client, WsEnumerateInfo* enumInfo, WsXmlNode
 void cim_get_instance_from_enum (CimClientInfo* cc, WsContextH cntx, WsXmlNodeH body, WsmanStatus *status);
 
 char* cim_get_namespace_selector(hash_t *keys);
+
+void cim_delete_instance_from_enum ( CimClientInfo *client,
+		WsmanStatus *status);
 
 #endif /*SFCC_INTERFACE_H_*/
 

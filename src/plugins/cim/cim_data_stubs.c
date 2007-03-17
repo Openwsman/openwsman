@@ -121,7 +121,9 @@ verify_class_namespace(CimClientInfo *client)
 	debug("Requested Class: %s", client->requested_class );
 	if ( client && (strstr(client->requested_class, "CIM") != NULL ) &&
 			(strstr(client->resource_uri , 
-				XML_NS_CIM_CLASS) != NULL ) ) {
+				XML_NS_CIM_CLASS) != NULL ) &&
+			 strcmp(client->method, TRANSFER_CREATE) != 0
+			) {
 		return 1;
 	}
 
@@ -175,10 +177,14 @@ CimResource_Delete_EP( SoapOpH op,
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		return 1;
 	} else {
-		if ((doc = wsman_create_response_envelope(cntx, in_doc, NULL))) {
-			cim_delete_instance(cimclient, &status);
+		if ( (doc = wsman_create_response_envelope(cntx, in_doc, NULL)) ) {    		
+			if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
+				cim_delete_instance_from_enum(cimclient, &status);
+			} else {
+				debug("no base class, getting instance directly with getInstance");
+				cim_delete_instance(cimclient, &status);
+			}
 		}
 
 		if (status.fault_code != 0) {
@@ -532,12 +538,16 @@ CimResource_Create_EP( SoapOpH op,
 					soap_get_op_doc(op, 1), NULL))) {
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
 		WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
-		if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
-
-			cim_create_instance(cimclient, cntx , in_body, body, &status);
+		if (!ws_xml_get_child(in_body, 0, NULL, NULL)) {
+			status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+			status.fault_detail_code = 0;
 		} else {
-			status.fault_code = WXF_INVALID_REPRESENTATION;
-			status.fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
+			if (ws_xml_get_child(in_body, 0, cimclient->resource_uri, cimclient->requested_class)) {
+				cim_create_instance(cimclient, cntx , in_body, body, &status);
+			} else {
+				status.fault_code = WXF_INVALID_REPRESENTATION;
+				status.fault_detail_code = WSMAN_DETAIL_INVALID_NAMESPACE;
+			}
 		}
 	}
 
