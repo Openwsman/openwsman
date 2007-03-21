@@ -47,6 +47,22 @@
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
+static FILE *_dumpfile = NULL;
+
+void
+wsman_client_set_dumpfile( FILE *f )
+{
+    if (f)
+	_dumpfile = f;
+    return;
+}
+
+FILE *
+wsman_client_get_dumpfile( void )
+{
+    return _dumpfile;
+}
+
 
 static char*
 wsman_make_action(char *uri, char *op_name)
@@ -433,7 +449,7 @@ wsman_client_node_to_buf(WsXmlNodeH node) {
 	char *buf;
 	int   len;
 	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
-	//ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
+	//ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(doc));
 	ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
 	return buf;
 }
@@ -569,7 +585,7 @@ wsman_client_create_request(WsManClient * cl,
 			action != WSMAN_ACTION_TRANSFER_PUT &&
 			action != WSMAN_ACTION_CUSTOM) {
 		if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-			ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+			ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
 		}
 	}
 	return request;
@@ -618,7 +634,7 @@ _ws_transfer_create(WsManClient * cl,
 	handle_resource_request(cl, request, data, typeInfo, (char *)resource_uri);
 
 	if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
 	}
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -685,7 +701,7 @@ _ws_transfer_put(WsManClient * cl,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, NULL);
 	handle_resource_request(cl, request, data, typeInfo, resource_uri);
 	if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
 	}
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -825,7 +841,7 @@ wsman_invoke(WsManClient * cl,
 		ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
 	}
 	if ((options.flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
 	}
 
 	if (wsman_send_request(cl, request)) {
@@ -1324,6 +1340,10 @@ wsman_create_client(const char *hostname,
 		return NULL;
 	}
 	wsc->wscntx = ws_create_runtime(NULL);
+
+	if (wsman_client_get_dumpfile() == NULL) {
+	    wsman_client_set_dumpfile( stdout );
+	}
 
 	wsc->data.scheme = strdup(scheme ? scheme : "http");
 	wsc->data.hostName = hostname ? strdup(hostname) : strdup("localhost");

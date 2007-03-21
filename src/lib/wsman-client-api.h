@@ -323,6 +323,9 @@ extern          "C" {
 	void 			wsman_client_get_fault_data(WsXmlDocH doc, WsManFault *fault);
 	WsManFault *	wsman_client_fault_new(void);
 
+    void wsman_client_set_dumpfile( FILE *f );
+    FILE *wsman_client_get_dumpfile( void );
+
 /*---------------- Advanced client API --------------------------------------*/
 
 
