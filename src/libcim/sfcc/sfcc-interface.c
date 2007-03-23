@@ -256,7 +256,8 @@ property2xml(   CimClientInfo *client,
 
 	if (CMIsArray(data)) 
 	{
-		if ( data.type != CMPI_null && data.state != CMPI_nullValue) {
+		debug("+++++++++++++++++++++++++++++++++ array: %s", name );
+		if ( data.type == CMPI_null && data.state == CMPI_nullValue) {
 			WsXmlNodeH nilnode = ws_xml_add_child(node, resource_uri, name , NULL);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 			return;
@@ -274,6 +275,7 @@ property2xml(   CimClientInfo *client,
 			}
 		}
 	} else {
+		debug("+++++++++++++++++++++++++++++++++ not array");
 		if (data.type != CMPI_null && data.state != CMPI_nullValue) {
 			WsXmlNodeH nilnode = NULL, refpoint = NULL;
 
