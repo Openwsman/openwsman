@@ -135,9 +135,11 @@ typedef int socklen_t;
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
+/*  bug #67
 typedef struct ssl_st SSL;
 typedef struct ssl_method_st SSL_METHOD;
 typedef struct ssl_ctx_st SSL_CTX;
+*/
 #endif
 
 #if 0
