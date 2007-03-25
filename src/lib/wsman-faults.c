@@ -374,6 +374,14 @@ WsmanFaultCodeTable fault_code_table[] =
 	{ 
 		WSMAN_UNSUPPORTED_FEATURE,
 		WSMAN_ACTION_FAULT,
+		XML_NS_CIM_BINDING,
+		FAULT_RECEIVER_CODE,
+		"PolymorphismModeNotSupported", 
+		"The specified feature is not supported." 
+	},
+	{ 
+    		WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
+		WSMB_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
 		"UnsupportedFeature", 

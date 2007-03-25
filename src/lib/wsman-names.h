@@ -279,6 +279,7 @@
 #define WSMB_EXCLUDE_SUBCLASS_PROP      "ExcludeSubClassProperties"
 #define WSMB_NONE      "None"
 #define WSMB_DERIVED_REPRESENTATION     "DerivedRepresentation"
+#define WSMB_ACTION_FAULT     		"http://schemas.dmtf.org/wbem/wsman/1/cimbinding/fault"
 
 
 // Catalog

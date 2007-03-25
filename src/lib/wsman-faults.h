@@ -127,11 +127,13 @@ enum __WsmanFaultCodeType
     
     WSMAN_UNSUPPORTED_FEATURE,
 
-
     // SOAP	
     SOAP_FAULT_VERSION_MISMATCH,
     // MustUnderstand
     SOAP_FAULT_MUSTUNDERSTAND,
+
+    // wsmb:PolymorphismModeNotSupported 
+    WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
 
     WSMAN_UNKNOWN
 };

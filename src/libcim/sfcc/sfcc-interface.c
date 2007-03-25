@@ -70,10 +70,17 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	char *sub, *target_class = NULL;
 	hscan_t hs;
 	hnode_t *hn;
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_ExcludeSubClassProperties) ==
-			 FLAG_ExcludeSubClassProperties)) {
-		target_class = client->requested_class;
+	if (enumInfo 
+		&& ((enumInfo->flags & FLAG_ExcludeSubClassProperties) ==
+			 FLAG_ExcludeSubClassProperties) ) {
+		if ((enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) ==
+                           FLAG_ENUMERATION_ENUM_EPR 
+		|| (enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) !=
+                          FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )  {
+			target_class = classname;
+		} else {
+			target_class = client->requested_class;
+		}
 	} else {
 		target_class = classname;
 	}
@@ -815,24 +822,20 @@ cim_getEprAt(CimClientInfo * client,
 	    results->ft->getElementAt(results, enumInfo->index, NULL);
 
 	CMPIInstance *instance = data.value.inst;
-	CMPIObjectPath *objectpath =
-	    instance->ft->getObjectPath(instance, NULL);
-	CMPIString *classname =
-	    objectpath->ft->getClassName(objectpath, NULL);
+	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
+	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
 	if (enumInfo && ((enumInfo->flags &
 			  FLAG_POLYMORPHISM_NONE) ==
 			 FLAG_POLYMORPHISM_NONE)
-	    && (strcmp((char *) classname->hdl, client->requested_class) !=
-		0)) {
+	    && (strcmp((char *) classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
-	uri =
-	    cim_find_namespace_for_class(client, enumInfo,
+	uri = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
-	if (retval)
+	if (retval) {
 		cim_add_epr(client, itemsNode, uri, objectpath);
-
+	}
 
 	u_free(uri);
 	if (classname)
