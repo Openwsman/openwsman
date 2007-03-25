@@ -450,13 +450,10 @@ CimResource_Pull_EP( WsContextH cntx,
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	WsXmlNodeH body, pullnode;
+	int max;
 
 	if ( enumInfo) {   
-		/*
-		cimclient = CimResource_Init(cntx, 
-				enumInfo->auth_data.username, 
-				enumInfo->auth_data.password );
-				*/
 		cimclient = cim_getclient_from_enum_context(enumInfo);
 		if (!cimclient) {
 			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
@@ -477,12 +474,11 @@ CimResource_Pull_EP( WsContextH cntx,
 	} 
 
 	doc = wsman_create_response_envelope(cntx, in_doc, NULL);
-	WsXmlNodeH body = ws_xml_get_soap_body(doc);
-
-	WsXmlNodeH pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
+	body = ws_xml_get_soap_body(doc);
+	pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
 			WSENUM_PULL_RESP, NULL);
 
-	int max = wsman_get_max_elements(cntx, NULL);
+	max = wsman_get_max_elements(cntx, NULL);
 	cim_get_enum_items(cimclient, cntx, pullnode, 
 			enumInfo, XML_NS_ENUMERATION,  max);
 
@@ -492,8 +488,7 @@ cleanup:
 	else
 		enumInfo->pullResultPtr = NULL;
 
-	if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) 
-	{
+	if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) {
 		cim_release_enum_context(enumInfo);
 		if (cimclient) {
 			CimResource_destroy(cimclient);

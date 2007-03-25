@@ -554,9 +554,11 @@ instance2xml(CimClientInfo * client,
 	    cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
+	debug("final_class: %s", final_class );
 
 	r = ws_xml_add_child(body, NULL, final_class, NULL);
 	u_free(final_class);
+	debug("class name: %s", client->requested_class);
 
 	//FIXME
 	ns = ws_xml_ns_add(r, class_namespace, "p");
@@ -565,17 +567,14 @@ instance2xml(CimClientInfo * client,
 	if (enumInfo && ((enumInfo->flags &
 			  FLAG_ExcludeSubClassProperties) ==
 			 FLAG_ExcludeSubClassProperties)) {
-		debug("class name: %s", client->requested_class);
-		_class =
-		    cim_get_class(client, client->requested_class, 0,
+		_class = cim_get_class(client, client->requested_class, 0,
 				  NULL);
 		if (_class)
-			numproperties =
-			    _class->ft->getPropertyCount(_class, NULL);
+			numproperties = _class->ft->getPropertyCount(_class, NULL);
 	} else {
-		numproperties =
-		    instance->ft->getPropertyCount(instance, NULL);
+		numproperties = instance->ft->getPropertyCount(instance, NULL);
 	}
+	debug("numproperties: %d", numproperties );
 
 
 	if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, "xsi")) {
@@ -590,14 +589,12 @@ instance2xml(CimClientInfo * client,
 				 FLAG_ExcludeSubClassProperties)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
-			data =
-			    instance->ft->getProperty(instance,
+			data = instance->ft->getProperty(instance,
 						      (char *)
 						      propertyname->hdl,
 						      NULL);
 		} else {
-			data =
-			    instance->ft->getPropertyAt(instance, i,
+			data = instance->ft->getPropertyAt(instance, i,
 							&propertyname,
 							NULL);
 		}
@@ -724,8 +721,8 @@ cim_enum_instances(CimClientInfo * client,
 				       client->requested_class, NULL);
 
 	enumeration = cc->ft->enumInstances(cc, objectpath,
-					    CMPI_FLAG_IncludeClassOrigin,
-					    NULL, &rc);
+			CMPI_FLAG_DeepInheritance,
+		    	NULL, &rc);
 
 	debug("enumInstances() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
@@ -782,6 +779,8 @@ cim_getElementAt(CimClientInfo * client,
 	    instance->ft->getObjectPath(instance, NULL);
 	CMPIString *classname =
 	    objectpath->ft->getClassName(objectpath, NULL);
+
+	debug("xx class: %s", (char *)classname->hdl );
 
 	if (enumInfo && ((enumInfo->flags &
 			  FLAG_POLYMORPHISM_NONE) ==
