@@ -944,6 +944,7 @@ create_instance_from_xml(CMPIInstance * instance,
 			status->fault_code = WXF_INVALID_REPRESENTATION;
 			status->fault_detail_code =
 			    WSMAN_DETAIL_MISSING_VALUES;
+			CMRelease(propertyname);
 			break;
 		}
 		CMRelease(propertyname);
@@ -1201,7 +1202,7 @@ cim_invoke_method(CimClientInfo * client,
 void
 cim_delete_instance_from_enum(CimClientInfo * client, WsmanStatus * status)
 {
-	CMPIObjectPath *objectpath;
+	CMPIObjectPath *objectpath = NULL;
 	CMPIStatus rc;
 	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
@@ -1226,9 +1227,9 @@ cim_delete_instance_from_enum(CimClientInfo * client, WsmanStatus * status)
 	debug("fault: %d %d", status->fault_code,
 	      status->fault_detail_code);
 
+cleanup:
 	if (objectpath)
 		CMRelease(objectpath);
-      cleanup:
 	return;
 }
 

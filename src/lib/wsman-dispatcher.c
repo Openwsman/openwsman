@@ -87,6 +87,7 @@ is_wk_header(WsXmlNodeH header)
 		{XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE},
 		{XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT},
 		{XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER},
+//		{XML_NS_WS_MAN, WSM_OPTION_SET},
 		{NULL, NULL}
 	};
 
@@ -370,7 +371,10 @@ wsman_check_unsupported_features(op_t * op)
 	if (n != NULL && m!= NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
-	}	
+	} else if  (n != NULL || m!= NULL) {
+		retVal = 1;
+		wsman_generate_op_fault(op, WSEN_FILTERING_NOT_SUPPORTED,  0);
+	}
 
 	return retVal;
 }
