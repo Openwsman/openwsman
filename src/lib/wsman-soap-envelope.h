@@ -119,6 +119,7 @@ int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 
 void            wsman_add_namespace_as_selector(WsXmlDocH doc,
 					                  char *_namespace);
-					                  
+char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
+		                const char *op);
 
 #endif

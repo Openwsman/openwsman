@@ -255,6 +255,7 @@ struct __WsEnumerateInfo {
 	// FIXME: Should have an EPR struct here later
 	char *		epr_to;
 	char *		epr_uri;
+	void *		aux;
 };
 
 enum __WsmanFilterDialect {

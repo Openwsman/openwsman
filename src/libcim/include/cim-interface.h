@@ -9,18 +9,19 @@
 
 struct __CimClientInfo 
 {
-  void *cc;
-  hash_t          *namespaces;
-  hash_t          *selectors;
-  char*           cim_namespace;
-  char*           resource_uri;
-  char*           method;
-  hash_t          *method_args;
-  char*           requested_class;
-  char* username;
-  char* password;
-  
-            
+	void *cc;
+	hash_t          *namespaces;
+	hash_t          *selectors;
+	char*           cim_namespace;
+	char*           resource_uri;
+	char*           method;
+	hash_t          *method_args;
+	char*           requested_class;
+	char* 		username;
+	char* 		password;
+	unsigned long   flags;
+
+
 };
 typedef struct __CimClientInfo CimClientInfo;
 

@@ -113,9 +113,10 @@ extern          "C" {
 #define FLAG_MUND_LOCALE                     0x0200
 #define FLAG_MUND_OPTIONSET                  0x0400
 #define FLAG_MUND_FRAGMENT                   0x0800
+#define FLAG_CIM_EXTENSIONS                  0x1000
 
 	typedef struct {
-		unsigned char   flags;
+		unsigned long   flags;
 		char           *filter;
 		char           *dialect;
 		char           *fragment;

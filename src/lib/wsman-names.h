@@ -263,6 +263,8 @@
 #define WSM_ITEM                       "Item"
 #define WSM_FRAGMENT_TRANSFER          "FragmentTransfer"
 #define WSM_XML_FRAGMENT               "XmlFragment"
+#define WSM_OPTION_SET             	"OptionSet"
+#define WSM_OPTION             		"Option"
 
 #define WSM_MAX_ENVELOPE_SIZE           "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT           "OperationTimeout"
@@ -280,6 +282,7 @@
 #define WSMB_NONE      "None"
 #define WSMB_DERIVED_REPRESENTATION     "DerivedRepresentation"
 #define WSMB_ACTION_FAULT     		"http://schemas.dmtf.org/wbem/wsman/1/cimbinding/fault"
+#define WSMB_SHOW_EXTENSION		"ShowExtensions"
 
 
 // Catalog

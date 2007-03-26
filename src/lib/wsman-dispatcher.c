@@ -854,7 +854,7 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 		node = list_next((list_t *) dispInfo->interfaces, node);
 	}
 	if (r == NULL) {
-		debug("no ifc");
+		u_free(ns);
 		return NULL;
 	}
 	/*
@@ -874,6 +874,7 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 			break;
 		}
 	}
+	u_free(ns);
 
 	if (ep == NULL) {
 		debug("no ep");

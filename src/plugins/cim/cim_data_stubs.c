@@ -47,6 +47,7 @@
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
+#include "wsman-client-api.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
@@ -61,6 +62,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 {
 	char *_tmp = NULL;
 	char *r = NULL;
+	char *show_extensions;
 	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 	WsmanStatus status;
 
@@ -78,13 +80,20 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	if (cimclient->selectors) {
 		_tmp = cim_get_namespace_selector(cimclient->selectors);
 	}
-	if (_tmp)
+	if (_tmp) {
 		cimclient->cim_namespace = _tmp;
-	else
+	} else {
 		cimclient->cim_namespace = get_cim_namespace();
+	}
+
 	cimclient->resource_uri = u_strdup(r);
 	cimclient->method_args = wsman_get_method_args(cntx, r );
-	// u_free(r);
+	show_extensions = wsman_get_option_set(cntx,NULL, WSMB_SHOW_EXTENSION );
+	debug("show extensions: %s", show_extensions );
+	if (show_extensions && strcmp(show_extensions, "true") == 0) {
+		cimclient->flags |= FLAG_CIM_EXTENSIONS;
+	}
+	u_free(show_extensions);
 	return cimclient;
 }
 
@@ -95,13 +104,12 @@ CimResource_destroy(CimClientInfo *cimclient)
 	if (cimclient->resource_uri) u_free(cimclient->resource_uri);
 	if (cimclient->method) u_free(cimclient->method);
 	if (cimclient->requested_class) u_free(cimclient->requested_class);
-	if (cimclient->method_args) 
-	{
+	if (cimclient->method_args) {
 		hash_free(cimclient->method_args);       
 	}
-	if (cimclient->selectors) 
-	{
-		hash_free(cimclient->selectors);        
+	if (cimclient->selectors) {
+		hash_free(cimclient->selectors);
+		debug("selectors destroyed");
 	}
 	cim_release_client(cimclient);
 	u_free(cimclient);
@@ -255,13 +263,6 @@ CimResource_Get_EP( SoapOpH op,
 				debug("no base class, getting instance directly with getInstance");
 				cim_get_instance(cimclient, cntx, body, &status);
 			}
-		}
-
-		if (status.fault_code != 0) 
-		{
-			ws_xml_destroy_doc(doc);
-			doc = wsman_generate_fault(cntx, in_doc, status.fault_code, 
-					status.fault_detail_code, NULL);
 		}
 	}
 cleanup:

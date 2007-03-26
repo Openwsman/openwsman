@@ -391,6 +391,8 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions options)
 			FLAG_ENUMERATION_OPTIMIZATION) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
 	}
+
+
 	if ((options.flags & FLAG_ENUMERATION_ENUM_EPR) ==
 			FLAG_ENUMERATION_ENUM_EPR) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE, WSM_ENUM_EPR);
@@ -503,6 +505,13 @@ wsman_client_create_request(WsManClient * cl,
 
 	body = ws_xml_get_soap_body(request);
 	header = ws_xml_get_soap_header(request);
+	if ((options.flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
+		WsXmlNodeH opset = ws_xml_add_child(header, 
+				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
+		WsXmlNodeH op = ws_xml_add_child(opset, 
+				XML_NS_WS_MAN, WSM_OPTION, NULL);
+		ws_xml_add_node_attr(op, NULL, WSM_NAME, WSMB_SHOW_EXTENSION);
+	}
 
 
 	switch (action) {

@@ -305,7 +305,9 @@ main (int argc, char **argv)
   initialize_logging ();
  
   if ( (listener = wsmand_start_server(ini)) == NULL) {
-    exit(EXIT_FAILURE);
+  	wsman_plugins_unload(listener);
+ 	u_free(listener);
+    	exit(EXIT_FAILURE);
   }
 
   wsman_plugins_unload(listener);

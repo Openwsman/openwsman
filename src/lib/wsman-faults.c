@@ -435,6 +435,7 @@ wsman_find_httpcode_for_value( WsXmlDocH doc )
 		else if (strcmp(xp, FAULT_SENDER_CODE_NS) == 0 )
 			httpcode = WSMAN_STATUS_BAD_REQUEST;
 	}
+	u_free(xp);
 	return httpcode;
 }
 
