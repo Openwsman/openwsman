@@ -836,23 +836,15 @@ hash_t *wsman_get_method_args(WsContextH cntx, char *resource_uri)
 	return NULL;
 }
 
-hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
+static
+hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
 {
-	WsXmlNodeH header;
-	WsXmlNodeH node;
-	WsXmlNodeH selector;
+	WsXmlNodeH selector, node;
 	int index = 0;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
-	if (doc == NULL)
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-	if (!doc)
-		return NULL;
-
-	header = ws_xml_get_soap_header(doc);
-	node =
-	    ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	node = ws_xml_get_child(epr_node, 0, XML_NS_WS_MAN, 
+			WSM_SELECTOR_SET);
 	if (!node) {
 		debug("no SelectorSet defined");
 		hash_destroy(h);
@@ -889,6 +881,24 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 
 	hash_destroy(h);
 	return NULL;
+}
+
+hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
+{
+	WsXmlNodeH header;
+	hash_t *h = NULL;
+
+	if (doc == NULL)
+		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+
+	if (!doc)
+		return NULL;
+
+	header = ws_xml_get_soap_header(doc);
+	if (header) {
+		h = wsman_get_selectors_from_epr(header);
+	} 
+	return h;
 }
 
 
