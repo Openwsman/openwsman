@@ -428,7 +428,7 @@ cim_verify_class_keys(CMPIConstClass * class,
 		data =
 		    class->ft->getPropertyQualifier(class,
 						    (char *) propertyname->
-						    hdl, "KEY", &rc);
+						    hdl, "Key", &rc);
 		if (rc.rc == 0)
 			ccount++;
 	}
