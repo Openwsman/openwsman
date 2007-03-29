@@ -89,8 +89,8 @@ xml_serializer_free(XmlSerializationData* data, void* buf)
 WsXmlNodeH
 xml_serializer_add_child(XmlSerializationData* data, char* value)
 {
-	char* name = data->elementInfo->name;
-	char *ns   = data->elementInfo->ns;
+	const char* name = data->elementInfo->name;
+	const char *ns   = data->elementInfo->ns;
 	WsXmlNodeH node;
 
 	TRACE_ENTER;
@@ -106,8 +106,8 @@ WsXmlNodeH
 xml_serializer_get_child(XmlSerializationData* data)
 {
 	WsXmlNodeH node;
-	char* name = data->elementInfo->name;
-	char *ns   = data->elementInfo->ns;
+	const char* name = data->elementInfo->name;
+	const char *ns   = data->elementInfo->ns;
 
 	TRACE_ENTER;
 	debug("name = %s:%s in %s [%d]", ns, name,
@@ -985,8 +985,8 @@ size_t ws_serialize(WsContextH cntx,
 		WsXmlNodeH xmlNode, 
 		XML_TYPE_PTR dataPtr, 
 		XmlSerializerInfo* info,
-		char* name,
-		char* ns,
+		const char* name,
+		const char* ns,
 		XML_NODE_ATTR *attrs,
 		int output)
 {
@@ -1058,8 +1058,8 @@ void*
 ws_deserialize(WsContextH cntx,
 		WsXmlNodeH xmlParent,
 		XmlSerializerInfo* info,
-		char* name,
-		char *ns,
+		const char* name,
+		const char *ns,
 		XML_NODE_ATTR **attrs,
 		int index,
 		int output)
@@ -1113,8 +1113,8 @@ enforce_mustunderstand(WsXmlNodeH node)
 }
 
 int
-ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str, 
-		char* nameNs, char* name, int mustunderstand)
+ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, const char* str, 
+		const char* nameNs, const char* name, int mustunderstand)
 {
 	WsXmlNodeH node;
 	TRACE_ENTER;
@@ -1129,7 +1129,7 @@ ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, char* str,
 
 
 int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent, unsigned long val, 
-		char* nameNs, char* name, int mustunderstand)
+		const char* nameNs, const char* name, int mustunderstand)
 {
 	WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
 	TRACE_ENTER;
@@ -1145,7 +1145,7 @@ int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent, unsigned long val,
 
 
 char* ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index, 
-		char* nameNs, char* name)
+		const char* nameNs, const char* name)
 {
 	char* str = NULL;
 	WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
@@ -1164,7 +1164,7 @@ char* ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
 }
 
 unsigned long ws_deserialize_uint32(WsContextH cntx, 
-		WsXmlNodeH parent, int index, char* nameNs, char* name)
+		WsXmlNodeH parent, int index, const char* nameNs, const char* name)
 {
 	unsigned long val = 0;
 	WsXmlNodeH node = ws_xml_get_child(parent, index, nameNs, name);
@@ -1179,7 +1179,7 @@ unsigned long ws_deserialize_uint32(WsContextH cntx,
 /*
  * Returns duration in seconds in <value> argument
  */
-int ws_deserialize_duration(char *t, time_t *value)
+int ws_deserialize_duration(const char *t, time_t *value)
 {
 	long years = 0;
 	long months = 0;
@@ -1312,7 +1312,7 @@ DONE:
 }
 
 
-int ws_deserialize_datetime(char *text,
+int ws_deserialize_datetime(const char *text,
 		XML_DATETIME *tmx)
 {
 	int res = 0;

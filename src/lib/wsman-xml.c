@@ -61,7 +61,7 @@
  */
 void
 ws_xml_make_default_prefix ( WsXmlNodeH node, 
-                             char* uri, 
+                             const char* uri, 
                              char* buf, 
                              int bufsize)
 {
@@ -78,12 +78,12 @@ ws_xml_make_default_prefix ( WsXmlNodeH node,
 }
 
 static int
-is_xml_val_true( char* text )
+is_xml_val_true( const char* text )
 {
     int retVal = 0;
 
     if ( text ) {
-        char* ptr = text;
+        const char* ptr = text;
 
         while( isdigit(*ptr) )
             ptr++;
@@ -130,15 +130,15 @@ ns_enum_at_node( WsXmlNodeH node,
 
 static char*
 make_qname( WsXmlNodeH node, 
-            char* uri, 
-            char* name)
+            const char* uri, 
+            const char* name)
 {
     char* buf = NULL; 
     if ( name && uri && name )
     {
         size_t len = 1 + strlen(name);
         WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1); 
-        char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
+        const char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
 
         if ( prefix != NULL )
             len += 1 + strlen(prefix);
@@ -168,10 +168,10 @@ make_qname( WsXmlNodeH node,
  * responsibility to update QName fields accordingly
  */
 WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node, 
-        char* nameNs,
-        char* name,
-        char* valueNs,
-        char* value)
+        const char* nameNs,
+        const char* name,
+        const char* valueNs,
+        const char* value)
 {
     WsXmlAttrH attr = NULL;
 
@@ -279,8 +279,8 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
         if ( srcRoot )
         {
             SoapH soap = dstSoap;
-            char* name = ws_xml_get_node_local_name(srcRoot);
-            char* nsUri = ws_xml_get_node_name_ns(srcRoot);
+            const char* name = ws_xml_get_node_local_name(srcRoot);
+            const char* nsUri = ws_xml_get_node_name_ns(srcRoot);
 
             if ( soap == NULL )
                 soap = ws_xml_get_doc_soap_handle(srcDoc);
@@ -401,7 +401,7 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
  * @param name Node name
  * @return found text 
  */
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
+char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name)
 {
     WsXmlNodeH root = ws_xml_get_doc_root(doc);
     return ws_xml_find_text_in_tree(root, nsUri, name, 1);
@@ -416,7 +416,7 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name)
  * @param bRecursive Recursive flag
  * @return found text 
  */
-char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive)
+char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive)
 {
     WsXmlNodeH node = head;
 
@@ -668,8 +668,8 @@ WsXmlDocH ws_xml_read_memory(
 }
 
 
-WsXmlDocH ws_xml_read_file( SoapH soap, char* filename, 
-        char* encoding, unsigned long options)
+WsXmlDocH ws_xml_read_file( SoapH soap, const char* filename, 
+        const char* encoding, unsigned long options)
 {
     return xml_parser_file_to_doc(soap, filename, encoding, options);
 }
@@ -684,8 +684,8 @@ WsXmlDocH ws_xml_read_file( SoapH soap, char* filename,
  */
 WsXmlDocH 
 ws_xml_create_doc( SoapH soap, 
-                   char* rootNsUri,
-                   char* rootName) {
+                   const char* rootNsUri,
+                   const char* rootName) {
     WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
 	WsXmlNodeH rootNode;
 	WsXmlNsH ns;
@@ -730,7 +730,7 @@ ws_xml_create_doc( SoapH soap,
  * @return status
  * 
  */
-int ws_xml_set_node_name(WsXmlNodeH node, char* nsUri, char* name)
+int ws_xml_set_node_name(WsXmlNodeH node, const char* nsUri, const char* name)
 {
     int retVal = -1;
 
@@ -789,7 +789,7 @@ static int find_in_tree_callback(WsXmlNodeH node, void* _data)
  * @param bRecursive Recursive flag
  * @return Result XML node
  */
-WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, char* nsUri, char* localName, int bRecursive)
+WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, const char* nsUri, const char* localName, int bRecursive)
 {
     FindInTreeCallbackData data;
 
@@ -821,7 +821,7 @@ WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc)
  * @param name Node name
  * @return Result XML node
  */
-WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, char* name)
+WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, const char* name)
 {
     WsXmlNodeH node = NULL;
     WsXmlNodeH env = ws_xml_get_soap_envelope(doc);
@@ -859,8 +859,8 @@ WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, char* name)
 WsXmlNodeH
 ws_xml_get_child( WsXmlNodeH parent, 
                   int index,
-                  char* nsUri,
-                  char* localName)
+                  const char* nsUri,
+                  const char* localName)
 {
     WsXmlNodeH node = NULL;
 
@@ -896,7 +896,7 @@ ws_xml_get_child( WsXmlNodeH parent,
  * @return Returns 1 if node is QName
  * @brief Shortcats for QName manipulation name can be NULL, in this case just check namespace
  */
-int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
+int ws_xml_is_node_qname(WsXmlNodeH node, const char* nsUri, const char* name)
 {
     int retVal = 0;
     if ( node )
@@ -916,8 +916,8 @@ int ws_xml_is_node_qname(WsXmlNodeH node, char* nsUri, char* name)
 
 WsXmlNsH
 ws_xml_find_wk_ns( SoapH soap, 
-                   char* uri, 
-                   char* prefix)
+                   const char* uri, 
+                   const char* prefix)
 {
     WsXmlNsH ns = NULL;
     if (soap)
@@ -1029,8 +1029,8 @@ ws_xml_find_ns_callback( WsXmlNodeH node,
  */
 WsXmlNsH 
 ws_xml_find_ns( WsXmlNodeH node, 
-                char* nsUri, 
-                char* prefix, 
+                const char* nsUri, 
+                const char* prefix, 
                 int bWalkUpTree)
 {
     WsXmlFindNsData data;
@@ -1139,9 +1139,9 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
  */
 WsXmlNodeH 
 ws_xml_add_child(WsXmlNodeH node, 
-                 char* nsUri,
-                 char* localName,
-                 char* val)
+                 const char* nsUri,
+                 const char* localName,
+                 const char* val)
 {
     WsXmlNodeH newNode = 
         xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 
@@ -1150,7 +1150,7 @@ ws_xml_add_child(WsXmlNodeH node,
 }
 
 WsXmlNodeH 
-ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
+ws_xml_add_empty_child_format(WsXmlNodeH node, const char* nsUri, const char* format, ...)
 {
 	WsXmlNodeH newNode;
     va_list args;
@@ -1165,7 +1165,7 @@ ws_xml_add_empty_child_format(WsXmlNodeH node, char* nsUri, char* format, ...)
 }
 
 WsXmlNodeH 
-ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* format, ...)
+ws_xml_add_child_format(WsXmlNodeH node, const char* nsUri, const char* localName, const char* format, ...)
 {
 	WsXmlNodeH newNode;
     va_list args;
@@ -1188,7 +1188,7 @@ ws_xml_add_child_format(WsXmlNodeH node, char* nsUri, char* localName, char* for
  * @return 1 if Ok, 0 if not
  */
 static int 
-is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
+is_ns_prefix_ok(WsXmlNsH ns, const char* newPrefix, int bDefault)
 {
     int retVal = 0;
     char* curPrefix = xml_parser_ns_query(ns, XML_NS_PREFIX);
@@ -1225,7 +1225,7 @@ is_ns_prefix_ok(WsXmlNsH ns, char* newPrefix, int bDefault)
  * update QName values and attributes
  */
 WsXmlNsH
-ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDefault)
+ws_xml_define_ns(WsXmlNodeH node, const char* nsUri, const char* nsPrefix, int bDefault)
 {
     WsXmlNsH ns = NULL;
 
@@ -1260,10 +1260,10 @@ ws_xml_define_ns(WsXmlNodeH node, char* nsUri, char* nsPrefix, int bDefault)
  */
 WsXmlNodeH
 ws_xml_add_qname_child(WsXmlNodeH parent, 
-        char* nameNs,
-        char* name,
-        char* valueNs,
-        char* value)
+        const char* nameNs,
+        const char* name,
+        const char* valueNs,
+        const char* value)
 {
     WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
     if ( node == NULL )
@@ -1287,9 +1287,9 @@ int ws_xml_get_node_attr_count(WsXmlNodeH node)
 
 WsXmlAttrH
 ws_xml_add_node_attr( WsXmlNodeH node, 
-                      char* nsUri, 
-                      char* name, 
-                      char* value)
+                      const char* nsUri, 
+                      const char* name, 
+                      const char* value)
 {
     WsXmlAttrH attr = NULL;
     if ( node && name )
@@ -1314,7 +1314,7 @@ ws_xml_get_node_attr(WsXmlNodeH node, int index)
 }
 
 WsXmlAttrH 
-ws_xml_find_node_attr(WsXmlNodeH node, char* attrNs, char* attrName)
+ws_xml_find_node_attr(WsXmlNodeH node, const char* attrNs, const char* attrName)
 {
     WsXmlAttrH attr = NULL;
     if ( node && attrName )
@@ -1412,7 +1412,7 @@ char* ws_xml_get_attr_value(WsXmlAttrH attr)
 }
 
 
-char* ws_xml_find_attr_value(WsXmlNodeH node, char* ns, char* attrName)
+char* ws_xml_find_attr_value(WsXmlNodeH node, const char* ns, const char* attrName)
 {
     char* val = NULL;
     WsXmlAttrH attr = ws_xml_find_node_attr(node, ns, attrName);
@@ -1423,7 +1423,7 @@ char* ws_xml_find_attr_value(WsXmlNodeH node, char* ns, char* attrName)
     return val;
 }
 
-int ws_xml_find_attr_bool(WsXmlNodeH node, char* ns, char* attrName)
+int ws_xml_find_attr_bool(WsXmlNodeH node, const char* ns, const char* attrName)
 {
     int retVal = 0;
     char* val = ws_xml_find_attr_value(node, ns, attrName);
@@ -1435,7 +1435,7 @@ int ws_xml_find_attr_bool(WsXmlNodeH node, char* ns, char* attrName)
 }
 
 
-unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, char* ns, char* attrName)
+unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, const char* ns, const char* attrName)
 {
     unsigned long retVal = 0;
     char* val = ws_xml_find_attr_value(node, ns, attrName);
@@ -1450,7 +1450,7 @@ unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, char* ns, char* attrName)
 // if ns is not defined at the node or at any of its parents, it will be defined at the root
 // if namespaces has been changed after this function is called, itis caller's
 // responsibility to update QName fields accordingly
-int ws_xml_set_node_qname_val(WsXmlNodeH node, char* valNsUri, char* valName)
+int ws_xml_set_node_qname_val(WsXmlNodeH node, const char* valNsUri, const char* valName)
 {
     int retVal = -1;
     if ( node && valName && valNsUri )
@@ -1477,7 +1477,7 @@ WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node)
 }
 
 
-int ws_xml_set_node_text(WsXmlNodeH node, char* text)
+int ws_xml_set_node_text(WsXmlNodeH node, const char* text)
 {
     int retVal = -1;
 
@@ -1487,7 +1487,7 @@ int ws_xml_set_node_text(WsXmlNodeH node, char* text)
     return retVal;
 }
 
-void ws_xml_set_node_lang(WsXmlNodeH node, char* lang)
+void ws_xml_set_node_lang(WsXmlNodeH node, const char* lang)
 {
     xmlNodeSetLang((xmlNodePtr )node, BAD_CAST lang);
 }
@@ -1525,8 +1525,8 @@ void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
 
 WsXmlNsH 
 ws_xml_ns_add( WsXmlNodeH node, 
-               char* uri, 
-               char* prefix)
+               const char* uri, 
+               const char* prefix)
 {
     return xml_parser_ns_add(node, uri, prefix );
 }

@@ -153,7 +153,7 @@ xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node ) {
 }
 
 
-int xml_parser_create_doc(WsXmlDocH wsDoc, char* rootName)
+int xml_parser_create_doc(WsXmlDocH wsDoc, const char* rootName)
 {
     int retVal = -1;
     xmlDocPtr doc;
@@ -202,7 +202,7 @@ xml_parser_get_root(WsXmlDocH doc)
 }
 
 WsXmlDocH
-xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long options)
+xml_parser_file_to_doc(SoapH soap, const char* filename, const char* encoding, unsigned long options)
 {
 	xmlDocPtr xmlDoc;
     WsXmlDocH Doc = NULL;
@@ -229,7 +229,7 @@ xml_parser_file_to_doc(SoapH soap, char* filename, char* encoding, unsigned long
 
 WsXmlDocH 
 xml_parser_memory_to_doc(SoapH soap, char* buf, size_t size,
-                         char* encoding, unsigned long options)
+                         const char* encoding, unsigned long options)
 {
     WsXmlDocH Doc = NULL;
 	xmlDocPtr xmlDoc;
@@ -297,7 +297,7 @@ xml_parser_node_query(WsXmlNodeH node, int what)
 
 
 int 
-xml_parser_node_set(WsXmlNodeH node, int what, char* str)
+xml_parser_node_set(WsXmlNodeH node, int what, const char* str)
 {
     int retVal = -1;
     xmlNodePtr xmlNode = (xmlNodePtr)node;
@@ -413,8 +413,8 @@ xml_parser_node_get(WsXmlNodeH node, int which)
 
 WsXmlNsH 
 xml_parser_ns_find(WsXmlNodeH node, 
-                   char* uri, 
-                   char* prefix, 
+                   const char* uri, 
+                   const char* prefix, 
                    int bWalkUpTree, 
                    int bAddAtRootIfNotFound)
 {
@@ -488,8 +488,8 @@ xml_parser_ns_query(WsXmlNsH ns, int what)
 
 WsXmlNsH
 xml_parser_ns_add( WsXmlNodeH node, 
-                   char* uri, 
-                   char* prefix)
+                   const char* uri, 
+                   const char* prefix)
 {
     xmlNsPtr xmlNs = NULL;
     if ( node && uri )
@@ -517,7 +517,7 @@ xml_parser_ns_add( WsXmlNodeH node,
 }
 
 
-int xml_parser_ns_remove(WsXmlNodeH node, char* nsUri)
+int xml_parser_ns_remove(WsXmlNodeH node, const char* nsUri)
 {
     int retVal = -1;
 
@@ -639,9 +639,9 @@ int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree)
 
 static xmlNodePtr
 make_new_xml_node( xmlNodePtr base, 
-                   char* uri, 
-                   char* name, 
-                   char* value) 
+                   const char* uri, 
+                   const char* name, 
+                   const char* value) 
 {
     xmlNodePtr newNode = NULL;
     xmlNsPtr ns = NULL;
@@ -667,9 +667,9 @@ make_new_xml_node( xmlNodePtr base,
 WsXmlNodeH
 xml_parser_node_add(WsXmlNodeH base, 
                     int where, 
-                    char* nsUri, 
-                    char* localName, 
-                    char* value)
+                    const char* nsUri, 
+                    const char* localName, 
+                    const char* value)
 {
     xmlNodePtr xmlBase = (xmlNodePtr)base;
     xmlNodePtr newNode = 
@@ -707,9 +707,9 @@ xml_parser_node_remove(WsXmlNodeH node)
 
 WsXmlAttrH 
 xml_parser_attr_add( WsXmlNodeH node, 
-                     char* uri, 
-                     char* name, 
-                     char* value)
+                     const char* uri, 
+                     const char* name, 
+                     const char* value)
 {
     xmlNodePtr xmlNode = (xmlNodePtr)node;
     xmlNsPtr xmlNs = (xmlNsPtr)xml_parser_ns_find(node, uri, NULL, 1, 1);

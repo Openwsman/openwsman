@@ -62,8 +62,8 @@ typedef struct __WsXmlParserData WsXmlParserData;
 
 struct _WsXmlFindNsData
 {
-    char* prefix;
-    char* nsUri;
+    const char* prefix;
+    const char* nsUri;
     WsXmlNodeH node;
     WsXmlNsH ns;
 };
@@ -71,8 +71,8 @@ typedef struct _WsXmlFindNsData WsXmlFindNsData;
 
 struct _FindInTreeCallbackData
 {
-    char* ns;
-    char* name;
+    const char* ns;
+    const char* name;
     WsXmlNodeH node;
 };
 typedef struct _FindInTreeCallbackData FindInTreeCallbackData;
@@ -96,8 +96,8 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
 
 
 /* 
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, char* nsUri, char* name); 
-char* ws_xml_find_text_in_tree(WsXmlNodeH head, char* nsUri, char* name, int bRecursive);
+char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name); 
+char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive);
 */
 
 WsXmlDocH ws_xml_create_doc_by_import( WsXmlNodeH node );
@@ -117,28 +117,28 @@ char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
 
 char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
-WsXmlDocH ws_xml_read_file(SoapH soap, char* filename,
-                                char* encoding, unsigned long options);
+WsXmlDocH ws_xml_read_file(SoapH soap, const char* filename,
+                                const char* encoding, unsigned long options);
 WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, size_t size,
                                  char *encoding, unsigned long options);
 
-WsXmlDocH ws_xml_create_doc(SoapH soap, char *rootNsUri, char *rootName);
-WsXmlNsH ws_xml_find_wk_ns(SoapH soap, char *uri, char *prefix);
+WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName);
+WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri, const char *prefix);
 
-WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, char* uri, char* prefix);
+WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const const char* uri, const char* prefix);
 
-WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, char* nsUri,
-                                      char* localName, char* format, ...);
+WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, const char* nsUri,
+                                      const char* localName, const char* format, ...);
 
 WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
-                                char* nsUri, char* format, ...);
+                                const char* nsUri, const char* format, ...);
 
 int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int ws_xml_utf8_strlen(char *buf);
 
 
-void ws_xml_set_node_lang(WsXmlNodeH node, char* lang);
+void ws_xml_set_node_lang(WsXmlNodeH node, const char* lang);
 
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 

@@ -102,8 +102,8 @@ typedef size_t (*XmlSerializationProc)(struct __XmlSerializationData* data);
 
 struct __XmlSerializerInfo
 {
-    char *ns;
-    char* name;
+    const char *ns;
+    const char* name;
     size_t mincount;    /**< Minimal Count */
     size_t count;       /**< Maximal Count */
     size_t size;        /**< size of serialized/deserialized element */
@@ -396,16 +396,16 @@ size_t ws_serialize(WsContextH cntx,
                 WsXmlNodeH xmlNode,
                 XML_TYPE_PTR dataPtr,
                 XmlSerializerInfo *info,
-                char *name,
-                char *ns,
+                const char *name,
+                const char *ns,
                 XML_NODE_ATTR *attrs,
                 int output);
 
 void *ws_deserialize(WsContextH cntx,
                 WsXmlNodeH xmlParent,
                 XmlSerializerInfo *info,
-                char *name,
-                char *ns,
+                const char *name,
+                const char *ns,
                 XML_NODE_ATTR **attrs,
                 int index,
                 int output);
@@ -414,38 +414,38 @@ void *ws_deserialize(WsContextH cntx,
 
 int ws_serialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 
-                char *str, 
-                char *nameNs, 
-                char *name,
+                const char *str, 
+                const char *nameNs, 
+                const char *name,
                 int mustunderstand);
 
 int ws_serialize_uint32(
                 WsContextH cntx, 
                 WsXmlNodeH parent, 
                 unsigned long val, 
-                char *nameNs, 
-                char *name,
+                const char *nameNs, 
+                const char *name,
                 int mustunderstand);
 
 char *ws_deserialize_str(WsContextH cntx, 
                 WsXmlNodeH parent, 
                 int index, 
-                char *nameNs, 
-                char *name);
+                const char *nameNs, 
+                const char *name);
 
 unsigned long ws_deserialize_uint32(
                 WsContextH cntx, 
                 WsXmlNodeH parent, 
                 int index, 
-                char *nameNs, 
-                char *name);
+                const char *nameNs, 
+                const char *name);
 
 int ws_deserialize_duration(
-                char* text,
+                const char* text,
                 time_t *value);
 
 int ws_deserialize_datetime(
-                char *text,
+                const char *text,
                 XML_DATETIME *tmx);
 
 
