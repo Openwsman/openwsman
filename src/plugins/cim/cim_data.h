@@ -51,6 +51,8 @@ typedef struct __CimResource CimResource;
 
 int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 
+int CimResource_EnumRefInsts_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
+
 int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, WsmanStatus *status);

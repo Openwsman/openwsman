@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -75,6 +76,9 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 		return NULL;
 	cimclient->namespaces = get_vendor_namespaces();
 	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
+	if(cimclient->selectors == NULL) {
+		cimclient->selectors = wsman_get_selector_list_from_body(cntx, NULL);
+	}
 	cimclient->requested_class = wsman_get_class_name(cntx);
 	cimclient->method = wsman_get_method_name(cntx);
 	if (cimclient->selectors) {
@@ -424,6 +428,71 @@ cleanup:
 	return retval;
 }
 
+int
+CimResource_EnumRefInsts_EP( WsContextH cntx,
+    WsEnumerateInfo* enumInfo,
+    WsmanStatus *status)
+{
+  debug("CIM Enumerate Reference Instances called");
+  int retval = 0;
+  CimClientInfo *cimclient = NULL;
+#if 0
+  WsXmlDocH doc;
+  WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+#endif
+
+  if ( enumInfo ) {
+    cimclient = CimResource_Init(cntx,
+        enumInfo->auth_data.username,
+        enumInfo->auth_data.password );
+    if (!cimclient) {
+      status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+      status->fault_detail_code = 0;
+      retval = 1;
+      goto cleanup;
+    }
+  }
+  debug("NameSpace: %s", cimclient->cim_namespace );
+
+  if (!verify_class_namespace(cimclient) ) {
+    error("resource uri namespace mismatch");
+    status->fault_code = WSA_DESTINATION_UNREACHABLE;
+    status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+    retval = 1;
+    goto cleanup;
+  }
+
+  cim_enum_reference_instances(cimclient, enumInfo, status);
+  if (status && status->fault_code != 0) {
+    retval = 1;
+    goto cleanup;
+  }
+#if 0
+	if (enumInfo->totalItems > 0) {
+		doc = wsman_create_response_envelope(cntx, in_doc , NULL);
+		WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
+				XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
+		cim_get_enum_items(cimclient, cntx, node,
+				enumInfo, XML_NS_WS_MAN, enumInfo->totalItems);
+		if (doc != NULL) {
+			enumInfo->pullResultPtr = doc;
+			int index2 = enumInfo->index + 1;
+			if (index2 == enumInfo->totalItems)  {
+				cim_release_enum_context(enumInfo);
+				CimResource_destroy(cimclient);
+			}
+		}
+	}
+	else {
+		enumInfo->pullResultPtr = NULL;
+	}
+#endif
+cleanup:
+  if (retval && cimclient) {
+    CimResource_destroy(cimclient);
+  }
+  return retval;
+}
 
 
 

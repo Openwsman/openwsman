@@ -97,6 +97,8 @@ char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
 hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
+hash_t * wsman_get_selector_list_from_body(WsContextH cntx, WsXmlDocH doc);
+
 void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 
 char* wsman_get_action(WsContextH cntx, WsXmlDocH doc);

@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Sumeet Kukreja, Dell Inc.
  */
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
@@ -779,6 +780,62 @@ cim_enum_instances(CimClientInfo * client,
 	return;
 }
 
+void 
+cim_enum_reference_instances (CimClientInfo *client,
+		WsEnumerateInfo* enumInfo,
+		WsmanStatus *status)
+{ 
+
+	debug( "%s: called", __FUNCTION__); 
+	CMPIObjectPath *objectpath;
+	CMPIEnumeration *enumeration;
+	CMPIStatus rc;
+	CMCIClient *cc = (CMCIClient *)client->cc;
+	sfcc_enumcontext *enumcontext;
+
+	objectpath = newCMPIObjectPath(client->cim_namespace,
+			client->requested_class , NULL);
+	cim_add_keys(objectpath, client->selectors);
+	debug( "ObjectPath: %s", CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+
+	enumeration = cc->ft->references(cc, objectpath,
+			NULL, NULL, 0, NULL, &rc);
+	debug( "%s: rc=%d, msg=%s",
+			__FUNCTION__, rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+
+	if (rc.rc) {
+		debug( "CMCIClient %s failed", __FUNCTION__);
+		cim_to_wsman_status(rc, status);
+		if (rc.msg) CMRelease(rc.msg);
+		goto cleanup;
+	}
+	CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL);
+
+	cim_to_wsman_status(rc, status);
+	if (rc.msg) CMRelease(rc.msg);
+	if (!enumArr) {
+		goto cleanup;
+	}
+	/* Free the selectors.  These are lost on the Pull call anyways */
+	hash_free(client->selectors);
+	client->selectors = NULL;
+
+	enumInfo->totalItems = cim_enum_totalItems(enumArr);
+	debug( "Total items: %d", enumInfo->totalItems );
+	enumcontext = u_zalloc(sizeof(sfcc_enumcontext));
+	enumcontext->ecClient = client;
+	enumcontext->ecEnumeration = enumeration;
+	enumInfo->enumResults = enumArr;
+	enumInfo->appEnumContext = enumcontext;
+
+	if (objectpath) CMRelease(objectpath);
+	return;
+
+cleanup:
+	//if (enumeration) CMRelease(enumeration);
+	if (objectpath) CMRelease(objectpath);
+	return;
+}
 
 
 int

@@ -14,6 +14,7 @@ LIBS = \
 
 LIBS += $(CURL_LIBS)
 
+test_references_SOURCES = test_references.c
 test_transfer_get_SOURCES = test_transfer_get.c
 test_transfer_put_SOURCES = test_transfer_put.c
 test_invoke_SOURCES = test_invoke.c
@@ -22,6 +23,7 @@ test_enumeration_SOURCES = test_enumeration.c
 test_pull_SOURCES = test_pull.c
 
 noinst_PROGRAMS = \
+		  test_references \
 		  test_transfer_get \
 		  test_transfer_put \
 		  test_identify \

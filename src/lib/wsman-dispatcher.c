@@ -329,7 +329,7 @@ wsman_check_unsupported_features(op_t * op)
 	WsXmlNodeH      body = ws_xml_get_soap_body(op->in_doc);
 	int             retVal = 0;
 	SoapH           soap;
-	WsXmlNodeH      n, m;
+	WsXmlNodeH      n; /* , m; */
 	soap = op->dispatch->fw;
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
@@ -367,14 +367,21 @@ wsman_check_unsupported_features(op_t * op)
 				WSMAN_DETAIL_ADDRESSING_MODE);
 	}	
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_FILTER);
-	m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER);
-	if (n != NULL && m!= NULL) {
+	/* Need to remove the following for associators and references */
+	/* 
+		m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER);
+		if (n != NULL && m!= NULL) {
+	*/
+	if(n != NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
-	} else if  (n != NULL || m!= NULL) {
+	} 
+	/*
+	else if  (n != NULL || m!= NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSEN_FILTERING_NOT_SUPPORTED,  0);
 	}
+	*/
 
 	return retVal;
 }

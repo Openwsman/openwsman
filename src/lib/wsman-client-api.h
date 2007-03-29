@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifndef WSMANCLIENT_API_H_
@@ -88,6 +89,7 @@ extern "C" {
 		WSMAN_ACTION_TRANSFER_GET,
 		WSMAN_ACTION_TRANSFER_PUT,
 		WSMAN_ACTION_ENUMERATION,
+		WSMAN_ACTION_ENUMERATE_REFERENCE_INSTANCES,
 		WSMAN_ACTION_PULL,
 		WSMAN_ACTION_RELEASE,
 		WSMAN_ACTION_CUSTOM,
@@ -329,6 +331,12 @@ extern "C" {
 					 const char *resourceUri);
 
 
+	void wsman_build_assocRef_body(WsManClient *cl, WsXmlDocH request,
+		       	char *resource_uri,
+			actionOptions *options, int assocRef);
+	WsXmlDocH wsenum_reference_instances(WsManClient *cl,
+		const char *resource_uri,
+		actionOptions *options);
 
 	/* Action options handling */
 	actionOptions *initialize_action_options(void);
@@ -336,8 +344,7 @@ extern "C" {
 	void wsman_add_selectors_from_query_string(actionOptions * options,
 						   const char
 						   *query_string);
-	void wsman_add_properties_from_query_string(actionOptions *
-						    options,
+	void wsman_add_properties_from_query_string(actionOptions * options,
 						    const char
 						    *query_string);
 	void wsman_add_selector_from_options(WsXmlDocH doc,
@@ -346,7 +353,6 @@ extern "C" {
 				     unsigned int);
 	void wsman_set_options_from_uri(const char *resourceUri,
 					actionOptions * options);
-
 	void wsman_client_add_selector(actionOptions * options,
 				       const char *key, const char *value);
 	void wsman_client_add_property(actionOptions * options,

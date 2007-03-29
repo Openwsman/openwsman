@@ -31,6 +31,7 @@
 /**
  * @author Anas Nashif
  * @author Eugene Yarmosh
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifndef WSMAN_SOAP_H_
@@ -67,6 +68,7 @@
 #define WS_DISP_TYPE_IDENTIFY           17
 #define WS_DISP_TYPE_DIRECT_CREATE           18
 #define WS_DISP_TYPE_DIRECT_DELETE           19
+#define WS_DISP_TYPE_ENUM_REFINSTS           21
 #define WS_DISP_TYPE_PRIVATE                0xfffe
 
 
@@ -312,6 +314,7 @@ int             ws_transfer_put_stub(SoapOpH op, void *appData);
 int             ws_transfer_delete_stub(SoapOpH op, void *appData);
 int             wsman_identify_stub(SoapOpH op, void *appData);
 int             wsenum_enumerate_stub(SoapOpH op, void *appData);
+int             wsenum_reference_instances_stub(SoapOpH op, void *appData);
 int             ws_transfer_get_stub(SoapOpH op, void *appData);
 int             wsenum_pull_stub(SoapOpH op, void *appData);
 int             wsenum_pull_raw_stub(SoapOpH op, void *appData);

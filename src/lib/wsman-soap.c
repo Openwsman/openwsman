@@ -308,6 +308,11 @@ wsman_register_endpoint(WsContextH cntx,
 		action = ep->inAction;
 		callbackProc = wsenum_enumerate_stub;
 		break;
+  case WS_DISP_TYPE_ENUM_REFINSTS:
+    debug("Registering endpoint for Enumerate Reference Instances");
+    action = ep->inAction;
+    callbackProc = wsenum_reference_instances_stub;
+    break;
 	case WS_DISP_TYPE_RELEASE:
 		debug("Registering endpoint for Release");
 		action = ep->inAction;
@@ -868,6 +873,91 @@ destroy_enuminfo(WsEnumerateInfo * enumInfo)
  */
 int
 wsenum_enumerate_stub(SoapOpH op,
+		      void *appData)
+{
+	WsXmlDocH       doc = NULL;
+	int             retVal = 0;
+	WsEnumerateInfo *enumInfo;
+	WsmanStatus     status;
+	WsXmlNodeH      resp_node;
+	WsXmlNodeH      body;
+	WsContextH      soapCntx;
+	SoapH           soap = soap_get_op_soap(op);
+
+	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
+	WsEndPointEnumerate endPoint =
+			(WsEndPointEnumerate)ep->serviceEndPoint;
+
+	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
+	WsContextH      epcntx;
+
+	epcntx = ws_create_ep_context(soap, _doc);
+	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
+	wsman_status_init(&status);
+	doc = create_enum_info(op, epcntx, _doc, &enumInfo);
+	if (doc != NULL) {
+		// wrong enum elements met. Fault message generated
+		goto DONE;
+	}
+
+	if (endPoint && (retVal = endPoint(epcntx, enumInfo, &status))) {
+                debug("enumeration fault");
+		doc = wsman_generate_fault(epcntx, _doc,
+			 status.fault_code, status.fault_detail_code, NULL);
+		destroy_enuminfo(enumInfo);
+		goto DONE;
+	}
+	if (enumInfo->pullResultPtr) {
+		doc = enumInfo->pullResultPtr;
+		enumInfo->index++;
+	} else {
+		doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+	}
+
+	if (!doc)
+		goto DONE;
+
+	wsman_set_estimated_total(_doc, doc, enumInfo);
+	body = ws_xml_get_soap_body(doc);
+
+	if (enumInfo->pullResultPtr == NULL) {
+		resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION,
+					     WSENUM_ENUMERATE_RESP, NULL);
+	} else {
+		resp_node = ws_xml_get_child(body, 0,
+				 XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+	}
+
+	soapCntx = ws_get_soap_context(soap);
+	if (enumInfo->index == enumInfo->totalItems) {
+		ws_serialize_str(epcntx, resp_node, NULL,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+		ws_serialize_str(epcntx, resp_node,
+			       NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE, 0);
+		destroy_enuminfo(enumInfo);
+	} else {
+		ws_serialize_str(epcntx, resp_node, enumInfo->enumId,
+			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+		insert_enum_info(soapCntx, enumInfo);
+	}
+
+DONE:
+	if (doc) {
+		soap_set_op_doc(op, doc, 0);
+	}
+	ws_serializer_free_all(epcntx);
+	ws_destroy_context(epcntx);
+	return retVal;
+}
+
+/**
+ * Enumerate Reference Instances Stub for processing enumeration requests
+ * @param op SOAP pperation handler
+ * @param appData Application data
+ * @return status
+ */
+int
+wsenum_reference_instances_stub(SoapOpH op,
 		      void *appData)
 {
 	WsXmlDocH       doc = NULL;

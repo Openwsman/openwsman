@@ -31,6 +31,7 @@
 /**
  * @author Anas Nashif
  * @author Eugene Yarmosh
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifndef WSMAN_DECLARATIONS_H_
@@ -85,6 +86,10 @@
 #define END_POINT_ENUMERATE(t, ns)                                   \
   { WS_DISP_TYPE_ENUMERATE, NULL, NULL, ENUM_ACTION_ENUMERATE, NULL, \
       t##_TypeInfo, (WsProcType)t##_Enumerate_EP, ns, NULL}
+
+#define END_POINT_ENUM_REFINSTS(t, ns)                                   \
+  { WS_DISP_TYPE_ENUM_REFINSTS, NULL, NULL, ENUM_ACTION_REFINSTS, NULL, \
+      t##_TypeInfo, (WsProcType)t##_EnumRefInsts_EP, ns, NULL}
 
 #define END_POINT_RELEASE(t, ns)                                  \
   { WS_DISP_TYPE_RELEASE, NULL, NULL, ENUM_ACTION_RELEASE, NULL,  \

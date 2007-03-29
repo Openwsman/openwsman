@@ -31,6 +31,7 @@
 /**
  * @author Anas Nashif
  * @author Vadim Revyakin
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifndef _WSMAN_NAMESPACES_H_
@@ -189,6 +190,13 @@
 #define ENUM_ACTION_ENUMEND       \
            "http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerationEnd"
 
+#define ENUM_ACTION_REFINSTS   \
+         "http://schemas.xmlsoap.org/ws/2004/09/enumeration/References"
+#define ENUM_ACTION_REFINSTSRESPONSE   \
+         "http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReferencesResponse"
+#define WSENUM_REFERENCE_INSTANCES       "References"
+#define WSENUM_REFERENCE_INSTANCES_RESP  "ReferencesResponse"
+
 
 #define EVT_ACTION_SUBSCRIBE      \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"
@@ -245,6 +253,14 @@
 #define WSENUM_CODE                   "Code"
 #define WSENUM_SOURCE_SHUTTING_DOWN   "SourceShuttingDown"
 #define WSENUM_SOURCE_CANCELING       "SourceCanceling"
+
+#define WSENUM_ASSOCIATION_INSTANCES   "AssociationInstances"
+#define WSENUM_OBJECT                 "Object"
+#define WSENUM_REFERENCE_PARAMETERS   "ReferenceParameters"
+#define WSENUM_ASSOCIATION_CLASS_NAME "AssociationClassName"
+#define WSENUM_RESULT_CLASS_NAME      "ResultClassName"
+#define WSENUM_ROLE                   "Role"
+#define WSENUM_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
 
 
 #define WSM_SYSTEM                     "System"
@@ -315,6 +331,8 @@
         "http://schemas.microsoft.com/wbem/wsman/1/WQL"
 #define WSM_XPATH_FILTER_DIALECT        \
         "http://www.w3.org/TR/1999/REC-xpath-19991116"
+#define WSM_ASSOCIATION_FILTER_DIALECT     \
+        "http://schemas.dmtf.org/wbem/wsman/1/cimbinding/associationFilter"
 
 
 #define WSFW_RESPONSE_STR              "Response"

@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #include "wsman_config.h"
@@ -62,6 +63,7 @@ START_END_POINTS(CimResource)
   END_POINT_TRANSFER_DIRECT_CREATE(CimResource, XML_NS_CIM_CLASS),
   END_POINT_TRANSFER_DIRECT_DELETE(CimResource, XML_NS_CIM_CLASS),
   END_POINT_ENUMERATE(CimResource, XML_NS_CIM_CLASS),
+  END_POINT_ENUM_REFINSTS(CimResource, XML_NS_CIM_CLASS),
   END_POINT_DIRECT_PULL(CimResource, XML_NS_CIM_CLASS),
   END_POINT_RELEASE(CimResource, XML_NS_CIM_CLASS),
   END_POINT_CUSTOM_METHOD(CimResource, XML_NS_CIM_CLASS),

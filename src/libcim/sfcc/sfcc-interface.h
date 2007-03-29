@@ -58,6 +58,8 @@ void cim_delete_instance (CimClientInfo *client, WsmanStatus *status);
 
 void cim_enum_instances (CimClientInfo* client, WsEnumerateInfo* enumInfo, WsmanStatus *status);
 
+void cim_enum_reference_instances (CimClientInfo* client, WsEnumerateInfo* enumInfo, WsmanStatus *status);
+
 void cim_put_instance (CimClientInfo* client, WsContextH cntx,  WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus *status); 
 
 void cim_create_instance (CimClientInfo* client, WsContextH cntx,  WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus *status); 

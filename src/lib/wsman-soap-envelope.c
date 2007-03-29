@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -901,6 +902,80 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 	return h;
 }
 
+hash_t *
+wsman_get_selector_list_from_body(WsContextH cntx,
+      WsXmlDocH doc)
+{
+  WsXmlNodeH body;
+  WsXmlNodeH node, assInst, object;
+  WsXmlNodeH selector;
+  int index = 0;
+  hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+
+  if (doc == NULL)
+    doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+
+  if (!doc)
+    return NULL;
+
+  body = ws_xml_get_soap_body(doc);
+  node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+  if(!node) {
+    debug("no SelectorSet defined. Missing Enumerate");
+    return NULL;
+  }
+  node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSENUM_FILTER);
+  if(!node) {
+    debug("no SelectorSet defined. Missing Filter");
+    return NULL;
+  }
+
+  assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_INSTANCES);
+  if(!node) {
+    debug("no SelectorSet defined. Missing AssociationInstances");
+    return NULL;
+  }
+
+  object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSENUM_OBJECT);
+  if(!node) {
+    debug("no SelectorSet defined. Missing Object");
+    return NULL;
+  }
+
+  node = ws_xml_get_child(object, 0, XML_NS_ADDRESSING, WSENUM_REFERENCE_PARAMETERS);
+  if(!node) {
+    debug("no SelectorSet defined. Missing ReferenceParameters");
+    return NULL;
+  }
+
+  node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+  if(!node) {
+    debug("no SelectorSet defined");
+    return NULL;
+  }
+  while((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
+    char *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
+    if(attrVal == NULL)
+      attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
+
+    debug("Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
+    if(attrVal) {
+      if(!hash_lookup(h, attrVal)) {
+        if(!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
+          error("hash_alloc_insert failed");
+        }
+      } else {
+        error("duplicate selector");
+      }
+    }
+  }
+
+  if(!hash_isempty(h))
+    return h;
+
+  hash_destroy(h);
+  return NULL;
+}
 
 
 char *wsman_get_selector(WsContextH cntx,
