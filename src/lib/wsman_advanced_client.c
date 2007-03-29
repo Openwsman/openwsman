@@ -511,7 +511,7 @@ char* wsman_session_identify(int session_id, int flag)
 	session_t	*s;
 	WsXmlDocH	request, response;
 	WsXmlNodeH	node;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*res = NULL;
 
 	s = get_session_by_id(session_id);
@@ -521,7 +521,7 @@ char* wsman_session_identify(int session_id, int flag)
 
 	pthread_mutex_lock(&s->lock);
 
-	initialize_action_options(&options);
+	options = initialize_action_options();
 
 	request = wsman_client_create_request(s->client,
 						NULL,
@@ -564,7 +564,7 @@ int wsman_session_enumerate(int session_id,
 {
 	session_t	*s, *e = NULL;
 	WsXmlDocH	request, response;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*enum_context;
 
 	s = get_session_by_id(session_id);
@@ -579,13 +579,13 @@ int wsman_session_enumerate(int session_id,
 		s->fault = NULL;
 	}
 
-	initialize_action_options(&options);
+	options = initialize_action_options();
 
 	if (filter)
-		options.filter = u_strdup(filter);
+		options->filter = u_strdup(filter);
 	if (dialect)
-		options.dialect = u_strdup(dialect);
-	options.flags = flags;
+		options->dialect = u_strdup(dialect);
+	options->flags = flags;
 	if (resource_uri) {
 		request = wsman_client_create_request(s->client,
 						resource_uri,
@@ -600,10 +600,10 @@ int wsman_session_enumerate(int session_id,
 					NULL, NULL);
 	}
 
-	if (options.filter)
-		u_free(options.filter);
-	if (options.dialect)
-		u_free(options.dialect);
+	if (options->filter)
+		u_free(options->filter);
+	if (options->dialect)
+		u_free(options->dialect);
 
 	if (!request) {
 		pthread_mutex_unlock(&s->lock);
@@ -668,7 +668,7 @@ char* wsman_enumerator_pull(int enumerator_id)
 {
 	session_t	*s;
 	WsXmlDocH	request, response;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*enum_context;
 	char		*item = NULL;
 
@@ -684,7 +684,7 @@ char* wsman_enumerator_pull(int enumerator_id)
 		s->fault = NULL;
 	}
 
-	initialize_action_options(&options);
+	options = initialize_action_options();
 	request = wsman_client_create_request(s->client,
 					s->resource_uri,
 					options, WSMAN_ACTION_PULL,
@@ -751,7 +751,7 @@ char* wsman_session_transfer_get(int session_id,
 	session_t	*s;
 	WsXmlDocH	request, response;
 	WsXmlNodeH	node;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*resource = NULL;
 
 	s = get_session_by_id(session_id);
@@ -760,8 +760,8 @@ char* wsman_session_transfer_get(int session_id,
 	}
 
 	pthread_mutex_lock(&s->lock);
-	initialize_action_options(&options);
-	options.selectors = s->selectors;
+	options = initialize_action_options();
+	options->selectors = s->selectors;
 
 	if (s->fault) {
 		u_free(s->fault);
@@ -801,7 +801,7 @@ char* wsman_session_transfer_put(int session_id,
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
 	WsXmlNodeH	node;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*resource = NULL;
 
 	if (!xml_content) {
@@ -824,8 +824,8 @@ char* wsman_session_transfer_put(int session_id,
 		return NULL;
 	};
 
-	initialize_action_options(&options);
-	options.selectors = s->selectors;
+	options = initialize_action_options();
+	options->selectors = s->selectors;
 
 	if (s->fault) {
 		u_free(s->fault);
@@ -875,7 +875,7 @@ char* wsman_session_transfer_create(int session_id,
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
 	WsXmlNodeH	node;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*resource = NULL;
 
 	if (!xml_content) {
@@ -898,7 +898,7 @@ char* wsman_session_transfer_create(int session_id,
 		return NULL;
 	};
 
-	initialize_action_options(&options);
+	options = initialize_action_options();
 
 	if (s->fault) {
 		u_free(s->fault);
@@ -947,7 +947,7 @@ char* wsman_session_invoke(int sid,
 	session_t	*s;
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
-	actionOptions	options;
+	actionOptions	*options = NULL;
 	char		*res = NULL;
 
 	s = get_session_by_id(sid);
@@ -966,8 +966,8 @@ char* wsman_session_invoke(int sid,
 		return NULL;
 	};
 
-	initialize_action_options(&options);
-	options.selectors = s->selectors;
+	options = initialize_action_options();
+	options->selectors = s->selectors;
 
 	if (s->fault) {
 		u_free(s->fault);

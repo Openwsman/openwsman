@@ -208,7 +208,7 @@ int main(int argc, char** argv)
     int i;
     WsManClient *cl;
     WsXmlDocH doc;
-    actionOptions options;
+    actionOptions *options = NULL;
 
     if (getenv("OPENWSMAN_TEST_HOST")) {
         host = getenv("OPENWSMAN_TEST_HOST");
@@ -233,10 +233,10 @@ int main(int argc, char** argv)
                 sd[0].scheme,
                 sd[0].username,
                 sd[0].password);		
-        initialize_action_options(&options);
+        options = initialize_action_options();
 
         if (tests[i].selectors != NULL)
-            wsman_add_selectors_from_query_string (&options, tests[i].selectors);
+            wsman_add_selectors_from_query_string (options, tests[i].selectors);
 
 
         doc = ws_transfer_get(cl, (char *)tests[i].resource_uri, options);
@@ -271,7 +271,7 @@ int main(int argc, char** argv)
 CONTINUE:
         u_free(tests[i].selectors);
         u_free(tests[i].expected_value);
-        destroy_action_options(&options);
+        destroy_action_options(options);
         wsman_release_client(cl);
     }		
     return 0;

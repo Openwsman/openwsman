@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	
     WsManClient *cl;
     WsXmlDocH doc;
-    actionOptions options;
+    actionOptions *options = NULL;
 
 
     wsman_client_transport_init(NULL);
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
         sd[0].scheme,
         sd[0].username,
         sd[0].password);		
-    initialize_action_options(&options);
+    options = initialize_action_options();
 
 
     doc = wsman_identify(cl, options);
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
         ws_xml_destroy_doc(doc);
     }
 CONTINUE:
-    destroy_action_options(&options);
+    destroy_action_options(options);
     wsman_release_client(cl);
 
 	

@@ -23,7 +23,7 @@ extern "C" {
 using namespace WsmanClientNamespace;
 
 static string	XmlDocToString			(WsXmlDocH		doc);
-static void	SetDefaultOptions		(actionOptions *options);
+static actionOptions *SetDefaultOptions();
 static bool	CheckClientResponseCode	(WsManClient* cl, long &returnCode, int &lastErr, string &error);
 
 // Construct from params.
@@ -67,15 +67,15 @@ WsmanClient::~WsmanClient()
 /// <returns>string - xml represantation EndpointReference of the created object</returns>
 string WsmanClient::Create(const string &resourceUri, const string &data)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options = NULL;
+	options = SetDefaultOptions();
 
 	WsXmlDocH createResponse = ws_transfer_create_fromtext(cl, 
 			resourceUri.c_str(),
 			options,
 			data.c_str(), data.length(), WSMAN_ENCODING);
 
-	destroy_action_options(&options);
+	destroy_action_options(options);
 	string error;
 	long code;
 	int lastErr;
@@ -109,19 +109,20 @@ string WsmanClient::Create(const string &resourceUri, const string &data)
 /// <param name="resourceUri">string, The identifier of the resource to be deleted</param>
 void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options;
+	options = SetDefaultOptions();
 
 	// Add selectors.
 	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
 		if(p->second != "")
-			wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+			wsman_client_add_selector(options, 
+					(char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
 	WsXmlDocH deleteResponse = ws_transfer_delete(	cl, 
 			(char *)resourceUri.c_str(),
 			options);
-	destroy_action_options(&options);
+	destroy_action_options(options);
 	string error;
 	long code;
 	int lastErr;
@@ -151,8 +152,8 @@ void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 /// <returns>ArrayList of strings containing xml response</returns>
 void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options = NULL;
+	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	char *enumContext;
 	WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)resourceUri.c_str(),  options);
@@ -162,21 +163,21 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 	int lastErr;
 	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(enum_response);
-		destroy_action_options(&options);
+		destroy_action_options(options);
 		if(lastErr) {
 			throw(TransportException(lastErr, error));
 		} else {
 			throw HttpException(code, error);
 		}
 	} else if (!enum_response) {
-		destroy_action_options(&options);
+		destroy_action_options(options);
 		ws_xml_destroy_doc(enum_response);
 		// throw exception("WsmanClient: unknown error has occured");
 	} else if (wsman_client_check_for_fault(enum_response)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(enum_response), e);
 		ws_xml_destroy_doc(enum_response);
-		destroy_action_options(&options);
+		destroy_action_options(options);
 		throw e;
 	}
 	enumContext = wsenum_get_enum_context(enum_response);
@@ -187,7 +188,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 		// Check for success (500,400 are OK??)
 		if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 			ws_xml_destroy_doc(doc);
-			destroy_action_options(&options);
+			destroy_action_options(options);
 			if(lastErr) {
 				throw(TransportException(lastErr, error));
 			} else {
@@ -196,19 +197,19 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 		}
 		else if (!doc) {
 			ws_xml_destroy_doc(doc);
-			destroy_action_options(&options);
+			destroy_action_options(options);
 			// throw exception("WsmanClient: unknown error has occured");
 		} else if (wsman_client_check_for_fault(doc)) {
 			WsmanException e(code, error);
 			GetWsmanFault(XmlDocToString(doc), e);
-			destroy_action_options(&options);
+			destroy_action_options(options);
 			ws_xml_destroy_doc(doc);
 			throw e;			
 		}
 		enumRes.push_back(ExtractItems((XmlDocToString(doc))));
 		enumContext = wsenum_get_enum_context(doc);    
 	}
-	destroy_action_options(&options);
+	destroy_action_options(options);
 }
 
 /// <summary>
@@ -220,18 +221,20 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 /// <returns>WsXmlDocH, an XML representation of the instance. </returns>
 string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options = NULL;
+	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	// Add selectors.
 	if (s) {
 		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+			if(p->second != "")
+				wsman_client_add_selector(options, 
+						(char *)p->first.c_str(), (char *)p->second.c_str());
 		}
 	}
 	doc = ws_transfer_get(cl, (char *)resourceUri.c_str(), options);
 
-	destroy_action_options(&options);
+	destroy_action_options(options);
 	string error;
 	long code;
 	int lastErr;
@@ -266,19 +269,19 @@ string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 //???? why is string returned
 string WsmanClient::Put(const string &resourceUri, const string &content, NameValuePairs &s)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options = NULL;
+	options = SetDefaultOptions();
 	WsXmlDocH doc;
 
 	// Add selectors.
 	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
 		if(p->second != "")
-			wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+			wsman_client_add_selector(options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
 	doc = ws_transfer_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
 
-	destroy_action_options(&options);
+	destroy_action_options(options);
 	string error;
 	long code;
 	int lastErr;
@@ -313,21 +316,22 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 /// <returns>The XML representation of the method output.</returns>
 string WsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, NameValuePairs &s)
 {
-	actionOptions options;
-	SetDefaultOptions(&options);
+	actionOptions *options = NULL;
+	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	string error;
 
 	// Add selectors.
 	for (PairsIterator p = s.begin(); p != s.end(); ++p) {
-		if(p->second != "")	wsman_client_add_selector(&options, (char *)p->first.c_str(), (char *)p->second.c_str());
+		if(p->second != "")
+			wsman_client_add_selector(options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
 	doc = wsman_invoke_fromtext(cl, resourceUri.c_str(), options,
 			(char *)methodName.c_str(), content.c_str(),
 			content.length(), WSMAN_ENCODING);
 
-	destroy_action_options(&options);
+	destroy_action_options(options);
 	long code;
 	int lastErr;
 	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
@@ -420,9 +424,9 @@ string XmlDocToString(WsXmlDocH doc) {
 /// <summary>
 /// Set default request options.
 /// </summary>
-void SetDefaultOptions(actionOptions *options)
+actionOptions * SetDefaultOptions()
 {
-	initialize_action_options(options);
+	actionOptions *options = initialize_action_options();
 	//options->max_envelope_size = OPEN_WSMAN_MAX_ENVELOPE_SIZE;
 }
 

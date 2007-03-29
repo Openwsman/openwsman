@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 	int i;
 	WsManClient *cl;
 	WsXmlDocH docp;
-	actionOptions options;
+	actionOptions *options = NULL;
 	char *enumContext = NULL;
 	//unsigned int id = 0;	
 	
@@ -238,11 +238,11 @@ int main(int argc, char** argv)
     		sd[0].username,
     		sd[0].password);
     			
-		initialize_action_options(&options);
-		options.flags = tests[i].flags;
-		options.max_elements = tests[i].max_elements;
+		options = initialize_action_options();
+		options->flags = tests[i].flags;
+		options->max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
-			wsman_add_selectors_from_query_string (&options, tests[i].selectors);	
+			wsman_add_selectors_from_query_string (options, tests[i].selectors);	
 		 		
 		WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
 			 options);
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
 			ws_xml_destroy_doc(docp);
 		}
 CONTINUE:
-		destroy_action_options(&options);
+		destroy_action_options(options);
     	wsman_release_client(cl);
 	}
 
