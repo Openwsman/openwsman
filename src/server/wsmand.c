@@ -31,7 +31,7 @@
 /**
  * @author Anas Nashif
  */
- 
+
 #ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
 #endif
@@ -73,247 +73,232 @@
 static int log_pid = 0;
 
 static void
-debug_message_handler (const char *str, 
-                       debug_level_e level, 
-                       void *user_data)
+debug_message_handler(const char *str,
+		      debug_level_e level, void *user_data)
 {
-  
-  if (log_pid == 0)
-    log_pid = getpid ();
 
-  if (level <= wsmand_options_get_debug_level () 
-      || wsmand_options_get_foreground_debug() > 0 ) 
-  {
-    struct tm *tm;
-    time_t now;
-    char timestr[128];
-    char *log_msg;
-    int p;
+	if (log_pid == 0)
+		log_pid = getpid();
 
-    time (&now);
-    tm = localtime (&now);
-    strftime (timestr, 128, "%b %e %T", tm);
+	if (level <= wsmand_options_get_debug_level()
+	    || wsmand_options_get_foreground_debug() > 0) {
+		struct tm *tm;
+		time_t now;
+		char timestr[128];
+		char *log_msg;
+		int p;
 
-    log_msg = u_strdup_printf ("%s [%d] %s\n",
-                               timestr, log_pid, str);
-    if ( (p = write (STDERR_FILENO, log_msg, strlen (log_msg)) ) < 0  )
-      fprintf(stderr, "Failed writing to log file\n");
-    fsync (STDERR_FILENO);
+		time(&now);
+		tm = localtime(&now);
+		strftime(timestr, 128, "%b %e %T", tm);
 
-    u_free (log_msg);
-  }
-  if ( level <= wsmand_options_get_syslog_level ()) 
-  {
-    char *log_name = u_strdup_printf ("wsmand[%d]", log_pid);
+		log_msg = u_strdup_printf("%s [%d] %s\n",
+					  timestr, log_pid, str);
+		if ((p =
+		     write(STDERR_FILENO, log_msg, strlen(log_msg))) < 0)
+			fprintf(stderr, "Failed writing to log file\n");
+		fsync(STDERR_FILENO);
 
-    openlog (log_name, 0, LOG_DAEMON);
-    syslog (LOG_INFO, "%s", str);
-    closelog ();
-    u_free (log_name);
-  }
+		u_free(log_msg);
+	}
+	if (level <= wsmand_options_get_syslog_level()) {
+		char *log_name = u_strdup_printf("wsmand[%d]", log_pid);
+
+		openlog(log_name, 0, LOG_DAEMON);
+		syslog(LOG_INFO, "%s", str);
+		closelog();
+		u_free(log_name);
+	}
 }
 
 
-static void
-initialize_logging (void)
-{    
-  debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
-
-} /* initialize_logging */
-
-
-static void
-signal_handler (int sig_num)
+static void initialize_logging(void)
 {
-  const char *sig_name = NULL;
+	debug_add_handler(debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
 
-  if (sig_num == SIGQUIT)
-    sig_name = "SIGQUIT";
-  else if (sig_num == SIGTERM)
-    sig_name = "SIGTERM";
-  else if (sig_num == SIGINT)
-    sig_name = "SIGINT";
-  else
-    assert(1 == 1);
-
-  debug( "Received %s... Shutting down.", sig_name);
-  wsmand_shutdown ();
-} /* signal_handler */
+}				/* initialize_logging */
 
 
-
-
-static void
-sighup_handler (int sig_num)
+static void signal_handler(int sig_num)
 {
-  debug( "SIGHUP received; reloading data");
+	const char *sig_name = NULL;
 
-  if (wsmand_options_get_debug_level () == 0) 
-  {
-    int fd;
+	if (sig_num == SIGQUIT)
+		sig_name = "SIGQUIT";
+	else if (sig_num == SIGTERM)
+		sig_name = "SIGTERM";
+	else if (sig_num == SIGINT)
+		sig_name = "SIGINT";
+	else
+		assert(1 == 1);
 
-    close (STDOUT_FILENO);
-
-    fd = open ("/var/log/wsmand.log",
-               O_WRONLY | O_CREAT | O_APPEND,
-               S_IRUSR | S_IWUSR);
-    assert (fd == STDOUT_FILENO);
-
-    close (STDERR_FILENO);
-
-    fd = dup (fd); /* dup fd to stderr */
-    assert (fd == STDERR_FILENO);
-  }
-       
-} /* sighup_handler */
+	debug("Received %s... Shutting down.", sig_name);
+	wsmand_shutdown();
+}				/* signal_handler */
 
 
 
-static int
-rc_write (int fd, const char *buf, size_t count)
+
+static void sighup_handler(int sig_num)
 {
-  size_t bytes_remaining = count;
-  const char *ptr = buf;
+	debug("SIGHUP received; reloading data");
 
-  while (bytes_remaining) {
-    size_t bytes_written;
+	if (wsmand_options_get_debug_level() == 0) {
+		int fd;
 
-    bytes_written = write (fd, ptr, bytes_remaining);
+		close(STDOUT_FILENO);
 
-    if (bytes_written == -1) {
-      if (errno == EAGAIN || errno == EINTR) {
-        continue;
-      } else {
-        break;
-      }
-    }
+		fd = open("/var/log/wsmand.log",
+			  O_WRONLY | O_CREAT | O_APPEND,
+			  S_IRUSR | S_IWUSR);
+		assert(fd == STDOUT_FILENO);
 
-    bytes_remaining -= bytes_written;
-    ptr += bytes_written;
-  }
+		close(STDERR_FILENO);
 
-  if (bytes_remaining)
-  {
-    return (FALSE);
-  }
+		fd = dup(fd);	/* dup fd to stderr */
+		assert(fd == STDERR_FILENO);
+	}
 
-  return (TRUE);
+}				/* sighup_handler */
+
+
+
+static int rc_write(int fd, const char *buf, size_t count)
+{
+	size_t bytes_remaining = count;
+	const char *ptr = buf;
+
+	while (bytes_remaining) {
+		size_t bytes_written;
+
+		bytes_written = write(fd, ptr, bytes_remaining);
+
+		if (bytes_written == -1) {
+			if (errno == EAGAIN || errno == EINTR) {
+				continue;
+			} else {
+				break;
+			}
+		}
+
+		bytes_remaining -= bytes_written;
+		ptr += bytes_written;
+	}
+
+	if (bytes_remaining) {
+		return (FALSE);
+	}
+
+	return (TRUE);
 }
 
 
-static void
-daemonize (void)
+static void daemonize(void)
 {
-  int fork_rv;
-  int i;
-  int fd;
-  char *pid;
-   
-  if (wsmand_options_get_foreground_debug() > 0 )
-  {
-    return;
-  }
+	int fork_rv;
+	int i;
+	int fd;
+	char *pid;
 
-  fork_rv = fork ();
-  if (fork_rv < 0)
-  {
-    fprintf(stderr, "wsmand: fork failed!\n");
-  }
+	if (wsmand_options_get_foreground_debug() > 0) {
+		return;
+	}
 
-  if (fork_rv > 0)
-  {
-    exit (0);
-  }
+	fork_rv = fork();
+	if (fork_rv < 0) {
+		fprintf(stderr, "wsmand: fork failed!\n");
+	}
 
-  log_pid = 0;
-  setsid ();
+	if (fork_rv > 0) {
+		exit(0);
+	}
 
-  /* Change our CWD to / */
-  chdir ("/");
+	log_pid = 0;
+	setsid();
 
-  /* Close all file descriptors. */
-  for (i = getdtablesize (); i >= 0; --i)
-    close (i);
+	/* Change our CWD to / */
+	chdir("/");
 
-  fd = open ("/dev/null", O_RDWR); /* open /dev/null as stdin */
-  assert (fd == STDIN_FILENO);
+	/* Close all file descriptors. */
+	for (i = getdtablesize(); i >= 0; --i)
+		close(i);
 
-  /* Open a new file for our logging file descriptor.  This
-     will be the fd 1, stdout. */
-  fd = open ("/var/log/wsmand.log",
-             O_WRONLY | O_CREAT | O_APPEND,
-             S_IRUSR | S_IWUSR);
-  assert (fd == STDOUT_FILENO);
+	fd = open("/dev/null", O_RDWR);	/* open /dev/null as stdin */
+	assert(fd == STDIN_FILENO);
 
-  fd = dup (fd); /* dup fd to stderr */
-  assert (fd == STDERR_FILENO);
+	/* Open a new file for our logging file descriptor.  This
+	   will be the fd 1, stdout. */
+	fd = open("/var/log/wsmand.log",
+		  O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+	assert(fd == STDOUT_FILENO);
 
-  fd = open (wsmand_options_get_pid_file(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-  pid = u_strdup_printf ("%d", getpid ());
-  rc_write (fd, pid, strlen (pid));
-  u_free (pid);
-  close (fd);
+	fd = dup(fd);		/* dup fd to stderr */
+	assert(fd == STDERR_FILENO);
 
-  // TODO
-  // remove /var/run/wsmand.pid
-  // remove /var/lock/subsys/wsmand
+	fd = open(wsmand_options_get_pid_file(),
+		  O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	pid = u_strdup_printf("%d", getpid());
+	rc_write(fd, pid, strlen(pid));
+	u_free(pid);
+	close(fd);
+
+	// TODO
+	// remove /var/run/wsmand.pid
+	// remove /var/lock/subsys/wsmand
 }
 
 
 
 
-int
-main (int argc, char **argv)
+int main(int argc, char **argv)
 {
-  struct sigaction sig_action;
-  dictionary       *ini;
-  char *filename;
-  WsManListenerH *listener = NULL;
+	struct sigaction sig_action;
+	dictionary *ini;
+	char *filename;
+	WsManListenerH *listener = NULL;
 
-  if (!wsmand_parse_options(argc, argv)) {
-    fprintf(stderr, "Failed to parse command line options\n");
-    exit(EXIT_FAILURE);
-  }
+	if (!wsmand_parse_options(argc, argv)) {
+		fprintf(stderr, "Failed to parse command line options\n");
+		exit(EXIT_FAILURE);
+	}
 
-  filename = (char *)wsmand_options_get_config_file();
-  ini = iniparser_load(filename);
-  debug("Using conf file: %s", filename);
-  if (ini==NULL) {
-    fprintf(stderr, "Cannot parse file [%s]\n", filename);
-    return 1;
-  } else if (!wsmand_read_config(ini)) {
-    fprintf(stderr, "Configuration file not found\n");
-    exit(EXIT_FAILURE);
-  }
+	filename = (char *) wsmand_options_get_config_file();
+	ini = iniparser_load(filename);
+	debug("Using conf file: %s", filename);
+	if (ini == NULL) {
+		fprintf(stderr, "Cannot parse file [%s]\n", filename);
+		return 1;
+	} else if (!wsmand_read_config(ini)) {
+		fprintf(stderr, "Configuration file not found\n");
+		exit(EXIT_FAILURE);
+	}
 
-  daemonize ();		
+	daemonize();
 
-  /* Set up SIGTERM and SIGQUIT handlers */
-  sig_action.sa_handler = signal_handler;
-  sigemptyset (&sig_action.sa_mask);
-  sig_action.sa_flags = 0;
-  sigaction (SIGINT,  &sig_action, NULL);
-  sigaction (SIGTERM, &sig_action, NULL);
-  sigaction (SIGQUIT, &sig_action, NULL);
+	/* Set up SIGTERM and SIGQUIT handlers */
+	sig_action.sa_handler = signal_handler;
+	sigemptyset(&sig_action.sa_mask);
+	sig_action.sa_flags = 0;
+	sigaction(SIGINT, &sig_action, NULL);
+	sigaction(SIGTERM, &sig_action, NULL);
+	sigaction(SIGQUIT, &sig_action, NULL);
 
-  /* Set up SIGHUP handler. */
-  sig_action.sa_handler = sighup_handler;
-  sigemptyset (&sig_action.sa_mask);
-  sig_action.sa_flags = 0;
-  sigaction (SIGHUP, &sig_action, NULL);
+	/* Set up SIGHUP handler. */
+	sig_action.sa_handler = sighup_handler;
+	sigemptyset(&sig_action.sa_mask);
+	sig_action.sa_flags = 0;
+	sigaction(SIGHUP, &sig_action, NULL);
 
-  initialize_logging ();
- 
-  if ( (listener = wsmand_start_server(ini)) == NULL) {
-  	wsman_plugins_unload(listener);
- 	u_free(listener);
-    	exit(EXIT_FAILURE);
-  }
+	initialize_logging();
 
-  wsman_plugins_unload(listener);
-  u_free(listener);
-  iniparser_freedict(ini);
-  return 0;
+	if ((listener = wsmand_start_server(ini)) == NULL) {
+		wsman_plugins_unload(listener);
+		u_free(listener);
+		exit(EXIT_FAILURE);
+	}
+
+	wsman_plugins_unload(listener);
+	u_free(listener);
+	iniparser_freedict(ini);
+	return 0;
 }
-
-

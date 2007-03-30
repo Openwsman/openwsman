@@ -44,17 +44,17 @@ typedef void (*WsmandShutdownFn) (void *);
 
 /* At shutdown time, handlers are executed in the
    reverse of the order in which they are added. */
-void wsmand_shutdown_add_handler (WsmandShutdownFn fn, void*  user_data);
+void wsmand_shutdown_add_handler(WsmandShutdownFn fn, void *user_data);
 
-void wsmand_shutdown_block (void);
+void wsmand_shutdown_block(void);
 
-void wsmand_shutdown_allow (void);
+void wsmand_shutdown_allow(void);
 
 /* wsmand_shutdown does return.  The actual shutdown happens
    in an idle function. */
 
-void wsmand_shutdown (void);
-void wsmand_restart  (void);
+void wsmand_shutdown(void);
+void wsmand_restart(void);
 
 
 int wsmand_parse_options(int argc, char **argv);
@@ -69,25 +69,23 @@ int wsmand_options_get_server_ssl_port(void);
 char *wsmand_options_get_ssl_key_file(void);
 char *wsmand_options_get_ssl_cert_file(void);
 int wsmand_options_get_digest(void);
-char *wsmand_options_get_digest_password_file (void);
-char *wsmand_options_get_basic_password_file (void);
-char *wsmand_options_get_service_path (void);
-int wsmand_options_get_min_threads (void);
-int wsmand_options_get_max_threads (void);
+char *wsmand_options_get_digest_password_file(void);
+char *wsmand_options_get_basic_password_file(void);
+char *wsmand_options_get_service_path(void);
+int wsmand_options_get_min_threads(void);
+int wsmand_options_get_max_threads(void);
 char *wsmand_default_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator(void);
 char *wsmand_option_get_basic_authenticator_arg(void);
-char* wsmand_options_get_pid_file (void);
+char *wsmand_options_get_pid_file(void);
 unsigned long wsmand_options_get_enumIdleTimeout(void);
 const char *wsmand_options_get_config_file(void);
-int wsmand_options_get_foreground_debug (void);
+int wsmand_options_get_foreground_debug(void);
 
-const char **
-wsmand_options_get_argv (void);
-int wsmand_read_config (dictionary *ini);
-
+const char **wsmand_options_get_argv(void);
+int wsmand_read_config(dictionary * ini);
 
 
 
-#endif /* __WSMAND_DAEMON_H__ */
 
+#endif				/* __WSMAND_DAEMON_H__ */
