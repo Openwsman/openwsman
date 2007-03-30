@@ -124,7 +124,7 @@ path2xml(CimClientInfo * client,
 	int i = 0, numkeys = 0;
 	char *cv = NULL;
 	char *_path_res_uri = NULL;
-	WsXmlNodeH cimns;
+	WsXmlNodeH cimns, wsman_selector_set;
 
 	CMPIObjectPath *objectpath = val->ref;
 	CMPIString *namespace =
@@ -150,27 +150,23 @@ path2xml(CimClientInfo * client,
 				"%s", _path_res_uri);
 	u_free(_path_res_uri);
 
-	WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
-							 XML_NS_WS_MAN,
-							 WSM_SELECTOR_SET,
-							 NULL);
+	wsman_selector_set = ws_xml_add_child(refparam,
+			XML_NS_WS_MAN,
+			WSM_SELECTOR_SET,
+			NULL);
 
 	for (i = 0; i < numkeys; i++) {
 		CMPIString *keyname;
-		CMPIData data =
-		    objectpath->ft->getKeyAt(objectpath, i, &keyname,
-					     NULL);
+		CMPIData data = objectpath->ft->getKeyAt(objectpath, i,
+				&keyname, NULL);
+		cv = (char *) value2Chars(data.  type, &data.  value);
 		WsXmlNodeH s = ws_xml_add_child(wsman_selector_set,
 						XML_NS_WS_MAN,
-						WSM_SELECTOR,
-						(char *) value2Chars(data.
-								     type,
-								     &data.
-								     value));
+						WSM_SELECTOR, cv );
 		ws_xml_add_node_attr(s, NULL, "Name",
 				     (char *) keyname->hdl);
 		if (cv)
-			free(cv);
+			u_free(cv);
 		if (keyname)
 			CMRelease(keyname);
 	}

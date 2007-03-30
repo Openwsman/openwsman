@@ -89,7 +89,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 
 	cimclient->resource_uri = u_strdup(r);
 	cimclient->method_args = wsman_get_method_args(cntx, r );
-	show_extensions = wsman_get_option_set(cntx,NULL, WSMB_SHOW_EXTENSION );
+	show_extensions = wsman_get_option_set(cntx, NULL, WSMB_SHOW_EXTENSION );
 
 	if (show_extensions && strcmp(show_extensions, "true") == 0) {
 		cimclient->flags |= FLAG_CIM_EXTENSIONS;

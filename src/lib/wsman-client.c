@@ -663,11 +663,14 @@ wsman_client_create_request(WsManClient * cl,
 				FLAG_ENUMERATION_COUNT_ESTIMATION) {
 			ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
 		}
-		if (options->filter && options->dialect) {
+		if (options->filter) {
 			node = ws_xml_get_child(body, 0, NULL, NULL);
 			filter = ws_xml_add_child(node,
 					XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
-			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
+			if (options->dialect)
+				ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
+			else
+				ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, WSM_XPATH_FILTER_DIALECT );
 		}
 	}
 	if (action != WSMAN_ACTION_TRANSFER_CREATE &&

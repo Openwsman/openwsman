@@ -335,6 +335,8 @@
 
 
 #define CIM_NAMESPACE_SELECTOR          "__cimnamespace"
+#define CIM_ALL_AVAILABLE_CLASSES	"http://schemas.dmtf.org/wbem/wscim/1/*"
+#define XML_NS_CIM_ALL_CLASS		"http://schemas.dmtf.org/wbem/wscim/1"
 
 
 #endif

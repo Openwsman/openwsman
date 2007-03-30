@@ -68,7 +68,7 @@ enum __WsmanFaultCodeType
     WSMAN_EVENT_DELIVER_TO_UNUSABLE,
 
     /** wse:EventSourceUnableToProcess*/
-    WSE_VENT_SOURCE_UNABLE_TO_PROCESS,
+    WSE_EVENT_SOURCE_UNABLE_TO_PROCESS,
     
     /** wsen:FilterDialectRequestedUnavailable */
     WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,

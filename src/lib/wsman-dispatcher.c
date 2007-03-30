@@ -313,6 +313,13 @@ validate_mustunderstand_headers(op_t * op)
 	return child;
 }
 
+static int wsman_check_supported_dialect(const char *dialect)
+{
+	if (strcmp(dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
+		return 0;
+	}
+	return 1;
+}
 
 
 /**
@@ -329,7 +336,8 @@ wsman_check_unsupported_features(op_t * op)
 	WsXmlNodeH      body = ws_xml_get_soap_body(op->in_doc);
 	int             retVal = 0;
 	SoapH           soap;
-	WsXmlNodeH      n; /* , m; */
+	WsXmlNodeH      n, m, k;
+	char *resource_uri = NULL;
 	soap = op->dispatch->fw;
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
@@ -367,24 +375,46 @@ wsman_check_unsupported_features(op_t * op)
 				WSMAN_DETAIL_ADDRESSING_MODE);
 	}	
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION, WSENUM_FILTER);
-	/* Need to remove the following for associators and references */
-	/* 
-		m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER);
-		if (n != NULL && m!= NULL) {
-	*/
-	if(n != NULL) {
+	m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN , WSM_FILTER); 
+	if (n != NULL && m!= NULL) {
 		retVal = 1;
 		wsman_generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
-	} 
-	/*
-	else if  (n != NULL || m!= NULL) {
-		retVal = 1;
-		wsman_generate_op_fault(op, WSEN_FILTERING_NOT_SUPPORTED,  0);
+	}  else if (n || m) {
+		char *dia;
+		if (n) {
+			dia = ws_xml_find_attr_value(n, NULL , WSM_DIALECT);
+		} else if (m) {
+			dia = ws_xml_find_attr_value(m, NULL , WSM_DIALECT);
+		}
+		if (dia)
+			retVal = wsman_check_supported_dialect(dia);
+		else
+			retVal = wsman_check_supported_dialect(WSM_XPATH_FILTER_DIALECT);
+
+		if (retVal)
+			wsman_generate_op_fault(op,
+					WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE, 0);
 	}
-	*/
+	k  = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
+	if (k)
+		resource_uri = ws_xml_get_node_text(k);
+	if (resource_uri &&
+			( strcmp(resource_uri, CIM_ALL_AVAILABLE_CLASSES ) == 0 ) )  {
+		if (!n &&  !m ) {
+			retVal = 1;
+			wsman_generate_op_fault(op,
+					WSMAN_UNSUPPORTED_FEATURE, 
+					WSMAN_DETAIL_FILTERING_REQUIRED);
+
+		}
+
+	}
+
 
 	return retVal;
 }
+
+
 
 /**
  * Check for duplicate Message ID
@@ -811,25 +841,28 @@ DONE:
 }
 
 
-static char    *
+static char *
 wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
 			  char *uri)
 {
-	char           *ns = NULL;
+	char *ns = NULL;
+	 lnode_t *node = NULL;
 	if (r->namespaces == NULL) {
 		return NULL;
 	}
-	if (uri) {
-		lnode_t *node = list_first(r->namespaces);
-		while (node) {
-			WsSupportedNamespaces *sns =
-				(WsSupportedNamespaces *) node->list_data;
-			if (sns->ns != NULL && strstr(uri, sns->ns)) {
-				ns = u_strdup(sns->ns);
-				break;
-			}
-			node = list_next(r->namespaces, node);
+	if (!uri) 
+		return NULL;
+
+	node = list_first(r->namespaces);
+	while (node) {
+		WsSupportedNamespaces *sns =
+			(WsSupportedNamespaces *) node->list_data;
+		debug("namespace: %s", sns->ns );
+		if (sns->ns != NULL && strstr(uri, sns->ns)) {
+			ns = u_strdup(sns->ns);
+			break;
 		}
+		node = list_next(r->namespaces, node);
 	}
 	return ns;
 }
@@ -913,7 +946,7 @@ wsman_dispatcher(WsContextH cntx,
 	char           *ns = NULL;
 
 	WsDispatchInterfaceInfo *r = NULL;
-	lnode_t        *node = list_first((list_t *) dispInfo->interfaces);
+	lnode_t *node = list_first((list_t *) dispInfo->interfaces);
 
 	if (doc == NULL) {
 		error("doc is null");
@@ -922,6 +955,7 @@ wsman_dispatcher(WsContextH cntx,
 	}
 	uri = wsman_get_resource_uri(cntx, doc);
 	action = wsman_get_action(cntx, doc);
+	debug("uri: %s, action: %s", uri, action );
 	if ((!uri || !action) && !wsman_is_identify_request(doc)) {
 		goto cleanup;
 	}
@@ -939,7 +973,7 @@ wsman_dispatcher(WsContextH cntx,
 		 /*
 	          * If Resource URI is null then most likely we are dealing
 		  * with  a generic plugin supporting a namespace with
-		  *  multiple Resource URIs (e.g. CIM)
+		  * multiple Resource URIs (e.g. CIM)
 	          **/
 		else if (ifc->wsmanResourceUri == NULL &&
 				(ns = wsman_dispatcher_match_ns(ifc, uri))) {
@@ -964,7 +998,7 @@ wsman_dispatcher(WsContextH cntx,
 	         * we are dealing with a custom action
 	         */
 		if (ns != NULL) {
-			size_t             len = strlen(ns);
+			size_t len = strlen(ns);
 			if (!strncmp(action, ns, len) && action[len] == '/')
 				ptr = &action[len + 1];
 		}

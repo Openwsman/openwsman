@@ -684,32 +684,33 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 {
 	char *optval = NULL;
 	int index = 0;
-	if (doc == NULL)
+	WsXmlNodeH node, option;
+	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc) 
+			return NULL;
+	}
 
-	if (doc) {
-		WsXmlNodeH node = ws_xml_get_soap_header(doc);
-		WsXmlNodeH option;
-		if (node && (node = ws_xml_get_child(node, 0, 
-						XML_NS_WS_MAN, WSM_OPTION_SET))) {
-			debug("option set found");
-			while ((option = ws_xml_get_child(node, index++, XML_NS_WS_MAN,
-							WSM_OPTION))) {
-				char *attrVal = ws_xml_find_attr_value(option, NULL,
-							WSM_NAME);
-				debug("Option: %s", attrVal);
+	node = ws_xml_get_soap_header(doc);
+	if (node && (node = ws_xml_get_child(node, 0, 
+					XML_NS_WS_MAN, WSM_OPTION_SET))) {
+		debug("option set found");
+		while ((option = ws_xml_get_child(node, index++, XML_NS_WS_MAN,
+						WSM_OPTION))) {
+			char *attrVal = ws_xml_find_attr_value(option, NULL,
+					WSM_NAME);
+			debug("Option: %s", attrVal);
 
-				if (attrVal && strcmp(attrVal, op ) == 0 ) {
-					optval = ws_xml_get_node_text(option);
-					if (optval[0] == 0)
-						optval = u_strdup_printf("true");
-					debug("Option: %s=%s", attrVal, optval);
-					break;
-				}
+			if (attrVal && strcmp(attrVal, op ) == 0 ) {
+				optval = ws_xml_get_node_text(option);
+				if (optval[0] == 0)
+					optval = u_strdup_printf("true");
+				debug("Option: %s=%s", attrVal, optval);
+				break;
 			}
-
-
 		}
+
+
 	}
 	return optval;
 }
@@ -806,17 +807,18 @@ char *wsman_get_class_name(WsContextH cntx)
 char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 {
 	char *val = NULL;
+	WsXmlNodeH header, node;
 
-	if (doc == NULL)
+	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-	if (doc) {
-		WsXmlNodeH header = ws_xml_get_soap_header(doc);
-		WsXmlNodeH node =
-		    ws_xml_get_child(header, 0, XML_NS_WS_MAN,
-				     WSM_RESOURCE_URI);
-		val = (!node) ? NULL : ws_xml_get_node_text(node);
+		if (!doc)
+			return NULL;
 	}
+
+	header = ws_xml_get_soap_header(doc);
+	node = ws_xml_get_child(header, 0, XML_NS_WS_MAN,
+				WSM_RESOURCE_URI);
+	val = (!node) ? NULL : ws_xml_get_node_text(node);
 	return val;
 }
 
