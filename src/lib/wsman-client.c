@@ -296,27 +296,23 @@ wsman_add_selector_from_options(WsXmlDocH doc, actionOptions *options)
 	}
 }
 
-void
-wsman_build_assocRef_body(WsManClient *cl, WsXmlDocH request, char *resource_uri,
-		actionOptions *options, int assocRef)
+
+
+static
+void wsman_create_epr(WsContextH cntx, WsXmlNodeH epr_node, 
+		const char* resource_uri, 
+		actionOptions *options) 
 {
-	WsXmlNodeH body = ws_xml_get_soap_body(request);
-	WsXmlNodeH node, object, assInst;
-
-	debug("%s: called", __FUNCTION__);
-	node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
-	node = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, NULL);
-	ws_xml_add_node_attr(node, NULL, WSENUM_DIALECT, WSM_ASSOCIATION_FILTER_DIALECT);
-	assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_INSTANCES, NULL);
-
-	/* Build Object */
-	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_OBJECT, NULL);
-
+	WsXmlNodeH node;
 	/* Add Selectors */
-	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, WSA_TO_ANONYMOUS);
-	node = ws_xml_add_child(object, XML_NS_ADDRESSING, WSENUM_REFERENCE_PARAMETERS, NULL);
-	ws_serialize_str(cl->wscntx, node, resource_uri, XML_NS_WS_MAN, WSM_RESOURCE_URI, 1);
-	if (options->selectors != NULL && hash_count(options->selectors) > 0) {
+	ws_xml_add_child(epr_node, XML_NS_ADDRESSING, WSA_ADDRESS, 
+			WSA_TO_ANONYMOUS);
+	node = ws_xml_add_child(epr_node, XML_NS_ADDRESSING, 
+			WSENUM_REFERENCE_PARAMETERS, NULL);
+	ws_serialize_str(cntx, node, resource_uri, XML_NS_WS_MAN, 
+			WSM_RESOURCE_URI, 0);
+	if (options->selectors != NULL && 
+			hash_count(options->selectors) > 0) {
 		hnode_t        *hn;
 		hscan_t         hs;
 		hash_scan_begin(&hs, options->selectors);
@@ -330,14 +326,43 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlDocH request, char *resource_uri
 	if (options->cim_ns) {
 		wsman_add_selector(node, CIM_NAMESPACE_SELECTOR, options->cim_ns);
 	}
+	return;
+}
+
+
+
+void
+wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
+		const char *resource_uri,
+		actionOptions *options,
+		int assocRef)
+{
+	WsXmlNodeH node, object, assInst;
+
+	debug("%s: called", __FUNCTION__);
+	node = ws_xml_add_child(body, XML_NS_WS_MAN, 
+			WSENUM_FILTER, NULL);
+	ws_xml_add_node_attr(node, NULL, WSENUM_DIALECT, 
+			WSM_ASSOCIATION_FILTER_DIALECT);
+	assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
+			WSENUM_ASSOCIATION_INSTANCES, NULL);
+
+	/* Build Object */
+	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_OBJECT, NULL);
+
+	wsman_create_epr(cl->wscntx, object, resource_uri, options );
 	/* Add AssociationClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_CLASS_NAME, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
+			WSENUM_ASSOCIATION_CLASS_NAME, NULL);
 	/* Add ResultClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_RESULT_CLASS_NAME, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
+			WSENUM_RESULT_CLASS_NAME, NULL);
 	/* Add Role */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_ROLE, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
+			WSENUM_ROLE, NULL);
 	/* Add IncludeResultProperty */
-	ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_INCLUDE_RESULT_PROPERTY, NULL);
+	ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
+		       	WSENUM_INCLUDE_RESULT_PROPERTY, NULL);
 
 }
 
@@ -404,9 +429,6 @@ wsman_create_action_str(WsmanAction action)
 	case WSMAN_ACTION_ENUMERATION:
 		action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_ENUMERATE);
 		break;
-  case WSMAN_ACTION_ENUMERATE_REFERENCE_INSTANCES:
-    action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_REFERENCE_INSTANCES);
-    break;
 	case WSMAN_ACTION_PULL:
 		action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_PULL);
 		break;
@@ -438,7 +460,10 @@ wsman_create_action_str(WsmanAction action)
 
 
 static void
-wsman_set_enumeration_options(WsXmlNodeH body, actionOptions *options)
+wsman_set_enumeration_options(WsManClient * cl,
+			WsXmlNodeH body, 
+			const char* resource_uri,
+			actionOptions *options)
 {
 	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
@@ -454,6 +479,8 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions *options)
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_ENUM_MODE,
 				WSM_ENUM_OBJ_AND_EPR);
 	}
+
+	// Polymorphism
 	if ((options->flags & FLAG_IncludeSubClassProperties) 
 			== FLAG_IncludeSubClassProperties) {
 		ws_xml_add_child(node, XML_NS_CIM_BINDING,
@@ -466,6 +493,11 @@ wsman_set_enumeration_options(WsXmlNodeH body, actionOptions *options)
 			== FLAG_POLYMORPHISM_NONE) {
 		ws_xml_add_child(node, XML_NS_CIM_BINDING,
 				WSMB_POLYMORPHISM_MODE, "None");
+	}
+
+	// References and Associations
+	if ((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) {
+		wsman_build_assocRef_body(cl, node, resource_uri, options, 0);
 	}
 }
 
@@ -588,11 +620,8 @@ wsman_client_create_request(WsManClient * cl,
 	case WSMAN_ACTION_ENUMERATION:
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
-		wsman_set_enumeration_options(body, options);
+		wsman_set_enumeration_options(cl, body, resource_uri, options);
 		break;
-  case WSMAN_ACTION_ENUMERATE_REFERENCE_INSTANCES:
-    wsman_build_assocRef_body(cl, request, (char *)resource_uri, options, 0);
-    break;
 	case WSMAN_ACTION_PULL:
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_ENUMERATION, WSENUM_PULL, NULL);
@@ -1060,25 +1089,6 @@ wsenum_enumerate(WsManClient * cl,
 	return response;
 }
 
-WsXmlDocH
-wsenum_reference_instances(WsManClient *cl,
-		const char *resource_uri,
-		actionOptions *options)
-{
-	WsXmlDocH       response;
-	//options->flags |= FLAG_DUMP_REQUEST;
-	WsXmlDocH       request = wsman_client_create_request(cl,
-			resource_uri, options,
-			WSMAN_ACTION_ENUMERATE_REFERENCE_INSTANCES, NULL, NULL);
-	if (wsman_send_request(cl, request)) {
-		ws_xml_destroy_doc(request);
-		return NULL;
-	}
-	response = wsman_build_envelope_from_response(cl);
-	ws_xml_destroy_doc(request);
-	return response;
-}
-
 
 WsXmlDocH
 wsenum_pull(WsManClient * cl,
@@ -1200,7 +1210,6 @@ wsman_build_envelope(WsContextH cntx,
 		ws_serialize_str(cntx, header,
 			(char *)action, XML_NS_ADDRESSING, WSA_ACTION, 1);
 	}
-	//    u_free((char *)action);
 
 	if (to_uri) {
 		ws_serialize_str(cntx, header, (char *)to_uri,
@@ -1240,7 +1249,7 @@ wsman_build_envelope(WsContextH cntx,
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);
 
   	/* Do not add the selectors to the header for reference instances */
-	if(strcmp(action, ENUM_ACTION_REFINSTS)) {
+	if ((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) {
 		wsman_add_selector_from_options(doc, options);
 
 		if (options->cim_ns) {

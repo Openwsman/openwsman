@@ -76,9 +76,6 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 		return NULL;
 	cimclient->namespaces = get_vendor_namespaces();
 	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
-	if(cimclient->selectors == NULL) {
-		cimclient->selectors = wsman_get_selector_list_from_body(cntx, NULL);
-	}
 	cimclient->requested_class = wsman_get_class_name(cntx);
 	cimclient->method = wsman_get_method_name(cntx);
 	if (cimclient->selectors) {
@@ -93,7 +90,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->resource_uri = u_strdup(r);
 	cimclient->method_args = wsman_get_method_args(cntx, r );
 	show_extensions = wsman_get_option_set(cntx,NULL, WSMB_SHOW_EXTENSION );
-	debug("show extensions: %s", show_extensions );
+
 	if (show_extensions && strcmp(show_extensions, "true") == 0) {
 		cimclient->flags |= FLAG_CIM_EXTENSIONS;
 	}
@@ -105,13 +102,17 @@ static void
 CimResource_destroy(CimClientInfo *cimclient)
 {
 
-	if (cimclient->resource_uri) u_free(cimclient->resource_uri);
-	if (cimclient->method) u_free(cimclient->method);
-	if (cimclient->requested_class) u_free(cimclient->requested_class);
+	if (cimclient->resource_uri) 
+		u_free(cimclient->resource_uri);
+	if (cimclient->method) 
+		u_free(cimclient->method);
+	if (cimclient->requested_class) 
+		u_free(cimclient->requested_class);
 	if (cimclient->method_args) {
 		hash_free(cimclient->method_args);       
 	}
 	if (cimclient->selectors) {
+		debug("++++++++++++++++++++ selectors: %p, count: %d", cimclient->selectors, hash_count(cimclient->selectors) );
 		hash_free(cimclient->selectors);
 		debug("selectors destroyed");
 	}
@@ -389,7 +390,13 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		goto cleanup;
 	} 
 
-	cim_enum_instances(cimclient, enumInfo, status);
+	if (wsman_is_ref_enum(cntx, NULL)) {
+		hash_t *selectors;
+		selectors  = wsman_get_selector_list_from_filter(cntx, NULL);
+		cim_enum_reference_instances(cimclient, enumInfo, selectors, status);
+	} else {
+		cim_enum_instances(cimclient, enumInfo, status);
+	}
 
 	if (status && status->fault_code != 0) {
 		retval = 1;
@@ -399,6 +406,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	max_elements = wsman_is_optimization(cntx, NULL);
 
 	enum_mode = wsman_get_enum_mode(cntx, NULL); 
+
 	if (enum_mode)
 		wsman_set_enum_mode(enum_mode, enumInfo);
 
@@ -428,45 +436,46 @@ cleanup:
 	return retval;
 }
 
+#if 0
 int
 CimResource_EnumRefInsts_EP( WsContextH cntx,
-    WsEnumerateInfo* enumInfo,
-    WsmanStatus *status)
+		WsEnumerateInfo* enumInfo,
+		WsmanStatus *status)
 {
-  debug("CIM Enumerate Reference Instances called");
-  int retval = 0;
-  CimClientInfo *cimclient = NULL;
+	debug("CIM Enumerate Reference Instances called");
+	int retval = 0;
+	CimClientInfo *cimclient = NULL;
 #if 0
-  WsXmlDocH doc;
-  WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	WsXmlDocH doc;
+	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 #endif
 
-  if ( enumInfo ) {
-    cimclient = CimResource_Init(cntx,
-        enumInfo->auth_data.username,
-        enumInfo->auth_data.password );
-    if (!cimclient) {
-      status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-      status->fault_detail_code = 0;
-      retval = 1;
-      goto cleanup;
-    }
-  }
-  debug("NameSpace: %s", cimclient->cim_namespace );
+	if ( enumInfo ) {
+		cimclient = CimResource_Init(cntx,
+				enumInfo->auth_data.username,
+				enumInfo->auth_data.password );
+		if (!cimclient) {
+			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status->fault_detail_code = 0;
+			retval = 1;
+			goto cleanup;
+		}
+	}
+	debug("NameSpace: %s", cimclient->cim_namespace );
 
-  if (!verify_class_namespace(cimclient) ) {
-    error("resource uri namespace mismatch");
-    status->fault_code = WSA_DESTINATION_UNREACHABLE;
-    status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-    retval = 1;
-    goto cleanup;
-  }
+	if (!verify_class_namespace(cimclient) ) {
+		error("resource uri namespace mismatch");
+		status->fault_code = WSA_DESTINATION_UNREACHABLE;
+		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+		retval = 1;
+		goto cleanup;
+	}
 
-  cim_enum_reference_instances(cimclient, enumInfo, status);
-  if (status && status->fault_code != 0) {
-    retval = 1;
-    goto cleanup;
-  }
+	cim_enum_reference_instances(cimclient, enumInfo, status);
+	if (status && status->fault_code != 0) {
+		retval = 1;
+		goto cleanup;
+	}
 #if 0
 	if (enumInfo->totalItems > 0) {
 		doc = wsman_create_response_envelope(cntx, in_doc , NULL);
@@ -488,12 +497,12 @@ CimResource_EnumRefInsts_EP( WsContextH cntx,
 	}
 #endif
 cleanup:
-  if (retval && cimclient) {
-    CimResource_destroy(cimclient);
-  }
-  return retval;
+	if (retval && cimclient) {
+		CimResource_destroy(cimclient);
+	}
+	return retval;
 }
-
+#endif
 
 
 int 

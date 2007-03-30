@@ -89,7 +89,6 @@ extern "C" {
 		WSMAN_ACTION_TRANSFER_GET,
 		WSMAN_ACTION_TRANSFER_PUT,
 		WSMAN_ACTION_ENUMERATION,
-		WSMAN_ACTION_ENUMERATE_REFERENCE_INSTANCES,
 		WSMAN_ACTION_PULL,
 		WSMAN_ACTION_RELEASE,
 		WSMAN_ACTION_CUSTOM,
@@ -116,6 +115,7 @@ extern "C" {
 #define FLAG_MUND_OPTIONSET                  0x0400
 #define FLAG_MUND_FRAGMENT                   0x0800
 #define FLAG_CIM_EXTENSIONS                  0x1000
+#define FLAG_CIM_REFERENCES                  0x2000
 
 	typedef struct {
 		unsigned long flags;
@@ -331,8 +331,8 @@ extern "C" {
 					 const char *resourceUri);
 
 
-	void wsman_build_assocRef_body(WsManClient *cl, WsXmlDocH request,
-		       	char *resource_uri,
+	void wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
+		       	const char *resource_uri,
 			actionOptions *options, int assocRef);
 	WsXmlDocH wsenum_reference_instances(WsManClient *cl,
 		const char *resource_uri,

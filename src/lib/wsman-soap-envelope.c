@@ -574,30 +574,55 @@ wsman_create_fault_envelope(WsContextH cntx,
 	ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,
 			 uuidBuf);
 
-
 	return doc;
 }
 
+int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc)
+{
+	WsXmlNodeH node;
+	if (doc == NULL) {
+		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc) 
+			return 0;
+	}
+
+	node = ws_xml_get_soap_body(doc);
+	if (node && (node = ws_xml_get_child(node, 0,
+					XML_NS_ENUMERATION,
+					WSENUM_ENUMERATE))) {
+		WsXmlNodeH filter = ws_xml_get_child(node,
+				0, XML_NS_WS_MAN, WSM_FILTER);
+		if (filter) {
+			char *attrVal = ws_xml_find_attr_value(filter, 
+					NULL, WSM_DIALECT);
+			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 )
+				return 1;
+		}
+	}
+	return 0;
+}
 
 char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc)
 {
 	char *enum_mode = NULL;
+	WsXmlNodeH node;
 	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc) 
+			return NULL;
 	}
-	if (doc) {
-		WsXmlNodeH node = ws_xml_get_soap_body(doc);
-		if (node && (node = ws_xml_get_child(node, 0,
-						     XML_NS_ENUMERATION,
-						     WSENUM_ENUMERATE))) {
-			WsXmlNodeH opt = ws_xml_get_child(node,
-							  0, XML_NS_WS_MAN,
-							  WSM_ENUM_MODE);
-			if (opt) {
-				char *text = ws_xml_get_node_text(opt);
-				if (text != NULL)
-					enum_mode = text;
-			}
+
+	node = ws_xml_get_soap_body(doc);
+	if (node && (node = ws_xml_get_child(node, 0,
+					XML_NS_ENUMERATION,
+					WSENUM_ENUMERATE))) {
+		WsXmlNodeH opt = ws_xml_get_child(node,
+				0, XML_NS_WS_MAN,
+				WSM_ENUM_MODE);
+		if (opt) {
+			char *text = ws_xml_get_node_text(opt);
+			if (text != NULL)
+				enum_mode = text;
 		}
 	}
 	return enum_mode;
@@ -670,8 +695,7 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 			debug("option set found");
 			while ((option = ws_xml_get_child(node, index++, XML_NS_WS_MAN,
 							WSM_OPTION))) {
-				char *attrVal =
-					ws_xml_find_attr_value(option, NULL,
+				char *attrVal = ws_xml_find_attr_value(option, NULL,
 							WSM_NAME);
 				debug("Option: %s", attrVal);
 
@@ -837,7 +861,8 @@ hash_t *wsman_get_method_args(WsContextH cntx, char *resource_uri)
 	return NULL;
 }
 
-static
+
+
 hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node;
@@ -889,11 +914,11 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 	WsXmlNodeH header;
 	hash_t *h = NULL;
 
-	if (doc == NULL)
+	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
-	if (!doc)
-		return NULL;
+		if (!doc)
+			return NULL;
+	}
 
 	header = ws_xml_get_soap_header(doc);
 	if (header) {
@@ -903,78 +928,50 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 }
 
 hash_t *
-wsman_get_selector_list_from_body(WsContextH cntx,
-      WsXmlDocH doc)
+wsman_get_selector_list_from_filter(WsContextH cntx,
+		WsXmlDocH doc)
 {
-  WsXmlNodeH body;
-  WsXmlNodeH node, assInst, object;
-  WsXmlNodeH selector;
-  int index = 0;
-  hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	WsXmlNodeH body;
+	WsXmlNodeH node, assInst, object;
 
-  if (doc == NULL)
-    doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	if (doc == NULL) {
+		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 
-  if (!doc)
-    return NULL;
+		if (!doc)
+			return NULL;
+	}
 
-  body = ws_xml_get_soap_body(doc);
-  node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-  if(!node) {
-    debug("no SelectorSet defined. Missing Enumerate");
-    return NULL;
-  }
-  node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSENUM_FILTER);
-  if(!node) {
-    debug("no SelectorSet defined. Missing Filter");
-    return NULL;
-  }
+	body = ws_xml_get_soap_body(doc);
+	node = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+	if(!node) {
+		debug("no SelectorSet defined. Missing Enumerate");
+		return NULL;
+	}
+	node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSENUM_FILTER);
+	if(!node) {
+		debug("no SelectorSet defined. Missing Filter");
+		return NULL;
+	}
 
-  assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_INSTANCES);
-  if(!node) {
-    debug("no SelectorSet defined. Missing AssociationInstances");
-    return NULL;
-  }
+	assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_INSTANCES);
+	if(!node) {
+		debug("no SelectorSet defined. Missing AssociationInstances");
+		return NULL;
+	}
 
-  object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSENUM_OBJECT);
-  if(!node) {
-    debug("no SelectorSet defined. Missing Object");
-    return NULL;
-  }
+	object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSENUM_OBJECT);
+	if(!node) {
+		debug("no SelectorSet defined. Missing Object");
+		return NULL;
+	}
 
-  node = ws_xml_get_child(object, 0, XML_NS_ADDRESSING, WSENUM_REFERENCE_PARAMETERS);
-  if(!node) {
-    debug("no SelectorSet defined. Missing ReferenceParameters");
-    return NULL;
-  }
+	node = ws_xml_get_child(object, 0, XML_NS_ADDRESSING, WSENUM_REFERENCE_PARAMETERS);
+	if(!node) {
+		debug("no SelectorSet defined. Missing ReferenceParameters");
+		return NULL;
+	}
 
-  node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-  if(!node) {
-    debug("no SelectorSet defined");
-    return NULL;
-  }
-  while((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN, WSM_SELECTOR))) {
-    char *attrVal = ws_xml_find_attr_value(selector, XML_NS_WS_MAN, WSM_NAME);
-    if(attrVal == NULL)
-      attrVal = ws_xml_find_attr_value(selector, NULL, WSM_NAME);
-
-    debug("Selector: %s=%s", attrVal, ws_xml_get_node_text(selector));
-    if(attrVal) {
-      if(!hash_lookup(h, attrVal)) {
-        if(!hash_alloc_insert(h, attrVal, ws_xml_get_node_text(selector))) {
-          error("hash_alloc_insert failed");
-        }
-      } else {
-        error("duplicate selector");
-      }
-    }
-  }
-
-  if(!hash_isempty(h))
-    return h;
-
-  hash_destroy(h);
-  return NULL;
+	return  wsman_get_selectors_from_epr(node);
 }
 
 

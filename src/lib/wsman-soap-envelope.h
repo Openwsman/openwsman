@@ -95,9 +95,14 @@ void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
 
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
+hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node);
+
+
+int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc);
+
 hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
-hash_t * wsman_get_selector_list_from_body(WsContextH cntx, WsXmlDocH doc);
+hash_t * wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc);
 
 void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
 

@@ -144,11 +144,11 @@ path2xml(CimClientInfo * client,
 					       XML_NS_ADDRESSING,
 					       WSA_REFERENCE_PARAMETERS,
 					       NULL);
-	_path_res_uri =
-	    cim_find_namespace_for_class(client, NULL,
+	_path_res_uri = cim_find_namespace_for_class(client, NULL,
 					 (char *) classname->hdl);
 	ws_xml_add_child_format(refparam, XML_NS_WS_MAN, WSM_RESOURCE_URI,
 				"%s", _path_res_uri);
+	u_free(_path_res_uri);
 
 	WsXmlNodeH wsman_selector_set = ws_xml_add_child(refparam,
 							 XML_NS_WS_MAN,
@@ -783,6 +783,7 @@ cim_enum_instances(CimClientInfo * client,
 void 
 cim_enum_reference_instances (CimClientInfo *client,
 		WsEnumerateInfo* enumInfo,
+		hash_t *selectors,
 		WsmanStatus *status)
 { 
 
@@ -795,11 +796,10 @@ cim_enum_reference_instances (CimClientInfo *client,
 
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class , NULL);
-	cim_add_keys(objectpath, client->selectors);
+	cim_add_keys(objectpath, selectors);
 	debug( "ObjectPath: %s", CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
 
-	enumeration = cc->ft->references(cc, objectpath,
-			NULL, NULL, 0, NULL, &rc);
+	enumeration = cc->ft->references(cc, objectpath, NULL, NULL, 0, NULL, &rc);
 	debug( "%s: rc=%d, msg=%s",
 			__FUNCTION__, rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
 
@@ -817,8 +817,8 @@ cim_enum_reference_instances (CimClientInfo *client,
 		goto cleanup;
 	}
 	/* Free the selectors.  These are lost on the Pull call anyways */
-	hash_free(client->selectors);
-	client->selectors = NULL;
+	hash_free(selectors);
+	//client->selectors = NULL;
 
 	enumInfo->totalItems = cim_enum_totalItems(enumArr);
 	debug( "Total items: %d", enumInfo->totalItems );

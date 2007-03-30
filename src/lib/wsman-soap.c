@@ -308,11 +308,6 @@ wsman_register_endpoint(WsContextH cntx,
 		action = ep->inAction;
 		callbackProc = wsenum_enumerate_stub;
 		break;
-  case WS_DISP_TYPE_ENUM_REFINSTS:
-    debug("Registering endpoint for Enumerate Reference Instances");
-    action = ep->inAction;
-    callbackProc = wsenum_reference_instances_stub;
-    break;
 	case WS_DISP_TYPE_RELEASE:
 		debug("Registering endpoint for Release");
 		action = ep->inAction;
@@ -950,6 +945,10 @@ DONE:
 	return retVal;
 }
 
+
+
+#if 0
+
 /**
  * Enumerate Reference Instances Stub for processing enumeration requests
  * @param op SOAP pperation handler
@@ -1034,6 +1033,8 @@ DONE:
 	ws_destroy_context(epcntx);
 	return retVal;
 }
+
+#endif
 
 int
 wsenum_release_stub(SoapOpH op,

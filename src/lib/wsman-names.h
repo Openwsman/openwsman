@@ -190,14 +190,6 @@
 #define ENUM_ACTION_ENUMEND       \
            "http://schemas.xmlsoap.org/ws/2004/09/enumeration/EnumerationEnd"
 
-#define ENUM_ACTION_REFINSTS   \
-         "http://schemas.xmlsoap.org/ws/2004/09/enumeration/References"
-#define ENUM_ACTION_REFINSTSRESPONSE   \
-         "http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReferencesResponse"
-#define WSENUM_REFERENCE_INSTANCES       "References"
-#define WSENUM_REFERENCE_INSTANCES_RESP  "ReferencesResponse"
-
-
 #define EVT_ACTION_SUBSCRIBE      \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"
 #define EVT_ACTION_GETSTATUS      \
@@ -286,6 +278,7 @@
 #define WSM_OPERATION_TIMEOUT           "OperationTimeout"
 #define WSM_FAULT_SUBCODE               "FaultSubCode"
 #define WSM_FILTER                      "Filter"
+#define WSM_DIALECT                      "Filter"
 
 
 #define WXF_RESOURCE_CREATED                      "ResourceCreated"
