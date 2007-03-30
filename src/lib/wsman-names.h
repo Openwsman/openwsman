@@ -278,7 +278,7 @@
 #define WSM_OPERATION_TIMEOUT           "OperationTimeout"
 #define WSM_FAULT_SUBCODE               "FaultSubCode"
 #define WSM_FILTER                      "Filter"
-#define WSM_DIALECT                      "Filter"
+#define WSM_DIALECT                     "Dialect"
 
 
 #define WXF_RESOURCE_CREATED                      "ResourceCreated"
