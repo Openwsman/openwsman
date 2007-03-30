@@ -31,13 +31,13 @@
 /**
  * @author Anas Nashif
  */
- 
+
 
 #ifndef WSMAND_LISTENER_H_
 #define WSMAND_LISTENER_H_
 
 #define AUTHENTICATION_REALM "OPENWSMAN"
 
-WsManListenerH *wsmand_start_server(dictionary *ini);
+WsManListenerH *wsmand_start_server(dictionary * ini);
 
-#endif /*SERVER_H_*/
+#endif				/*SERVER_H_ */
