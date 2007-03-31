@@ -60,44 +60,42 @@
  * @param bufsize Buffer size
  */
 void
-ws_xml_make_default_prefix ( WsXmlNodeH node, 
-                             const char* uri, 
-                             char* buf, 
-                             int bufsize)
+ws_xml_make_default_prefix(WsXmlNodeH node,
+			   const char *uri, char *buf, int bufsize)
 {
-    WsXmlDocH doc = xml_parser_get_doc(node);
-    WsXmlNsH ns;
+	WsXmlDocH doc = xml_parser_get_doc(node);
+	WsXmlNsH ns;
 
-    if ( doc != NULL && (ns = ws_xml_find_wk_ns(doc->fw, uri, NULL)) != NULL )
-        strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
-    else
-        if ( bufsize >= 12 )
-            sprintf(buf, "n%lu", ++doc->prefixIndex);
-        else
-            buf[0] = 0;
+	if (doc != NULL &&
+	    (ns = ws_xml_find_wk_ns(doc->fw, uri, NULL)) != NULL)
+		strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
+	else if (bufsize >= 12)
+		sprintf(buf, "n%lu", ++doc->prefixIndex);
+	else
+		buf[0] = 0;
 }
 
-static int
-is_xml_val_true( const char* text )
+static int is_xml_val_true(const char *text)
 {
-    int retVal = 0;
+	int retVal = 0;
 
-    if ( text ) {
-        const char* ptr = text;
+	if (text) {
+		const char *ptr = text;
 
-        while( isdigit(*ptr) )
-            ptr++;
+		while (isdigit(*ptr))
+			ptr++;
 
-        if ( *ptr ) {
-            if ( !strcasecmp(text, "true") || !strcasecmp(text, "yes") )
-                retVal = 1;
-        } else {
-            if ( atoi(text) != 0 )
-                retVal = 1;
-        }
-    }
+		if (*ptr) {
+			if (!strcasecmp(text, "true") ||
+			    !strcasecmp(text, "yes"))
+				retVal = 1;
+		} else {
+			if (atoi(text) != 0)
+				retVal = 1;
+		}
+	}
 
-    return retVal;
+	return retVal;
 }
 
 /**
@@ -106,52 +104,44 @@ is_xml_val_true( const char* text )
  * @param callback Namespace Enumeration callback
  * @param data Callback data 
  */
-static int 
-ns_enum_at_node( WsXmlNodeH node, 
-                 WsXmlNsEnumCallback callback, 
-                 void* data)
+static int
+ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void *data)
 {
-    int retVal = 0;
+	int retVal = 0;
 
-    if ( node )
-    {
-        int i;
-        WsXmlNsH ns;
+	if (node) {
+		int i;
+		WsXmlNsH ns;
 
-        for(i = 0; (ns = ws_xml_get_ns(node, i)) != NULL; i++)
-        {
-            if ( (retVal = callback(node, ns, data)) != 0 )
-                break;
-        }
-    }
-    return retVal;
+		for (i = 0; (ns = ws_xml_get_ns(node, i)) != NULL; i++) {
+			if ((retVal = callback(node, ns, data)) != 0)
+				break;
+		}
+	}
+	return retVal;
 }
 
 
-static char*
-make_qname( WsXmlNodeH node, 
-            const char* uri, 
-            const char* name)
+static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 {
-    char* buf = NULL; 
-    if ( name && uri && name )
-    {
-        size_t len = 1 + strlen(name);
-        WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1); 
-        const char* prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns); 
+	char *buf = NULL;
+	if (name && uri && name) {
+		size_t len = 1 + strlen(name);
+		WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1);
+		const char *prefix =
+		    (!ns) ? NULL : ws_xml_get_ns_prefix(ns);
 
-        if ( prefix != NULL )
-            len += 1 + strlen(prefix);
+		if (prefix != NULL)
+			len += 1 + strlen(prefix);
 
-        if ( (buf = u_malloc(len)) != NULL )
-        {
-            if ( prefix != NULL )
-                sprintf(buf, "%s:%s", prefix, name);
-            else
-                strcpy(buf, name);
-        }
-    }
-    return buf;
+		if ((buf = u_malloc(len)) != NULL) {
+			if (prefix != NULL)
+				sprintf(buf, "%s:%s", prefix, name);
+			else
+				strcpy(buf, name);
+		}
+	}
+	return buf;
 }
 
 
@@ -167,25 +157,23 @@ make_qname( WsXmlNodeH node,
  * if namespaces has been changed after this function is called, itis caller's
  * responsibility to update QName fields accordingly
  */
-WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node, 
-        const char* nameNs,
-        const char* name,
-        const char* valueNs,
-        const char* value)
+WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
+				 const char *nameNs,
+				 const char *name,
+				 const char *valueNs, const char *value)
 {
-    WsXmlAttrH attr = NULL;
+	WsXmlAttrH attr = NULL;
 
-    if ( name && node && valueNs && value )
-    {
-        char* buf = make_qname(node, valueNs, value);
-        if ( buf != NULL )
-        {
-            attr = ws_xml_add_node_attr(node, nameNs, name, buf);
-            u_free(buf);
-        }
-    }
+	if (name && node && valueNs && value) {
+		char *buf = make_qname(node, valueNs, value);
+		if (buf != NULL) {
+			attr =
+			    ws_xml_add_node_attr(node, nameNs, name, buf);
+			u_free(buf);
+		}
+	}
 
-    return attr;
+	return attr;
 }
 
 /**
@@ -197,17 +185,15 @@ WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
  * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero) 
  * walks up the parent chain
  */
-void ws_xml_ns_enum(WsXmlNodeH node, 
-                    WsXmlNsEnumCallback callback,
-                    void* data,
-                    int bWalkUpTree) 
+void ws_xml_ns_enum(WsXmlNodeH node,
+		    WsXmlNsEnumCallback callback,
+		    void *data, int bWalkUpTree)
 {
-    while(node)
-    {
-        if ( ns_enum_at_node(node, callback, data) || !bWalkUpTree )
-            break;
-        node = ws_xml_get_node_parent(node);
-    }
+	while (node) {
+		if (ns_enum_at_node(node, callback, data) || !bWalkUpTree)
+			break;
+		node = ws_xml_get_node_parent(node);
+	}
 }
 
 
@@ -237,29 +223,28 @@ WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
  * @param soapVersion The SOAP version to be used for creating the envelope
  * @return An XMl document  
  */
-WsXmlDocH ws_xml_create_envelope(SoapH soap, char* soapVersion)
+WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
 {
-    WsXmlDocH doc = NULL;
+	WsXmlDocH doc = NULL;
 
-    if ( soapVersion == NULL )
-        soapVersion = XML_NS_SOAP_1_2;
+	if (soapVersion == NULL)
+		soapVersion = XML_NS_SOAP_1_2;
 
-    if ( (doc = ws_xml_create_doc(soap, soapVersion, SOAP_ENVELOPE)) != NULL )
-    {
-        WsXmlNodeH root = ws_xml_get_doc_root(doc);
+	if ((doc = ws_xml_create_doc(soap, soapVersion,
+			       SOAP_ENVELOPE)) != NULL) {
+		WsXmlNodeH root = ws_xml_get_doc_root(doc);
 
-        if ( root == NULL
-                ||
-                ws_xml_add_child(root, soapVersion, "Header", NULL) == NULL 
-                ||
-                ws_xml_add_child(root, soapVersion, "Body", NULL) == NULL )
-        {
-            ws_xml_destroy_doc(doc);
-            doc = NULL;		
-        }
-    }
+		if (root == NULL ||
+		    ws_xml_add_child(root, soapVersion, "Header",
+				     NULL) == NULL ||
+		    ws_xml_add_child(root, soapVersion, "Body",
+				     NULL) == NULL) {
+			ws_xml_destroy_doc(doc);
+			doc = NULL;
+		}
+	}
 
-    return doc;
+	return doc;
 }
 
 
@@ -271,34 +256,40 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char* soapVersion)
  */
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
 {
-    WsXmlDocH dst = NULL;
+	WsXmlDocH dst = NULL;
 
-    if ( srcDoc )
-    {
-        WsXmlNodeH srcRoot = ws_xml_get_doc_root(srcDoc);
-        if ( srcRoot )
-        {
-            SoapH soap = dstSoap;
-            const char* name = ws_xml_get_node_local_name(srcRoot);
-            const char* nsUri = ws_xml_get_node_name_ns(srcRoot);
+	if (srcDoc) {
+		WsXmlNodeH srcRoot = ws_xml_get_doc_root(srcDoc);
+		if (srcRoot) {
+			SoapH soap = dstSoap;
+			const char *name =
+			    ws_xml_get_node_local_name(srcRoot);
+			const char *nsUri =
+			    ws_xml_get_node_name_ns(srcRoot);
 
-            if ( soap == NULL )
-                soap = ws_xml_get_doc_soap_handle(srcDoc);
+			if (soap == NULL)
+				soap = ws_xml_get_doc_soap_handle(srcDoc);
 
-            if ( (dst = ws_xml_create_doc(soap, nsUri, name)) != NULL )
-            {
-                int i;
-                WsXmlNodeH node;
-                WsXmlNodeH dstRoot = ws_xml_get_doc_root(dst);
+			if ((dst =
+			     ws_xml_create_doc(soap, nsUri,
+					       name)) != NULL) {
+				int i;
+				WsXmlNodeH node;
+				WsXmlNodeH dstRoot =
+				    ws_xml_get_doc_root(dst);
 
-                for(i = 0; (node = ws_xml_get_child(srcRoot, i, NULL, NULL)) != NULL; i++)
-                {
-                    ws_xml_duplicate_tree(dstRoot, node);
-                }
-            }
-        }
-    }
-    return dst;
+				for (i = 0;
+				     (node =
+				      ws_xml_get_child(srcRoot, i, NULL,
+						       NULL)) != NULL;
+				     i++) {
+					ws_xml_duplicate_tree(dstRoot,
+							      node);
+				}
+			}
+		}
+	}
+	return dst;
 }
 
 
@@ -309,15 +300,14 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
  */
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
-    int i;
-    WsXmlAttrH attr;
-    for(i = 0; (attr = ws_xml_get_node_attr(srcNode, i)) != NULL; i++)
-    {
-        ws_xml_add_node_attr(dstNode, 
-                ws_xml_get_attr_ns(attr),
-                ws_xml_get_attr_name(attr),
-                ws_xml_get_attr_value(attr));
-    }
+	int i;
+	WsXmlAttrH attr;
+	for (i = 0; (attr = ws_xml_get_node_attr(srcNode, i)) != NULL; i++) {
+		ws_xml_add_node_attr(dstNode,
+				     ws_xml_get_attr_ns(attr),
+				     ws_xml_get_attr_name(attr),
+				     ws_xml_get_attr_value(attr));
+	}
 }
 
 /**
@@ -327,12 +317,14 @@ void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  */
 int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
-    int i;
-    WsXmlNodeH child;
-    for(i = 0; (child = ws_xml_get_child(srcNode, i, NULL, NULL)) != NULL; i++) {
-        ws_xml_duplicate_tree(dstNode, child);
-    }
-    return i;
+	int i;
+	WsXmlNodeH child;
+	for (i = 0;
+	     (child = ws_xml_get_child(srcNode, i, NULL, NULL)) != NULL;
+	     i++) {
+		ws_xml_duplicate_tree(dstNode, child);
+	}
+	return i;
 }
 
 
@@ -343,40 +335,41 @@ int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
  */
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 {
-    WsXmlNodeH node;
-    if (!srcNode || !dstNode) {
-        error("NULL arguments: dst = %p; src = %p", dstNode, srcNode);
-        return;
-    }
-    node = ws_xml_add_child(dstNode,
-                    ws_xml_get_node_name_ns(srcNode),
-                    ws_xml_get_node_local_name(srcNode), NULL);
-    if (!node) {
-        error("could not add node");
-        return;
-    }
-    ws_xml_duplicate_attr(node, srcNode);
-    if (ws_xml_duplicate_children(node, srcNode) == 0) {
-        // no children
-        ws_xml_set_node_text(node, ws_xml_get_node_text(srcNode));
-    }
+	WsXmlNodeH node;
+	if (!srcNode || !dstNode) {
+		error("NULL arguments: dst = %p; src = %p", dstNode,
+		      srcNode);
+		return;
+	}
+	node = ws_xml_add_child(dstNode,
+				ws_xml_get_node_name_ns(srcNode),
+				ws_xml_get_node_local_name(srcNode), NULL);
+	if (!node) {
+		error("could not add node");
+		return;
+	}
+	ws_xml_duplicate_attr(node, srcNode);
+	if (ws_xml_duplicate_children(node, srcNode) == 0) {
+		// no children
+		ws_xml_set_node_text(node, ws_xml_get_node_text(srcNode));
+	}
 }
 
 
-void
-ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst) 
+void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst)
 {
-    if (src && dst )
-    {
-        xmlNodePtr x = xmlDocCopyNode((xmlNodePtr)src, ((xmlDocPtr)src)->doc , 1 );
-        if (x)
-            xmlAddChild((xmlNodePtr ) dst, x );
-    }
+	if (src && dst) {
+		xmlNodePtr x = xmlDocCopyNode((xmlNodePtr) src,
+				   ((xmlDocPtr) src)->doc, 1);
+		if (x)
+			xmlAddChild((xmlNodePtr) dst, x);
+	}
 }
 
 
-int ws_xml_utf8_strlen(char *buf) {
-    return xml_parser_utf8_strlen(buf);
+int ws_xml_utf8_strlen(char *buf)
+{
+	return xml_parser_utf8_strlen(buf);
 }
 
 /**
@@ -386,9 +379,10 @@ int ws_xml_utf8_strlen(char *buf) {
  * @param ptrSize the size of the buffer
  * @param encoding The encoding to be used
  */
-void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encoding)
+void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
+			    char *encoding)
 {
-    xml_parser_doc_to_memory(doc, buf, ptrSize, encoding);
+	xml_parser_doc_to_memory(doc, buf, ptrSize, encoding);
 }
 
 
@@ -401,10 +395,11 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char** buf, int* ptrSize, char* encod
  * @param name Node name
  * @return found text 
  */
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name)
+char *ws_xml_find_text_in_doc(WsXmlDocH doc, const char *nsUri,
+			      const char *name)
 {
-    WsXmlNodeH root = ws_xml_get_doc_root(doc);
-    return ws_xml_find_text_in_tree(root, nsUri, name, 1);
+	WsXmlNodeH root = ws_xml_get_doc_root(doc);
+	return ws_xml_find_text_in_tree(root, nsUri, name, 1);
 }
 
 
@@ -416,17 +411,18 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name
  * @param bRecursive Recursive flag
  * @return found text 
  */
-char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive)
+char *ws_xml_find_text_in_tree(WsXmlNodeH head, const char *nsUri,
+			       const char *name, int bRecursive)
 {
-    WsXmlNodeH node = head;
+	WsXmlNodeH node = head;
 
-    if ( !ws_xml_is_node_qname(head, nsUri, name) )
-        node = ws_xml_find_in_tree(head, nsUri, name, bRecursive); 
+	if (!ws_xml_is_node_qname(head, nsUri, name))
+		node = ws_xml_find_in_tree(head, nsUri, name, bRecursive);
 
-    if ( node )
-        return ws_xml_get_node_text(node);
+	if (node)
+		return ws_xml_get_node_text(node);
 
-    return NULL;
+	return NULL;
 }
 #endif
 
@@ -434,9 +430,9 @@ char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* n
  * Free Memory
  * @param ptr Pointer to be freed
  */
-void ws_xml_free_memory(void* ptr)
+void ws_xml_free_memory(void *ptr)
 {
-    xml_parser_free_memory(ptr);
+	xml_parser_free_memory(ptr);
 }
 
 /**
@@ -446,10 +442,10 @@ void ws_xml_free_memory(void* ptr)
  */
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 {
-    SoapH soap = NULL;
-    if ( doc )
-        soap = doc->fw;
-    return soap;
+	SoapH soap = NULL;
+	if (doc)
+		soap = doc->fw;
+	return soap;
 }
 
 
@@ -459,59 +455,54 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-int 
-ws_xml_parser_initialize( SoapH soap, 
-                          WsXmlNsData nsData[])
+int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 {
-    int retVal = -1;
-    WsXmlParserData* parserData = NULL;
+	int retVal = -1;
+	WsXmlParserData *parserData = NULL;
 
-    if ( soap != NULL 
-            && 
-            (parserData = (WsXmlParserData*)u_zalloc(sizeof(WsXmlParserData))) != NULL)
-    {
-        u_lock(soap);
+	parserData = (WsXmlParserData *) u_zalloc(sizeof(WsXmlParserData));
 
-        xml_parser_initialize(soap);
+	if (soap != NULL && parserData) {
+		u_lock(soap);
+		xml_parser_initialize(soap);
 
-        if ( (parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList")) != NULL )
-        {
-            WsXmlNodeH node = ws_xml_get_doc_root(parserData->nsHolder);
-            retVal = 0;
-            soap->parserData = parserData;
-            if ( nsData )
-            {
-                int i;
-                for(i = 0; nsData[i].uri != NULL; i++)
-                {
-                    WsXmlNsData* nsd = &nsData[i];
-                    ws_xml_define_ns(node, nsd->uri, nsd->prefix, 0);
-                }
-            }
-        }
-        u_unlock(soap);
-    }
 
-    if ( retVal != 0 && parserData )
-    {
-        u_free(parserData);
-    }
+		parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList");
+		if (parserData->nsHolder != NULL) {
+			WsXmlNodeH node = ws_xml_get_doc_root(
+					parserData->nsHolder);
+			retVal = 0;
+			soap->parserData = parserData;
+			if (nsData) {
+				int i;
+				for (i = 0; nsData[i].uri != NULL; i++) {
+					WsXmlNsData *nsd = &nsData[i];
+					ws_xml_define_ns(node, nsd->uri,
+							 nsd->prefix, 0);
+				}
+			}
+		}
+		u_unlock(soap);
+	}
 
-    return retVal;
+	if (retVal != 0 && parserData) {
+		u_free(parserData);
+	}
+
+	return retVal;
 }
 
-void 
-ws_xml_parser_destroy(SoapH soap)
+void ws_xml_parser_destroy(SoapH soap)
 {
-    if (soap && soap->parserData )
-    {
-        u_lock(soap);
-        ws_xml_destroy_doc(((WsXmlParserData*)soap->parserData)->nsHolder);
-        xml_parser_destroy(soap);
-        u_free(soap->parserData);
-        soap->parserData = NULL;
-        u_unlock(soap);
-    }
+	if (soap && soap->parserData) {
+		u_lock(soap);
+		ws_xml_destroy_doc(((WsXmlParserData *) soap->parserData)->
+				   nsHolder);
+		xml_parser_destroy(soap);
+		u_free(soap->parserData);
+		soap->parserData = NULL;
+		u_unlock(soap);
+	}
 }
 
 
@@ -523,7 +514,7 @@ ws_xml_parser_destroy(SoapH soap)
  */
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
 {
-    return ws_xml_get_soap_element(doc, SOAP_HEADER);
+	return ws_xml_get_soap_element(doc, SOAP_HEADER);
 }
 
 
@@ -536,24 +527,25 @@ WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
  * @return 
  * 
  */
-int 
-ws_xml_enum_children(WsXmlNodeH parent, 
-        WsXmlEnumCallback callback, 
-        void* data, 
-        int bRecursive)
+int
+ws_xml_enum_children(WsXmlNodeH parent,
+		     WsXmlEnumCallback callback,
+		     void *data, int bRecursive)
 {
-    int retVal = 0;
-    int i;
-    WsXmlNodeH child;
+	int retVal = 0;
+	int i;
+	WsXmlNodeH child;
 
-    for(i = 0; (child = ws_xml_get_child(parent, i, NULL, NULL)) != NULL; i++)
-    {
-        if ( (retVal =  ws_xml_enum_tree(child, callback, data, bRecursive)) )
-        {
-            break;
-        }
-    }
-    return retVal;
+	for (i = 0;
+	     (child = ws_xml_get_child(parent, i, NULL, NULL)) != NULL;
+	     i++) {
+		if ((retVal =
+		     ws_xml_enum_tree(child, callback, data,
+				      bRecursive))) {
+			break;
+		}
+	}
+	return retVal;
 }
 
 
@@ -564,10 +556,10 @@ ws_xml_enum_children(WsXmlNodeH parent,
  */
 int ws_xml_get_child_count(WsXmlNodeH parent)
 {
-    int count = 0;
-    if ( parent )
-        count = xml_parser_get_count(parent, XML_COUNT_NODE, 0);
-    return count;
+	int count = 0;
+	if (parent)
+		count = xml_parser_get_count(parent, XML_COUNT_NODE, 0);
+	return count;
 }
 
 
@@ -578,17 +570,18 @@ int ws_xml_get_child_count(WsXmlNodeH parent)
  * @param data Callback data
  * @param bRecursive Recursive flag
  */
-int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback, void* data, int bRecursive)
+int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback,
+		     void *data, int bRecursive)
 {
-    int retVal = 0;
-    if ( top )
-    {
-        if ( !(retVal = callback(top, data)) && bRecursive )
-        {
-            retVal = ws_xml_enum_children(top, callback, data, bRecursive);
-        }
-    }
-    return retVal;
+	int retVal = 0;
+	if (top) {
+		if (!(retVal = callback(top, data)) && bRecursive) {
+			retVal =
+			    ws_xml_enum_children(top, callback, data,
+						 bRecursive);
+		}
+	}
+	return retVal;
 }
 
 
@@ -597,13 +590,13 @@ int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback, void* data, int
  * @param node XML node
  * @return Namespace of node
  */
-char* ws_xml_get_node_name_ns(WsXmlNodeH node)
+char *ws_xml_get_node_name_ns(WsXmlNodeH node)
 {
-    char* uri = NULL;
-    if ( node )
-        uri = xml_parser_node_query(node, XML_NS_URI);
+	char *uri = NULL;
+	if (node)
+		uri = xml_parser_node_query(node, XML_NS_URI);
 
-    return uri;
+	return uri;
 }
 
 
@@ -612,12 +605,12 @@ char* ws_xml_get_node_name_ns(WsXmlNodeH node)
  * @param node XML node
  * @return Node local name
  */
-char* ws_xml_get_node_local_name(WsXmlNodeH node)
+char *ws_xml_get_node_local_name(WsXmlNodeH node)
 {
-    char* name = NULL;
-    if ( node )
-        name = xml_parser_node_query(node, XML_LOCAL_NAME);
-    return name;
+	char *name = NULL;
+	if (node)
+		name = xml_parser_node_query(node, XML_LOCAL_NAME);
+	return name;
 }
 
 
@@ -628,10 +621,10 @@ char* ws_xml_get_node_local_name(WsXmlNodeH node)
  */
 WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc)
 {
-    WsXmlNodeH node = NULL;
-    if ( doc != NULL )
-        node = xml_parser_get_root(doc);
-    return node;
+	WsXmlNodeH node = NULL;
+	if (doc != NULL)
+		node = xml_parser_get_root(doc);
+	return node;
 }
 
 /**
@@ -639,13 +632,13 @@ WsXmlNodeH ws_xml_get_doc_root(WsXmlDocH doc)
  * @param node XML node
  * @return XML node text
  */
-char* 
-ws_xml_get_node_text(WsXmlNodeH node) {
-    char* text = NULL;
-    if ( node ) {
-        text = xml_parser_node_query(node, XML_TEXT_VALUE);
-    }
-    return text;	
+char *ws_xml_get_node_text(WsXmlNodeH node)
+{
+	char *text = NULL;
+	if (node) {
+		text = xml_parser_node_query(node, XML_TEXT_VALUE);
+	}
+	return text;
 }
 
 /**
@@ -657,21 +650,20 @@ ws_xml_get_node_text(WsXmlNodeH node) {
  * @param options Parser options
  * @return XML document
  */
-WsXmlDocH ws_xml_read_memory(
-        SoapH soap, 
-        char* buf, 
-        size_t size, 
-        char* encoding, 
-        unsigned long options)
+WsXmlDocH ws_xml_read_memory(SoapH soap,
+			     char *buf,
+			     size_t size,
+			     char *encoding, unsigned long options)
 {
-    return xml_parser_memory_to_doc(soap, buf, size, encoding, options);
+	return xml_parser_memory_to_doc(soap, buf, size, encoding,
+					options);
 }
 
 
-WsXmlDocH ws_xml_read_file( SoapH soap, const char* filename, 
-        const char* encoding, unsigned long options)
+WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
+			   const char *encoding, unsigned long options)
 {
-    return xml_parser_file_to_doc(soap, filename, encoding, options);
+	return xml_parser_file_to_doc(soap, filename, encoding, options);
 }
 
 
@@ -682,42 +674,42 @@ WsXmlDocH ws_xml_read_file( SoapH soap, const char* filename,
  * @param rootName Root node name
  * @return XML document
  */
-WsXmlDocH 
-ws_xml_create_doc( SoapH soap, 
-                   const char* rootNsUri,
-                   const char* rootName) {
-    WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
+WsXmlDocH
+ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName)
+{
+	WsXmlDocH wsDoc = (WsXmlDocH) u_zalloc(sizeof(*wsDoc));
 	WsXmlNodeH rootNode;
 	WsXmlNsH ns;
-    char prefix[12];
+	char prefix[12];
 
-    if (wsDoc == NULL) {
-        error("No memory");
-        return NULL;
-    }
-    wsDoc->fw = soap;
-    if (xml_parser_create_doc(wsDoc, rootName) != 0) {
-            error("xml_parser_create_doc failed");
-            u_free(wsDoc);
-            return NULL;
-    }
+	if (wsDoc == NULL) {
+		error("No memory");
+		return NULL;
+	}
+	wsDoc->fw = soap;
+	if (xml_parser_create_doc(wsDoc, rootName) != 0) {
+		error("xml_parser_create_doc failed");
+		u_free(wsDoc);
+		return NULL;
+	}
 
-    if (rootNsUri == NULL) {
-        return wsDoc;
-    }
+	if (rootNsUri == NULL) {
+		return wsDoc;
+	}
 
-    rootNode = ws_xml_get_doc_root((WsXmlDocH)wsDoc);
-    
+	rootNode = ws_xml_get_doc_root((WsXmlDocH) wsDoc);
 
-    ws_xml_make_default_prefix(rootNode, rootNsUri, prefix, sizeof (prefix));
-    ns = xml_parser_ns_add(rootNode, rootNsUri, prefix);
-    if (ns == NULL) {
-         error("xml_parser_ns_add failed");
-         ws_xml_destroy_doc(wsDoc);
-         return NULL;
-    }
-    ws_xml_set_node_name(rootNode, rootNsUri, NULL);
-    return wsDoc;	
+
+	ws_xml_make_default_prefix(rootNode, rootNsUri, prefix,
+				   sizeof(prefix));
+	ns = xml_parser_ns_add(rootNode, rootNsUri, prefix);
+	if (ns == NULL) {
+		error("xml_parser_ns_add failed");
+		ws_xml_destroy_doc(wsDoc);
+		return NULL;
+	}
+	ws_xml_set_node_name(rootNode, rootNsUri, NULL);
+	return wsDoc;
 }
 
 
@@ -730,22 +722,25 @@ ws_xml_create_doc( SoapH soap,
  * @return status
  * 
  */
-int ws_xml_set_node_name(WsXmlNodeH node, const char* nsUri, const char* name)
+int ws_xml_set_node_name(WsXmlNodeH node, const char *nsUri,
+			 const char *name)
 {
-    int retVal = -1;
+	int retVal = -1;
 
-    if ( node && (name || nsUri) )
-    {
-        if ( name )
-            retVal = xml_parser_node_set(node, XML_LOCAL_NAME, name);
-        else
-            retVal = 0;
+	if (node && (name || nsUri)) {
+		if (name)
+			retVal =
+			    xml_parser_node_set(node, XML_LOCAL_NAME,
+						name);
+		else
+			retVal = 0;
 
-        if ( !retVal && nsUri )
-            retVal = xml_parser_node_set(node, XML_NS_URI, nsUri);
-    }
+		if (!retVal && nsUri)
+			retVal =
+			    xml_parser_node_set(node, XML_NS_URI, nsUri);
+	}
 
-    return retVal;
+	return retVal;
 }
 
 
@@ -755,11 +750,12 @@ int ws_xml_set_node_name(WsXmlNodeH node, const char* nsUri, const char* name)
  * Destroy XML document
  * @param doc XML document
  */
-void ws_xml_destroy_doc(WsXmlDocH doc) {
-    if (doc) {
-        xml_parser_destroy_doc(doc);
-        u_free(doc);
-    }
+void ws_xml_destroy_doc(WsXmlDocH doc)
+{
+	if (doc) {
+		xml_parser_destroy_doc(doc);
+		u_free(doc);
+	}
 }
 
 
@@ -770,15 +766,15 @@ void ws_xml_destroy_doc(WsXmlDocH doc) {
  * @param _data Callback data
  * @return status
  */
-static int find_in_tree_callback(WsXmlNodeH node, void* _data)
+static int find_in_tree_callback(WsXmlNodeH node, void *_data)
 {
-    FindInTreeCallbackData* data = (FindInTreeCallbackData*)_data;
-    int retVal = ws_xml_is_node_qname(node, data->ns, data->name);
+	FindInTreeCallbackData *data = (FindInTreeCallbackData *) _data;
+	int retVal = ws_xml_is_node_qname(node, data->ns, data->name);
 
-    if ( retVal )
-        data->node = node;
+	if (retVal)
+		data->node = node;
 
-    return retVal;
+	return retVal;
 }
 
 /**
@@ -789,17 +785,18 @@ static int find_in_tree_callback(WsXmlNodeH node, void* _data)
  * @param bRecursive Recursive flag
  * @return Result XML node
  */
-WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, const char* nsUri, const char* localName, int bRecursive)
+WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, const char *nsUri,
+			       const char *localName, int bRecursive)
 {
-    FindInTreeCallbackData data;
+	FindInTreeCallbackData data;
 
-    data.node = NULL;
-    data.ns = nsUri;
-    data.name = localName;
+	data.node = NULL;
+	data.ns = nsUri;
+	data.name = localName;
 
-    ws_xml_enum_tree(head, find_in_tree_callback, &data, bRecursive);
+	ws_xml_enum_tree(head, find_in_tree_callback, &data, bRecursive);
 
-    return data.node;
+	return data.node;
 }
 
 
@@ -810,7 +807,7 @@ WsXmlNodeH ws_xml_find_in_tree(WsXmlNodeH head, const char* nsUri, const char* l
  */
 WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc)
 {
-    return ws_xml_get_soap_element(doc, SOAP_BODY);
+	return ws_xml_get_soap_element(doc, SOAP_BODY);
 }
 
 
@@ -821,31 +818,28 @@ WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc)
  * @param name Node name
  * @return Result XML node
  */
-WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, const char* name)
+WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, const char *name)
 {
-    WsXmlNodeH node = NULL;
-    WsXmlNodeH env = ws_xml_get_soap_envelope(doc);
+	WsXmlNodeH node = NULL;
+	WsXmlNodeH env = ws_xml_get_soap_envelope(doc);
+	char *soapUri = NULL;
 
-    if ( env != NULL )
-    {
-        char* soapUri = ws_xml_get_node_name_ns(env);
-
-        if ( (node = ws_xml_get_child(env, 0, NULL, NULL)) != NULL )
-        {
-            if ( !ws_xml_is_node_qname(node, soapUri, name) )
-            {
-                if ( strcmp(name, SOAP_HEADER) != 0 )
-                {
-                    if ( (node = ws_xml_get_child(env, 1, NULL, NULL)) != NULL )
-                    {
-                        if ( !ws_xml_is_node_qname(node, soapUri, name) )
-                            node = NULL;
-                    }
-                }
-            }
-        }
-    } 
-    return node;
+	if (!env)
+		return NULL;
+	soapUri = ws_xml_get_node_name_ns(env);
+	node = ws_xml_get_child(env, 0, NULL, NULL);
+	if (!node)
+		return NULL;
+	if (!ws_xml_is_node_qname(node, soapUri, name)) {
+		if (strcmp(name, SOAP_HEADER) != 0) {
+			node = ws_xml_get_child(env, 1, NULL, NULL);
+			if (node) {
+				if (!ws_xml_is_node_qname(node, soapUri, name))
+					node = NULL;
+			}
+		}
+	}
+	return node;
 }
 
 /**
@@ -857,35 +851,30 @@ WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, const char* name)
  * @return Result XML node
  */
 WsXmlNodeH
-ws_xml_get_child( WsXmlNodeH parent, 
-                  int index,
-                  const char* nsUri,
-                  const char* localName)
+ws_xml_get_child(WsXmlNodeH parent,
+		 int index, const char *nsUri, const char *localName)
 {
-    WsXmlNodeH node = NULL;
+	WsXmlNodeH node = NULL;
 
-    if ( parent && index >= 0 )
-    {
-        if ( nsUri == NULL && localName == NULL )
-            node = xml_parser_node_get(parent, index);
-        else
-        {
-            int count = 0;
-            node = xml_parser_get_first_child(parent);
-            while( node != NULL )
-            {
-                if ( ws_xml_is_node_qname(node, nsUri, localName) )
-                {
-                    if ( count == index )
-                        break;
-                    count++;
-                }
-                node = xml_parser_get_next_child(node);
-            }
-        }
-    }
+	if (parent && index >= 0) {
+		if (nsUri == NULL && localName == NULL)
+			node = xml_parser_node_get(parent, index);
+		else {
+			int count = 0;
+			node = xml_parser_get_first_child(parent);
+			while (node != NULL) {
+				if (ws_xml_is_node_qname
+				    (node, nsUri, localName)) {
+					if (count == index)
+						break;
+					count++;
+				}
+				node = xml_parser_get_next_child(node);
+			}
+		}
+	}
 
-    return node;
+	return node;
 }
 
 /**
@@ -896,40 +885,39 @@ ws_xml_get_child( WsXmlNodeH parent,
  * @return Returns 1 if node is QName
  * @brief Shortcats for QName manipulation name can be NULL, in this case just check namespace
  */
-int ws_xml_is_node_qname(WsXmlNodeH node, const char* nsUri, const char* name)
+int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
+			 const char *name)
 {
-    int retVal = 0;
-    if ( node )
-    {
-        char* nodeNsUri = ws_xml_get_node_name_ns(node);
-        if (  ( nsUri == nodeNsUri ) ||
-                (nsUri != NULL && nodeNsUri != NULL && !strcmp(nodeNsUri, nsUri)) )
-        {
-            if ( name == NULL || !strcmp(name, ws_xml_get_node_local_name(node)) )
-                retVal = 1;
-        }
-    }
-    return retVal;
+	int retVal = 0;
+	if (node) {
+		char *nodeNsUri = ws_xml_get_node_name_ns(node);
+		if ((nsUri == nodeNsUri) ||
+		    (nsUri != NULL && nodeNsUri != NULL &&
+		     !strcmp(nodeNsUri, nsUri))) {
+			if (name == NULL ||
+			    !strcmp(name,
+				    ws_xml_get_node_local_name(node)))
+				retVal = 1;
+		}
+	}
+	return retVal;
 }
 
 
 
-WsXmlNsH
-ws_xml_find_wk_ns( SoapH soap, 
-                   const char* uri, 
-                   const char* prefix)
+WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri, const char *prefix)
 {
-    WsXmlNsH ns = NULL;
-    if (soap)
-    {
-        WsXmlParserData* data = (WsXmlParserData*)soap->parserData;
-        if ( data && data->nsHolder )
-        {            
-            WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);
-            ns = ws_xml_find_ns(root, uri, prefix, 0);            
-        }
-    }
-    return ns;
+	WsXmlNsH ns = NULL;
+	if (soap) {
+		WsXmlParserData *data =
+		    (WsXmlParserData *) soap->parserData;
+		if (data && data->nsHolder) {
+			WsXmlNodeH root =
+			    ws_xml_get_doc_root(data->nsHolder);
+			ns = ws_xml_find_ns(root, uri, prefix, 0);
+		}
+	}
+	return ns;
 }
 
 /**
@@ -939,35 +927,13 @@ ws_xml_find_wk_ns( SoapH soap,
  */
 WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc)
 {
-    WsXmlNodeH root = ws_xml_get_doc_root(doc);
-    if ( ws_xml_is_node_qname(root, XML_NS_SOAP_1_2, SOAP_ENVELOPE) 
-            ||
-            ws_xml_is_node_qname(root, XML_NS_SOAP_1_1, SOAP_ENVELOPE) )
-    {
-        return root;
-    }
-    return NULL;
+	WsXmlNodeH root = ws_xml_get_doc_root(doc);
+	if (ws_xml_is_node_qname(root, XML_NS_SOAP_1_2, SOAP_ENVELOPE)
+	    || ws_xml_is_node_qname(root, XML_NS_SOAP_1_1, SOAP_ENVELOPE)) {
+		return root;
+	}
+	return NULL;
 }
-
-
-/**
- * Get SOAP Faul
- * @param doc XML document
- * @return XML node with fault, if NULL is returned, then the document is not a fault
- */
-/*
-WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
-{
-    char* soapUri = ws_xml_get_node_name_ns(ws_xml_get_doc_root(doc));
-    WsXmlNodeH node = ws_xml_get_soap_operation(doc);
-
-    if ( node && !ws_xml_is_node_qname(node, soapUri, SOAP_FAULT) )
-        node = NULL;
-
-    return node;
-}
-*/
-
 
 
 
@@ -978,11 +944,11 @@ WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc)
  */
 WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
 {
-    WsXmlNodeH parent = NULL;
-    if ( node != NULL )
-        parent = xml_parser_node_get(node, XML_ELEMENT_PARENT);
+	WsXmlNodeH parent = NULL;
+	if (node != NULL)
+		parent = xml_parser_node_get(node, XML_ELEMENT_PARENT);
 
-    return parent;
+	return parent;
 }
 
 /**
@@ -993,26 +959,24 @@ WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node)
  * @return status
  */
 static int
-ws_xml_find_ns_callback( WsXmlNodeH node, 
-                         WsXmlNsH ns, 
-                         void* _data)
+ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void *_data)
 {
-    WsXmlFindNsData* data = (WsXmlFindNsData*)_data;
-    char* curUri = ws_xml_get_ns_uri(ns);
-    char* curPrefix = ws_xml_get_ns_prefix(ns);
-    // debug("uri: %s prefix: %s", curUri, curPrefix );
+	WsXmlFindNsData *data = (WsXmlFindNsData *) _data;
+	char *curUri = ws_xml_get_ns_uri(ns);
+	char *curPrefix = ws_xml_get_ns_prefix(ns);
+	// debug("uri: %s prefix: %s", curUri, curPrefix );
 
-    if ( (data->nsUri != NULL && !strcmp(curUri, data->nsUri))
-            ||
-            (data->prefix != NULL && curPrefix != NULL && !strcmp(curPrefix, data->prefix))
-            ||
-            (data->nsUri == NULL && data->prefix == NULL && curPrefix == NULL)	)
-    {
-        data->node = node;
-        data->ns = ns;
-    }
+	if ((data->nsUri != NULL && !strcmp(curUri, data->nsUri))
+	    ||
+	    (data->prefix != NULL && curPrefix != NULL &&
+	     !strcmp(curPrefix, data->prefix))
+	    || (data->nsUri == NULL && data->prefix == NULL &&
+		curPrefix == NULL)) {
+		data->node = node;
+		data->ns = ns;
+	}
 
-    return (data->ns != NULL);
+	return (data->ns != NULL);
 }
 
 
@@ -1027,43 +991,40 @@ ws_xml_find_ns_callback( WsXmlNodeH node,
  * (if bIncludeParents isn't zero) walks up the parent chain
  * returns prefix for the namespace and node where it defined
  */
-WsXmlNsH 
-ws_xml_find_ns( WsXmlNodeH node, 
-                const char* nsUri, 
-                const char* prefix, 
-                int bWalkUpTree)
+WsXmlNsH
+ws_xml_find_ns(WsXmlNodeH node,
+	       const char *nsUri, const char *prefix, int bWalkUpTree)
 {
-    WsXmlFindNsData data;
+	WsXmlFindNsData data;
 
-    data.node = NULL;
-    data.ns = NULL;
-    data.nsUri = nsUri;
-    data.prefix = prefix;
+	data.node = NULL;
+	data.ns = NULL;
+	data.nsUri = nsUri;
+	data.prefix = prefix;
 
-    if ( (nsUri || prefix) && node )
-        ws_xml_ns_enum(node, ws_xml_find_ns_callback, &data, bWalkUpTree);
+	if ((nsUri || prefix) && node)
+		ws_xml_ns_enum(node, ws_xml_find_ns_callback, &data,
+			       bWalkUpTree);
 
-    return data.ns;
+	return data.ns;
 }
 
 
-char*
-ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
+char *ws_xml_get_node_name_ns_prefix(WsXmlNodeH node)
 {
-    char* prefix = NULL;
-    if ( node )
-        prefix = xml_parser_node_query(node, XML_NS_PREFIX);
-    return prefix;
+	char *prefix = NULL;
+	if (node)
+		prefix = xml_parser_node_query(node, XML_NS_PREFIX);
+	return prefix;
 
 }
 
-char*
-ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
+char *ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
 {
-    char* uri = NULL;
-    if ( node )
-        uri = xml_parser_node_query(node, XML_NS_URI);
-    return uri;
+	char *uri = NULL;
+	if (node)
+		uri = xml_parser_node_query(node, XML_NS_URI);
+	return uri;
 
 }
 
@@ -1074,13 +1035,11 @@ ws_xml_get_node_name_ns_uri(WsXmlNodeH node)
  * @param bWalkUpTree Tree Flag
  * @return Count
  */
-int
-ws_xml_get_ns_count( WsXmlNodeH node, 
-                     int bWalkUpTree)
+int ws_xml_get_ns_count(WsXmlNodeH node, int bWalkUpTree)
 {
-    int count = xml_parser_get_count(node, XML_COUNT_NS, bWalkUpTree);
+	int count = xml_parser_get_count(node, XML_COUNT_NS, bWalkUpTree);
 
-    return count;
+	return count;
 }
 
 
@@ -1089,12 +1048,11 @@ ws_xml_get_ns_count( WsXmlNodeH node,
  * @param ns Namespace
  * @return Prefix of Namespace
  */
-char* 
-ws_xml_get_ns_prefix(WsXmlNsH ns)
+char *ws_xml_get_ns_prefix(WsXmlNsH ns)
 {
-    if ( ns )
-        return xml_parser_ns_query(ns, XML_NS_PREFIX);
-    return NULL;
+	if (ns)
+		return xml_parser_ns_query(ns, XML_NS_PREFIX);
+	return NULL;
 }
 
 
@@ -1103,12 +1061,11 @@ ws_xml_get_ns_prefix(WsXmlNsH ns)
  * @param ns Namespace
  * @return URI of namespace, NULL of not found 
  */
-char*
-ws_xml_get_ns_uri(WsXmlNsH ns)
+char *ws_xml_get_ns_uri(WsXmlNsH ns)
 {
-    if ( ns )
-        return xml_parser_ns_query(ns, XML_NS_URI);
-    return NULL;
+	if (ns)
+		return xml_parser_ns_query(ns, XML_NS_URI);
+	return NULL;
 }
 
 
@@ -1121,9 +1078,9 @@ ws_xml_get_ns_uri(WsXmlNsH ns)
  */
 WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
 {
-    if ( node )
-        return xml_parser_ns_get(node, index);
-    return NULL;
+	if (node)
+		return xml_parser_ns_get(node, index);
+	return NULL;
 }
 
 
@@ -1137,46 +1094,48 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
  * @param val Value of the node
  * @return New XML node
  */
-WsXmlNodeH 
-ws_xml_add_child(WsXmlNodeH node, 
-                 const char* nsUri,
-                 const char* localName,
-                 const char* val)
+WsXmlNodeH
+ws_xml_add_child(WsXmlNodeH node,
+		 const char *nsUri, const char *localName, const char *val)
 {
-    WsXmlNodeH newNode = 
-        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val); 
+	WsXmlNodeH newNode =
+	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName,
+				val);
 
-    return newNode;
+	return newNode;
 }
 
-WsXmlNodeH 
-ws_xml_add_empty_child_format(WsXmlNodeH node, const char* nsUri, const char* format, ...)
+WsXmlNodeH
+ws_xml_add_empty_child_format(WsXmlNodeH node, const char *nsUri,
+			      const char *format, ...)
 {
 	WsXmlNodeH newNode;
-    va_list args;
-    char buf[4096];
-    va_start (args, format);
-    vsnprintf(buf,4096,format,args);
-    va_end(args);
-    newNode = 
-        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL); 
+	va_list args;
+	char buf[4096];
+	va_start(args, format);
+	vsnprintf(buf, 4096, format, args);
+	va_end(args);
+	newNode =
+	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL);
 
-    return newNode;
+	return newNode;
 }
 
-WsXmlNodeH 
-ws_xml_add_child_format(WsXmlNodeH node, const char* nsUri, const char* localName, const char* format, ...)
+WsXmlNodeH
+ws_xml_add_child_format(WsXmlNodeH node, const char *nsUri,
+			const char *localName, const char *format, ...)
 {
 	WsXmlNodeH newNode;
-    va_list args;
-    char buf[4096];
-    va_start (args, format);
-    vsnprintf(buf,4096,format,args);
-    va_end(args);
-    newNode = 
-        xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, buf); 
+	va_list args;
+	char buf[4096];
+	va_start(args, format);
+	vsnprintf(buf, 4096, format, args);
+	va_end(args);
+	newNode =
+	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName,
+				buf);
 
-    return newNode;
+	return newNode;
 }
 
 
@@ -1187,28 +1146,25 @@ ws_xml_add_child_format(WsXmlNodeH node, const char* nsUri, const char* localNam
  * @param bDefault FIXME
  * @return 1 if Ok, 0 if not
  */
-static int 
-is_ns_prefix_ok(WsXmlNsH ns, const char* newPrefix, int bDefault)
+static int
+is_ns_prefix_ok(WsXmlNsH ns, const char *newPrefix, int bDefault)
 {
-    int retVal = 0;
-    char* curPrefix = xml_parser_ns_query(ns, XML_NS_PREFIX);
+	int retVal = 0;
+	char *curPrefix = xml_parser_ns_query(ns, XML_NS_PREFIX);
 
-    if ( bDefault )
-    {
-        if ( curPrefix == NULL )
-            retVal = 1;
-    }
-    else
-    {
-        if ( (newPrefix == NULL && curPrefix != NULL)
-                ||
-                (newPrefix && curPrefix && !strcmp(newPrefix, curPrefix)) )
-        {
-            retVal = 1;
-        }
-    }
+	if (bDefault) {
+		if (curPrefix == NULL)
+			retVal = 1;
+	} else {
+		if ((newPrefix == NULL && curPrefix != NULL)
+		    ||
+		    (newPrefix && curPrefix &&
+		     !strcmp(newPrefix, curPrefix))) {
+			retVal = 1;
+		}
+	}
 
-    return retVal;
+	return retVal;
 }
 
 
@@ -1225,25 +1181,25 @@ is_ns_prefix_ok(WsXmlNsH ns, const char* newPrefix, int bDefault)
  * update QName values and attributes
  */
 WsXmlNsH
-ws_xml_define_ns(WsXmlNodeH node, const char* nsUri, const char* nsPrefix, int bDefault)
+ws_xml_define_ns(WsXmlNodeH node, const char *nsUri, const char *nsPrefix,
+		 int bDefault)
 {
-    WsXmlNsH ns = NULL;
+	WsXmlNsH ns = NULL;
 
-    if ( node && nsUri )
-    {
-        ns = ws_xml_find_ns(node, nsUri, NULL, 0);
-        if ( ns == NULL || !is_ns_prefix_ok(ns, nsPrefix, bDefault) )
-        {
-            char buf[12];
-            if ( !bDefault && nsPrefix == NULL )
-            {
-                ws_xml_make_default_prefix(node, nsUri, buf, sizeof(buf));
-                nsPrefix = buf;
-            }
-            ns = xml_parser_ns_add(node, nsUri, nsPrefix);
-        }
-    }
-    return ns;
+	if (node && nsUri) {
+		ns = ws_xml_find_ns(node, nsUri, NULL, 0);
+		if (ns == NULL || !is_ns_prefix_ok(ns, nsPrefix, bDefault)) {
+			char buf[12];
+			if (!bDefault && nsPrefix == NULL) {
+				ws_xml_make_default_prefix(node, nsUri,
+							   buf,
+							   sizeof(buf));
+				nsPrefix = buf;
+			}
+			ns = xml_parser_ns_add(node, nsUri, nsPrefix);
+		}
+	}
+	return ns;
 }
 
 /**
@@ -1259,237 +1215,229 @@ ws_xml_define_ns(WsXmlNodeH node, const char* nsUri, const char* nsPrefix, int b
  * 
  */
 WsXmlNodeH
-ws_xml_add_qname_child(WsXmlNodeH parent, 
-        const char* nameNs,
-        const char* name,
-        const char* valueNs,
-        const char* value)
+ws_xml_add_qname_child(WsXmlNodeH parent,
+		       const char *nameNs,
+		       const char *name,
+		       const char *valueNs, const char *value)
 {
-    WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
-    if ( node == NULL )
-    {
-        ws_xml_set_node_qname_val(node, valueNs, value);
-    }
-    return node;
+	WsXmlNodeH node = ws_xml_add_child(parent, nameNs, name, NULL);
+	if (node == NULL) {
+		ws_xml_set_node_qname_val(node, valueNs, value);
+	}
+	return node;
 }
 
 
 int ws_xml_get_node_attr_count(WsXmlNodeH node)
 {
-    int count = 0;
+	int count = 0;
 
-    if ( node )
-        count = xml_parser_get_count(node, XML_COUNT_ATTR, 0);
+	if (node)
+		count = xml_parser_get_count(node, XML_COUNT_ATTR, 0);
 
-    return count;
+	return count;
 }
 
 
 WsXmlAttrH
-ws_xml_add_node_attr( WsXmlNodeH node, 
-                      const char* nsUri, 
-                      const char* name, 
-                      const char* value)
+ws_xml_add_node_attr(WsXmlNodeH node,
+		     const char *nsUri,
+		     const char *name, const char *value)
 {
-    WsXmlAttrH attr = NULL;
-    if ( node && name )
-        attr = xml_parser_attr_add(node, nsUri, name, value);
+	WsXmlAttrH attr = NULL;
+	if (node && name)
+		attr = xml_parser_attr_add(node, nsUri, name, value);
 
-    return (WsXmlAttrH)attr;
+	return (WsXmlAttrH) attr;
 }
 
 
-void 
-ws_xml_remove_node_attr(WsXmlAttrH attr)
+void ws_xml_remove_node_attr(WsXmlAttrH attr)
 {
-    if ( attr )
-        xml_parser_attr_remove(attr);
+	if (attr)
+		xml_parser_attr_remove(attr);
 }
 
+
+WsXmlAttrH ws_xml_get_node_attr(WsXmlNodeH node, int index)
+{
+	return xml_parser_attr_get(node, index);
+}
 
 WsXmlAttrH
-ws_xml_get_node_attr(WsXmlNodeH node, int index)
+ws_xml_find_node_attr(WsXmlNodeH node, const char *attrNs,
+		      const char *attrName)
 {
-    return xml_parser_attr_get(node, index);
-}
+	WsXmlAttrH attr = NULL;
+	if (node && attrName) {
+		int i = 0;
 
-WsXmlAttrH 
-ws_xml_find_node_attr(WsXmlNodeH node, const char* attrNs, const char* attrName)
-{
-    WsXmlAttrH attr = NULL;
-    if ( node && attrName )
-    {
-        int i = 0;
+		for (i = 0; (attr = ws_xml_get_node_attr(node, i)) != NULL;
+		     i++) {
+			char *curNsUri = ws_xml_get_attr_ns(attr);
+			char *curName = ws_xml_get_attr_name(attr);
 
-        for(i = 0; (attr = ws_xml_get_node_attr(node, i)) != NULL; i++)
-        {
-            char* curNsUri = ws_xml_get_attr_ns(attr);
-            char* curName = ws_xml_get_attr_name(attr);
+			if ((attrNs == curNsUri)
+			    ||
+			    (attrNs != NULL
+			     &&
+			     curNsUri != NULL
+			     && !strcmp(curNsUri, attrNs))) {
+				if (!strcmp(attrName, curName))
+					break;
+			}
+		}
+	}
 
-            if ((attrNs == curNsUri)
-                    ||
-                    (attrNs != NULL
-                     &&
-                     curNsUri != NULL
-                     &&
-                     !strcmp(curNsUri, attrNs)) )
-            {
-                if ( !strcmp(attrName, curName) )
-                    break;
-            }
-        }
-    }
-
-    return attr;
+	return attr;
 }
 
 
-unsigned long 
-ws_xml_get_node_ulong(WsXmlNodeH node)
+unsigned long ws_xml_get_node_ulong(WsXmlNodeH node)
 {
-    unsigned long val = 0;
-    char* text = ws_xml_get_node_text(node);
+	unsigned long val = 0;
+	char *text = ws_xml_get_node_text(node);
 
-    if ( text )
-        val = atoi(text);
-    return val;
+	if (text)
+		val = atoi(text);
+	return val;
 }
 
 
-int 
-ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
+int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
 {
-    int retVal = -1;
-    if ( node )
-    {
-        char buf[12];
-        sprintf(buf, "%lu", uVal);
-        retVal = ws_xml_set_node_text(node, buf);
-    }
-    return retVal;
+	int retVal = -1;
+	if (node) {
+		char buf[12];
+		sprintf(buf, "%lu", uVal);
+		retVal = ws_xml_set_node_text(node, buf);
+	}
+	return retVal;
 }
 
 
 
 
-char* ws_xml_get_attr_name(WsXmlAttrH attr)
+char *ws_xml_get_attr_name(WsXmlAttrH attr)
 {
-    char* name = NULL;
-    if ( attr )
-        name = xml_parser_attr_query(attr, XML_LOCAL_NAME);
-    return name;
+	char *name = NULL;
+	if (attr)
+		name = xml_parser_attr_query(attr, XML_LOCAL_NAME);
+	return name;
 }
 
-char* ws_xml_get_attr_ns(WsXmlAttrH attr)
+char *ws_xml_get_attr_ns(WsXmlAttrH attr)
 {
-    char* nsUri = NULL;
+	char *nsUri = NULL;
 
-    if ( attr )
-        nsUri = xml_parser_attr_query(attr, XML_NS_URI);
+	if (attr)
+		nsUri = xml_parser_attr_query(attr, XML_NS_URI);
 
-    return nsUri;
+	return nsUri;
 }
 
-char* ws_xml_get_attr_ns_prefix(WsXmlAttrH attr)
+char *ws_xml_get_attr_ns_prefix(WsXmlAttrH attr)
 {
-    char* prefix = NULL;
+	char *prefix = NULL;
 
-    if ( attr )
-        prefix = xml_parser_attr_query(attr, XML_NS_PREFIX);
+	if (attr)
+		prefix = xml_parser_attr_query(attr, XML_NS_PREFIX);
 
-    return prefix;
-}
-
-
-char* ws_xml_get_attr_value(WsXmlAttrH attr)
-{
-    char* val = NULL;
-
-    if ( attr )
-        val = xml_parser_attr_query(attr, XML_TEXT_VALUE);
-
-    return val;
+	return prefix;
 }
 
 
-char* ws_xml_find_attr_value(WsXmlNodeH node, const char* ns, const char* attrName)
+char *ws_xml_get_attr_value(WsXmlAttrH attr)
 {
-    char* val = NULL;
-    WsXmlAttrH attr = ws_xml_find_node_attr(node, ns, attrName);
+	char *val = NULL;
 
-    if ( attr )
-        val =  ws_xml_get_attr_value(attr);
+	if (attr)
+		val = xml_parser_attr_query(attr, XML_TEXT_VALUE);
 
-    return val;
-}
-
-int ws_xml_find_attr_bool(WsXmlNodeH node, const char* ns, const char* attrName)
-{
-    int retVal = 0;
-    char* val = ws_xml_find_attr_value(node, ns, attrName);
-
-    if ( val != NULL )
-        retVal = is_xml_val_true(val);
-
-    return retVal;
+	return val;
 }
 
 
-unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, const char* ns, const char* attrName)
+char *ws_xml_find_attr_value(WsXmlNodeH node, const char *ns,
+			     const char *attrName)
 {
-    unsigned long retVal = 0;
-    char* val = ws_xml_find_attr_value(node, ns, attrName);
+	char *val = NULL;
+	WsXmlAttrH attr = ws_xml_find_node_attr(node, ns, attrName);
 
-    if ( val != NULL )
-        retVal = atoi(val);
+	if (attr)
+		val = ws_xml_get_attr_value(attr);
 
-    return retVal;
+	return val;
+}
+
+int ws_xml_find_attr_bool(WsXmlNodeH node, const char *ns,
+			  const char *attrName)
+{
+	int retVal = 0;
+	char *val = ws_xml_find_attr_value(node, ns, attrName);
+
+	if (val != NULL)
+		retVal = is_xml_val_true(val);
+
+	return retVal;
+}
+
+
+unsigned long ws_xml_find_attr_ulong(WsXmlNodeH node, const char *ns,
+				     const char *attrName)
+{
+	unsigned long retVal = 0;
+	char *val = ws_xml_find_attr_value(node, ns, attrName);
+
+	if (val != NULL)
+		retVal = atoi(val);
+
+	return retVal;
 }
 
 
 // if ns is not defined at the node or at any of its parents, it will be defined at the root
 // if namespaces has been changed after this function is called, itis caller's
 // responsibility to update QName fields accordingly
-int ws_xml_set_node_qname_val(WsXmlNodeH node, const char* valNsUri, const char* valName)
+int ws_xml_set_node_qname_val(WsXmlNodeH node, const char *valNsUri,
+			      const char *valName)
 {
-    int retVal = -1;
-    if ( node && valName && valNsUri )
-    {
-        char* buf = make_qname(node, valNsUri, valName);
+	int retVal = -1;
+	if (node && valName && valNsUri) {
+		char *buf = make_qname(node, valNsUri, valName);
 
-        if ( buf != NULL )
-        {
-            retVal = ws_xml_set_node_text(node, buf);
-            u_free(buf);
-        }
-    }
-    return retVal;
+		if (buf != NULL) {
+			retVal = ws_xml_set_node_text(node, buf);
+			u_free(buf);
+		}
+	}
+	return retVal;
 }
 
 WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node)
 {
-    WsXmlDocH doc = NULL;
+	WsXmlDocH doc = NULL;
 
-    if ( node != NULL )
-        doc = xml_parser_get_doc(node);
+	if (node != NULL)
+		doc = xml_parser_get_doc(node);
 
-    return doc;
+	return doc;
 }
 
 
-int ws_xml_set_node_text(WsXmlNodeH node, const char* text)
+int ws_xml_set_node_text(WsXmlNodeH node, const char *text)
 {
-    int retVal = -1;
+	int retVal = -1;
 
-    if ( node )
-        retVal = xml_parser_node_set(node, XML_TEXT_VALUE, text);
+	if (node)
+		retVal = xml_parser_node_set(node, XML_TEXT_VALUE, text);
 
-    return retVal;
+	return retVal;
 }
 
-void ws_xml_set_node_lang(WsXmlNodeH node, const char* lang)
+void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang)
 {
-    xmlNodeSetLang((xmlNodePtr )node, BAD_CAST lang);
+	xmlNodeSetLang((xmlNodePtr) node, BAD_CAST lang);
 }
 
 
@@ -1503,56 +1451,55 @@ int is_root_node(WsXmlNodeH node)
 */
 
 
-void ws_xml_dump_node_tree(FILE* f, WsXmlNodeH node)
+void ws_xml_dump_node_tree(FILE * f, WsXmlNodeH node)
 {
-    WsXmlDocH doc = xml_parser_get_doc(node);
-    xml_parser_doc_dump(f, doc);
-    return;
+	WsXmlDocH doc = xml_parser_get_doc(node);
+	xml_parser_doc_dump(f, doc);
+	return;
 }
 
-void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char** buf, int* ptrSize)
+void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
+				  int *ptrSize)
 {
-    WsXmlDocH doc = xml_parser_get_doc(node);
-    xml_parser_doc_dump_memory(doc, buf, ptrSize);
-    return;
+	WsXmlDocH doc = xml_parser_get_doc(node);
+	xml_parser_doc_dump_memory(doc, buf, ptrSize);
+	return;
 }
 
-void ws_xml_dump_doc(FILE* f, WsXmlDocH doc ) {
-    xml_parser_doc_dump(f, doc);
-    return;
-}
-
-
-WsXmlNsH 
-ws_xml_ns_add( WsXmlNodeH node, 
-               const char* uri, 
-               const char* prefix)
+void ws_xml_dump_doc(FILE * f, WsXmlDocH doc)
 {
-    return xml_parser_ns_add(node, uri, prefix );
+	xml_parser_doc_dump(f, doc);
+	return;
+}
+
+
+WsXmlNsH
+ws_xml_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
+{
+	return xml_parser_ns_add(node, uri, prefix);
 }
 
 
 
-int 
-check_xpath(WsXmlNodeH node, char *xpath_expr) {
-    //return xml_parser_check_xpath(node, xpath_expr);
-    return 0;
+int check_xpath(WsXmlNodeH node, char *xpath_expr)
+{
+	//return xml_parser_check_xpath(node, xpath_expr);
+	return 0;
 }
 
 
-char *
-ws_xml_get_xpath_value (WsXmlDocH doc, char *expression)
-{    
-    return xml_parser_get_xpath_value(doc, expression);
+char *ws_xml_get_xpath_value(WsXmlDocH doc, char *expression)
+{
+	return xml_parser_get_xpath_value(doc, expression);
 }
 
 
 
-WsXmlDocH 
-ws_xml_create_doc_by_import( WsXmlNodeH node ) {
-        WsXmlDocH wsDoc = (WsXmlDocH)u_zalloc(sizeof (*wsDoc));
-	xml_parser_create_doc_by_import( wsDoc,  node );
-        return wsDoc;
+WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node)
+{
+	WsXmlDocH wsDoc = (WsXmlDocH) u_zalloc(sizeof(*wsDoc));
+	xml_parser_create_doc_by_import(wsDoc, node);
+	return wsDoc;
 }
 
 
