@@ -292,16 +292,15 @@ xml2property(CMPIInstance * instance,
 }
 
 void
-property2xml(CimClientInfo * client,
-	     CMPIData data,
+property2xml(CimClientInfo * client, CMPIData data,
 	     char *name, WsXmlNodeH node, char *resource_uri, int is_key)
 {
 	char *valuestr = NULL;
 
 	if (CMIsArray(data)) {
+		 WsXmlNodeH nilnode;
 		if (data.type == CMPI_null && data.state == CMPI_nullValue) {
-			WsXmlNodeH nilnode =
-			    ws_xml_add_child(node, resource_uri, name,
+			nilnode = ws_xml_add_child(node, resource_uri, name,
 					     NULL);
 			ws_xml_add_node_attr(nilnode,
 					     XML_NS_SCHEMA_INSTANCE, "nil",

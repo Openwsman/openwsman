@@ -37,9 +37,8 @@
 
 
 
-struct __internalWsNode
-{
-	char* valText;
+struct __internalWsNode {
+	char *valText;
 	//DL_List nsQNameList;
 };
 typedef struct __internalWsNode iWsNode;
@@ -52,45 +51,52 @@ void xml_parser_destroy_doc(WsXmlDocH Doc);
 WsXmlDocH xml_parser_get_doc(WsXmlNodeH node);
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc);
 WsXmlDocH xml_parser_memory_to_doc(SoapH soap, char *buf, size_t size,
-                                 const char *encoding, unsigned long options);
+				   const char *encoding,
+				   unsigned long options);
 char *xml_parser_node_query(WsXmlNodeH node, int what);
 int xml_parser_node_set(WsXmlNodeH node, int what, const char *str);
 WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which);
 WsXmlNsH xml_parser_ns_find(WsXmlNodeH node, const char *uri,
-             const char *prefix, int bWalkUpTree, int bAddAtRootIfNotFound);
+			    const char *prefix, int bWalkUpTree,
+			    int bAddAtRootIfNotFound);
 char *xml_parser_ns_query(WsXmlNsH ns, int what);
-WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix);
+WsXmlNsH xml_parser_ns_add(WsXmlNodeH node, const char *uri,
+			   const char *prefix);
 int xml_parser_ns_remove(WsXmlNodeH node, const char *nsUri);
 WsXmlNsH xml_parser_ns_get(WsXmlNodeH node, int which);
 
 int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree);
 // xmlNodePtr make_new_xml_node(xmlNodePtr base, const char *uri, const char *name, const char *value);
 WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where,
-                           const char *nsUri, const char *localName, const char *value);
+			       const char *nsUri, const char *localName,
+			       const char *value);
 int xml_parser_node_remove(WsXmlNodeH node);
 WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, const char *uri,
-                                        const char *name, const char *value);
+			       const char *name, const char *value);
 int xml_parser_attr_remove(WsXmlAttrH attr);
-WsXmlDocH xml_parser_file_to_doc(SoapH soap, const char* filename,
-                                     const char* encoding, unsigned long options);
+WsXmlDocH xml_parser_file_to_doc(SoapH soap, const char *filename,
+				 const char *encoding,
+				 unsigned long options);
 
-char* xml_parser_attr_query(WsXmlAttrH attr, int what);
+char *xml_parser_attr_query(WsXmlAttrH attr, int what);
 WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
 
-void xml_parser_free_memory(void* ptr);
-void xml_parser_doc_to_memory(WsXmlDocH doc, char** buf,
-                                             int* ptrSize, char* encoding);
+void xml_parser_free_memory(void *ptr);
+void xml_parser_doc_to_memory(WsXmlDocH doc, char **buf,
+			      int *ptrSize, char *encoding);
 
-void xml_parser_doc_dump(FILE* f, WsXmlDocH doc);
-void xml_parser_doc_dump_memory(WsXmlDocH doc, char** buf, int* ptrSize);
-void xml_parser_element_dump(FILE* f, WsXmlDocH doc, WsXmlNodeH node);
+void xml_parser_doc_dump(FILE * f, WsXmlDocH doc);
+void xml_parser_doc_dump_memory(WsXmlDocH doc, char **buf, int *ptrSize);
+void xml_parser_element_dump(FILE * f, WsXmlDocH doc, WsXmlNodeH node);
 
-int xml_parser_check_xpath(WsXmlNodeH node, char * xpath_expr);
+int xml_parser_check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int xml_parser_utf8_strlen(char *buf);
 
 char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression);
 
-int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node ) ;
+int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node);
 
-#endif /*XML_BINDING_LIBXML2_H_*/
+void xml_parser_unlink_node(WsXmlNodeH node);
+
+#endif				/*XML_BINDING_LIBXML2_H_ */

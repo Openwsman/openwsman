@@ -98,15 +98,15 @@ typedef struct _XML_NODE_ATTR XML_NODE_ATTR;
 
 
 struct __XmlSerializationData;
-typedef size_t (*XmlSerializationProc)(struct __XmlSerializationData* data);
+typedef int (*XmlSerializationProc)(struct __XmlSerializationData* data);
 
 struct __XmlSerializerInfo
 {
     const char *ns;
     const char* name;
-    size_t mincount;    /**< Minimal Count */
-    size_t count;       /**< Maximal Count */
-    size_t size;        /**< size of serialized/deserialized element */
+    int mincount;    /**< Minimal Count */
+    int count;       /**< Maximal Count */
+    int size;        /**< size of serialized/deserialized element */
     unsigned int flags; /**< flags */
     XmlSerializationProc proc; /**< Serialization Processor */
     XML_TYPE_PTR extData;      /**< External Data */
@@ -193,7 +193,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
     }
 
 
-        // No namespace defines
+// No namespace defines
 #define SER_UINT8_FLAGS(n, x, flags)  SER_NS_UINT8_FLAGS(NULL, n, x, flags)
 #define SER_UINT16_FLAGS(n, x, flags) SER_NS_UINT16_FLAGS(NULL, n, x, flags)
 #define SER_UINT32_FLAGS(n, x, flags) SER_NS_UINT32_FLAGS(NULL, n, x, flags)
@@ -205,7 +205,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
                         SER_NS_DYN_ARRAY_FLAGS(NULL, n, min, max, flags, t)
 
 
-        // Serialization Info for different types
+// Serialization Info for different types
 #define SER_UINT8(n, x)               SER_UINT8_FLAGS(n, x, 0)
 #define SER_UINT16(n, x)              SER_UINT16_FLAGS(n, x, 0)
 #define SER_UINT32(n, x)              SER_UINT32_FLAGS(n, x, 0)
@@ -378,21 +378,21 @@ XmlSerializerInfo t##_TypeInfo[] = {\
 
         // XmlSerializationProc functions for different types
 
-size_t do_serialize_uint8(struct __XmlSerializationData* data);
-size_t do_serialize_uint16(struct __XmlSerializationData* data);
-size_t do_serialize_uint32(struct __XmlSerializationData* data);
-size_t do_serialize_string(struct __XmlSerializationData* data);
-size_t do_serialize_bool(struct __XmlSerializationData* data);
-size_t do_serialize_dyn_size_array(struct __XmlSerializationData* data);
-size_t do_serialize_struct(struct __XmlSerializationData* data);
-size_t do_serialize_attrs(struct __XmlSerializationData* data);
+int do_serialize_uint8(struct __XmlSerializationData* data);
+int do_serialize_uint16(struct __XmlSerializationData* data);
+int do_serialize_uint32(struct __XmlSerializationData* data);
+int do_serialize_string(struct __XmlSerializationData* data);
+int do_serialize_bool(struct __XmlSerializationData* data);
+int do_serialize_dyn_size_array(struct __XmlSerializationData* data);
+int do_serialize_struct(struct __XmlSerializationData* data);
+int do_serialize_attrs(struct __XmlSerializationData* data);
 
 
 
 
         // Serializer user interface
 
-size_t ws_serialize(WsContextH cntx,
+int ws_serialize(WsContextH cntx,
                 WsXmlNodeH xmlNode,
                 XML_TYPE_PTR dataPtr,
                 XmlSerializerInfo *info,
@@ -449,7 +449,7 @@ int ws_deserialize_datetime(
                 XML_DATETIME *tmx);
 
 
-size_t ws_serializer_free_mem(WsContextH cntx, 
+int ws_serializer_free_mem(WsContextH cntx, 
                 XML_TYPE_PTR buf, 
                 XmlSerializerInfo *info);
 

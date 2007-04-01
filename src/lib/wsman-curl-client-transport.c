@@ -216,6 +216,13 @@ init_curl_transport(WsManClient *cl)
 			goto DONE;
 		}
 	}
+	if (wsman_transport_get_timeout()) {
+		r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, wsman_transport_get_timeout());
+		if (r != 0) {
+			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_TIMEOUT, ...)");
+			goto DONE;
+		}
+	}
 
 	if (wsman_transport_get_proxyauth()) {
 		r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,

@@ -77,6 +77,8 @@ void debug_remove_handler (unsigned int id);
 void debug_full(debug_level_e  level, const char *format, ...);
 void debug_full_verbose(debug_level_e  level, char *file,
                  int line, const char *proc, const char *format, ...);
+
+// #define ENABLE_TRACING
 #ifdef ENABLE_TRACING
 #define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
 #define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __FUNCTION__, __FILE__, __LINE__ , debug_helper (format));

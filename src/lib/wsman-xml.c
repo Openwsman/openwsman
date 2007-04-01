@@ -278,11 +278,8 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
 				WsXmlNodeH dstRoot =
 				    ws_xml_get_doc_root(dst);
 
-				for (i = 0;
-				     (node =
-				      ws_xml_get_child(srcRoot, i, NULL,
-						       NULL)) != NULL;
-				     i++) {
+				for (i = 0; (node = ws_xml_get_child(srcRoot,
+								i, NULL, NULL)) != NULL; i++) {
 					ws_xml_duplicate_tree(dstRoot,
 							      node);
 				}
@@ -1503,7 +1500,10 @@ WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node)
 }
 
 
-
+void ws_xml_unlink_node(WsXmlNodeH node)
+{
+	xml_parser_unlink_node(node);
+}
 
 
 /** @} */

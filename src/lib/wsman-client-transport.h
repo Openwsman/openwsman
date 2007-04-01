@@ -76,6 +76,8 @@ extern void wsman_client_transport_fini(void);
 
 extern char *wsman_transport_get_proxy(void);
 
+extern unsigned long wsman_transport_get_timeout(void);
+
 extern char *wsman_transport_get_proxyauth(void);
 
 extern char * wsman_transport_get_agent (void);
@@ -89,6 +91,8 @@ extern char *wsman_transport_get_cafile(void);
 extern void wsman_transport_set_proxy(char *proxy);
 
 extern void wsman_transport_set_proxyauth(char *pauth);
+
+extern void wsman_transport_set_timeout(unsigned long timeout);
 
 extern void wsman_transport_set_agent(char *agent);
 

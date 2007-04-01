@@ -46,10 +46,9 @@
 #include "wsman-xml-api.h"
 
 
-struct __WsXmlParserData
-{
+struct __WsXmlParserData {
 	WsXmlDocH nsHolder;
-	void* _private;	
+	void *_private;
 };
 typedef struct __WsXmlParserData WsXmlParserData;
 
@@ -60,27 +59,24 @@ typedef struct __WsXmlParserData WsXmlParserData;
 
 
 
-struct _WsXmlFindNsData
-{
-    const char* prefix;
-    const char* nsUri;
-    WsXmlNodeH node;
-    WsXmlNsH ns;
+struct _WsXmlFindNsData {
+	const char *prefix;
+	const char *nsUri;
+	WsXmlNodeH node;
+	WsXmlNsH ns;
 };
 typedef struct _WsXmlFindNsData WsXmlFindNsData;
 
-struct _FindInTreeCallbackData
-{
-    const char* ns;
-    const char* name;
-    WsXmlNodeH node;
+struct _FindInTreeCallbackData {
+	const char *ns;
+	const char *name;
+	WsXmlNodeH node;
 };
 typedef struct _FindInTreeCallbackData FindInTreeCallbackData;
 
-struct __WsXmlDumpNodeTreeData
-{
-    FILE* stream;
-    int indent;
+struct __WsXmlDumpNodeTreeData {
+	FILE *stream;
+	int indent;
 };
 typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
@@ -100,7 +96,7 @@ char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive);
 */
 
-WsXmlDocH ws_xml_create_doc_by_import( WsXmlNodeH node );
+WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node);
 
 
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
@@ -113,35 +109,43 @@ void ws_xml_parser_destroy(SoapH soap);
 
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
-char* ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
+char *ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
 
-char* ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
+char *ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
-WsXmlDocH ws_xml_read_file(SoapH soap, const char* filename,
-                                const char* encoding, unsigned long options);
+WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
+			   const char *encoding, unsigned long options);
 WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, size_t size,
-                                 char *encoding, unsigned long options);
+			     char *encoding, unsigned long options);
 
-WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName);
-WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri, const char *prefix);
+WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
+			    const char *rootName);
+WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri,
+			   const char *prefix);
 
-WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const const char* uri, const char* prefix);
+WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const const char *uri,
+		       const char *prefix);
 
-WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, const char* nsUri,
-                                      const char* localName, const char* format, ...);
+WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, const char *nsUri,
+				   const char *localName,
+				   const char *format, ...);
 
 WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
-                                const char* nsUri, const char* format, ...);
+					 const char *nsUri,
+					 const char *format, ...);
 
 int check_xpath(WsXmlNodeH node, char *xpath_expr);
 
 int ws_xml_utf8_strlen(char *buf);
 
 
-void ws_xml_set_node_lang(WsXmlNodeH node, const char* lang);
+void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang);
 
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 
+
+void ws_xml_unlink_node(WsXmlNodeH node);
+
 /** @} */
 
-#endif /*XML_API_GENERIC_H_*/
+#endif				/*XML_API_GENERIC_H_ */

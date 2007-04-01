@@ -67,6 +67,7 @@ static char *proxy = NULL;
 static char *proxy_auth = NULL;
 static char *user_agent = PACKAGE_STRING;
 static int noverifypeer = 0;
+static unsigned long  transport_timeout = 0;
 static char *cafile;
 
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
@@ -200,6 +201,13 @@ char *wsman_transport_get_proxyauth()
   return proxy_auth;
 }
 
+unsigned long wsman_transport_get_timeout()
+{
+  return transport_timeout;
+}
+
+
+
 char * wsman_transport_get_agent ()
 {
   return user_agent;
@@ -229,6 +237,11 @@ void wsman_transport_set_proxy(char *arg)
 void wsman_transport_set_proxyauth(char *arg)
 {
   proxy_auth = arg;
+}
+
+void wsman_transport_set_timeout(unsigned long arg)
+{
+  transport_timeout = arg;
 }
 
 void wsman_transport_set_agent (char *arg)
