@@ -380,7 +380,7 @@ wsman_check_unsupported_features(op_t * op)
 		retVal = 1;
 		wsman_generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
 	}  else if (n || m) {
-		char *dia;
+		char *dia = NULL;
 		if (n) {
 			dia = ws_xml_find_attr_value(n, NULL , WSM_DIALECT);
 		} else if (m) {
