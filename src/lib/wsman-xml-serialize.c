@@ -358,7 +358,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
-				error("negative or abcent value = %s",
+				error("negative or absent value = %s",
 				      str);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
