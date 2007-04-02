@@ -628,56 +628,53 @@ char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc)
 	return enum_mode;
 }
 
+
 void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo * enumInfo)
 {
 	if (strcmp(enum_mode, WSM_ENUM_EPR) == 0)
-		enumInfo->flags |= FLAG_ENUMERATION_ENUM_EPR;
+		enumInfo->flags |= WSMAN_ENUMINFO_EPR;
 	else if (strcmp(enum_mode, WSM_ENUM_OBJ_AND_EPR) == 0)
-		enumInfo->flags |= FLAG_ENUMERATION_ENUM_OBJ_AND_EPR;
+		enumInfo->flags |= WSMAN_ENUMINFO_OBJEPR;
 	return;
 }
 
 
 void
 wsman_set_polymorph_mode(WsContextH cntx,
-			 WsXmlDocH doc, WsEnumerateInfo * enumInfo)
+		WsXmlDocH doc, WsEnumerateInfo * enumInfo)
 {
+	WsXmlNodeH node;
 
 	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc)
+			return;
 	}
+	node = ws_xml_get_soap_body(doc);
+	if (node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+				WSENUM_ENUMERATE))) {
 
-	if (doc) {
-		WsXmlNodeH node = ws_xml_get_soap_body(doc);
-		if (node && (node = ws_xml_get_child(node, 0,
-						     XML_NS_ENUMERATION,
-						     WSENUM_ENUMERATE))) {
-			WsXmlNodeH opt = ws_xml_get_child(node, 0,
-							  XML_NS_CIM_BINDING,
-							  WSMB_POLYMORPHISM_MODE);
-			if (opt) {
-				char *mode = ws_xml_get_node_text(opt);
-				if (strcmp
-				    (mode,
-				     WSMB_EXCLUDE_SUBCLASS_PROP) == 0)
-					enumInfo->flags |=
-					    FLAG_ExcludeSubClassProperties;
-				else if (strcmp
-					 (mode,
-					  WSMB_INCLUDE_SUBCLASS_PROP) == 0)
-					enumInfo->flags |=
-					    FLAG_IncludeSubClassProperties;
-				else if (strcmp(mode, WSMB_NONE) == 0)
-					enumInfo->flags |=
-					    FLAG_POLYMORPHISM_NONE;
-			} else {
-				enumInfo->flags |=
-				    FLAG_IncludeSubClassProperties;
-				return;
+		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING,
+				WSMB_POLYMORPHISM_MODE);
+		if (opt) {
+			char *mode = ws_xml_get_node_text(opt);
+			if (strcmp(mode, WSMB_EXCLUDE_SUBCLASS_PROP) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_EXCLUDE;
+			} else if (strcmp(mode, WSMB_INCLUDE_SUBCLASS_PROP) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
+			} else if (strcmp(mode, WSMB_NONE) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_NONE;
 			}
+		} else {
+			enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
+			return;
 		}
 	}
+	debug("enum flags: %lu", enumInfo->flags );
 }
+
+
+
 
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 		const char *op)
@@ -720,27 +717,29 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc)
 {
 	int max_elements = 0;
-	if (doc == NULL)
+	WsXmlNodeH node;
+	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc)
+			return 0;
+	}
 
-	if (doc) {
-		WsXmlNodeH node = ws_xml_get_soap_body(doc);
+	node = ws_xml_get_soap_body(doc);
 
-		if (node && (node = ws_xml_get_child(node, 0, 
-			XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
-			WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
-					     WSM_OPTIMIZE_ENUM);
-			if (opt) {
-				WsXmlNodeH max = ws_xml_get_child(node, 0,
-						     XML_NS_WS_MAN,
-						     WSM_MAX_ELEMENTS);
-				if (max) {
-					char *text = ws_xml_get_node_text(max);
-					if (text != NULL)
-						max_elements = atoi(text);
-				} else {
-					max_elements = 1;
-				}
+	if (node && (node = ws_xml_get_child(node, 0, 
+					XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
+		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
+				WSM_OPTIMIZE_ENUM);
+		if (opt) {
+			WsXmlNodeH max = ws_xml_get_child(node, 0,
+					XML_NS_WS_MAN,
+					WSM_MAX_ELEMENTS);
+			if (max) {
+				char *text = ws_xml_get_node_text(max);
+				if (text != NULL)
+					max_elements = atoi(text);
+			} else {
+				max_elements = 1;
 			}
 		}
 	}

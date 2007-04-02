@@ -18,9 +18,6 @@
 #include <u/str.h>
 #include <u/uri.h>
 #include <u/os.h>
-#ifndef NO_ENV
-#include <u/env.h>
-#endif
 #ifndef NO_LOG
 #include <u/log.h>
 #endif

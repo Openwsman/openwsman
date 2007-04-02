@@ -314,22 +314,19 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				tmp =
 				    *((XML_TYPE_UINT8 *) data->elementBuf);
 			else if (valSize == 2)
-				tmp =
-				    *((XML_TYPE_UINT16 *) data->
+				tmp = *((XML_TYPE_UINT16 *) data->
 				      elementBuf);
 			else if (valSize == 4)
-				tmp =
-				    *((XML_TYPE_UINT32 *) data->
+				tmp = *((XML_TYPE_UINT32 *) data->
 				      elementBuf);
 			else {
-				error("unsupported uint size + %d",
-				      8 * valSize);
+				error("unsupported uint size + %d", 
+						8 * valSize);
 				retVal = WS_ERR_INVALID_PARAMETER;
 				goto DONE;
 			}
 
-			if (((child =
-			      xml_serializer_add_child(data,
+			if (((child = xml_serializer_add_child(data,
 						       NULL)) == NULL)
 			    || (ws_xml_set_node_ulong(child, tmp)) != 0) {
 				debug("could not add child %s[%d]",
@@ -339,8 +336,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 			}
 		}
 		if (data->mode == XML_SMODE_DESERIALIZE) {
-			if ((child =
-			     xml_serializer_get_child(data)) == NULL) {
+			if ((child = xml_serializer_get_child(data)) == NULL) {
 				error ("not enough (%d < %d) instances of element %s",
 				     data->index, DATA_COUNT(data),
 				     DATA_ELNAME(data));
@@ -358,8 +354,13 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
-				error("negative or absent value = %s",
-				      str);
+
+				if (ws_xml_find_attr_bool(child, 
+						     XML_NS_SCHEMA_INSTANCE,
+						     XML_SCHEMA_NIL)) {
+					goto ALMOST_DONE;
+				}
+				error("negative or absent value = %s", str);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
 			}
@@ -403,6 +404,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				goto DONE;
 			}
 		}
+ALMOST_DONE:
 		handle_attrs(data, child, valSize);
 		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
 	}

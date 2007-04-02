@@ -71,13 +71,9 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	char *sub, *target_class = NULL;
 	hscan_t hs;
 	hnode_t *hn;
-	if (enumInfo 
-		&& ((enumInfo->flags & FLAG_ExcludeSubClassProperties) ==
-			 FLAG_ExcludeSubClassProperties) ) {
-		if ((enumInfo->flags & FLAG_ENUMERATION_ENUM_EPR) ==
-                           FLAG_ENUMERATION_ENUM_EPR 
-		|| (enumInfo->flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) !=
-                          FLAG_ENUMERATION_ENUM_OBJ_AND_EPR )  {
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
+		if ( (enumInfo->flags & WSMAN_ENUMINFO_EPR ) &&
+			!(enumInfo->flags & WSMAN_ENUMINFO_OBJEPR))  {
 			target_class = classname;
 		} else {
 			target_class = client->requested_class;
@@ -87,7 +83,6 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	}
 
 	debug("target class:%s", target_class);
-
 	if (strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL &&
 	    (strcmp(client->method, TRANSFER_GET) == 0 ||
 	     strcmp(client->method, TRANSFER_DELETE) == 0 ||
@@ -339,8 +334,7 @@ property2xml(CimClientInfo * client, CMPIData data,
 				    ws_xml_add_child(node, resource_uri,
 						     name, valuestr);
 				if (is_key == 0 && 
-					(client->flags &
-					 FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS ) {
+					(client->flags & WSMAN_ENUMINFO_EXT )) {
 					ws_xml_add_node_attr(propnode,
 							XML_NS_CIM_SCHEMA, "Key",
 							"true");
@@ -527,9 +521,7 @@ static CMPIConstClass *cim_get_class(CimClientInfo * client,
 	CMPIStatus rc;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
-
 	op = newCMPIObjectPath(client->cim_namespace, class, NULL);
-
 	_class = cc->ft->getClass(cc, op, flags, NULL, &rc);
 
 	/* Print the results */
@@ -561,25 +553,21 @@ instance2xml(CimClientInfo * client,
 
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	classname = objectpath->ft->getClassName(objectpath, NULL);
-	class_namespace =
-	    cim_find_namespace_for_class(client, enumInfo,
+	class_namespace = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
-	debug("final_class: %s", final_class );
 
 	r = ws_xml_add_child(body, NULL, final_class, NULL);
 	u_free(final_class);
-	debug("class name: %s", client->requested_class);
 
 	//FIXME
 	ns = ws_xml_ns_add(r, class_namespace, "p");
 	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
+	
+	debug("+++++++++++++++++++++++++++++ %d", enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE  );
 
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_ExcludeSubClassProperties) ==
-			 FLAG_ExcludeSubClassProperties)) {
-		_class = cim_get_class(client, client->requested_class, 0,
-				  NULL);
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
+		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
 	} else {
@@ -596,9 +584,7 @@ instance2xml(CimClientInfo * client,
 		CMPIString *propertyname;
 		CMPIData data;
 		CMPIStatus is_key;
-		if (enumInfo && ((enumInfo->flags &
-				  FLAG_ExcludeSubClassProperties) ==
-				 FLAG_ExcludeSubClassProperties)) {
+		if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
 			data = instance->ft->getProperty(instance,
@@ -617,9 +603,7 @@ instance2xml(CimClientInfo * client,
 		CMRelease(propertyname);
 	}
 
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_ExcludeSubClassProperties) ==
-			 FLAG_ExcludeSubClassProperties)) {
+	if (enumInfo && (enumInfo->flags &  WSMAN_ENUMINFO_POLY_EXCLUDE ) ) {
 		if (_class) {
 			CMRelease(_class);
 		}
@@ -837,32 +821,26 @@ int
 cim_getElementAt(CimClientInfo * client,
 		 WsEnumerateInfo * enumInfo, WsXmlNodeH itemsNode)
 {
-
 	int retval = 1;
 	CMPIArray *results = (CMPIArray *) enumInfo->enumResults;
-	CMPIData data =
-	    results->ft->getElementAt(results, enumInfo->index, NULL);
+	CMPIData data = results->ft->getElementAt(results,
+			enumInfo->index, NULL);
 
 	CMPIInstance *instance = data.value.inst;
-	CMPIObjectPath *objectpath =
-	    instance->ft->getObjectPath(instance, NULL);
-	CMPIString *classname =
-	    objectpath->ft->getClassName(objectpath, NULL);
+	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
+	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
 	debug("xx class: %s", (char *)classname->hdl );
-
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_POLYMORPHISM_NONE) ==
-			 FLAG_POLYMORPHISM_NONE)
-	    && (strcmp((char *) classname->hdl, client->requested_class) !=
-		0)) {
+	if (enumInfo &&
+		(enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
+		(strcmp((char *) classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
 
-	if (classname)
-		CMRelease(classname);
 	if (retval)
 		instance2xml(client, instance, itemsNode, enumInfo);
+	if (classname)
+		CMRelease(classname);
 	if (objectpath)
 		CMRelease(objectpath);
 	return retval;
@@ -1774,24 +1752,20 @@ cim_get_enum_items(CimClientInfo * client,
 	WsXmlNodeH itemsNode;
 	int c = 0;
 
-	if (node == NULL) {
+	if (node == NULL) 
 		return;
-	}
+
 	itemsNode = ws_xml_add_child(node, namespace, WSENUM_ITEMS, NULL);
 	debug("Total items: %d", enumInfo->totalItems);
+	debug("enum flags: %lu", enumInfo->flags );
 
 	if (max > 0) {
 		while (max > 0 && enumInfo->index >= 0 &&
 		       enumInfo->index < enumInfo->totalItems) {
-			if ((enumInfo->
-			     flags & FLAG_ENUMERATION_ENUM_EPR) ==
-			    FLAG_ENUMERATION_ENUM_EPR) {
+			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
 				c = cim_getEprAt(client, enumInfo,
 						 itemsNode);
-			} else
-			    if ((enumInfo->
-				 flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR)
-				== FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) {
+			} else if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
 				c = cim_getEprObjAt(client, enumInfo,
 						    itemsNode);
 			} else {
@@ -1805,20 +1779,15 @@ cim_get_enum_items(CimClientInfo * client,
 	} else {
 		while (enumInfo->index >= 0
 		       && enumInfo->index < enumInfo->totalItems) {
-			if ((enumInfo->
-			     flags & FLAG_ENUMERATION_ENUM_EPR) ==
-			    FLAG_ENUMERATION_ENUM_EPR) {
+			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
 				c = cim_getEprAt(client, enumInfo,
 						 itemsNode);
 			} else
-			    if ((enumInfo->
-				 flags & FLAG_ENUMERATION_ENUM_OBJ_AND_EPR)
-				== FLAG_ENUMERATION_ENUM_OBJ_AND_EPR) {
+			    if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
 				c = cim_getEprObjAt(client, enumInfo,
 						    itemsNode);
 			} else {
-				c = cim_getElementAt(client, enumInfo,
-						     itemsNode);
+				c = cim_getElementAt(client, enumInfo, itemsNode);
 			}
 			if (c == 0)
 				enumInfo->index++;

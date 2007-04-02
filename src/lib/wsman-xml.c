@@ -1347,10 +1347,8 @@ char *ws_xml_get_attr_ns_prefix(WsXmlAttrH attr)
 char *ws_xml_get_attr_value(WsXmlAttrH attr)
 {
 	char *val = NULL;
-
 	if (attr)
 		val = xml_parser_attr_query(attr, XML_TEXT_VALUE);
-
 	return val;
 }
 

@@ -236,13 +236,19 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
 
 #define EUIDLEN		64
-#define WSMAN_ENUMINFO_INWORK_FLAG	                      0x010000
-#define WSMAN_ENUMINFO_IncludeSubClassProperties_FLAG     0x000020
-#define WSMAN_ENUMINFO_ExcludeSubClassProperties_FLAG     0x000040
-#define WSMAN_ENUMINFO__POLYMORPHISM_FLAG                 0x000080
+#define WSMAN_ENUMINFO_INWORK_FLAG	                  0x010000
+
+#define WSMAN_ENUMINFO_POLY_NONE	  0x000020
+#define WSMAN_ENUMINFO_POLY_INCLUDE       0x000040
+#define WSMAN_ENUMINFO_POLY_EXCLUDE       0x000080
+#define WSMAN_ENUMINFO_EST_COUNT          0x000100
+#define WSMAN_ENUMINFO_OPT          	  0x000200
+#define WSMAN_ENUMINFO_EPR          	  0x000400
+#define WSMAN_ENUMINFO_OBJEPR          	  0x000800
+#define WSMAN_ENUMINFO_EXT          	  0x001000
 
 struct __WsEnumerateInfo {
-	int flags;
+	unsigned long flags;
 	char            enumId[EUIDLEN];
 	unsigned long   timeStamp; // in msecs
 	unsigned long   expires; // expiration time in msecs  since  the epoch
