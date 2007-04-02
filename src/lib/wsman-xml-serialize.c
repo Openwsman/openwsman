@@ -354,12 +354,13 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
-
+/*
 				if (ws_xml_find_attr_bool(child, 
 						     XML_NS_SCHEMA_INSTANCE,
 						     XML_SCHEMA_NIL)) {
 					goto ALMOST_DONE;
 				}
+				*/
 				error("negative or absent value = %s", str);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
@@ -404,7 +405,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				goto DONE;
 			}
 		}
-ALMOST_DONE:
+// ALMOST_DONE:
 		handle_attrs(data, child, valSize);
 		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
 	}
