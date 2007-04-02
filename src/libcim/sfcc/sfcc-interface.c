@@ -828,9 +828,7 @@ cim_getElementAt(CimClientInfo * client,
 	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
-	debug("xx class: %s", (char *)classname->hdl );
-	if (enumInfo &&
-		(enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
 		(strcmp((char *) classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
@@ -856,16 +854,14 @@ cim_getEprAt(CimClientInfo * client,
 	int retval = 1;
 	char *uri = NULL;
 	CMPIArray *results = (CMPIArray *) enumInfo->enumResults;
-	CMPIData data =
-	    results->ft->getElementAt(results, enumInfo->index, NULL);
+	CMPIData data = results->ft->getElementAt(results,
+			enumInfo->index, NULL);
 
 	CMPIInstance *instance = data.value.inst;
 	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_POLYMORPHISM_NONE) ==
-			 FLAG_POLYMORPHISM_NONE)
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE) 
 	    && (strcmp((char *) classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
@@ -899,15 +895,11 @@ cim_getEprObjAt(CimClientInfo * client,
 	CMPIString *classname =
 	    objectpath->ft->getClassName(objectpath, NULL);
 
-	if (enumInfo && ((enumInfo->flags &
-			  FLAG_POLYMORPHISM_NONE) ==
-			 FLAG_POLYMORPHISM_NONE)
-	    && (strcmp((char *) classname->hdl, client->requested_class) !=
-		0)) {
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE) && 
+		(strcmp((char *) classname->hdl, client->requested_class) != 0)) {
 		retval = 0;
 	}
-	uri =
-	    cim_find_namespace_for_class(client, enumInfo,
+	uri = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
 
 	if (retval) {
