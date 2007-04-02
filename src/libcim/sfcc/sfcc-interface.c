@@ -564,8 +564,6 @@ instance2xml(CimClientInfo * client,
 	ns = ws_xml_ns_add(r, class_namespace, "p");
 	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
 	
-	debug("+++++++++++++++++++++++++++++ %d", enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE  );
-
 	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
