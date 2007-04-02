@@ -76,7 +76,7 @@ static void wsman_output(WsXmlDocH doc)
 int main(int argc, char** argv)
 {
 	WsManClient *cl;
-	WsXmlDocH ref_resp, doc = NULL;
+	WsXmlDocH ref_resp = NULL, doc = NULL;
 	actionOptions *options;
 	char *enumContext = NULL;
 
@@ -106,8 +106,8 @@ int main(int argc, char** argv)
 		wsman_output(doc);	
 		enumContext = wsenum_get_enum_context(doc);
 	}
-
-	ws_xml_destroy_doc(doc);
+	if (doc)
+		ws_xml_destroy_doc(doc);
 	destroy_action_options(options);
 	wsman_release_client(cl);
 	return 0;
