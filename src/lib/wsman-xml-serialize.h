@@ -49,21 +49,14 @@
 
 struct __XmlSerializationData
 {
-	//XML_TYPE_PTR appData;
 	WsContextH cntx;
 	char *elementBuf; 
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
-//	char* ns;
-//	char* name; // optional can be NULL
-//	char* nameNs;
 	int mode;
 	unsigned int index;
 	WsXmlNodeH xmlNode;
     XML_NODE_ATTR *attrs;
-//	int indentCount;
-//	int error;
-//	char* faultDetail;
 	int skipFlag;
 };
 typedef struct __XmlSerializationData XmlSerializationData;

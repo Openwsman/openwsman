@@ -319,6 +319,9 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 			else if (valSize == 4)
 				tmp = *((XML_TYPE_UINT32 *) data->
 				      elementBuf);
+			else if (valSize == 8)
+				tmp = *((XML_TYPE_UINT64 *) data->
+				      elementBuf);
 			else {
 				error("unsupported uint size + %d", 
 						8 * valSize);
@@ -354,13 +357,12 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
-/*
 				if (ws_xml_find_attr_bool(child, 
 						     XML_NS_SCHEMA_INSTANCE,
 						     XML_SCHEMA_NIL)) {
-					goto ALMOST_DONE;
+					DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
+					goto DONE;
 				}
-				*/
 				error("negative or absent value = %s", str);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
@@ -398,6 +400,9 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 			} else if (valSize == 4) {
 				*((XML_TYPE_UINT32 *) data->elementBuf) =
 				    (XML_TYPE_UINT32) tmp;
+			} else if (valSize == 8) {
+				*((XML_TYPE_UINT64 *) data->elementBuf) =
+				    (XML_TYPE_UINT64) tmp;
 			} else {
 				error("unsupported uint size + %d",
 				      8 * valSize);
@@ -405,7 +410,6 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				goto DONE;
 			}
 		}
-// ALMOST_DONE:
 		handle_attrs(data, child, valSize);
 		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
 	}
@@ -493,6 +497,32 @@ int do_serialize_uint32(XmlSerializationData * data)
 	return retVal;
 }
 
+int do_serialize_uint64(XmlSerializationData * data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_UINT64 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+	pad = (unsigned long) DATA_BUF(data) % al;
+	if (pad) {
+		pad = al - pad;
+	}
+
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_uint(data, sizeof(XML_TYPE_UINT64));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
 
 int do_serialize_string(XmlSerializationData * data)
 {
