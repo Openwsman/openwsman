@@ -362,9 +362,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		WsmanStatus *status)
 {
 	debug("CIM Enumeration");
-	int max_elements = 0;
 	WsXmlDocH doc;
-	char *enum_mode;
 	int retval = 0; 
 	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	CimClientInfo *cimclient = NULL;
@@ -389,7 +387,10 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		goto cleanup;
 	} 
 
-	if (wsman_is_ref_enum(cntx, NULL)) {
+	wsman_parse_enum_request(cntx, enumInfo);
+
+
+	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_REF ) ) {
 		hash_t *selectors;
 		selectors  = wsman_get_selector_list_from_filter(cntx, NULL);
 		cim_enum_reference_instances(cimclient, enumInfo, selectors, status);
@@ -402,19 +403,12 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		goto cleanup;
 	}
 
-	max_elements = wsman_is_optimization(cntx, NULL);
-	enum_mode = wsman_get_enum_mode(cntx, NULL); 
-
-	if (enum_mode)
-		wsman_set_enum_mode(enum_mode, enumInfo);
-	wsman_set_polymorph_mode(cntx, NULL, enumInfo);
-
-	if (max_elements > 0) {
+	if (enumInfo->maxItems > 0) {
 		doc = wsman_create_response_envelope(cntx, in_doc , NULL);
 		WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
 		cim_get_enum_items(cimclient, cntx, node,
-				enumInfo, XML_NS_WS_MAN, max_elements);
+				enumInfo, XML_NS_WS_MAN, enumInfo->maxItems);
 		if (doc != NULL) {
 			enumInfo->pullResultPtr = doc;
 			int index2 = enumInfo->index + 1;

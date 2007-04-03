@@ -253,6 +253,7 @@
 #define WSENUM_RESULT_CLASS_NAME      "ResultClassName"
 #define WSENUM_ROLE                   "Role"
 #define WSENUM_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
+#define WSMB_ASSOCIATED_INSTANCES	"AssociatedInstances"
 
 
 #define WSM_SYSTEM                     "System"

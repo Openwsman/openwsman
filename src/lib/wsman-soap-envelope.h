@@ -87,18 +87,12 @@ void wsman_set_estimated_total(WsXmlDocH in_doc,
                                WsXmlDocH out_doc,
                                WsEnumerateInfo *enumInfo);
 
-int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
-
-char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
-
-void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
 
 char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
 hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node);
 
 
-int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc);
 
 hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
@@ -119,14 +113,29 @@ void wsman_set_fault(WsmanMessage *msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
+#if 0
+int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
+
+char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
+
+void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
+
+int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc);
+
 void wsman_set_polymorph_mode(WsContextH cntx,
                               WsXmlDocH doc,
                               WsEnumerateInfo *enumInfo);
+			      
+#endif
+
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 
-void            wsman_add_namespace_as_selector(WsXmlDocH doc,
+void wsman_add_namespace_as_selector(WsXmlDocH doc,
 					                  char *_namespace);
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 		                const char *op);
+
+int wsman_parse_enum_request(WsContextH cntx,
+		                WsEnumerateInfo * enumInfo);
 
 #endif

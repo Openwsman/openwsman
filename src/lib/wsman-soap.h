@@ -236,7 +236,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
 
 #define EUIDLEN		64
-#define WSMAN_ENUMINFO_INWORK_FLAG	                  0x010000
+#define WSMAN_ENUMINFO_INWORK_FLAG	  0x010000
 
 #define WSMAN_ENUMINFO_POLY_NONE	  0x000020
 #define WSMAN_ENUMINFO_POLY_INCLUDE       0x000040
@@ -246,6 +246,8 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 #define WSMAN_ENUMINFO_EPR          	  0x000400
 #define WSMAN_ENUMINFO_OBJEPR          	  0x000800
 #define WSMAN_ENUMINFO_EXT          	  0x001000
+#define WSMAN_ENUMINFO_ASSOC          	  0x010000
+#define WSMAN_ENUMINFO_REF          	  0x020000
 
 struct __WsEnumerateInfo {
 	unsigned long flags;

@@ -577,14 +577,14 @@ wsman_create_fault_envelope(WsContextH cntx,
 	return doc;
 }
 
-int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc)
+
+int wsman_parse_enum_request(WsContextH cntx, 
+		WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH node;
-	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-		if (!doc) 
-			return 0;
-	}
+	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	if (!doc) 
+		return 0;
 
 	node = ws_xml_get_soap_body(doc);
 	if (node && (node = ws_xml_get_child(node, 0,
@@ -592,16 +592,71 @@ int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc)
 					WSENUM_ENUMERATE))) {
 		WsXmlNodeH filter = ws_xml_get_child(node,
 				0, XML_NS_WS_MAN, WSM_FILTER);
+		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
+				WSM_ENUM_MODE);
+		// Enumeration mode
+		if (opt) {
+			char *text = ws_xml_get_node_text(opt);
+			if (text != NULL) {
+				if (strcmp(text, WSM_ENUM_EPR) == 0)
+					enumInfo->flags |= WSMAN_ENUMINFO_EPR;
+				else if (strcmp(text, WSM_ENUM_OBJ_AND_EPR) == 0)
+					enumInfo->flags |= WSMAN_ENUMINFO_OBJEPR;
+			}
+		}
+
+		// Polymorphism
+		opt = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING,
+				WSMB_POLYMORPHISM_MODE);
+		if (opt) {
+			char *mode = ws_xml_get_node_text(opt);
+			if (strcmp(mode, WSMB_EXCLUDE_SUBCLASS_PROP) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_EXCLUDE;
+			} else if (strcmp(mode, WSMB_INCLUDE_SUBCLASS_PROP) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
+			} else if (strcmp(mode, WSMB_NONE) == 0) {
+				enumInfo->flags |= WSMAN_ENUMINFO_POLY_NONE;
+			}
+		} else {
+			enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
+		}
+
+		// Enum Optimization
+		opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
+				WSM_OPTIMIZE_ENUM);
+		if (opt) {
+			WsXmlNodeH max = ws_xml_get_child(node, 0,
+					XML_NS_WS_MAN,
+					WSM_MAX_ELEMENTS);
+			enumInfo->flags |= WSMAN_ENUMINFO_OPT;
+			if (max) {
+				char *text = ws_xml_get_node_text(max);
+				if (text != NULL) {
+					enumInfo->maxItems = atoi(text);
+				}
+			} else {
+				enumInfo->maxItems = 1;
+			}
+		}
+
+		// Filter
 		if (filter) {
 			char *attrVal = ws_xml_find_attr_value(filter, 
 					NULL, WSM_DIALECT);
-			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 )
-				return 1;
+			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
+				if (ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
+						       WSENUM_ASSOCIATION_INSTANCES)) 	
+					enumInfo->flags |= WSMAN_ENUMINFO_REF;
+				else if (ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
+						       WSMB_ASSOCIATED_INSTANCES)) 	
+					enumInfo->flags |= WSMAN_ENUMINFO_ASSOC;
+			}
 		}
 	}
-	return 0;
+	return 1;
 }
 
+#if 0
 char *wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc)
 {
 	char *enum_mode = NULL;
@@ -673,7 +728,40 @@ wsman_set_polymorph_mode(WsContextH cntx,
 	debug("enum flags: %lu", enumInfo->flags );
 }
 
+int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc)
+{
+	int max_elements = 0;
+	WsXmlNodeH node;
+	if (doc == NULL) {
+		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		if (!doc)
+			return 0;
+	}
 
+	node = ws_xml_get_soap_body(doc);
+
+	if (node && (node = ws_xml_get_child(node, 0, 
+					XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
+		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
+				WSM_OPTIMIZE_ENUM);
+		if (opt) {
+			WsXmlNodeH max = ws_xml_get_child(node, 0,
+					XML_NS_WS_MAN,
+					WSM_MAX_ELEMENTS);
+			if (max) {
+				char *text = ws_xml_get_node_text(max);
+				if (text != NULL)
+					max_elements = atoi(text);
+			} else {
+				max_elements = 1;
+			}
+		}
+	}
+	return max_elements;
+}
+
+
+#endif
 
 
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
@@ -710,40 +798,6 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 
 	}
 	return optval;
-}
-
-
-
-int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc)
-{
-	int max_elements = 0;
-	WsXmlNodeH node;
-	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-		if (!doc)
-			return 0;
-	}
-
-	node = ws_xml_get_soap_body(doc);
-
-	if (node && (node = ws_xml_get_child(node, 0, 
-					XML_NS_ENUMERATION, WSENUM_ENUMERATE))) {
-		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
-				WSM_OPTIMIZE_ENUM);
-		if (opt) {
-			WsXmlNodeH max = ws_xml_get_child(node, 0,
-					XML_NS_WS_MAN,
-					WSM_MAX_ELEMENTS);
-			if (max) {
-				char *text = ws_xml_get_node_text(max);
-				if (text != NULL)
-					max_elements = atoi(text);
-			} else {
-				max_elements = 1;
-			}
-		}
-	}
-	return max_elements;
 }
 
 
