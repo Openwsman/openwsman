@@ -308,7 +308,7 @@ void wsman_create_epr(WsContextH cntx, WsXmlNodeH epr_node,
 	ws_xml_add_child(epr_node, XML_NS_ADDRESSING, WSA_ADDRESS, 
 			WSA_TO_ANONYMOUS);
 	node = ws_xml_add_child(epr_node, XML_NS_ADDRESSING, 
-			WSENUM_REFERENCE_PARAMETERS, NULL);
+			WSA_REFERENCE_PARAMETERS, NULL);
 	ws_serialize_str(cntx, node, resource_uri, XML_NS_WS_MAN, 
 			WSM_RESOURCE_URI, 0);
 	if (options->selectors != NULL && 
@@ -345,24 +345,24 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
 	ws_xml_add_node_attr(node, NULL, WSENUM_DIALECT, 
 			WSM_ASSOCIATION_FILTER_DIALECT);
 	assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
-			WSENUM_ASSOCIATION_INSTANCES, NULL);
+			WSMB_ASSOCIATION_INSTANCES, NULL);
 
 	/* Build Object */
-	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSENUM_OBJECT, NULL);
+	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
 
 	wsman_create_epr(cl->wscntx, object, resource_uri, options );
 	/* Add AssociationClassName */
 	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
-			WSENUM_ASSOCIATION_CLASS_NAME, NULL);
+			WSMB_ASSOCIATION_CLASS_NAME, NULL);
 	/* Add ResultClassName */
 	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
-			WSENUM_RESULT_CLASS_NAME, NULL);
+			WSMB_RESULT_CLASS_NAME, NULL);
 	/* Add Role */
 	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
-			WSENUM_ROLE, NULL);
+			WSMB_ROLE, NULL);
 	/* Add IncludeResultProperty */
 	ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-		       	WSENUM_INCLUDE_RESULT_PROPERTY, NULL);
+		       	WSMB_INCLUDE_RESULT_PROPERTY, NULL);
 
 }
 

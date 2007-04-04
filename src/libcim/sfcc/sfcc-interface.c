@@ -814,6 +814,59 @@ cleanup:
 	return;
 }
 
+void
+cim_enum_associator_instances (CimClientInfo *client,
+		WsEnumerateInfo* enumInfo,
+		hash_t *selectors,
+		WsmanStatus *status)
+{
+	CMPIObjectPath *objectpath;
+	CMPIEnumeration *enumeration;
+	CMPIStatus rc;
+	CMCIClient *cc = (CMCIClient *)client->cc;
+	sfcc_enumcontext *enumcontext;
+
+	objectpath = newCMPIObjectPath(client->cim_namespace,
+			client->requested_class , NULL);
+	cim_add_keys(objectpath, selectors);
+	/* ObjectPath: root/mock:Mock_ComputerSystem.Name="MComp2",CreationClassName="Mock_ComputerSystem" */
+	debug( "ObjectPath: %s", CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+
+	enumeration = cc->ft->associators(cc, objectpath, NULL, NULL, NULL, NULL, 0, NULL, &rc);
+	debug( "%s: rc=%d, msg=%s",
+			__FUNCTION__, rc.rc, (rc.msg)? (char *)rc.msg->hdl : NULL);
+
+	if (rc.rc) {
+		debug( "CMCIClient %s failed", __FUNCTION__);
+		cim_to_wsman_status(rc, status);
+		if (rc.msg) CMRelease(rc.msg);
+		goto cleanup;
+	}
+	CMPIArray * enumArr =  enumeration->ft->toArray(enumeration, NULL);
+
+	cim_to_wsman_status(rc, status);
+	if (rc.msg) CMRelease(rc.msg);
+	if (!enumArr) {
+		goto cleanup;
+	}
+	/* Free the selectors.  These are lost on the Pull call anyways */
+	hash_free(selectors);
+
+	enumInfo->totalItems = cim_enum_totalItems(enumArr);
+	debug( "Total items: %d", enumInfo->totalItems );
+	enumcontext = u_zalloc(sizeof(sfcc_enumcontext));
+	enumcontext->ecClient = client;
+	enumcontext->ecEnumeration = enumeration;
+	enumInfo->enumResults = enumArr;
+	enumInfo->appEnumContext = enumcontext;
+
+	if (objectpath) CMRelease(objectpath);
+	return;
+
+cleanup:
+	if (objectpath) CMRelease(objectpath);
+	return;
+}
 
 int
 cim_getElementAt(CimClientInfo * client,

@@ -390,10 +390,21 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	wsman_parse_enum_request(cntx, enumInfo);
 
 
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_REF ) ) {
+	if (enumInfo && ( (enumInfo->flags & WSMAN_ENUMINFO_REF ) ||
+		       	( enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) ) {
 		hash_t *selectors;
 		selectors  = wsman_get_selector_list_from_filter(cntx, NULL);
-		cim_enum_reference_instances(cimclient, enumInfo, selectors, status);
+		if(selectors) {
+			char *tmp = cim_get_namespace_selector(selectors);
+			if(tmp)
+				cimclient->cim_namespace = tmp;
+		}
+		if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
+			cim_enum_reference_instances(cimclient, enumInfo, selectors, status);
+		}
+		if(enumInfo->flags & WSMAN_ENUMINFO_ASSOC) {
+			cim_enum_associator_instances(cimclient, enumInfo, selectors, status);
+		}
 	} else {
 		cim_enum_instances(cimclient, enumInfo, status);
 	}

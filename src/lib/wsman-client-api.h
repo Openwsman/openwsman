@@ -116,6 +116,7 @@ extern "C" {
 #define FLAG_MUND_FRAGMENT                   0x0800
 #define FLAG_CIM_EXTENSIONS                  0x1000
 #define FLAG_CIM_REFERENCES                  0x2000
+#define FLAG_CIM_ASSOCIATORS                 0x4000
 
 	typedef struct {
 		unsigned long flags;

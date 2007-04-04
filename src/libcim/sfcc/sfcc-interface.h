@@ -66,6 +66,11 @@ void cim_enum_reference_instances(CimClientInfo * client,
 				  hash_t *selectors,
 				  WsmanStatus * status);
 
+void cim_enum_associator_instances(CimClientInfo * client,
+          WsEnumerateInfo * enumInfo,
+          hash_t *selectors,
+          WsmanStatus * status);
+
 void cim_put_instance(CimClientInfo * client, WsContextH cntx,
 		      WsXmlNodeH in_body, WsXmlNodeH body,
 		      WsmanStatus * status);

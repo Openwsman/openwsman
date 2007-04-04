@@ -246,14 +246,17 @@
 #define WSENUM_SOURCE_SHUTTING_DOWN   "SourceShuttingDown"
 #define WSENUM_SOURCE_CANCELING       "SourceCanceling"
 
-#define WSENUM_ASSOCIATION_INSTANCES   "AssociationInstances"
-#define WSENUM_OBJECT                 "Object"
-#define WSENUM_REFERENCE_PARAMETERS   "ReferenceParameters"
-#define WSENUM_ASSOCIATION_CLASS_NAME "AssociationClassName"
-#define WSENUM_RESULT_CLASS_NAME      "ResultClassName"
-#define WSENUM_ROLE                   "Role"
-#define WSENUM_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
-#define WSMB_ASSOCIATED_INSTANCES	"AssociatedInstances"
+
+
+
+
+#define WSMB_ASSOCIATED_INSTANCES   "AssociatedInstances"
+#define WSMB_ASSOCIATION_INSTANCES  "AssociationInstances"
+#define WSMB_OBJECT                 "Object"
+#define WSMB_ASSOCIATION_CLASS_NAME "AssociationClassName"
+#define WSMB_RESULT_CLASS_NAME      "ResultClassName"
+#define WSMB_ROLE                   "Role"
+#define WSMB_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
 
 
 #define WSM_SYSTEM                     "System"

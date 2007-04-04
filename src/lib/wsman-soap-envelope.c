@@ -577,7 +577,6 @@ wsman_create_fault_envelope(WsContextH cntx,
 	return doc;
 }
 
-
 int wsman_parse_enum_request(WsContextH cntx, 
 		WsEnumerateInfo * enumInfo)
 {
@@ -645,7 +644,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 					NULL, WSM_DIALECT);
 			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
 				if (ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
-						       WSENUM_ASSOCIATION_INSTANCES)) 	
+						       WSMB_ASSOCIATION_INSTANCES)) 	
 					enumInfo->flags |= WSMAN_ENUMINFO_REF;
 				else if (ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
 						       WSMB_ASSOCIATED_INSTANCES)) 	
@@ -983,15 +982,13 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 }
 
 hash_t *
-wsman_get_selector_list_from_filter(WsContextH cntx,
-		WsXmlDocH doc)
+wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 {
 	WsXmlNodeH body;
 	WsXmlNodeH node, assInst, object;
 
 	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-
 		if (!doc)
 			return NULL;
 	}
@@ -1008,19 +1005,22 @@ wsman_get_selector_list_from_filter(WsContextH cntx,
 		return NULL;
 	}
 
-	assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSENUM_ASSOCIATION_INSTANCES);
-	if(!node) {
-		debug("no SelectorSet defined. Missing AssociationInstances");
-		return NULL;
+	assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES);
+	if(!assInst) {
+		assInst = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES);
+		if(!assInst) {
+			debug("no SelectorSet defined. Missing AssociationInstances / AssociatedInstances");
+			return NULL;
+		}
 	}
 
-	object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSENUM_OBJECT);
+	object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSMB_OBJECT);
 	if(!node) {
 		debug("no SelectorSet defined. Missing Object");
 		return NULL;
 	}
 
-	node = ws_xml_get_child(object, 0, XML_NS_ADDRESSING, WSENUM_REFERENCE_PARAMETERS);
+	node = ws_xml_get_child(object, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
 	if(!node) {
 		debug("no SelectorSet defined. Missing ReferenceParameters");
 		return NULL;

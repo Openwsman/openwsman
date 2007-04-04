@@ -92,8 +92,6 @@ char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
 
 hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node);
 
-
-
 hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
 hash_t * wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc);
