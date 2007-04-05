@@ -109,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;openwsman\src;openwsman\src\lib;openwsman\src\libu"
+				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;..\src;..\src\lib;..\src\libu"
 				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
