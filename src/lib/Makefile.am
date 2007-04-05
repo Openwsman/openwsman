@@ -22,6 +22,7 @@ OWSMAN_INCLUDES = \
 	wsman-soap.h \
 	wsman-soap-envelope.h \
 	wsman-xml.h \
+	wsman-epr.h \
 	wsman-soap.h \
 	wsman-soap-message.h \
 	wsman-server.h \
@@ -44,6 +45,7 @@ libwsman_server_la_SOURCES = \
 libwsman_la_SOURCES = \
 	wsman-xml-binding.c \
 	wsman-xml.c \
+	wsman-epr.c \
 	wsman-dispatcher.c \
 	wsman-soap.c \
 	wsman-faults.c \

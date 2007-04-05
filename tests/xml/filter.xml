@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsmb="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd">
+  <s:Header>
+    <wsa:Action s:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate</wsa:Action>
+    <wsa:To s:mustUnderstand="true">http://vpro.home.planux.com:8889/wsman</wsa:To>
+    <wsman:ResourceURI s:mustUnderstand="true">http://schemas.dmtf.org/wbem/wscim/1/*</wsman:ResourceURI>
+    <wsa:MessageID s:mustUnderstand="true">uuid:6fc16529-2ce5-1ce5-8002-a052ae761600</wsa:MessageID>
+    <wsa:ReplyTo>
+      <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+    </wsa:ReplyTo>
+  </s:Header>
+  <s:Body>
+    <wsen:Enumerate>
+      <wsman:Filter Dialect="http://schemas.dmtf.org/wbem/wsman/1/cimbinding/associationFilter">
+        <wsmb:AssociationInstances>
+          <wsmb:Object>
+            <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+            <wsa:ReferenceParameters>
+              <wsman:ResourceURI>http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_UnitaryComputerSystem</wsman:ResourceURI>
+              <wsman:SelectorSet>
+                <wsman:Selector Name="Name">vpro.home.planux.com</wsman:Selector>
+                <wsman:Selector Name="CreationClassName">OMC_UnitaryComputerSystem</wsman:Selector>
+              </wsman:SelectorSet>
+            </wsa:ReferenceParameters>
+          </wsmb:Object>
+          <wsmb:AssociationClassName/>
+          <wsmb:ResultClassName/>
+          <wsmb:Role/>
+          <wsmb:IncludeResultProperty/>
+        </wsmb:AssociationInstances>
+      </wsman:Filter>
+    </wsen:Enumerate>
+  </s:Body>
+</s:Envelope>
+

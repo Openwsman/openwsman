@@ -1044,7 +1044,6 @@ wsenum_enumerate_and_pull(WsManClient * cl,
 	WsXmlDocH       enum_response = wsenum_enumerate(cl,
 			resource_uri, options);
 
-
 	if (enum_response) {
 		long rc = wsman_client_get_response_code(cl);
 		if (rc == 200 || rc == 400 || rc == 500) {

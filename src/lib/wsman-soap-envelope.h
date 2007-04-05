@@ -111,20 +111,6 @@ void wsman_set_fault(WsmanMessage *msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
-#if 0
-int wsman_is_optimization(WsContextH cntx, WsXmlDocH doc);
-
-char * wsman_get_enum_mode(WsContextH cntx, WsXmlDocH doc);
-
-void wsman_set_enum_mode(char *enum_mode, WsEnumerateInfo *enumInfo);
-
-int wsman_is_ref_enum(WsContextH cntx, WsXmlDocH doc);
-
-void wsman_set_polymorph_mode(WsContextH cntx,
-                              WsXmlDocH doc,
-                              WsEnumerateInfo *enumInfo);
-			      
-#endif
 
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 

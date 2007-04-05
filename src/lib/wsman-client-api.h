@@ -136,7 +136,6 @@ extern "C" {
 	typedef int (*SoapResponseCallback) (WsManClient *, WsXmlDocH,
 					     void *);
 
-
 	struct _WsManFault {
 		const char *code;
 		const char *subcode;

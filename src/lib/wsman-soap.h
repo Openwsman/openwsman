@@ -249,6 +249,15 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 #define WSMAN_ENUMINFO_ASSOC          	  0x010000
 #define WSMAN_ENUMINFO_REF          	  0x020000
 
+
+
+
+struct __filter_t {
+
+	void *epr;
+};
+typedef struct __filter_t filter_t;
+
 struct __WsEnumerateInfo {
 	unsigned long flags;
 	char            enumId[EUIDLEN];
@@ -262,11 +271,13 @@ struct __WsEnumerateInfo {
 	void           *appEnumContext;
 	WsmanAuth       auth_data;
 	WsEndPointRelease releaseproc;
-	// FIXME: Should have an EPR struct here later
 	char *		epr_to;
 	char *		epr_uri;
 	void *		aux;
+	void		*epr;
+	filter_t	*filter;
 };
+
 
 enum __WsmanFilterDialect {
 	WSMAN_FILTER_XPATH,
