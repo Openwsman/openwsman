@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Include&quot;;&quot;.\libiconv\include&quot;;&quot;.\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -65,7 +65,7 @@
 				LinkLibraryDependencies="false"
 				AdditionalDependencies="libxml2_a.lib winhttp.lib"
 				OutputFile=".\Lib\$(ProjectName)D.lib"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Lib&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\lib&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\lib&quot;;Lib;&quot;$(MSSDK)\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Lib&quot;;&quot;.\libiconv\lib&quot;;&quot;.\libxml2-2.6.27.win32\lib&quot;;Lib;&quot;$(MSSDK)\Lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
