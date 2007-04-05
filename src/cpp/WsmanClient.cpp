@@ -428,6 +428,7 @@ actionOptions * SetDefaultOptions()
 {
 	actionOptions *options = initialize_action_options();
 	//options->max_envelope_size = OPEN_WSMAN_MAX_ENVELOPE_SIZE;
+	return options;
 }
 
 /// <summary>

@@ -25,7 +25,7 @@ namespace WsmanClientNamespace {
 	HttpException::HttpException(long error, string what) throw():
 		Exception(what), errorCode(error) 
 	{}
-	HttpException::~HttpException() throw();
+	//HttpException::~HttpException() throw();
 
 	WsmanException::WsmanException(long error, string what) throw():
 		Exception(what.c_str()), httpCode(error), codeValue(""),
