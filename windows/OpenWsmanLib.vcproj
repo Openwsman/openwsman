@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;&quot;openwsman\src&quot;;openwsman\src\lib;openwsman\src\libu"
+				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;&quot;..\src&quot;;..\src\lib;..\src\libu;..\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -315,7 +315,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\WsmanClient.cpp"
+				RelativePath="..\src\cpp\WsmanClient.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\cpp\Exception.cpp"
 				>
 			</File>
 		</Filter>
