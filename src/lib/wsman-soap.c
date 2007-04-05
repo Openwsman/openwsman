@@ -1106,9 +1106,10 @@ wsenum_pull_stub(SoapOpH op, void *appData)
 	int locked = 0;
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
+	WsEnumerateInfo *enumInfo;
 
 	wsman_status_init(&status);
-	WsEnumerateInfo *enumInfo = get_locked_enuminfo(soapCntx, _doc,
+	enumInfo = get_locked_enuminfo(soapCntx, _doc,
 		op, WSENUM_PULL, &status);
 
 	if (enumInfo == NULL) {
@@ -1184,9 +1185,10 @@ wsenum_pull_raw_stub(SoapOpH op,
 	int             retVal = 0;
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	int locked = 0;
+	WsEnumerateInfo *enumInfo;
 
 	wsman_status_init(&status);
-	WsEnumerateInfo *enumInfo = get_locked_enuminfo(soapCntx,
+	enumInfo = get_locked_enuminfo(soapCntx,
 	                               _doc, op, WSENUM_PULL, &status);
 
 	if (enumInfo == NULL) {
