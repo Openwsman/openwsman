@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,8 +64,8 @@
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
 				AdditionalDependencies="libxml2_a.lib winhttp.lib"
-				OutputFile="..\Lib\$(ProjectName)D.lib"
-				AdditionalLibraryDirectories="Lib;&quot;$(MSSDK)\Lib&quot;"
+				OutputFile=".\Lib\$(ProjectName)D.lib"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Lib&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\lib&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\lib&quot;;Lib;&quot;$(MSSDK)\Lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -172,6 +172,10 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\dictionary.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\cpp\Exception.cpp"
 				>
 			</File>
 			<File
@@ -310,6 +314,10 @@
 				RelativePath="..\src\lib\wsman-xml.c"
 				>
 			</File>
+			<File
+				RelativePath="..\src\cpp\WsmanClient.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -334,6 +342,10 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\u\dictionary.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\cpp\Exception.h"
 				>
 			</File>
 			<File
@@ -454,6 +466,10 @@
 			</File>
 			<File
 				RelativePath="..\src\lib\wsman-xml-serializer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\cpp\WsmanClient.h"
 				>
 			</File>
 		</Filter>
