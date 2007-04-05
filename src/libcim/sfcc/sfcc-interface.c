@@ -1534,7 +1534,7 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 		    WSMAN_DETAIL_INVALID_RESOURCEURI;
 		break;
 	case CMPI_RC_ERR_FAILED:
-		if (strcmp((char *) rc.msg->hdl, "CURL error: 7") == 0)
+		if (rc.msg && strcmp((char *) rc.msg->hdl, "CURL error: 7") == 0)
 			status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		else
 			status->fault_code = WSMAN_INTERNAL_ERROR;
