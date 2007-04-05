@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;&quot;..\src&quot;;..\src\lib;..\src\libu;..\src\cpp"
+				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -172,10 +172,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\dictionary.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\env.c"
 				>
 			</File>
 			<File
@@ -314,14 +310,6 @@
 				RelativePath="..\src\lib\wsman-xml.c"
 				>
 			</File>
-			<File
-				RelativePath="..\src\cpp\WsmanClient.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\cpp\Exception.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -346,10 +334,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\u\dictionary.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\u\env.h"
 				>
 			</File>
 			<File
@@ -470,14 +454,6 @@
 			</File>
 			<File
 				RelativePath="..\src\lib\wsman-xml-serializer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\WsmanClient.h"
-				>
-			</File>
-			<File
-				RelativePath=".\libxml2-2.6.27.win32\include\libxml\xmlmemory.h"
 				>
 			</File>
 		</Filter>
