@@ -37,7 +37,7 @@
 #include <wsman_config.h>
 #else
 #ifndef PACKAGE_STRING
-#define PACKAGE_STRING "WSMANCURL"
+#define PACKAGE_STRING "openwsman client"
 #endif
 #endif
 #include <stdio.h>
