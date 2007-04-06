@@ -149,7 +149,7 @@ void set_config( void *self, dictionary *config )
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
     debug("vendor namespaces: %s", namespaces);
     if (namespaces) {
-      hash_t * t = parse_query(namespaces);
+      hash_t * t = u_parse_query(namespaces);
       if (t) {
         vendor_namespaces = t;
       }

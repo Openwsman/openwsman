@@ -257,7 +257,7 @@ wsman_add_selectors_from_query_string(actionOptions * options,
 		const char *query_string)
 {
 	if (query_string) {
-		hash_t         *query = parse_query(query_string);
+		hash_t *query = u_parse_query(query_string);
 		if (query) {
 			options->selectors = query;
 		}
@@ -272,7 +272,7 @@ wsman_add_properties_from_query_string(actionOptions * options,
 	if (!query_string) 
 		return;
 
-        query = parse_query(query_string);
+        query = u_parse_query(query_string);
 	if (query) {
 		options->properties = query;
 	}
@@ -402,7 +402,7 @@ wsman_add_selector_from_uri(WsXmlDocH doc,
 			goto cleanup;
 	}
 
-	query = parse_query(uri->query);
+	query = u_parse_query(uri->query);
 	hash_scan_begin(&hs, query);
 	while ((hn = hash_scan_next(&hs))) {
 		wsman_add_selector(header,

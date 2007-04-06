@@ -24,7 +24,6 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/misc.h>
 #include <u/os.h>
-#include <u/getpid.h>
 
 #include <u/syslog.h>
 

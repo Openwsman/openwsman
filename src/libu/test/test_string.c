@@ -50,7 +50,7 @@ main(int argc, char *argv[])
         }
         (void) console("%s", query);
 
-        hash_t *h = parse_query(query);
+        hash_t *h = u_parse_query(query);
         hnode_t *hn;
         hscan_t hs;     
         hash_scan_begin(&hs, h);

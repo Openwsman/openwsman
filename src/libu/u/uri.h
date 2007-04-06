@@ -25,6 +25,7 @@ typedef struct u_uri_s u_uri_t;
 
 int u_uri_parse (const char *s, u_uri_t **pu);
 void u_uri_free (u_uri_t *uri);
+hash_t *u_parse_query(const char *query);
 
 #ifdef __cplusplus
 }

@@ -9,9 +9,6 @@
 #include <u/syslog.h>
 #include <u/gettimeofday.h>
 #include <u/syslog.h>
-#include <u/getpid.h>
-#include <u/strsep.h>
-#include <u/strtok_r.h>
 
 
 #if defined WIN32 && ! defined __CYGWIN__
@@ -21,7 +18,7 @@
 #include <windows.h>
 #include <wtypes.h>
 
-const char * getpass (const char *);
+typedef DWORD pid_t;
 #define dlclose(handle)         FreeLibrary(handle)
         
 #define sleep(secs) Sleep( (secs) * 1000 )
@@ -31,11 +28,13 @@ const char * getpass (const char *);
 #define pclose _pclose
 #ifndef ssize_t
 typedef int ssize_t;
-#endif
+#endif 
 
 #define bzero(p, l) memset(p, 0, l)
 
-#endif
+#endif // WIN32
+
+
 
 /* Define VA_COPY() to do the right thing for copying va_list variables. */
 #ifdef WIN32
@@ -65,5 +64,33 @@ typedef int ssize_t;
    into library files) */
 extern char *optarg;
 extern int optind;
+
+
+
+
+#ifdef WIN32
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef HAVE_STRSEP
+char * strsep(char **, const char *);
+#endif
+
+pid_t getpid(void);
+
+char *strtok_r(char *s, const char *delim, char **last);
+
+const char * getpass (const char *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
+
+
 
 #endif 
