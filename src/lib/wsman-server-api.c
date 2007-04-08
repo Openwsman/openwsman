@@ -45,54 +45,47 @@
 
 #if 0
 static void
-debug_message_handler (const char *str, 
-                       debug_level_e level, 
-                       void *user_data)
+debug_message_handler(const char *str,
+		      debug_level_e level, void *user_data)
 {
-  
-    int log_pid = getpid ();
 
-    char *log_name = u_strdup_printf ("wsmand[%d]", log_pid);
+	int log_pid = getpid();
 
-    openlog (log_name, 0, LOG_DAEMON);
-    syslog (LOG_INFO, "%s", str);
-    closelog ();
-    u_free (log_name);
+	char *log_name = u_strdup_printf("wsmand[%d]", log_pid);
+
+	openlog(log_name, 0, LOG_DAEMON);
+	syslog(LOG_INFO, "%s", str);
+	closelog();
+	u_free(log_name);
 }
 #endif
 
 
-void *
-wsman_server_create_config(char *config_file)
+void *wsman_server_create_config(char *config_file)
 {
-    SoapH soap = NULL;
-    dictionary       *ini;
-    WsManListenerH *listener = wsman_dispatch_list_new();
-    WsContextH cntx;
+	SoapH soap = NULL;
+	dictionary *ini;
+	WsManListenerH *listener = wsman_dispatch_list_new();
+	WsContextH cntx;
 
-    if (config_file) {
-    	ini = iniparser_load(config_file);
-	if (ini) {
-		listener->config = ini;
+	if (config_file) {
+		ini = iniparser_load(config_file);
+		if (ini) {
+			listener->config = ini;
+		}
 	}
-    }
-    cntx = wsman_init_plugins(listener);
-    if (cntx != NULL) {
-        soap = ws_context_get_runtime(cntx);
-    }
-    //debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
-    return (void *)soap;
+	cntx = wsman_init_plugins(listener);
+	if (cntx != NULL) {
+		soap = ws_context_get_runtime(cntx);
+	}
+	//debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
+	return (void *) soap;
 }
 
 
-void
-wsman_server_get_response(void *arg, WsmanMessage *msg)
+void wsman_server_get_response(void *arg, void *msg)
 {
-    SoapH  soap = (SoapH)arg;
-    dispatch_inbound_call(soap, msg);
+	SoapH soap = (SoapH) arg;
+
+	dispatch_inbound_call(soap,(WsmanMessage *)msg);
 }
-
-
-
-
-
