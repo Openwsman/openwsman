@@ -34,6 +34,9 @@
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
+#ifndef WIN32
+#include <dlfcn.h>
+#endif
 
 #include "wsman-types.h"
 #include "wsman-faults.h"
@@ -42,6 +45,7 @@
 #include "wsman-server.h"
 #include "wsman-dispatcher.h"
 #include "wsman-soap.h"
+#include "wsman-plugins.h"
 
 #if 0
 static void
@@ -60,6 +64,22 @@ debug_message_handler(const char *str,
 }
 #endif
 
+void wsman_server_read_plugin_config(void *arg, char *config_file)
+{
+	lnode_t *node;
+	SoapH soap = (SoapH) arg;
+	WsManListenerH * listener = (WsManListenerH *)soap->listener;
+	node = list_first(listener->plugins);
+	while (node) {
+		WsManPlugin *p = (WsManPlugin *) node->list_data;
+		p->set_config = dlsym(p->p_handle, "set_config");
+		if (listener->config && p->set_config) {
+			p->set_config(p->p_handle, listener->config);
+		} else {
+			debug("no configuration available for plugin: %s", p->p_name);
+		}
+	}
+}
 
 void *wsman_server_create_config(char *config_file)
 {
@@ -77,6 +97,8 @@ void *wsman_server_create_config(char *config_file)
 	cntx = wsman_init_plugins(listener);
 	if (cntx != NULL) {
 		soap = ws_context_get_runtime(cntx);
+		if (listener)
+			soap->listener = (WsManListenerH *)listener;
 	}
 	//debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);    
 	return (void *) soap;

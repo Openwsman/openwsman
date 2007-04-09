@@ -55,6 +55,25 @@
 
 #include "wsman-epr.h"
 
+SER_TYPEINFO_STRING_ATTR;
+SER_START_ITEMS(SelectorSet)
+SER_NS_DYN_ARRAY(XML_NS_WS_MAN, WSM_SELECTOR, 0, 10,
+		string_attr), SER_END_ITEMS(SelectorSet);
+
+
+SER_START_ITEMS(ReferenceParameters)
+SER_NS_STR(XML_NS_WS_MAN, WSM_RESOURCE_URI, 1),
+	SER_NS_STRUCT(XML_NS_WS_MAN, WSM_SELECTOR_SET, 1, SelectorSet),
+	SER_END_ITEMS(ReferenceParameters);
+
+
+SER_START_ITEMS(epr_t)
+SER_NS_STR(XML_NS_ADDRESSING, WSA_ADDRESS, 1),
+	SER_NS_STRUCT(XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, 1,
+			ReferenceParameters), SER_END_ITEMS(epr_t);
+
+
+
 epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 	const char *epr_node_name, const char *ns) 
 {
@@ -88,13 +107,8 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 				cb(cb_data, a->value, s->value );
 				break;
 			}
-				/*
-			printf("%s:%s=%s",
-					a->ns ? a->ns : "", a->name, a->value);
-					*/
 			a = a->next;
 		}
-		//printf(")  =  %s\n", s->value);
 	}
 }
 

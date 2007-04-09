@@ -103,7 +103,6 @@ typedef struct __SoapOp *SoapOpH;
 struct __Soap {
 	/* do not move this field */
 	pthread_mutex_t lockData;
-	int             bExit;
 	void           *parserData;
 	unsigned long   uniqueIdCounter;
 
@@ -127,6 +126,7 @@ struct __Soap {
 
 	void           *dispatcherData;
 	DispatcherCallback dispatcherProc;
+	void *listener;
 };
 typedef struct __Soap *SoapH;
 
@@ -253,9 +253,13 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
 
 struct __filter_t {
-
 	void *epr;
+	char *assocClass;
+	char *resultClass;
+	char *role;
+	char *resultRole;
 };
+
 typedef struct __filter_t filter_t;
 
 struct __WsEnumerateInfo {

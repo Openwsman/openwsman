@@ -256,6 +256,7 @@
 #define WSMB_ASSOCIATION_CLASS_NAME "AssociationClassName"
 #define WSMB_RESULT_CLASS_NAME      "ResultClassName"
 #define WSMB_ROLE                   "Role"
+#define WSMB_RESULT_ROLE            "ResultRole"
 #define WSMB_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
 
 

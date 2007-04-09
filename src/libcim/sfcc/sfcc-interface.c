@@ -54,6 +54,7 @@
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-epr.h"
 
 #include "sfcc-interface.h"
 #include "cim-interface.h"
@@ -701,6 +702,16 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 		return NULL;
 }
 
+
+static int cim_add_keys_from_filter_cb(void *objectpath, const char* key, 
+		const char *value) 
+{
+	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
+	debug("adding selector %s=%s", key, value );
+	CMAddKey(op, key, value, CMPI_chars);
+	return 0;
+}
+
 void
 cim_enum_instances(CimClientInfo * client,
 		   WsEnumerateInfo * enumInfo, 
@@ -712,25 +723,32 @@ cim_enum_instances(CimClientInfo * client,
 	CMPIStatus rc;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	sfcc_enumcontext *enumcontext;
+	filter_t *filter = NULL;
 
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
 
+	if( (enumInfo->flags & WSMAN_ENUMINFO_REF) ||
+		       	(enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) {
+		filter = enumInfo->filter;
+		wsman_epr_selector_cb(filter->epr, 
+				cim_add_keys_from_filter_cb, objectpath);
+		debug( "ObjectPath: %s", 
+				CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+	}
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
-		cim_add_keys(objectpath, selectors);
-		debug( "ObjectPath: %s", CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
-		enumeration = cc->ft->references(cc, objectpath, NULL, NULL, 0, NULL, &rc);
+		enumeration = cc->ft->references(cc, objectpath, filter->resultClass, 
+				filter->role, 0, NULL, &rc);
 	} else if(enumInfo->flags & WSMAN_ENUMINFO_ASSOC) {
-		cim_add_keys(objectpath, selectors);
-		debug( "ObjectPath: %s", CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
-		enumeration = cc->ft->associators(cc, objectpath, NULL, NULL, NULL, NULL, 0, NULL, &rc);
+		enumeration = cc->ft->associators(cc, objectpath, filter->assocClass,
+				filter->resultClass,
+				filter->role,
+				filter->resultRole, 0, NULL, &rc);
 	} else {
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 			CMPI_FLAG_DeepInheritance,
 		    	NULL, &rc);
 	}
-	if (selectors)
-		hash_free(selectors);
 
 	debug("enumInstances() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);

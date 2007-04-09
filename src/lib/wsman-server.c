@@ -56,93 +56,116 @@
 
 
 
-WsManListenerH*
-wsman_dispatch_list_new()
+WsManListenerH *wsman_dispatch_list_new()
 {
-  WsManListenerH *list = (WsManListenerH *)u_malloc(sizeof(WsManListenerH) );
-  return list;
+	WsManListenerH *list =
+	    (WsManListenerH *) u_malloc(sizeof(WsManListenerH));
+	return list;
 }
 
-WsContextH
-wsman_init_plugins(WsManListenerH *listener)
-{	
-  list_t *list = list_create(LISTCOUNT_T_MAX);
-  lnode_t *node;
-  WsContextH cntx = NULL;	  	 
-  wsman_plugins_load(listener);
-  node = list_first(listener->plugins);
-
-  while (node) 
-  {		
-    WsManPlugin *p = (WsManPlugin *)node->list_data;
-    p->ifc = (WsDispatchInterfaceInfo *)malloc(sizeof(WsDispatchInterfaceInfo));
-
-    p->set_config = dlsym(p->p_handle, "set_config");
-    p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
-        
-
-    if (listener->config &&  p->set_config) 
-    {
-      p->set_config(p->p_handle, listener->config);
-    } else {
-      debug("no configuration available for plugin: %s",p->p_name);
-    }
-    if ( p->get_endpoints )
-      p->get_endpoints(p->p_handle, p->ifc );
-
-    if (p->ifc) 
-    {
-      debug("Plugin version: %s", ((WsDispatchInterfaceInfo *)p->ifc)->version );
-      if (strcmp(PACKAGE_VERSION, ((WsDispatchInterfaceInfo *)p->ifc)->version ) == 0 ) {
-        lnode_t *i = lnode_create(p->ifc);
-        list_append(list, i);
-      } else {
-        error("Plugin is not compatible with version of the software or plugin is invalid");
-      }
-    } else {
-      error("invalid plugins");
-    }
-    node = list_next(listener->plugins, node );
-  }
-  cntx = ws_create_runtime(list);
-  return cntx;
-}
-
-
-void *
-wsman_server_auxiliary_loop_thread(void *arg)
+#if 0
+void wsman_server_read_plugin_config(void *arg, char *config_file)
 {
-    WsContextH cntx = (WsContextH)arg;
-    int r;
-    pthread_mutex_t      mutex;
-    pthread_cond_t       cond;
-    struct timespec timespec;
-    struct timeval tv;
+	lnode_t *node;
+	SoapH soap = (SoapH) arg;
+	WsManListenerH * listener = ((WsManListenerH *)soap->listener;
+	node = list_first(listener->plugins);
+	while (node) {
+		WsManPlugin *p = (WsManPlugin *) node->list_data;
+		p->set_config = dlsym(p->p_handle, "set_config");
+		if (listener->config && p->set_config) {
+			p->set_config(p->p_handle, listener->config);
+		} else {
+			debug("no configuration available for plugin: %s", p->p_name);
+		}
+	}
+}
 
-    if ((r = pthread_cond_init(&cond, NULL)) != 0) {
-        error("pthread_cond_init failed = %d", r); 
-        return NULL;
-    }
-    if ((r = pthread_mutex_init(&mutex, NULL)) != 0) {
-        error("pthread_mutex_init failed = %d", r); 
-        return NULL;
-    }
 
-    while (continue_working) {	
-        pthread_mutex_lock(&mutex);
-        gettimeofday(&tv, NULL);
-        timespec.tv_sec = tv.tv_sec + 1;
-        timespec.tv_nsec = tv.tv_usec * 1000;
-        pthread_cond_timedwait(&cond, &mutex, &timespec);
-        pthread_mutex_unlock(&mutex);
+#endif
 
-        wsman_timeouts_manager(cntx);
-    }
-    return NULL;
+static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo) 
+{
+	debug("Plugin version: %s", (ifcinfo->version) );
+	if (strcmp (PACKAGE_VERSION, ifcinfo->version) == 0) {
+		return 1;
+	}
+	return 0;
 }
 
 
 
+WsContextH wsman_init_plugins(WsManListenerH * listener)
+{
+	list_t *list = list_create(LISTCOUNT_T_MAX);
+	lnode_t *node;
+	WsContextH cntx = NULL;
+	WsDispatchInterfaceInfo *ifcinfo = NULL;
+	wsman_plugins_load(listener);
+	node = list_first(listener->plugins);
+
+	while (node) {
+		WsManPlugin *p = (WsManPlugin *) node->list_data;
+		p->ifc =
+		    (WsDispatchInterfaceInfo *)
+		    malloc(sizeof(WsDispatchInterfaceInfo));
+
+		p->set_config = dlsym(p->p_handle, "set_config");
+		p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
+
+
+		if (listener->config && p->set_config) {
+			p->set_config(p->p_handle, listener->config);
+		} else {
+			debug("no configuration available for plugin: %s", p->p_name);
+		}
+
+		if (p->get_endpoints)
+			p->get_endpoints(p->p_handle, p->ifc);
+
+		ifcinfo = p->ifc;
+		if (p->ifc && wsman_server_verify_plugin(ifcinfo)) {
+			lnode_t *i = lnode_create(p->ifc);
+			list_append(list, i);
+		} else {
+			error ("Plugin is not compatible with version of the software or plugin is invalid");
+			error("invalid plugins");
+		}
+		node = list_next(listener->plugins, node);
+	}
+	cntx = ws_create_runtime(list);
+	return cntx;
+}
 
 
 
+void *wsman_server_auxiliary_loop_thread(void *arg)
+{
+	WsContextH cntx = (WsContextH) arg;
+	int r;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	struct timespec timespec;
+	struct timeval tv;
+
+	if ((r = pthread_cond_init(&cond, NULL)) != 0) {
+		error("pthread_cond_init failed = %d", r);
+		return NULL;
+	}
+	if ((r = pthread_mutex_init(&mutex, NULL)) != 0) {
+		error("pthread_mutex_init failed = %d", r);
+		return NULL;
+	}
+
+	while (continue_working) {
+		pthread_mutex_lock(&mutex);
+		gettimeofday(&tv, NULL);
+		timespec.tv_sec = tv.tv_sec + 1;
+		timespec.tv_nsec = tv.tv_usec * 1000;
+		pthread_cond_timedwait(&cond, &mutex, &timespec);
+		pthread_mutex_unlock(&mutex);
+
+		wsman_timeouts_manager(cntx);
+	}
+	return NULL;
+}

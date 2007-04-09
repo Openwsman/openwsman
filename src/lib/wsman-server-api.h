@@ -43,6 +43,7 @@ extern "C" {
 
 void *wsman_server_create_config(char *config_file);
 void wsman_server_get_response(void *arg, void *msg);
+void wsman_server_read_plugin_config(void *arg, char *config_file);
 
 #ifdef __cplusplus
 }

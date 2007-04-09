@@ -389,18 +389,6 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	} 
 
 	wsman_parse_enum_request(cntx, enumInfo);
-
-	if (enumInfo && ( (enumInfo->flags & WSMAN_ENUMINFO_REF ) ||
-		       	( enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) ) {
-		selectors  = wsman_get_selector_list_from_filter(cntx, NULL);
-		if(selectors) {
-			char *tmp = cim_get_namespace_selector(selectors);
-			if(tmp)
-				cimclient->cim_namespace = tmp;
-		}
-	} else {
-		selectors = NULL;
-	}
 	cim_enum_instances(cimclient, enumInfo, selectors, status);
 
 	if (status && status->fault_code != 0) {
