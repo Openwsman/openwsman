@@ -1503,5 +1503,11 @@ void ws_xml_unlink_node(WsXmlNodeH node)
 	xml_parser_unlink_node(node);
 }
 
+void ws_xml_set_ns(WsXmlNodeH r, const char* namespace, const char* prefix)
+{
+	WsXmlNsH ns = ws_xml_ns_add(r, namespace, prefix);
+	xml_parser_set_ns(r, ns, prefix);
+}
+
 
 /** @} */

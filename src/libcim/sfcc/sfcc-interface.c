@@ -44,10 +44,6 @@
 #include "u/libu.h"
 
 
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
-#include <libxml/xmlstring.h>
-
 #include "wsman-errors.h"
 #include "wsman-xml-api.h"
 #include "wsman-client-api.h"
@@ -550,7 +546,6 @@ instance2xml(CimClientInfo * client,
 	char *final_class = NULL;
 	int numproperties = 0;
 	WsXmlNodeH r;
-	WsXmlNsH ns;
 
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	classname = objectpath->ft->getClassName(objectpath, NULL);
@@ -561,9 +556,7 @@ instance2xml(CimClientInfo * client,
 	r = ws_xml_add_child(body, NULL, final_class, NULL);
 	u_free(final_class);
 
-	//FIXME
-	ns = ws_xml_ns_add(r, class_namespace, "p");
-	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
+	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);
 	
 	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
 		_class = cim_get_class(client, client->requested_class, 0, NULL);

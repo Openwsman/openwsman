@@ -260,6 +260,9 @@
 #define WSMB_INCLUDE_RESULT_PROPERTY "IncludeResultProperty"
 
 
+#define CIM_RESOURCE_NS_PREFIX	 	"p"
+
+
 #define WSM_SYSTEM                     "System"
 #define WSM_LOCALE                     "Locale"
 #define WSM_RESOURCE_URI               "ResourceURI"

@@ -98,5 +98,6 @@ char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression);
 int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node);
 
 void xml_parser_unlink_node(WsXmlNodeH node);
+void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char* prefix);
 
 #endif				/*XML_BINDING_LIBXML2_H_ */

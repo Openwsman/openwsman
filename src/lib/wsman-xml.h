@@ -146,6 +146,9 @@ void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 
 void ws_xml_unlink_node(WsXmlNodeH node);
 
+
+void ws_xml_set_ns(WsXmlNodeH r, const char* namespace, const char* prefix );
+
 /** @} */
 
 #endif				/*XML_API_GENERIC_H_ */

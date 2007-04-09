@@ -909,3 +909,12 @@ int xml_parser_check_xpath(WsXmlNodeH node, char *xpath_expr)
 
 	return 0;
 }
+
+
+void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char* prefix)
+{
+	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
+}
+
+
+
