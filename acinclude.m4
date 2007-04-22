@@ -49,8 +49,8 @@ if test $want_SFCC = yes; then
                 if test ! "$ac_SFCC_libraries" = "NO"; then
                         SFCC_libdirs="$ac_SFCC_libraries $SFCC_libdirs"
                 fi
-                test=NONE
-                SFCC_libdir=NONE
+                test=NO
+                SFCC_libdir=NO
                 for dir in $SFCC_libdirs; do
                         try="ls -1 $dir/libcimc*"
                         if test=`eval $try 2> /dev/null`; then SFCC_libdir=$dir; break; else echo "tried $dir" >&AC_FD_CC ; fi

@@ -1,1 +1,5 @@
-SUBDIRS = identify cim wsman
+SUBDIRS = identify wsman
+
+if BUILD_LIBCIM
+SUBDIRS += cim
+endif
