@@ -836,6 +836,58 @@ register_namespaces(xmlXPathContextPtr ctxt, WsXmlDocH doc,
 	xmlFree(nsList);
 }
 
+
+int xml_parser_check_xpath(WsXmlDocH doc, const char *expression)
+{
+	xmlXPathObject *obj;
+	xmlNodeSetPtr nodeset;
+	xmlXPathContextPtr ctxt;
+	xmlDocPtr d = (xmlDocPtr) doc->parserDoc;
+	int retval = 0;
+
+	ctxt = xmlXPathNewContext(d);
+	if (ctxt == NULL) {
+		error("failed while creating xpath context");
+		return 0;
+	}
+	register_namespaces(ctxt, doc, xml_parser_get_root(doc));
+	obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
+	if (obj) {
+		debug
+		    ("xpath: got object+++++++++++++++++++++++++++++++++++");
+		nodeset = obj->nodesetval;
+		if (nodeset && nodeset->nodeNr > 0) {
+			int size = nodeset->nodeNr;
+			int i;
+			xmlNodePtr cur;
+			for(i = 0; i < size; ++i) {
+				if(nodeset->nodeTab[i]->type == XML_ELEMENT_NODE) {
+					cur = nodeset->nodeTab[i];   	    
+					if(cur->ns) { 
+						fprintf(stdout, "= element node \"%s:%s\"\n", 
+								cur->ns->href, cur->name);
+					} else {
+						fprintf(stdout, "= element node \"%s\"\n", 
+								cur->name);
+					}
+				}
+			}
+
+			retval = 1;
+		}
+		xmlXPathFreeContext(ctxt);
+		xmlXPathFreeObject(obj);
+	} else {
+		debug
+		    ("xpath: no object+++++++++++++++++++++++++++++++++++");
+		return 0;
+	}
+
+	return retval;
+}
+
+
+
 char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
 {
 	//int i;
@@ -881,40 +933,15 @@ char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
 
 void xml_parser_unlink_node(WsXmlNodeH node)
 {
-	xmlUnlinkNode((xmlNodePtr) node );
+	xmlUnlinkNode((xmlNodePtr) node);
 	xmlFreeNode((xmlNodePtr) node);
 	return;
 }
 
 
-int xml_parser_check_xpath(WsXmlNodeH node, char *xpath_expr)
-{
-
-	xmlDocPtr doc;
-	xmlNodePtr rootNode = NULL;
-
-	if ((doc = xmlNewDoc(BAD_CAST "1.0")) == NULL ||
-	    (rootNode = xmlNewNode(NULL, BAD_CAST "resource")) == NULL) {
-		if (doc)
-			xmlFreeDoc(doc);
-	} else {
-		xmlDocSetRootElement(doc, rootNode);
-	}
-	ws_xml_duplicate_tree((WsXmlNodeH) xmlDocGetRootElement(doc),
-			      node);
-	if (rootNode) {
-		xmlDocFormatDump(stdout, doc, 1);
-		xmlFreeDoc(doc);
-	}
-
-	return 0;
-}
 
 
-void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char* prefix)
+void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char *prefix)
 {
 	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
 }
-
-
-

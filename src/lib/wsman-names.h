@@ -50,6 +50,8 @@
 #define XML_NS_TRANSFER             "http://schemas.xmlsoap.org/ws/2004/09/transfer"
 #define XML_NS_XML_SCHEMA           "http://www.w3.org/2001/XMLSchema"
 #define XML_NS_SCHEMA_INSTANCE      "http://www.w3.org/2001/XMLSchema-instance"
+#define XML_NS_SCHEMA_INSTANCE_PREFIX      "xsi"
+#define XML_NS_SCHEMA_INSTANCE_NIL      "nil"
 
 
 #define XML_NS_OPENWSMAN            "http://schema.openwsman.org/2006/openwsman"

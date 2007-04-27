@@ -1476,10 +1476,9 @@ ws_xml_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
 
 
 
-int check_xpath(WsXmlNodeH node, char *xpath_expr)
+int ws_xml_check_xpath(WsXmlDocH doc, const char *xpath_expr)
 {
-	//return xml_parser_check_xpath(node, xpath_expr);
-	return 0;
+	return xml_parser_check_xpath(doc, xpath_expr);
 }
 
 

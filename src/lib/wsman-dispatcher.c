@@ -54,8 +54,6 @@
 #include "wsman-soap-envelope.h"
 
 
-
-
 /**
  * @defgroup Dispatcher Dispatcher
  * @brief SOAP Dispatcher
@@ -315,9 +313,10 @@ validate_mustunderstand_headers(op_t * op)
 
 static int wsman_check_supported_dialect(const char *dialect)
 {
-	if (strcmp(dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
+	if (strcmp(dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) 
 		return 0;
-	}
+	else if (strcmp(dialect, WSM_XPATH_FILTER_DIALECT) == 0 ) 
+		return 0;
 	return 1;
 }
 

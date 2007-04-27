@@ -344,8 +344,14 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
 			WSENUM_FILTER, NULL);
 	ws_xml_add_node_attr(node, NULL, WSENUM_DIALECT, 
 			WSM_ASSOCIATION_FILTER_DIALECT);
-	assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
-			WSMB_ASSOCIATION_INSTANCES, NULL);
+	if((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES)
+		assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
+				WSMB_ASSOCIATION_INSTANCES, NULL);
+	else if((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)
+		assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
+				WSMB_ASSOCIATED_INSTANCES, NULL);
+	else
+		return;
 
 	/* Build Object */
 	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
@@ -360,6 +366,11 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
 	/* Add Role */
 	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
 			WSMB_ROLE, NULL);
+	if((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS) {
+		/* Add Role */
+		node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, 
+				WSMB_RESULT_ROLE, NULL);
+	}
 	/* Add IncludeResultProperty */
 	ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
 		       	WSMB_INCLUDE_RESULT_PROPERTY, NULL);
@@ -496,7 +507,8 @@ wsman_set_enumeration_options(WsManClient * cl,
 	}
 
 	// References and Associations
-	if ((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) {
+	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
+			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
 		wsman_build_assocRef_body(cl, node, resource_uri, options, 0);
 	}
 }
@@ -1251,7 +1263,8 @@ wsman_build_envelope(WsContextH cntx,
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);
 
   	/* Do not add the selectors to the header for reference instances */
-	if ((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) {
+	if (((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) &&
+			((options->flags & FLAG_CIM_ASSOCIATORS) != FLAG_CIM_ASSOCIATORS)) {
 		wsman_add_selector_from_options(doc, options);
 
 		if (options->cim_ns) {

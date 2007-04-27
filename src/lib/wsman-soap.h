@@ -236,8 +236,8 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 
 
 #define EUIDLEN		64
-#define WSMAN_ENUMINFO_INWORK_FLAG	  0x010000
 
+#define WSMAN_ENUMINFO_INWORK_FLAG	  0x000010
 #define WSMAN_ENUMINFO_POLY_NONE	  0x000020
 #define WSMAN_ENUMINFO_POLY_INCLUDE       0x000040
 #define WSMAN_ENUMINFO_POLY_EXCLUDE       0x000080
@@ -246,8 +246,9 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 #define WSMAN_ENUMINFO_EPR          	  0x000400
 #define WSMAN_ENUMINFO_OBJEPR          	  0x000800
 #define WSMAN_ENUMINFO_EXT          	  0x001000
-#define WSMAN_ENUMINFO_ASSOC          	  0x010000
-#define WSMAN_ENUMINFO_REF          	  0x020000
+/* The value 0x010000 is already assigned to flag WSMAN_ENUMINFO_INWORK_FLAG */
+#define WSMAN_ENUMINFO_ASSOC          	  0x020000  
+#define WSMAN_ENUMINFO_REF          	  0x040000
 
 
 
@@ -258,6 +259,7 @@ struct __filter_t {
 	char *resultClass;
 	char *role;
 	char *resultRole;
+	char *xpath;
 };
 
 typedef struct __filter_t filter_t;
@@ -269,7 +271,7 @@ struct __WsEnumerateInfo {
 	unsigned long   expires; // expiration time in msecs  since  the epoch
 	unsigned int    totalItems;
 	unsigned int    maxItems;
-	int             index;
+	unsigned int             index;
 	void           *enumResults;
 	void           *pullResultPtr;
 	void           *appEnumContext;

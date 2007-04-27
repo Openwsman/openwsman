@@ -578,7 +578,19 @@ wsman_create_fault_envelope(WsContextH cntx,
 	return doc;
 }
 
-static void wsman_parse_filter( WsContextH cntx,
+static void wsman_parse_xpath_filter( WsContextH cntx,
+		WsXmlNodeH filter, 
+		WsEnumerateInfo * enumInfo)
+{
+	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+	f->xpath = u_strdup(ws_xml_get_node_text(filter));
+	debug("Xpath filter: %s", f->xpath );
+	enumInfo->filter = f;
+}
+
+
+
+static void wsman_parse_assoc_filter( WsContextH cntx,
 			WsXmlNodeH filter, 
 			WsEnumerateInfo * enumInfo)
 {
@@ -597,22 +609,22 @@ static void wsman_parse_filter( WsContextH cntx,
 		f->epr = epr;
 		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
 		if (fnode) 
-			f->resultClass = ws_xml_get_node_text(fnode);
+			f->resultClass = u_strdup(ws_xml_get_node_text(fnode));
 		else
 			f->resultClass = NULL;
 		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
 		if (fnode) 
-			f->role = ws_xml_get_node_text(fnode);
+			f->role = u_strdup(ws_xml_get_node_text(fnode));
 		else
 			f->role = NULL;
 		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
 		if (fnode)
-			f->assocClass = ws_xml_get_node_text(fnode);
+			f->assocClass = u_strdup(ws_xml_get_node_text(fnode));
 		else 
 			 f->assocClass = NULL;
 		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
 		if (fnode) 
-			f->resultRole = ws_xml_get_node_text(fnode);
+			f->resultRole = u_strdup(ws_xml_get_node_text(fnode));
 		else
 			f->resultRole = NULL;
 		enumInfo->filter = f;
@@ -686,7 +698,11 @@ int wsman_parse_enum_request(WsContextH cntx,
 			char *attrVal = ws_xml_find_attr_value(filter, 
 					NULL, WSM_DIALECT);
 			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
-				wsman_parse_filter(cntx, filter, enumInfo);
+				wsman_parse_assoc_filter(cntx, filter, enumInfo);
+			}
+			if (( attrVal && strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ) || !attrVal ) {
+				debug("++++++++++++++++++++++++++++ xpath filter");
+				wsman_parse_xpath_filter(cntx, filter, enumInfo);
 			}
 		} else {
 			enumInfo->filter = NULL;

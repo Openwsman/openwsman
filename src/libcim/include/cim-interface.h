@@ -10,6 +10,7 @@
 struct __CimClientInfo 
 {
 	void *cc;
+	WsContextH	cntx;
 	hash_t          *namespaces;
 	hash_t          *selectors;
 	char*           cim_namespace;

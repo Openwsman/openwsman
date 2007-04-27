@@ -853,7 +853,7 @@ DONE:
 static void destroy_filter(filter_t *filter)
 {
 	if (filter->epr) {
-		u_free(filter->epr);
+		//u_free(filter->epr);
 	}
 
 }

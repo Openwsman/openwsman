@@ -74,6 +74,8 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 			get_cim_port(), username, password , &status);
 	if (!cimclient->cc) 
 		return NULL;
+
+	cimclient->cntx = cntx;
 	cimclient->namespaces = get_vendor_namespaces();
 	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
 	cimclient->requested_class = wsman_get_class_name(cntx);
@@ -474,6 +476,7 @@ CimResource_Pull_EP( WsContextH cntx,
 	pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION, 
 			WSENUM_PULL_RESP, NULL);
 
+	// FIXME
 	max = wsman_get_max_elements(cntx, NULL);
 	cim_get_enum_items(cimclient, cntx, pullnode, 
 			enumInfo, XML_NS_ENUMERATION,  max);
@@ -570,12 +573,13 @@ CimResource_Put_EP( SoapOpH op,
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
+	WsmanMessage *msg;
 
-	wsman_status_init(&status);
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+	wsman_status_init(&status);
 	op_t *_op = (op_t *)op;
-	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	msg = (WsmanMessage *)_op->data;
 
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
@@ -585,7 +589,10 @@ CimResource_Put_EP( SoapOpH op,
 			status.fault_detail_code = 0;
 			goto cleanup;
 		}
+	} else {
+		goto cleanup;
 	}
+
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;

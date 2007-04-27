@@ -54,9 +54,6 @@
 #include "wsman-xml.h"
 #include "wsman-debug.h"
 #include "wsman-client-transport.h"
-//#include <libxml/xmlmemory.h>
-
-
 
 #define DEFAULT_TRANSFER_LEN 32000
 

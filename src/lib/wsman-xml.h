@@ -134,8 +134,7 @@ WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
 					 const char *nsUri,
 					 const char *format, ...);
 
-int check_xpath(WsXmlNodeH node, char *xpath_expr);
-
+int ws_xml_check_xpath(WsXmlDocH doc, const char *xpath_expr);
 int ws_xml_utf8_strlen(char *buf);
 
 
