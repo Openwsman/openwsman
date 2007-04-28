@@ -1647,7 +1647,6 @@ void
 destroy_dispatch_entry(SoapDispatchH entry)
 {
 	int             usageCount;
-
 	if (!entry)
 		return;
 
@@ -1740,7 +1739,6 @@ soap_destroy_fw(SoapH soap)
 	ws_xml_parser_destroy(soap);
 
 	ws_destroy_context(soap->cntx);
-	//soap_destroy_lock(fw);
 	u_free(soap);
 
 	return;

@@ -698,6 +698,10 @@ dispatcher_create_fault(SoapH soap,
 {
 	char           *buf = NULL;
 	int             len;
+	if (!soap) {
+		return;
+	}
+
 	if (wsman_fault_occured(msg)) {
 		wsman_generate_fault_buffer(
 					    soap->cntx,
