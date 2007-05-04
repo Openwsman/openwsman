@@ -1426,7 +1426,7 @@ cim_put_instance(CimClientInfo * client,
 		 WsContextH cntx,
 		 WsXmlNodeH in_body, WsXmlNodeH body, WsmanStatus * status)
 {
-	CMPIInstance *instance;
+	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath;
 	CMPIStatus rc;
 	WsmanStatus statusP;

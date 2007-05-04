@@ -128,7 +128,7 @@ wsman_client_get_context(WsManClient * cl)
 char *
 wsman_client_get_hostname(WsManClient * cl)
 {
-	return cl->data.hostName;
+	return cl->data.hostname;
 }
 
 
@@ -573,8 +573,6 @@ wsman_client_create_request(WsManClient * cl,
 	WsXmlNodeH      body;
 	WsXmlNodeH      header;
 	WsXmlNodeH      node;
-	hscan_t         hs;
-	hnode_t        *hn;
 	char           *_action = NULL;
 	WsXmlNodeH      filter;
 
@@ -613,23 +611,9 @@ wsman_client_create_request(WsManClient * cl,
 		ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_WSMAN_ID, WSMID_IDENTIFY, NULL);
 		break;
-	case WSMAN_ACTION_CUSTOM:
-		if (options->properties && hash_count(options->properties) > 0 ) {
-			if (method) {
-				node = ws_xml_add_empty_child_format(body,
-						(char *)resource_uri, "%s_INPUT", method);
-				hash_scan_begin(&hs, options->properties);
-				while ((hn = hash_scan_next(&hs))) {
-					ws_xml_add_child(node,  (char *)resource_uri, (char *) hnode_getkey(hn),
-							(char *) hnode_get(hn));
-				}
-			}
-		} else {
-			ws_xml_add_empty_child_format(body,
-					(char *)resource_uri, "%s_INPUT", method);
-		}
-		break;
-	case WSMAN_ACTION_ENUMERATION:
+        case WSMAN_ACTION_CUSTOM:
+                break;
+        case WSMAN_ACTION_ENUMERATION:
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
 		wsman_set_enumeration_options(cl, body, resource_uri, options);
@@ -936,14 +920,37 @@ wsman_invoke(WsManClient * cl,
 		const char *method,
 		WsXmlDocH data)
 {
+	hscan_t         hs;
+	hnode_t        *hn;
 	WsXmlDocH       response;
-	WsXmlDocH       request = wsman_client_create_request(cl,
-			resource_uri, options,
-			WSMAN_ACTION_CUSTOM, (char *)method, NULL);
-	if ((!options->properties || hash_count(options->properties) == 0) && data != NULL) {
+        WsXmlDocH       request = wsman_client_create_request(cl,
+                resource_uri, options,
+                WSMAN_ACTION_CUSTOM, (char *)method, NULL);
+	WsXmlNodeH body = ws_xml_get_soap_body(request);
+
+	if ((!options->properties || 
+                    hash_count(options->properties) == 0) && 
+                data != NULL) {
+
 		WsXmlNodeH n = ws_xml_get_doc_root(data);
 		ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
-	}
+        } else if (options->properties && 
+                hash_count(options->properties) > 0 ) {
+            if (method) {
+                WsXmlNodeH node = ws_xml_add_empty_child_format(body,
+                        (char *)resource_uri, "%s_INPUT", method);
+                hash_scan_begin(&hs, options->properties);
+                while ((hn = hash_scan_next(&hs))) {
+                    ws_xml_add_child(node,  
+                            (char *)resource_uri, 
+                            (char *) hnode_getkey(hn),
+                            (char *) hnode_get(hn));
+                }
+            }
+        } else {
+            ws_xml_add_empty_child_format(body,
+                    (char *)resource_uri, "%s_INPUT", method);
+        }
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
 	}
@@ -963,17 +970,19 @@ wsman_invoke_fromtext(WsManClient * cl,
 		const char *resourceUri,
 		actionOptions *options,
 		const char *method,
-		const char *data, size_t size, const char *encoding)
+		const char *data, 
+                size_t size, 
+                const char *encoding)
 {
 	WsXmlDocH       response;
-	WsXmlDocH       request = wsman_client_create_request(cl,
-			resourceUri, options,
-			WSMAN_ACTION_CUSTOM, (char *)method, NULL);
+        WsXmlDocH request = wsman_client_create_request(cl, resourceUri, options,
+						  WSMAN_ACTION_CUSTOM, 
+						  (char *)method, NULL);
 	if (request == NULL) {
 		error("could not create request");
 		return NULL;
 	}
-	if ((!options->properties || hash_count(options->properties) == 0) && data != NULL) {
+	if ( data != NULL) {
 		WsXmlDocH doc = wsman_client_read_memory(cl,
 				(char *)data, size, (char *)encoding, 0);
 		WsXmlNodeH n;
@@ -985,7 +994,9 @@ wsman_invoke_fromtext(WsManClient * cl,
 		n = ws_xml_get_doc_root(doc);
 		ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
 		ws_xml_destroy_doc(doc);
-	}
+	} else {
+            warning("No XML provided");
+        }
 
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -1013,7 +1024,7 @@ wsman_invoke_serialized(WsManClient * cl,
 		error("could not create request");
 		return NULL;
 	}
-	if ((!options->properties || hash_count(options->properties) == 0) && data != NULL) {
+	if (data != NULL) {
 		handle_resource_request(cl, request, data, typeInfo, (char *)resourceUri);
 	}
 
@@ -1450,12 +1461,12 @@ wsman_create_client(const char *hostname,
 	}
 
 	wsc->data.scheme = strdup(scheme ? scheme : "http");
-	wsc->data.hostName = hostname ? strdup(hostname) : strdup("localhost");
+	wsc->data.hostname = hostname ? strdup(hostname) : strdup("localhost");
 	wsc->data.port = port;
 	wsc->data.path = strdup(path ? path : "/wsman");
 	wsc->data.user = username ? strdup(username) : NULL;
 	wsc->data.pwd = password ? strdup(password) : NULL;
-
+	wsc->data.auth_set = 0;
 
 	wsc->data.endpoint = u_strdup_printf("%s://%s:%d%s",
 			scheme, hostname, port, path);
@@ -1476,9 +1487,9 @@ wsman_release_client(WsManClient * cl)
 		u_free(cl->data.scheme);
 		cl->data.scheme = NULL;
 	}
-	if (cl->data.hostName) {
-		u_free(cl->data.hostName);
-		cl->data.hostName = NULL;
+	if (cl->data.hostname) {
+		u_free(cl->data.hostname);
+		cl->data.hostname = NULL;
 	}
 	if (cl->data.path) {
 		u_free(cl->data.path);

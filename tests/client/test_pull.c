@@ -220,7 +220,6 @@ int main(int argc, char** argv)
 	char *enumContext = NULL;
 	//unsigned int id = 0;	
 	
-	wsman_client_transport_init(NULL);
 	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
     initialize_logging();
 	//wsman_client_add_handler(wsman_client_handler, NULL);
@@ -237,6 +236,7 @@ int main(int argc, char** argv)
     		sd[0].scheme,
     		sd[0].username,
     		sd[0].password);
+	wsman_client_transport_init(cl, NULL);
     			
 		options = initialize_action_options();
 		options->flags = tests[i].flags;

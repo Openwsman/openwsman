@@ -80,9 +80,9 @@ int main(int argc, char** argv)
 	actionOptions *options;
 	char *enumContext = NULL;
 
-	wsman_client_transport_init(NULL);
 
 	cl = wsman_create_client(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);		
+	wsman_client_transport_init(cl, NULL);
 
 	options = initialize_action_options();
 	options->cim_ns = u_strdup(test.namespace);

@@ -64,7 +64,7 @@ static list_t *sessions = NULL;
 static list_t *enumerators = NULL;
 static pthread_mutex_t lock;
 
-static void default_auth_callback(ws_auth_type_t auth, char **user, char **pwd)
+static void default_auth_callback(wsman_auth_type_t auth, char **user, char **pwd)
 {
 	*user = strdup("");
 }
@@ -77,7 +77,7 @@ static void _init(void)
 
 	sessions = list_create(LISTCOUNT_T_MAX);
 	enumerators = list_create(LISTCOUNT_T_MAX);
-	wsman_client_transport_init(NULL);
+	wsman_client_transport_init(NULL, NULL);
 	ws_client_transport_set_auth_request_func(default_auth_callback);
 }
 

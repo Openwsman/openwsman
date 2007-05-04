@@ -34,14 +34,14 @@ WsmanClient::WsmanClient(const char *endpoint,
 {	
 	cl = wsman_create_client_from_uri(endpoint);
 
-	wsman_transport_set_auth_method ((char *)auth_method);
-	if (ws_client_transport_get_auth_value() == 0 ) {
+	wsman_transport_set_auth_method (cl , (char *)auth_method);
+	if (wsman_client_transport_get_auth_value(cl) == 0 ) {
 		// Authentication method not supported, reverting to digest
-		wsman_transport_set_auth_method("digest");
+		wsman_transport_set_auth_method(cl, "digest");
 	}
 
 	if (cert) {
-		wsman_transport_set_cafile((char*)cert);
+		wsman_transport_set_cafile(cl, (char*)cert);
 	}
 
 	// TO-DO: support tls and kerberos.
@@ -50,7 +50,7 @@ WsmanClient::WsmanClient(const char *endpoint,
 // Initialize the transport layer, this static method should be called only once.
 void WsmanClient::Init()
 {
-	wsman_client_transport_init((void*)NULL);
+	wsman_client_transport_init(cl, (void*)NULL);
 }
 
 // Destructor.

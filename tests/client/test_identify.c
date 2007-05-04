@@ -92,7 +92,6 @@ int main(int argc, char** argv)
     actionOptions *options = NULL;
 
 
-    wsman_client_transport_init(NULL);
     printf ("Test 1: Testin Identify Request:");
     cl = wsman_create_client( sd[0].server,
         sd[0].port,
@@ -100,6 +99,7 @@ int main(int argc, char** argv)
         sd[0].scheme,
         sd[0].username,
         sd[0].password);		
+    wsman_client_transport_init(cl, NULL);
     options = initialize_action_options();
 
 

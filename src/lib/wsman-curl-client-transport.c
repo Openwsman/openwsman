@@ -57,7 +57,7 @@
 
 #define DEFAULT_TRANSFER_LEN 32000
 
-extern ws_auth_request_func_t request_func;
+extern wsman_auth_request_func_t request_func;
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 static int initialized = 0;
@@ -65,31 +65,32 @@ static pthread_mutex_t curl_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 static long
-reauthenticate(long auth_set, long auth_avail, char **username, char **password)
+reauthenticate(WsManClient *cl, 
+        long auth_set, long auth_avail, char **username, char **password)
 {
 	long choosen_auth = 0;
-	ws_auth_type_t ws_auth = WS_NO_AUTH;
+	wsman_auth_type_t ws_auth = WS_NO_AUTH;
 
 	if (auth_avail &  CURLAUTH_GSSNEGOTIATE &&
-			wsman_is_auth_method(WS_GSSNEGOTIATE_AUTH)) {
+			wsman_is_auth_method(cl, WS_GSSNEGOTIATE_AUTH)) {
 		choosen_auth = CURLAUTH_GSSNEGOTIATE;
 		ws_auth = WS_GSSNEGOTIATE_AUTH;
 		goto REQUEST_PASSWORD;
 	}
 	if (auth_avail & CURLAUTH_DIGEST &&
-			wsman_is_auth_method(WS_DIGEST_AUTH)) {
+			wsman_is_auth_method(cl, WS_DIGEST_AUTH)) {
 		choosen_auth = CURLAUTH_DIGEST;
 		ws_auth = WS_DIGEST_AUTH;
 		goto REQUEST_PASSWORD;
 	}
 	if (auth_avail & CURLAUTH_NTLM &&
-			wsman_is_auth_method(WS_NTLM_AUTH)) {
+			wsman_is_auth_method(cl, WS_NTLM_AUTH)) {
 		choosen_auth = CURLAUTH_NTLM;
 		ws_auth = WS_NTLM_AUTH;
 		goto REQUEST_PASSWORD;
 	}
 	if (auth_avail & CURLAUTH_BASIC &&
-			wsman_is_auth_method(WS_BASIC_AUTH)) {
+			wsman_is_auth_method(cl, WS_BASIC_AUTH)) {
 		ws_auth = WS_BASIC_AUTH;
 		choosen_auth = CURLAUTH_BASIC;
 		goto REQUEST_PASSWORD;
@@ -101,14 +102,14 @@ reauthenticate(long auth_set, long auth_avail, char **username, char **password)
 
 
 REQUEST_PASSWORD:
-	message("%s authorization is used",
-			ws_client_transport_get_auth_name(ws_auth));
+	message("%s authentication is used",
+			wsman_client_transport_get_auth_name(ws_auth));
 	if (auth_set == 0 && *username && *password) {
 		// use existing username and password
 		return choosen_auth;
 	}
 
-	request_func(ws_auth, username, password);
+        request_func(ws_auth, username, password);
 
 	if (!(*username) || strlen(*username) == 0) {
 		debug("No username. Authorization canceled");
@@ -206,43 +207,43 @@ init_curl_transport(WsManClient *cl)
 		debug("Could not init easy curl");
 		goto DONE;
 	}
-	if (wsman_transport_get_proxy()) {
-		r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy());
+	if (wsman_transport_get_proxy(cl)) {
+		r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy(cl));
 		if (r != 0) {
 			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
 			goto DONE;
 		}
 	}
-	if (wsman_transport_get_timeout()) {
-		r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, wsman_transport_get_timeout());
+	if (wsman_transport_get_timeout(cl)) {
+		r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, wsman_transport_get_timeout(cl));
 		if (r != 0) {
 			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_TIMEOUT, ...)");
 			goto DONE;
 		}
 	}
 
-	if (wsman_transport_get_proxyauth()) {
+	if (wsman_transport_get_proxyauth(cl)) {
 		r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
-				wsman_transport_get_proxyauth());
+				wsman_transport_get_proxyauth(cl));
 		if (r != 0) {
 			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
 			goto DONE;
 		}
 	}
-	if (wsman_transport_get_cafile() != NULL) {
+	if (wsman_transport_get_cafile(cl) != NULL) {
 		r = curl_easy_setopt(curl, CURLOPT_CAINFO,
-				wsman_transport_get_cafile());
+				wsman_transport_get_cafile(cl));
 		if (r != 0) {
 			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
 			goto DONE;
 		}
 		r = curl_easy_setopt(curl, CURLOPT_SSLKEY,
-				wsman_transport_get_cafile());
+				wsman_transport_get_cafile(cl));
 		if (r != 0) {
 			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
 			goto DONE;
 		}
-		if (wsman_transport_get_no_verify_peer()) {
+		if (wsman_transport_get_no_verify_peer(cl)) {
 			r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 			if (r != 0) {
 				curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
@@ -251,7 +252,7 @@ init_curl_transport(WsManClient *cl)
 		}
 	}
 	return (void *)curl;
-DONE:
+ DONE:
 	cl->last_error = convert_to_last_error(r);
 	curl_easy_cleanup(curl);
 	return NULL;
@@ -277,9 +278,8 @@ wsman_client_handler( WsManClient *cl,
 	char *soapact_header = NULL;
 	long http_code;
 	long auth_avail = 0;
-	static long auth_set = 0;
 
-	if (!initialized && wsman_client_transport_init(NULL)) {
+	if (!initialized && wsman_client_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
 		return;
 	}
@@ -318,7 +318,7 @@ wsman_client_handler( WsManClient *cl,
 	}
 	headers = curl_slist_append(headers,
 			"Content-Type: application/soap+xml;charset=UTF-8");
-	usag = malloc(12 + strlen(wsman_transport_get_agent()) + 1);
+	usag = malloc(12 + strlen(wsman_transport_get_agent(cl)) + 1);
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
 		http_code = 400;
@@ -327,7 +327,7 @@ wsman_client_handler( WsManClient *cl,
 		goto DONE;
 	}
 
-	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent());
+	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent(cl));
 	headers = curl_slist_append(headers, usag);
 
 	/*
@@ -362,8 +362,8 @@ wsman_client_handler( WsManClient *cl,
 	}
 
 	while (1) {
-		if (cl->data.user && cl->data.pwd && auth_set) {
-			r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, auth_set);
+            if (cl->data.user && cl->data.pwd && cl->data.auth_set) {
+            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, cl->data.auth_set);
 			if (r != CURLE_OK) {
 				http_code = 400;
 				cl->fault_string = strdup(curl_easy_strerror(r));
@@ -410,7 +410,7 @@ wsman_client_handler( WsManClient *cl,
 		if (http_code != 401) {
 			break;
 		}
-		// we are here because of authorization required
+		// we are here because of authentication required
 		r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
 		if (r != CURLE_OK) {
 			http_code = 400;
@@ -418,7 +418,9 @@ wsman_client_handler( WsManClient *cl,
 			curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
 			goto DONE;
 		}
-		if (auth_set) {
+    /*  
+     *  FIXME: Why are we freeing credentials here?
+     *  if (cl->data.auth_set) {
 			if (cl->data.user) {
 				u_free(cl->data.user);
 				cl->data.user = NULL;
@@ -427,17 +429,17 @@ wsman_client_handler( WsManClient *cl,
 				u_free(cl->data.pwd);
 				cl->data.pwd = NULL;
 			}
-		}
-		auth_set = reauthenticate(auth_set, auth_avail, &cl->data.user,
-				&cl->data.pwd);
-		u_buf_clear(con->response);
-		if (auth_set == 0) {
-			// user wants to cancel authorization
-			r = CURLE_LOGIN_DENIED;
-			curl_err("User didn't provide authorization data");
-			goto DONE;
-		}
-	}
+      }*/
+                cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail, 
+                        &cl->data.user, &cl->data.pwd);
+                u_buf_clear(con->response);
+                if (cl->data.auth_set == 0) {
+                    // user wants to cancel authentication
+                    r = CURLE_LOGIN_DENIED;
+                    curl_err("User didn't provide authentication data");
+                    goto DONE;
+                }
+        }
 
 DONE:
 	cl->response_code = http_code;
@@ -458,7 +460,7 @@ DONE:
 }
 
 
-int wsman_client_transport_init(void *arg)
+int wsman_client_transport_init(WsManClient *cl, void *arg)
 {
 	CURLcode r;
 	long flags;
@@ -469,7 +471,7 @@ int wsman_client_transport_init(void *arg)
 		pthread_mutex_unlock(&curl_mutex);
 		return 0;
 	}
-	if (wsman_transport_get_cafile() != NULL) {
+	if (wsman_transport_get_cafile(cl) != NULL) {
 		flags = CURL_GLOBAL_SSL;
 	} else {
 		flags = CURL_GLOBAL_NOTHING;

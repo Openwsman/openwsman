@@ -62,6 +62,9 @@ char *auth_methods[] = {
   NULL,
 };
 
+
+
+/*
 static char *authentication_method = NULL;
 static char *proxy = NULL;
 static char *proxy_auth = NULL;
@@ -69,6 +72,8 @@ static char *user_agent = PACKAGE_STRING;
 static int noverifypeer = 0;
 static unsigned long  transport_timeout = 0;
 static char *cafile;
+*/
+
 
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
@@ -110,15 +115,15 @@ get_transfer_time()
 
 
 static void
-request_usr_pwd(ws_auth_type_t auth,
+request_usr_pwd( wsman_auth_type_t auth,
                 char **username,
                 char **password);
 
-ws_auth_request_func_t request_func = &request_usr_pwd;
+wsman_auth_request_func_t request_func = &request_usr_pwd;
 
 
 static void
-request_usr_pwd(ws_auth_type_t auth,
+request_usr_pwd( wsman_auth_type_t auth,
                 char **username,
                 char **password)
 {
@@ -128,7 +133,7 @@ request_usr_pwd(ws_auth_type_t auth,
 
   fprintf(stdout,"Authentication failed, please retry\n");
   fprintf(stdout, "%s authentication is used\n",
-          ws_client_transport_get_auth_name(auth));
+          wsman_client_transport_get_auth_name( auth));
   printf("User name: ");
   fflush(stdout); 
   if ( (p = fgets(user, 20, stdin) ) != NULL ) 
@@ -145,7 +150,7 @@ request_usr_pwd(ws_auth_type_t auth,
   *password = u_strdup_printf ("%s", pw);
 }
 
-char *ws_client_transport_get_auth_name(ws_auth_type_t auth)
+char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth)
 {
   switch (auth) {
   case WS_NO_AUTH :    return "No Auth";
@@ -158,27 +163,28 @@ char *ws_client_transport_get_auth_name(ws_auth_type_t auth)
   return "Unknown";
 }
 
-void ws_client_transport_set_auth_request_func(ws_auth_request_func_t f)
+void wsman_client_transport_set_auth_request_func(WsManClient *cl, 
+        wsman_auth_request_func_t f)
 {
-  request_func = f;
+  cl->authentication.auth_request_func = f;
 }
 
-int wsman_is_auth_method(int method)
+int wsman_is_auth_method(WsManClient *cl, int method)
 {
-  if (authentication_method == NULL) {
+  if (cl->authentication.method == NULL) {
     return 1;
   }
   if (method >= WS_MAX_AUTH) {
     return 0;
   }
-  return (!strncasecmp(authentication_method, auth_methods[method],
-                       strlen(authentication_method)));
+  return (!strncasecmp(cl->authentication.method, auth_methods[method],
+                       strlen(cl->authentication.method)));
 }
 
-int ws_client_transport_get_auth_value()
+int wsman_client_transport_get_auth_value(WsManClient *cl)
 {
-    char *m = authentication_method;
-    ws_auth_type_t i;
+    char *m = cl->authentication.method;
+    wsman_auth_type_t i;
 
     if (m == NULL) {
         return 0;
@@ -191,77 +197,80 @@ int ws_client_transport_get_auth_value()
     return 0;
 }
 
-char *wsman_transport_get_proxy()
+char *wsman_transport_get_proxy(WsManClient *cl)
 {
-  return proxy;
+  return cl->proxy_data.proxy;
 }
 
-char *wsman_transport_get_proxyauth()
+char *wsman_transport_get_proxyauth(WsManClient *cl)
 {
-  return proxy_auth;
+  return cl->proxy_data.proxy_auth;
 }
 
-unsigned long wsman_transport_get_timeout()
+unsigned long wsman_transport_get_timeout(WsManClient *cl)
 {
-  return transport_timeout;
+  return cl->transport_timeout;
 }
 
-
-
-char * wsman_transport_get_agent ()
+void wsman_transport_set_agent (WsManClient *cl, char * arg)
 {
-  return user_agent;
-}
-
-char * wsman_transport_get_auth_method ()
-{
-  return authentication_method;
-}
-
-int wsman_transport_get_no_verify_peer ()
-{
-  return noverifypeer;
-}
-
-char *wsman_transport_get_cafile()
-{
-  return cafile;
+  cl->user_agent = arg;
 }
 
 
-void wsman_transport_set_proxy(char *arg)
+
+char * wsman_transport_get_auth_method (WsManClient *cl)
 {
-  proxy = arg;
+  return cl->authentication.method;
 }
 
-void wsman_transport_set_proxyauth(char *arg)
+int wsman_transport_get_no_verify_peer (WsManClient *cl)
 {
-  proxy_auth = arg;
+  return cl->authentication.verify_peer;
 }
 
-void wsman_transport_set_timeout(unsigned long arg)
+char *wsman_transport_get_cafile(WsManClient *cl)
 {
-  transport_timeout = arg;
+  return cl->authentication.cert_file;
 }
 
-void wsman_transport_set_agent (char *arg)
+
+void wsman_transport_set_proxy(WsManClient *cl, char *arg)
 {
-  user_agent = arg;
+  cl->proxy_data.proxy = arg;
 }
 
-void wsman_transport_set_auth_method (char *arg)
+void wsman_transport_set_proxyauth(WsManClient *cl, char *arg)
 {
-  authentication_method = arg;
+  cl->proxy_data.proxy_auth = arg;
 }
 
-void wsman_transport_set_no_verify_peer (int arg)
+void wsman_transport_set_timeout(WsManClient *cl, unsigned long arg)
 {
-  noverifypeer = arg;
+  cl->transport_timeout = arg;
 }
 
-void wsman_transport_set_cafile(char *arg)
+char * wsman_transport_get_agent (WsManClient *cl)
 {
-  cafile = arg;
+    if (cl->user_agent)
+        return cl->user_agent;
+    else
+        return DEFAULT_USER_AGENT;
+}
+
+void wsman_transport_set_auth_method (WsManClient *cl, char *arg)
+{
+  cl->authentication.method = arg;
+}
+
+void wsman_transport_set_no_verify_peer (WsManClient *cl, int arg)
+{
+  cl->authentication.verify_peer = arg;
+}
+
+void wsman_transport_set_cafile(WsManClient *cl, char *arg)
+{
+  cl->authentication.cert_file = arg;
 }
 
 

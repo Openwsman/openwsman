@@ -47,6 +47,22 @@ extern "C" {
 #include "wsman-types.h"
 
 
+// Possible authentication methods
+
+typedef enum {
+    WS_NO_AUTH,
+    WS_BASIC_AUTH,
+    WS_DIGEST_AUTH,
+    WS_PASS_AUTH,
+    WS_NTLM_AUTH,
+    WS_GSSNEGOTIATE_AUTH,
+    WS_MAX_AUTH,
+} wsman_auth_type_t;
+
+        typedef void (*wsman_auth_request_func_t)( wsman_auth_type_t t, 
+                    char **usr, 
+                    char **pwd);
+
 	struct _WsManClient;
 	typedef struct _WsManClient WsManClient;
 
@@ -373,8 +389,7 @@ extern "C" {
 	void wsman_client_set_dumpfile(FILE * f);
 	FILE *wsman_client_get_dumpfile(void);
 
-/*---------------- Advanced client API --------------------------------------*/
-
+#if 0
 
 	int wsman_session_open(const char *server,
 			       int port,
@@ -433,6 +448,7 @@ extern "C" {
 
 	char *wsman_session_serialize(int sid, void *data,
 				      void *type_info);
+#endif
 
 #ifdef __cplusplus
 }

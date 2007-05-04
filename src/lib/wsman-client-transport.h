@@ -43,64 +43,53 @@
 #define DEFAULT_USER_AGENT PACKAGE_STRING
 
 
-// Possible authentication methods
-
-typedef enum {
-    WS_NO_AUTH,
-    WS_BASIC_AUTH,
-    WS_DIGEST_AUTH,
-    WS_PASS_AUTH,
-    WS_NTLM_AUTH,
-    WS_GSSNEGOTIATE_AUTH,
-    WS_MAX_AUTH,
-} ws_auth_type_t;
-
 
 
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 
-typedef void (*ws_auth_request_func_t)(ws_auth_type_t t, char **usr, char **pwd);
 
-extern void ws_client_transport_set_auth_request_func(ws_auth_request_func_t f);
+extern void wsman_client_transport_set_auth_request_func(WsManClient *cl, 
+        wsman_auth_request_func_t f);
 
-extern char *ws_client_transport_get_auth_name(ws_auth_type_t auth);
+extern char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth);
 
-extern int ws_client_transport_get_auth_value(void);
+extern int wsman_client_transport_get_auth_value(WsManClient *cl);
 
-extern int wsman_is_auth_method(int method);
+extern int wsman_is_auth_method(WsManClient *cl, int method);
 
-extern int wsman_client_transport_init(void *arg);
+extern int wsman_client_transport_init(WsManClient *cl, void *arg);
 
 extern void wsman_client_transport_fini(void);
 
-extern char *wsman_transport_get_proxy(void);
+extern char *wsman_transport_get_proxy(WsManClient *cl);
 
-extern unsigned long wsman_transport_get_timeout(void);
+extern unsigned long wsman_transport_get_timeout(WsManClient *cl);
 
-extern char *wsman_transport_get_proxyauth(void);
+extern char *wsman_transport_get_proxyauth(WsManClient *cl);
 
-extern char * wsman_transport_get_agent (void);
+extern char * wsman_transport_get_agent (WsManClient *cl);
+extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
 
-extern char * wsman_transport_get_auth_method (void);
+extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
-extern int wsman_transport_get_no_verify_peer (void);
+extern int wsman_transport_get_no_verify_peer (WsManClient *cl);
 
-extern char *wsman_transport_get_cafile(void);
+extern char *wsman_transport_get_cafile(WsManClient *cl);
 
-extern void wsman_transport_set_proxy(char *proxy);
+extern void wsman_transport_set_proxy(WsManClient *cl, char *proxy);
 
-extern void wsman_transport_set_proxyauth(char *pauth);
+extern void wsman_transport_set_proxyauth(WsManClient *cl, char *pauth);
 
-extern void wsman_transport_set_timeout(unsigned long timeout);
+extern void wsman_transport_set_timeout(WsManClient *cl, unsigned long timeout);
 
-extern void wsman_transport_set_agent(char *agent);
+extern void wsman_transport_set_agent(WsManClient *cl, char *agent);
 
-extern void wsman_transport_set_auth_method(char *am);
+extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
 
-extern void wsman_transport_set_no_verify_peer(int value);
+extern void wsman_transport_set_no_verify_peer(WsManClient *cl, int value);
 
-extern void wsman_transport_set_cafile(char *caf);
+extern void wsman_transport_set_cafile(WsManClient *cl, char *caf);
 
 
 extern void wsman_transport_close_transport(WsManClient *cl);

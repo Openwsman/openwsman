@@ -1,6 +1,6 @@
 
 
-SUBDIRS = libu lib  cpp
+SUBDIRS = libu lib 
 
 if BUILD_LIBCIM 
 SUBDIRS += libcim

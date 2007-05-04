@@ -169,7 +169,6 @@ int main(int argc, char** argv)
         host = getenv("OPENWSMAN_TEST_HOST");
     }
 
-    wsman_client_transport_init(NULL);
 
     for (i = 0; i < ntests; i++) {
         printf ("Test %3d: %s ", i + 1, tests[i].explanation);
@@ -181,6 +180,7 @@ int main(int argc, char** argv)
                                  sd[0].scheme,
                                  sd[0].username,
                                  sd[0].password);
+        wsman_client_transport_init(cl, NULL);
         options = initialize_action_options();
         
 		

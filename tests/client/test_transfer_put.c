@@ -155,7 +155,6 @@ int main(int argc, char** argv)
         host = getenv("OPENWSMAN_TEST_HOST");
     }
 	
-	wsman_client_transport_init(NULL);
 		
 	for (i = 0; i < ntests; i++) 
 	{
@@ -177,6 +176,7 @@ int main(int argc, char** argv)
 			wsman_add_properties_from_query_string(options, tests[i].properties);		
 		 
 		doc = ws_transfer_get_and_put(cl, (char *)tests[i].resource_uri, options);
+	wsman_client_transport_init(cl, NULL);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
