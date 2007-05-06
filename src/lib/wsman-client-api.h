@@ -386,8 +386,8 @@ typedef enum {
 					 WsManFault * fault);
 	WsManFault *wsman_client_fault_new(void);
 
-	void wsman_client_set_dumpfile(FILE * f);
-	FILE *wsman_client_get_dumpfile(void);
+	void wsman_client_set_dumpfile(WsManClient *cl, FILE * f);
+	FILE *wsman_client_get_dumpfile(WsManClient *cl);
 
 #if 0
 

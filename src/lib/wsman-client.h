@@ -98,6 +98,7 @@ extern "C" {
 		void *transport;
                 unsigned long transport_timeout;
                 char * user_agent;
+		FILE *dumpfile;
 	};
 
 

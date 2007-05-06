@@ -47,20 +47,18 @@
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
-static FILE *_dumpfile = NULL;
-
 void
-wsman_client_set_dumpfile( FILE *f )
+wsman_client_set_dumpfile( WsManClient *cl, FILE *f )
 {
     if (f)
-	_dumpfile = f;
+	cl->dumpfile = f;
     return;
 }
 
 FILE *
-wsman_client_get_dumpfile( void )
+wsman_client_get_dumpfile(WsManClient *cl)
 {
-    return _dumpfile;
+    return cl->dumpfile;
 }
 
 
@@ -673,7 +671,7 @@ wsman_client_create_request(WsManClient * cl,
 			action != WSMAN_ACTION_TRANSFER_PUT &&
 			action != WSMAN_ACTION_CUSTOM) {
 		if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-			ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
+			ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
 		}
 	}
 	return request;
@@ -722,7 +720,7 @@ _ws_transfer_create(WsManClient * cl,
 	handle_resource_request(cl, request, data, typeInfo, (char *)resource_uri);
 
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
 	}
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -789,7 +787,7 @@ _ws_transfer_put(WsManClient * cl,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, NULL);
 	handle_resource_request(cl, request, data, typeInfo, resource_uri);
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
 	}
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -952,7 +950,7 @@ wsman_invoke(WsManClient * cl,
                     (char *)resource_uri, "%s_INPUT", method);
         }
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
-		ws_xml_dump_node_tree(_dumpfile, ws_xml_get_doc_root(request));
+		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
 	}
 
 	if (wsman_send_request(cl, request)) {
@@ -1456,10 +1454,8 @@ wsman_create_client(const char *hostname,
 	}
 	wsc->wscntx = ws_create_runtime(NULL);
 
-	if (wsman_client_get_dumpfile() == NULL) {
-	    wsman_client_set_dumpfile( stdout );
-	}
 
+	wsc->dumpfile = stdout;
 	wsc->data.scheme = strdup(scheme ? scheme : "http");
 	wsc->data.hostname = hostname ? strdup(hostname) : strdup("localhost");
 	wsc->data.port = port;
