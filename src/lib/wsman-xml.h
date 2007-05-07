@@ -36,7 +36,7 @@
 
 /**
  * @addtogroup XMLParserGeneric
- * 
+ *
  * @{
  */
 
@@ -91,8 +91,8 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
 
 
-/* 
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name); 
+/*
+char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name);
 char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive);
 */
 
@@ -123,7 +123,7 @@ WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri,
 			   const char *prefix);
 
-WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const const char *uri,
+WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const char *uri,
 		       const char *prefix);
 
 WsXmlNodeH ws_xml_add_child_format(WsXmlNodeH node, const char *nsUri,
@@ -146,7 +146,7 @@ void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 void ws_xml_unlink_node(WsXmlNodeH node);
 
 
-void ws_xml_set_ns(WsXmlNodeH r, const char* namespace, const char* prefix );
+void ws_xml_set_ns(WsXmlNodeH r, const char* ns, const char* prefix );
 
 /** @} */
 

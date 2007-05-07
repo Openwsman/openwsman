@@ -49,24 +49,27 @@ typedef struct __CimResource CimResource;
 
 // Service endpoint declaration
 
-int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, 
-		WsmanStatus *status);
+int CimResource_Enumerate_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
+		WsmanStatus *status,
+		void *opaqueData);
 
 int CimResource_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
-		WsmanStatus *status);
+		WsmanStatus *status,
+		void *opaqueData);
 
 int CimResource_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
-		WsmanStatus *status);
+		WsmanStatus *status,
+		void *opaqueData);
 
-int CimResource_Get_EP(SoapOpH op, void* appData);
+int CimResource_Get_EP(SoapOpH op, void* appData, void *opaqueData);
 
-int CimResource_Custom_EP(SoapOpH op, void* appData);
+int CimResource_Custom_EP(SoapOpH op, void* appData, void *opaqueData);
 
-int CimResource_Put_EP(SoapOpH op, void* appData);
+int CimResource_Put_EP(SoapOpH op, void* appData, void *opaqueData);
 
-int CimResource_Create_EP(SoapOpH op, void* appData);
+int CimResource_Create_EP(SoapOpH op, void* appData, void *opaqueData);
 
-int CimResource_Delete_EP(SoapOpH op, void* appData);
+int CimResource_Delete_EP(SoapOpH op, void* appData, void *opaqueData);
 
 SER_DECLARE_TYPE(CimResource);
 DECLARE_EP_ARRAY(CimResource);

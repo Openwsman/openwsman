@@ -76,8 +76,8 @@ typedef struct __op_t op_t;
 
 int             soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void *data, int inbound);
 
-int             outbound_addressing_filter(SoapOpH opHandle, void *data);
-int             outbound_control_header_filter(SoapOpH opHandle, void *data);
+int             outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData);
+int             outbound_control_header_filter(SoapOpH opHandle, void *data, void *opaqueData);
 
 int  			soap_add_filter(SoapH soap,	SoapServiceCallback callbackProc, void *callbackData,
 				int inbound);
@@ -88,7 +88,7 @@ void		    wsman_generate_notunderstood_fault(op_t * op,
 
 char           *get_relates_to_message_id(SoapH soap, WsXmlDocH doc);
 
-void            dispatch_inbound_call(SoapH soap, WsmanMessage * msg);
+void            dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void * opaqueData);
 void            wsman_dispatcher_list(list_t * interfaces);
 
 SoapDispatchH   wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
@@ -105,7 +105,7 @@ void            destroy_dispatch_entry(SoapDispatchH entry);
 
 void            add_response_entry(SoapH soap, op_t * op);
 
-int             process_inbound_operation(op_t * op, WsmanMessage * msg);
+int             process_inbound_operation(op_t * op, WsmanMessage * msg, void * opaqueData);
 void            wsman_create_identify_response(SoapH soap, WsmanMessage * msg);
 void            wsman_generate_encoding_fault(op_t * op, WsmanFaultDetailType faultDetail);
 

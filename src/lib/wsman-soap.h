@@ -224,15 +224,15 @@ typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
 
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
-typedef int     (*WsEndPointEnumerate) (WsContextH, WsEnumerateInfo *, WsmanStatus *);
+typedef int     (*WsEndPointEnumerate) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
 
-typedef int     (*WsEndPointPull) (WsContextH, WsEnumerateInfo *, WsmanStatus *);
+typedef int     (*WsEndPointPull) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
 
-typedef int     (*WsEndPointRelease) (WsContextH, WsEnumerateInfo *, WsmanStatus *);
+typedef int     (*WsEndPointRelease) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
 
-typedef int     (*WsEndPointPut) (WsContextH, void *, void **, WsmanStatus *);
+typedef int     (*WsEndPointPut) (WsContextH, void *, void **, WsmanStatus *, void *);
 
-typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
+typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 
 
 #define EUIDLEN		64
@@ -247,7 +247,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *);
 #define WSMAN_ENUMINFO_OBJEPR          	  0x000800
 #define WSMAN_ENUMINFO_EXT          	  0x001000
 /* The value 0x010000 is already assigned to flag WSMAN_ENUMINFO_INWORK_FLAG */
-#define WSMAN_ENUMINFO_ASSOC          	  0x020000  
+#define WSMAN_ENUMINFO_ASSOC          	  0x020000
 #define WSMAN_ENUMINFO_REF          	  0x040000
 
 
@@ -301,7 +301,7 @@ typedef enum __WsmanPolymorphismMode WsmanPolymorphismMode;
 
 
 
-typedef int     (*SoapServiceCallback) (SoapOpH, void *);
+typedef int     (*SoapServiceCallback) (SoapOpH, void *, void *);
 struct __callback_t {
 	lnode_t         node;
 	              //dataBuf is passed to callback as data
@@ -324,29 +324,29 @@ SoapH           ws_context_get_runtime(WsContextH hCntx);
 
 
 
-int 
+int
 wsman_register_interface(WsContextH cntx,
 			 WsDispatchInterfaceInfo * wsInterface,
 			 WsManDispatcherInfo * dispInfo);
-int 
+int
 wsman_register_endpoint(WsContextH cntx,
 			WsDispatchInterfaceInfo * wsInterface,
 			WsDispatchEndPointInfo * ep,
 			WsManDispatcherInfo * dispInfo);
 
 
-int             ws_transfer_put_stub(SoapOpH op, void *appData);
-int             ws_transfer_delete_stub(SoapOpH op, void *appData);
-int             wsman_identify_stub(SoapOpH op, void *appData);
-int             wsenum_enumerate_stub(SoapOpH op, void *appData);
-int             wsenum_reference_instances_stub(SoapOpH op, void *appData);
-int             ws_transfer_get_stub(SoapOpH op, void *appData);
-int             wsenum_pull_stub(SoapOpH op, void *appData);
-int             wsenum_pull_raw_stub(SoapOpH op, void *appData);
-int             wsenum_release_stub(SoapOpH op, void *appData);
+int             ws_transfer_put_stub(SoapOpH op, void *appData, void *opaqueData);
+int             ws_transfer_delete_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsman_identify_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsenum_enumerate_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsenum_reference_instances_stub(SoapOpH op, void *appData, void *opaqueData);
+int             ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsenum_pull_raw_stub(SoapOpH op, void *appData, void *opaqueData);
+int             wsenum_release_stub(SoapOpH op, void *appData, void *opaqueData);
 
 
-SoapOpH 
+SoapOpH
 soap_create_op(SoapH soap,
 	       char *inboundAction,
 	       char *outboundAction,
@@ -401,14 +401,14 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code(WsmanFaultCodeType fault
 
 
 
-WsXmlDocH 
+WsXmlDocH
 wsman_generate_fault(
 		     WsContextH cntx,
 		     WsXmlDocH inDoc,
 		     WsmanFaultCodeType faultCode,
 		     WsmanFaultDetailType faultDetail,
 		     char *fault_msg);
-void 
+void
 wsman_generate_fault_buffer(
 			    WsContextH cntx,
 			    WsXmlDocH inDoc,
@@ -423,7 +423,7 @@ wsman_generate_fault_buffer(
 void            wsman_status_init(WsmanStatus * s);
 int             wsman_check_status(WsmanStatus * s);
 
-void  wsman_timeouts_manager(WsContextH cntx);
+void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
 
 
 #endif				/* SOAP_API_H_ */

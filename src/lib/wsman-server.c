@@ -84,7 +84,7 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 
 #endif
 
-static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo) 
+static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo)
 {
 	debug("Plugin version: %s", (ifcinfo->version) );
 	if (strcmp (PACKAGE_VERSION, ifcinfo->version) == 0) {
@@ -165,7 +165,7 @@ void *wsman_server_auxiliary_loop_thread(void *arg)
 		pthread_cond_timedwait(&cond, &mutex, &timespec);
 		pthread_mutex_unlock(&mutex);
 
-		wsman_timeouts_manager(cntx);
+		wsman_timeouts_manager(cntx, NULL);
 	}
 	return NULL;
 }

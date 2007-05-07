@@ -203,7 +203,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	}
 	u_buf_construct(wsman_msg->request, body, length, length);
 
-	// some plugins can use credentials for its 
+	// some plugins can use credentials for its
 	// own authentication
 	shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
 			       &wsman_msg->auth_data.password);
@@ -212,7 +212,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	// Call dispatcher. Real request handling
 	if (status == WSMAN_STATUS_OK) {
 		// dispatch if we didn't find out the error
-		dispatch_inbound_call(soap, wsman_msg);
+		dispatch_inbound_call(soap, wsman_msg, NULL);
 		status = wsman_msg->http_code;
 	}
 
@@ -403,7 +403,7 @@ static void *service_connection(void *arg)
 	pthread_mutex_lock(&shttpd_mutex);
 	while (continue_working) {
 		if (list_isempty(request_list)) {
-			// no sockets to serve 
+			// no sockets to serve
 			if (num_threads > min_threads) {
 				debug("we have too many threads %d > %d"
 				      " Thread %d is being completed",
@@ -469,7 +469,7 @@ static int initialize_basic_authenticator(void)
 	}
 
 	if (auth == NULL) {
-		// No basic authenticationame 
+		// No basic authenticationame
 		return 0;
 	}
 
@@ -627,7 +627,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 
 		list_append(request_list, node);
 		if (idle_threads > 0) {
-			// we have idle thread waiting for a request 
+			// we have idle thread waiting for a request
 			debug("using idle thread. idle_threads = %d",
 			      idle_threads);
 			pthread_cond_signal(&shttpd_cond);
@@ -635,7 +635,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 			continue;
 		}
 		if (num_threads >= max_threads) {
-			// we have enough threads to serve requests 
+			// we have enough threads to serve requests
 			debug("Using existing thread. %d > %d",
 			      num_threads, max_threads);
 			pthread_mutex_unlock(&shttpd_mutex);
@@ -654,7 +654,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 		debug("pthread_create failed = %d. num_threads = %d",
 		      r, num_threads);
 		if (num_threads > 0) {
-			// we have threads to serve request 
+			// we have threads to serve request
 			debug
 			    ("we have threads to serve request. num_threads = %d",
 			     num_threads);
@@ -662,7 +662,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 			continue;
 		}
 
-		// So we couldn't create even one thread. Serve the request here 
+		// So we couldn't create even one thread. Serve the request here
 		debug("Serve on main thread");
 		node = list_delete(request_list, node);
 		if (node) {
