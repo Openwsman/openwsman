@@ -1,4 +1,4 @@
-SUBDIRS = src doc etc tests
+SUBDIRS = src doc etc tests examples
 
 wsmanincludedir = $(includedir)/openwsman
 #wsmaninclude_HEADERS = wsman_config.h

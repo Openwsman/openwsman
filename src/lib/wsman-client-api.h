@@ -245,8 +245,6 @@ typedef enum {
 	/* Creating objects */
 
 	WsContextH wsman_create_runtime(void);
-	WsXmlDocH wsman_create_doc(WsContextH cntx, const char *rootname);
-	void wsman_destroy_doc(WsXmlDocH doc);
 	WsXmlDocH wsman_build_envelope(WsContextH cntx, const char *action,
 				       const char *reply_to_uri,
 				       const char *resource_uri,

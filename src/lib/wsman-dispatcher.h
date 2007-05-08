@@ -47,79 +47,64 @@
  */
 
 struct __dispatch_t {
-	lnode_t         node;
-	int             usageCount;
-	char           *inboundAction;
-	char           *outboundAction;
-	unsigned long   flags;
-	SoapH           fw;
+	lnode_t node;
+	int usageCount;
+	char *inboundAction;
+	char *outboundAction;
+	unsigned long flags;
+	SoapH fw;
 	SoapServiceCallback serviceCallback;
-	void           *serviceData;
-	list_t         *inboundFilterList;
-	list_t         *outboundFilterList;
+	void *serviceData;
+	list_t *inboundFilterList;
+	list_t *outboundFilterList;
 };
 
 struct __op_t {
 	SoapDispatchH dispatch;
-	time_t          expires;
-	unsigned long   submittedTicks;
-	WsContextH      cntx;
-	WsXmlDocH       in_doc;
-	              //not deleted on destroy
-        WsXmlDocH out_doc;
-	              //not deleted on destroy
-        WsmanMessage * data;
-	list_t         *processed_headers;
+	time_t expires;
+	unsigned long submittedTicks;
+	WsContextH cntx;
+	WsXmlDocH in_doc;
+	//not deleted on destroy
+	WsXmlDocH out_doc;
+	//not deleted on destroy
+	WsmanMessage *data;
+	list_t *processed_headers;
 };
 typedef struct __op_t op_t;
 
 
-int             soap_add_op_filter(SoapOpH op, SoapServiceCallback proc, void *data, int inbound);
+void dispatch_inbound_call(SoapH soap, WsmanMessage * msg,
+			   void *opaqueData);
 
-int             outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData);
-int             outbound_control_header_filter(SoapOpH opHandle, void *data, void *opaqueData);
+SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
 
-int  			soap_add_filter(SoapH soap,	SoapServiceCallback callbackProc, void *callbackData,
-				int inbound);
+void destroy_op_entry(op_t * entry);
 
+op_t *create_op_entry(SoapH soap, SoapDispatchH dispatch,
+		      WsmanMessage * data);
 
-void		    wsman_generate_notunderstood_fault(op_t * op,
-				   WsXmlNodeH notUnderstoodHeader);
+int unlink_response_entry(SoapH soap, op_t * entry);
 
-char           *get_relates_to_message_id(SoapH soap, WsXmlDocH doc);
+void destroy_dispatch_entry(SoapDispatchH entry);
 
-void            dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void * opaqueData);
-void            wsman_dispatcher_list(list_t * interfaces);
+void wsman_create_identify_response(SoapH soap, WsmanMessage * msg);
 
-SoapDispatchH   wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc);
-WsEndPointRelease wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc);
+void wsman_generate_encoding_fault(op_t * op,
+				   WsmanFaultDetailType faultDetail);
 
-void            destroy_op_entry(op_t * entry);
+WsEndPointRelease wsman_get_release_endpoint(WsContextH cntx,
+					     WsXmlDocH doc);
 
-op_t*           create_op_entry(SoapH soap, SoapDispatchH dispatch,
-				WsmanMessage * data);
+void wsman_dispatch_start(SoapDispatchH disp);
 
-int             unlink_response_entry(SoapH soap, op_t * entry);
-op_t           *find_response_entry(SoapH soap, char *id);
-void            destroy_dispatch_entry(SoapDispatchH entry);
+SoapDispatchH wsman_dispatch_create(SoapH soap, char *inboundAction, char *outboundAction,
+				   char *role,	//reserved, must be NULL
+				   SoapServiceCallback callbackProc,
+				   void *callbackData,
+				   unsigned long flags);
 
-void            add_response_entry(SoapH soap, op_t * op);
-
-int             process_inbound_operation(op_t * op, WsmanMessage * msg, void * opaqueData);
-void            wsman_create_identify_response(SoapH soap, WsmanMessage * msg);
-void            wsman_generate_encoding_fault(op_t * op, WsmanFaultDetailType faultDetail);
-
-
-void            soap_start_dispatch(SoapDispatchH disp);
-
-SoapDispatchH   soap_create_dispatch(SoapH soap, char *inboundAction,
-		     		char *outboundAction, //optional
-		     		char *role, //reserved, must be NULL
-		     		SoapServiceCallback callbackProc,
-		     		void *callbackData,
-		     		unsigned long flags);
-
-SoapDispatchH  wsman_dispatch_entry_new(void);
+SoapDispatchH wsman_dispatch_entry_new(void);
 
 /** @} */
 #endif				/* WS_DISPATCHER_H_ */

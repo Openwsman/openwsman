@@ -447,6 +447,14 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 
 
 
+WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc, 
+		const char *rootNsUri, 
+		const char *rootName ) 
+{
+	SoapH soap = ws_xml_get_doc_soap_handle(doc);
+	return ws_xml_create_doc(soap, rootNsUri, rootName);
+}
+
 /**
  * Initialize XML Parser
  * @param soap SOAP handle

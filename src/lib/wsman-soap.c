@@ -382,12 +382,12 @@ wsman_register_endpoint(WsContextH cntx,
 		break;
 	}
 
-	if (callbackProc != NULL && (disp = soap_create_dispatch(soap, action,
+	if (callbackProc != NULL && (disp = wsman_dispatch_create(soap, action,
 			NULL, NULL, callbackProc, ep, flags))) {
 		dispInfo->map[dispInfo->mapCount].ep = ep;
 		dispInfo->map[dispInfo->mapCount].disp = disp;
 		dispInfo->mapCount++;
-		soap_start_dispatch(disp);
+		wsman_dispatch_start(disp);
 	}
 	if (action && action != ep->inAction) {
 		u_free(action);
@@ -1489,7 +1489,7 @@ soap_create_op(SoapH soap,
 	SoapDispatchH  disp = NULL;
 	op_t           *entry = NULL;
 
-	if ((disp = soap_create_dispatch(soap, inboundAction, outboundAction,
+	if ((disp = wsman_dispatch_create(soap, inboundAction, outboundAction,
 			      NULL, //reserved, must be NULL
 			      callbackProc, callbackData, flags)) != NULL) {
 		entry = create_op_entry(soap, disp, NULL);
@@ -1692,6 +1692,7 @@ ws_get_context_xml_doc_val(WsContextH cntx,
 }
 
 
+#if 0
 void
 add_response_entry(SoapH soap, op_t * op)
 {
@@ -1702,6 +1703,7 @@ add_response_entry(SoapH soap, op_t * op)
 	list_append(soap->responseList, n);
 	u_unlock(soap);
 }
+#endif
 
 
 

@@ -372,4 +372,5 @@ AC_OUTPUT([
         tests/Makefile
         tests/client/Makefile
         tests/xml/Makefile
+        examples/Makefile
 	])

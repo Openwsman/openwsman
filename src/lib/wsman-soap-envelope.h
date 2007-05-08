@@ -39,87 +39,88 @@
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
-int wsman_is_valid_envelope(WsmanMessage *msg, WsXmlDocH doc);
+int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc);
 
-// int wsman_is_duplicate_message_id (SoapH soap, WsXmlDocH doc);
-
-char* wsman_get_soap_header_value(SoapH soap, WsXmlDocH doc, char* nsUri, char* name);
+char *wsman_get_soap_header_value(SoapH soap, WsXmlDocH doc, char *nsUri,
+				  char *name);
 
 WsXmlNodeH wsman_get_soap_header_element(SoapH soap,
-        WsXmlDocH doc, char* nsUri, char* name);
+					 WsXmlDocH doc, char *nsUri,
+					 char *name);
 
-WsXmlDocH wsman_build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri, 
-        char *code, char *subCode, char *reason, char *detail);
+WsXmlDocH wsman_build_soap_fault(SoapH soap, char *soapNsUri,
+				 char *faultNsUri, char *code,
+				 char *subCode, char *reason,
+				 char *detail);
 
-void wsman_build_soap_version_fault(SoapH soap);
 
-WsXmlDocH wsman_create_response_envelope(WsContextH cntx, 
-        WsXmlDocH rqstDoc, 
-        char* action);
+WsXmlDocH wsman_create_response_envelope(WsContextH cntx,
+					 WsXmlDocH rqstDoc, char *action);
 
-WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage *msg);
+WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage * msg);
 
-WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc, char *code,
-        char *subCodeNs, char *subCode, char *lang,
-        char *reason, void (*addDetailProc)(WsXmlNodeH, void *),
-        void *addDetailProcData);
-
+WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc,
+			     char *code, char *subCodeNs, char *subCode,
+			     char *lang, char *reason,
+			     void (*addDetailProc) (WsXmlNodeH, void *),
+			     void *addDetailProcData);
 
 WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
-            WsXmlDocH rqstDoc,
-            char* code,
-            char* subCodeNs,
-            char* subCode,
-	    char *fault_action,
-            char* lang,
-            char* reason,
-            char* faultDetail);
+				      WsXmlDocH rqstDoc,
+				      char *code,
+				      char *subCodeNs,
+				      char *subCode,
+				      char *fault_action,
+				      char *lang,
+				      char *reason, char *faultDetail);
 
-char* wsman_get_class_name ( WsContextH cntx );
+char *wsman_get_class_name(WsContextH cntx);
 
-char* wsman_get_method_name ( WsContextH cntx ); 
+char *wsman_get_method_name(WsContextH cntx);
 
-hash_t* wsman_get_method_args ( WsContextH cntx, char *resource_uri );
+hash_t *wsman_get_method_args(WsContextH cntx, char *resource_uri);
 
 int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
 void wsman_set_estimated_total(WsXmlDocH in_doc,
-                               WsXmlDocH out_doc,
-                               WsEnumerateInfo *enumInfo);
+			       WsXmlDocH out_doc,
+			       WsEnumerateInfo * enumInfo);
 
-
-char* wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char* name, int index);
+char *wsman_get_selector(WsContextH cntx, WsXmlDocH doc, char *name,
+			 int index);
 
 hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node);
 
-hash_t * wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
+hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
-hash_t * wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc);
+hash_t *wsman_get_selector_list_from_filter(WsContextH cntx,
+					    WsXmlDocH doc);
 
-void wsman_add_selector( WsXmlNodeH baseNode, char* name, char* val);
+void wsman_add_selector(WsXmlNodeH baseNode, char *name, char *val);
 
-char* wsman_get_action(WsContextH cntx, WsXmlDocH doc);
+char *wsman_get_action(WsContextH cntx, WsXmlDocH doc);
 
-char* wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
+char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);
 
 int wsman_is_fault_envelope(WsXmlDocH doc);
 
-void wsman_set_fault(WsmanMessage *msg, 
-            WsmanFaultCodeType fault_code, 
-            WsmanFaultDetailType fault_detail_code,
-            const char *details);
+void wsman_set_fault(WsmanMessage * msg,
+		     WsmanFaultCodeType fault_code,
+		     WsmanFaultDetailType fault_detail_code,
+		     const char *details);
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
-
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 
-void wsman_add_namespace_as_selector(WsXmlDocH doc,
-					                  char *_namespace);
-char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
-		                const char *op);
+void wsman_add_namespace_as_selector(WsXmlDocH doc, char *_namespace);
 
-int wsman_parse_enum_request(WsContextH cntx,
-		                WsEnumerateInfo * enumInfo);
+char *wsman_get_option_set(WsContextH cntx, WsXmlDocH doc, const char *op);
+
+int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
+
+WsXmlDocH wsman_create_doc(WsContextH cntx, const char *rootname);
+
+void wsman_destroy_doc(WsXmlDocH doc);
 
 #endif

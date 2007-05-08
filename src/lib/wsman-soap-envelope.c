@@ -320,6 +320,7 @@ wsman_build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri,
  * @param  fw SOAP Framework handle
  * @todo Send fault back
  */
+#if 0
 void wsman_build_soap_version_fault(SoapH soap)
 {
 	WsXmlDocH fault =
@@ -361,9 +362,7 @@ void wsman_build_soap_version_fault(SoapH soap)
 	}
 }
 
-
-
-
+#endif
 
 
 /**
@@ -1101,3 +1100,16 @@ int wsman_is_identify_request(WsXmlDocH doc)
 	else
 		return 0;
 }
+
+WsXmlDocH
+wsman_create_doc(WsContextH cntx, const char *rootname)
+{
+	return ws_xml_create_doc(cntx->soap, NULL, (char *)rootname);
+}
+
+void
+wsman_destroy_doc(WsXmlDocH doc)
+{
+	ws_xml_destroy_doc(doc);
+}
+

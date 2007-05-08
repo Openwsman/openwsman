@@ -73,22 +73,6 @@
 
 
 
-#if 0
-// Selectors
-#define ADD_SELECTOR(n,t,d)                     \
-  { n, NULL, t, d}
-
-#define SELECTOR_LAST { NULL, NULL, NULL, NULL }
-#define START_TRANSFER_GET_SELECTORS(t) WsSelector t##_Get_Selectors[] = {
-
-#define FINISH_TRANSFER_GET_SELECTORS(t) SELECTOR_LAST }
-#define DECLARE_SELECTOR_ARRAY(t)               \
-  extern WsSelector t##_Get_Selectors[]
-
-#endif
-
-
-
 struct __dispatch_t;
 typedef struct __dispatch_t *SoapDispatchH;
 
@@ -424,6 +408,16 @@ void            wsman_status_init(WsmanStatus * s);
 int             wsman_check_status(WsmanStatus * s);
 
 void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
+
+
+int outbound_addressing_filter(SoapOpH opHandle, void *data,
+			       void *opaqueData);
+
+int outbound_control_header_filter(SoapOpH opHandle, void *data,
+				   void *opaqueData);
+
+int soap_add_filter(SoapH soap, SoapServiceCallback callbackProc,
+		    void *callbackData, int inbound);
 
 
 #endif				/* SOAP_API_H_ */

@@ -82,18 +82,6 @@ wsman_create_runtime (void)
 }
 
 
-WsXmlDocH
-wsman_create_doc(WsContextH cntx, const char *rootname)
-{
-	return ws_xml_create_doc(cntx->soap, NULL, (char *)rootname);
-}
-
-void
-wsman_destroy_doc(WsXmlDocH doc)
-{
-	ws_xml_destroy_doc(doc);
-}
-
 
 
 // Access to client elements
