@@ -98,7 +98,7 @@ static wchar_t *convert_to_unicode(char *str)
 }
 
 
-int wsman_client_transport_init(void *arg)
+int wsman_client_transport_init(WsManClient *cl, void *arg)
 {
 	wchar_t *agent;
 	static long lock;
@@ -106,7 +106,7 @@ int wsman_client_transport_init(void *arg)
 	if (session != NULL) {
 		return 0;
 	}
-	agent = convert_to_unicode(wsman_transport_get_agent());
+	agent = convert_to_unicode(wsman_transport_get_agent(cl));
 	if (agent == NULL) {
 		return 1;
 	}
@@ -267,7 +267,7 @@ wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	u_buf_t *ubuf;
 	PCCERT_CONTEXT certificate;
 
-	if (session == NULL && wsman_client_transport_init(NULL)) {
+	if (session == NULL && wsman_client_transport_init(cl, NULL)) {
 		error("could not initialize transport");
 		lastErr = GetLastError();
 		goto DONE;
@@ -315,7 +315,7 @@ wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 	ws_xml_dump_memory_enc(rqstDoc, &buf, &errLen, "UTF-8");
 	updated = 0;
-	ws_auth = ws_client_transport_get_auth_value();
+	ws_auth = wsman_client_transport_get_auth_value(cl);
 	if (ws_auth == WS_NTLM_AUTH) {
 		DWORD d = WINHTTP_ENABLE_SPN_SERVER_PORT;
 		if (!WinHttpSetOption(request,
@@ -364,7 +364,7 @@ wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				lastErr = 0;
 				if (!find_cert
 				    ((const _TCHAR *)
-				     wsman_transport_get_cafile(),
+				     wsman_transport_get_cafile(cl),
 				     &certificate, &lastErr)) {
 					debug("No certificate");
 
