@@ -69,6 +69,14 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 	lnode_t *node;
 	SoapH soap = (SoapH) arg;
 	WsManListenerH * listener = (WsManListenerH *)soap->listener;
+	if (config_file) {
+		debug("reading config file 2");
+		dictionary *ini;
+		ini = iniparser_load(config_file);
+		if (ini) {
+			listener->config = ini;
+		}
+	}
 	node = list_first(listener->plugins);
 	while (node) {
 		WsManPlugin *p = (WsManPlugin *) node->list_data;
@@ -78,6 +86,7 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 		} else {
 			debug("no configuration available for plugin: %s", p->p_name);
 		}
+		node = list_next(listener->plugins, node);
 	}
 }
 
@@ -89,6 +98,7 @@ void *wsman_server_create_config(char *config_file)
 	WsContextH cntx;
 
 	if (config_file) {
+		debug("reading config file 1");
 		ini = iniparser_load(config_file);
 		if (ini) {
 			listener->config = ini;

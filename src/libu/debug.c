@@ -44,112 +44,103 @@
 static list_t *handlers = NULL;
 
 unsigned int
-debug_add_handler (debug_fn    fn,
-                   debug_level_e level,
-                   void*     user_data)
+debug_add_handler(debug_fn fn, debug_level_e level, void *user_data)
 {
 	lnode_t *new_node;
-    debug_handler_t *handler = (debug_handler_t *)u_malloc(sizeof(debug_handler_t));
-    if (!handlers) {
-        handlers = list_create(LISTCOUNT_T_MAX);
-    }
-    handler->fn = fn;
-    handler->level = level;
-    handler->user_data = user_data;
+	debug_handler_t *handler =
+	    (debug_handler_t *) u_malloc(sizeof(debug_handler_t));
+	if (!handlers) {
+		handlers = list_create(LISTCOUNT_T_MAX);
+	}
+	handler->fn = fn;
+	handler->level = level;
+	handler->user_data = user_data;
 
-    if (list_count(handlers) > 0 ) {
-        lnode_t *n = list_last(handlers);
-        handler->id = ((debug_handler_t *)n->list_data)->id  + 1;
-    }
-    else
-        handler->id = 1;
+	if (list_count(handlers) > 0) {
+		lnode_t *n = list_last(handlers);
+		handler->id = ((debug_handler_t *) n->list_data)->id + 1;
+	} else
+		handler->id = 1;
 
-    new_node = lnode_create(handler);
-    list_append(handlers, new_node);
+	new_node = lnode_create(handler);
+	list_append(handlers, new_node);
 
-    return handler->id;
+	return handler->id;
 }
 
-void
-debug_remove_handler (unsigned int id)
+void debug_remove_handler(unsigned int id)
 {
-    lnode_t *iter = list_first(handlers);
-    while (iter) {
-        debug_handler_t *handler = (debug_handler_t *)iter->list_data;
+	lnode_t *iter = list_first(handlers);
+	while (iter) {
+		debug_handler_t *handler =
+		    (debug_handler_t *) iter->list_data;
 
-        if (handler->id == id) {
-            list_delete (handlers, iter);
-            lnode_destroy(iter);
-            return;
-        }
-        iter = list_next(handlers, iter);
-    }
-}
-
-
-static void
-call_handlers(debug_level_e  level, char *str)
-{
-    lnode_t * iter;
-    debug_handler_t *handler;
-    iter = list_first(handlers);
-    while (iter) {
-        handler = (debug_handler_t *)iter->list_data;
-        if ((handler->level == DEBUG_LEVEL_ALWAYS) ||
-            (level <= handler->level))
-            handler->fn (str, level, handler->user_data);
-        iter = list_next(handlers, iter);
-    }
+		if (handler->id == id) {
+			list_delete(handlers, iter);
+			lnode_destroy(iter);
+			return;
+		}
+		iter = list_next(handlers, iter);
+	}
 }
 
 
-void
-debug_full (debug_level_e  level,
-            const char   *format,
-               ...)
+static void call_handlers(debug_level_e level, char *str)
 {
-    va_list args;
-    char *str;
+	lnode_t *iter;
+	debug_handler_t *handler;
+	iter = list_first(handlers);
+	while (iter) {
+		handler = (debug_handler_t *) iter->list_data;
+		if ((handler->level == DEBUG_LEVEL_ALWAYS) ||
+		    (level <= handler->level))
+			handler->fn(str, level, handler->user_data);
+		iter = list_next(handlers, iter);
+	}
+}
 
-    if (handlers == NULL) {
-        return;
-    }
 
-    va_start (args, format);
-    str = u_strdup_vprintf (format, args);
-    va_end (args);
+void debug_full(debug_level_e level, const char *format, ...)
+{
+	va_list args;
+	char *str;
 
-    call_handlers(level, str);
+	if (handlers == NULL) {
+		return;
+	}
 
-    u_free (str);
+	va_start(args, format);
+	str = u_strdup_vprintf(format, args);
+	va_end(args);
+
+	call_handlers(level, str);
+
+	u_free(str);
 }
 
 
 
 void
-debug_full_verbose (debug_level_e  level,
-            char *file,
-            int line,
-            const char *proc,
-            const char   *format,
-               ...)
+debug_full_verbose(debug_level_e level,
+		   char *file,
+		   int line, const char *proc, const char *format, ...)
 {
-    va_list args;
-    char *str;
-    char *body;
+	va_list args;
+	char *str;
+	char *body;
 
-    if (handlers == NULL) {
-        return;
-    }
+	if (handlers == NULL) {
+		return;
+	}
 
-    va_start (args, format);
-    body = u_strdup_vprintf (format, args);
-    va_end (args);
-    str = u_strdup_printf("[%d] %s:%d(%s) %s",
-                      level, file, line, proc, body);
-    u_free(body);
+	va_start(args, format);
+	body = u_strdup_vprintf(format, args);
+	va_end(args);
+	str = u_strdup_printf("[%d] %s:%d(%s) %s",
+			      level, file, line, proc, body);
+	u_free(body);
 
-    call_handlers(level, str);
+	call_handlers(level, str);
 
-    u_free (str);
+	u_free(str);
 }
