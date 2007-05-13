@@ -393,6 +393,9 @@ static int check_unsupported_features(op_t * op)
 	enumurate =
 	    ws_xml_get_child(body, 0, XML_NS_ENUMERATION,
 			     WSENUM_ENUMERATE);
+	if (!enumurate)
+		return retVal;
+
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION,
 			     WSENUM_END_TO);
 	if (n != NULL) {
@@ -429,10 +432,8 @@ static int check_unsupported_features(op_t * op)
 	    (strcmp(resource_uri, CIM_ALL_AVAILABLE_CLASSES) == 0)) {
 		if (!n && !m) {
 			retVal = 1;
-			generate_op_fault(op,
-						WSMAN_UNSUPPORTED_FEATURE,
+			generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_FILTERING_REQUIRED);
-
 		}
 
 	}

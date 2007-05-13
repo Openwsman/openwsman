@@ -77,7 +77,6 @@ SER_NS_STR(XML_NS_ADDRESSING, WSA_ADDRESS, 1),
 epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 	const char *epr_node_name, const char *ns) 
 {
-
 	epr_t *epr;
         epr = (epr_t *) ws_deserialize(cntx,
                                         node,

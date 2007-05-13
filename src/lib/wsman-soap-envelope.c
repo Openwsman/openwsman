@@ -594,6 +594,7 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 			WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH node;
+	WsXmlNodeH fnode;
 	if ((node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
 				WSMB_ASSOCIATION_INSTANCES) ) != NULL) 	
 		enumInfo->flags |= WSMAN_ENUMINFO_REF;
@@ -601,33 +602,34 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 				WSMB_ASSOCIATED_INSTANCES)) != NULL) 	
 		enumInfo->flags |= WSMAN_ENUMINFO_ASSOC;
 
-	if (node!= NULL) {
-		WsXmlNodeH fnode;
-    		epr_t *epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
-		filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-		f->epr = epr;
-		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
-		if (fnode) 
-			f->resultClass = u_strdup(ws_xml_get_node_text(fnode));
-		else
-			f->resultClass = NULL;
-		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
-		if (fnode) 
-			f->role = u_strdup(ws_xml_get_node_text(fnode));
-		else
-			f->role = NULL;
-		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
-		if (fnode)
-			f->assocClass = u_strdup(ws_xml_get_node_text(fnode));
-		else 
-			 f->assocClass = NULL;
-		fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
-		if (fnode) 
-			f->resultRole = u_strdup(ws_xml_get_node_text(fnode));
-		else
-			f->resultRole = NULL;
-		enumInfo->filter = f;
+	if (node == NULL) {
+		return;
 	}
+
+	epr_t *epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
+	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+	f->epr = epr;
+	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
+	if (fnode) 
+		f->resultClass = u_strdup(ws_xml_get_node_text(fnode));
+	else
+		f->resultClass = NULL;
+	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
+	if (fnode) 
+		f->role = u_strdup(ws_xml_get_node_text(fnode));
+	else
+		f->role = NULL;
+	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
+	if (fnode)
+		f->assocClass = u_strdup(ws_xml_get_node_text(fnode));
+	else 
+		f->assocClass = NULL;
+	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
+	if (fnode) 
+		f->resultRole = u_strdup(ws_xml_get_node_text(fnode));
+	else
+		f->resultRole = NULL;
+	enumInfo->filter = f;
 }
 
 
@@ -700,7 +702,6 @@ int wsman_parse_enum_request(WsContextH cntx,
 				wsman_parse_assoc_filter(cntx, filter, enumInfo);
 			}
 			if (( attrVal && strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ) || !attrVal ) {
-				debug("++++++++++++++++++++++++++++ xpath filter");
 				wsman_parse_xpath_filter(cntx, filter, enumInfo);
 			}
 		} else {
@@ -791,9 +792,7 @@ char *wsman_get_method_name(WsContextH cntx)
 
 char *wsman_get_class_name(WsContextH cntx)
 {
-	//char         *r = NULL;
 	char *resource_uri = wsman_get_resource_uri(cntx, NULL);
-	//wsman_remove_query_string(resourceUri, &r);
 	char *className = u_strdup(strrchr(resource_uri, '/') + 1);
 	return className;
 }

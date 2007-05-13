@@ -78,7 +78,9 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->cntx = cntx;
 	cimclient->namespaces = get_vendor_namespaces();
 	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
+
 	cimclient->requested_class = wsman_get_class_name(cntx);
+
 	cimclient->method = wsman_get_method_name(cntx);
 	if (cimclient->selectors) {
 		_tmp = cim_get_namespace_selector(cimclient->selectors);
@@ -132,6 +134,9 @@ verify_class_namespace(CimClientInfo *client)
 	hscan_t hs;
 	hnode_t *hn;
 	int rv = 0;
+	if ( strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) ==0 ) {
+		return 1;
+	}
 	debug("Requested Class: %s", client->requested_class );
 	if ( client && (strstr(client->requested_class, "CIM") != NULL ) &&
 			(strstr(client->resource_uri ,
@@ -372,7 +377,6 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	int retval = 0;
 	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	CimClientInfo *cimclient = NULL;
-	hash_t *selectors = NULL;
 
 	if ( enumInfo ) {
 		cimclient = CimResource_Init(cntx,
@@ -386,7 +390,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		}
 	}
 
-	if (!verify_class_namespace(cimclient) ) {
+	if (!verify_class_namespace(cimclient)) {
 		error("resource uri namespace mismatch");
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -395,7 +399,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	}
 
 	wsman_parse_enum_request(cntx, enumInfo);
-	cim_enum_instances(cimclient, enumInfo, selectors, status);
+	cim_enum_instances(cimclient, enumInfo, status);
 
 	if (status && status->fault_code != 0) {
 		retval = 1;

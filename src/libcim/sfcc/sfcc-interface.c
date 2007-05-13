@@ -852,7 +852,6 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 void
 cim_enum_instances(CimClientInfo * client,
 		   WsEnumerateInfo * enumInfo,
-		   hash_t *selectors,
 		   WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath;
@@ -862,16 +861,23 @@ cim_enum_instances(CimClientInfo * client,
 	sfcc_enumcontext *enumcontext;
 	filter_t *filter = NULL;
 
-	objectpath = newCMPIObjectPath(client->cim_namespace,
-			client->requested_class, NULL);
 
 	if( (enumInfo->flags & WSMAN_ENUMINFO_REF) ||
 		       	(enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) {
+		char *class = NULL;
+		epr_t *epr;
 		filter = enumInfo->filter;
+		epr = (epr_t *)filter->epr;
+		class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
+		objectpath = newCMPIObjectPath(client->cim_namespace,
+			class, NULL);
 		wsman_epr_selector_cb(filter->epr,
 				cim_add_keys_from_filter_cb, objectpath);
 		debug( "ObjectPath: %s",
 				CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+	} else {
+		objectpath = newCMPIObjectPath(client->cim_namespace,
+			client->requested_class, NULL);
 	}
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
 		enumeration = cc->ft->references(cc, objectpath, filter->resultClass,

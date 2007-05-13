@@ -59,7 +59,6 @@ void cim_get_instance(CimClientInfo * client, WsContextH cntx,
 void cim_delete_instance(CimClientInfo * client, WsmanStatus * status);
 
 void cim_enum_instances(CimClientInfo * client, WsEnumerateInfo * enumInfo,
-		hash_t *selectors,
 		WsmanStatus * status);
 
 #if 0
