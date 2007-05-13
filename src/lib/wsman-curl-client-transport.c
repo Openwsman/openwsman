@@ -234,21 +234,33 @@ init_curl_transport(WsManClient *cl)
 		r = curl_easy_setopt(curl, CURLOPT_CAINFO,
 				wsman_transport_get_cafile(cl));
 		if (r != 0) {
-			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLCERT, ..)");
 			goto DONE;
 		}
+/*
+		// sslkey
 		r = curl_easy_setopt(curl, CURLOPT_SSLKEY,
 				wsman_transport_get_cafile(cl));
 		if (r != 0) {
-			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLSERT, ..)");
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLKEY, ..)");
 			goto DONE;
 		}
-		if (wsman_transport_get_no_verify_peer(cl)) {
-			r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-			if (r != 0) {
-				curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
-				goto DONE;
-			}
+*/
+
+		// verify peer
+		r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER,
+				wsman_transport_get_verify_peer(cl));
+		if (r != 0) {
+			curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
+			goto DONE;
+		}
+
+		// no verify host
+		r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 
+				wsman_transport_get_verify_host(cl));
+		if (r != 0) {
+			curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
+			goto DONE;
 		}
 	}
 	return (void *)curl;

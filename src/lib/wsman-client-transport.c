@@ -64,19 +64,7 @@ char *auth_methods[] = {
 
 
 
-/*
-static char *authentication_method = NULL;
-static char *proxy = NULL;
-static char *proxy_auth = NULL;
-static char *user_agent = PACKAGE_STRING;
-static int noverifypeer = 0;
-static unsigned long  transport_timeout = 0;
-static char *cafile;
-*/
-
-
 extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
-
 
 static long long transfer_time = 0;
 
@@ -224,16 +212,20 @@ char * wsman_transport_get_auth_method (WsManClient *cl)
   return cl->authentication.method;
 }
 
-int wsman_transport_get_no_verify_peer (WsManClient *cl)
+int wsman_transport_get_verify_peer (WsManClient *cl)
 {
   return cl->authentication.verify_peer;
+}
+
+int wsman_transport_get_verify_host (WsManClient *cl)
+{
+  return cl->authentication.verify_host;
 }
 
 char *wsman_transport_get_cafile(WsManClient *cl)
 {
   return cl->authentication.cert_file;
 }
-
 
 void wsman_transport_set_proxy(WsManClient *cl, char *arg)
 {
@@ -263,9 +255,14 @@ void wsman_transport_set_auth_method (WsManClient *cl, char *arg)
   cl->authentication.method = arg;
 }
 
-void wsman_transport_set_no_verify_peer (WsManClient *cl, int arg)
+void wsman_transport_set_verify_peer (WsManClient *cl, int arg)
 {
   cl->authentication.verify_peer = arg;
+}
+
+void wsman_transport_set_verify_host (WsManClient *cl, int arg)
+{
+  cl->authentication.verify_host = arg;
 }
 
 void wsman_transport_set_cafile(WsManClient *cl, char *arg)

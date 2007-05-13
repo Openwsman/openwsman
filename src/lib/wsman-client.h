@@ -72,6 +72,7 @@ extern "C" {
 		char *cert_file;
 		char *key_file;
 		unsigned int verify_peer;
+		unsigned int verify_host;
                 wsman_auth_request_func_t auth_request_func;
                 char *method;
 	};

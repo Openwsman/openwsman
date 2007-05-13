@@ -47,6 +47,25 @@
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
+static hash_t *
+get_selectors_from_uri(const char *resource_uri)
+{
+	u_uri_t        *uri;
+	hash_t *selectors = NULL;
+	if (resource_uri != NULL) {
+		if (u_uri_parse((const char *) resource_uri, &uri) != 0)
+			return NULL;
+	} else {
+		return NULL;
+	}
+	if (uri->query != NULL) {
+		 selectors = u_parse_query(uri->query);
+	}
+	if (uri) {
+		u_uri_free(uri);
+	}
+	return selectors;
+}
 void
 wsman_client_set_dumpfile( WsManClient *cl, FILE *f )
 {
@@ -290,18 +309,30 @@ void wsman_create_epr(WsContextH cntx, WsXmlNodeH epr_node,
 		actionOptions *options) 
 {
 	WsXmlNodeH node;
-	/* Add Selectors */
+	hash_t *selectors = NULL;
+	char *uri = NULL;
+
 	ws_xml_add_child(epr_node, XML_NS_ADDRESSING, WSA_ADDRESS, 
 			WSA_TO_ANONYMOUS);
 	node = ws_xml_add_child(epr_node, XML_NS_ADDRESSING, 
 			WSA_REFERENCE_PARAMETERS, NULL);
-	ws_serialize_str(cntx, node, resource_uri, XML_NS_WS_MAN, 
-			WSM_RESOURCE_URI, 0);
 	if (options->selectors != NULL && 
 			hash_count(options->selectors) > 0) {
+		selectors = options->selectors;
+		ws_serialize_str(cntx, node, resource_uri, XML_NS_WS_MAN, 
+			WSM_RESOURCE_URI, 0);
+	} else if (options->filter &&
+		       	strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
+		selectors =  get_selectors_from_uri(options->filter);
+		wsman_remove_query_string(options->filter, &uri);
+		ws_serialize_str(cntx, node, uri, XML_NS_WS_MAN, 
+			WSM_RESOURCE_URI, 0);
+	}
+
+	if (selectors) {
 		hnode_t        *hn;
 		hscan_t         hs;
-		hash_scan_begin(&hs, options->selectors);
+		hash_scan_begin(&hs, selectors);
 		while ((hn = hash_scan_next(&hs))) {
 			wsman_add_selector(node,
 					(char *) hnode_getkey(hn), (char *) hnode_get(hn));
@@ -318,18 +349,13 @@ void wsman_create_epr(WsContextH cntx, WsXmlNodeH epr_node,
 
 
 void
-wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
+wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
 		const char *resource_uri,
 		actionOptions *options,
 		int assocRef)
 {
-	WsXmlNodeH node, object, assInst;
+	WsXmlNodeH  object, assInst;
 
-	debug("%s: called", __FUNCTION__);
-	node = ws_xml_add_child(body, XML_NS_WS_MAN, 
-			WSENUM_FILTER, NULL);
-	ws_xml_add_node_attr(node, NULL, WSENUM_DIALECT, 
-			WSM_ASSOCIATION_FILTER_DIALECT);
 	if((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES)
 		assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
 				WSMB_ASSOCIATION_INSTANCES, NULL);
@@ -366,20 +392,7 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
 void
 wsman_set_options_from_uri(const char *resource_uri, actionOptions * options)
 {
-	u_uri_t        *uri;
-	if (resource_uri != NULL) {
-		if (u_uri_parse((const char *) resource_uri, &uri) != 0)
-			return;
-	} else {
-		return;
-	}
-	if (uri->query != NULL) {
-		debug("query: %s", uri->query);
-		wsman_add_selectors_from_query_string(options, uri->query);
-	}
-	if (uri) {
-		u_uri_free(uri);
-	}
+	options->selectors = get_selectors_from_uri(resource_uri);
 }
 
 void
@@ -462,6 +475,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 			const char* resource_uri,
 			actionOptions *options)
 {
+	WsXmlNodeH filter;
 	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {
@@ -491,11 +505,25 @@ wsman_set_enumeration_options(WsManClient * cl,
 		ws_xml_add_child(node, XML_NS_CIM_BINDING,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
+	if (options->filter) {
+		if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
+			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
+			filter = ws_xml_add_child(node,
+				XML_NS_WS_MAN, WSENUM_FILTER, NULL);
+		} else {
+			filter = ws_xml_add_child(node,
+				XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
+		}
+		if (options->dialect)
+			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
+		else
+			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, WSM_XPATH_FILTER_DIALECT );
+	}
 
 	// References and Associations
 	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
 			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
-		wsman_build_assocRef_body(cl, node, resource_uri, options, 0);
+		wsman_build_assocRef_body(cl, filter, resource_uri, options, 0);
 	}
 }
 
@@ -560,7 +588,6 @@ wsman_client_create_request(WsManClient * cl,
 	WsXmlNodeH      header;
 	WsXmlNodeH      node;
 	char           *_action = NULL;
-	WsXmlNodeH      filter;
 
 	if (action == WSMAN_ACTION_IDENTIFY) {
 		request = ws_xml_create_envelope(
@@ -644,15 +671,6 @@ wsman_client_create_request(WsManClient * cl,
 		if ((options->flags & FLAG_ENUMERATION_COUNT_ESTIMATION) ==
 				FLAG_ENUMERATION_COUNT_ESTIMATION) {
 			ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);
-		}
-		if (options->filter) {
-			node = ws_xml_get_child(body, 0, NULL, NULL);
-			filter = ws_xml_add_child(node,
-					XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
-			if (options->dialect)
-				ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
-			else
-				ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, WSM_XPATH_FILTER_DIALECT );
 		}
 	}
 	if (action != WSMAN_ACTION_TRANSFER_CREATE &&
