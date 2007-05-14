@@ -102,41 +102,6 @@ get_transfer_time()
 
 
 
-static void
-request_usr_pwd( wsman_auth_type_t auth,
-                char **username,
-                char **password);
-
-wsman_auth_request_func_t request_func = &request_usr_pwd;
-
-
-static void
-request_usr_pwd( wsman_auth_type_t auth,
-                char **username,
-                char **password)
-{
-  char *pw;
-  char user[21];
-  char *p;
-
-  fprintf(stdout,"Authentication failed, please retry\n");
-  fprintf(stdout, "%s authentication is used\n",
-          wsman_client_transport_get_auth_name( auth));
-  printf("User name: ");
-  fflush(stdout); 
-  if ( (p = fgets(user, 20, stdin) ) != NULL ) 
-  {
-
-    if (strchr(user, '\n'))
-      (*(strchr(user, '\n'))) = '\0';
-    *username = u_strdup_printf ("%s", user);
-  } else {
-    *username = NULL;
-  }
-
-  pw = (char *)getpass("Password: ");
-  *password = u_strdup_printf ("%s", pw);
-}
 
 char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth)
 {

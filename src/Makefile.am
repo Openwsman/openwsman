@@ -1,6 +1,6 @@
 
 
-SUBDIRS = libu lib 
+SUBDIRS = libu lib
 
 
 if DISABLE_PLUGINS

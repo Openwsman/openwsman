@@ -475,7 +475,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 			const char* resource_uri,
 			actionOptions *options)
 {
-	WsXmlNodeH filter;
+	WsXmlNodeH filter = NULL;
 	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {

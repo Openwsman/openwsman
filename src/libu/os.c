@@ -135,9 +135,6 @@ cont:
 
 
 
-
-
-
 #ifndef HAVE_STRSEP
 /*
  * Get next token from string *stringp, where tokens are possibly-empty
