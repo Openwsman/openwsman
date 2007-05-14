@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<example xmlns:n1="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Sample>
+		<AcceptPause>false</AcceptPause>
+		<AcceptStop>true</AcceptStop>
+		<Caption>Caption</Caption>
+		<CheckPoint>30</CheckPoint>
+		<CreationClassName>CreationClassName</CreationClassName>
+		<Description>Description</Description>
+		<DesktopInteract>true</DesktopInteract>
+		<n1:DisplayName>DisplayName</n1:DisplayName>
+		<ErrorControl>ErrorControl</ErrorControl>
+		<ExitCode xsi:nil="true"/>
+		<InstallDate>InstallDate</InstallDate>
+		<Name>Name</Name>
+		<PathName>PathName</PathName>
+		<ProcessId>60</ProcessId>
+		<ServiceSpecificExitCode>70</ServiceSpecificExitCode>
+		<ServiceType>ServiceType</ServiceType>
+		<Started>false</Started>
+		<StartMode>StartMode</StartMode>
+		<StartName>StartName</StartName>
+		<State>State</State>
+		<Status>Status</Status>
+		<SystemCreationClassName>SystemCreationClassName</SystemCreationClassName>
+		<SystemName>SystemName</SystemName>
+		<TagId>90</TagId>
+		<WaitHint>100</WaitHint>
+		<Uint64>100000</Uint64>
+	</Sample>
+</example>
