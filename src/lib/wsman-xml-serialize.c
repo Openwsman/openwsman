@@ -222,7 +222,7 @@ handle_attrs(struct __XmlSerializationData *data,
 		}
 		src = ws_xml_get_attr_ns(xmlattr);
 		if (!(src == NULL || *src == 0)) {
-			dstSize = 1 + strlen(src);
+			dstSize = 1 + (int )strlen(src);
 			dstPtr =
 			    (char *) xml_serializer_alloc(data, dstSize,
 							  1);
@@ -236,7 +236,7 @@ handle_attrs(struct __XmlSerializationData *data,
 		}
 		src = ws_xml_get_attr_name(xmlattr);
 		if (!(src == NULL || *src == 0)) {
-			dstSize = 1 + strlen(src);
+			dstSize = 1 + (int )strlen(src);
 			dstPtr =
 			    (char *) xml_serializer_alloc(data, dstSize,
 							  1);
@@ -250,7 +250,7 @@ handle_attrs(struct __XmlSerializationData *data,
 		}
 		src = ws_xml_get_attr_value(xmlattr);
 		if (!(src == NULL || *src == 0)) {
-			dstSize = 1 + strlen(src);
+			dstSize = 1 + (int )strlen(src);
 			dstPtr =
 			    (char *) xml_serializer_alloc(data, dstSize,
 							  1);
@@ -1224,7 +1224,7 @@ char *ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
 	if (node) {
 		str = ws_xml_get_node_text(node);
 		if (cntx && str) {
-			int len = strlen(str) + 1;
+			int len = (int )strlen(str) + 1;
 			char *tmp = str;
 			if ((str = ws_serializer_alloc(cntx,
 						 len * sizeof(char))))

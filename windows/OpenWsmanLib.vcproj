@@ -109,6 +109,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D &quot;_CRT_SECURE_NO_DEPRECATE&quot;"
 				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\src\cpp;..\Include;&quot;$(MSSDK)\include&quot;;..\src;..\src\lib;..\src\libu"
 				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK"
 				RuntimeLibrary="0"

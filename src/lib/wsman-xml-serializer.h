@@ -106,9 +106,9 @@ struct __XmlSerializerInfo
 {
     const char *ns;
     const char* name;
-    int mincount;    /**< Minimal Count */
-    int count;       /**< Maximal Count */
-    int size;        /**< size of serialized/deserialized element */
+    unsigned int mincount;    /**< Minimal Count */
+    unsigned int count;       /**< Maximal Count */
+    unsigned int size;        /**< size of serialized/deserialized element */
     unsigned int flags; /**< flags */
     XmlSerializationProc proc; /**< Serialization Processor */
     XML_TYPE_PTR extData;      /**< External Data */
