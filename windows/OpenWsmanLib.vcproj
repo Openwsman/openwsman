@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Include&quot;;&quot;.\libiconv\include&quot;;&quot;.\libxml2-2.6.27.win32\include&quot;;..\Include;..\src;..\src\lib;..\src\libu;..\src\cpp"
-				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libxml2_a.lib winhttp.lib"
+				AdditionalDependencies="libxml2.lib winhttp.lib rpcrt4.lib"
 				OutputFile=".\Lib\$(ProjectName)D.lib"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK\Lib&quot;;&quot;.\libiconv\lib&quot;;&quot;.\libxml2-2.6.27.win32\lib&quot;;Lib;&quot;$(MSSDK)\Lib&quot;"
 			/>
@@ -109,8 +109,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\Include;&quot;$(MSSDK)\include&quot;;..\src;..\src\lib;..\src\libu"
-				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC"
+				AdditionalIncludeDirectories="&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\include&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\include&quot;;..\src\cpp;..\Include;&quot;$(MSSDK)\include&quot;;..\src;..\src\lib;..\src\libu"
+				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -129,9 +129,9 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="libxml2_a.lib winhttp.lib"
-				OutputFile="..\Lib\$(ProjectName).lib"
-				AdditionalLibraryDirectories="Lib;&quot;$(MSSDK)\Lib&quot;"
+				AdditionalDependencies="libxml2.lib winhttp.lib"
+				OutputFile="Lib\openwsman.lib"
+				AdditionalLibraryDirectories="&quot;C:\Documents and Settings\anashif\My Documents\Development\libiconv\lib&quot;;&quot;C:\Documents and Settings\anashif\My Documents\Development\libxml2-2.6.27.win32\lib&quot;;Lib;&quot;$(MSSDK)\Lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -172,10 +172,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\dictionary.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\cpp\Exception.cpp"
 				>
 			</File>
 			<File
@@ -223,23 +219,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\libu\str.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\libu\strings.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\strlib.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\strsep.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\strtok_r.c"
 				>
 			</File>
 			<File
@@ -256,10 +236,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\uri.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\url2.c"
 				>
 			</File>
 			<File
@@ -314,10 +290,6 @@
 				RelativePath="..\src\lib\wsman-xml.c"
 				>
 			</File>
-			<File
-				RelativePath="..\src\cpp\WsmanClient.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -342,10 +314,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\u\dictionary.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\cpp\Exception.h"
 				>
 			</File>
 			<File
@@ -417,10 +385,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\libu\u\strsep.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\libu\u\strtok_r.h"
 				>
 			</File>
@@ -438,10 +402,6 @@
 			</File>
 			<File
 				RelativePath="..\src\libu\u\uri.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\libu\u\url2.h"
 				>
 			</File>
 			<File
@@ -466,10 +426,6 @@
 			</File>
 			<File
 				RelativePath="..\src\lib\wsman-xml-serializer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\cpp\WsmanClient.h"
 				>
 			</File>
 		</Filter>
