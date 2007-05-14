@@ -19,6 +19,17 @@
 #include <wtypes.h>
 
 typedef DWORD pid_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+pid_t getpid(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #define dlclose(handle)         FreeLibrary(handle)
         
 #define sleep(secs) Sleep( (secs) * 1000 )
@@ -78,7 +89,7 @@ extern "C" {
 char * strsep(char **, const char *);
 #endif
 
-pid_t getpid(void);
+
 
 char *strtok_r(char *s, const char *delim, char **last);
 

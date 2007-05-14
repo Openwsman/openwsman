@@ -30,9 +30,6 @@ static const char rcsid[] =
 #include <u/misc.h>
 #include <u/carpal.h>
 #include <u/memory.h>
-#ifndef  HAVE_STRSEP
-#include <u/strsep.h>
-#endif
 
 
 

@@ -595,6 +595,8 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 {
 	WsXmlNodeH node;
 	WsXmlNodeH fnode;
+	epr_t *epr = NULL;
+	filter_t *f = NULL;
 	if ((node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
 				WSMB_ASSOCIATION_INSTANCES) ) != NULL) 	
 		enumInfo->flags |= WSMAN_ENUMINFO_REF;
@@ -606,8 +608,8 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 		return;
 	}
 
-	epr_t *epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
-	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+	epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
+	f = (filter_t *)u_zalloc(sizeof(filter_t));
 	f->epr = epr;
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
 	if (fnode) 

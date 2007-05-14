@@ -147,7 +147,7 @@ void wsman_transport_close_transport(WsManClient * cl)
 static void *init_win_transport(WsManClient * cl)
 {
 	HINTERNET connect;
-	wchar_t *host = convert_to_unicode(cl->data.hostName);
+	wchar_t *host = convert_to_unicode(cl->data.hostname);
 
 	if (host == NULL) {
 		error("No host");
