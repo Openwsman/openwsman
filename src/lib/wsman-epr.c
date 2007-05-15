@@ -91,6 +91,7 @@ epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 {
 	int i;
+	XML_NODE_ATTR *a;
 	Selector *ss =
 		(Selector *) epr->refparams.selectorset.selectors.data;
 	if (ss == NULL) {
@@ -100,7 +101,7 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 	for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
 		Selector *s;
 		s = ss + i;
-		XML_NODE_ATTR *a = s->attrs;
+		a = s->attrs;
 		while (a) {
 			if (strcmp(a->name, WSM_NAME) == 0 ) {
 				cb(cb_data, a->value, s->value );

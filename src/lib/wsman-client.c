@@ -1434,7 +1434,7 @@ wsman_client_get_fault_data(WsXmlDocH doc,
 		}
 		detail = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_DETAIL);
 		if (detail) {
-			WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_WS_MAN, SOAP_FAULT_DETAIL);
+			WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_SOAP_1_2, SOAP_DETAIL);
 			fault->fault_detail = ws_xml_get_node_text(fault_detail);		
 		}		
 
