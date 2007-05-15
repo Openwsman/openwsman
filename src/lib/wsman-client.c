@@ -1409,36 +1409,35 @@ wsman_client_get_fault_data(WsXmlDocH doc,
 {
 	WsXmlNodeH body;
 	WsXmlNodeH fault_node;
+	WsXmlNodeH code;
+	WsXmlNodeH reason;
+	WsXmlNodeH detail;
 	if (wsman_client_check_for_fault(doc) == 0 || !fault )
 		return;
 
 	body = ws_xml_get_soap_body(doc);	
 	fault_node = ws_xml_get_child(body, 0, XML_NS_SOAP_1_2, SOAP_FAULT);
-	if (fault_node) {
-		WsXmlNodeH code;
-		WsXmlNodeH reason;
-		WsXmlNodeH detail;
+	if (!fault_node) 
+		return;
 
-		code = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_CODE);
-		if (code) {
-			WsXmlNodeH code_v = ws_xml_get_child(code, 0 , XML_NS_SOAP_1_2, SOAP_VALUE);
-			WsXmlNodeH subcode = ws_xml_get_child(code, 0 , XML_NS_SOAP_1_2, SOAP_SUBCODE);
-			WsXmlNodeH subcode_v = ws_xml_get_child(subcode, 0 , XML_NS_SOAP_1_2, SOAP_VALUE);
-			fault->code = ws_xml_get_node_text(code_v);
-			fault->subcode = ws_xml_get_node_text(subcode_v);
-		}
-		reason = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_REASON);
-		if (reason) {
-			WsXmlNodeH reason_text = ws_xml_get_child(reason, 0 , XML_NS_SOAP_1_2, SOAP_TEXT);
-			fault->reason = ws_xml_get_node_text(reason_text);		
-		}
-		detail = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_DETAIL);
-		if (detail) {
-			WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_SOAP_1_2, SOAP_DETAIL);
-			fault->fault_detail = ws_xml_get_node_text(fault_detail);		
-		}		
-
+	code = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_CODE);
+	if (code) {
+		WsXmlNodeH code_v = ws_xml_get_child(code, 0 , XML_NS_SOAP_1_2, SOAP_VALUE);
+		WsXmlNodeH subcode = ws_xml_get_child(code, 0 , XML_NS_SOAP_1_2, SOAP_SUBCODE);
+		WsXmlNodeH subcode_v = ws_xml_get_child(subcode, 0 , XML_NS_SOAP_1_2, SOAP_VALUE);
+		fault->code = ws_xml_get_node_text(code_v);
+		fault->subcode = ws_xml_get_node_text(subcode_v);
 	}
+	reason = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_REASON);
+	if (reason) {
+		WsXmlNodeH reason_text = ws_xml_get_child(reason, 0 , XML_NS_SOAP_1_2, SOAP_TEXT);
+		fault->reason = ws_xml_get_node_text(reason_text);		
+	}
+	detail = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_DETAIL);
+	if (detail) {
+		WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_WS_MAN, SOAP_FAULT_DETAIL);
+		fault->fault_detail = ws_xml_get_node_text(fault_detail);		
+	}		
 	return;			
 }
 

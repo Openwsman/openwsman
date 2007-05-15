@@ -100,3 +100,5 @@ lib_LTLIBRARIES = \
 		 libwsman_client.la \
 		 libwsman_server.la
 
+EXTRA_DIST = \
+	wsman-win-client-transport.c
