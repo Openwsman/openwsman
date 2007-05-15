@@ -1468,6 +1468,7 @@ wsman_create_client(const char *hostname,
 	wsc->data.user = username ? strdup(username) : NULL;
 	wsc->data.pwd = password ? strdup(password) : NULL;
 	wsc->data.auth_set = 0;
+	wsc->initialized = 0;
 
 	wsc->data.endpoint = u_strdup_printf("%s://%s:%d%s",
 			scheme, hostname, port, path);

@@ -60,7 +60,6 @@
 extern wsman_auth_request_func_t request_func;
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
-static int initialized = 0;
 static pthread_mutex_t curl_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -292,7 +291,7 @@ wsman_client_handler( WsManClient *cl,
 	long http_code;
 	long auth_avail = 0;
 
-	if (!initialized && wsman_client_transport_init(cl, NULL)) {
+	if (!cl->initialized && wsman_client_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
 		return;
 	}
@@ -480,7 +479,7 @@ int wsman_client_transport_init(WsManClient *cl, void *arg)
 
 
 	pthread_mutex_lock(&curl_mutex);
-	if (initialized) {
+	if (cl->initialized) {
 		pthread_mutex_unlock(&curl_mutex);
 		return 0;
 	}
@@ -494,7 +493,7 @@ int wsman_client_transport_init(WsManClient *cl, void *arg)
 #endif
 	r = curl_global_init(flags);
 	if (r == CURLE_OK) {
-		initialized = 1;
+		cl->initialized = 1;
 	}
 	pthread_mutex_unlock(&curl_mutex);
 	if (r != CURLE_OK) {
@@ -504,15 +503,15 @@ int wsman_client_transport_init(WsManClient *cl, void *arg)
 	return (r == CURLE_OK ? 0 : 1);
 }
 
-void wsman_client_transport_fini()
+void wsman_client_transport_fini(WsManClient *cl)
 {
 	pthread_mutex_lock(&curl_mutex);
-	if (!initialized) {
+	if (!cl->initialized) {
 		pthread_mutex_unlock(&curl_mutex);
 		return;
 	}
 	curl_global_cleanup();
-	initialized = 0;
+	cl->initialized = 0;
 	pthread_mutex_unlock(&curl_mutex);
 
 }

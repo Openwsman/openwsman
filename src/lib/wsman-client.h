@@ -87,6 +87,7 @@ extern "C" {
 	struct _WsManClient {
 		void *hdl;
 		int flags;
+		int initialized;
 		pthread_mutex_t mutex;
 		WsContextH wscntx;
 		WsManClientData data;

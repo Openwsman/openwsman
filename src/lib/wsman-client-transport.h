@@ -60,7 +60,7 @@ extern int wsman_is_auth_method(WsManClient *cl, int method);
 
 extern int wsman_client_transport_init(WsManClient *cl, void *arg);
 
-extern void wsman_client_transport_fini(void);
+extern void wsman_client_transport_fini(WsManClient *cl);
 
 extern char *wsman_transport_get_proxy(WsManClient *cl);
 
