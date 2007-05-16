@@ -80,7 +80,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 		error("Client busy");
 		return 1;
 	}
-	reinit_client_connection(cl);
+	wsman_client_reinit_conn(cl);
 
 #ifdef DEBUG_VERBOSE
 	gettimeofday(&tv0, NULL);

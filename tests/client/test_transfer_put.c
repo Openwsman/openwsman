@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 	int i;
 	WsManClient *cl;
 	WsXmlDocH doc;
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 		
     if (getenv("OPENWSMAN_TEST_HOST")) {
         host = getenv("OPENWSMAN_TEST_HOST");
@@ -161,20 +161,20 @@ int main(int argc, char** argv)
         if (tests[i].selectors) {
             tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
         }
-    	cl = wsman_create_client( sd[0].server,
+    	cl = wsman_client_create( sd[0].server,
     		sd[0].port,
     		sd[0].path,
     		sd[0].scheme,
     		sd[0].username,
     		sd[0].password);		
-		options = initialize_action_options();
+		options = wsman_client_options_init();
 		
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string(options, tests[i].selectors);
 		if (tests[i].properties != NULL)
 			wsman_add_properties_from_query_string(options, tests[i].properties);		
 		 
-		doc = ws_transfer_get_and_put(cl, (char *)tests[i].resource_uri, options);
+		doc = wsman_client_action_get_and_put(cl, (char *)tests[i].resource_uri, options);
 	wsman_client_transport_init(cl, NULL);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
@@ -204,8 +204,8 @@ int main(int argc, char** argv)
         }
         ws_xml_destroy_doc(doc);
 CONTINUE:
-		destroy_action_options(options);
-        wsman_release_client(cl);
+		wsman_client_options_destroy(options);
+        wsman_client_release(cl);
 	}
 	
 	return 0;

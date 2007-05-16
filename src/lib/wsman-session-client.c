@@ -511,7 +511,7 @@ char* wsman_session_identify(int session_id, int flag)
 	session_t	*s;
 	WsXmlDocH	request, response;
 	WsXmlNodeH	node;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*res = NULL;
 
 	s = get_session_by_id(session_id);
@@ -521,7 +521,7 @@ char* wsman_session_identify(int session_id, int flag)
 
 	pthread_mutex_lock(&s->lock);
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 
 	request = wsman_client_create_request(s->client,
 						NULL,
@@ -564,7 +564,7 @@ int wsman_session_enumerate(int session_id,
 {
 	session_t	*s, *e = NULL;
 	WsXmlDocH	request, response;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*enum_context;
 
 	s = get_session_by_id(session_id);
@@ -579,7 +579,7 @@ int wsman_session_enumerate(int session_id,
 		s->fault = NULL;
 	}
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 
 	if (filter)
 		options->filter = u_strdup(filter);
@@ -668,7 +668,7 @@ char* wsman_enumerator_pull(int enumerator_id)
 {
 	session_t	*s;
 	WsXmlDocH	request, response;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*enum_context;
 	char		*item = NULL;
 
@@ -684,7 +684,7 @@ char* wsman_enumerator_pull(int enumerator_id)
 		s->fault = NULL;
 	}
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 	request = wsman_client_create_request(s->client,
 					s->resource_uri,
 					options, WSMAN_ACTION_PULL,
@@ -751,7 +751,7 @@ char* wsman_session_transfer_get(int session_id,
 	session_t	*s;
 	WsXmlDocH	request, response;
 	WsXmlNodeH	node;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*resource = NULL;
 
 	s = get_session_by_id(session_id);
@@ -760,7 +760,7 @@ char* wsman_session_transfer_get(int session_id,
 	}
 
 	pthread_mutex_lock(&s->lock);
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {
@@ -801,7 +801,7 @@ char* wsman_session_transfer_put(int session_id,
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
 	WsXmlNodeH	node;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*resource = NULL;
 
 	if (!xml_content) {
@@ -824,7 +824,7 @@ char* wsman_session_transfer_put(int session_id,
 		return NULL;
 	};
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {
@@ -875,7 +875,7 @@ char* wsman_session_transfer_create(int session_id,
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
 	WsXmlNodeH	node;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*resource = NULL;
 
 	if (!xml_content) {
@@ -898,7 +898,7 @@ char* wsman_session_transfer_create(int session_id,
 		return NULL;
 	};
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 
 	if (s->fault) {
 		u_free(s->fault);
@@ -947,7 +947,7 @@ char* wsman_session_invoke(int sid,
 	session_t	*s;
 	WsXmlDocH	request,	response;
 	WsXmlDocH 	doc_content;
-	actionOptions	*options = NULL;
+	client_opt_t	*options = NULL;
 	char		*res = NULL;
 
 	s = get_session_by_id(sid);
@@ -966,7 +966,7 @@ char* wsman_session_invoke(int sid,
 		return NULL;
 	};
 
-	options = initialize_action_options();
+	options = wsman_client_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {

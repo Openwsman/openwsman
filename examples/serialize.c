@@ -827,7 +827,7 @@ static void example106()
 					      "wsman",
 					      "secret");
 
-	actionOptions *options = initialize_action_options();
+	client_opt_t *options = wsman_client_options_init();
 
 	WsXmlDocH request = wsman_client_create_request(cl,
 							"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",

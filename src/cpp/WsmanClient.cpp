@@ -23,7 +23,7 @@ extern "C" {
 using namespace WsmanClientNamespace;
 
 static string	XmlDocToString			(WsXmlDocH		doc);
-static actionOptions *SetDefaultOptions();
+static client_opt_t *SetDefaultOptions();
 static bool	CheckClientResponseCode	(WsManClient* cl, long &returnCode, int &lastErr, string &error);
 
 // Construct from params.
@@ -32,7 +32,7 @@ WsmanClient::WsmanClient(const char *endpoint,
 		const   char *oid,
 		const	char *auth_method)
 {	
-	cl = wsman_create_client_from_uri(endpoint);
+	cl = wsman_client_create_from_uri(endpoint);
 	wsman_client_transport_init(cl, (void*)NULL);
 
 	wsman_transport_set_auth_method (cl , (char *)auth_method);
@@ -57,7 +57,7 @@ void WsmanClient::Init()
 WsmanClient::~WsmanClient() 
 {
 	wsman_client_transport_fini(cl);
-	wsman_release_client(cl);
+	wsman_client_release(cl);
 }
 
 /// <summary>
@@ -68,15 +68,15 @@ WsmanClient::~WsmanClient()
 /// <returns>string - xml represantation EndpointReference of the created object</returns>
 string WsmanClient::Create(const string &resourceUri, const string &data)
 {
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 
-	WsXmlDocH createResponse = ws_transfer_create_fromtext(cl, 
+	WsXmlDocH createResponse = wsman_client_action_create_fromtext(cl, 
 			resourceUri.c_str(),
 			options,
 			data.c_str(), data.length(), WSMAN_ENCODING);
 
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 	string error;
 	long code;
 	int lastErr;
@@ -110,7 +110,7 @@ string WsmanClient::Create(const string &resourceUri, const string &data)
 /// <param name="resourceUri">string, The identifier of the resource to be deleted</param>
 void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 {
-	actionOptions *options;
+	client_opt_t *options;
 	options = SetDefaultOptions();
 
 	// Add selectors.
@@ -120,10 +120,10 @@ void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 					(char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
-	WsXmlDocH deleteResponse = ws_transfer_delete(	cl, 
+	WsXmlDocH deleteResponse = wsman_client_action_delete(	cl, 
 			(char *)resourceUri.c_str(),
 			options);
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 	string error;
 	long code;
 	int lastErr;
@@ -153,43 +153,43 @@ void WsmanClient::Delete(const string &resourceUri, NameValuePairs &s)
 /// <returns>ArrayList of strings containing xml response</returns>
 void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 {
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	char *enumContext;
-	WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)resourceUri.c_str(),  options);
+	WsXmlDocH enum_response = wsman_client_action_enumerate(cl, (char *)resourceUri.c_str(),  options);
 
 	string error;
 	long code;
 	int lastErr;
 	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 		ws_xml_destroy_doc(enum_response);
-		destroy_action_options(options);
+		wsman_client_options_destroy(options);
 		if(lastErr) {
 			throw(TransportException(lastErr, error));
 		} else {
 			throw HttpException(code, error);
 		}
 	} else if (!enum_response) {
-		destroy_action_options(options);
+		wsman_client_options_destroy(options);
 		ws_xml_destroy_doc(enum_response);
 		// throw exception("WsmanClient: unknown error has occured");
 	} else if (wsman_client_check_for_fault(enum_response)) {
 		WsmanException e(code, error);
 		GetWsmanFault(XmlDocToString(enum_response), e);
 		ws_xml_destroy_doc(enum_response);
-		destroy_action_options(options);
+		wsman_client_options_destroy(options);
 		throw e;
 	}
-	enumContext = wsenum_get_enum_context(enum_response);
+	enumContext = wsman_client_get_enum_context(enum_response);
 	ws_xml_destroy_doc(enum_response);
 
 	while (enumContext != NULL && enumContext[0] != 0 ) {
-		doc = wsenum_pull(cl, resourceUri.c_str(), options, enumContext);
+		doc = wsman_client_action_pull(cl, resourceUri.c_str(), options, enumContext);
 		// Check for success (500,400 are OK??)
 		if (! CheckClientResponseCode(cl, code, lastErr, error)) {
 			ws_xml_destroy_doc(doc);
-			destroy_action_options(options);
+			wsman_client_options_destroy(options);
 			if(lastErr) {
 				throw(TransportException(lastErr, error));
 			} else {
@@ -197,20 +197,20 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 			}
 		}
 		else if (!doc) {
-			destroy_action_options(options);
+			wsman_client_options_destroy(options);
 			throw exception();
 		} else if (wsman_client_check_for_fault(doc)) {
 			WsmanException e(code, error);
 			GetWsmanFault(XmlDocToString(doc), e);
-			destroy_action_options(options);
+			wsman_client_options_destroy(options);
 			ws_xml_destroy_doc(doc);
 			throw e;			
 		}
 		enumRes.push_back(ExtractItems((XmlDocToString(doc))));
-		enumContext = wsenum_get_enum_context(doc);    
+		enumContext = wsman_client_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
 	}
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 }
 
 /// <summary>
@@ -222,7 +222,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 /// <returns>WsXmlDocH, an XML representation of the instance. </returns>
 string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 {
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	// Add selectors.
@@ -233,9 +233,9 @@ string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 						(char *)p->first.c_str(), (char *)p->second.c_str());
 		}
 	}
-	doc = ws_transfer_get(cl, (char *)resourceUri.c_str(), options);
+	doc = wsman_client_action_get(cl, (char *)resourceUri.c_str(), options);
 
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 	string error;
 	long code;
 	int lastErr;
@@ -270,7 +270,7 @@ string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 //???? why is string returned
 string WsmanClient::Put(const string &resourceUri, const string &content, NameValuePairs &s)
 {
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
 
@@ -280,9 +280,9 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 			wsman_client_add_selector(options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
-	doc = ws_transfer_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
+	doc = wsman_client_action_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
 
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 	string error;
 	long code;
 	int lastErr;
@@ -317,7 +317,7 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 /// <returns>The XML representation of the method output.</returns>
 string WsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, NameValuePairs &s)
 {
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	string error;
@@ -328,11 +328,11 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 			wsman_client_add_selector(options, (char *)p->first.c_str(), (char *)p->second.c_str());
 	}
 
-	doc = wsman_invoke_fromtext(cl, resourceUri.c_str(), options,
+	doc = wsman_client_action_invoke_fromtext(cl, resourceUri.c_str(), options,
 			(char *)methodName.c_str(), content.c_str(),
 			content.length(), WSMAN_ENCODING);
 
-	destroy_action_options(options);
+	wsman_client_options_destroy(options);
 	long code;
 	int lastErr;
 	if (! CheckClientResponseCode(cl, code, lastErr, error)) {
@@ -430,9 +430,9 @@ string XmlDocToString(WsXmlDocH doc) {
 /// <summary>
 /// Set default request options.
 /// </summary>
-actionOptions * SetDefaultOptions()
+client_opt_t * SetDefaultOptions()
 {
-	actionOptions *options = initialize_action_options();
+	client_opt_t *options = wsman_client_options_init();
 	//options->max_envelope_size = OPEN_WSMAN_MAX_ENVELOPE_SIZE;
 	return options;
 }

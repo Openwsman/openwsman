@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 	int i;
 	WsManClient *cl;
 	WsXmlDocH docp;
-	actionOptions *options = NULL;
+	client_opt_t *options = NULL;
 	char *enumContext = NULL;
 	//unsigned int id = 0;	
 	
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
 		printf ("Test %d: %s:", i + 1, tests[i].explanation);
 		//printf ("------------------------------------------------\n");
 
-    	cl = wsman_create_client( 
+    	cl = wsman_client_create( 
     		sd[0].server,
     		sd[0].port,
     		sd[0].path,
@@ -238,13 +238,13 @@ int main(int argc, char** argv)
     		sd[0].password);
 	wsman_client_transport_init(cl, NULL);
     			
-		options = initialize_action_options();
+		options = wsman_client_options_init();
 		options->flags = tests[i].flags;
 		options->max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
 			wsman_add_selectors_from_query_string (options, tests[i].selectors);	
 		 		
-		WsXmlDocH enum_response = wsenum_enumerate(cl, (char *)tests[i].resource_uri ,
+		WsXmlDocH enum_response = wsman_client_action_enumerate(cl, (char *)tests[i].resource_uri ,
 			 options);
 		if (!enum_response) {
                printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
@@ -261,24 +261,24 @@ int main(int argc, char** argv)
                     u_free(xp);
 			    }
 		}
-		enumContext = wsenum_get_enum_context(enum_response);
+		enumContext = wsman_client_get_enum_context(enum_response);
 		ws_xml_destroy_doc(enum_response);
 
 		while (enumContext != NULL)
 		{ 			
-			docp = wsenum_pull(cl, (char *)tests[i].resource_uri,
+			docp = wsman_client_action_pull(cl, (char *)tests[i].resource_uri,
                              options, enumContext);
             if (!docp) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
             }
 			wsman_output(docp);	
-			enumContext = wsenum_get_enum_context(docp);
+			enumContext = wsman_client_get_enum_context(docp);
 			ws_xml_destroy_doc(docp);
 		}
 CONTINUE:
-		destroy_action_options(options);
-    	wsman_release_client(cl);
+		wsman_client_options_destroy(options);
+    	wsman_client_release(cl);
 	}
 
 	return 0;

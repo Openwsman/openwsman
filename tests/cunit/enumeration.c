@@ -157,7 +157,7 @@ static void wsman_output(WsXmlDocH doc) {
 }
 
 
-actionOptions options;
+client_opt_t options;
 
 
 
@@ -167,7 +167,7 @@ static void enumeration_test(void) {
     char *xp = NULL;
 
     reinit_client_connection(cl);
-    initialize_action_options(&options);
+    wsman_client_options_init(&options);
 
     options.flags = tests[i].flags;
 
@@ -201,7 +201,7 @@ RETURN:
         ws_xml_destroy_doc(enum_response);
     }
     u_free(xp);
-    destroy_action_options(&options);
+    wsman_client_options_destroy(&options);
     i++; // decrease executed test number
 }
 

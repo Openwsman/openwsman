@@ -146,11 +146,9 @@ typedef enum {
 		unsigned int max_envelope_size;
 		unsigned int max_elements;
 
-	} actionOptions;
+	} client_opt_t;
 
 
-	typedef int (*SoapResponseCallback) (WsManClient *, WsXmlDocH,
-					     void *);
 
 	struct _WsManFault {
 		const char *code;
@@ -167,7 +165,7 @@ typedef enum {
 	 * @param endpoint an URI describing the endpoint, with user/pass, port and path
 	 * @return client handle
 	 */
-	WsManClient *wsman_create_client_from_uri(const char *endpoint);
+	WsManClient *wsman_client_create_from_uri(const char *endpoint);
 
 
 	/**
@@ -180,7 +178,7 @@ typedef enum {
  	* @param password Passwrod
  	* @return client handle
  	*/
-	WsManClient *wsman_create_client(const char *hostname,
+	WsManClient *wsman_client_create(const char *hostname,
 					 const int port, const char *path,
 					 const char *scheme,
 					 const char *username,
@@ -191,14 +189,14 @@ typedef enum {
 	 * @param cl Client handle that was created with wsman_create_client
 	 * @return void
 	 */
-	void wsman_release_client(WsManClient * cl);
+	void wsman_client_release(WsManClient * cl);
 
 	/*
 	 * Reset client connection and prepare handle for a new connection
 	 * @param cl Client handle
 	 * @return void
 	 */
-	void reinit_client_connection(WsManClient * cl);
+	void wsman_client_reinit_conn(WsManClient * cl);
 
 
 	/* WsManClient handling */
@@ -254,7 +252,7 @@ typedef enum {
 				       const char *reply_to_uri,
 				       const char *resource_uri,
 				       const char *to_uri,
-				       actionOptions * options);
+				       client_opt_t * options);
 
 	WsXmlDocH wsman_build_envelope_from_response(WsManClient * cl);
 
@@ -262,100 +260,103 @@ typedef enum {
 
 	/* Wsman actions handling */
 
-	WsXmlDocH wsman_identify(WsManClient * cl,
-				 actionOptions * options);
+	WsXmlDocH wsman_client_action_identify(WsManClient * cl,
+				 client_opt_t * options);
 
-	WsXmlDocH ws_transfer_get(WsManClient * cl,
+	WsXmlDocH wsman_client_action_get(WsManClient * cl,
 				  const char *resourceUri,
-				  actionOptions * options);
+				  client_opt_t * options);
 
-	WsXmlDocH ws_transfer_put(WsManClient * cl,
+	WsXmlDocH wsman_client_action_put(WsManClient * cl,
 				  const char *resource_uri,
-				  actionOptions * options,
+				  client_opt_t * options,
 				  WsXmlDocH source_doc);
 
-	WsXmlDocH ws_transfer_put_fromtext(WsManClient * cl,
+	WsXmlDocH wsman_client_action_put_fromtext(WsManClient * cl,
 					   const char *resource_uri,
-					   actionOptions * options,
+					   client_opt_t * options,
 					   const char *data, size_t size,
 					   const char *encoding);
 
-	WsXmlDocH ws_transfer_put_serialized(WsManClient * cl,
+	WsXmlDocH wsman_client_action_put_serialized(WsManClient * cl,
 					     const char *resource_uri,
-					     actionOptions * options,
+					     client_opt_t * options,
 					     void *typeInfo, void *data);
 
-	WsXmlDocH ws_transfer_get_and_put(WsManClient * cl,
+	WsXmlDocH wsman_client_action_get_and_put(WsManClient * cl,
 					  const char *resourceUri,
-					  actionOptions * options);
+					  client_opt_t * options);
 
-	WsXmlDocH ws_transfer_create(WsManClient * cl,
+	WsXmlDocH wsman_client_action_create(WsManClient * cl,
 				     const char *resourceUri,
-				     actionOptions * options,
+				     client_opt_t * options,
 				     WsXmlDocH source_doc);
 
-	WsXmlDocH ws_transfer_create_fromtext(WsManClient * cl,
+	WsXmlDocH wsman_client_action_create_fromtext(WsManClient * cl,
 					      const char *resourceUri,
-					      actionOptions * options,
+					      client_opt_t * options,
 					      const char *data,
 					      size_t size,
 					      const char *encoding);
 
-	WsXmlDocH ws_transfer_create_serialized(WsManClient * cl,
+	WsXmlDocH wsman_client_action_create_serialized(WsManClient * cl,
 						const char *resource_uri,
-						actionOptions * options,
+						client_opt_t * options,
 						void *typeInfo,
 						void *data);
 
-	WsXmlDocH ws_transfer_delete(WsManClient * cl,
+	WsXmlDocH wsman_client_action_delete(WsManClient * cl,
 				     const char *resourceUri,
-				     actionOptions * options);
+				     client_opt_t * options);
 
-	WsXmlDocH wsenum_enumerate(WsManClient * cl,
+	WsXmlDocH wsman_client_action_enumerate(WsManClient * cl,
 				   const char *resourceUri,
-				   actionOptions * options);
+				   client_opt_t * options);
 
-	WsXmlDocH wsenum_pull(WsManClient * cl, const char *resourceUri,
-			      actionOptions * options,
+	WsXmlDocH wsman_client_action_pull(WsManClient * cl, const char *resourceUri,
+			      client_opt_t * options,
 			      const char *enumContext);
 
-	WsXmlDocH wsenum_release(WsManClient * cl, const char *resourceUri,
-				 actionOptions * options,
+	WsXmlDocH wsman_client_action_release(WsManClient * cl, const char *resourceUri,
+				 client_opt_t * options,
 				 const char *enumContext);
 
-	WsXmlDocH wsman_invoke(WsManClient * cl, const char *resourceUri,
-			       actionOptions * options, const char *method,
+	WsXmlDocH wsman_client_action_invoke(WsManClient * cl, const char *resourceUri,
+			       client_opt_t * options, const char *method,
 			       WsXmlDocH source_doc);
 
-	WsXmlDocH wsman_invoke_fromtext(WsManClient * cl,
+	WsXmlDocH wsman_client_action_invoke_fromtext(WsManClient * cl,
 					const char *resourceUri,
-					actionOptions * options,
+					client_opt_t * options,
 					const char *method,
 					const char *data, size_t size,
 					const char *encoding);
 
-	WsXmlDocH wsman_invoke_serialized(WsManClient * cl,
+	WsXmlDocH wsman_client_action_invoke_serialized(WsManClient * cl,
 					  const char *resourceUri,
-					  actionOptions * options,
+					  client_opt_t * options,
 					  const char *method,
 					  void *typeInfo, void *data);
 
-	int wsenum_enumerate_and_pull(WsManClient * cl,
+	typedef int (*SoapResponseCallback) (WsManClient *, WsXmlDocH,
+					     void *);
+
+	int wsman_client_action_enumerate_and_pull(WsManClient * cl,
 				      const char *resource_uri,
-				      actionOptions * options,
+				      client_opt_t * options,
 				      SoapResponseCallback callback,
 				      void *callback_data);
 
 	WsXmlDocH wsman_client_create_request(WsManClient * cl,
 					      const char *resource_uri,
-					      actionOptions * options,
+					      client_opt_t * options,
 					      WsmanAction action,
 					      char *method, void *data);
 
 	/* WsXmlDocH manipulation */
-	char *wsenum_get_enum_context(WsXmlDocH doc);
+	char *wsman_client_get_enum_context(WsXmlDocH doc);
 
-	void wsenum_free_enum_context(char *);
+	void wsman_client_free_enum_context(char *);
 
 	void wsman_add_fragment_transfer(WsXmlDocH doc, char *fragment);
 
@@ -367,34 +368,34 @@ typedef enum {
 
 	void wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
 		       	const char *resource_uri,
-			actionOptions *options, int assocRef);
+			client_opt_t *options, int assocRef);
 
 	/* Action options handling */
-	actionOptions *initialize_action_options(void);
+	client_opt_t *wsman_client_options_init(void);
 
-	void destroy_action_options(actionOptions * op);
+	void wsman_client_options_destroy(client_opt_t * op);
 
-	void wsman_add_selectors_from_query_string(actionOptions * options,
+	void wsman_add_selectors_from_query_string(client_opt_t * options,
 						   const char
 						   *query_string);
 
-	void wsman_add_properties_from_query_string(actionOptions * options,
+	void wsman_add_properties_from_query_string(client_opt_t * options,
 						    const char
 						    *query_string);
 
 	void wsman_add_selector_from_options(WsXmlDocH doc,
-					     actionOptions * options);
+					     client_opt_t * options);
 
-	void wsman_set_action_option(actionOptions * options,
+	void wsman_set_action_option(client_opt_t * options,
 				     unsigned int);
 
 	void wsman_set_options_from_uri(const char *resourceUri,
-					actionOptions * options);
+					client_opt_t * options);
 
-	void wsman_client_add_selector(actionOptions * options,
+	void wsman_client_add_selector(client_opt_t * options,
 				       const char *key, const char *value);
 
-	void wsman_client_add_property(actionOptions * options,
+	void wsman_client_add_property(client_opt_t * options,
 				       const char *key, const char *value);
 
 	/* Misc */

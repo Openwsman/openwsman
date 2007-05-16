@@ -88,21 +88,21 @@ int main(int argc, char** argv)
 	
     WsManClient *cl;
     WsXmlDocH doc;
-    actionOptions *options = NULL;
+    client_opt_t *options = NULL;
 
 
     printf ("Test 1: Testin Identify Request:");
-    cl = wsman_create_client( sd[0].server,
+    cl = wsman_client_create( sd[0].server,
         sd[0].port,
         sd[0].path,
         sd[0].scheme,
         sd[0].username,
         sd[0].password);		
     wsman_client_transport_init(cl, NULL);
-    options = initialize_action_options();
+    options = wsman_client_options_init();
 
 
-    doc = wsman_identify(cl, options);
+    doc = wsman_client_action_identify(cl, options);
     if (!doc) {
            printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
            goto CONTINUE;
@@ -123,8 +123,8 @@ int main(int argc, char** argv)
         ws_xml_destroy_doc(doc);
     }
 CONTINUE:
-    destroy_action_options(options);
-    wsman_release_client(cl);
+    wsman_client_options_destroy(options);
+    wsman_client_release(cl);
 
 	
 	return 0;
