@@ -57,7 +57,7 @@
 #define DEFAULT_TRANSFER_LEN 32000
 
 extern wsman_auth_request_func_t request_func;
-void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+void wsmc_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 static pthread_mutex_t curl_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -101,7 +101,7 @@ reauthenticate(WsManClient *cl,
 
 REQUEST_PASSWORD:
 	message("%s authentication is used",
-			wsman_client_transport_get_auth_name(ws_auth));
+			wsmc_transport_get_auth_name(ws_auth));
 	if (auth_set == 0 && *username && *password) {
 		// use existing username and password
 		return choosen_auth;
@@ -271,7 +271,7 @@ init_curl_transport(WsManClient *cl)
 }
 
 void
-wsman_client_handler( WsManClient *cl,
+wsmc_handler( WsManClient *cl,
 		WsXmlDocH rqstDoc,
 		void* user_data)
 {
@@ -290,7 +290,7 @@ wsman_client_handler( WsManClient *cl,
 	long http_code;
 	long auth_avail = 0;
 
-	if (!cl->initialized && wsman_client_transport_init(cl, NULL)) {
+	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
 		return;
 	}
@@ -471,7 +471,7 @@ DONE:
 }
 
 
-int wsman_client_transport_init(WsManClient *cl, void *arg)
+int wsmc_transport_init(WsManClient *cl, void *arg)
 {
 	CURLcode r;
 	long flags;
@@ -502,7 +502,7 @@ int wsman_client_transport_init(WsManClient *cl, void *arg)
 	return (r == CURLE_OK ? 0 : 1);
 }
 
-void wsman_client_transport_fini(WsManClient *cl)
+void wsmc_transport_fini(WsManClient *cl)
 {
 	pthread_mutex_lock(&curl_mutex);
 	if (!cl->initialized) {

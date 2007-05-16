@@ -80,11 +80,11 @@ int main(int argc, char** argv)
 	client_opt_t *options;
 	char *enumContext = NULL;
 
-	wsman_client_transport_init(NULL);
+	wsmc_transport_init(NULL);
 
 	cl = wsman_create_client(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);		
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 	options->cim_ns = u_strdup(test.namespace);
 	options->flags |= FLAG_CIM_ASSOCIATORS;
 	wsman_add_selectors_from_query_string (options, test.selectors);
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 		doc = wsenum_pull(cl, (char *)test.resource_uri, options, enumContext);
 		if (!doc) {
 			printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
-			wsman_client_options_destroy(options);
+			wsmc_options_destroy(options);
 			wsman_release_client(cl);
 			return -1;
 		}
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 	}
 	if (doc)
 		ws_xml_destroy_doc(doc);
-	wsman_client_options_destroy(options);
+	wsmc_options_destroy(options);
 	wsman_release_client(cl);
 	return 0;
 }

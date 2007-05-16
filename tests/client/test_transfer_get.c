@@ -225,28 +225,28 @@ int main(int argc, char** argv)
         }
 
         printf ("Test %3d: %s ", i + 1, tests[i].explanation);
-        cl = wsman_client_create(
+        cl = wsmc_create(
                 sd[0].server,
                 sd[0].port,
                 sd[0].path,
                 sd[0].scheme,
                 sd[0].username,
                 sd[0].password);		
-        wsman_client_transport_init(cl, NULL);
-        options = wsman_client_options_init();
+        wsmc_transport_init(cl, NULL);
+        options = wsmc_options_init();
 
         if (tests[i].selectors != NULL)
-            wsman_client_add_selectors_from_str (options, tests[i].selectors);
+            wsmc_add_selectors_from_str (options, tests[i].selectors);
 
 
-        doc = wsman_client_action_get(cl, (char *)tests[i].resource_uri, options);
+        doc = wsmc_action_get(cl, (char *)tests[i].resource_uri, options);
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-        if (tests[i].final_status != wsman_client_get_response_code(cl)) {
+        if (tests[i].final_status != wsmc_get_response_code(cl)) {
             printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n",
-                                    wsman_client_get_response_code(cl));
+                                    wsmc_get_response_code(cl));
             goto CONTINUE;
         }
         if ((char *)tests[i].expected_value != NULL) 
@@ -271,8 +271,8 @@ int main(int argc, char** argv)
 CONTINUE:
         u_free(tests[i].selectors);
         u_free(tests[i].expected_value);
-        wsman_client_options_destroy(options);
-        wsman_client_release(cl);
+        wsmc_options_destroy(options);
+        wsmc_release(cl);
     }		
     return 0;
 }

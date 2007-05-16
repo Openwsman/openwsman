@@ -72,7 +72,7 @@ static HINTERNET session;
 extern wsman_auth_request_func_t request_func;
 static BOOL find_cert(const _TCHAR * certName,
 		      PCCERT_CONTEXT * pCertContext, int *errorLast);
-void wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc,
+void wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc,
 			  void *user_data);
 
 
@@ -98,7 +98,7 @@ static wchar_t *convert_to_unicode(char *str)
 }
 
 
-int wsman_client_transport_init(WsManClient *cl, void *arg)
+int wsmc_transport_init(WsManClient *cl, void *arg)
 {
 	wchar_t *agent;
 	static long lock;
@@ -129,7 +129,7 @@ int wsman_client_transport_init(WsManClient *cl, void *arg)
 }
 
 
-void wsman_client_transport_fini()
+void wsmc_transport_fini()
 {
 	if (session)
 		WinHttpCloseHandle(session);
@@ -238,7 +238,7 @@ static int cleanup_request_data(HINTERNET request)
 
 
 void
-wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
+wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 {
 	HINTERNET connect;
 	HINTERNET request = NULL;
@@ -267,7 +267,7 @@ wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	u_buf_t *ubuf;
 	PCCERT_CONTEXT certificate;
 
-	if (session == NULL && wsman_client_transport_init(cl, NULL)) {
+	if (session == NULL && wsmc_transport_init(cl, NULL)) {
 		error("could not initialize transport");
 		lastErr = GetLastError();
 		goto DONE;
@@ -315,7 +315,7 @@ wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 	ws_xml_dump_memory_enc(rqstDoc, &buf, &errLen, "UTF-8");
 	updated = 0;
-	ws_auth = wsman_client_transport_get_auth_value(cl);
+	ws_auth = wsmc_transport_get_auth_value(cl);
 	if (ws_auth == WS_NTLM_AUTH) {
 		DWORD d = WINHTTP_ENABLE_SPN_SERVER_PORT;
 		if (!WinHttpSetOption(request,

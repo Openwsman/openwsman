@@ -222,29 +222,29 @@ int main(int argc, char** argv)
 	
 	//wsman_debug_set_level(DEBUG_LEVEL_DEBUG);
     initialize_logging();
-	//wsman_client_add_handler(wsman_client_handler, NULL);
+	//wsmc_add_handler(wsmc_handler, NULL);
 		
 	for (i = 0; i < ntests; i++) 
 	{
 		printf ("Test %d: %s:", i + 1, tests[i].explanation);
 		//printf ("------------------------------------------------\n");
 
-    	cl = wsman_client_create( 
+    	cl = wsmc_create( 
     		sd[0].server,
     		sd[0].port,
     		sd[0].path,
     		sd[0].scheme,
     		sd[0].username,
     		sd[0].password);
-	wsman_client_transport_init(cl, NULL);
+	wsmc_transport_init(cl, NULL);
     			
-		options = wsman_client_options_init();
+		options = wsmc_options_init();
 		options->flags = tests[i].flags;
 		options->max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
-			wsman_client_add_selectors_from_str (options, tests[i].selectors);	
+			wsmc_add_selectors_from_str (options, tests[i].selectors);	
 		 		
-		WsXmlDocH enum_response = wsman_client_action_enumerate(cl, (char *)tests[i].resource_uri ,
+		WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)tests[i].resource_uri ,
 			 options);
 		if (!enum_response) {
                printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
@@ -261,24 +261,24 @@ int main(int argc, char** argv)
                     u_free(xp);
 			    }
 		}
-		enumContext = wsman_client_get_enum_context(enum_response);
+		enumContext = wsmc_get_enum_context(enum_response);
 		ws_xml_destroy_doc(enum_response);
 
 		while (enumContext != NULL)
 		{ 			
-			docp = wsman_client_action_pull(cl, (char *)tests[i].resource_uri,
+			docp = wsmc_action_pull(cl, (char *)tests[i].resource_uri,
                              options, enumContext);
             if (!docp) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
             }
 			wsman_output(docp);	
-			enumContext = wsman_client_get_enum_context(docp);
+			enumContext = wsmc_get_enum_context(docp);
 			ws_xml_destroy_doc(docp);
 		}
 CONTINUE:
-		wsman_client_options_destroy(options);
-    	wsman_client_release(cl);
+		wsmc_options_destroy(options);
+    	wsmc_release(cl);
 	}
 
 	return 0;

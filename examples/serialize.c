@@ -827,15 +827,15 @@ static void example106()
 					      "wsman",
 					      "secret");
 
-	client_opt_t *options = wsman_client_options_init();
+	client_opt_t *options = wsmc_options_init();
 
-	WsXmlDocH request = wsman_client_create_request(cl,
+	WsXmlDocH request = wsmc_create_request(cl,
 							"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
 							options,
 							WSMAN_ACTION_TRANSFER_CREATE,
 							NULL, NULL);
 	WsXmlDocH d =
-	    wsman_client_read_memory(cl, data, strlen(data), NULL, 0);
+	    wsmc_read_memory(cl, data, strlen(data), NULL, 0);
 	ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(d));
 	//      WsXmlNodeH n = ws_xml_get_doc_root(d);
 

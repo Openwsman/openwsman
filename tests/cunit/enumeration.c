@@ -167,7 +167,7 @@ static void enumeration_test(void) {
     char *xp = NULL;
 
     reinit_client_connection(cl);
-    wsman_client_options_init(&options);
+    wsmc_options_init(&options);
 
     options.flags = tests[i].flags;
 
@@ -201,7 +201,7 @@ RETURN:
         ws_xml_destroy_doc(enum_response);
     }
     u_free(xp);
-    wsman_client_options_destroy(&options);
+    wsmc_options_destroy(&options);
     i++; // decrease executed test number
 }
 

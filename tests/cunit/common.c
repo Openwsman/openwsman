@@ -25,7 +25,7 @@ char *host = "langley.home.planux.com";
 
 
 int init_test(void) {
-  wsman_client_transport_init(NULL);
+  wsmc_transport_init(NULL);
   if (getenv("OPENWSMAN_TEST_HOST")) {
     host = getenv("OPENWSMAN_TEST_HOST");
   }
@@ -46,6 +46,6 @@ int init_test(void) {
 
 int clean_test(void) {
   wsman_release_client(cl);
-  wsman_client_transport_fini();
+  wsmc_transport_fini();
   return 0;
 }

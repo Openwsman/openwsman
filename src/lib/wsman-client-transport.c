@@ -62,7 +62,7 @@ char *auth_methods[] = {
 
 
 
-extern void wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc,
+extern void wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc,
 				 void *user_data);
 
 #ifdef DEBUG_VERBOSE
@@ -76,17 +76,17 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	long long t0, t1;
 #endif
 
-	if (wsman_client_lock(cl)) {
+	if (wsmc_lock(cl)) {
 		error("Client busy");
 		return 1;
 	}
-	wsman_client_reinit_conn(cl);
+	wsmc_reinit_conn(cl);
 
 #ifdef DEBUG_VERBOSE
 	gettimeofday(&tv0, NULL);
 #endif
 
-	wsman_client_handler(cl, request, NULL);
+	wsmc_handler(cl, request, NULL);
 
 #ifdef DEBUG_VERBOSE
 	gettimeofday(&tv1, NULL);
@@ -94,7 +94,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
 	transfer_time += t1 - t0;
 #endif
-	wsman_client_unlock(cl);
+	wsmc_unlock(cl);
 	return 0;
 }
 
@@ -108,7 +108,7 @@ long long get_transfer_time()
 #endif
 
 
-char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth)
+char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
 {
 	switch (auth) {
 	case WS_NO_AUTH:
@@ -126,7 +126,7 @@ char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth)
 	return "Unknown";
 }
 
-void wsman_client_transport_set_auth_request_func(WsManClient * cl,
+void wsmc_transport_set_auth_request_func(WsManClient * cl,
 						  wsman_auth_request_func_t
 						  f)
 {
@@ -146,7 +146,7 @@ int wsman_is_auth_method(WsManClient * cl, int method)
 		 strlen(cl->authentication.method)));
 }
 
-int wsman_client_transport_get_auth_value(WsManClient * cl)
+int wsmc_transport_get_auth_value(WsManClient * cl)
 {
 	char *m = cl->authentication.method;
 	wsman_auth_type_t i;

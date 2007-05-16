@@ -77,7 +77,7 @@ static void _init(void)
 
 	sessions = list_create(LISTCOUNT_T_MAX);
 	enumerators = list_create(LISTCOUNT_T_MAX);
-	wsman_client_transport_init(NULL, NULL);
+	wsmc_transport_init(NULL, NULL);
 	ws_client_transport_set_auth_request_func(default_auth_callback);
 }
 
@@ -297,7 +297,7 @@ static const char* session_error(session_t *s)
 
 	pthread_mutex_lock(&s->lock);
 
-	fault = wsman_client_get_fault_string(s->client);
+	fault = wsmc_get_fault_string(s->client);
 	if (!fault && s->fault) {
 		fault = s->fault;
 	}
@@ -371,7 +371,7 @@ char wsman_session_resource_locator_set(int session_id,
 
 	pthread_mutex_lock(&s->lock);
 
-	doc = wsman_client_read_memory(s->client,
+	doc = wsmc_read_memory(s->client,
 					my_epr,
 					strlen(my_epr),
 					NULL, 0);
@@ -486,7 +486,7 @@ static char* _subcode_from_doc(WsXmlDocH doc)
 	WsManFault	fault;
 	char		*subcode = NULL;
 
-	wsman_client_get_fault_data(doc, &fault);
+	wsmc_get_fault_data(doc, &fault);
 
 	if (fault.subcode && strlen(fault.subcode) > 1) {
 		subcode = u_strdup(fault.subcode);
@@ -497,7 +497,7 @@ static char* _subcode_from_doc(WsXmlDocH doc)
 
 static char _check_response(session_t *s, WsXmlDocH response)
 {
-	if (wsman_client_check_for_fault(response)) {
+	if (wsmc_check_for_fault(response)) {
 		s->fault = _subcode_from_doc(response);
 		ws_xml_destroy_doc(response);
 		return 1;
@@ -521,9 +521,9 @@ char* wsman_session_identify(int session_id, int flag)
 
 	pthread_mutex_lock(&s->lock);
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 
-	request = wsman_client_create_request(s->client,
+	request = wsmc_create_request(s->client,
 						NULL,
 						options,
 						WSMAN_ACTION_IDENTIFY,
@@ -545,7 +545,7 @@ char* wsman_session_identify(int session_id, int flag)
 			return NULL;
 		}
 		node = ws_xml_get_soap_body(response);
-		res = wsman_client_node_to_formatbuf(
+		res = wsmc_node_to_formatbuf(
 				ws_xml_get_child(node, 0 , NULL, NULL ));
 		ws_xml_destroy_doc(response);
 	}
@@ -579,7 +579,7 @@ int wsman_session_enumerate(int session_id,
 		s->fault = NULL;
 	}
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 
 	if (filter)
 		options->filter = u_strdup(filter);
@@ -587,13 +587,13 @@ int wsman_session_enumerate(int session_id,
 		options->dialect = u_strdup(dialect);
 	options->flags = flags;
 	if (resource_uri) {
-		request = wsman_client_create_request(s->client,
+		request = wsmc_create_request(s->client,
 						resource_uri,
 						options,
 						WSMAN_ACTION_ENUMERATION,
 						NULL, NULL);
 	} else {
-		request = wsman_client_create_request(s->client,
+		request = wsmc_create_request(s->client,
 					s->resource_uri,
 					options,
 					WSMAN_ACTION_ENUMERATION,
@@ -658,7 +658,7 @@ static char* _item_from_doc(WsXmlDocH doc)
 		return NULL;
 	}
 
-	item = wsman_client_node_to_formatbuf(
+	item = wsmc_node_to_formatbuf(
 			ws_xml_get_child(node, 0 , NULL, NULL ));
 
 	return item;
@@ -684,8 +684,8 @@ char* wsman_enumerator_pull(int enumerator_id)
 		s->fault = NULL;
 	}
 
-	options = wsman_client_options_init();
-	request = wsman_client_create_request(s->client,
+	options = wsmc_options_init();
+	request = wsmc_create_request(s->client,
 					s->resource_uri,
 					options, WSMAN_ACTION_PULL,
 					NULL, s->enum_context);
@@ -760,7 +760,7 @@ char* wsman_session_transfer_get(int session_id,
 	}
 
 	pthread_mutex_lock(&s->lock);
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {
@@ -768,7 +768,7 @@ char* wsman_session_transfer_get(int session_id,
 		s->fault = NULL;
 	}
 
-	request = wsman_client_create_request(s->client, s->resource_uri,
+	request = wsmc_create_request(s->client, s->resource_uri,
 					options, WSMAN_ACTION_TRANSFER_GET,
 					NULL, NULL);
 
@@ -783,7 +783,7 @@ char* wsman_session_transfer_get(int session_id,
 			return NULL;
 		}
 		node = ws_xml_get_soap_body(response);
-		resource = wsman_client_node_to_formatbuf(
+		resource = wsmc_node_to_formatbuf(
 				ws_xml_get_child(node, 0 , NULL, NULL ));
 		ws_xml_destroy_doc(response);
 	}
@@ -815,7 +815,7 @@ char* wsman_session_transfer_put(int session_id,
 
 	pthread_mutex_lock(&s->lock);
 
-	doc_content = wsman_client_read_memory(s->client,
+	doc_content = wsmc_read_memory(s->client,
 					u_strdup(xml_content),
 					strlen(xml_content),
 					NULL, 0);
@@ -824,7 +824,7 @@ char* wsman_session_transfer_put(int session_id,
 		return NULL;
 	};
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {
@@ -832,7 +832,7 @@ char* wsman_session_transfer_put(int session_id,
 		s->fault = NULL;
 	}
 
-	request = wsman_client_create_request(s->client, s->resource_uri,
+	request = wsmc_create_request(s->client, s->resource_uri,
 					options, WSMAN_ACTION_TRANSFER_PUT,
 					NULL, NULL);
 	if (!request) {
@@ -857,7 +857,7 @@ char* wsman_session_transfer_put(int session_id,
 			return NULL;
 		}
 		node = ws_xml_get_soap_body(response);
-		resource = wsman_client_node_to_formatbuf(
+		resource = wsmc_node_to_formatbuf(
 				ws_xml_get_child(node, 0 , NULL, NULL ));
 		ws_xml_destroy_doc(response);
 	}
@@ -889,7 +889,7 @@ char* wsman_session_transfer_create(int session_id,
 
 	pthread_mutex_lock(&s->lock);
 
-	doc_content = wsman_client_read_memory(s->client,
+	doc_content = wsmc_read_memory(s->client,
 					u_strdup(xml_content),
 					strlen(xml_content),
 					NULL, 0);
@@ -898,14 +898,14 @@ char* wsman_session_transfer_create(int session_id,
 		return NULL;
 	};
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 
 	if (s->fault) {
 		u_free(s->fault);
 		s->fault = NULL;
 	}
 
-	request = wsman_client_create_request(s->client, s->resource_uri,
+	request = wsmc_create_request(s->client, s->resource_uri,
 					options, WSMAN_ACTION_TRANSFER_CREATE,
 					NULL, NULL);
 	if (!request) {
@@ -929,7 +929,7 @@ char* wsman_session_transfer_create(int session_id,
 			return NULL;
 		}
 		node = ws_xml_get_soap_body(response);
-		resource = wsman_client_node_to_formatbuf(
+		resource = wsmc_node_to_formatbuf(
 				ws_xml_get_child(node, 0 , NULL, NULL ));
 		ws_xml_destroy_doc(response);
 	}
@@ -957,7 +957,7 @@ char* wsman_session_invoke(int sid,
 
 	pthread_mutex_lock(&s->lock);
 
-	doc_content = wsman_client_read_memory(s->client,
+	doc_content = wsmc_read_memory(s->client,
 					u_strdup(xml_content),
 					strlen(xml_content),
 					NULL, 0);
@@ -966,7 +966,7 @@ char* wsman_session_invoke(int sid,
 		return NULL;
 	};
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 	options->selectors = s->selectors;
 
 	if (s->fault) {
@@ -974,7 +974,7 @@ char* wsman_session_invoke(int sid,
 		s->fault = NULL;
 	}
 
-	request = wsman_client_create_request(s->client, s->resource_uri,
+	request = wsmc_create_request(s->client, s->resource_uri,
 					options, WSMAN_ACTION_CUSTOM,
 					(char *)method, NULL);
 	if (!request) {
@@ -998,7 +998,7 @@ char* wsman_session_invoke(int sid,
 			pthread_mutex_unlock(&s->lock);
 			return NULL;
 		}
-		res = wsman_client_node_to_formatbuf(
+		res = wsmc_node_to_formatbuf(
 				ws_xml_get_child(ws_xml_get_soap_body(response),
 						0 , NULL, NULL));
 		ws_xml_destroy_doc(response);
@@ -1044,7 +1044,7 @@ char* wsman_session_serialize(int sid, void *data, void *type_info)
 	node = ws_xml_get_child(ws_xml_get_doc_root(doc), 0, NULL, NULL);
 
 	if (node) {
-		result = wsman_client_node_to_formatbuf(node);
+		result = wsmc_node_to_formatbuf(node);
 	}
 	ws_xml_destroy_doc(doc);
 

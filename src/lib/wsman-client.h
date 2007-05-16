@@ -106,8 +106,8 @@ extern "C" {
 
 
 
-	int wsman_client_lock(WsManClient * cl);
-	void wsman_client_unlock(WsManClient * cl);
+	int wsmc_lock(WsManClient * cl);
+	void wsmc_unlock(WsManClient * cl);
 
 
 #ifdef __cplusplus

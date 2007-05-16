@@ -165,7 +165,7 @@ typedef enum {
 	 * @param endpoint an URI describing the endpoint, with user/pass, port and path
 	 * @return client handle
 	 */
-	WsManClient *wsman_client_create_from_uri(const char *endpoint);
+	WsManClient *wsmc_create_from_uri(const char *endpoint);
 
 
 	/**
@@ -178,7 +178,7 @@ typedef enum {
  	* @param password Passwrod
  	* @return client handle
  	*/
-	WsManClient *wsman_client_create(const char *hostname,
+	WsManClient *wsmc_create(const char *hostname,
 					 const int port, const char *path,
 					 const char *scheme,
 					 const char *username,
@@ -189,36 +189,36 @@ typedef enum {
 	 * @param cl Client handle that was created with wsman_create_client
 	 * @return void
 	 */
-	void wsman_client_release(WsManClient * cl);
+	void wsmc_release(WsManClient * cl);
 
 	/*
 	 * Reset client connection and prepare handle for a new connection
 	 * @param cl Client handle
 	 * @return void
 	 */
-	void wsman_client_reinit_conn(WsManClient * cl);
+	void wsmc_reinit_conn(WsManClient * cl);
 
 
 	/* WsManClient handling */
-	WsContextH wsman_client_get_context(WsManClient * cl);
+	WsContextH wsmc_get_context(WsManClient * cl);
 
-	char *wsman_client_get_hostname(WsManClient * cl);
+	char *wsmc_get_hostname(WsManClient * cl);
 
-	unsigned int wsman_client_get_port(WsManClient * cl);
+	unsigned int wsmc_get_port(WsManClient * cl);
 
-	char *wsman_client_get_path(WsManClient * cl);
+	char *wsmc_get_path(WsManClient * cl);
 
-	char *wsman_client_get_scheme(WsManClient * cl);
+	char *wsmc_get_scheme(WsManClient * cl);
 
-	char *wsman_client_get_user(WsManClient * cl);
+	char *wsmc_get_user(WsManClient * cl);
 
-	char *wsman_client_get_endpoint(WsManClient * cl);
+	char *wsmc_get_endpoint(WsManClient * cl);
 
-	long wsman_client_get_response_code(WsManClient * cl);
+	long wsmc_get_response_code(WsManClient * cl);
 
-	char *wsman_client_get_fault_string(WsManClient * cl);
+	char *wsmc_get_fault_string(WsManClient * cl);
 
-	WS_LASTERR_Code wsman_client_get_last_error(WsManClient * cl);
+	WS_LASTERR_Code wsmc_get_last_error(WsManClient * cl);
 
 
 	/**
@@ -229,7 +229,7 @@ typedef enum {
 	 * @param XML options
 	 * @return XML document
 	 */
-	WsXmlDocH wsman_client_read_file(WsManClient * cl, char *filename,
+	WsXmlDocH wsmc_read_file(WsManClient * cl, char *filename,
 					 char *encoding,
 					 unsigned long options);
 	/**
@@ -241,7 +241,7 @@ typedef enum {
 	 * @param XML options
 	 * @return XML document
 	 */
-	WsXmlDocH wsman_client_read_memory(WsManClient * cl, char *buf,
+	WsXmlDocH wsmc_read_memory(WsManClient * cl, char *buf,
 					   size_t size, char *encoding,
 					   unsigned long options);
 
@@ -256,83 +256,83 @@ typedef enum {
 
 	WsXmlDocH wsman_build_envelope_from_response(WsManClient * cl);
 
-	WsXmlDocH wsman_client_build_envelope_from_response(WsManClient * cl);
+	WsXmlDocH wsmc_build_envelope_from_response(WsManClient * cl);
 
 	/* Wsman actions handling */
 
-	WsXmlDocH wsman_client_action_identify(WsManClient * cl,
+	WsXmlDocH wsmc_action_identify(WsManClient * cl,
 				 client_opt_t * options);
 
-	WsXmlDocH wsman_client_action_get(WsManClient * cl,
+	WsXmlDocH wsmc_action_get(WsManClient * cl,
 				  const char *resourceUri,
 				  client_opt_t * options);
 
-	WsXmlDocH wsman_client_action_put(WsManClient * cl,
+	WsXmlDocH wsmc_action_put(WsManClient * cl,
 				  const char *resource_uri,
 				  client_opt_t * options,
 				  WsXmlDocH source_doc);
 
-	WsXmlDocH wsman_client_action_put_fromtext(WsManClient * cl,
+	WsXmlDocH wsmc_action_put_fromtext(WsManClient * cl,
 					   const char *resource_uri,
 					   client_opt_t * options,
 					   const char *data, size_t size,
 					   const char *encoding);
 
-	WsXmlDocH wsman_client_action_put_serialized(WsManClient * cl,
+	WsXmlDocH wsmc_action_put_serialized(WsManClient * cl,
 					     const char *resource_uri,
 					     client_opt_t * options,
 					     void *typeInfo, void *data);
 
-	WsXmlDocH wsman_client_action_get_and_put(WsManClient * cl,
+	WsXmlDocH wsmc_action_get_and_put(WsManClient * cl,
 					  const char *resourceUri,
 					  client_opt_t * options);
 
-	WsXmlDocH wsman_client_action_create(WsManClient * cl,
+	WsXmlDocH wsmc_action_create(WsManClient * cl,
 				     const char *resourceUri,
 				     client_opt_t * options,
 				     WsXmlDocH source_doc);
 
-	WsXmlDocH wsman_client_action_create_fromtext(WsManClient * cl,
+	WsXmlDocH wsmc_action_create_fromtext(WsManClient * cl,
 					      const char *resourceUri,
 					      client_opt_t * options,
 					      const char *data,
 					      size_t size,
 					      const char *encoding);
 
-	WsXmlDocH wsman_client_action_create_serialized(WsManClient * cl,
+	WsXmlDocH wsmc_action_create_serialized(WsManClient * cl,
 						const char *resource_uri,
 						client_opt_t * options,
 						void *typeInfo,
 						void *data);
 
-	WsXmlDocH wsman_client_action_delete(WsManClient * cl,
+	WsXmlDocH wsmc_action_delete(WsManClient * cl,
 				     const char *resourceUri,
 				     client_opt_t * options);
 
-	WsXmlDocH wsman_client_action_enumerate(WsManClient * cl,
+	WsXmlDocH wsmc_action_enumerate(WsManClient * cl,
 				   const char *resourceUri,
 				   client_opt_t * options);
 
-	WsXmlDocH wsman_client_action_pull(WsManClient * cl, const char *resourceUri,
+	WsXmlDocH wsmc_action_pull(WsManClient * cl, const char *resourceUri,
 			      client_opt_t * options,
 			      const char *enumContext);
 
-	WsXmlDocH wsman_client_action_release(WsManClient * cl, const char *resourceUri,
+	WsXmlDocH wsmc_action_release(WsManClient * cl, const char *resourceUri,
 				 client_opt_t * options,
 				 const char *enumContext);
 
-	WsXmlDocH wsman_client_action_invoke(WsManClient * cl, const char *resourceUri,
+	WsXmlDocH wsmc_action_invoke(WsManClient * cl, const char *resourceUri,
 			       client_opt_t * options, const char *method,
 			       WsXmlDocH source_doc);
 
-	WsXmlDocH wsman_client_action_invoke_fromtext(WsManClient * cl,
+	WsXmlDocH wsmc_action_invoke_fromtext(WsManClient * cl,
 					const char *resourceUri,
 					client_opt_t * options,
 					const char *method,
 					const char *data, size_t size,
 					const char *encoding);
 
-	WsXmlDocH wsman_client_action_invoke_serialized(WsManClient * cl,
+	WsXmlDocH wsmc_action_invoke_serialized(WsManClient * cl,
 					  const char *resourceUri,
 					  client_opt_t * options,
 					  const char *method,
@@ -341,28 +341,28 @@ typedef enum {
 	typedef int (*SoapResponseCallback) (WsManClient *, WsXmlDocH,
 					     void *);
 
-	int wsman_client_action_enumerate_and_pull(WsManClient * cl,
+	int wsmc_action_enumerate_and_pull(WsManClient * cl,
 				      const char *resource_uri,
 				      client_opt_t * options,
 				      SoapResponseCallback callback,
 				      void *callback_data);
 
-	WsXmlDocH wsman_client_create_request(WsManClient * cl,
+	WsXmlDocH wsmc_create_request(WsManClient * cl,
 					      const char *resource_uri,
 					      client_opt_t * options,
 					      WsmanAction action,
 					      char *method, void *data);
 
 	/* WsXmlDocH manipulation */
-	char *wsman_client_get_enum_context(WsXmlDocH doc);
+	char *wsmc_get_enum_context(WsXmlDocH doc);
 
-	void wsman_client_free_enum_context(char *);
+	void wsmc_free_enum_context(char *);
 
-	void wsman_client_add_fragment_transfer(WsXmlDocH doc, char *fragment);
+	void wsmc_add_fragment_transfer(WsXmlDocH doc, char *fragment);
 
-	void wsman_client_add_namespace_as_selector(WsXmlDocH doc, char *ns);
+	void wsmc_add_namespace_as_selector(WsXmlDocH doc, char *ns);
 
-	void wsman_client_add_selector_from_uri(WsXmlDocH doc,
+	void wsmc_add_selector_from_uri(WsXmlDocH doc,
 					 const char *resourceUri);
 
 
@@ -371,31 +371,31 @@ typedef enum {
 			client_opt_t *options, int assocRef);
 
 	/* Action options handling */
-	client_opt_t *wsman_client_options_init(void);
+	client_opt_t *wsmc_options_init(void);
 
-	void wsman_client_options_destroy(client_opt_t * op);
+	void wsmc_options_destroy(client_opt_t * op);
 
-	void wsman_client_add_selectors_from_str(client_opt_t * options,
+	void wsmc_add_selectors_from_str(client_opt_t * options,
 						   const char
 						   *query_string);
 
-	void wsman_client_add_prop_from_str(client_opt_t * options,
+	void wsmc_add_prop_from_str(client_opt_t * options,
 						    const char
 						    *query_string);
 
-	void wsman_client_add_selector_from_options(WsXmlDocH doc,
+	void wsmc_add_selector_from_options(WsXmlDocH doc,
 					     client_opt_t * options);
 
-	void wsman_client_set_action_option(client_opt_t * options,
+	void wsmc_set_action_option(client_opt_t * options,
 				     unsigned int);
 
-	void wsman_client_set_options_from_uri(const char *resourceUri,
+	void wsmc_set_options_from_uri(const char *resourceUri,
 					client_opt_t * options);
 
-	void wsman_client_add_selector(client_opt_t * options,
+	void wsmc_add_selector(client_opt_t * options,
 				       const char *key, const char *value);
 
-	void wsman_client_add_property(client_opt_t * options,
+	void wsmc_add_property(client_opt_t * options,
 				       const char *key, const char *value);
 
 	/* Misc */
@@ -403,20 +403,20 @@ typedef enum {
 	/* Place holder */
 	void wsman_remove_query_string(const char *resourceUri,
 				       char **result);
-	int wsman_client_check_for_fault(WsXmlDocH doc);
+	int wsmc_check_for_fault(WsXmlDocH doc);
 
-	void wsman_client_node_to_buf(WsXmlNodeH node, char **buf);
+	void wsmc_node_to_buf(WsXmlNodeH node, char **buf);
 
-	char *wsman_client_node_to_formatbuf(WsXmlNodeH node);
+	char *wsmc_node_to_formatbuf(WsXmlNodeH node);
 
-	void wsman_client_get_fault_data(WsXmlDocH doc,
+	void wsmc_get_fault_data(WsXmlDocH doc,
 					 WsManFault * fault);
 
-	WsManFault *wsman_client_fault_new(void);
+	WsManFault *wsmc_fault_new(void);
 
-	void wsman_client_set_dumpfile(WsManClient *cl, FILE * f);
+	void wsmc_set_dumpfile(WsManClient *cl, FILE * f);
 
-	FILE *wsman_client_get_dumpfile(WsManClient *cl);
+	FILE *wsmc_get_dumpfile(WsManClient *cl);
 
 #if 0
 

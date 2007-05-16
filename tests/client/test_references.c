@@ -81,35 +81,35 @@ int main(int argc, char** argv)
 	char *enumContext = NULL;
 
 
-	cl = wsman_client_create(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);		
-	wsman_client_transport_init(cl, NULL);
+	cl = wsmc_create(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);		
+	wsmc_transport_init(cl, NULL);
 
-	options = wsman_client_options_init();
+	options = wsmc_options_init();
 	options->cim_ns = u_strdup(test.namespace);
-	wsman_client_add_selectors_from_str (options, test.selectors);
-	ref_resp = wsman_client_action_enumerate(cl, (char *)test.resource_uri, options); 
+	wsmc_add_selectors_from_str (options, test.selectors);
+	ref_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options); 
 	wsman_output(ref_resp);
 
 
 	/* Pull for the response */
-	enumContext = wsman_client_get_enum_context(ref_resp);
+	enumContext = wsmc_get_enum_context(ref_resp);
 	ws_xml_destroy_doc(ref_resp);
 
 	while(enumContext != NULL) { 			
-		doc = wsman_client_action_pull(cl, (char *)test.resource_uri, options, enumContext);
+		doc = wsmc_action_pull(cl, (char *)test.resource_uri, options, enumContext);
 		if (!doc) {
 			printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
-			wsman_client_options_destroy(options);
-			wsman_client_release(cl);
+			wsmc_options_destroy(options);
+			wsmc_release(cl);
 			return -1;
 		}
 		wsman_output(doc);	
-		enumContext = wsman_client_get_enum_context(doc);
+		enumContext = wsmc_get_enum_context(doc);
 	}
 	if (doc)
 		ws_xml_destroy_doc(doc);
-	wsman_client_options_destroy(options);
-	wsman_client_release(cl);
+	wsmc_options_destroy(options);
+	wsmc_release(cl);
 	return 0;
 }
 

@@ -157,7 +157,7 @@ static void transfer_get_test(void) {
     }
 
     reinit_client_connection(cl);
-    wsman_client_options_init(&options);
+    wsmc_options_init(&options);
 
     if (get_tests[i].selectors != NULL) {
        wsman_add_selectors_from_query_string (&options, get_tests[i].selectors);
@@ -218,7 +218,7 @@ RETURN:
     }
     u_free((char *)get_tests[i].selectors);
     get_tests[i].selectors = old_selectors;
-    wsman_client_options_destroy(&options);
+    wsmc_options_destroy(&options);
     i++; // increase executed test number
 }
 

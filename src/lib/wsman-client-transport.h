@@ -45,15 +45,15 @@
 
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
-extern void wsman_client_transport_set_auth_request_func(WsManClient *cl, 
+extern void wsmc_transport_set_auth_request_func(WsManClient *cl, 
         wsman_auth_request_func_t f);
 
 
 extern int wsman_is_auth_method(WsManClient *cl, int method);
 
-extern int wsman_client_transport_init(WsManClient *cl, void *arg);
+extern int wsmc_transport_init(WsManClient *cl, void *arg);
 
-extern void wsman_client_transport_fini(WsManClient *cl);
+extern void wsmc_transport_fini(WsManClient *cl);
 
 extern char *wsman_transport_get_proxy(WsManClient *cl);
 
@@ -69,9 +69,9 @@ extern int wsman_transport_get_verify_peer (WsManClient *cl);
 
 extern int wsman_transport_get_verify_host (WsManClient *cl);
 
-extern char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth);
+extern char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
 
-extern int wsman_client_transport_get_auth_value(WsManClient *cl);
+extern int wsmc_transport_get_auth_value(WsManClient *cl);
 
 extern char *wsman_transport_get_cafile(WsManClient *cl);
 

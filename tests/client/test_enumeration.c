@@ -238,30 +238,30 @@ int main(int argc, char** argv)
   {
     printf ("Test %d: %70s:", i + 1, tests[i].explanation);	
     
-    cl = wsman_client_create( 
+    cl = wsmc_create( 
                         sd[0].server,
                         sd[0].port,
                         sd[0].path,
                         sd[0].scheme,
                         sd[0].username,
                         sd[0].password);
-    wsman_client_transport_init(cl, NULL);
+    wsmc_transport_init(cl, NULL);
 
-    options = wsman_client_options_init();
+    options = wsmc_options_init();
     options->flags = tests[i].flags;
     options->max_elements = tests[i].max_elements;
     if (tests[i].selectors != NULL)
-      wsman_client_add_selectors_from_str (options, tests[i].selectors);	
+      wsmc_add_selectors_from_str (options, tests[i].selectors);	
 
 
-    WsXmlDocH enum_response = wsman_client_action_enumerate(cl, (char *)tests[i].resource_uri ,
+    WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)tests[i].resource_uri ,
                                                options);
     if (!enum_response) {
          printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
          goto CONTINUE;
     }
 
-    enumContext = wsman_client_get_enum_context(enum_response);
+    enumContext = wsmc_get_enum_context(enum_response);
 
     wsman_output(enum_response);
     if ((char *)tests[i].expected_value != NULL) 
@@ -285,7 +285,7 @@ int main(int argc, char** argv)
     ws_xml_destroy_doc(enum_response);	
     if (enumContext) {
       printf ("Test %d: %70s:", i + 1, "Check Release Response:");
-      WsXmlDocH release_response = wsman_client_action_release(cl,
+      WsXmlDocH release_response = wsmc_action_release(cl,
                         (char *)tests[i].resource_uri,
                         options, enumContext);
 
@@ -307,8 +307,8 @@ int main(int argc, char** argv)
       ws_xml_destroy_doc(release_response);         
     }
 CONTINUE:	
-    wsman_client_options_destroy(options);		
-    wsman_client_release(cl);
+    wsmc_options_destroy(options);		
+    wsmc_release(cl);
 
   }
 
