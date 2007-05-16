@@ -170,9 +170,9 @@ int main(int argc, char** argv)
 		options = wsman_client_options_init();
 		
 		if (tests[i].selectors != NULL)
-			wsman_add_selectors_from_query_string(options, tests[i].selectors);
+			wsman_client_add_selectors_from_str(options, tests[i].selectors);
 		if (tests[i].properties != NULL)
-			wsman_add_properties_from_query_string(options, tests[i].properties);		
+			wsman_client_add_prop_from_str(options, tests[i].properties);		
 		 
 		doc = wsman_client_action_get_and_put(cl, (char *)tests[i].resource_uri, options);
 	wsman_client_transport_init(cl, NULL);

@@ -236,7 +236,7 @@ int main(int argc, char** argv)
         options = wsman_client_options_init();
 
         if (tests[i].selectors != NULL)
-            wsman_add_selectors_from_query_string (options, tests[i].selectors);
+            wsman_client_add_selectors_from_str (options, tests[i].selectors);
 
 
         doc = wsman_client_action_get(cl, (char *)tests[i].resource_uri, options);

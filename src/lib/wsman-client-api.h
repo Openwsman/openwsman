@@ -358,11 +358,11 @@ typedef enum {
 
 	void wsman_client_free_enum_context(char *);
 
-	void wsman_add_fragment_transfer(WsXmlDocH doc, char *fragment);
+	void wsman_client_add_fragment_transfer(WsXmlDocH doc, char *fragment);
 
-	void wsman_add_namespace_as_selector(WsXmlDocH doc, char *ns);
+	void wsman_client_add_namespace_as_selector(WsXmlDocH doc, char *ns);
 
-	void wsman_add_selector_from_uri(WsXmlDocH doc,
+	void wsman_client_add_selector_from_uri(WsXmlDocH doc,
 					 const char *resourceUri);
 
 
@@ -375,21 +375,21 @@ typedef enum {
 
 	void wsman_client_options_destroy(client_opt_t * op);
 
-	void wsman_add_selectors_from_query_string(client_opt_t * options,
+	void wsman_client_add_selectors_from_str(client_opt_t * options,
 						   const char
 						   *query_string);
 
-	void wsman_add_properties_from_query_string(client_opt_t * options,
+	void wsman_client_add_prop_from_str(client_opt_t * options,
 						    const char
 						    *query_string);
 
-	void wsman_add_selector_from_options(WsXmlDocH doc,
+	void wsman_client_add_selector_from_options(WsXmlDocH doc,
 					     client_opt_t * options);
 
-	void wsman_set_action_option(client_opt_t * options,
+	void wsman_client_set_action_option(client_opt_t * options,
 				     unsigned int);
 
-	void wsman_set_options_from_uri(const char *resourceUri,
+	void wsman_client_set_options_from_uri(const char *resourceUri,
 					client_opt_t * options);
 
 	void wsman_client_add_selector(client_opt_t * options,

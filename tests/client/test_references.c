@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
 	options = wsman_client_options_init();
 	options->cim_ns = u_strdup(test.namespace);
-	wsman_add_selectors_from_query_string (options, test.selectors);
+	wsman_client_add_selectors_from_str (options, test.selectors);
 	ref_resp = wsman_client_action_enumerate(cl, (char *)test.resource_uri, options); 
 	wsman_output(ref_resp);
 

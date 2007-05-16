@@ -215,7 +215,7 @@ wsman_client_options_destroy(client_opt_t * op)
 }
 
 void
-wsman_set_action_option(client_opt_t * options, unsigned int flag)
+wsman_client_set_action_option(client_opt_t * options, unsigned int flag)
 {
 	options->flags |= flag;
 	return;
@@ -258,7 +258,7 @@ wsman_client_add_selector(client_opt_t * options,
 
 
 void
-wsman_add_selectors_from_query_string(client_opt_t * options,
+wsman_client_add_selectors_from_str(client_opt_t * options,
 		const char *query_string)
 {
 	if (query_string) {
@@ -270,7 +270,7 @@ wsman_add_selectors_from_query_string(client_opt_t * options,
 }
 
 void
-wsman_add_properties_from_query_string(client_opt_t * options,
+wsman_client_add_prop_from_str(client_opt_t * options,
 		const char *query_string)
 {
 	hash_t *query;
@@ -284,7 +284,7 @@ wsman_add_properties_from_query_string(client_opt_t * options,
 }
 
 void
-wsman_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
+wsman_client_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 {
 	WsXmlNodeH      header;
 	hnode_t        *hn;
@@ -390,13 +390,13 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
 }
 
 void
-wsman_set_options_from_uri(const char *resource_uri, client_opt_t * options)
+wsman_client_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 {
 	options->selectors = get_selectors_from_uri(resource_uri);
 }
 
 void
-wsman_add_selector_from_uri(WsXmlDocH doc,
+wsman_client_add_selector_from_uri(WsXmlDocH doc,
 		const char *resource_uri)
 {
 	u_uri_t        *uri;
@@ -528,7 +528,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 }
 
 static void
-wsman_set_transfer_put_properties(WsXmlDocH get_response,
+wsman_client_set_put_prop(WsXmlDocH get_response,
 		WsXmlDocH put_request,
 		client_opt_t *options)
 {
@@ -903,7 +903,7 @@ wsman_client_action_get_and_put(WsManClient * cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, (void *) get_response);
 
-	wsman_set_transfer_put_properties(get_response, put_request, options);
+	wsman_client_set_put_prop(get_response, put_request, options);
 	//ws_xml_destroy_doc(get_response);
 	if (wsman_send_request(cl, put_request)) {
 		ws_xml_destroy_doc(put_request);
@@ -1281,7 +1281,7 @@ wsman_build_envelope(WsContextH cntx,
   	/* Do not add the selectors to the header for reference instances */
 	if (((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) &&
 			((options->flags & FLAG_CIM_ASSOCIATORS) != FLAG_CIM_ASSOCIATORS)) {
-		wsman_add_selector_from_options(doc, options);
+		wsman_client_add_selector_from_options(doc, options);
 
 		if (options->cim_ns) {
 			wsman_add_selector(header,

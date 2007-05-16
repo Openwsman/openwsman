@@ -242,7 +242,7 @@ int main(int argc, char** argv)
 		options->flags = tests[i].flags;
 		options->max_elements = tests[i].max_elements;
 		if (tests[i].selectors != NULL)
-			wsman_add_selectors_from_query_string (options, tests[i].selectors);	
+			wsman_client_add_selectors_from_str (options, tests[i].selectors);	
 		 		
 		WsXmlDocH enum_response = wsman_client_action_enumerate(cl, (char *)tests[i].resource_uri ,
 			 options);
