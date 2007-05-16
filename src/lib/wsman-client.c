@@ -555,13 +555,13 @@ wsman_set_transfer_put_properties(WsXmlDocH get_response,
 }
 
 
-char*
-wsman_client_node_to_buf(WsXmlNodeH node) {
-	char *buf;
+void
+wsman_client_node_to_buf(WsXmlNodeH node, char **buf) {
 	int   len;
 	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
-	ws_xml_dump_memory_enc(doc, &buf, &len, "UTF-8");
-	return buf;
+	ws_xml_dump_memory_enc(doc, buf, &len, "UTF-8");
+	ws_xml_destroy_doc(doc);
+	return;
 }
 
 
@@ -571,6 +571,7 @@ wsman_client_node_to_formatbuf(WsXmlNodeH node) {
 	int   len;
 	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
 	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
+	ws_xml_destroy_doc(doc);
 	return buf;
 }
 

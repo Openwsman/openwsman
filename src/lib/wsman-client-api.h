@@ -378,7 +378,7 @@ typedef enum {
 	void wsman_remove_query_string(const char *resourceUri,
 				       char **result);
 	int wsman_client_check_for_fault(WsXmlDocH doc);
-	char *wsman_client_node_to_buf(WsXmlNodeH node);
+	void wsman_client_node_to_buf(WsXmlNodeH node, char **buf);
 	char *wsman_client_node_to_formatbuf(WsXmlNodeH node);
 	void wsman_client_get_fault_data(WsXmlDocH doc,
 					 WsManFault * fault);

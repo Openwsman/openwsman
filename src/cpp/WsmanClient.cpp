@@ -33,6 +33,7 @@ WsmanClient::WsmanClient(const char *endpoint,
 		const	char *auth_method)
 {	
 	cl = wsman_create_client_from_uri(endpoint);
+	wsman_client_transport_init(cl, (void*)NULL);
 
 	wsman_transport_set_auth_method (cl , (char *)auth_method);
 	if (wsman_client_transport_get_auth_value(cl) == 0 ) {
@@ -50,12 +51,12 @@ WsmanClient::WsmanClient(const char *endpoint,
 // Initialize the transport layer, this static method should be called only once.
 void WsmanClient::Init()
 {
-	wsman_client_transport_init(cl, (void*)NULL);
 }
 
 // Destructor.
 WsmanClient::~WsmanClient() 
 {
+	wsman_client_transport_fini(cl);
 	wsman_release_client(cl);
 }
 
@@ -208,6 +209,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 		}
 		enumRes.push_back(ExtractItems((XmlDocToString(doc))));
 		enumContext = wsenum_get_enum_context(doc);    
+		ws_xml_destroy_doc(doc);
 	}
 	destroy_action_options(options);
 }
@@ -363,7 +365,8 @@ string WsmanClient::ExtractPayload(string xml)
 			xml.length(), NULL, 0);
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);	  
 	WsXmlNodeH payloadNode = ws_xml_get_child(bodyNode, 0, NULL, NULL);
-	char *buf = wsman_client_node_to_buf( payloadNode);
+	char *buf = NULL;
+	wsman_client_node_to_buf( payloadNode, &buf);
 	string payload = string(buf);
 	u_free(buf);
 	return payload;
@@ -377,9 +380,13 @@ string WsmanClient::ExtractItems(string xml)
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
 	WsXmlNodeH pullResponse = ws_xml_get_child(bodyNode, 0, XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 	WsXmlNodeH itemsNode = ws_xml_get_child(pullResponse, 0, XML_NS_ENUMERATION, WSENUM_ITEMS);
-	char *buf = wsman_client_node_to_buf( ws_xml_get_child(itemsNode, 0 , NULL, NULL ));
+	WsXmlNodeH n = ws_xml_get_child(itemsNode, 0 , NULL, NULL );
+	char *buf = NULL;
+	wsman_client_node_to_buf( n, &buf);
 	string payload = string(buf);
 	u_free(buf);
+	ws_xml_destroy_doc(doc);
+
 	return payload;
 }
 
