@@ -46,6 +46,15 @@
 #include "wsman-types.h"
 #include "wsman-names.h"
 
+
+// Errors
+#define WS_ERR_INSUFFICIENT_RESOURCES	(-1)
+#define WS_ERR_INVALID_PARAMETER		(-2)
+#define WS_ERR_XML_PARSING			    (-3)
+#define WS_ERR_XML_NODE_NOT_FOUND		(-4)
+#define WS_ERR_NOT_IMPLEMENTED			(-5)
+
+
 typedef void* XML_TYPE_PTR;
 
 typedef struct __XmlSerialiseDynamicSizeData

@@ -35,11 +35,9 @@
 
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
-#else
-#ifndef PACKAGE_STRING
-#define PACKAGE_STRING "openwsman client"
 #endif
-#endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,253 +51,257 @@
 #include "u/libu.h"
 
 char *auth_methods[] = {
-  "noauth",
-  "basic",
-  "digest",
-  "pass",
-  "ntlm",
-  "gss",
-  NULL,
+	"noauth",
+	"basic",
+	"digest",
+	"pass",
+	"ntlm",
+	"gss",
+	NULL,
 };
 
 
 
-extern void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
+extern void wsman_client_handler(WsManClient * cl, WsXmlDocH rqstDoc,
+				 void *user_data);
 
+#ifdef DEBUG_VERBOSE
 static long long transfer_time = 0;
+#endif
 
-int
-wsman_send_request(WsManClient *cl, WsXmlDocH request)
+int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 {
-  struct timeval tv0, tv1;
-  long long t0, t1;
+#ifdef DEBUG_VERBOSE
+	struct timeval tv0, tv1;
+	long long t0, t1;
+#endif
 
-  if (wsman_client_lock(cl)) {
-        error("Client busy");
-        return 1;
-  }
-  reinit_client_connection(cl);
+	if (wsman_client_lock(cl)) {
+		error("Client busy");
+		return 1;
+	}
+	reinit_client_connection(cl);
 
-  gettimeofday(&tv0, NULL);
+#ifdef DEBUG_VERBOSE
+	gettimeofday(&tv0, NULL);
+#endif
 
-  wsman_client_handler(cl, request, NULL);
+	wsman_client_handler(cl, request, NULL);
 
-  gettimeofday(&tv1, NULL);
-  t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
-  t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
-  transfer_time += t1 -t0;
-  wsman_client_unlock(cl);
-  return 0;
+#ifdef DEBUG_VERBOSE
+	gettimeofday(&tv1, NULL);
+	t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
+	t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
+	transfer_time += t1 - t0;
+#endif
+	wsman_client_unlock(cl);
+	return 0;
 }
 
-long long
-get_transfer_time()
+#ifdef DEBUG_VERBOSE
+long long get_transfer_time()
 {
-  long long l = transfer_time;
-  transfer_time = 0;
-  return l;
+	long long l = transfer_time;
+	transfer_time = 0;
+	return l;
 }
-
-
+#endif
 
 
 char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth)
 {
-  switch (auth) {
-  case WS_NO_AUTH :    return "No Auth";
-  case WS_BASIC_AUTH:  return "Basic";
-  case WS_DIGEST_AUTH: return "Digest";
-  case WS_NTLM_AUTH:   return "NTLM";
-  case WS_GSSNEGOTIATE_AUTH : return "GSS-Negotiate";
-  default: ;
-  }
-  return "Unknown";
+	switch (auth) {
+	case WS_NO_AUTH:
+		return "No Auth";
+	case WS_BASIC_AUTH:
+		return "Basic";
+	case WS_DIGEST_AUTH:
+		return "Digest";
+	case WS_NTLM_AUTH:
+		return "NTLM";
+	case WS_GSSNEGOTIATE_AUTH:
+		return "GSS-Negotiate";
+	default:;
+	}
+	return "Unknown";
 }
 
-void wsman_client_transport_set_auth_request_func(WsManClient *cl, 
-        wsman_auth_request_func_t f)
+void wsman_client_transport_set_auth_request_func(WsManClient * cl,
+						  wsman_auth_request_func_t
+						  f)
 {
-  cl->authentication.auth_request_func = f;
+	cl->authentication.auth_request_func = f;
 }
 
-int wsman_is_auth_method(WsManClient *cl, int method)
+int wsman_is_auth_method(WsManClient * cl, int method)
 {
-  if (cl->authentication.method == NULL) {
-    return 1;
-  }
-  if (method >= WS_MAX_AUTH) {
-    return 0;
-  }
-  return (!strncasecmp(cl->authentication.method, auth_methods[method],
-                       strlen(cl->authentication.method)));
+	if (cl->authentication.method == NULL) {
+		return 1;
+	}
+	if (method >= WS_MAX_AUTH) {
+		return 0;
+	}
+	return (!strncasecmp
+		(cl->authentication.method, auth_methods[method],
+		 strlen(cl->authentication.method)));
 }
 
-int wsman_client_transport_get_auth_value(WsManClient *cl)
+int wsman_client_transport_get_auth_value(WsManClient * cl)
 {
-    char *m = cl->authentication.method;
-    wsman_auth_type_t i;
+	char *m = cl->authentication.method;
+	wsman_auth_type_t i;
 
-    if (m == NULL) {
-        return 0;
-    }
-    for (i = 0; auth_methods[i] != NULL; i++) {
-        if (!strcasecmp(m, auth_methods[i])) {
-            return i;
-        }
-    }
-    return 0;
+	if (m == NULL) {
+		return 0;
+	}
+	for (i = 0; auth_methods[i] != NULL; i++) {
+		if (!strcasecmp(m, auth_methods[i])) {
+			return i;
+		}
+	}
+	return 0;
 }
 
-char *wsman_transport_get_proxy(WsManClient *cl)
+char *wsman_transport_get_proxy(WsManClient * cl)
 {
-  return cl->proxy_data.proxy;
+	return cl->proxy_data.proxy;
 }
 
-char *wsman_transport_get_proxyauth(WsManClient *cl)
+char *wsman_transport_get_proxyauth(WsManClient * cl)
 {
-  return cl->proxy_data.proxy_auth;
+	return cl->proxy_data.proxy_auth;
 }
 
-unsigned long wsman_transport_get_timeout(WsManClient *cl)
+unsigned long wsman_transport_get_timeout(WsManClient * cl)
 {
-  return cl->transport_timeout;
+	return cl->transport_timeout;
 }
 
-void wsman_transport_set_agent (WsManClient *cl, char * arg)
+void wsman_transport_set_agent(WsManClient * cl, char *arg)
 {
-  cl->user_agent = arg;
+	cl->user_agent = arg;
 }
 
-
-
-char * wsman_transport_get_auth_method (WsManClient *cl)
+char *wsman_transport_get_auth_method(WsManClient * cl)
 {
-  return cl->authentication.method;
+	return cl->authentication.method;
 }
 
-int wsman_transport_get_verify_peer (WsManClient *cl)
+int wsman_transport_get_verify_peer(WsManClient * cl)
 {
-  return cl->authentication.verify_peer;
+	return cl->authentication.verify_peer;
 }
 
-int wsman_transport_get_verify_host (WsManClient *cl)
+int wsman_transport_get_verify_host(WsManClient * cl)
 {
-  return cl->authentication.verify_host;
+	return cl->authentication.verify_host;
 }
 
-char *wsman_transport_get_cafile(WsManClient *cl)
+char *wsman_transport_get_cafile(WsManClient * cl)
 {
-  return cl->authentication.cert_file;
+	return cl->authentication.cert_file;
 }
 
-void wsman_transport_set_proxy(WsManClient *cl, char *arg)
+void wsman_transport_set_proxy(WsManClient * cl, char *arg)
 {
-  cl->proxy_data.proxy = arg;
+	cl->proxy_data.proxy = arg;
 }
 
-void wsman_transport_set_proxyauth(WsManClient *cl, char *arg)
+void wsman_transport_set_proxyauth(WsManClient * cl, char *arg)
 {
-  cl->proxy_data.proxy_auth = arg;
+	cl->proxy_data.proxy_auth = arg;
 }
 
-void wsman_transport_set_timeout(WsManClient *cl, unsigned long arg)
+void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
 {
-  cl->transport_timeout = arg;
+	cl->transport_timeout = arg;
 }
 
-char * wsman_transport_get_agent (WsManClient *cl)
+char *wsman_transport_get_agent(WsManClient * cl)
 {
-    if (cl->user_agent)
-        return cl->user_agent;
-    else
-        return DEFAULT_USER_AGENT;
+	if (cl->user_agent)
+		return cl->user_agent;
+	else
+		return DEFAULT_USER_AGENT;
 }
 
-void wsman_transport_set_auth_method (WsManClient *cl, char *arg)
+void wsman_transport_set_auth_method(WsManClient * cl, char *arg)
 {
-  cl->authentication.method = arg;
+	cl->authentication.method = arg;
 }
 
-void wsman_transport_set_verify_peer (WsManClient *cl, int arg)
+void wsman_transport_set_verify_peer(WsManClient * cl, int arg)
 {
-  cl->authentication.verify_peer = arg;
+	cl->authentication.verify_peer = arg;
 }
 
-void wsman_transport_set_verify_host (WsManClient *cl, int arg)
+void wsman_transport_set_verify_host(WsManClient * cl, int arg)
 {
-  cl->authentication.verify_host = arg;
+	cl->authentication.verify_host = arg;
 }
 
-void wsman_transport_set_cafile(WsManClient *cl, char *arg)
+void wsman_transport_set_cafile(WsManClient * cl, char *arg)
 {
-  cl->authentication.cert_file = arg;
+	cl->authentication.cert_file = arg;
 }
 
 
-char *
-wsman_transport_get_last_error_string(WS_LASTERR_Code err)
+char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {
-    switch (err) {
-        case WS_LASTERR_OK:
-            return "Everithing OK";
-        case WS_LASTERR_FAILED_INIT:
-            return "Trnasport initailization failed";
-        case WS_LASTERR_UNSUPPORTED_PROTOCOL:
-            return "Unsupported protocol";
-        case WS_LASTERR_URL_MALFORMAT:
-            return "URL malformat";
-        case WS_LASTERR_COULDNT_RESOLVE_PROXY:
-            return "Could not resolve proxy";
-        case WS_LASTERR_COULDNT_RESOLVE_HOST:
-            return "Could not resolve host";
-        case WS_LASTERR_COULDNT_CONNECT:
-            return "Could not connect";
-        case WS_LASTERR_HTTP_RETURNED_ERROR:
-            return "HTTP returned error";
-        case WS_LASTERR_WRITE_ERROR:
-            return "Write error";
-        case WS_LASTERR_READ_ERROR:
-            return "Read error";
-        case WS_LASTERR_OUT_OF_MEMORY:
-            return "Could not alloc memory";
-        case WS_LASTERR_OPERATION_TIMEOUTED:
-            return "Operation timeout reached";
-        case WS_LASTERR_HTTP_POST_ERROR:
-            return "HTTP POST error";
-        case WS_LASTERR_BAD_DOWNLOAD_RESUME:
-            return "Couldn't resume download";
-        case WS_LASTERR_TOO_MANY_REDIRECTS:
-            return "Catch endless re-direct loop";
-        case WS_LASTERR_SSL_CONNECT_ERROR:
-            return "SSL connection error";
-        case WS_LASTERR_SSL_PEER_CERTIFICATE:
-            return "Peer's certificate wasn't OK";
-        case WS_LASTERR_SSL_ENGINE_NOTFOUND:
-            return "SSL crypto engine not found";
-        case WS_LASTERR_SSL_ENGINE_SETFAILED:
-            return "Can't set SSL crypto engine default";
-        case WS_LASTERR_SSL_CERTPROBLEM:
-            return "Problem with the local certificate";
-        case WS_LASTERR_SSL_CACERT:
-            return "Problem with the CA certificate";
-        case WS_LASTERR_SSL_ENGINE_INITFAILED:
-            return " failed to initialise SSL engine";
-        case WS_LASTERR_SEND_ERROR:
-            return "Failed sending network data";
-        case WS_LASTERR_RECV_ERROR:
-            return "Failure in receiving network data";
-        case WS_LASTERR_BAD_CONTENT_ENCODING:
-            return "Unrecognized transfer encoding";
-        case WS_LASTERR_LOGIN_DENIED:
-            return "User, password or similar was not accepted";
-        default:
-            return "Unrecognized error";
-    }
+	switch (err) {
+	case WS_LASTERR_OK:
+		return "Everithing OK";
+	case WS_LASTERR_FAILED_INIT:
+		return "Trnasport initailization failed";
+	case WS_LASTERR_UNSUPPORTED_PROTOCOL:
+		return "Unsupported protocol";
+	case WS_LASTERR_URL_MALFORMAT:
+		return "URL malformat";
+	case WS_LASTERR_COULDNT_RESOLVE_PROXY:
+		return "Could not resolve proxy";
+	case WS_LASTERR_COULDNT_RESOLVE_HOST:
+		return "Could not resolve host";
+	case WS_LASTERR_COULDNT_CONNECT:
+		return "Could not connect";
+	case WS_LASTERR_HTTP_RETURNED_ERROR:
+		return "HTTP returned error";
+	case WS_LASTERR_WRITE_ERROR:
+		return "Write error";
+	case WS_LASTERR_READ_ERROR:
+		return "Read error";
+	case WS_LASTERR_OUT_OF_MEMORY:
+		return "Could not alloc memory";
+	case WS_LASTERR_OPERATION_TIMEOUTED:
+		return "Operation timeout reached";
+	case WS_LASTERR_HTTP_POST_ERROR:
+		return "HTTP POST error";
+	case WS_LASTERR_BAD_DOWNLOAD_RESUME:
+		return "Couldn't resume download";
+	case WS_LASTERR_TOO_MANY_REDIRECTS:
+		return "Catch endless re-direct loop";
+	case WS_LASTERR_SSL_CONNECT_ERROR:
+		return "SSL connection error";
+	case WS_LASTERR_SSL_PEER_CERTIFICATE:
+		return "Peer's certificate wasn't OK";
+	case WS_LASTERR_SSL_ENGINE_NOTFOUND:
+		return "SSL crypto engine not found";
+	case WS_LASTERR_SSL_ENGINE_SETFAILED:
+		return "Can't set SSL crypto engine default";
+	case WS_LASTERR_SSL_CERTPROBLEM:
+		return "Problem with the local certificate";
+	case WS_LASTERR_SSL_CACERT:
+		return "Problem with the CA certificate";
+	case WS_LASTERR_SSL_ENGINE_INITFAILED:
+		return " failed to initialise SSL engine";
+	case WS_LASTERR_SEND_ERROR:
+		return "Failed sending network data";
+	case WS_LASTERR_RECV_ERROR:
+		return "Failure in receiving network data";
+	case WS_LASTERR_BAD_CONTENT_ENCODING:
+		return "Unrecognized transfer encoding";
+	case WS_LASTERR_LOGIN_DENIED:
+		return "User, password or similar was not accepted";
+	default:
+		return "Unrecognized error";
+	}
 }
-
-
-
-
-
-
-

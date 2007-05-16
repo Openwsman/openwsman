@@ -323,7 +323,6 @@ int             ws_transfer_put_stub(SoapOpH op, void *appData, void *opaqueData
 int             ws_transfer_delete_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsman_identify_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsenum_enumerate_stub(SoapOpH op, void *appData, void *opaqueData);
-int             wsenum_reference_instances_stub(SoapOpH op, void *appData, void *opaqueData);
 int             ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsenum_pull_raw_stub(SoapOpH op, void *appData, void *opaqueData);

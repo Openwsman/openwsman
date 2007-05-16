@@ -37,8 +37,7 @@
 #define WS_XML_SERIALIZATION_H
 
 #include "wsman-xml-serializer.h"
-//struct __XmlSerializationTypeInfo;
-//struct __XmlSerializerInfo;
+
 
 #define XML_SMODE_SERIALIZE     1
 #define XML_SMODE_DESERIALIZE   2

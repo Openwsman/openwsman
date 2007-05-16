@@ -197,9 +197,8 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 			}
 		}
 		else if (!doc) {
-			ws_xml_destroy_doc(doc);
 			destroy_action_options(options);
-			// throw exception("WsmanClient: unknown error has occured");
+			throw exception();
 		} else if (wsman_client_check_for_fault(doc)) {
 			WsmanException e(code, error);
 			GetWsmanFault(XmlDocToString(doc), e);

@@ -47,7 +47,6 @@
 
 #include "u/libu.h"
 
-#include "wsman-errors.h"
 #include "wsman-xml-api.h"
 #include "wsman-dispatcher.h"
 

@@ -50,7 +50,6 @@
 #include "wsman-types.h"
 #include "wsman-client.h"
 #include "wsman-soap.h"
-#include "wsman-errors.h"
 #include "wsman-xml.h"
 #include "wsman-debug.h"
 #include "wsman-client-transport.h"
@@ -234,7 +233,7 @@ init_curl_transport(WsManClient *cl)
 		r = curl_easy_setopt(curl, CURLOPT_CAINFO,
 				wsman_transport_get_cafile(cl));
 		if (r != 0) {
-			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLCERT, ..)");
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
 			goto DONE;
 		}
 /*

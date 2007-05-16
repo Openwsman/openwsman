@@ -10,7 +10,6 @@
 
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-errors.h"
 #include "wsman-soap.h"
 #include "wsman-xml-serialize.h"
 #include "wsman-epr.h"

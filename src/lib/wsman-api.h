@@ -40,4 +40,3 @@
 #include "wsman-client-transport.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-debug.h"
-#include "wsman-errors.h"

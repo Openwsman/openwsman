@@ -5,7 +5,6 @@ wsmaninclude_HEADERS = \
 	wsman-types.h \
 	wsman-names.h \
 	wsman-debug.h \
-	wsman-errors.h \
 	wsman-client.h  \
 	wsman-client-api.h \
 	wsman-xml-api.h \

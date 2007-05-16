@@ -41,7 +41,6 @@
 
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-errors.h"
 #include "wsman-soap.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-xml-serialize.h"
@@ -171,8 +170,8 @@ static void example1(void)
 	ws_xml_dump_node_tree(stdout, node);
 	node = ws_xml_get_doc_root(doc);
 
-	WsXmlDocH xx = ws_xml_read_file( ws_context_get_runtime(cntx), "./test.xml", "UTF-8", 0 );
-	node = ws_xml_get_doc_root(xx);
+	//WsXmlDocH xx = ws_xml_read_file( ws_context_get_runtime(cntx), "./test.xml", "UTF-8", 0 );
+	//node = ws_xml_get_doc_root(xx);
 	Sample_Servie *cs = (Sample_Servie *) ws_deserialize(cntx,
 							     node,
 							     Sample_Servie_TypeInfo,
@@ -184,7 +183,6 @@ static void example1(void)
 		return;
 	}
 	
-	printf("%d\n", cs->ExitCode );
 
 	retval = memcmp(cs, &servie, sizeof(&servie));
 	if (retval) {

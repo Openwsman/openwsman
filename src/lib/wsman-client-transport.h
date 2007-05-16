@@ -30,6 +30,7 @@
 
 /**
  * @author Vadim Revyakin
+ * @author Anas Nashif
  */
 
 #ifndef WSMAN_CLIENT_TRANSPORT_H_
@@ -42,19 +43,11 @@
 
 #define DEFAULT_USER_AGENT PACKAGE_STRING
 
-
-
-
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
-
-
 
 extern void wsman_client_transport_set_auth_request_func(WsManClient *cl, 
         wsman_auth_request_func_t f);
 
-extern char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth);
-
-extern int wsman_client_transport_get_auth_value(WsManClient *cl);
 
 extern int wsman_is_auth_method(WsManClient *cl, int method);
 
@@ -70,19 +63,23 @@ extern char *wsman_transport_get_proxyauth(WsManClient *cl);
 
 extern char * wsman_transport_get_agent (WsManClient *cl);
 
-extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
-
 extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
 extern int wsman_transport_get_verify_peer (WsManClient *cl);
 
-extern void wsman_transport_set_verify_peer(WsManClient *cl, int value);
-
 extern int wsman_transport_get_verify_host (WsManClient *cl);
 
-extern void wsman_transport_set_verify_host(WsManClient *cl, int value);
+extern char *wsman_client_transport_get_auth_name(wsman_auth_type_t auth);
+
+extern int wsman_client_transport_get_auth_value(WsManClient *cl);
 
 extern char *wsman_transport_get_cafile(WsManClient *cl);
+
+char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
+
+extern void wsman_transport_set_verify_peer(WsManClient *cl, int value);
+
+extern void wsman_transport_set_verify_host(WsManClient *cl, int value);
 
 extern void wsman_transport_set_proxy(WsManClient *cl, char *proxy);
 
@@ -94,15 +91,16 @@ extern void wsman_transport_set_agent(WsManClient *cl, char *agent);
 
 extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
 
-
 extern void wsman_transport_set_cafile(WsManClient *cl, char *caf);
 
+extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
 
 extern void wsman_transport_close_transport(WsManClient *cl);
 
+#ifdef DEBUG_VERBOSE
 long long get_transfer_time(void);
+#endif
 
-char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 
