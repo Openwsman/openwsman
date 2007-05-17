@@ -206,11 +206,15 @@ void wsman_transport_set_verify_host(WsManClient * cl, int arg)
 	cl->authentication.verify_host = arg;
 }
 
-void wsman_transport_set_cafile(WsManClient * cl, char *arg)
+void wsman_transport_set_cainfo(WsManClient * cl, char *arg)
 {
 	cl->authentication.cainfo = arg;
 }
 
+void wsman_transport_set_cert(WsManClient * cl, char *arg)
+{
+	cl->authentication.sslcert = arg;
+}
 
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {

@@ -42,7 +42,7 @@ WsmanClient::WsmanClient(const char *endpoint,
 	}
 
 	if (cert) {
-		wsman_transport_set_cafile(cl, (char*)cert);
+		wsman_transport_set_cainfo(cl, (char*)cert);
 	}
 
 	// TO-DO: support tls and kerberos.

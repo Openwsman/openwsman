@@ -206,6 +206,21 @@ init_curl_transport(WsManClient *cl)
 		debug("Could not init easy curl");
 		goto DONE;
 	}
+	debug("cl->authentication.verify_peer: %d", cl->authentication.verify_peer );
+	// verify peer
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, cl->authentication.verify_peer);
+	if (r != 0) {
+		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
+		goto DONE;
+	}
+
+	// verify host
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, cl->authentication.verify_host);
+	if (r != 0) {
+		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
+		goto DONE;
+	}
+
 	r = curl_easy_setopt(curl, CURLOPT_PROXY, cl->proxy_data.proxy);
 	if (r != 0) {
 		curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
@@ -244,20 +259,6 @@ init_curl_transport(WsManClient *cl)
 	r = curl_easy_setopt(curl, CURLOPT_SSLCERT, cl->authentication.sslcert );
 	if (r != 0) {
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLCERT, ..)");
-		goto DONE;
-	}
-
-	// verify peer
-	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, cl->authentication.verify_peer);
-	if (r != 0) {
-		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
-		goto DONE;
-	}
-
-	// verify host
-	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, cl->authentication.verify_host);
-	if (r != 0) {
-		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
 		goto DONE;
 	}
 

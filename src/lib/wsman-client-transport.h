@@ -79,7 +79,9 @@ extern void wsman_transport_set_agent(WsManClient *cl, char *agent);
 
 extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
 
-extern void wsman_transport_set_cafile(WsManClient *cl, char *caf);
+extern void wsman_transport_set_cainfo(WsManClient *cl, char *cainfo);
+
+extern void wsman_transport_set_cert(WsManClient *cl, char *cert);
 
 extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
 
