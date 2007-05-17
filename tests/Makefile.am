@@ -1,2 +1,2 @@
-SUBDIRS = client xml
+SUBDIRS = client xml serialization
 
