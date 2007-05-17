@@ -30,7 +30,6 @@
 
 /**
  * @author Anas Nashif
- * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifndef WSMANCLIENT_API_H_
@@ -191,14 +190,14 @@ typedef enum {
 					 const char *username,
 					 const char *password);
 
-	/*
+	/**
 	 * Release client
 	 * @param cl Client handle that was created with wsman_create_client
 	 * @return void
 	 */
 	void wsmc_release(WsManClient * cl);
 
-	/*
+	/**
 	 * Reset client connection and prepare handle for a new connection
 	 * @param cl Client handle
 	 * @return void
@@ -207,24 +206,75 @@ typedef enum {
 
 
 	/* WsManClient handling */
+
+	/**
+	 * Get client context
+	 * @param cl Client handle
+	 * @return Context
+	 */
 	WsContextH wsmc_get_context(WsManClient * cl);
 
+	/**
+	 * Get host name from handle
+	 * @param cl Client handle
+	 * @return host name
+	 */
 	char *wsmc_get_hostname(WsManClient * cl);
 
+	/**
+	 * Get port from handle
+	 * @param cl Client handle
+	 * @return host name
+	 */
 	unsigned int wsmc_get_port(WsManClient * cl);
 
+	/**
+	 * Get uri path from handle
+	 * @param cl Client handle
+	 * @return uri path
+	 */
 	char *wsmc_get_path(WsManClient * cl);
 
+	/**
+	 * Get uri scheme from handle
+	 * @param cl Client handle
+	 * @return scheme
+	 */
 	char *wsmc_get_scheme(WsManClient * cl);
 
+	/**
+	 * Get username from handle
+	 * @param cl Client handle
+	 * @return username
+	 */
 	char *wsmc_get_user(WsManClient * cl);
 
+	/**
+	 * Get endpoint from handle
+	 * @param cl Client handle
+	 * @return endpoint
+	 */
 	char *wsmc_get_endpoint(WsManClient * cl);
 
+	/**
+	 * Get response code from client
+	 * @param cl Client handle
+	 * @return response code
+	 */
 	long wsmc_get_response_code(WsManClient * cl);
 
+	/**
+	 * Get fault string
+	 * @param cl Client handle
+	 * @return host name
+	 */
 	char *wsmc_get_fault_string(WsManClient * cl);
 
+	/**
+	 * Get last error code
+	 * @param cl Client handle
+	 * @return last error code
+	 */
 	WS_LASTERR_Code wsmc_get_last_error(WsManClient * cl);
 
 
@@ -252,87 +302,231 @@ typedef enum {
 					   size_t size, char *encoding,
 					   unsigned long options);
 
-	/* Creating objects */
+	/**
+	 * Create runtime context for client
+	 * @param cl Client handle
+	 * @return void
+	 */
 	WsContextH wsmc_create_runtime(void);
 
+	/**
+	 * Parse response and create a new envelope based on it
+	 * @param cl Client handle
+	 * @return New envelope 
+	 */
 	WsXmlDocH wsmc_build_envelope_from_response(WsManClient * cl);
 
 	/* Wsman actions handling */
 
+	/**
+	 * Send an Identify request
+	 * @param cl Client handle
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_identify(WsManClient * cl,
 				 client_opt_t * options);
 
+
+	/**
+	 * Send a Transfer Get request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_get(WsManClient * cl,
-				  const char *resourceUri,
+				  const char *resource_uri,
 				  client_opt_t * options);
 
+	/**
+	 * Send a Transfer Put request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param source_doc A document with the new resource, for example the result of a Get request with modified properties.
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_put(WsManClient * cl,
 				  const char *resource_uri,
 				  client_opt_t * options,
 				  WsXmlDocH source_doc);
 
+	/**
+	 * Send a Transfer Put request using a text buffer XML representation
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param data Buffer
+	 * @param size Buffer size
+	 * @param encoding XML encoding
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_put_fromtext(WsManClient * cl,
 					   const char *resource_uri,
 					   client_opt_t * options,
 					   const char *data, size_t size,
 					   const char *encoding);
 
+	/**
+	 * Send a Transfer Put request using serialized data
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param typeInfo Data type information
+	 * @param data  Pointer to data
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_put_serialized(WsManClient * cl,
 					     const char *resource_uri,
 					     client_opt_t * options,
 					     void *typeInfo, void *data);
 
+	/**
+	 * Send a Transfer Get and then Transfer Put modifying properties defined in the options structure
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_get_and_put(WsManClient * cl,
-					  const char *resourceUri,
+					  const char *resource_uri,
 					  client_opt_t * options);
 
+	/**
+	 * Send a Transfer Create using existing document with a new resource
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param source_doc A document with the new resource, for example the result of a Get request with modified properties.
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_create(WsManClient * cl,
-				     const char *resourceUri,
+				     const char *resource_uri,
 				     client_opt_t * options,
 				     WsXmlDocH source_doc);
 
+	/**
+	 * Send a Transfer Create request using a text buffer XML representation
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param data Buffer
+	 * @param size Buffer size
+	 * @param encoding XML encoding
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_create_fromtext(WsManClient * cl,
-					      const char *resourceUri,
+					      const char *resource_uri,
 					      client_opt_t * options,
 					      const char *data,
 					      size_t size,
 					      const char *encoding);
 
+	/**
+	 * Send a Transfer Create request using serialized data
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param typeInfo Data type information
+	 * @param data  Pointer to data
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_create_serialized(WsManClient * cl,
 						const char *resource_uri,
 						client_opt_t * options,
 						void *typeInfo,
 						void *data);
 
+	/**
+	 * Send a Transfer Delete
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_delete(WsManClient * cl,
-				     const char *resourceUri,
+				     const char *resource_uri,
 				     client_opt_t * options);
 
+	/**
+	 * Send a Enumerate request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_enumerate(WsManClient * cl,
-				   const char *resourceUri,
+				   const char *resource_uri,
 				   client_opt_t * options);
 
-	WsXmlDocH wsmc_action_pull(WsManClient * cl, const char *resourceUri,
+	/**
+	 * Send a Pull request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param enumContext enumeration context
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_pull(WsManClient * cl, const char *resource_uri,
 			      client_opt_t * options,
 			      const char *enumContext);
 
-	WsXmlDocH wsmc_action_release(WsManClient * cl, const char *resourceUri,
+	/**
+	 * Send a Release request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param enumContext enumeration context
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_release(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
 				 const char *enumContext);
 
-	WsXmlDocH wsmc_action_invoke(WsManClient * cl, const char *resourceUri,
+	/**
+	 * Send a custom method request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param method  Custom method name
+	 * @param source_doc A document with the new resource, for example the result of a Get request with modified properties.
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_invoke(WsManClient * cl, const char *resource_uri,
 			       client_opt_t * options, const char *method,
 			       WsXmlDocH source_doc);
 
+	/**
+	 * Send a custom method request using text input of XML data
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param method  Custom method name
+	 * @param data Buffer
+	 * @param size Buffer size
+	 * @param encoding XML encoding
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_invoke_fromtext(WsManClient * cl,
-					const char *resourceUri,
+					const char *resource_uri,
 					client_opt_t * options,
 					const char *method,
 					const char *data, size_t size,
 					const char *encoding);
 
+	/**
+	 * Send a custom method request using serialized data of resource
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param method  Custom method name
+	 * @param typeInfo Data type information
+	 * @param data  Pointer to data
+	 * @return response document
+	 */
 	WsXmlDocH wsmc_action_invoke_serialized(WsManClient * cl,
-					  const char *resourceUri,
+					  const char *resource_uri,
 					  client_opt_t * options,
 					  const char *method,
 					  void *typeInfo, void *data);
@@ -340,30 +534,72 @@ typedef enum {
 	typedef int (*SoapResponseCallback) (WsManClient *, WsXmlDocH,
 					     void *);
 
+	/**
+	 * Send a Enumerate request and then use callback for subsequent Pull calls
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param callback Function to handle Pull requests and Responses
+	 * @param callback_data Pointer to callback data
+	 * @return success
+	 */
 	int wsmc_action_enumerate_and_pull(WsManClient * cl,
 				      const char *resource_uri,
 				      client_opt_t * options,
 				      SoapResponseCallback callback,
 				      void *callback_data);
 
+	/**
+	 * Create a request envelope based on client data
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param action Requested Action (e.g., Get, Put, Create)
+	 * @param method custom method ( can be NULL)
+	 * @param data client data
+	 * @return Request document
+	 */
 	WsXmlDocH wsmc_create_request(WsManClient * cl,
 					      const char *resource_uri,
 					      client_opt_t * options,
 					      WsmanAction action,
 					      char *method, void *data);
 
-	/* WsXmlDocH manipulation */
+	/**
+	 * Get enumeration context from response
+	 * @param doc Response document
+	 * @return enumeration context
+	 */
 	char *wsmc_get_enum_context(WsXmlDocH doc);
 
-	void wsmc_free_enum_context(char *);
+	/**
+	 * Free enumeration context
+	 * @param enumctx Enumeration context
+	 * @return enumeration context
+	 */
+	void wsmc_free_enum_context(char * enumctx);
 
+	/**
+	 * Add a selector from URI with query string containing selectors
+	 * @param doc request to add selectors to
+	 * @param resource_uri Resource URI
+	 * @return void
+	 */
 	void wsmc_add_selector_from_uri(WsXmlDocH doc,
-					 const char *resourceUri);
+					 const char *resource_uri);
 
 
-	/* Action options handling */
+	/**
+	 * Initialize client requeust options
+	 * @return initialized options structure
+	 */
 	client_opt_t *wsmc_options_init(void);
 
+	/**
+	 * destroy client requeust options
+	 * @param options structure
+	 * @return void
+	 */
 	void wsmc_options_destroy(client_opt_t * op);
 
 	void wsmc_add_selectors_from_str(client_opt_t * options,
@@ -380,7 +616,7 @@ typedef enum {
 	void wsmc_set_action_option(client_opt_t * options,
 				     unsigned int);
 
-	void wsmc_set_options_from_uri(const char *resourceUri,
+	void wsmc_set_options_from_uri(const char *resource_uri,
 					client_opt_t * options);
 
 	void wsmc_add_selector(client_opt_t * options,
@@ -392,7 +628,7 @@ typedef enum {
 	/* Misc */
 
 	/* Place holder */
-	void wsmc_remove_query_string(const char *resourceUri,
+	void wsmc_remove_query_string(const char *resource_uri,
 				       char **result);
 	int wsmc_check_for_fault(WsXmlDocH doc);
 
