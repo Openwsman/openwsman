@@ -88,11 +88,6 @@ int unlink_response_entry(SoapH soap, op_t * entry);
 
 void destroy_dispatch_entry(SoapDispatchH entry);
 
-void wsman_create_identify_response(SoapH soap, WsmanMessage * msg);
-
-void wsman_generate_encoding_fault(op_t * op,
-				   WsmanFaultDetailType faultDetail);
-
 WsEndPointRelease wsman_get_release_endpoint(WsContextH cntx,
 					     WsXmlDocH doc);
 

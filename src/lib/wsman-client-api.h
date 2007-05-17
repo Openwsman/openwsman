@@ -46,6 +46,13 @@ extern "C" {
 #include "wsman-names.h"
 #include "wsman-types.h"
 
+/**
+ * @defgroup Client Client
+ * @brief WS-Management Client
+ *
+ * @{
+ */
+
 
 // Possible authentication methods
 
@@ -246,15 +253,7 @@ typedef enum {
 					   unsigned long options);
 
 	/* Creating objects */
-	WsContextH wsman_create_runtime(void);
-
-	WsXmlDocH wsman_build_envelope(WsContextH cntx, const char *action,
-				       const char *reply_to_uri,
-				       const char *resource_uri,
-				       const char *to_uri,
-				       client_opt_t * options);
-
-	WsXmlDocH wsman_build_envelope_from_response(WsManClient * cl);
+	WsContextH wsmc_create_runtime(void);
 
 	WsXmlDocH wsmc_build_envelope_from_response(WsManClient * cl);
 
@@ -358,17 +357,9 @@ typedef enum {
 
 	void wsmc_free_enum_context(char *);
 
-	void wsmc_add_fragment_transfer(WsXmlDocH doc, char *fragment);
-
-	void wsmc_add_namespace_as_selector(WsXmlDocH doc, char *ns);
-
 	void wsmc_add_selector_from_uri(WsXmlDocH doc,
 					 const char *resourceUri);
 
-
-	void wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH body,
-		       	const char *resource_uri,
-			client_opt_t *options, int assocRef);
 
 	/* Action options handling */
 	client_opt_t *wsmc_options_init(void);
@@ -401,7 +392,7 @@ typedef enum {
 	/* Misc */
 
 	/* Place holder */
-	void wsman_remove_query_string(const char *resourceUri,
+	void wsmc_remove_query_string(const char *resourceUri,
 				       char **result);
 	int wsmc_check_for_fault(WsXmlDocH doc);
 
@@ -417,6 +408,7 @@ typedef enum {
 	void wsmc_set_dumpfile(WsManClient *cl, FILE * f);
 
 	FILE *wsmc_get_dumpfile(WsManClient *cl);
+/** @} */
 
 #if 0
 

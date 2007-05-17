@@ -55,25 +55,13 @@ extern int wsmc_transport_init(WsManClient *cl, void *arg);
 
 extern void wsmc_transport_fini(WsManClient *cl);
 
-extern char *wsman_transport_get_proxy(WsManClient *cl);
-
-extern unsigned long wsman_transport_get_timeout(WsManClient *cl);
-
-extern char *wsman_transport_get_proxyauth(WsManClient *cl);
-
 extern char * wsman_transport_get_agent (WsManClient *cl);
 
 extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
-extern int wsman_transport_get_verify_peer (WsManClient *cl);
-
-extern int wsman_transport_get_verify_host (WsManClient *cl);
-
 extern char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
 
 extern int wsmc_transport_get_auth_value(WsManClient *cl);
-
-extern char *wsman_transport_get_cafile(WsManClient *cl);
 
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 

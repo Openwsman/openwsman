@@ -69,8 +69,10 @@ extern "C" {
 
 
 	struct _WsManAuthData {
-		char *cert_file;
-		char *key_file;
+		char *cainfo;
+		char *capath;
+		char *sslcert;
+		char *sslkey;
 		unsigned int verify_peer;
 		unsigned int verify_host;
                 wsman_auth_request_func_t auth_request_func;

@@ -206,62 +206,63 @@ init_curl_transport(WsManClient *cl)
 		debug("Could not init easy curl");
 		goto DONE;
 	}
-	if (wsman_transport_get_proxy(cl)) {
-		r = curl_easy_setopt(curl, CURLOPT_PROXY, wsman_transport_get_proxy(cl));
-		if (r != 0) {
-			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
-			goto DONE;
-		}
+	r = curl_easy_setopt(curl, CURLOPT_PROXY, cl->proxy_data.proxy);
+	if (r != 0) {
+		curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXY, ...)");
+		goto DONE;
 	}
-	if (wsman_transport_get_timeout(cl)) {
-		r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, wsman_transport_get_timeout(cl));
-		if (r != 0) {
-			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_TIMEOUT, ...)");
-			goto DONE;
-		}
+	r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, cl->transport_timeout);
+	if (r != 0) {
+		curl_err("Could notcurl_easy_setopt(curl, CURLOPT_TIMEOUT, ...)");
+		goto DONE;
 	}
 
-	if (wsman_transport_get_proxyauth(cl)) {
-		r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD,
-				wsman_transport_get_proxyauth(cl));
-		if (r != 0) {
-			curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
-			goto DONE;
-		}
+	r = curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, cl->proxy_data.proxy_auth);
+	if (r != 0) {
+		curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
+		goto DONE;
 	}
-	if (wsman_transport_get_cafile(cl) != NULL) {
-		r = curl_easy_setopt(curl, CURLOPT_CAINFO,
-				wsman_transport_get_cafile(cl));
-		if (r != 0) {
-			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
-			goto DONE;
-		}
-/*
-		// sslkey
-		r = curl_easy_setopt(curl, CURLOPT_SSLKEY,
-				wsman_transport_get_cafile(cl));
-		if (r != 0) {
-			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLKEY, ..)");
-			goto DONE;
-		}
-*/
 
-		// verify peer
-		r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER,
-				wsman_transport_get_verify_peer(cl));
-		if (r != 0) {
-			curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
-			goto DONE;
-		}
-
-		// no verify host
-		r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 
-				wsman_transport_get_verify_host(cl));
-		if (r != 0) {
-			curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
-			goto DONE;
-		}
+	r = curl_easy_setopt(curl, CURLOPT_CAPATH, cl->authentication.capath);
+	if (r != 0) {
+		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAPATH, ..)");
+		goto DONE;
 	}
+	// cainfo
+	r = curl_easy_setopt(curl, CURLOPT_CAINFO, cl->authentication.cainfo);
+	if (r != 0) {
+		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
+		goto DONE;
+	}
+	// sslkey
+	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
+	if (r != 0) {
+		curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLKEY, ..)");
+		goto DONE;
+	}
+	// sslcert
+	r = curl_easy_setopt(curl, CURLOPT_SSLCERT, cl->authentication.sslcert );
+	if (r != 0) {
+		curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLCERT, ..)");
+		goto DONE;
+	}
+
+	// verify peer
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, cl->authentication.verify_peer);
+	if (r != 0) {
+		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
+		goto DONE;
+	}
+
+	// verify host
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, cl->authentication.verify_host);
+	if (r != 0) {
+		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
+		goto DONE;
+	}
+
+
+
 	return (void *)curl;
  DONE:
 	cl->last_error = convert_to_last_error(r);
@@ -474,23 +475,13 @@ DONE:
 int wsmc_transport_init(WsManClient *cl, void *arg)
 {
 	CURLcode r;
-	long flags;
-
 
 	pthread_mutex_lock(&curl_mutex);
 	if (cl->initialized) {
 		pthread_mutex_unlock(&curl_mutex);
 		return 0;
 	}
-	if (wsman_transport_get_cafile(cl) != NULL) {
-		flags = CURL_GLOBAL_SSL;
-	} else {
-		flags = CURL_GLOBAL_NOTHING;
-	}
-#ifdef _WIN32
-	flags |= CURL_GLOBAL_WIN32;
-#endif
-	r = curl_global_init(flags);
+	r = curl_global_init(CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32);
 	if (r == CURLE_OK) {
 		cl->initialized = 1;
 	}

@@ -162,44 +162,10 @@ int wsmc_transport_get_auth_value(WsManClient * cl)
 	return 0;
 }
 
-char *wsman_transport_get_proxy(WsManClient * cl)
-{
-	return cl->proxy_data.proxy;
-}
-
-char *wsman_transport_get_proxyauth(WsManClient * cl)
-{
-	return cl->proxy_data.proxy_auth;
-}
-
-unsigned long wsman_transport_get_timeout(WsManClient * cl)
-{
-	return cl->transport_timeout;
-}
 
 void wsman_transport_set_agent(WsManClient * cl, char *arg)
 {
 	cl->user_agent = arg;
-}
-
-char *wsman_transport_get_auth_method(WsManClient * cl)
-{
-	return cl->authentication.method;
-}
-
-int wsman_transport_get_verify_peer(WsManClient * cl)
-{
-	return cl->authentication.verify_peer;
-}
-
-int wsman_transport_get_verify_host(WsManClient * cl)
-{
-	return cl->authentication.verify_host;
-}
-
-char *wsman_transport_get_cafile(WsManClient * cl)
-{
-	return cl->authentication.cert_file;
 }
 
 void wsman_transport_set_proxy(WsManClient * cl, char *arg)
@@ -242,7 +208,7 @@ void wsman_transport_set_verify_host(WsManClient * cl, int arg)
 
 void wsman_transport_set_cafile(WsManClient * cl, char *arg)
 {
-	cl->authentication.cert_file = arg;
+	cl->authentication.cainfo = arg;
 }
 
 

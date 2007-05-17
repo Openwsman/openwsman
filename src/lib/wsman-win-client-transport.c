@@ -282,7 +282,6 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 	connect = (HINTERNET) cl->transport;
 	if (strnicmp(cl->data.endpoint, "https", 5) == 0)
-		//if (wsman_transport_get_cafile() != NULL) 
 	{
 		flags |= WINHTTP_FLAG_SECURE;
 	}
@@ -364,7 +363,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				lastErr = 0;
 				if (!find_cert
 				    ((const _TCHAR *)
-				     wsman_transport_get_cafile(cl),
+				     cl->authentication.cainfo,
 				     &certificate, &lastErr)) {
 					debug("No certificate");
 

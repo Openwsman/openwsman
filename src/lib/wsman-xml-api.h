@@ -38,6 +38,17 @@
 #include "u/libu.h"
 #include "wsman-types.h"
 
+
+
+/**
+ * @defgroup XML XML
+ * @brief XML API
+ *
+ * @{
+ */
+
+
+
 // context
 
 #define WS_CONTEXT_TYPE_MASK           0x0f
@@ -209,4 +220,5 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
 		const char *rootName );
 
 
+/** @} */
 #endif				/*WS_XML_API_H_ */
