@@ -164,16 +164,20 @@ convert_to_last_error(CURLcode r)
 		return WS_LASTERR_SSL_CERTPROBLEM;
 	case CURLE_SSL_CACERT:
 		return WS_LASTERR_SSL_CACERT;
+#if LIBCURL_VERSION_NUM > 0x70C01
 	case CURLE_SSL_ENGINE_INITFAILED:
 		return WS_LASTERR_SSL_ENGINE_INITFAILED;
+#endif
 	case CURLE_SEND_ERROR:
 		return WS_LASTERR_SEND_ERROR;
 	case CURLE_RECV_ERROR:
 		return WS_LASTERR_RECV_ERROR;
 	case CURLE_BAD_CONTENT_ENCODING:
 		return WS_LASTERR_BAD_CONTENT_ENCODING;
+#if LIBCURL_VERSION_NUM > 0x70C01
 	case CURLE_LOGIN_DENIED:
 		return WS_LASTERR_LOGIN_DENIED;
+#endif
 	default:
 		return WS_LASTERR_OTHER_ERROR;
 	}
@@ -448,7 +452,12 @@ wsmc_handler( WsManClient *cl,
                 u_buf_clear(con->response);
                 if (cl->data.auth_set == 0) {
                     // user wants to cancel authentication
+		    //FIXME
+#if LIBCURL_VERSION_NUM > 0x70C01
                     r = CURLE_LOGIN_DENIED;
+#else
+		    r = 1000;
+#endif
                     curl_err("User didn't provide authentication data");
                     goto DONE;
                 }

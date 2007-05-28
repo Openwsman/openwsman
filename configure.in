@@ -31,7 +31,12 @@ AC_ARG_ENABLE(debug,
 	      [  --enable-debug=[no/minimum/yes] turn on debugging [default=$debug_default]],,
 	      enable_debug=$debug_default)
 
-PKG_CHECK_MODULES([CURL], libcurl)
+AC_PATH_PROG(CURL_CONFIG, curl-config, no)
+if test "$CURL_CONFIG" = "no" ; then
+	AC_MSG_ERROR([the curl-config script installed by libcurl could not be found.  libcurl is required for tests.])
+fi
+CURL_CFLAGS=`curl-config --cflags`
+CURL_LIBS=`curl-config --libs`
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
