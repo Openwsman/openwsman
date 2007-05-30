@@ -22,9 +22,11 @@ extern "C" {
 
 using namespace WsmanClientNamespace;
 
-static string	XmlDocToString			(WsXmlDocH		doc);
+static string	XmlDocToString	(WsXmlDocH doc);
 static client_opt_t *SetDefaultOptions();
 static bool	CheckClientResponseCode	(WsManClient* cl, long &returnCode, int &lastErr, string &error);
+static string ExtractItems(WsManClient *cl, string xml);
+static string ExtractPayload(WsManClient *cl, string xml);
 
 // Construct from params.
 WsmanClient::WsmanClient(const char *endpoint,
@@ -98,7 +100,7 @@ string WsmanClient::Create(const string &resourceUri, const string &data)
 		throw e;
 	}
 
-	string xml = ExtractPayload(XmlDocToString(createResponse));
+	string xml = ExtractPayload(cl, XmlDocToString(createResponse));
 	ws_xml_destroy_doc(createResponse);
 	return xml; 
 }
@@ -206,7 +208,7 @@ void WsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes)
 			ws_xml_destroy_doc(doc);
 			throw e;			
 		}
-		enumRes.push_back(ExtractItems((XmlDocToString(doc))));
+		enumRes.push_back(ExtractItems(cl, (XmlDocToString(doc))));
 		enumContext = wsmc_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
 	}
@@ -255,7 +257,7 @@ string WsmanClient::Get(const string &resourceUri, NameValuePairs *s)
 		ws_xml_destroy_doc(doc);
 		throw e;
 	}
-	string xml = ExtractPayload(XmlDocToString(doc));
+	string xml = ExtractPayload(cl, XmlDocToString(doc));
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
@@ -303,7 +305,7 @@ string WsmanClient::Put(const string &resourceUri, const string &content, NameVa
 		ws_xml_destroy_doc(doc);
 		throw e;
 	}
-	string xml = ExtractPayload(XmlDocToString(doc));
+	string xml = ExtractPayload(cl, XmlDocToString(doc));
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
@@ -351,43 +353,12 @@ string WsmanClient::Invoke(const string &resourceUri, const string &methodName, 
 		ws_xml_destroy_doc(doc);
 		throw e;
 	}
-	string xml = ExtractPayload(XmlDocToString(doc));
+	string xml = ExtractPayload(cl, XmlDocToString(doc));
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
 
 
-string WsmanClient::ExtractPayload(string xml)
-{
-
-	WsXmlDocH  doc = wsmc_read_memory(cl, (char *)xml.c_str(),
-			xml.length(), NULL, 0);
-	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);	  
-	WsXmlNodeH payloadNode = ws_xml_get_child(bodyNode, 0, NULL, NULL);
-	char *buf = NULL;
-	wsmc_node_to_buf( payloadNode, &buf);
-	string payload = string(buf);
-	u_free(buf);
-	return payload;
-}
-
-string WsmanClient::ExtractItems(string xml)
-{
-
-	WsXmlDocH  doc = wsmc_read_memory(cl, (char *)xml.c_str(),
-			xml.length(), NULL, 0);
-	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
-	WsXmlNodeH pullResponse = ws_xml_get_child(bodyNode, 0, XML_NS_ENUMERATION, WSENUM_PULL_RESP);
-	WsXmlNodeH itemsNode = ws_xml_get_child(pullResponse, 0, XML_NS_ENUMERATION, WSENUM_ITEMS);
-	WsXmlNodeH n = ws_xml_get_child(itemsNode, 0 , NULL, NULL );
-	char *buf = NULL;
-	wsmc_node_to_buf( n, &buf);
-	string payload = string(buf);
-	u_free(buf);
-	ws_xml_destroy_doc(doc);
-
-	return payload;
-}
 
 
 
@@ -476,3 +447,35 @@ bool CheckClientResponseCode(WsManClient* cl, long &responseCode, int &lastError
 	error.append("\n");	
 	return false;		
 }
+
+string ExtractItems(WsManClient *cl, string xml)
+{
+
+	WsXmlDocH  doc = wsmc_read_memory(cl, (char *)xml.c_str(),
+			xml.length(), NULL, 0);
+	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
+	WsXmlNodeH pullResponse = ws_xml_get_child(bodyNode, 0, XML_NS_ENUMERATION, WSENUM_PULL_RESP);
+	WsXmlNodeH itemsNode = ws_xml_get_child(pullResponse, 0, XML_NS_ENUMERATION, WSENUM_ITEMS);
+	WsXmlNodeH n = ws_xml_get_child(itemsNode, 0 , NULL, NULL );
+	char *buf = NULL;
+	wsmc_node_to_buf( n, &buf);
+	string payload = string(buf);
+	u_free(buf);
+	ws_xml_destroy_doc(doc);
+
+	return payload;
+}
+string ExtractPayload(WsManClient *cl, string xml)
+{
+
+	WsXmlDocH  doc = wsmc_read_memory(cl, (char *)xml.c_str(),
+			xml.length(), NULL, 0);
+	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);	  
+	WsXmlNodeH payloadNode = ws_xml_get_child(bodyNode, 0, NULL, NULL);
+	char *buf = NULL;
+	wsmc_node_to_buf( payloadNode, &buf);
+	string payload = string(buf);
+	u_free(buf);
+	return payload;
+}
+

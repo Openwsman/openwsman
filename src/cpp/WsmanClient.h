@@ -37,8 +37,6 @@ namespace WsmanClientNamespace
 	private:
 		WsManClient* cl;
 		void GetWsmanFault(string xml, WsmanException &e);
-		string ExtractPayload(string xml);
-		string ExtractItems(string xml);
 	public:
 		// Construct from params.
 		WsmanClient(const char *endpoint,
