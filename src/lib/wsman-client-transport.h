@@ -40,8 +40,11 @@
 #include "wsman-client-api.h"
 
 
-
+#ifdef PACKAGE_STRING
 #define DEFAULT_USER_AGENT PACKAGE_STRING
+#else
+#define DEFAULT_USER_AGENT "Openwsman"
+#endif
 
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
@@ -82,6 +85,7 @@ extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
 extern void wsman_transport_set_cainfo(WsManClient *cl, char *cainfo);
 
 extern void wsman_transport_set_cert(WsManClient *cl, char *cert);
+extern void wsman_transport_set_key(WsManClient *cl, char *key);
 
 extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
 

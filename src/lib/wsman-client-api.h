@@ -641,6 +641,9 @@ typedef enum {
 
 	WsManFault *wsmc_fault_new(void);
 
+
+	void wsmc_fault_destroy(WsManFault *fault);
+
 	void wsmc_set_dumpfile(WsManClient *cl, FILE * f);
 
 	FILE *wsmc_get_dumpfile(WsManClient *cl);

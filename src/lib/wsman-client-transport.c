@@ -216,6 +216,11 @@ void wsman_transport_set_cert(WsManClient * cl, char *arg)
 	cl->authentication.sslcert = arg;
 }
 
+void wsman_transport_set_key(WsManClient * cl, char *arg)
+{
+	cl->authentication.sslkey = arg;
+}
+
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {
 	switch (err) {

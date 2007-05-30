@@ -1402,6 +1402,22 @@ wsmc_fault_new(void)
 		return NULL;
 }
 
+void wsmc_fault_destroy(WsManFault *fault)
+{
+	/*
+	if (fault->code)
+		u_free(fault->code);
+	if (fault->subcode)
+		u_free(fault->subcode);
+	if (fault->reason)
+		u_free(fault->reason);
+	if (fault->fault_detail)
+		u_free(fault->fault_detail);
+		*/
+	u_free(fault);
+	return;
+}
+
 
 
 void
