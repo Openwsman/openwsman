@@ -1,72 +1,99 @@
 //----------------------------------------------------------------------------
 //
-//  Copyright (C) Intel Corporation, 2003 - 2006.
+//  Copyright (C) Intel Corporation, 2003 - 2007.
 //
-//  File:       OpenWsmanClient.h 
+//  File:       WsmanClient.h 
 //
-//  Contents:   A wrapper class for openweman
+//  Contents:   A WS-MAN client interface
 //
 //----------------------------------------------------------------------------
 
-#ifndef __OPEN_WSMAN_CLIENT_H
-#define __OPEN_WSMAN_CLIENT_H
+#ifndef __WSMAN_CLIENT_INTERFACE
+#define __WSMAN_CLIENT_INTERFACE
 
 #include <string>
 #include <vector>
 #include <map>
-#include <stdexcept>
-
 #include "Exception.h"
 
 using namespace std;
-
-struct _WsManClient;
-typedef struct _WsManClient WsManClient; // FW declaration of struct
-struct WsManClientData;	
+using namespace WsmanExceptionNamespace;
 
 namespace WsmanClientNamespace
 {
-	/// <summary>
-	/// Class for holding selectors.
-	/// </summary>
-	typedef std::map<std::string, std::string>	NameValuePairs;
-	typedef std::map<std::string, std::string>::iterator	PairsIterator;
+	// WS-MAN Client exceptions
+	// Exception thrown when server error occurs
+	class WsmanClientException : public GeneralWsmanException
+	{
+	public:
+		WsmanClientException(const char* message,
+			unsigned int err = WSMAN_GENERAL_ERROR)
+			:GeneralWsmanException(message, err){}
+	};
 
+	// Exception thrown if the server returned a soap fault
+	class WsmanSoapFault : public WsmanClientException
+	{
+	private:		
+		string soapCodeValue;
+		string soapSubcodeValue;
+		string soapReason;
+		string soapDetail;
+	public:
+		WsmanSoapFault(const char* message,
+			const string& faultCode = "",
+			const string& faultSubcode = "",
+			const string& faultReason = "", 
+			const string& faultDetail = "")
+			:WsmanClientException(message, WSMAN_SOAP_FAULT)
+		{
+			SetWsmanFaultFields(faultCode, faultSubcode, faultReason, faultDetail);
+		}
+		virtual ~WsmanSoapFault() throw() {}		
+		void SetWsmanFaultFields(const string& faultCode,
+			const string& faultSubcode,
+			const string& faultReason,
+			const string& faultDetail)
+		{
+			soapCodeValue = faultCode;
+			soapSubcodeValue = faultSubcode;
+			soapReason = faultReason;
+			soapDetail = faultDetail;
+		}
+		string GetFaultCode(){return soapCodeValue;}
+		string GetFaultSubcode(){return soapSubcodeValue;}
+		string GetFaultReason(){return soapReason;}
+		string GetFaultDetail(){return soapDetail;}
+	};
+
+	// type for holding selectors.
+	typedef std::map<std::string, std::string> NameValuePairs;
+	typedef std::map<std::string, std::string>::const_iterator PairsIterator;
+
+	// Wsman Client Interface class
 	class WsmanClient
 	{
-	private:
-		WsManClient* cl;
-		void GetWsmanFault(string xml, WsmanException &e);
 	public:
-		// Construct from params.
-		WsmanClient(const char *endpoint,
-			const	char	*cert = NULL,
-			const char *oid = NULL,			
-			const char *auth_method = "digest");
-
 		// Destructor.
-		~WsmanClient();
+		virtual ~WsmanClient(){}
 
-		/// Creates a new instance of a resource.
-		string Create(const string &resourceUri, const string &data);
+		// Creates a new instance of a resource.
+		virtual string Create(const string &resourceUri, const string &xmlData) const = 0;
 
-		/// Delete a resource.
-		void Delete(const string &resourceUri, NameValuePairs &s);
+		// Delete a resource.
+		virtual void Delete(const string &resourceUri, const NameValuePairs *s = NULL) const = 0;
 
-		/// Enumerate resource. 
-		void Enumerate(const string &resourceUri, vector<string> &enumRes);
+		// Enumerate a resource. 
+		virtual void Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s = NULL) const = 0;
 
-		/// Retrieve a resource.
-		string Get(const string &resourceUri, NameValuePairs *s);
+		// Retrieve a resource.
+		virtual string Get(const string &resourceUri, const NameValuePairs *s = NULL) const = 0;
 
-		/// Update a resource.
-		string Put(const string &resourceUri, const string &content, NameValuePairs &s);
+		// Update a resource.
+		virtual string Put(const string &resourceUri, const string &content, const NameValuePairs *s = NULL) const = 0;
 
-		/// Invokes a method and returns the results of the method call.
-		string Invoke(const string &resourceUri, const string &methodName, const string &content, NameValuePairs &s);
-
-		/// Initialize the transport layer, this method should be called only once before using this class.
-		static void Init();
+		// Invokes a method and returns the results of the method call.
+		virtual string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const = 0;
 	};
-}; // namespace WsmanClient
+} // namespace WsmanClientNamespace
 #endif

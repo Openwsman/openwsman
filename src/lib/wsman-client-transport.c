@@ -216,6 +216,17 @@ void wsman_transport_set_cert(WsManClient * cl, char *arg)
 	cl->authentication.sslcert = arg;
 }
 
+void wsman_transport_set_caoid(WsManClient *cl, char *oid)
+{
+	cl->authentication.caoid = oid;
+}
+#ifdef _WIN32
+void wsman_transport_set_calocal(WsManClient *cl, BOOL local)
+{
+	cl->authentication.calocal = local;
+}
+#endif
+
 void wsman_transport_set_key(WsManClient * cl, char *arg)
 {
 	cl->authentication.sslkey = arg;

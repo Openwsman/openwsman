@@ -15,15 +15,14 @@ LIBS = \
     $(top_builddir)/src/lib/libwsman_client.la 
 
 wsmaninclude_HEADERS = \
-		       WsmanClient.h  \
+		       OpenWsmanClient.h  \
 		       Exception.h
 
 lib_LTLIBRARIES=libwsman_clientpp.la
 
 libwsman_clientpp_la_SOURCES = \
-	WsmanClient.cpp  \
-	WsmanClient.h \
-	Exception.cpp \
+	OpenWsmanClient.cpp  \
+	OpenWsmanClient.h \
 	Exception.h
 
 

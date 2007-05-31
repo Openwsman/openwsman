@@ -50,30 +50,29 @@
 #include "wsman-types.h"
 #include "wsman-client.h"
 #include "wsman-soap.h"
-#include "wsman-errors.h"
 #include "wsman-xml.h"
 #include "wsman-debug.h"
 #include "wsman-client-transport.h"
 
 #define BUFLEN 8096
-#define NUM_OF_OIDS 2
+#define MAX_NUM_OF_OIDS 2
 #define CLIENT_CERT_STORE "MY"
 #define CERT_MAX_STR_LEN 256
 #define OID_CLIENT "1.3.6.1.5.5.7.3.2"
-#define  OID_REMOTE  "2.16.840.1.113741.1.2.1"
 /* kerberos auth */
-#define WINHTTP_OPTION_SPN                           96
+#define WINHTTP_OPTION_SPN                     96
 // values for WINHTTP_OPTION_SPN
-#define WINHTTP_DISABLE_SPN_SERVER_PORT           0x00000000
-#define WINHTTP_ENABLE_SPN_SERVER_PORT            0x00000001
+#define WINHTTP_DISABLE_SPN_SERVER_PORT         0x00000000
+#define WINHTTP_ENABLE_SPN_SERVER_PORT          0x00000001
+#define AUTH_SCHEME_NTLM			0x00000004
 /* ensure that the winhttp library is linked */
 #pragma comment( lib, "winhttp.lib" )
-static HINTERNET session;
-extern wsman_auth_request_func_t request_func;
-static BOOL find_cert(const _TCHAR * certName,
-		      PCCERT_CONTEXT * pCertContext, int *errorLast);
-void wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc,
-			  void *user_data);
+static BOOL find_cert(const _TCHAR * oid,
+					  const _TCHAR * certName,
+					  BOOL localMachine,
+					  PCCERT_CONTEXT  *pCertContext, 
+					  int* errorLast);
+void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
 
 
@@ -101,38 +100,37 @@ static wchar_t *convert_to_unicode(char *str)
 int wsmc_transport_init(WsManClient *cl, void *arg)
 {
 	wchar_t *agent;
-	static long lock;
 
-	if (session != NULL) {
+	if (cl->session_handle != NULL) {
 		return 0;
 	}
 	agent = convert_to_unicode(wsman_transport_get_agent(cl));
 	if (agent == NULL) {
 		return 1;
 	}
-	while (InterlockedExchange(&lock, 1L));
-	if (session != NULL) {
-		lock = 0L;
+	while (InterlockedExchange(&cl->lock_session_handle, 1L));
+	if (cl->session_handle != NULL) {
+		cl->lock_session_handle = 0L;
 		return 0;
 	}
-	session = WinHttpOpen(agent,
+	cl->session_handle = WinHttpOpen(agent,
 			      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 			      WINHTTP_NO_PROXY_NAME,
 			      WINHTTP_NO_PROXY_BYPASS, 0);
-	lock = 0L;
+	cl->lock_session_handle = 0L;
 	u_free(agent);
-	if (session == NULL) {
+	if (cl->session_handle == NULL) {
 		error("Could not open session");
 	}
 
-	return session ? 0 : 1;
+	return cl->session_handle ? 0 : 1;
 }
 
 
-void wsmc_transport_fini()
+void wsmc_transport_fini(WsManClient *cl)
 {
-	if (session)
-		WinHttpCloseHandle(session);
+	if (cl->session_handle)
+		WinHttpCloseHandle(cl->session_handle);
 }
 
 void wsman_transport_close_transport(WsManClient * cl)
@@ -153,12 +151,12 @@ static void *init_win_transport(WsManClient * cl)
 		error("No host");
 		return NULL;
 	}
-	if (session == NULL) {
+	if (cl->session_handle == NULL) {
 		error("could not initialize session");
 		return NULL;
 	}
 
-	connect = WinHttpConnect(session, host, cl->data.port, 0);
+	connect = WinHttpConnect(cl->session_handle, host, cl->data.port, 0);
 	u_free(host);
 	if (connect == NULL) {
 		error("could not establish connection");
@@ -267,7 +265,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	u_buf_t *ubuf;
 	PCCERT_CONTEXT certificate;
 
-	if (session == NULL && wsmc_transport_init(cl, NULL)) {
+	if (cl->session_handle == NULL && wsmc_transport_init(cl, NULL)) {
 		error("could not initialize transport");
 		lastErr = GetLastError();
 		goto DONE;
@@ -315,15 +313,20 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	ws_xml_dump_memory_enc(rqstDoc, &buf, &errLen, "UTF-8");
 	updated = 0;
 	ws_auth = wsmc_transport_get_auth_value(cl);
-	if (ws_auth == WS_NTLM_AUTH) {
+	if(ws_auth  == AUTH_SCHEME_NTLM)
+	{
 		DWORD d = WINHTTP_ENABLE_SPN_SERVER_PORT;
-		if (!WinHttpSetOption(request,
+		bResults =WinHttpSetOption(request,
 				      WINHTTP_OPTION_SPN,
-				      (LPVOID) (&d), sizeof(DWORD))) {
+									(LPVOID) (&d),
+									sizeof(DWORD));
+	    if (!bResults) 
+		{ 
 			lastErr = GetLastError();
-			goto DONE;
-		}
+			bDone = TRUE;
 
+	}
+		bResults = FALSE;
 	}
 	while (!bDone) {
 		bResult = WinHttpSendRequest(request,
@@ -361,10 +364,10 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 			if (ERROR_WINHTTP_CLIENT_AUTH_CERT_NEEDED ==
 			    lastErr) {
 				lastErr = 0;
-				if (!find_cert
-				    ((const _TCHAR *)
-				     cl->authentication.cainfo,
-				     &certificate, &lastErr)) {
+
+			if (!find_cert(	(const _TCHAR *)  cl->authentication.caoid, 
+				(const _TCHAR *)  cl->authentication.cainfo, 
+				cl->authentication.calocal, &certificate, &lastErr)) {
 					debug("No certificate");
 
 					bDone = TRUE;
@@ -543,36 +546,56 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	}
 }
 
-
-static BOOL find_cert(const _TCHAR * certName,
-		      PCCERT_CONTEXT * pCertContext, int *errorLast)
+// in future change this to return a list of certs...
+BOOL find_cert(const _TCHAR * oid,
+					  const _TCHAR * certName,
+					  BOOL localMachine,
+					  PCCERT_CONTEXT  *pCertContext, 
+					  int* errorLast)
 {
 
 	_TCHAR pszNameString[CERT_MAX_STR_LEN];
 	HANDLE hStoreHandle = NULL;
-	LPSTR oids[NUM_OF_OIDS] = { OID_CLIENT, OID_REMOTE };
+	LPSTR oids[MAX_NUM_OF_OIDS] = {OID_CLIENT,oid};
 	BOOL certSuccess = FALSE;
-	CERT_ENHKEY_USAGE amtOID = { NUM_OF_OIDS, oids };
-	int lastErr = 0;
-	////oids[0] = OID_CLIENT;
-	// oids[1] = wsman_transport_get_cafile();
-	// amtOID = { NUM_OF_OIDS, oids };
+	CERT_ENHKEY_USAGE od ={ oid ? 2 : 1, oids };
+	int lastErr =0;
 
+	/* Choose which personal store to use : Current User or Local Machine*/
+	DWORD flags;
+	if (localMachine) 
+	{
+		flags = CERT_SYSTEM_STORE_LOCAL_MACHINE;
+	}
+	else 
+	{
+		flags = CERT_SYSTEM_STORE_CURRENT_USER;
+	}
 
-	if (!(hStoreHandle = CertOpenSystemStore((HCRYPTPROV) NULL, "MY"))) {
+	/* Open the personal store */
+	if ( !(hStoreHandle = CertOpenStore(
+		CERT_STORE_PROV_SYSTEM,          // The store provider type
+		0,                               // The encoding type is not needed
+		NULL,                            // Use the default HCRYPTPROV
+		flags,  // Set the store location in a registry location
+		L"MY"                            // The store name as a Unicode string
+		)))
+	{
 		/* Cannot open the certificates store - exit immediately */
 		lastErr = GetLastError();
-		error("error %d in CertOpenSystemStore", lastErr);
+		error("error %d in CertOpenStore", lastErr);
 		return TRUE;
 	}
+
 	// Search for the first client certificate
 
-	*pCertContext = CertFindCertificateInStore(hStoreHandle,
-						   X509_ASN_ENCODING |
-						   PKCS_7_ASN_ENCODING,
+	*pCertContext = CertFindCertificateInStore(
+		hStoreHandle,
+		X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 						   CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
 						   CERT_FIND_ENHKEY_USAGE,
-						   &amtOID, NULL);
+        &od,
+        NULL);
 
 	/*
 	   If certificate was found - determinate its name. Keep search 
@@ -604,7 +627,7 @@ static BOOL find_cert(const _TCHAR * certName,
 					       PKCS_7_ASN_ENCODING,
 					       CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
 					       CERT_FIND_ENHKEY_USAGE,
-					       &amtOID, *pCertContext);
+					       &od, *pCertContext);
 
 	}
 

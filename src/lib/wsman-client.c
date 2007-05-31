@@ -1476,7 +1476,6 @@ wsmc_create(const char *hostname,
 	}
 	wsc->wscntx = ws_create_runtime(NULL);
 
-
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = strdup(scheme ? scheme : "http");
 	wsc->data.hostname = hostname ? strdup(hostname) : strdup("localhost");
@@ -1487,7 +1486,9 @@ wsmc_create(const char *hostname,
 	wsc->data.auth_set = 0;
 	wsc->initialized = 0;
 	wsc->transport_timeout = 0;
-
+#ifdef _WIN32
+	wsc->session_handle = 0;
+#endif
 	wsc->data.endpoint = u_strdup_printf("%s://%s:%d%s",
 			scheme, hostname, port, path);
 	debug("Endpoint: %s", wsc->data.endpoint);

@@ -1,92 +1,76 @@
 //----------------------------------------------------------------------------
 //
-//  Copyright (C) Intel Corporation, 2003 - 2006.
+//  Copyright (C) Intel Corporation, 2007.
 //
-//  File:       OpenWsmanClient.h 
+//  File:       Exception.h 
 //
-//  Contents:   A wrapper class for openweman
+//  Contents:   General Wsman Exception definition
 //
 //----------------------------------------------------------------------------
 
-#ifndef __OPEN_WSMAN_EXCEPTION_H
-#define __OPEN_WSMAN_EXCEPTION_H
+#ifndef __WSMAN_EXCEPTION_H
+#define __WSMAN_EXCEPTION_H
 
 #include <string>
-#include <vector>
-#include <map>
 #include <stdexcept>
 
 using namespace std;
+// Error Codes
+#define WSMAN_SUCCESS 0
+// A general error occurred
+#define WSMAN_GENERAL_ERROR 1
+// A transport level error occurred
+#define WSMAN_TRANSPORT_ERROR 2
+// An HTTP error occurred
+#define WSMAN_HTTP_ERROR 3
+// The WS-MAN server returned a soap fault
+#define WSMAN_SOAP_FAULT 4
+// A string to type or type to string error occurred
+#define WSMAN_TYPE_CONVERSION_ERROR 5
+// Failed to parse or write an XML string
+#define WSMAN_XML_ERROR 6
+// Input information is missing
+#define WSMAN_MISSING_INPUT 7
+// An unexpected response was received
+#define WSMAN_RESPONSE_UNKNOWN 8
+// Error resulting from MustUnderstand attribute
+#define WSMAN_MUST_UNDERSTAND 9
+// The soap message is invalid or of invalid version
+#define WSMAN_SOAP_MESSAGE_INVALID 10
+// The Soap header is too long
+#define WSMAN_SOAP_HDR_OVERFLOW 11
+// a UDP error occurred
+#define WSMAN_UDP_ERROR 12
+// a TCP error occurred
+#define WSMAN_TCP_ERROR 13
+// failed to connect to server
+#define WSMAN_CONNECT_ERROR 14
 
-struct _WsManClient;
-typedef struct _WsManClient WsManClient; // FW declaration of struct
-struct WsManClientData;	
-
-namespace WsmanClientNamespace
+namespace WsmanExceptionNamespace
 {
+	class GeneralWsmanException : public exception
+	{
+	private:
+	  string _what;
+		unsigned int error;
 
-
-    class Exception : public std::exception
-    {
-        private:
-            string _what;
-
-        public:
-            Exception(const string& what_arg) throw();
-            virtual ~Exception() throw();
-            virtual const char *getString() const;
-            virtual const char *what() const throw() { return _what.c_str(); };
-    };
-
-    // Exception thrown when transport error occurs
-    // Exception thrown when transport error occurs
-    class TransportException : public Exception
-    {
-        private:
-            int transferErrorCode;
-        public:
-            TransportException(int error, string what = "")  throw();
-            virtual ~TransportException() throw();
-            virtual int GetTransportReturnCode() const throw()  {return transferErrorCode;}
-    };
-
-
-    // Exception thrown when http error occurs
-    class HttpException : public Exception
-    {
-        private:
-            long errorCode;
-        public:
-            HttpException(long error, string what = "") throw();
-            virtual ~HttpException() throw(){}
-            virtual long GetErrorCode() {return errorCode;}
-    };
-
-    // Exception thrown when server error occurs
-    class WsmanException : public Exception
-    {
-        private:
-            long httpCode;
-            string codeValue;
-            string subcodeValue;
-            string reason;
-            string detail;
-        public:
-            WsmanException(long errorC, string what = "") throw();
-            ~WsmanException() throw(){}
-            long GetHttpReturnCode() {return httpCode;}
-            void SetWsmanFaultFields(string& faultCode, string& faultSubcode,
-                    string& faultReason, string& faultDetail)
-            {
-                codeValue = faultCode;
-                subcodeValue = faultSubcode;
-                reason = faultReason;
-                detail = faultDetail;
-            }
-            string GetFaultCode(){return codeValue;}
-            string GetFaultSubcode(){return subcodeValue;}
-            string GetFaultReason(){return reason;}
-            string GetFaultDetail(){return detail;}
-    };
-}; // namespace WsmanClient
+	public:
+		GeneralWsmanException(const char* what,
+			unsigned int err = WSMAN_GENERAL_ERROR)
+			:_what(what), error(err){}
+		virtual ~GeneralWsmanException() throw (){}
+		virtual string getDetail()
+		{
+			return _what;
+		}
+		virtual const char *what() const throw() 
+		{ 
+		  return _what.c_str(); 
+		};
+		virtual unsigned int getErr() const
+		{
+			return error;
+		}
+	};
+}
 #endif

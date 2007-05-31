@@ -70,6 +70,10 @@ extern "C" {
 
 	struct _WsManAuthData {
 		char *cainfo;
+		char *caoid;
+#ifdef _WIN32
+		BOOL calocal;
+#endif
 		char *capath;
 		char *sslcert;
 		char *sslkey;
@@ -96,6 +100,10 @@ extern "C" {
 		WsManConnection *connection;
                 WsManAuthData authentication;
                 WsManProxyData proxy_data;
+#ifdef _WIN32
+		void* session_handle;
+		long lock_session_handle;
+#endif
 		long response_code;
 		char *fault_string;
 		WS_LASTERR_Code last_error;
