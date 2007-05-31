@@ -243,7 +243,6 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	unsigned long flags = 0;
 	char *buf = NULL;
 	int errLen;
-	int ws_auth;
 	DWORD dwStatusCode = 0;
 	DWORD dwSupportedSchemes;
 	DWORD dwFirstScheme;
@@ -256,6 +255,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	BOOL bDone = FALSE;
 	DWORD dwDownloaded = 0;
 	BOOL updated;
+	int ws_auth;
 
 	wchar_t *pwd;
 	wchar_t *usr;

@@ -64,7 +64,7 @@ extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
 extern char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
 
-extern int wsmc_transport_get_auth_value(WsManClient *cl);
+extern  wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient *cl);
 
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 

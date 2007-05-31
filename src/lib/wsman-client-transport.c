@@ -146,20 +146,20 @@ int wsman_is_auth_method(WsManClient * cl, int method)
 		 strlen(cl->authentication.method)));
 }
 
-int wsmc_transport_get_auth_value(WsManClient * cl)
+wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient * cl)
 {
 	char *m = cl->authentication.method;
 	wsman_auth_type_t i;
 
 	if (m == NULL) {
-		return 0;
+		return WS_NO_AUTH;
 	}
 	for (i = 0; auth_methods[i] != NULL; i++) {
 		if (!strcasecmp(m, auth_methods[i])) {
 			return i;
 		}
 	}
-	return 0;
+	return WS_NO_AUTH;
 }
 
 
