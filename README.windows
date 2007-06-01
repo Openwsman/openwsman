@@ -1,0 +1,7 @@
+To compile openwsman client library for windows download pre-compiled libraries for
+- libxml
+- iconv
+
+and unpack them in the root directory. 
+
+Load the vcproj file in Visual C and compile.
