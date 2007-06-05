@@ -211,11 +211,10 @@ void wsman_transport_set_cainfo(WsManClient * cl, char *arg)
 	cl->authentication.cainfo = arg;
 }
 
-void wsman_transport_set_cert(WsManClient * cl, char *arg)
+void wsman_transport_set_capath(WsManClient *cl, char *capath)
 {
-	cl->authentication.sslcert = arg;
+  cl->authentication.capath = capath;
 }
-
 void wsman_transport_set_caoid(WsManClient *cl, char *oid)
 {
 	cl->authentication.caoid = oid;
@@ -227,11 +226,15 @@ void wsman_transport_set_calocal(WsManClient *cl, BOOL local)
 }
 #endif
 
-void wsman_transport_set_key(WsManClient * cl, char *arg)
+void wsman_transport_set_cert(WsManClient * cl, char *arg)
 {
-	cl->authentication.sslkey = arg;
+	cl->authentication.sslcert = arg;
 }
 
+void wsman_transport_set_key(WsManClient *cl, char *key)
+{
+  cl->authentication.sslkey = key;
+}
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {
 	switch (err) {

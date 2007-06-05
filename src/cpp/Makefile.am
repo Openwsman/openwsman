@@ -23,7 +23,8 @@ lib_LTLIBRARIES=libwsman_clientpp.la
 libwsman_clientpp_la_SOURCES = \
 	OpenWsmanClient.cpp  \
 	OpenWsmanClient.h \
-	Exception.h
+	Exception.h \
+	WsmanClient.h
 
 
 libwsman_clientpp_la_CPPFLAGS = 

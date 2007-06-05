@@ -242,16 +242,20 @@ init_curl_transport(WsManClient *cl)
 		goto DONE;
 	}
 
+	if (cl->authentication.capath) {
 	r = curl_easy_setopt(curl, CURLOPT_CAPATH, cl->authentication.capath);
 	if (r != 0) {
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAPATH, ..)");
 		goto DONE;
 	}
+	}
 	// cainfo
+	if (cl->authentication.cainfo) {
 	r = curl_easy_setopt(curl, CURLOPT_CAINFO, cl->authentication.cainfo);
 	if (r != 0) {
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
 		goto DONE;
+	}
 	}
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);

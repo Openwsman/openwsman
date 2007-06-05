@@ -84,11 +84,12 @@ extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
 
 extern void wsman_transport_set_cainfo(WsManClient *cl, char *cainfo);
 
+extern void wsman_transport_set_capath(WsManClient *cl, char *capath);
+
 extern void wsman_transport_set_caoid(WsManClient *cl, char *oid);
 #ifdef _WIN32
 extern void wsman_transport_set_calocal(WsManClient *cl, BOOL local);
 #endif
-
 extern void wsman_transport_set_cert(WsManClient *cl, char *cert);
 
 extern void wsman_transport_set_key(WsManClient *cl, char *key);

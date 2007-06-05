@@ -1432,7 +1432,7 @@ wsmc_get_fault_data(WsXmlDocH doc,
 	if (wsmc_check_for_fault(doc) == 0 || !fault )
 		return;
 
-	body = ws_xml_get_soap_body(doc);	
+	body = ws_xml_get_soap_body(doc);
 	fault_node = ws_xml_get_child(body, 0, XML_NS_SOAP_1_2, SOAP_FAULT);
 	if (!fault_node) 
 		return;
@@ -1448,12 +1448,14 @@ wsmc_get_fault_data(WsXmlDocH doc,
 	reason = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_REASON);
 	if (reason) {
 		WsXmlNodeH reason_text = ws_xml_get_child(reason, 0 , XML_NS_SOAP_1_2, SOAP_TEXT);
-		fault->reason = ws_xml_get_node_text(reason_text);		
+		fault->reason = ws_xml_get_node_text(reason_text);
 	}
 	detail = ws_xml_get_child(fault_node, 0, XML_NS_SOAP_1_2, SOAP_DETAIL);
 	if (detail) {
-		WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_WS_MAN, SOAP_FAULT_DETAIL);
-		fault->fault_detail = ws_xml_get_node_text(fault_detail);		
+		// FIXME
+		// WsXmlNodeH fault_detail = ws_xml_get_child(detail, 0 , XML_NS_WS_MAN, SOAP_FAULT_DETAIL);
+		// fault->fault_detail = ws_xml_get_node_text(fault_detail);
+		fault->fault_detail = ws_xml_get_node_text(detail);
 	}		
 	return;			
 }

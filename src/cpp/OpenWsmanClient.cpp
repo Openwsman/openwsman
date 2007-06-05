@@ -29,35 +29,29 @@ static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
 
 // Construct from params.
+
 OpenWsmanClient::OpenWsmanClient(const char *host,
 						const int port,
-						const char *path,
+				 const char *path ,
 						const char *scheme,
-						const char *auth_method,
+				 const char *auth_method ,
 						const char *username,
-						const char *password,
+				 const char *password
 #ifdef _WIN32
-						const bool local,
-#endif
+				 // determines which cert store to search
+				 ,const bool local,
+				 // search for a client cert with this name
 						const char *cert,
-						const char *oid)
+				 // search for a cient cert with this oid
+				 const char *oid
+#endif
+				 )
 {	
 	cl = wsmc_create(host, port, path, scheme, username, password);
 	wsmc_transport_init(cl, (void*)NULL);
-
-	wsman_transport_set_auth_method (cl , (char *)auth_method);
-	if (wsmc_transport_get_auth_value(cl) == 0 ) {
-		// Authentication method not supported, reverting to digest
-		wsman_transport_set_auth_method(cl, "digest");
-	}
-	if (cert) {
-		wsman_transport_set_cainfo(cl, (char*)cert);
-	}
-	if (oid) {
-		wsman_transport_set_caoid(cl, (char*)oid);
-	}
+	SetAuth(auth_method);	
 #ifdef _WIN32
-	wsman_transport_set_calocal(cl, local);
+	SetClientCert(oid, cert, local);
 #endif
 }
 
@@ -127,8 +121,8 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 		if(ResourceNotFound(cl, enum_response))
 		{
 			wsmc_options_destroy(options);
-		}
 		return;
+	}
 	}
 	catch(exception& e)
 	{
@@ -288,7 +282,7 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 	{
 		char tmp[10];
 		error = "An HTTP error occurred.\n";
-		sprintf(tmp, "%ld", lastError);
+		sprintf(tmp, "%ld", responseCode);
 		error.append("HTTP Error = ").append(tmp);
 		ws_xml_destroy_doc(doc);
 		throw WsmanClientException(error.c_str(), WSMAN_HTTP_ERROR);
@@ -333,15 +327,74 @@ bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes)
 		return false;
 	}
 	WsManFault *fault = wsmc_fault_new();
+	bool ret = false;
 	wsmc_get_fault_data(enumerationRes, fault);
 	string subcode_s = fault->subcode ? string(fault->subcode) : "";
 	if(subcode_s.find("DestinationUnreachable") != string::npos)
 	{
-		return true;
+		ret = true;
 	}
 	wsmc_fault_destroy(fault);
 	CheckWsmanResponse(cl, enumerationRes);
-	return false;
+	return ret;
 }
 
+void OpenWsmanClient::SetAuth(const char *auth_method)
+{
+	wsman_transport_set_auth_method (cl , (char *)auth_method);
+	if (wsmc_transport_get_auth_value(cl) == 0 ) {
+		// Authentication method not supported, reverting to digest
+		wsman_transport_set_auth_method(cl, "digest");
+	}
+}
 
+#ifdef _WIN32
+void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const bool local)
+{
+	if (cert) {
+		wsman_transport_set_cainfo(cl, (char*)cert);
+	}
+
+	if (oid) {
+		wsman_transport_set_caoid(cl, (char*)oid);
+	}
+
+	wsman_transport_set_calocal(cl, local);
+}
+
+#else
+// Set server certificate params
+// params: cainfo - string naming a file holding one or more certificates to verify the peer with.
+//         capath - string naming a dierctory holding multiple CA certificates to verify the peer with.
+// Give null arguments if you want curl to search for certificates inthe default path
+// 
+void OpenWsmanClient::SetServerCert(const char *cainfo, const char *capath)
+{
+  // This means curl verifies the server certificate
+  wsman_transport_set_verify_peer(cl, 1);
+
+  // This means the certificate must indicate that the server is the server to which you meant to connect.
+  wsman_transport_set_verify_host(cl, 2);
+
+  if (cainfo) {
+    wsman_transport_set_cainfo(cl, (char*)cainfo);
+  }
+  if (capath) {
+    wsman_transport_set_capath(cl, (char*)capath);
+  }
+
+}
+      
+// Set client certificates params
+// params: cert - file name of your certificate.
+//         key  - file name of your private key.
+void OpenWsmanClient::SetClientCert(const char *cert, const char *key)
+{
+  if (cert) { 
+    wsman_transport_set_cert(cl, (char*)cert);
+  }
+  if (key) {
+    wsman_transport_set_key(cl, (char*)key);
+  }
+}
+#endif
