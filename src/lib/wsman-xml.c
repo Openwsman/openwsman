@@ -471,7 +471,6 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 		u_lock(soap);
 		xml_parser_initialize(soap);
 
-
 		parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList");
 		if (parserData->nsHolder != NULL) {
 			WsXmlNodeH node = ws_xml_get_doc_root(

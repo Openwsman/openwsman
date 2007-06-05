@@ -98,10 +98,22 @@ static void destroy_tree_private_data(xmlNode * node)
 	}
 }
 
+static void
+myXmlErrorReporting (void *ctx, const char* msg, ...)
+{
+  va_list args;
+  char *string;
+  va_start(args, msg);
+  string = u_strdup_vprintf (msg, args);
+  warning (string);
+  va_end(args);
 
+  u_free(string);
+}
 
 void xml_parser_initialize(SoapH soap)
 {
+	xmlSetGenericErrorFunc(NULL, myXmlErrorReporting);
 }
 
 void xml_parser_destroy(SoapH soap)

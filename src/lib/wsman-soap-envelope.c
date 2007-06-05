@@ -1038,18 +1038,31 @@ char *wsman_get_action(WsContextH cntx, WsXmlDocH doc)
 void wsman_add_selector(WsXmlNodeH baseNode, char *name, char *val)
 {
 	WsXmlNodeH selector = NULL;
+	WsXmlDocH epr = NULL;
 	WsXmlNodeH set =
 	    ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
 
-	if (set
-	    || (set =
-		ws_xml_add_child(baseNode, XML_NS_WS_MAN, WSM_SELECTOR_SET,
-				 NULL))) {
-		if ((selector =
-		     ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
-				      val))) {
-			ws_xml_add_node_attr(selector, NULL, WSM_NAME,
-					     name);
+	if (val && strstr(val, WSA_EPR)) {
+		SoapH soap = ws_xml_get_doc_soap_handle(ws_xml_get_node_doc(baseNode));
+		epr = ws_xml_read_memory(soap, val, strlen(val), NULL, 0);
+	}
+
+	if (set || (set = ws_xml_add_child(baseNode, 
+				XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL))) {
+		if (epr) {
+			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
+							NULL))) {
+				ws_xml_duplicate_tree(selector,
+					ws_xml_get_doc_root(epr));
+				ws_xml_add_node_attr(selector, NULL, WSM_NAME,
+						name);
+			}
+		} else {
+			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
+							val))) {
+				ws_xml_add_node_attr(selector, NULL, WSM_NAME,
+						name);
+			}
 		}
 	}
 	return;
