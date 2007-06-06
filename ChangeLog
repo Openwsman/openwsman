@@ -1,3 +1,58 @@
+
+1.1.0 
+
+Thread saftey: Moved static variables to client struct
+TLS Support: Support mutual authentication on Linux and Windows
+C++ client improvements
+API changes: Fixed long names and modified prefix of client API function
+Filtering: Assoc./References Support improved 
+
+1.0.0 
+
+First major release
+0.7.5
+
+Bug fix release
+0.7.4
+
+Bug fix release
+0.7.3
+
+Bug fix release
+0.7.2
+
+Bug fix release
+0.7.1
+
+Bug fix release
+0.7.0
+
+    * Enumeration Expiry support and timeout handler added
+    * C++ Wrapper library added
+    * Enhanced low-level API to support different types of data, now operations and actions requiring input (payload) accept:
+          o Text
+          o XML
+          o Serialized data 
+    * Simple C API with Sessions support added
+    * Serialization, Reworked and enhanced, added the following:
+          o Date/Time Serialization
+          o EPR Serialization 
+    * Create and Delete are now supported on the server level and the CIM plugin
+    * Namespace and resource URI handling is now stricter now allowing the use of random namespaces (they have to be defined in the configuration file)
+    * Transport using native interface on windows (not curl)
+    * Unified error handling for Windows and Linux
+    * Enahncements to make client compile and work on Windows
+    * Single Client API header
+    * Many bugs and spec conformance issues fixed 
+
+0.6.1
+
+The updates in this version of Openwsman have been focused on WS-CIM and WS-Management specification compliance.
+
+Interoperability with other WS-Management implementations was done at the Management Developers Conference (MDC) 2006. The issues found at the MDC have been corrected in this release.
+0.6.0
+0.5.1
+
 0.5.0
 
 0.4.2
