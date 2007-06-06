@@ -3,9 +3,9 @@ exec_prefix=@prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: @PACKAGE_NAME@
+Name: openwsman++
 Description: Opensource Implementation of WS-Management Client
 Version: @VERSION@
 Requires:
-Libs: -L${libdir} -l@WSMAN_PKG@ -l@WSMAN_CLIENT_PKG@ -l@WSMAN_UTILS_PKG@
+Libs: -L${libdir} -l@WSMAN_PKG@ -l@WSMAN_CLIENTPP_PKG@ -l@WSMAN_UTILS_PKG@
 Cflags: -I${includedir}/@PACKAGE_NAME@ -I${includedir}/@PACKAGE_NAME@/u

@@ -16,7 +16,8 @@ LIBS = \
 
 wsmaninclude_HEADERS = \
 		       OpenWsmanClient.h  \
-		       Exception.h
+		       Exception.h \
+			WsmanClient.h
 
 lib_LTLIBRARIES=libwsman_clientpp.la
 
