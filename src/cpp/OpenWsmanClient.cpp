@@ -31,22 +31,22 @@ static string ExtractItems(WsXmlDocH& doc);
 // Construct from params.
 
 OpenWsmanClient::OpenWsmanClient(const char *host,
-						const int port,
+				 const int port,
 				 const char *path ,
-						const char *scheme,
+				 const char *scheme,
 				 const char *auth_method ,
-						const char *username,
+				 const char *username,
 				 const char *password
 #ifdef _WIN32
 				 // determines which cert store to search
 				 ,const bool local,
 				 // search for a client cert with this name
-						const char *cert,
+				 const char *cert,
 				 // search for a cient cert with this oid
 				 const char *oid
 #endif
 				 )
-{	
+{
 	cl = wsmc_create(host, port, path, scheme, username, password);
 	wsmc_transport_init(cl, (void*)NULL);
 	SetAuth(auth_method);	
@@ -121,8 +121,13 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 		if(ResourceNotFound(cl, enum_response))
 		{
 			wsmc_options_destroy(options);
-		return;
+			return;
+		}
 	}
+	catch(GeneralWsmanException& e)
+	{
+		wsmc_options_destroy(options);
+		throw e;
 	}
 	catch(exception& e)
 	{
@@ -335,7 +340,10 @@ bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes)
 		ret = true;
 	}
 	wsmc_fault_destroy(fault);
-	CheckWsmanResponse(cl, enumerationRes);
+	if(!ret)
+	{
+		CheckWsmanResponse(cl, enumerationRes);
+	}
 	return ret;
 }
 
