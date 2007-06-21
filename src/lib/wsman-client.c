@@ -244,6 +244,13 @@ wsmc_get_user(WsManClient * cl)
 
 
 char *
+wsmc_get_password(WsManClient * cl)
+{
+	return cl->data.pwd;
+}
+
+
+char *
 wsmc_get_endpoint(WsManClient * cl)
 {
 	return cl->data.endpoint;

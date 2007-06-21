@@ -250,6 +250,13 @@ typedef enum {
 	char *wsmc_get_user(WsManClient * cl);
 
 	/**
+	 * Get password from handle
+	 * @param cl Client handle
+	 * @return username
+	 */
+	char *wsmc_get_password(WsManClient * cl);
+
+	/**
 	 * Get endpoint from handle
 	 * @param cl Client handle
 	 * @return endpoint
