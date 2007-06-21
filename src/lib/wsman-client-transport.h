@@ -68,6 +68,8 @@ extern  wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient *cl);
 
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 
+extern unsigned long wsman_transport_get_timeout(WsManClient *cl);
+
 extern void wsman_transport_set_verify_peer(WsManClient *cl, int value);
 
 extern void wsman_transport_set_verify_host(WsManClient *cl, int value);

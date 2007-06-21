@@ -178,6 +178,11 @@ void wsman_transport_set_proxyauth(WsManClient * cl, char *arg)
 	cl->proxy_data.proxy_auth = arg;
 }
 
+unsigned long wsman_transport_get_timeout(WsManClient * cl)
+{
+	return cl->transport_timeout;
+}
+
 void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
 {
 	cl->transport_timeout = arg;
