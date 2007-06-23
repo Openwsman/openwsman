@@ -124,7 +124,12 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 			return;
 		}
 	}
-	catch(GeneralWsmanException& e)
+	catch(WsmanSoapFault& e)
+	{
+		wsmc_options_destroy(options);
+		throw e;
+	}
+	catch(WsmanClientException& e)
 	{
 		wsmc_options_destroy(options);
 		throw e;
@@ -337,7 +342,8 @@ bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes)
 	string subcode_s = fault->subcode ? string(fault->subcode) : "";
 	if(subcode_s.find("DestinationUnreachable") != string::npos)
 	{
-		ret = true;
+		wsmc_fault_destroy(fault);
+		return true;
 	}
 	wsmc_fault_destroy(fault);
 	if(!ret)

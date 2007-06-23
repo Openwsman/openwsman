@@ -51,7 +51,7 @@ namespace WsmanExceptionNamespace
 	class GeneralWsmanException : public exception
 	{
 	private:
-	  string _what;
+		string _what;
 		unsigned int error;
 
 	public:
@@ -67,7 +67,7 @@ namespace WsmanExceptionNamespace
 		{ 
 		  return _what.c_str(); 
 		};
-		virtual unsigned int getErr() const
+		virtual unsigned int getErr() const throw()
 		{
 			return error;
 		}

@@ -29,6 +29,7 @@ namespace WsmanClientNamespace
 		WsmanClientException(const char* message,
 			unsigned int err = WSMAN_GENERAL_ERROR)
 			:GeneralWsmanException(message, err){}
+		virtual ~WsmanClientException() throw() {}
 	};
 
 	// Exception thrown if the server returned a soap fault
@@ -53,17 +54,17 @@ namespace WsmanClientNamespace
 		void SetWsmanFaultFields(const string& faultCode,
 			const string& faultSubcode,
 			const string& faultReason,
-			const string& faultDetail)
+			const string& faultDetail) throw()
 		{
 			soapCodeValue = faultCode;
 			soapSubcodeValue = faultSubcode;
 			soapReason = faultReason;
 			soapDetail = faultDetail;
 		}
-		string GetFaultCode(){return soapCodeValue;}
-		string GetFaultSubcode(){return soapSubcodeValue;}
-		string GetFaultReason(){return soapReason;}
-		string GetFaultDetail(){return soapDetail;}
+		string GetFaultCode() const throw() {return soapCodeValue;}
+		string GetFaultSubcode() const throw() {return soapSubcodeValue;}
+		string GetFaultReason() const throw() {return soapReason;}
+		string GetFaultDetail() const throw() {return soapDetail;}
 	};
 
 	// type for holding selectors.
