@@ -86,7 +86,7 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 
 static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo)
 {
-	debug("Plugin version: %s", (ifcinfo->version) );
+	debug("Plugin '%s', version: %s", (ifcinfo->displayName), (ifcinfo->version) );
 	if (strcmp (PACKAGE_VERSION, ifcinfo->version) == 0) {
 		return 1;
 	}
