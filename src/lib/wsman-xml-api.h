@@ -35,9 +35,12 @@
 #ifndef WS_XML_API_H_
 #define WS_XML_API_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif				/* __cplusplus */
+
 #include "u/libu.h"
 #include "wsman-types.h"
-
 
 
 /**
@@ -221,4 +224,7 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
 
 
 /** @} */
+#ifdef __cplusplus
+}
+#endif				/* __cplusplus */
 #endif				/*WS_XML_API_H_ */
