@@ -236,7 +236,7 @@ xml_parser_file_to_doc(SoapH soap, const char *filename,
 }
 
 WsXmlDocH
-xml_parser_memory_to_doc(SoapH soap, char *buf, size_t size,
+xml_parser_memory_to_doc(SoapH soap, const char *buf, size_t size,
 			 const char *encoding, unsigned long options)
 {
 	WsXmlDocH Doc = NULL;

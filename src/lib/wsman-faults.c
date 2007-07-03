@@ -284,7 +284,7 @@ WsmanFaultCodeTable fault_code_table[] =
 		"One or more options are not valid." 
 	},
 	{ 
-		WSMAN_INVALID_PARAMERTER,
+		WSMAN_INVALID_PARAMETER,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,

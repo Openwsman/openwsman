@@ -655,9 +655,9 @@ char *ws_xml_get_node_text(WsXmlNodeH node)
  * @return XML document
  */
 WsXmlDocH ws_xml_read_memory(SoapH soap,
-			     char *buf,
+			     const char *buf,
 			     size_t size,
-			     char *encoding, unsigned long options)
+			     const char *encoding, unsigned long options)
 {
 	return xml_parser_memory_to_doc(soap, buf, size, encoding,
 					options);

@@ -108,7 +108,7 @@ wsman_epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
  */
 WsXmlDocH
 wsman_create_response_envelope(WsContextH cntx,
-			       WsXmlDocH rqstDoc, char *action)
+			       WsXmlDocH rqstDoc, const char *action)
 {
 	SoapH soap = cntx->soap;
 	char *soapNs =
@@ -199,7 +199,7 @@ WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage * msg)
  * @return Header value
  */
 char *wsman_get_soap_header_value(SoapH soap,
-				  WsXmlDocH doc, char *nsUri, char *name)
+				  WsXmlDocH doc, const char *nsUri, const char *name)
 {
 	char *retVal = NULL;
 	WsXmlNodeH node =
@@ -222,7 +222,7 @@ char *wsman_get_soap_header_value(SoapH soap,
  */
 WsXmlNodeH
 wsman_get_soap_header_element(SoapH soap,
-			      WsXmlDocH doc, char *nsUri, char *name)
+			      WsXmlDocH doc, const char *nsUri, const char *name)
 {
 	WsXmlNodeH node = ws_xml_get_soap_header(doc);
 	if (node && name) {
@@ -244,9 +244,9 @@ wsman_get_soap_header_element(SoapH soap,
  * @return Fault XML document
  */
 WsXmlDocH
-wsman_build_soap_fault(SoapH soap, char *soapNsUri, char *faultNsUri,
-		       char *code, char *subCode, char *reason,
-		       char *detail)
+wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri,
+		       const char *code, const char *subCode, const char *reason,
+		       const char *detail)
 {
 	WsXmlDocH doc;
 
@@ -510,11 +510,11 @@ int wsman_is_valid_xml_envelope(WsXmlDocH doc)
 WsXmlDocH
 wsman_create_fault_envelope(WsContextH cntx,
 			    WsXmlDocH rqstDoc,
-			    char *code,
-			    char *subCodeNs,
-			    char *subCode,
-			    char *fault_action,
-			    char *lang, char *reason, char *faultDetail)
+			    const char *code,
+			    const char *subCodeNs,
+			    const char *subCode,
+			    const char *fault_action,
+			    const char *lang, const char *reason, const char *faultDetail)
 {
 	WsXmlDocH doc = NULL;
 	WsXmlNodeH header;
@@ -821,7 +821,7 @@ char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 }
 
 
-hash_t *wsman_get_method_args(WsContextH cntx, char *resource_uri)
+hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
 	char *input = NULL;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
@@ -977,7 +977,7 @@ wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 
 
 char *wsman_get_selector(WsContextH cntx,
-			 WsXmlDocH doc, char *name, int index)
+			 WsXmlDocH doc, const char *name, int index)
 {
 	char *val = NULL;
 	if (doc == NULL)
@@ -1035,7 +1035,7 @@ char *wsman_get_action(WsContextH cntx, WsXmlDocH doc)
 
 
 
-void wsman_add_selector(WsXmlNodeH baseNode, char *name, char *val)
+void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 {
 	WsXmlNodeH selector = NULL;
 	WsXmlDocH epr = NULL;
@@ -1094,7 +1094,7 @@ wsman_set_estimated_total(WsXmlDocH in_doc,
 
 
 
-void wsman_add_namespace_as_selector(WsXmlDocH doc, char *_namespace)
+void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace)
 {
 	WsXmlNodeH header = ws_xml_get_soap_header(doc);
 	wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, _namespace);

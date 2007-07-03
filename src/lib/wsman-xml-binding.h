@@ -50,7 +50,7 @@ int xml_parser_create_doc(WsXmlDocH Doc, const char *rootName);
 void xml_parser_destroy_doc(WsXmlDocH Doc);
 WsXmlDocH xml_parser_get_doc(WsXmlNodeH node);
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc);
-WsXmlDocH xml_parser_memory_to_doc(SoapH soap, char *buf, size_t size,
+WsXmlDocH xml_parser_memory_to_doc(SoapH soap, const char *buf, size_t size,
 				   const char *encoding,
 				   unsigned long options);
 char *xml_parser_node_query(WsXmlNodeH node, int what);

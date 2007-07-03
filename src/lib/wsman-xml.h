@@ -115,8 +115,8 @@ char *ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
 WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
 			   const char *encoding, unsigned long options);
-WsXmlDocH ws_xml_read_memory(SoapH soap, char *buf, size_t size,
-			     char *encoding, unsigned long options);
+WsXmlDocH ws_xml_read_memory(SoapH soap, const char *buf, size_t size,
+			     const char *encoding, unsigned long options);
 
 WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
 			    const char *rootName);

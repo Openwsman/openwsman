@@ -1598,7 +1598,7 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 		status->fault_code = WSMAN_ACCESS_DENIED;
 		break;
 	case CMPI_RC_ERR_INVALID_PARAMETER:
-		status->fault_code = WSMAN_INVALID_PARAMERTER;
+		status->fault_code = WSMAN_INVALID_PARAMETER;
 		status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
 		break;
 	case CMPI_RC_ERR_NOT_SUPPORTED:
