@@ -23,6 +23,10 @@ namespace WsmanClientNamespace
 	{
 	private:
 		WsManClient* cl;
+		// Copy constructor is declared private
+		OpenWsmanClient(const OpenWsmanClient& cl);
+		// operator = is declared private
+		OpenWsmanClient& operator =(const OpenWsmanClient& cl);
 	public:
 		// Construct from params.
 		OpenWsmanClient(const char *host = "localhost",
