@@ -63,5 +63,5 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_libdir}/openwsman/authenticators/*.la
 %{_libdir}/openwsman/plugins/*.a
 %{_libdir}/openwsman/plugins/*.la
-%{prefix}/lib/pkgconfig/openwsman.pc
+%{_libdir}/pkgconfig/openwsman.pc
 
