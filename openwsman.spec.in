@@ -64,4 +64,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_libdir}/openwsman/plugins/*.a
 %{_libdir}/openwsman/plugins/*.la
 %{_libdir}/pkgconfig/openwsman.pc
+%{_libdir}/pkgconfig/openwsman++.pc
+%{_libdir}/pkgconfig/openwsman-server.pc
 
