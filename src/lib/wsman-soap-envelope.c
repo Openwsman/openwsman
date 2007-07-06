@@ -832,17 +832,19 @@ hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 		char *mn = wsman_get_method_name(cntx);
 		input = u_strdup_printf("%s_INPUT", mn);
 		in_node = ws_xml_get_child(body, 0, resource_uri, input);
+		if (!in_node) {
+			char *xsd = u_strdup_printf("%s.xsd", resource_uri);
+			in_node = ws_xml_get_child(body, 0, xsd, input);
+			u_free(xsd);
+		}
 		if (in_node) {
 			WsXmlNodeH arg;
 			int index = 0;
-			debug("INPUT found");
 			while ((arg =
 				ws_xml_get_child(in_node, index++, NULL,
 						 NULL))) {
 				char *key =
 				    ws_xml_get_node_local_name(arg);
-				debug("Argument: %s=%s", key,
-				      ws_xml_get_node_text(arg));
 				if (!hash_alloc_insert
 				    (h, key, ws_xml_get_node_text(arg))) {
 					error("hash_alloc_insert failed");
