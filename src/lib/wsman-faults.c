@@ -135,9 +135,12 @@ WsmanFaultCodeTable fault_code_table[] =
 		SOAP_FAULT_MUSTUNDERSTAND,
 		WSA_ACTION_FAULT,
 		XML_NS_SOAP_1_2,
-		FAULT_SENDER_CODE,        
-		"MustUnderstand", 
-		""
+		FAULT_MUSTUNDERSTAND_CODE,        
+		"", 
+		"The WS-Management service cannot process a SOAP header in the request that" \
+		"is marked as mustUnderstand by the client.  This could be caused by the use" \
+		"of a version of the protocol which is not supported, or may be an" \
+		"incompatibility  between the client and server implementations."
 	},
 	{ 
 		WSA_ENDPOINT_UNAVAILABLE,
@@ -458,6 +461,10 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faul
 				httpcode = WSMAN_STATUS_BAD_REQUEST;
 				break;
 			}
+			else if (strcmp(fault_code_table[i].code, FAULT_MUSTUNDERSTAND_CODE ) == 0) {
+				httpcode = WSMAN_STATUS_BAD_REQUEST;
+				break;
+			}
 		}
 	}
 	return httpcode;
@@ -484,10 +491,10 @@ wsman_generate_fault( WsContextH cntx,
 			} else {
 				reason = fault_code_table[i].reason;
 			}
-			debug("faultDetail: %d", faultDetail);
+			//debug("faultDetail: %d", faultDetail);
 			if (faultDetail>0) {
 				detail = fault_detail_table[faultDetail].detail;
-				debug("Fault detail: %s", fault_detail_table[faultDetail].detail);
+				//debug("Fault detail: %s", fault_detail_table[faultDetail].detail);
 			}
 			else 
 				detail = NULL;

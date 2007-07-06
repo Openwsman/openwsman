@@ -154,15 +154,12 @@ generate_notunderstood_fault(op_t * op,
 
 	if (op->in_doc == NULL)
 		return;
-	generate_op_fault(op,
-				SOAP_FAULT_MUSTUNDERSTAND,
-				SOAP_DETAIL_HEADER_NOT_UNDERSTOOD);
+	generate_op_fault(op, SOAP_FAULT_MUSTUNDERSTAND, 0);
 
 	if (op->out_doc != NULL) {
 		header = ws_xml_get_soap_header(op->out_doc);
 		if (header) {
-			child =
-			    ws_xml_add_child(header, XML_NS_SOAP_1_2,
+			child = ws_xml_add_child(header, XML_NS_SOAP_1_2,
 					     "NotUnderstood", NULL);
 			ws_xml_add_qname_attr(child, NULL, "qname",
 					      ws_xml_get_node_name_ns
@@ -459,13 +456,17 @@ static int wsman_is_duplicate_message_id(op_t * op)
 	WsXmlNodeH msgIdNode;
 	soap = op->dispatch->fw;
 
-	msgIdNode = ws_xml_get_child(header, 0,
-				     XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+	msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, 
+			WSA_MESSAGE_ID);
 	if (msgIdNode != NULL) {
 		lnode_t *node;
 		char *msgId;
-
 		msgId = ws_xml_get_node_text(msgIdNode);
+		if (msgId[0] == 0 ) {
+			generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0 );
+			debug("MessageId missing");
+			return 1;
+		}
 		debug("Checking Message ID: %s", msgId);
 		u_lock(soap);
 		node = list_first(soap->processedMsgIdList);
@@ -505,10 +506,8 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		}
 		u_unlock(soap);
 	} else if (!wsman_is_identify_request(op->in_doc)) {
-		generate_op_fault(op,
-					WSA_INVALID_MESSAGE_INFORMATION_HEADER,
-					0);
-		debug("No MessageId found");
+		generate_op_fault(op, WSA_MESSAGE_INFORMATION_HEADER_REQUIRED, 0);
+		debug("No MessageId Header found");
 		return 1;
 	}
 
@@ -549,8 +548,7 @@ outbound_control_header_filter(SoapOpH opHandle,
 	if (!inHeaders)
 		return 0;
 
-	maxsize =
-	    ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN,
+	maxsize = ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN,
 			     WSM_MAX_ENVELOPE_SIZE);
 	mu = ws_xml_find_attr_value(maxsize, XML_NS_SOAP_1_2,
 				    SOAP_MUST_UNDERSTAND);

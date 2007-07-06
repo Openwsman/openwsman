@@ -545,7 +545,7 @@ wsman_create_fault_envelope(WsContextH cntx,
 
 	ws_xml_set_node_qname_val(node, soapNs, code);
 
-	if (subCode) {
+	if (subCode && subCode[0] != 0 ) {
 		node =
 		    ws_xml_add_child(codeNode, soapNs, SOAP_SUBCODE, NULL);
 		node = ws_xml_add_child(node, soapNs, SOAP_VALUE, NULL);

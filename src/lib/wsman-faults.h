@@ -36,9 +36,11 @@
 #define WSMAN_FAULTS_H_
 
 #define FAULT_SENDER_CODE "Sender"
+#define FAULT_MUSTUNDERSTAND_CODE "MustUnderstand"
 #define FAULT_RECEIVER_CODE "Receiver"
 #define FAULT_SENDER_CODE_NS "s:Sender"
 #define FAULT_RECEIVER_CODE_NS "s:Receiver"
+#define FAULT_MUSTUNDERSTAND_CODE_NS "s:MustUnderstand"
 
 enum __WsmanFaultCodeType 
 {	

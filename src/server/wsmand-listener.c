@@ -72,7 +72,7 @@
 #include "wsman-server.h"
 #include "wsman-plugins.h"
 
-#define MULTITHREADED_SERVER
+// #define MULTITHREADED_SERVER
 
 #ifdef MULTITHREADED_SERVER
 #ifdef HAVE_PTHREAD_H

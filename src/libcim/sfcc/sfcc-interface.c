@@ -620,8 +620,6 @@ instance2xml(CimClientInfo * client,
 	ttime += t1 -t0;
 
 	debug("Transofrmation time: %d", ttime );
-	debug("blah");
-
 	if (enumInfo && (enumInfo->flags &  WSMAN_ENUMINFO_POLY_EXCLUDE ) ) {
 		if (_class) {
 			CMRelease(_class);
