@@ -50,7 +50,6 @@
 #include "wsman-xml.h"
 #include "wsman-client-api.h"
 #include "wsman-xml-serializer.h"
-#include "wsman-dispatcher.h"
 
 #include "wsman-soap-envelope.h"
 #include "wsman-soap-message.h"
@@ -172,8 +171,7 @@ CimResource_Delete_EP( SoapOpH op,
 	WsmanStatus status;
 	CimClientInfo *cimclient = NULL;
 	SoapH soap = soap_get_op_soap(op);
-	op_t *_op = (op_t *)op;
-	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	WsXmlDocH in_doc = NULL;
 	WsXmlDocH doc = NULL;
 	WsContextH cntx;
@@ -230,7 +228,6 @@ cleanup:
 	return 0;
 }
 
-
 int
 CimResource_Get_EP( SoapOpH op,
 		void* appData,
@@ -239,19 +236,13 @@ CimResource_Get_EP( SoapOpH op,
 	WsXmlDocH doc = NULL;
 	WsmanStatus status;
 	CimClientInfo *cimclient = NULL;
-	WsXmlDocH in_doc = NULL;
-	debug( "Get Endpoint Called");
-
-	wsman_status_init(&status);
+	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	SoapH soap = soap_get_op_soap(op);
 
-
-	in_doc = soap_get_op_doc(op, 1);
+	WsXmlDocH in_doc = soap_get_op_doc(op, 1);
 	WsContextH cntx = ws_create_ep_context(soap, in_doc);
 
-
-	op_t *_op = (op_t *)op;
-	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	wsman_status_init(&status);
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
 				msg->auth_data.username,
@@ -312,8 +303,7 @@ CimResource_Custom_EP( SoapOpH op,
 	in_doc = soap_get_op_doc(op, 1);
 	WsContextH cntx = ws_create_ep_context(soap, in_doc);
 
-	op_t *_op = (op_t *)op;
-	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	action = wsman_get_action(cntx, in_doc );
 	if (msg) {
 		cimclient = CimResource_Init(cntx, msg->auth_data.username,
@@ -521,8 +511,7 @@ CimResource_Create_EP( SoapOpH op,
 	wsman_status_init(&status);
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
-	op_t *_op = (op_t *)op;
-	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	WsmanMessage *msg = wsman_get_msg_from_op(op);
 
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
@@ -590,8 +579,7 @@ CimResource_Put_EP( SoapOpH op,
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 	wsman_status_init(&status);
-	op_t *_op = (op_t *)op;
-	msg = (WsmanMessage *)_op->data;
+	msg = wsman_get_msg_from_op(op);
 
 	if (msg) {
 		cimclient = CimResource_Init(cntx,

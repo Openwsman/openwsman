@@ -418,5 +418,6 @@ int outbound_control_header_filter(SoapOpH opHandle, void *data,
 int soap_add_filter(SoapH soap, SoapServiceCallback callbackProc,
 		    void *callbackData, int inbound);
 
+WsmanMessage *wsman_get_msg_from_op(SoapOpH op) ;
 
 #endif				/* SOAP_API_H_ */

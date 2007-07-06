@@ -591,6 +591,14 @@ ws_transfer_get_stub(SoapOpH op,
 
 
 
+WsmanMessage *wsman_get_msg_from_op(SoapOpH op) 
+{
+	op_t *_op = (op_t *)op;
+	WsmanMessage *msg = (WsmanMessage *)_op->data;
+	return msg;
+}
+
+
 
 		//    ENUMERATION STUFF
 
@@ -607,8 +615,8 @@ wsman_verify_enum_info(SoapOpH op,
 		       WsmanStatus * status)
 {
 
-	op_t           *_op = (op_t *) op;
-	WsmanMessage   *msg = (WsmanMessage *) _op->data;
+	WsmanMessage   *msg = wsman_get_msg_from_op(op);
+
 	WsXmlNodeH  header = ws_xml_get_soap_header(doc);
 	char *to =  ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
@@ -805,8 +813,7 @@ create_enum_info(SoapOpH op,
 	WsXmlNodeH  header = ws_xml_get_soap_header(indoc);
 	WsXmlDocH outdoc = NULL;
 	WsEnumerateInfo *enumInfo;
-	op_t           *_op = (op_t *) op;
-	WsmanMessage   *msg = (WsmanMessage *) _op->data;
+	WsmanMessage   *msg = wsman_get_msg_from_op(op);
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
 	WsmanFaultDetailType fault_detail_code = WSMAN_DETAIL_OK;
 	char *uri, *to;
@@ -1608,7 +1615,7 @@ soap_destroy_op(SoapOpH op)
 }
 
 
-op_t           *
+op_t *
 create_op_entry(SoapH soap,
 		SoapDispatchH dispatch,
 		WsmanMessage * data)
@@ -1690,20 +1697,6 @@ ws_get_context_xml_doc_val(WsContextH cntx,
 //	return (WsXmlDocH) get_context_val(cntx, name);
 	return cntx->indoc;
 }
-
-
-#if 0
-void
-add_response_entry(SoapH soap, op_t * op)
-{
-	lnode_t        *n;
-	debug("Adding Response Entry");
-	u_lock(soap);
-	n = lnode_create(op);
-	list_append(soap->responseList, n);
-	u_unlock(soap);
-}
-#endif
 
 
 
