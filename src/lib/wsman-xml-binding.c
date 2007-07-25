@@ -487,7 +487,7 @@ xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
 			if (prefix != NULL) {
 				xmlNs->prefix = xmlStrdup(BAD_CAST prefix);
 			}
-			// TBD: walk down the tree to update QName node and attr values 
+			// TBD: walk down the tree to update QName node and attr values
 		} else {
 			xmlNs =
 			    xmlNewNs((xmlNodePtr) node, BAD_CAST uri,
@@ -865,8 +865,6 @@ int xml_parser_check_xpath(WsXmlDocH doc, const char *expression)
 	register_namespaces(ctxt, doc, xml_parser_get_root(doc));
 	obj = xmlXPathEvalExpression(BAD_CAST expression, ctxt);
 	if (obj) {
-		debug
-		    ("xpath: got object+++++++++++++++++++++++++++++++++++");
 		nodeset = obj->nodesetval;
 		if (nodeset && nodeset->nodeNr > 0) {
 			int size = nodeset->nodeNr;
@@ -874,12 +872,12 @@ int xml_parser_check_xpath(WsXmlDocH doc, const char *expression)
 			xmlNodePtr cur;
 			for(i = 0; i < size; ++i) {
 				if(nodeset->nodeTab[i]->type == XML_ELEMENT_NODE) {
-					cur = nodeset->nodeTab[i];   	    
-					if(cur->ns) { 
-						fprintf(stdout, "= element node \"%s:%s\"\n", 
+					cur = nodeset->nodeTab[i];
+					if(cur->ns) {
+						fprintf(stdout, "= element node \"%s:%s\"\n",
 								cur->ns->href, cur->name);
 					} else {
-						fprintf(stdout, "= element node \"%s\"\n", 
+						fprintf(stdout, "= element node \"%s\"\n",
 								cur->name);
 					}
 				}
@@ -890,8 +888,6 @@ int xml_parser_check_xpath(WsXmlDocH doc, const char *expression)
 		xmlXPathFreeContext(ctxt);
 		xmlXPathFreeObject(obj);
 	} else {
-		debug
-		    ("xpath: no object+++++++++++++++++++++++++++++++++++");
 		return 0;
 	}
 

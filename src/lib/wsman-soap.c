@@ -324,7 +324,7 @@ wsman_register_endpoint(WsContextH cntx,
 		callbackProc = wsenum_pull_stub;
 		break;
 	case WS_DISP_TYPE_DIRECT_PULL:
-		debug("Registering endpoint for Pull Raw");
+		debug("Registering endpoint for direct Pull");
 		action = ep->inAction;
 		callbackProc = wsenum_pull_raw_stub;
 		break;
@@ -591,7 +591,7 @@ ws_transfer_get_stub(SoapOpH op,
 
 
 
-WsmanMessage *wsman_get_msg_from_op(SoapOpH op) 
+WsmanMessage *wsman_get_msg_from_op(SoapOpH op)
 {
 	op_t *_op = (op_t *)op;
 	WsmanMessage *msg = (WsmanMessage *)_op->data;
