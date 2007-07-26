@@ -33,17 +33,14 @@
  */
 
 
-#define OPENWSMAN
-
-#ifdef OPENWSMAN
 #ifndef EMBEDDED
 #define EMBEDDED
 #endif
 #include "u/libu.h"
 #include "shttpd.h"
+
 #ifdef HAVE_CONFIG_H
 #include "wsman_config.h"
-#endif
 #endif
 
 
@@ -53,7 +50,7 @@
 #endif /* CONFIG */
 #define	HTPASSWD	".htpasswd"	/* Passwords file name		*/
 #define	EXPIRE_TIME	3600		/* Expiration time, seconds	*/
-#define KEEP_ALIVE_TIME 2      /* keep connection, seconds */
+#define KEEP_ALIVE_TIME  2     /* keep connection, seconds */
 #ifndef IO_MAX
 #define	IO_MAX		16384		/* Max request size		*/
 #endif /* IO_MAX */
@@ -998,7 +995,7 @@ shttpd_register_url(struct shttpd_ctx *ctx,
 static void
 setopt(const char *var, const char *val)
 {
-	struct opt	*opt; 
+	struct opt	*opt;
 
 	if ((opt = swtoopt(0, var)) == NULL)
 		elog(ERR_FATAL, "setopt: unknown variable [%s]", var);
@@ -1408,7 +1405,7 @@ writeremote(struct conn *c, const char *buf, size_t len)
 	if (c->ssl) {
 		n = SSL_write(c->ssl, buf, len);
 	}
-	else 
+	else
 #endif
 		n = send(c->sock, buf, len, 0);
 
@@ -1810,7 +1807,7 @@ fetchfield(const char **from, char *to, int len, int shift)
 		Snprintf(fmt, sizeof(fmt), "%%%d[^ \t,]%%n", len - 1);
 	}
 
-	elog(ERR_DEBUG, "fetchfield: [%s] [%s]", fmt, p);
+	//elog(ERR_DEBUG, "fetchfield: [%s] [%s]", fmt, p);
 
 	if (sscanf(p, fmt, to, &n)) {
 		p += n;
@@ -1933,7 +1930,7 @@ checkauth(struct conn *c, const char *path)
 	}
 	*p = 0;
 
-	// use di.uri as a bufer. It's big ehough 
+	// use di.uri as a bufer. It's big ehough
 	l = ws_base64_decode(pp, p - pp, di.uri);
 	if (l <= 0) {
 		return 0;
@@ -2124,7 +2121,7 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 			c->expire += EXPIRE_TIME;
 		} else if (!(c->flags & FLAG_PARSED) && c->remote.done) {
 			if (n == 0) {
-				// connection closed by peer 
+				// connection closed by peer
 				c->flags &= ~FLAG_KEEP_CONNECTION;
 			}
 			c->flags |= FLAG_FINISHED;
@@ -2244,7 +2241,7 @@ do_accept(struct shttpd_ctx *ctx, void *ptr)
 
 	sa.len = sizeof(sa.u.sin);
 
-	sock = inetd ? fileno(stdin) : accept((int)((char *)ptr - (char *)NULL), &sa.u.sa, &sa.len);	
+	sock = inetd ? fileno(stdin) : accept((int)((char *)ptr - (char *)NULL), &sa.u.sa, &sa.len);
 	if (sock == -1)
 		elog(ERR_INFO, "do_accept(%d): %s", (int)((char *)ptr - (char *)NULL), strerror(ERRNO));
 	else
@@ -2252,7 +2249,7 @@ do_accept(struct shttpd_ctx *ctx, void *ptr)
 }
 
 /*
- * Setup user watch. If func is NULL, remove it 
+ * Setup user watch. If func is NULL, remove it
  */
 void
 shttpd_listen(struct shttpd_ctx *ctx, int sock)

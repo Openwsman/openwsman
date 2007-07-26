@@ -744,7 +744,6 @@ cim_enum_instances(CimClientInfo * client,
 	sfcc_enumcontext *enumcontext;
 	filter_t *filter = NULL;
 
-
 	if( (enumInfo->flags & WSMAN_ENUMINFO_REF) ||
 		       	(enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) {
 		char *class = NULL;
@@ -762,6 +761,7 @@ cim_enum_instances(CimClientInfo * client,
 		objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
 	}
+
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
 		enumeration = cc->ft->references(cc, objectpath, filter->resultClass,
 				filter->role, 0, NULL, &rc);

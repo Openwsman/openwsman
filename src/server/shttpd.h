@@ -44,13 +44,12 @@ struct shttpd_arg_t {
 
 struct shttpd_ctx;
 
-#ifdef OPENWSMAN
 /*
  * HTTP digest authentication
  */
 
 #include "u/libu.h"
- 
+
 
 #ifndef IO_MAX
 #define	IO_MAX		4096		/* Max request size		*/
@@ -77,14 +76,13 @@ struct basic {
 typedef int (*shttpd_bauth_callback_t)(char *u, char *passwd);
 typedef int (*shttpd_dauth_callback_t)(char *realm, char *method, struct digest *);
 
- 
+
 extern void shttpd_register_bauth_callback(struct shttpd_ctx *,
                             shttpd_bauth_callback_t);
 extern void shttpd_register_dauth_callback(struct shttpd_ctx *,
                             shttpd_dauth_callback_t);
 extern void      shttpd_get_credentials(struct shttpd_arg_t *,
                         char **user, char **pwd);
-#endif
 
 /*
  * User callback function. Called when certain registered URLs have been
@@ -132,9 +130,7 @@ extern void		shttpd_poll(struct shttpd_ctx *, int milliseconds);
 extern const char *	shttpd_version(void);
 extern const char *	shttpd_get_var(struct shttpd_arg_t *, const char *var);
 extern const char *	shttpd_get_header(struct shttpd_arg_t *, const char *);
-#ifdef OPENWSMAN
 extern hash_t     *shttpd_get_all_headers(struct shttpd_arg_t *);
-#endif
 extern const char *	shttpd_get_env(struct shttpd_arg_t *, const char *);
 
 extern int		shttpd_get_post_query_len(struct shttpd_arg_t *);

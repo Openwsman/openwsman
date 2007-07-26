@@ -72,7 +72,7 @@
 #include "wsman-server.h"
 #include "wsman-plugins.h"
 
-// #define MULTITHREADED_SERVER
+#define MULTITHREADED_SERVER
 
 #ifdef MULTITHREADED_SERVER
 #ifdef HAVE_PTHREAD_H
@@ -84,11 +84,12 @@ static pthread_mutex_t shttpd_mutex;
 static pthread_cond_t shttpd_cond;
 static list_t *request_list;
 static int num_threads = 0;
-static int max_threads = 4;
 static int min_threads = 2;
 static int idle_threads = 0;
+static int max_threads = 4;
 
 #endif
+
 
 int continue_working = 1;
 static int (*basic_auth_callback) (char *, char *) = NULL;
@@ -116,15 +117,6 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
 
 	return ws_authorize_digest(filename, &wsdig);
 }
-
-
-#if 0
-static int basic_auth_callback(char *username, char *password)
-{
-	return ws_authorize_basic(username, password);
-}
-#endif
-
 
 static char *shttp_reason_phrase(int status)
 {
@@ -396,7 +388,6 @@ static void *service_connection(void *arg)
 	lnode_t *node;
 	int sock;
 	SoapH soap = (SoapH) arg;
-//    struct timespec timespec;
 
 	debug("shttpd thread %d started. num_threads = %d",
 	      pthread_self(), num_threads);
@@ -435,7 +426,6 @@ static void *service_connection(void *arg)
 		pthread_cond_broadcast(&shttpd_cond);
 	}
 	pthread_mutex_unlock(&shttpd_mutex);
-
 	return NULL;
 }
 
@@ -596,13 +586,12 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	}
 
 	if ((r = pthread_attr_setdetachstate(&pattrs,
-					     PTHREAD_CREATE_DETACHED)) !=
-	    0) {
+				     PTHREAD_CREATE_DETACHED)) != 0) {
 		debug("pthread_attr_setdetachstate = %d", r);
 		return listener;
 	}
 
-	request_list = list_create(-1);
+	request_list = list_create(LISTCOUNT_T_MAX);
 
 	min_threads = wsmand_options_get_min_threads();
 	max_threads = wsmand_options_get_max_threads();
