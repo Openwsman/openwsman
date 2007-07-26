@@ -332,6 +332,10 @@ static int check_supported_dialect(const char *dialect)
 		return 0;
 	else if (strcmp(dialect, WSM_XPATH_FILTER_DIALECT) == 0)
 		return 0;
+	else if (strcmp(dialect, WSM_WQL_FILTER_DIALECT) == 0)
+		return 0;
+	else if (strcmp(dialect, WSM_CQL_FILTER_DIALECT) == 0)
+		return 0;
 	return 1;
 }
 
@@ -456,7 +460,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 	WsXmlNodeH msgIdNode;
 	soap = op->dispatch->fw;
 
-	msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, 
+	msgIdNode = ws_xml_get_child(header, 0, XML_NS_ADDRESSING,
 			WSA_MESSAGE_ID);
 	if (msgIdNode != NULL) {
 		lnode_t *node;

@@ -564,10 +564,11 @@ instance2xml(CimClientInfo * client,
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
+		debug("numproperties: %d", numproperties );
 	} else {
 		numproperties = instance->ft->getPropertyCount(instance, NULL);
+		debug("numproperties: %d", numproperties );
 	}
-	debug("numproperties: %d", numproperties );
 
 
 	if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, XML_NS_SCHEMA_INSTANCE_PREFIX)) {
@@ -603,9 +604,9 @@ instance2xml(CimClientInfo * client,
   	gettimeofday(&tv0, NULL);
 
 #if 0
-	if (enumInfo->filter->xpath) {
-		debug("xpath filter: %s", enumInfo->filter->xpath );
-		if (d && ws_xml_check_xpath(d, enumInfo->filter->xpath)) {
+	if (enumInfo->filter->query) {
+		debug("xpath filter: %s", enumInfo->filter->query );
+		if (d && ws_xml_check_xpath(d, enumInfo->filter->query)) {
 			ws_xml_copy_node(r , body);
 		}
 	} else {
@@ -743,12 +744,12 @@ cim_enum_instances(CimClientInfo * client,
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	sfcc_enumcontext *enumcontext;
 	filter_t *filter = NULL;
+	filter = enumInfo->filter;
 
 	if( (enumInfo->flags & WSMAN_ENUMINFO_REF) ||
 		       	(enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) {
 		char *class = NULL;
 		epr_t *epr;
-		filter = enumInfo->filter;
 		epr = (epr_t *)filter->epr;
 		class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
 		objectpath = newCMPIObjectPath(client->cim_namespace,
@@ -765,11 +766,17 @@ cim_enum_instances(CimClientInfo * client,
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
 		enumeration = cc->ft->references(cc, objectpath, filter->resultClass,
 				filter->role, 0, NULL, &rc);
-	} else if(enumInfo->flags & WSMAN_ENUMINFO_ASSOC) {
+	} else if (enumInfo->flags & WSMAN_ENUMINFO_ASSOC) {
 		enumeration = cc->ft->associators(cc, objectpath, filter->assocClass,
 				filter->resultClass,
 				filter->role,
 				filter->resultRole, 0, NULL, &rc);
+	}
+	else if (( enumInfo->flags & WSMAN_ENUMINFO_WQL )) {
+		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "WQL", &rc);
+	}
+	else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
+		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
 	} else {
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 			CMPI_FLAG_DeepInheritance,
@@ -1608,10 +1615,12 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 	case CMPI_RC_ERR_ALREADY_EXISTS:
 		status->fault_code = WSMAN_ALREADY_EXISTS;
 		break;
+	case CMPI_RC_ERR_INVALID_QUERY:
+		status->fault_code = WSEN_CANNOT_PROCESS_FILTER;
+		break;
 	case CMPI_RC_ERR_NO_SUCH_PROPERTY:
 	case CMPI_RC_ERR_TYPE_MISMATCH:
 	case CMPI_RC_ERR_QUERY_LANGUAGE_NOT_SUPPORTED:
-	case CMPI_RC_ERR_INVALID_QUERY:
 	case CMPI_RC_ERR_METHOD_NOT_AVAILABLE:
 	case CMPI_RC_DO_NOT_UNLOAD:
 	case CMPI_RC_NEVER_UNLOAD:

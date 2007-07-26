@@ -577,20 +577,19 @@ wsman_create_fault_envelope(WsContextH cntx,
 	return doc;
 }
 
-static void wsman_parse_xpath_filter( WsContextH cntx,
-		WsXmlNodeH filter, 
+static void wsman_parse_filter( WsContextH cntx,
+		WsXmlNodeH filter,
 		WsEnumerateInfo * enumInfo)
 {
 	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-	f->xpath = u_strdup(ws_xml_get_node_text(filter));
-	debug("Xpath filter: %s", f->xpath );
+	f->query = u_strdup(ws_xml_get_node_text(filter));
 	enumInfo->filter = f;
 }
 
 
 
 static void wsman_parse_assoc_filter( WsContextH cntx,
-			WsXmlNodeH filter, 
+			WsXmlNodeH filter,
 			WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH node;
@@ -598,10 +597,10 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 	epr_t *epr = NULL;
 	filter_t *f = NULL;
 	if ((node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
-				WSMB_ASSOCIATION_INSTANCES) ) != NULL) 	
+				WSMB_ASSOCIATION_INSTANCES) ) != NULL)
 		enumInfo->flags |= WSMAN_ENUMINFO_REF;
 	else if ( (node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
-				WSMB_ASSOCIATED_INSTANCES)) != NULL) 	
+				WSMB_ASSOCIATED_INSTANCES)) != NULL)
 		enumInfo->flags |= WSMAN_ENUMINFO_ASSOC;
 
 	if (node == NULL) {
@@ -612,22 +611,22 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 	f = (filter_t *)u_zalloc(sizeof(filter_t));
 	f->epr = epr;
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
-	if (fnode) 
+	if (fnode)
 		f->resultClass = u_strdup(ws_xml_get_node_text(fnode));
 	else
 		f->resultClass = NULL;
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
-	if (fnode) 
+	if (fnode)
 		f->role = u_strdup(ws_xml_get_node_text(fnode));
 	else
 		f->role = NULL;
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
 	if (fnode)
 		f->assocClass = u_strdup(ws_xml_get_node_text(fnode));
-	else 
+	else
 		f->assocClass = NULL;
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
-	if (fnode) 
+	if (fnode)
 		f->resultRole = u_strdup(ws_xml_get_node_text(fnode));
 	else
 		f->resultRole = NULL;
@@ -635,12 +634,12 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 }
 
 
-int wsman_parse_enum_request(WsContextH cntx, 
+int wsman_parse_enum_request(WsContextH cntx,
 		WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH node;
 	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-	if (!doc) 
+	if (!doc)
 		return 0;
 
 	node = ws_xml_get_soap_body(doc);
@@ -698,13 +697,20 @@ int wsman_parse_enum_request(WsContextH cntx,
 
 		// Filter
 		if (filter) {
-			char *attrVal = ws_xml_find_attr_value(filter, 
+			char *attrVal = ws_xml_find_attr_value(filter,
 					NULL, WSM_DIALECT);
 			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
 				wsman_parse_assoc_filter(cntx, filter, enumInfo);
 			}
-			if (( attrVal && strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ) || !attrVal ) {
-				wsman_parse_xpath_filter(cntx, filter, enumInfo);
+			if (( attrVal && strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ) ||
+					strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0||
+					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
+					!attrVal ) {
+				wsman_parse_filter(cntx, filter, enumInfo);
+				if ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 )
+					enumInfo->flags |= WSMAN_ENUMINFO_CQL;
+				else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 )
+					enumInfo->flags |= WSMAN_ENUMINFO_WQL;
 			}
 		} else {
 			enumInfo->filter = NULL;
@@ -722,12 +728,12 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 	WsXmlNodeH node, option;
 	if (doc == NULL) {
 		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-		if (!doc) 
+		if (!doc)
 			return NULL;
 	}
 
 	node = ws_xml_get_soap_header(doc);
-	if (node && (node = ws_xml_get_child(node, 0, 
+	if (node && (node = ws_xml_get_child(node, 0,
 					XML_NS_WS_MAN, WSM_OPTION_SET))) {
 		while ((option = ws_xml_get_child(node, index++, XML_NS_WS_MAN,
 						WSM_OPTION))) {
@@ -871,7 +877,7 @@ hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
 	int index = 0;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
-	node = ws_xml_get_child(epr_node, 0, XML_NS_WS_MAN, 
+	node = ws_xml_get_child(epr_node, 0, XML_NS_WS_MAN,
 			WSM_SELECTOR_SET);
 	if (!node) {
 		debug("no SelectorSet defined");
@@ -925,7 +931,7 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 	header = ws_xml_get_soap_header(doc);
 	if (header) {
 		h = wsman_get_selectors_from_epr(header);
-	} 
+	}
 	return h;
 }
 
@@ -1049,7 +1055,7 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 		epr = ws_xml_read_memory(soap, val, strlen(val), NULL, 0);
 	}
 
-	if (set || (set = ws_xml_add_child(baseNode, 
+	if (set || (set = ws_xml_add_child(baseNode,
 				XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL))) {
 		if (epr) {
 			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,

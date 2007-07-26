@@ -233,6 +233,8 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 /* The value 0x010000 is already assigned to flag WSMAN_ENUMINFO_INWORK_FLAG */
 #define WSMAN_ENUMINFO_ASSOC          	  0x020000
 #define WSMAN_ENUMINFO_REF          	  0x040000
+#define WSMAN_ENUMINFO_CQL          	  0x080000
+#define WSMAN_ENUMINFO_WQL          	  0x100000
 
 
 
@@ -243,7 +245,7 @@ struct __filter_t {
 	char *resultClass;
 	char *role;
 	char *resultRole;
-	char *xpath;
+	char *query;
 };
 
 typedef struct __filter_t filter_t;

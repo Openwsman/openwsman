@@ -42,7 +42,7 @@
 #define XML_NS_SOAP_1_2             "http://www.w3.org/2003/05/soap-envelope"
 
 
-#define XML_NS_XML_NAMESPACES       "http://www.w3.org/XML/1998/namespace"  
+#define XML_NS_XML_NAMESPACES       "http://www.w3.org/XML/1998/namespace"
 #define XML_NS_ADDRESSING           "http://schemas.xmlsoap.org/ws/2004/08/addressing"
 #define XML_NS_DISCOVERY            "http://schemas.xmlsoap.org/ws/2004/10/discovery"
 #define XML_NS_EVENTING             "http://schemas.xmlsoap.org/ws/2004/08/eventing"
@@ -334,6 +334,8 @@
         "http://schemas.microsoft.com/wbem/wsman/1/WQL"
 #define WSM_XPATH_FILTER_DIALECT        \
         "http://www.w3.org/TR/1999/REC-xpath-19991116"
+#define WSM_CQL_FILTER_DIALECT        \
+        "http://schemas.dmtf.org/wbem/cql/1/dsp0202.pdf"
 #define WSM_ASSOCIATION_FILTER_DIALECT     \
         "http://schemas.dmtf.org/wbem/wsman/1/cimbinding/associationFilter"
 

@@ -138,7 +138,7 @@ static void print_help_header(u_option_context_t *ctx, help_buf_t *help_buf)
 		node = list_next(ctx->groups, node);
 	}
 	put_to_help_buf(help_buf, 0, "");
-	
+
 }
 
 static void print_help_group(u_option_group_t *group, help_buf_t *help_buf)
@@ -415,7 +415,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 		return NULL;
 	}
 
-	if (!strncmp(option, "help", strlen("help"))) {
+	if (!strncmp(option, "help", strlen("help")) ) {
 		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
 			print_long_help(ctx, option);
 		}

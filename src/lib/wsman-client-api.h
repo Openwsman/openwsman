@@ -65,8 +65,8 @@ typedef enum {
     WS_MAX_AUTH,
 } wsman_auth_type_t;
 
-        typedef void (*wsman_auth_request_func_t)( wsman_auth_type_t t, 
-                    char **usr, 
+        typedef void (*wsman_auth_request_func_t)( wsman_auth_type_t t,
+                    char **usr,
                     char **pwd);
 
 	struct _WsManClient;
@@ -319,7 +319,7 @@ typedef enum {
 	/**
 	 * Parse response and create a new envelope based on it
 	 * @param cl Client handle
-	 * @return New envelope 
+	 * @return New envelope
 	 */
 	WsXmlDocH wsmc_build_envelope_from_response(WsManClient * cl);
 
