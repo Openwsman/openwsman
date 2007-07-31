@@ -63,7 +63,7 @@ static pthread_mutex_t curl_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 static long
-reauthenticate(WsManClient *cl, 
+reauthenticate(WsManClient *cl,
         long auth_set, long auth_avail, char **username, char **password)
 {
 	long choosen_auth = 0;
@@ -417,7 +417,7 @@ wsmc_handler( WsManClient *cl,
 		if (r != CURLE_OK) {
 			http_code = 400;
 			cl->fault_string = strdup(curl_easy_strerror(r));
-			curl_err("curl_easy_perform failed"); 
+			curl_err("curl_easy_perform failed");
 			goto DONE;
 		}
 		r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
@@ -439,7 +439,7 @@ wsmc_handler( WsManClient *cl,
 			curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
 			goto DONE;
 		}
-    /*  
+    /*
      *  FIXME: Why are we freeing credentials here?
      *  if (cl->data.auth_set) {
 			if (cl->data.user) {
@@ -451,7 +451,7 @@ wsmc_handler( WsManClient *cl,
 				cl->data.pwd = NULL;
 			}
       }*/
-                cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail, 
+                cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
                         &cl->data.user, &cl->data.pwd);
                 u_buf_clear(con->response);
                 if (cl->data.auth_set == 0) {
