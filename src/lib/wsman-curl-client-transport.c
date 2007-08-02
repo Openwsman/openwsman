@@ -299,7 +299,7 @@ wsmc_handler( WsManClient *cl,
 	char *soapact_header = NULL;
 	long http_code;
 	long auth_avail = 0;
-	char *_user, *_pass;
+	char *_user = NULL, *_pass = NULL;
 
 	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
