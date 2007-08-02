@@ -180,6 +180,12 @@ void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
 	cl->transport_timeout = arg;
 }
 
+
+char *wsman_transport_get_auth_method(WsManClient * cl)
+{
+	return cl->authentication.method;
+}
+
 void wsman_transport_set_auth_method(WsManClient * cl, const char *arg)
 {
 	cl->authentication.method = arg ? u_strdup( arg ) : NULL;
