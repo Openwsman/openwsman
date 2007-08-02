@@ -48,6 +48,11 @@
 
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
+/*
+ * Set callback function to ask for username/password on authentication failure (http-401 returned)
+ * If the callback returns an empty (or NULL) username, authentication is aborted.
+ */
+
 extern void wsmc_transport_set_auth_request_func(WsManClient *cl, 
         wsman_auth_request_func_t f);
 

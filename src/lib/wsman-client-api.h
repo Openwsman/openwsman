@@ -65,12 +65,12 @@ typedef enum {
     WS_MAX_AUTH,
 } wsman_auth_type_t;
 
-        typedef void (*wsman_auth_request_func_t)( wsman_auth_type_t t,
-                    char **usr,
-                    char **pwd);
-
 	struct _WsManClient;
 	typedef struct _WsManClient WsManClient;
+
+        typedef void (*wsman_auth_request_func_t)( WsManClient *client, wsman_auth_type_t t,
+                    char **usr,
+                    char **pwd);
 
 	typedef enum {
 		WS_LASTERR_OK = 0,

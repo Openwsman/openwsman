@@ -108,7 +108,7 @@ REQUEST_PASSWORD:
 	}
 
 	if ( cl->authentication.auth_request_func )
-		cl->authentication.auth_request_func(ws_auth, username, password);
+		cl->authentication.auth_request_func(cl, ws_auth, username, password);
 
 	if (!(*username) || strlen(*username) == 0) {
 		debug("No username. Authorization canceled");
