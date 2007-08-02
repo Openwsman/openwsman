@@ -73,6 +73,7 @@ debug_add_handler (debug_fn fn,
                       void* user_data);
 
 void debug_remove_handler (unsigned int id);
+void debug_destroy_handlers (void);
 
 void debug_full(debug_level_e  level, const char *format, ...);
 void debug_full_verbose(debug_level_e  level, char *file,

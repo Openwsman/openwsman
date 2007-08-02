@@ -299,6 +299,7 @@ wsmc_handler( WsManClient *cl,
 	char *soapact_header = NULL;
 	long http_code;
 	long auth_avail = 0;
+	char *_user, *_pass;
 
 	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
@@ -316,7 +317,7 @@ wsmc_handler( WsManClient *cl,
 	r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
 	if (r != CURLE_OK) {
 		http_code = 400;
-		cl->fault_string = strdup(curl_easy_strerror(r));
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_URL, ...)");
 		goto DONE;
 	}
@@ -325,7 +326,7 @@ wsmc_handler( WsManClient *cl,
 	r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
 	if (r != CURLE_OK) {
 		http_code = 400;
-		cl->fault_string = strdup(curl_easy_strerror(r));
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
 		goto DONE;
 	}
@@ -333,7 +334,7 @@ wsmc_handler( WsManClient *cl,
 	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, con->response);
 	if (r != CURLE_OK) {
 		http_code = 400;
-		cl->fault_string = strdup(curl_easy_strerror(r));
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
 		goto DONE;
 	}
@@ -343,7 +344,7 @@ wsmc_handler( WsManClient *cl,
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
 		http_code = 400;
-		cl->fault_string = strdup("Could not malloc memory");
+		cl->fault_string = u_strdup("Could not malloc memory");
 		curl_err("Could not malloc memory");
 		goto DONE;
 	}
@@ -367,7 +368,7 @@ wsmc_handler( WsManClient *cl,
 	r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	if (r != CURLE_OK) {
 		http_code = 400;
-		cl->fault_string = strdup(curl_easy_strerror(r));
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)");
 		goto DONE;
 	}
@@ -377,34 +378,37 @@ wsmc_handler( WsManClient *cl,
 	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
 	if (r != CURLE_OK) {
 		http_code = 400;
-		cl->fault_string = strdup(curl_easy_strerror(r));
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
 		goto DONE;
 	}
 
+
+	_user = wsmc_get_user(cl);
+	_pass = wsmc_get_password(cl);
+
 	while (1) {
-            if (cl->data.user && cl->data.pwd && cl->data.auth_set) {
-            r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, cl->data.auth_set);
+		if (_user && _pass && cl->data.auth_set) {
+			r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, cl->data.auth_set);
 			if (r != CURLE_OK) {
 				http_code = 400;
-				cl->fault_string = strdup(curl_easy_strerror(r));
+				cl->fault_string = u_strdup(curl_easy_strerror(r));
 				curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
 				goto DONE;
 			}
-			u_free(upwd);
-			upwd = malloc(strlen(cl->data.user) + strlen(cl->data.pwd) + 2);
+			//upwd = u_malloc(strlen(_user) + strlen(_pass) + 2);
+			upwd = u_strdup_printf(  "%s:%s", _user ,  _pass);
 			if (!upwd) {
 				r = CURLE_OUT_OF_MEMORY;
 				http_code = 400;
-				cl->fault_string = strdup("Could not malloc memory");
+				cl->fault_string = u_strdup("Could not malloc memory");
 				curl_err("Could not malloc memory");
 				goto DONE;
 			}
-			sprintf(upwd, "%s:%s", cl->data.user, cl->data.pwd);
 			r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
 			if (r != CURLE_OK) {
 				http_code = 400;
-				cl->fault_string = strdup(curl_easy_strerror(r));
+				cl->fault_string = u_strdup(curl_easy_strerror(r));
 				curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
 				goto DONE;
 			}
@@ -416,14 +420,14 @@ wsmc_handler( WsManClient *cl,
 		r = curl_easy_perform(curl);
 		if (r != CURLE_OK) {
 			http_code = 400;
-			cl->fault_string = strdup(curl_easy_strerror(r));
+			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_perform failed");
 			goto DONE;
 		}
 		r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		if (r != CURLE_OK) {
 			http_code = 400;
-			cl->fault_string = strdup(curl_easy_strerror(r));
+			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
 			goto DONE;
 		}
@@ -431,17 +435,16 @@ wsmc_handler( WsManClient *cl,
 		if (http_code != 401) {
 			break;
 		}
-		// we are here because of authentication required
+		/* we are here because of authentication required */
 		r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
 		if (r != CURLE_OK) {
 			http_code = 400;
-			cl->fault_string = strdup(curl_easy_strerror(r));
+			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
 			goto DONE;
 		}
-    /*
-     *  FIXME: Why are we freeing credentials here?
-     *  if (cl->data.auth_set) {
+		/*
+		if (cl->data.auth_set) {
 			if (cl->data.user) {
 				u_free(cl->data.user);
 				cl->data.user = NULL;
@@ -450,13 +453,13 @@ wsmc_handler( WsManClient *cl,
 				u_free(cl->data.pwd);
 				cl->data.pwd = NULL;
 			}
-      }*/
-                cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
+		}
+		*/
+		cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
                         &cl->data.user, &cl->data.pwd);
                 u_buf_clear(con->response);
                 if (cl->data.auth_set == 0) {
-                    // user wants to cancel authentication
-		    //FIXME
+                    /* FIXME: user wants to cancel authentication */
 #if LIBCURL_VERSION_NUM > 0x70C01
                     r = CURLE_LOGIN_DENIED;
 #else
@@ -474,8 +477,10 @@ DONE:
 	u_free(soapact_header);
 	u_free(usag);
 	u_free(upwd);
+	u_free(_pass);
+	u_free(_user);
 #ifdef _WIN32
-	xmlFree(buf);
+	ws_xml_free_memory(buf);
 #else
 	u_free(buf);
 #endif
@@ -510,14 +515,14 @@ int wsmc_transport_init(WsManClient *cl, void *arg)
 void wsmc_transport_fini(WsManClient *cl)
 {
 	pthread_mutex_lock(&curl_mutex);
-	if (!cl->initialized) {
+	if (cl->initialized == 0 ) {
 		pthread_mutex_unlock(&curl_mutex);
 		return;
 	}
 	curl_global_cleanup();
 	cl->initialized = 0;
 	pthread_mutex_unlock(&curl_mutex);
-
+	return;
 }
 
 void

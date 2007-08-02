@@ -94,8 +94,7 @@ wsman_make_action(char *uri, char *op_name)
 
 
 
-WsContextH
-wsmc_create_runtime (void)
+WsContextH wsmc_create_runtime (void)
 {
 	return ws_create_runtime(NULL);
 }
@@ -212,7 +211,7 @@ wsmc_get_context(WsManClient * cl)
 char *
 wsmc_get_hostname(WsManClient * cl)
 {
-	return cl->data.hostname;
+	return cl->data.hostname? u_strdup (cl->data.hostname) : NULL;
 }
 
 
@@ -225,35 +224,35 @@ wsmc_get_port(WsManClient * cl)
 char *
 wsmc_get_scheme(WsManClient * cl)
 {
-	return cl->data.scheme;
+	return cl->data.scheme ?  u_strdup ( cl->data.scheme) : NULL;
 }
 
 
 char *
 wsmc_get_path(WsManClient * cl)
 {
-	return cl->data.path;
+	return cl->data.path ?  u_strdup( cl->data.path ) : NULL;
 }
 
 
 char *
 wsmc_get_user(WsManClient * cl)
 {
-	return cl->data.user;
+	return  cl->data.user ? u_strdup( cl->data.user ) : NULL;
 }
 
 
 char *
 wsmc_get_password(WsManClient * cl)
 {
-	return cl->data.pwd;
+	return   cl->data.pwd ? u_strdup( cl->data.pwd ) : NULL;
 }
 
 
 char *
 wsmc_get_endpoint(WsManClient * cl)
 {
-	return cl->data.endpoint;
+	return cl->data.endpoint ? cl->data.endpoint : NULL;
 }
 
 
@@ -296,6 +295,10 @@ wsmc_options_destroy(client_opt_t * op)
 	if (op->properties) {
 		hash_free(op->properties);
 	}
+	u_free(op->filter);
+	u_free(op->dialect);
+	u_free(op->fragment);
+	u_free(op->cim_ns);
 	u_free(op);
 	return;
 }
@@ -1490,12 +1493,12 @@ wsmc_create(const char *hostname,
 	wsc->wscntx = ws_create_runtime(NULL);
 
 	wsc->dumpfile = stdout;
-	wsc->data.scheme = strdup(scheme ? scheme : "http");
-	wsc->data.hostname = hostname ? strdup(hostname) : strdup("localhost");
+	wsc->data.scheme = u_strdup(scheme ? scheme : "http");
+	wsc->data.hostname = hostname ? u_strdup(hostname) : u_strdup("localhost");
 	wsc->data.port = port;
-	wsc->data.path = strdup(path ? path : "/wsman");
-	wsc->data.user = username ? strdup(username) : NULL;
-	wsc->data.pwd = password ? strdup(password) : NULL;
+	wsc->data.path = u_strdup(path ? path : "/wsman");
+	wsc->data.user = username ? u_strdup(username) : NULL;
+	wsc->data.pwd = password ? u_strdup(password) : NULL;
 	wsc->data.auth_set = 0;
 	wsc->initialized = 0;
 	wsc->transport_timeout = 0;
@@ -1532,10 +1535,13 @@ wsmc_release(WsManClient * cl)
 	if (cl->data.user) {
 		u_free(cl->data.user);
 		cl->data.user = NULL;
-	} if (cl->data.pwd) {
+	}
+
+	if (cl->data.pwd) {
 		u_free(cl->data.pwd);
 		cl->data.pwd = NULL;
 	}
+
 	if (cl->data.endpoint) {
 		u_free(cl->data.endpoint);
 		cl->data.endpoint = NULL;

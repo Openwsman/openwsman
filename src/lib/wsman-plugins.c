@@ -91,7 +91,7 @@ plugin_new(void)
 static void
 plugin_free(WsManPlugin *self)
 {
-    message( "Un-loading plugins: %s", self->p_name ); 
+    message( "Un-loading plugins: %s", self->p_name );
 
     if( self->p_handle && self->cleanup ) {
         (*self->cleanup)( self->p_handle, self->data );
@@ -100,37 +100,22 @@ plugin_free(WsManPlugin *self)
         u_free(self->p_name);
     if( self->p_handle )
         dlclose( self->p_handle );
-//    u_free( self );
 }
 
-static WsManPluginError 
+static WsManPluginError
 plugin_init(WsManPlugin *self, const char *p_name)
 {
     WsManPluginError PluginError = PLUGIN_ERROR_OK ;
-    /*
-    g_return_val_if_fail(self, PLUGIN_ERROR_BADPARMS );
-    g_return_val_if_fail(p_name && strlen(p_name), PLUGIN_ERROR_BADPARMS);
-    */
     self->p_name = u_strdup(p_name) ;
-    if (NULL != (self->p_handle = dlopen(p_name, RTLD_LAZY)))
-    {        
-        if (  dlsym(self->p_handle, "get_endpoints")
+    if (NULL != (self->p_handle = dlopen(p_name, RTLD_LAZY))) {
+        if ( ! dlsym(self->p_handle, "get_endpoints")
                 &&  dlsym(self->p_handle, "init"))
         {
-            /*
-            self->started = (*self->init)(self->p_handle, &self->data);
-            if( !self->started ) {
-                PluginError = PLUGIN_ERROR_INITFAILED;
-            }
-            */
-        } else {
             self->init			        = 0 ;
             self->started	                = 0 ;
             PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
         }
-    } 
-    else 
-    {
+    } else {
         PluginError = PLUGIN_ERROR_NOTLOADED ;
     }
     return PluginError ;
@@ -143,7 +128,7 @@ load_plugin(WsManPlugin *self, const char *p_name)
     WsManPluginError err = plugin_init(self, p_name);
     const char	*plugin_err = dlerror();
     message("Loading plugin: %s", p_name );
- 
+
 	if( NULL == plugin_err )
         plugin_err = "";
     switch( err )
@@ -195,17 +180,17 @@ free_plugins(list_t * plugin_list)
 static int
 select_all_files (const struct dirent *e)
 {
-    return 1; 
+    return 1;
 }
 
 static void
-scan_plugins_in_directory ( WsManListenerH *listener, 
+scan_plugins_in_directory ( WsManListenerH *listener,
                             const char *dir_name)
 {
 	list_t *files = scan_files_in_dir ( dir_name, select_all_files);
 	lnode_t *node = list_first(files);
     listener->plugins = list_create(LISTCOUNT_T_MAX);
-       
+
     while (node != NULL)
     {
         const char* entry_name;
@@ -243,12 +228,12 @@ scan_plugins_in_directory ( WsManListenerH *listener,
 
 int
 wsman_plugins_load(WsManListenerH *listener)
-{   
+{
     scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR);
     return 0;
 }
 
-int 
+int
 wsman_plugins_unload(WsManListenerH *listener)
 {
 

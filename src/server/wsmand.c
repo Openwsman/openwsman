@@ -134,7 +134,7 @@ static void signal_handler(int sig_num)
 
 	debug("Received %s... Shutting down.", sig_name);
 	wsmand_shutdown();
-}				/* signal_handler */
+} /* signal_handler */
 
 
 
@@ -299,6 +299,7 @@ int main(int argc, char **argv)
 
 	wsman_plugins_unload(listener);
 	u_free(listener);
+	debug_destroy_handlers();
 	iniparser_freedict(ini);
 	return 0;
 }

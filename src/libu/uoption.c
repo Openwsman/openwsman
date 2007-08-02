@@ -320,7 +320,7 @@ static char fill_tmp_data(struct tmp_buf *data,
 		data[nd].lint = val;
 		break;
 	case U_OPTION_ARG_STRING:
-		data[nd].ptr = strdup(argptr);
+		data[nd].ptr = u_strdup(argptr);
 		break;
 	case  U_OPTION_ARG_STRING_ARRAY:
 		count = 0;
@@ -329,7 +329,7 @@ static char fill_tmp_data(struct tmp_buf *data,
 			++count;
 		}
 		data[nd].pptr = u_malloc(sizeof(char *) * (count + 2));
-		data[nd].pptr[count] = strdup(argptr);
+		data[nd].pptr[count] = u_strdup(argptr);
 		data[nd].pptr[count + 1] = NULL;
 		while (count != 0) {
 			count--;
@@ -486,15 +486,15 @@ u_option_group_t* u_option_group_new(const char *name,
 	grp = u_zalloc(sizeof(u_option_group_t));
 
 	if (name) {
-		grp->name = strdup(name);
+		grp->name = u_strdup(name);
 	}
 
 	if (descr) {
-		grp->descr = strdup(descr);
+		grp->descr = u_strdup(descr);
 	}
 
 	if (help_descr) {
-		grp->help_descr = strdup(help_descr);
+		grp->help_descr = u_strdup(help_descr);
 	}
 
 	return grp;
@@ -540,7 +540,7 @@ u_option_context_t* u_option_context_new(const char *usage)
 	ctx = (u_option_context_t *) u_zalloc(sizeof(u_option_context_t));
 
 	if (usage) {
-		ctx->usage = strdup(usage);
+		ctx->usage = u_strdup(usage);
 	}
 
 	ctx->groups = list_create(LISTCOUNT_T_MAX);

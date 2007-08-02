@@ -85,6 +85,12 @@ void debug_remove_handler(unsigned int id)
 }
 
 
+void debug_destroy_handlers(void)
+{
+	list_destroy_nodes(handlers);
+	list_destroy(handlers);
+}
+
 static void call_handlers(debug_level_e level, char *str)
 {
 	lnode_t *iter;

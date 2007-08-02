@@ -31,21 +31,21 @@ static string ExtractItems(WsXmlDocH& doc);
 // Construct from params.
 
 OpenWsmanClient::OpenWsmanClient(const char *host,
-				 const int port,
-				 const char *path ,
-				 const char *scheme,
-				 const char *auth_method ,
-				 const char *username,
-				 const char *password
+		const int port,
+		const char *path ,
+		const char *scheme,
+		const char *auth_method ,
+		const char *username,
+		const char *password
 #ifdef _WIN32
-				 // determines which cert store to search
-				 ,const bool local,
-				 // search for a client cert with this name
-				 const char *cert,
-				 // search for a cient cert with this oid
-				 const char *oid
+		// determines which cert store to search
+		,const bool local,
+		// search for a client cert with this name
+		const char *cert,
+		// search for a cient cert with this oid
+		const char *oid
 #endif
-				 )
+		)
 {
 	cl = wsmc_create(host, port, path, scheme, username, password);
 	wsmc_transport_init(cl, (void*)NULL);
@@ -139,7 +139,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 		wsmc_options_destroy(options);
 		throw e;
 	}
-	
+
 	enumContext = wsmc_get_enum_context(enum_response);
 	ws_xml_destroy_doc(enum_response);
 
@@ -155,9 +155,11 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 			throw e;
 		}
 		enumRes.push_back(ExtractItems(doc));
+		u_free(enumContext);
 		enumContext = wsmc_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
 	}
+	u_free(enumContext);
 	wsmc_options_destroy(options);
 }
 
@@ -287,8 +289,8 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 	}
 	long responseCode = wsmc_get_response_code(cl);
 	if (responseCode != 200 &&
-		responseCode != 400 &&
-		responseCode != 500)
+			responseCode != 400 &&
+			responseCode != 500)
 	{
 		char tmp[10];
 		error = "An HTTP error occurred.\n";
@@ -327,8 +329,8 @@ bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes)
 {
 	long responseCode = wsmc_get_response_code(cl);
 	if(wsmc_get_last_error(cl) ||
-		(responseCode != 200 && responseCode != 400 && responseCode != 500) ||
-		!enumerationRes)
+			(responseCode != 200 && responseCode != 400 && responseCode != 500) ||
+			!enumerationRes)
 	{
 		CheckWsmanResponse(cl, enumerationRes);
 	}
@@ -384,31 +386,31 @@ void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const boo
 // 
 void OpenWsmanClient::SetServerCert(const char *cainfo, const char *capath)
 {
-  // This means curl verifies the server certificate
-  wsman_transport_set_verify_peer(cl, 1);
+	// This means curl verifies the server certificate
+	wsman_transport_set_verify_peer(cl, 1);
 
-  // This means the certificate must indicate that the server is the server to which you meant to connect.
-  wsman_transport_set_verify_host(cl, 2);
+	// This means the certificate must indicate that the server is the server to which you meant to connect.
+	wsman_transport_set_verify_host(cl, 2);
 
-  if (cainfo) {
-    wsman_transport_set_cainfo(cl, (char*)cainfo);
-  }
-  if (capath) {
-    wsman_transport_set_capath(cl, (char*)capath);
-  }
+	if (cainfo) {
+		wsman_transport_set_cainfo(cl, (char*)cainfo);
+	}
+	if (capath) {
+		wsman_transport_set_capath(cl, (char*)capath);
+	}
 
 }
-      
+
 // Set client certificates params
 // params: cert - file name of your certificate.
 //         key  - file name of your private key.
 void OpenWsmanClient::SetClientCert(const char *cert, const char *key)
 {
-  if (cert) { 
-    wsman_transport_set_cert(cl, (char*)cert);
-  }
-  if (key) {
-    wsman_transport_set_key(cl, (char*)key);
-  }
+	if (cert) { 
+		wsman_transport_set_cert(cl, (char*)cert);
+	}
+	if (key) {
+		wsman_transport_set_key(cl, (char*)key);
+	}
 }
 #endif

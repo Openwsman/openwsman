@@ -93,7 +93,6 @@ extern "C" {
 	struct _WsManClient {
 		void *hdl;
 		int flags;
-		int initialized;
 		pthread_mutex_t mutex;
 		WsContextH wscntx;
 		WsManClientData data;
@@ -111,6 +110,7 @@ extern "C" {
                 unsigned long transport_timeout;
                 char * user_agent;
 		FILE *dumpfile;
+		long initialized;
 	};
 
 

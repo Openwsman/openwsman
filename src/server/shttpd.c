@@ -410,7 +410,6 @@ static int		inetd;		/* Inetd flag */
 static void	io_inc_tail(struct io *io, size_t n);
 static int	casecmp(register const char *s1, register const char *s2);
 static int	ncasecmp(register const char *, register const char *, size_t);
-static char	*mystrdup(const char *str);
 static void	disconnect(struct conn *c);
 static int	writeremote(struct conn *c, const char *buf, size_t len);
 static int	readremote(struct conn *c, char *buf, size_t len);
@@ -483,8 +482,8 @@ shttpd_addmimetype(struct shttpd_ctx *ctx, const char *ext, const char *mime)
 
 	/* XXX possible resource leak  */
 	if ((p = calloc(1, sizeof(*p))) != NULL &&
-			(p->ext = mystrdup(ext)) != NULL &&
-			(p->mime = mystrdup(mime)) != NULL) {
+			(p->ext = u_strdup(ext)) != NULL &&
+			(p->mime = u_strdup(mime)) != NULL) {
 		p->extlen	= strlen(p->ext);
 		p->next		= ctx->mimetypes;
 		ctx->mimetypes	= p;
@@ -676,7 +675,7 @@ set_aliases(struct shttpd_ctx *ctx, void *arg, const char *string)
 
 	ctx = NULL;	/* Unused */
 
-	for (s = p = copy = mystrdup(string); *s; s = p) {
+	for (s = p = copy = u_strdup(string); *s; s = p) {
 		if ((p = strchr(s, ',')) != NULL)
 			*p++ = '\0';
 		else
@@ -686,8 +685,8 @@ set_aliases(struct shttpd_ctx *ctx, void *arg, const char *string)
 		if (sscanf(s, "%[^=]=%s", dir, uri) != 2)
 			elog(ERR_DEBUG, "set_aliases: bad format: %s", string);
 		else if ((mp = calloc(1, sizeof(*mp))) != NULL) {
-			mp->mountpoint	= mystrdup(uri);
-			mp->path	= mystrdup(dir);
+			mp->mountpoint	= u_strdup(uri);
+			mp->path	= u_strdup(dir);
 			mp->next	= *head;
 			*head		= mp;
 			elog(ERR_DEBUG, "set_aliases: [%s]=[%s]", dir, uri);
@@ -709,7 +708,7 @@ set_envvars(struct shttpd_ctx *ctx, void *arg, const char *string)
 
 	ctx = NULL;	/* Unused */
 
-	for (s = p = copy = mystrdup(string); *s; s = p) {
+	for (s = p = copy = u_strdup(string); *s; s = p) {
 		if ((p = strchr(s, ',')) != NULL)
 			*p++ = '\0';
 		else
@@ -719,8 +718,8 @@ set_envvars(struct shttpd_ctx *ctx, void *arg, const char *string)
 		if (sscanf(s, "%[^=]=%s", name, value) != 2)
 			elog(ERR_DEBUG, "set_envvars: bad format: %s", string);
 		else if ((ep = calloc(1, sizeof(*ep))) != NULL) {
-			ep->name	= mystrdup(name);
-			ep->value	= mystrdup(value);
+			ep->name	= u_strdup(name);
+			ep->value	= u_strdup(value);
 			ep->next	= *head;
 			*head		= ep;
 			elog(ERR_DEBUG, "set_envvars: [%s]=[%s]", name, value);
@@ -986,7 +985,7 @@ shttpd_register_url(struct shttpd_ctx *ctx,
 		p->func		= cb;
 		p->data		= data;
 		p->authnotneeded = authnotneeded;
-		p->url		= mystrdup(url);
+		p->url		= u_strdup(url);
 		p->next		= ctx->urls;
 		ctx->urls	= p;
 	}
@@ -1002,7 +1001,7 @@ setopt(const char *var, const char *val)
 
 	if (opt->tmp != NULL)
 		free(opt->tmp);
-	opt->tmp = mystrdup(val);
+	opt->tmp = u_strdup(val);
 }
 
 
@@ -1030,8 +1029,8 @@ shttpd_protect_url(struct shttpd_ctx *ctx, const char *url, const char *file)
 	struct userauth	*p;
 
 	if ((p = calloc(1, sizeof(*p))) != NULL) {
-		p->url		= mystrdup(url);
-		p->filename	= mystrdup(file);
+		p->url		= u_strdup(url);
+		p->filename	= u_strdup(file);
 		p->next		= ctx->auths;
 		ctx->auths	= p;
 	}
@@ -1223,19 +1222,6 @@ ncasecmp(register const char *s1, register const char *s2, size_t len)
 	return (ret);
 }
 
-/* strdup() is not standard, define it here */
-static char *
-mystrdup(const char *str)
-{
-	size_t	len;
-	char	*p;
-
-	len = strlen(str);
-	if ((p = malloc(len + 1)) != NULL)
-		(void) strcpy(p, str);
-
-	return (p);
-}
 
 /*
  * Disconnect from remote side, free resources
@@ -1751,7 +1737,7 @@ parse_headers(struct conn *c, char *s)
 			/* Fetch header value into the connection structure */
 			if (header->type == HDR_STRING) {
 				if (v->value_str == NULL)
-					v->value_str = mystrdup(val);
+					v->value_str = u_strdup(val);
 			} else if (header->type == HDR_INT) {
 				v->value_int = strtoul(val, NULL, 10);
 			} else if (header->type == HDR_DATE) {
