@@ -56,10 +56,14 @@ extern int wsman_is_auth_method(WsManClient *cl, int method);
 
 extern int wsmc_transport_init(WsManClient *cl, void *arg);
 
+extern void wsman_transport_close_transport(WsManClient *cl);
+
 extern void wsmc_transport_fini(WsManClient *cl);
 
+extern void   wsman_transport_set_agent(WsManClient *cl, char *agent);
 extern char * wsman_transport_get_agent (WsManClient *cl);
 
+extern void   wsman_transport_set_auth_method(WsManClient *cl, char *am);
 extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
 extern char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
@@ -68,35 +72,40 @@ extern  wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient *cl);
 
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 
+extern void          wsman_transport_set_timeout(WsManClient *cl, unsigned long timeout);
 extern unsigned long wsman_transport_get_timeout(WsManClient *cl);
 
 extern void wsman_transport_set_verify_peer(WsManClient *cl, int value);
+extern int  wsman_transport_get_verify_peer(WsManClient *cl);
 
 extern void wsman_transport_set_verify_host(WsManClient *cl, int value);
+extern int  wsman_transport_get_verify_host(WsManClient *cl);
 
-extern void wsman_transport_set_proxy(WsManClient *cl, char *proxy);
+extern void  wsman_transport_set_proxy(WsManClient *cl, char *proxy);
+extern char *wsman_transport_get_proxy(WsManClient *cl);
 
-extern void wsman_transport_set_proxyauth(WsManClient *cl, char *pauth);
+extern void  wsman_transport_set_proxyauth(WsManClient *cl, char *pauth);
+extern char *wsman_transport_get_proxyauth(WsManClient *cl);
 
-extern void wsman_transport_set_timeout(WsManClient *cl, unsigned long timeout);
+extern void  wsman_transport_set_cainfo(WsManClient *cl, char *cainfo);
+extern char *wsman_transport_get_cainfo(WsManClient *cl);
 
-extern void wsman_transport_set_agent(WsManClient *cl, char *agent);
+extern void  wsman_transport_set_capath(WsManClient *cl, char *capath);
+extern char *wsman_transport_get_capath(WsManClient *cl);
 
-extern void wsman_transport_set_auth_method(WsManClient *cl, char *am);
+extern void  wsman_transport_set_caoid(WsManClient *cl, char *oid);
+extern char *wsman_transport_get_caoid(WsManClient *cl);
 
-extern void wsman_transport_set_cainfo(WsManClient *cl, char *cainfo);
-
-extern void wsman_transport_set_capath(WsManClient *cl, char *capath);
-
-extern void wsman_transport_set_caoid(WsManClient *cl, char *oid);
 #ifdef _WIN32
 extern void wsman_transport_set_calocal(WsManClient *cl, BOOL local);
+extern BOOL wsman_transport_get_calocal(WsManClient *cl);
 #endif
-extern void wsman_transport_set_cert(WsManClient *cl, char *cert);
 
-extern void wsman_transport_set_key(WsManClient *cl, char *key);
+extern void  wsman_transport_set_cert(WsManClient *cl, char *cert);
+extern char *wsman_transport_get_cert(WsManClient *cl);
 
-extern void wsman_transport_close_transport(WsManClient *cl);
+extern void  wsman_transport_set_key(WsManClient *cl, char *key);
+extern char *wsman_transport_get_key(WsManClient *cl);
 
 #ifdef DEBUG_VERBOSE
 long long get_transfer_time(void);

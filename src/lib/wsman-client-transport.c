@@ -133,6 +133,59 @@ void wsmc_transport_set_auth_request_func(WsManClient * cl,
 	cl->authentication.auth_request_func = f;
 }
 
+
+void wsman_transport_set_agent(WsManClient * cl, char *arg)
+{
+	cl->user_agent = arg;
+}
+
+char *wsman_transport_get_agent(WsManClient * cl)
+{
+	if (cl->user_agent)
+		return cl->user_agent;
+	else
+		return DEFAULT_USER_AGENT;
+}
+
+
+void wsman_transport_set_proxy(WsManClient * cl, char *arg)
+{
+	cl->proxy_data.proxy = arg;
+}
+
+char *wsman_transport_get_proxy(WsManClient *cl)
+{
+	return cl->proxy_data.proxy ? u_strdup( cl->proxy_data.proxy ) : NULL;
+}
+
+
+void wsman_transport_set_proxyauth(WsManClient * cl, char *arg)
+{
+	cl->proxy_data.proxy_auth = arg;
+}
+
+char *wsman_transport_get_proxyauth(WsManClient *cl)
+{
+	return cl->proxy_data.proxy_auth ? u_strdup( cl->proxy_data.proxy_auth ) : NULL;
+}
+
+
+unsigned long wsman_transport_get_timeout(WsManClient * cl)
+{
+	return cl->transport_timeout;
+}
+
+void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
+{
+	cl->transport_timeout = arg;
+}
+
+
+void wsman_transport_set_auth_method(WsManClient * cl, char *arg)
+{
+	cl->authentication.method = arg;
+}
+
 int wsman_is_auth_method(WsManClient * cl, int method)
 {
 	if (cl->authentication.method == NULL) {
@@ -163,83 +216,96 @@ wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient * cl)
 }
 
 
-void wsman_transport_set_agent(WsManClient * cl, char *arg)
-{
-	cl->user_agent = arg;
-}
-
-void wsman_transport_set_proxy(WsManClient * cl, char *arg)
-{
-	cl->proxy_data.proxy = arg;
-}
-
-void wsman_transport_set_proxyauth(WsManClient * cl, char *arg)
-{
-	cl->proxy_data.proxy_auth = arg;
-}
-
-unsigned long wsman_transport_get_timeout(WsManClient * cl)
-{
-	return cl->transport_timeout;
-}
-
-void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
-{
-	cl->transport_timeout = arg;
-}
-
-char *wsman_transport_get_agent(WsManClient * cl)
-{
-	if (cl->user_agent)
-		return cl->user_agent;
-	else
-		return DEFAULT_USER_AGENT;
-}
-
-void wsman_transport_set_auth_method(WsManClient * cl, char *arg)
-{
-	cl->authentication.method = arg;
-}
-
 void wsman_transport_set_verify_peer(WsManClient * cl, int arg)
 {
 	cl->authentication.verify_peer = arg;
 }
+
+int wsman_transport_get_verify_peer(WsManClient *cl)
+{
+	return cl->authentication.verify_peer;
+}
+
 
 void wsman_transport_set_verify_host(WsManClient * cl, int arg)
 {
 	cl->authentication.verify_host = arg;
 }
 
+int wsman_transport_get_verify_host(WsManClient *cl)
+{
+	return cl->authentication.verify_host;
+}
+
+
 void wsman_transport_set_cainfo(WsManClient * cl, char *arg)
 {
 	cl->authentication.cainfo = arg;
 }
 
+char *wsman_transport_get_cainfo(WsManClient *cl)
+{
+	return cl->authentication.cainfo ? u_strdup( cl->authentication.cainfo ) : NULL;
+}
+
+
 void wsman_transport_set_capath(WsManClient *cl, char *capath)
 {
-  cl->authentication.capath = capath;
+	cl->authentication.capath = capath;
 }
+
+char *wsman_transport_get_capath(WsManClient *cl)
+{
+	return cl->authentication.capath ? u_strdup( cl->authentication.capath ) : NULL;
+}
+
+
 void wsman_transport_set_caoid(WsManClient *cl, char *oid)
 {
 	cl->authentication.caoid = oid;
 }
+
+char *wsman_transport_get_caoid(WsManClient *cl)
+{
+	return cl->authentication.caoid ? u_strdup( cl->authentication.caoid ) : NULL;
+}
+
+
 #ifdef _WIN32
 void wsman_transport_set_calocal(WsManClient *cl, BOOL local)
 {
 	cl->authentication.calocal = local;
 }
+
+BOOL wsman_transport_get_calocal(WsManClient *cl)
+{
+	return cl->authentication.calocal;
+}
 #endif
+
 
 void wsman_transport_set_cert(WsManClient * cl, char *arg)
 {
 	cl->authentication.sslcert = arg;
 }
 
+char *wsman_transport_get_cert(WsManClient *cl)
+{
+	return cl->authentication.sslcert ? u_strdup( cl->authentication.sslcert ) : NULL;
+}
+
+
 void wsman_transport_set_key(WsManClient *cl, char *key)
 {
-  cl->authentication.sslkey = key;
+	cl->authentication.sslkey = key;
 }
+
+char *wsman_transport_get_key(WsManClient *cl)
+{
+	return cl->authentication.sslkey ? u_strdup( cl->authentication.sslkey ) : NULL;
+}
+
+
 char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {
 	switch (err) {
