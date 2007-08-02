@@ -96,8 +96,6 @@ extern void wsman_transport_set_cert(WsManClient *cl, char *cert);
 
 extern void wsman_transport_set_key(WsManClient *cl, char *key);
 
-extern void  wsman_transport_set_agent (WsManClient *cl, char *arg);
-
 extern void wsman_transport_close_transport(WsManClient *cl);
 
 #ifdef DEBUG_VERBOSE
