@@ -134,9 +134,9 @@ void wsmc_transport_set_auth_request_func(WsManClient * cl,
 }
 
 
-void wsman_transport_set_agent(WsManClient * cl, char *arg)
+void wsman_transport_set_agent(WsManClient * cl, const char *arg)
 {
-	cl->user_agent = arg;
+	cl->user_agent = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_agent(WsManClient * cl)
@@ -148,9 +148,9 @@ char *wsman_transport_get_agent(WsManClient * cl)
 }
 
 
-void wsman_transport_set_proxy(WsManClient * cl, char *arg)
+void wsman_transport_set_proxy(WsManClient * cl, const char *arg)
 {
-	cl->proxy_data.proxy = arg;
+	cl->proxy_data.proxy = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_proxy(WsManClient *cl)
@@ -159,9 +159,9 @@ char *wsman_transport_get_proxy(WsManClient *cl)
 }
 
 
-void wsman_transport_set_proxyauth(WsManClient * cl, char *arg)
+void wsman_transport_set_proxyauth(WsManClient * cl, const char *arg)
 {
-	cl->proxy_data.proxy_auth = arg;
+	cl->proxy_data.proxy_auth = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_proxyauth(WsManClient *cl)
@@ -180,10 +180,9 @@ void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
 	cl->transport_timeout = arg;
 }
 
-
-void wsman_transport_set_auth_method(WsManClient * cl, char *arg)
+void wsman_transport_set_auth_method(WsManClient * cl, const char *arg)
 {
-	cl->authentication.method = arg;
+	cl->authentication.method = arg ? u_strdup( arg ) : NULL;
 }
 
 int wsman_is_auth_method(WsManClient * cl, int method)
@@ -238,9 +237,9 @@ int wsman_transport_get_verify_host(WsManClient *cl)
 }
 
 
-void wsman_transport_set_cainfo(WsManClient * cl, char *arg)
+void wsman_transport_set_cainfo(WsManClient * cl, const char *arg)
 {
-	cl->authentication.cainfo = arg;
+	cl->authentication.cainfo = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_cainfo(WsManClient *cl)
@@ -249,9 +248,9 @@ char *wsman_transport_get_cainfo(WsManClient *cl)
 }
 
 
-void wsman_transport_set_capath(WsManClient *cl, char *capath)
+void wsman_transport_set_capath(WsManClient *cl, const char *arg)
 {
-	cl->authentication.capath = capath;
+	cl->authentication.capath = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_capath(WsManClient *cl)
@@ -260,9 +259,9 @@ char *wsman_transport_get_capath(WsManClient *cl)
 }
 
 
-void wsman_transport_set_caoid(WsManClient *cl, char *oid)
+void wsman_transport_set_caoid(WsManClient *cl, const char *arg)
 {
-	cl->authentication.caoid = oid;
+	cl->authentication.caoid = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_caoid(WsManClient *cl)
@@ -284,9 +283,9 @@ BOOL wsman_transport_get_calocal(WsManClient *cl)
 #endif
 
 
-void wsman_transport_set_cert(WsManClient * cl, char *arg)
+void wsman_transport_set_cert(WsManClient * cl, const char *arg)
 {
-	cl->authentication.sslcert = arg;
+	cl->authentication.sslcert = arg ? u_strdup( arg ) : NULL;
 }
 
 char *wsman_transport_get_cert(WsManClient *cl)
@@ -295,9 +294,9 @@ char *wsman_transport_get_cert(WsManClient *cl)
 }
 
 
-void wsman_transport_set_key(WsManClient *cl, char *key)
+void wsman_transport_set_key(WsManClient *cl, const char *key)
 {
-	cl->authentication.sslkey = key;
+	cl->authentication.sslkey = key ? u_strdup( key ) : NULL;
 }
 
 char *wsman_transport_get_key(WsManClient *cl)
