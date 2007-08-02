@@ -88,15 +88,17 @@ extern "C" {
 void ws_xml_free_memory(void *ptr);
 
 typedef int (*WsXmlEnumCallback) (WsXmlNodeH, void *);
+
 typedef int (*WsXmlNsEnumCallback) (WsXmlNodeH, WsXmlNsH, void *);
 
-
-	// Dumping 
+	// Dumping
 void ws_xml_dump_node_tree(FILE * f, WsXmlNodeH node);
+
 void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
 				  int *ptrSize);
 
 void ws_xml_dump_doc(FILE * f, WsXmlDocH doc);
+
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
 			    char *encoding);
 
@@ -109,28 +111,37 @@ void ws_xml_destroy_doc(WsXmlDocH doc);
 char *ws_xml_get_xpath_value(WsXmlDocH doc, char *expression);
 
 WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc);
+
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc);
+
 WsXmlNodeH ws_xml_get_soap_body(WsXmlDocH doc);
+
 WsXmlNodeH ws_xml_get_soap_element(WsXmlDocH doc, const char *name);
-
-
 
 
 	// WsXmlNode handling
 WsXmlDocH ws_xml_get_node_doc(WsXmlNodeH node);
 
 void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
+
 int ws_xml_duplicate_children(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node);
 
 int ws_xml_get_child_count(WsXmlNodeH parent);
+
 WsXmlNodeH ws_xml_get_child(WsXmlNodeH parent, int index,
 			    const char *nsUri, const char *localName);
+
 int ws_xml_enum_children(WsXmlNodeH parent, WsXmlEnumCallback callback,
 			 void *data, int bRecursive);
+
 WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, const char *ns,
 			    const char *localName, const char *val);
+
+WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
+					 const char *nsUri,
+					 const char *format, ...);
 
 WsXmlNsH ws_xml_ns_add(WsXmlNodeH node, const char *uri,
 		       const char *prefix);
@@ -154,9 +165,12 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 			 const char *name);
 
 char *ws_xml_get_node_local_name(WsXmlNodeH node);
+
 char *ws_xml_get_node_name_ns(WsXmlNodeH node);
+
 int ws_xml_set_node_name(WsXmlNodeH node, const char *nsUri,
 			 const char *name);
+
 int ws_xml_set_node_qname_val(WsXmlNodeH node, const char *valNsUri,
 			      const char *valName);
 
@@ -169,26 +183,27 @@ WsXmlNsH ws_xml_find_ns(WsXmlNodeH node, const char *nsUri,
 			const char *prefix, int bWalkUpTree);
 
 WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index);
+
 WsXmlNsH ws_xml_define_ns(WsXmlNodeH node, const char *nsUri,
 			  const char *nsPrefix, int bDefault);
 char *ws_xml_get_ns_prefix(WsXmlNsH ns);
+
 char *ws_xml_get_ns_uri(WsXmlNsH ns);
 
-
 unsigned long ws_xml_get_node_ulong(WsXmlNodeH node);
+
 int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal);
 
 char *ws_xml_get_node_text(WsXmlNodeH node);
+
 int ws_xml_set_node_text(WsXmlNodeH node, const char *text);
-
-
-
 
 void ws_xml_duplicate_attr(WsXmlNodeH dstNode, WsXmlNodeH srcNode);
 
 int ws_xml_get_node_attr_count(WsXmlNodeH node);
 
 WsXmlAttrH ws_xml_get_node_attr(WsXmlNodeH node, int index);
+
 WsXmlAttrH ws_xml_find_node_attr(WsXmlNodeH node, const char *attrNs,
 				 const char *attrName);
 
@@ -204,21 +219,24 @@ int ws_xml_find_attr_bool(WsXmlNodeH node, const char *ns,
 			  const char *attrName);
 
 void ws_xml_remove_node_attr(WsXmlAttrH attr);
+
 char *ws_xml_get_attr_name(WsXmlAttrH attr);
+
 char *ws_xml_get_attr_ns(WsXmlAttrH attr);
+
 char *ws_xml_get_attr_ns_prefix(WsXmlAttrH attr);
+
 char *ws_xml_get_attr_value(WsXmlAttrH attr);
+
 char *ws_xml_find_attr_value(WsXmlNodeH node, const char *ns,
 			     const char *attrName);
-
-
 
 void ws_xml_make_default_prefix(WsXmlNodeH node, const char *uri,
 				char *buf, int bufsize);
 
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 
-WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc, 
+WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
 		const char *rootNsUri,
 		const char *rootName );
 

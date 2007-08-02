@@ -90,21 +90,12 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
 
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
 
-
-/*
-char* ws_xml_find_text_in_doc(WsXmlDocH doc, const char* nsUri, const char* name);
-char* ws_xml_find_text_in_tree(WsXmlNodeH head, const char* nsUri, const char* name, int bRecursive);
-*/
-
 WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node);
+
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 
-
-/*
-WsXmlNodeH ws_xml_get_soap_fault(WsXmlDocH doc);
-WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc);
-*/
 int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[]);
+
 void ws_xml_parser_destroy(SoapH soap);
 
 int ws_xml_get_child_count(WsXmlNodeH parent);
@@ -123,14 +114,9 @@ WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri,
 			   const char *prefix);
 
-
-WsXmlNodeH ws_xml_add_empty_child_format(WsXmlNodeH node,
-					 const char *nsUri,
-					 const char *format, ...);
-
 int ws_xml_check_xpath(WsXmlDocH doc, const char *xpath_expr);
-int ws_xml_utf8_strlen(char *buf);
 
+int ws_xml_utf8_strlen(char *buf);
 
 void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang);
 

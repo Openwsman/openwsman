@@ -18,6 +18,7 @@ wsmaninclude_HEADERS = \
 	wsman-client.h \
 	wsman-declarations.h \
 	wsman-soap.h \
+	wsman-epr.h \
 	wsman-soap-envelope.h
 
 OWSMAN_INCLUDES = \
