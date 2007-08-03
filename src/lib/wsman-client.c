@@ -810,9 +810,9 @@ wsmc_create_request(WsManClient * cl,
 		break;
 	case WSMAN_ACTION_UNSUBSCRIBE:
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
-				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
+				XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
 		if(data) {
-			ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
+			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
 	case WSMAN_ACTION_RENEW:
@@ -823,7 +823,7 @@ wsmc_create_request(WsManClient * cl,
 				(unsigned int) options->timeout % 1000);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
-			ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
+			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
 	case WSMAN_ACTION_EVENT_PULL:

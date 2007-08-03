@@ -111,6 +111,8 @@ void wsman_set_fault(WsmanMessage * msg,
 
 int wsman_is_identify_request(WsXmlDocH doc);
 
+int wsman_is_event_related_request(WsXmlDocH doc);
+
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 
 void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace);

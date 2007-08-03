@@ -1225,6 +1225,7 @@ create_subs_info(SoapOpH op,
 		fault_code = WSMAN_INTERNAL_ERROR;
 		goto DONE;
 	}
+	subsInfo->uri = u_strdup(wsman_get_resource_uri(epcntx, indoc));
 	subsInfo->notificationDoc = list_create(-1);
 	if(!subNode) {
 		message("No subsribe body");
@@ -1360,6 +1361,7 @@ DONE:
 static void
 destroy_subsinfo(WsSubscribeInfo * subsInfo)
 {
+	u_free(subsInfo->uri);
 	u_free(subsInfo->auth_data.username);
 	u_free(subsInfo->auth_data.password);
 	u_free(subsInfo->epr_notifyto);
@@ -1436,23 +1438,23 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if (!doc)
 		goto DONE;
 	body = ws_xml_get_soap_body(doc);
-	header = ws_xml_get_soap_header(doc);
-	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
-	if(inNode){
-		temp = ws_xml_get_soap_header(doc);
-		temp = ws_xml_get_child(temp, 0, XML_NS_ADDRESSING, WSA_TO);
-		ws_xml_add_child(inNode,XML_NS_ADDRESSING,WSA_ADDRESS,ws_xml_get_node_text(temp));
-	}
-	inNode = ws_xml_add_child(inNode, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, NULL);
-	if(inNode)
-		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_IDENTIFIER, subsInfo->subsId);
+//	header = ws_xml_get_soap_header(doc);
+	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
+	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
 	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);	
 	header = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 	if(header)
-		ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, ws_xml_get_node_text(header));
+		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, ws_xml_get_node_text(header));
+	inNode = temp;
+	if(inNode){
+		temp = ws_xml_get_soap_header(_doc);
+		temp = ws_xml_get_child(temp, 0, XML_NS_ADDRESSING, WSA_TO);
+		ws_xml_add_child(inNode,XML_NS_ADDRESSING,WSA_ADDRESS,ws_xml_get_node_text(temp));
+	}
+	temp = ws_xml_add_child(inNode, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, NULL);
+	if(temp)
+		ws_xml_add_child_format(temp, XML_NS_EVENTING, WSEVENT_IDENTIFIER, "uuid:%s", subsInfo->subsId);
 
-	ws_serialize_str(epcntx, body, NULL,
-			    XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, 0);
 // To create the event report thread
 	pthread_t eventreport;
 	pthread_attr_t pattrs;
@@ -1527,6 +1529,11 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	body = ws_xml_get_soap_body(_doc);
 	header = ws_xml_get_soap_header(_doc);
 	inNode = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
+	if(inNode == NULL) {
+		status.fault_code = WSE_INVALID_MESSAGE;
+		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+		goto DONE;
+	}
 	char *uuid = ws_xml_get_node_text(inNode);
 	pthread_mutex_lock(&soap->lockSubs);
 	lnode_t * t = list_first(soap->subscriptionList);
@@ -1538,10 +1545,10 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	}
 	subsInfo = (WsSubscribeInfo *)t->list_data;
-	if(strcmp(subsInfo->subsId, uuid)) {
+	if(strcmp(subsInfo->subsId, uuid+5)) {
 		while((t == list_next(soap->subscriptionList, t))) {
 			subsInfo = (WsSubscribeInfo *)t->list_data;
-			if(!strcmp(subsInfo->subsId, uuid)) break;
+			if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		}
 	}
 	if(t) {

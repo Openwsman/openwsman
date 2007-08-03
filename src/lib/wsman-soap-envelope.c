@@ -410,7 +410,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 		debug("no header");
 		goto cleanup;
 	} else {
-		if (!wsman_is_identify_request(doc)) {
+		if (!wsman_is_identify_request(doc) && !wsman_is_event_related_request(doc)) {
 			WsXmlNodeH resource_uri =
 			    ws_xml_get_child(header, 0,
 					     XML_NS_WS_MAN,
@@ -1153,6 +1153,18 @@ int wsman_is_identify_request(WsXmlDocH doc)
 	if (node)
 		return 1;
 	else
+		return 0;
+}
+
+int wsman_is_event_related_request(WsXmlDocH doc)
+{
+	WsXmlNodeH node = ws_xml_get_soap_header(doc);
+	node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ACTION);
+	char * action = ws_xml_get_node_text(node);
+	if(strcmp(action, EVT_ACTION_UNSUBSCRIBE) ==0 || strcmp(action, EVT_ACTION_RENEW) ==0 
+		|| strcmp(action, EVT_ACTION_PULL) == 0)
+		return 1;
+	else 
 		return 0;
 }
 

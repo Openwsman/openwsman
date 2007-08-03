@@ -983,11 +983,27 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	}
 	uri = wsman_get_resource_uri(cntx, doc);
 	action = wsman_get_action(cntx, doc);
+	if(wsman_is_event_related_request(doc)) {
+		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
+		char *uuid = ws_xml_get_node_text(temp);
+		debug("Request uuid: %s", uuid);
+		if(uuid) {
+			SoapH soap = cntx->soap;
+			lnode_t *t = list_first(soap->subscriptionList);
+			while(t != NULL) {
+				WsSubscribeInfo *subsInfo = (WsSubscribeInfo *)t->list_data;
+				if(!strcmp(uuid+5, subsInfo->subsId)) {
+					uri = subsInfo->uri;
+					break;
+				}
+				t = list_next(soap->subscriptionList, t);
+			}
+		}
+	}
 	debug("uri: %s, action: %s", uri, action);
 	if ((!uri || !action) && !wsman_is_identify_request(doc)) {
 		goto cleanup;
 	}
-
 	while (node != NULL) {
 		WsDispatchInterfaceInfo *ifc =
 		    (WsDispatchInterfaceInfo *) node->list_data;
@@ -1048,6 +1064,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 			}
 		}
 	}
+	debug("before ws_remove_context_val");
 	ws_remove_context_val(cntx, WSM_RESOURCE_URI);
 
 	if (ep != NULL) {

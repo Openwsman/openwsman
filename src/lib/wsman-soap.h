@@ -321,6 +321,7 @@ struct __WsSubscribeInfo {
 	unsigned char thread_started;
 	char            subsId[EUIDLEN];
 	char *	soapNs;
+	char *	uri;
 	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
 	WsXmlDocH referenceParam;
 	char * locale; // language code
