@@ -780,6 +780,7 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 		return 1;
 	}
 
+
 	retVal =
 	    op->dispatch->serviceCallback((SoapOpH) op,
 					  op->dispatch->serviceData,

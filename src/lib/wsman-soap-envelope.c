@@ -720,6 +720,39 @@ int wsman_parse_enum_request(WsContextH cntx,
 }
 
 
+int wsman_parse_event_request(WsContextH cntx, WsSubscribeInfo * subsInfo)
+{
+	WsXmlNodeH node;
+	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	if (!doc)
+		return 0;
+
+	node = ws_xml_get_soap_body(doc);
+	if (node && (node = ws_xml_get_child(node, 0,
+					XML_NS_EVENTING,
+					WSEVENT_SUBSCRIBE))) {
+		WsXmlNodeH filter = ws_xml_get_child(node,
+				0, XML_NS_WS_MAN, WSM_FILTER);
+
+		// Filter
+		if (filter) {
+			char *attrVal = ws_xml_find_attr_value(filter,
+					NULL, WSM_DIALECT);
+			if (!attrVal) attrVal = WSM_XPATH_FILTER_DIALECT;
+			if (strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 || strcmp(attrVal, WSM_XPATH_EVENTROOT_FILTER) == 0) {
+				filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+				f->query = u_strdup(ws_xml_get_node_text(filter));
+				debug("Xpath filter: %s", f->query );
+				subsInfo->filter = f;
+			}
+		else {
+			subsInfo->filter = NULL;
+			}
+		}
+	}
+	return 1;
+}
+
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 		const char *op)
 {

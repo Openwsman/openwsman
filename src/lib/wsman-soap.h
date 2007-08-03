@@ -69,6 +69,11 @@
 #define WS_DISP_TYPE_DIRECT_CREATE           18
 #define WS_DISP_TYPE_DIRECT_DELETE           19
 #define WS_DISP_TYPE_ENUM_REFINSTS           21
+#define WS_DISP_TYPE_SUBSCRIBE		22
+#define WS_DISP_TYPE_UNSUBSCRIBE		23
+#define WS_DISP_TYPE_RENEW			24
+#define WS_DISP_TYPE_EVT_PULL			25
+#define WS_DISP_TYPE_ACK				26
 #define WS_DISP_TYPE_PRIVATE                0xfffe
 
 
@@ -76,7 +81,7 @@
 struct __dispatch_t;
 typedef struct __dispatch_t *SoapDispatchH;
 
-typedef         SoapDispatchH(*DispatcherCallback) (WsContextH, void *, WsXmlDocH);
+typedef SoapDispatchH (*DispatcherCallback) (WsContextH, void *, WsXmlDocH);
 
 
 struct __SoapOp {
@@ -96,6 +101,8 @@ struct __Soap {
 	list_t         *dispatchList;
 	list_t         *responseList;
 	list_t         *processedMsgIdList;
+	pthread_mutex_t lockSubs; 
+	list_t	         *subscriptionList;
 
 	WsContextH      cntx;
 	              //TBD claen up and initilaize it;
@@ -149,6 +156,13 @@ struct _WS_CONTEXT {
 //	int             last_get_name_idx;
 };
 
+typedef struct __WsSubscribeInfo WsSubscribeInfo;
+// EventThreadContext
+struct __WsEventThreadContext {
+	SoapH soap;
+	WsSubscribeInfo *subsInfo;
+};
+typedef struct __WsEventThreadContext * WsEventThreadContextH; 
 
 typedef void    (*WsProcType) (void);
 struct __XmlSerializerInfo;
@@ -208,6 +222,14 @@ typedef struct __WsManDispatcherInfo WsManDispatcherInfo;
 
 typedef struct __WsEnumerateInfo WsEnumerateInfo;
 
+typedef int	(*WsEndPointSubscribe) (WsContextH,WsSubscribeInfo *, WsmanStatus *, void *);
+
+typedef int	(*WsEndPointUnSubscribe) (WsContextH,WsSubscribeInfo *, WsmanStatus *, void *);
+
+typedef int	(*WsEndPointRenew) (WsContextH,WsSubscribeInfo *, WsmanStatus *, void *);
+
+typedef int	(*WsEndPointEventPull) (WsContextH, WsSubscribeInfo *, WsmanStatus *, void *);
+
 typedef int     (*WsEndPointEnumerate) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
 
 typedef int     (*WsEndPointPull) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
@@ -218,6 +240,27 @@ typedef int     (*WsEndPointPut) (WsContextH, void *, void **, WsmanStatus *, vo
 
 typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 
+#define WSE_NOTIFICATION_DRAOPEVENTS 1
+#define WSE_NOTIFICATION_HEARTBEAT 2
+#define WSE_NOTIFICATION_NOACK 3
+
+struct __WsEventBody {
+	u_buf_t *EventAction;
+	WsXmlDocH EventContent;
+	int droppedEvents; 
+};
+
+typedef struct __WsEventBody * WsEventBodyH;
+
+struct __WsNotificationInfo {
+	WsXmlDocH headerOpaqueData;
+	list_t *EventList;
+	WsXmlDocH bookmarkDoc;
+};
+
+typedef struct __WsNotificationInfo * WsNotificationInfoH;
+
+typedef int (*WsEndPointNotificationManager) (WsEventThreadContextH, WsNotificationInfoH);
 
 #define EUIDLEN		64
 
@@ -235,7 +278,6 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSMAN_ENUMINFO_REF          	  0x040000
 #define WSMAN_ENUMINFO_CQL          	  0x080000
 #define WSMAN_ENUMINFO_WQL          	  0x100000
-
 
 
 
@@ -269,6 +311,35 @@ struct __WsEnumerateInfo {
 	void		*epr;
 	filter_t	*filter;
 };
+
+#define WSMAN_SUBSCRIBEINFO_UNSCRIBE 0x01
+#define WSMAN_SUBSCRIBEINFO_RENEW 0x02
+#define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
+struct __WsSubscribeInfo {
+	pthread_mutex_t datalock;
+	unsigned long flags; //UNSCRIBE,RENEW
+	unsigned char thread_started;
+	char            subsId[EUIDLEN];
+	char *	soapNs;
+	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
+	WsXmlDocH referenceParam;
+	char * locale; // language code
+	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
+	unsigned long expires;
+	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription. 
+	                                         Implied value is 'http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push', 
+	                                         which indicates that Push Mode delivery should be used. */
+	unsigned long	connectionRetryCount; // count of connection retry
+	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
+	unsigned long heartbeatInterval; 
+	WsXmlDocH bookmarkDoc;
+	unsigned char bookmarksFlag; // whether bookmark is needed
+	filter_t	*filter;
+	WsmanAuth       auth_data;
+	WsEndPointNotificationManager eventproc; // plugin related event retriever
+	list_t * notificationDoc; //to store pending notification soap documents
+};
+
 
 
 enum __WsmanFilterDialect {
@@ -329,7 +400,11 @@ int             ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData
 int             wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsenum_pull_raw_stub(SoapOpH op, void *appData, void *opaqueData);
 int             wsenum_release_stub(SoapOpH op, void *appData, void *opaqueData);
-
+int             wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int		   wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int		   wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
+int		   wse_pull_stub(SoapOpH op, void *appData, void * opaqueData);
+//int		   wse_ack_stub(SoapOpH op, void *appData, void * opaqueData);
 
 SoapOpH
 soap_create_op(SoapH soap,
@@ -410,6 +485,9 @@ int             wsman_check_status(WsmanStatus * s);
 
 void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
 
+WsEventThreadContextH ws_create_event_thread_context(SoapH soap, WsSubscribeInfo *subsInfo);
+
+void * wse_notification_manager(void * thrdcntx);
 
 int outbound_addressing_filter(SoapOpH opHandle, void *data,
 			       void *opaqueData);

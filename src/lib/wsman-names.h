@@ -194,14 +194,27 @@
 
 #define EVT_ACTION_SUBSCRIBE      \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"
+#define WSEVENT_SUBSCRIBE		"Subscribe"
+#define WSEVENT_SUBSCRIBE_RESP		"SubscribeResponse"
+
+#define EVT_ACTION_PULL	\
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/Pull"
+
 #define EVT_ACTION_GETSTATUS      \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStaus"
+
 #define EVT_ACTION_UNSUBSCRIBE     \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/Unsubscribe"
+#define WSEVENT_UNSUBSCRIBE	"Unsubscribe"
+#define WSEVENT_UNSUBSCRIBE_RESP "UnsubscribeResponse"
+
 #define EVT_ACTION_SUBEND           \
            "http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscriptionEnd"
 
-
+#define EVT_ACTION_RENEW		\
+	"http://schemas.xmlsoap.org/ws/2004/08/eventing/Renew"
+#define WSEVENT_RENEW		"Renew"
+#define WSEVENT_RENEW_RESP	"RenewResponse"
 
 #define WSMAN_ACTION_EVENTS       \
            "http://schemas.xmlsoap.org/wbmem/wsman/1/wsman/Events"
@@ -249,8 +262,20 @@
 #define WSENUM_SOURCE_CANCELING       "SourceCanceling"
 
 
+#define WSEVENT_DELIVERY		"Delivery"
+#define WSEVENT_NOTIFY_TO		"NotifyTo"
+#define WSEVENT_EXPIRES		"Expires"
+#define WSEVENT_DELIVERY_MODE   "Mode"
+#define WSEVENT_SUBSCRIPTION_MANAGER "SubscriptionManager"
+#define WSEVENT_IDENTIFIER		"Identifier"
+#define WSEVENT_FILTER			"Filter"
+#define WSEVENT_DIALECT		"Dialect"
 
-
+//WS-Eventing delivery mode
+#define WSEVENT_DELIVERY_MODE_PUSH "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
+#define WSEVENT_DELIVERY_MODE_PUSHWITHACK "http://schemas.dmtf.org/wbem/wsman/1/wsman/PushWithAck"
+#define WSEVENT_DELIVERY_MODE_EVENTS "http://schemas.dmtf.org/wbem/wsman/1/wsman/Events"
+#define WSEVENT_DELIVERY_MODE_PULL "http://schemas.dmtf.org/wbem/wsman/1/wsman/Pull"
 
 #define WSMB_ASSOCIATED_INSTANCES   "AssociatedInstances"
 #define WSMB_ASSOCIATION_INSTANCES  "AssociationInstances"
@@ -283,13 +308,24 @@
 #define WSM_XML_FRAGMENT               "XmlFragment"
 #define WSM_OPTION_SET             	"OptionSet"
 #define WSM_OPTION             		"Option"
+#define WSM_TOTAL				"Total"
+#define WSM_HEARTBEATS			"Heartbeats"
+#define WSM_EVENTS				"Events"
+#define WSM_ACTION				"Action"
+#define WSM_EVENT				"Event"
+#define WSM_ACKREQUESTED		"AckRequested"
 
 #define WSM_MAX_ENVELOPE_SIZE           "MaxEnvelopeSize"
 #define WSM_OPERATION_TIMEOUT           "OperationTimeout"
 #define WSM_FAULT_SUBCODE               "FaultSubCode"
 #define WSM_FILTER                      "Filter"
 #define WSM_DIALECT                     "Dialect"
-
+#define WSM_CONTENTCODING		"ContentEncoding"
+#define WSM_CONNECTIONRETRY	"ConnectionRetry"
+#define WSM_SENDBOOKMARKS	"SendBookmarks"
+#define WSM_BOOKMARK			"Bookmark"
+#define WSM_DROPPEDEVENTS		"DroppedEvents"
+#define WSM_DEFAULTBOOKMARK	"http://schemas.dmtf.org/wbem/wsman/1/wsman/bookmark/earliest"
 
 #define WXF_RESOURCE_CREATED                      "ResourceCreated"
 
@@ -338,6 +374,8 @@
         "http://schemas.dmtf.org/wbem/cql/1/dsp0202.pdf"
 #define WSM_ASSOCIATION_FILTER_DIALECT     \
         "http://schemas.dmtf.org/wbem/wsman/1/cimbinding/associationFilter"
+#define WSM_XPATH_EVENTROOT_FILTER \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/filter/eventRootXPath"
 
 
 #define WSFW_RESPONSE_STR              "Response"

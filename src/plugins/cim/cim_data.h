@@ -71,6 +71,24 @@ int CimResource_Create_EP(SoapOpH op, void* appData, void *opaqueData);
 
 int CimResource_Delete_EP(SoapOpH op, void* appData, void *opaqueData);
 
+int CimResource_Subscribe_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+
+int CimResource_Renew_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+
+int CimResource_UnSubscribe_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+
+int CimResource_Evt_Pull_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
+                WsmanStatus *status,
+                void *opaqueData);
+
+//A thread to be created when subscription is handled successfully
+int CimResource_EventThread_EP(WsEventThreadContextH cntx, WsNotificationInfoH notificationinfo);
 SER_DECLARE_TYPE(CimResource);
 DECLARE_EP_ARRAY(CimResource);
 

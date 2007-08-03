@@ -629,4 +629,88 @@ cleanup:
 	return 0;
 }
 
+int
+CimResource_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
+{
+	int retval = 0;
+	return retval;
+}
+
+int 
+CimResource_Subscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	debug("CIM Subscription");
+	int retval = 0;
+/*	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	WsXmlNodeH nodeH = ws_xml_get_soap_body(in_doc);
+	CimClientInfo *cimclient = NULL;
+
+	if ( subsInfo ) {
+		cimclient = CimResource_Init(cntx,
+				subsInfo->auth_data.username,
+				subsInfo->auth_data.password );
+		if (!cimclient) {
+			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+			status->fault_detail_code = 0;
+			retval = 1;
+			goto cleanup;
+		}
+	}
+
+	if (!verify_class_namespace(cimclient)) {
+		error("resource uri namespace mismatch");
+		status->fault_code = WSA_DESTINATION_UNREACHABLE;
+		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+		retval = 1;
+		goto cleanup;
+	}
+*/
+// to do here: create indication filter here and something else necessary
+//	subsInfo->eventproc = CimResource_EventThread_EP;
+
+/*	
+	nodeH = ws_xml_get_child(nodeH, 0, XML_NS_EVENTING, WSEVENT_FILTER);
+	if (nodeH) {
+			char *attrVal = ws_xml_find_attr_value(nodeH, 
+					NULL, WSM_DIALECT);
+			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
+				wsman_parse_assoc_filter(cntx, nodeH, &subsInfo->filter, &subsInfo->flags);
+			}
+			if (( attrVal && strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ) || !attrVal ) {
+				wsman_parse_xpath_filter(cntx, nodeH, &subsInfo->filter);
+			}
+		else {
+			subsInfo->filter = NULL;
+		}
+	}
+*/
+	return retval;
+}
+
+int CimResource_Renew_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
+
+int CimResource_UnSubscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
+
+int CimResource_Evt_Pull_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
 

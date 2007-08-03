@@ -193,6 +193,9 @@ static int server_callback(struct shttpd_arg_t *arg)
 		fault_reason = "No request body";
 		error("NULL request body. len = %d", length);
 	}
+	else {
+		debug("Posted request: %s", body);
+	}
 	u_buf_construct(wsman_msg->request, body, length, length);
 
 	// some plugins can use credentials for its

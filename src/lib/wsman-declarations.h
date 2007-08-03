@@ -99,13 +99,30 @@
   { WS_DISP_TYPE_DIRECT_PULL, NULL, NULL, ENUM_ACTION_PULL, NULL, \
       t##_TypeInfo, (WsProcType)t##_Pull_EP, ns, NULL}    
 
-#define END_POINT_PRIVATE_EP(t, a, m, ns)                \
+#define END_POINT_SUBSCRIBE(t,ns)	\
+{WS_DISP_TYPE_SUBSCRIBE,NULL,NULL,EVT_ACTION_SUBSCRIBE, NULL, \
+ 	t##_TypeInfo,(WsProcType)t##_Subscribe_EP,ns,NULL}
+
+#define END_POINT_UNSUBSCRIBE(t,ns)   \
+{WS_DISP_TYPE_UNSUBSCRIBE,NULL,NULL,EVT_ACTION_UNSUBSCRIBE, NULL,    \
+	t##_TypeInfo,(WsProcType)t##_Subscribe_EP,ns,NULL}
+
+#define END_POINT_RENEW(t,ns)	\
+{WS_DISP_TYPE_RENEW,NULL,NULL,EVT_ACTION_RENEW, NULL,	\
+	t##_TypeInfo,(WsProcType)t##_Renew_EP,ns,NULL}
+
+#define END_POINT_EVT_PULL(t,ns)		\
+{WS_DISP_TYPE_EVT_PULL,NULL,NULL,EVT_ACTION_PULL, NULL,	\
+	t##_TypeInfo,(WsProcType)t##_Evt_Pull_EP,ns,NULL}
+
+#define END_POINT_PRIVATE_EP(t, ns)                \
   { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL,           \
       t##_TypeInfo, (WsProcType)t##_##m##_EP, ns, NULL }
 
 #define END_POINT_CUSTOM_METHOD(t, ns)                      \
   { WS_DISP_TYPE_PRIVATE, NULL, NULL, NULL, NULL,           \
       t##_TypeInfo, (WsProcType)t##_Custom_EP, ns, NULL }
+
 
 #define END_POINT_LAST  { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 

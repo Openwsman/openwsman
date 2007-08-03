@@ -119,6 +119,8 @@ char *wsman_get_option_set(WsContextH cntx, WsXmlDocH doc, const char *op);
 
 int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
 
+int wsman_parse_event_request(WsContextH cntx, WsSubscribeInfo * subsInfo);
+
 WsXmlDocH wsman_create_doc(WsContextH cntx, const char *rootname);
 
 void wsman_destroy_doc(WsXmlDocH doc);

@@ -117,9 +117,19 @@ typedef enum {
 		WSMAN_ACTION_TRANSFER_CREATE,
 		WSMAN_ACTION_TRANSFER_DELETE,
 		WSMAN_ACTION_IDENTIFY,
+		WSMAN_ACTION_SUBSCRIBE,
+		WSMAN_ACTION_UNSUBSCRIBE,
+		WSMAN_ACTION_RENEW,
+		WSMAN_ACTION_EVENT_PULL,
 		WSMAN_ACTION_TEST
 	} WsmanAction;
 
+typedef enum {
+	WSMAN_DELIVERY_PUSH = 0,
+	WSMAN_DELIVERY_PUSHWITHACK,
+	WSMAN_DELIVERY_EVENTS,
+	WSMAN_DELIVERY_PULL
+}WsmanDeliveryMode;
 
 
 // options flags values
@@ -139,6 +149,7 @@ typedef enum {
 #define FLAG_CIM_EXTENSIONS                  0x1000
 #define FLAG_CIM_REFERENCES                  0x2000
 #define FLAG_CIM_ASSOCIATORS                 0x4000
+#define FLAG_EVENT_SENDBOOKMARK		0X8000
 
 	typedef struct {
 		unsigned long flags;
@@ -146,6 +157,11 @@ typedef enum {
 		char *dialect;
 		char *fragment;
 		char *cim_ns;
+		char * delivery_uri;
+		char * reference;
+		WsmanDeliveryMode delivery_mode;
+		unsigned int heartbeat_interval;
+		unsigned int expires;
 		hash_t *selectors;
 		hash_t *properties;
 		unsigned int timeout;
@@ -492,6 +508,55 @@ typedef enum {
 				 const char *enumContext);
 
 	/**
+	 * Send a Release request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
+				 client_opt_t * options);
+
+
+	/**
+	 * Send a Release request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param uuid Subscription reference parameter
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, const char *resource_uri,
+				 client_opt_t * options,
+				 const char *uuid);
+
+
+	/**
+	 * Send a Release request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param uuid Subscription reference parameter
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_renew(WsManClient * cl, const char *resource_uri,
+				 client_opt_t * options,
+				 const char *uuid);
+	
+
+	/**
+	 * Send a Pull request
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param enumContext enumeration context
+	 * @return response document
+	 */
+	WsXmlDocH wsmc_action_evt_pull(WsManClient * cl, const char *resource_uri,
+			      client_opt_t * options,
+			      const char *enumContext);
+
+	/**
 	 * Send a custom method request
 	 * @param cl Client handle
 	 * @param resource_uri Resource URI
@@ -551,6 +616,21 @@ typedef enum {
 	 * @return success
 	 */
 	int wsmc_action_enumerate_and_pull(WsManClient * cl,
+				      const char *resource_uri,
+				      client_opt_t * options,
+				      SoapResponseCallback callback,
+				      void *callback_data);
+
+	/**
+	 * Send a Subscribe request and then use callback for subsequent Pull calls
+	 * @param cl Client handle
+	 * @param resource_uri Resource URI
+	 * @param client_opt_t Request options and flags
+	 * @param callback Function to handle Pull requests and Responses
+	 * @param callback_data Pointer to callback data
+	 * @return success
+	 */
+	int wsmc_action_subscribe_and_pull(WsManClient * cl,
 				      const char *resource_uri,
 				      client_opt_t * options,
 				      SoapResponseCallback callback,
