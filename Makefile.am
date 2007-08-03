@@ -1,4 +1,5 @@
 SUBDIRS = src doc etc tests examples
+AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
 
 wsmanincludedir = $(includedir)/openwsman
 #wsmaninclude_HEADERS = wsman_config.h
