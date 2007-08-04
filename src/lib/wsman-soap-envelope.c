@@ -1159,12 +1159,16 @@ int wsman_is_identify_request(WsXmlDocH doc)
 int wsman_is_event_related_request(WsXmlDocH doc)
 {
 	WsXmlNodeH node = ws_xml_get_soap_header(doc);
+	char *action = NULL;
 	node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ACTION);
-	char * action = ws_xml_get_node_text(node);
-	if(strcmp(action, EVT_ACTION_UNSUBSCRIBE) ==0 || strcmp(action, EVT_ACTION_RENEW) ==0 
+	action = ws_xml_get_node_text(node);
+	if (!action)
+		return 0;
+
+	if(strcmp(action, EVT_ACTION_UNSUBSCRIBE) ==0 || strcmp(action, EVT_ACTION_RENEW) ==0
 		|| strcmp(action, EVT_ACTION_PULL) == 0)
 		return 1;
-	else 
+	else
 		return 0;
 }
 
