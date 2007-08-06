@@ -819,8 +819,8 @@ wsmc_create_request(WsManClient * cl,
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_EVENTING, WSEVENT_RENEW, NULL);
 		char            buf[20];
-		sprintf(buf, "PT%u.%uS", (unsigned int) options->timeout / 1000,
-				(unsigned int) options->timeout % 1000);
+		sprintf(buf, "PT%u.%uS", (unsigned int) options->expires/ 1000,
+				(unsigned int) options->expires % 1000);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
 			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);

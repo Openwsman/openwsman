@@ -1611,20 +1611,21 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	epcntx = ws_create_ep_context(soap, _doc);
 	wsman_status_init(&status);
-	if (doc != NULL) {
-		// wrong enum elements met. Fault message generated
-		goto DONE;
-	}
 	body = ws_xml_get_soap_body(_doc);
 	header = ws_xml_get_soap_header(_doc);
 	inNode = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 	char *uuid = ws_xml_get_node_text(inNode);
-	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
-	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
+	if(uuid == NULL) {
+		status.fault_code = WSE_INVALID_MESSAGE;
+		status.fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
+		doc = wsman_generate_fault(epcntx, _doc,
+			 status.fault_code, status.fault_detail_code, NULL);
+		goto DONE;
+	}
 	pthread_mutex_lock(&soap->lockSubs);
 	lnode_t * t = list_first(soap->subscriptionList);
 	if(t == NULL) {
-		status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
+		status.fault_code = WSMAN_INVALID_PARAMETER;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
@@ -1637,6 +1638,8 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			if(!strcmp(subsInfo->subsId, uuid)) break;
 		}
 	}
+	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
+	inNode = ws_xml_get_child(inNode, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
 	if(t) {
 		wsman_set_expiretime(inNode, &subsInfo->expires, &status.fault_code);
 		if (status.fault_code != WSMAN_RC_OK) {
@@ -1656,7 +1659,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	if (!doc)
 		goto DONE;
 	body = ws_xml_get_soap_body(doc);
-	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
+	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_RENEW_RESP, NULL);
 	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_RENEW);	
 	header = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 	if(header)
