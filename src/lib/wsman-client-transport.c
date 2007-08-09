@@ -50,7 +50,7 @@
 #include "wsman-client.h"
 #include "u/libu.h"
 
-char *auth_methods[] = {
+static char *auth_methods[] = {
 	"noauth",
 	"basic",
 	"digest",
@@ -59,7 +59,6 @@ char *auth_methods[] = {
 	"gss",
 	NULL,
 };
-
 
 
 extern void wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc,
@@ -76,7 +75,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	long long t0, t1;
 #endif
 
-	if (wsmc_lock(cl)) {
+	if (wsmc_lock(cl) != 0 ) {
 		error("Client busy");
 		return 1;
 	}
@@ -112,15 +111,15 @@ char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
 {
 	switch (auth) {
 	case WS_NO_AUTH:
-		return "No Auth";
+		return _WS_NO_AUTH;
 	case WS_BASIC_AUTH:
-		return "Basic";
+		return _WS_BASIC_AUTH;
 	case WS_DIGEST_AUTH:
-		return "Digest";
+		return _WS_DIGEST_AUTH;
 	case WS_NTLM_AUTH:
-		return "NTLM";
+		return _WS_NTLM_AUTH;
 	case WS_GSSNEGOTIATE_AUTH:
-		return "GSS-Negotiate";
+		return _WS_GSSNEGOTIATE_AUTH;
 	default:;
 	}
 	return "Unknown";
@@ -221,23 +220,23 @@ wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient * cl)
 }
 
 
-void wsman_transport_set_verify_peer(WsManClient * cl, int arg)
+void wsman_transport_set_verify_peer(WsManClient * cl, unsigned int arg)
 {
 	cl->authentication.verify_peer = arg;
 }
 
-int wsman_transport_get_verify_peer(WsManClient *cl)
+unsigned int wsman_transport_get_verify_peer(WsManClient *cl)
 {
 	return cl->authentication.verify_peer;
 }
 
 
-void wsman_transport_set_verify_host(WsManClient * cl, int arg)
+void wsman_transport_set_verify_host(WsManClient * cl, unsigned int arg)
 {
 	cl->authentication.verify_host = arg;
 }
 
-int wsman_transport_get_verify_host(WsManClient *cl)
+unsigned int wsman_transport_get_verify_host(WsManClient *cl)
 {
 	return cl->authentication.verify_host;
 }

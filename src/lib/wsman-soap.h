@@ -101,7 +101,7 @@ struct __Soap {
 	list_t         *dispatchList;
 	list_t         *responseList;
 	list_t         *processedMsgIdList;
-	pthread_mutex_t lockSubs; 
+	pthread_mutex_t lockSubs;
 	list_t	         *subscriptionList;
 
 	WsContextH      cntx;
@@ -147,7 +147,7 @@ struct _WS_CONTEXT {
 	SoapH           soap;
 	unsigned long   enumIdleTimeout;
 	WsXmlDocH	indoc;
-	hash_t         *enuninfos;
+	hash_t         *enuminfos;
 	hash_t         *entries;
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
@@ -162,7 +162,7 @@ struct __WsEventThreadContext {
 	SoapH soap;
 	WsSubscribeInfo *subsInfo;
 };
-typedef struct __WsEventThreadContext * WsEventThreadContextH; 
+typedef struct __WsEventThreadContext * WsEventThreadContextH;
 
 typedef void    (*WsProcType) (void);
 struct __XmlSerializerInfo;
@@ -247,7 +247,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 struct __WsEventBody {
 	u_buf_t *EventAction;
 	WsXmlDocH EventContent;
-	int droppedEvents; 
+	int droppedEvents;
 };
 
 typedef struct __WsEventBody * WsEventBodyH;
@@ -327,12 +327,12 @@ struct __WsSubscribeInfo {
 	char * locale; // language code
 	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
 	unsigned long expires;
-	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription. 
-	                                         Implied value is 'http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push', 
+	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription.
+	                                         Implied value is 'http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push',
 	                                         which indicates that Push Mode delivery should be used. */
 	unsigned long	connectionRetryCount; // count of connection retry
 	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
-	unsigned long heartbeatInterval; 
+	unsigned long heartbeatInterval;
 	WsXmlDocH bookmarkDoc;
 	unsigned char bookmarksFlag; // whether bookmark is needed
 	filter_t	*filter;

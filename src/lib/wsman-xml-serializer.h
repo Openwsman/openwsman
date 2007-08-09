@@ -36,10 +36,10 @@
 /**
  * @defgroup XMLSerializer XML Serializer
  * @brief Serializer and Deserializer Functions and Macros
- * 
+ *
  * @{
  */
- 
+
 #ifndef WS_XML_SERIALIZER_H
 #define WS_XML_SERIALIZER_H
 
@@ -76,14 +76,15 @@ typedef char XML_TYPE_CHAR;
 typedef u_int8_t XML_TYPE_UINT8;
 typedef u_int16_t XML_TYPE_UINT16;
 typedef u_int32_t XML_TYPE_UINT32;
-typedef u_int64_t XML_TYPE_UINT64;
+typedef u_int32_t XML_TYPE_UINT64;
+
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
 #define PTRTOINT unsigned long
 #endif
 typedef struct {
     struct tm tm;
-    int    tz_min; // timezone GMT shift in minutes 
+    int    tz_min; // timezone GMT shift in minutes
 } XML_DATETIME;
 typedef char* XML_TYPE_STR;
 typedef XmlSerialiseDynamicSizeData XML_TYPE_DYN_ARRAY;
@@ -102,8 +103,8 @@ typedef struct _XML_NODE_ATTR XML_NODE_ATTR;
 
 
 /**
- * Count can be 1 for single elementd; > 1 for fixed size array; 
- * 0 for dynamic array. 
+ * Count can be 1 for single elementd; > 1 for fixed size array;
+ * 0 for dynamic array.
  */
 
 
@@ -246,7 +247,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
                                  SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, 0, t)
 
 
-        // Serialization Info to skip in 
+        // Serialization Info to skip in
 
 #define SER_IN_UINT8(n, x)            SER_UINT8_FLAGS(n, x, SER_IN)
 #define SER_IN_UINT16(n, x)           SER_UINT16_FLAGS(n, x, SER_IN)
@@ -454,32 +455,32 @@ void *ws_deserialize(WsContextH cntx,
 
 
 
-int ws_serialize_str(WsContextH cntx, 
-                WsXmlNodeH parent, 
-                const char *str, 
-                const char *nameNs, 
+int ws_serialize_str(WsContextH cntx,
+                WsXmlNodeH parent,
+                const char *str,
+                const char *nameNs,
                 const char *name,
                 int mustunderstand);
 
 int ws_serialize_uint32(
-                WsContextH cntx, 
-                WsXmlNodeH parent, 
-                unsigned long val, 
-                const char *nameNs, 
+                WsContextH cntx,
+                WsXmlNodeH parent,
+                unsigned long val,
+                const char *nameNs,
                 const char *name,
                 int mustunderstand);
 
-char *ws_deserialize_str(WsContextH cntx, 
-                WsXmlNodeH parent, 
-                int index, 
-                const char *nameNs, 
+char *ws_deserialize_str(WsContextH cntx,
+                WsXmlNodeH parent,
+                int index,
+                const char *nameNs,
                 const char *name);
 
 unsigned long ws_deserialize_uint32(
-                WsContextH cntx, 
-                WsXmlNodeH parent, 
-                int index, 
-                const char *nameNs, 
+                WsContextH cntx,
+                WsXmlNodeH parent,
+                int index,
+                const char *nameNs,
                 const char *name);
 
 int ws_deserialize_duration(
@@ -491,8 +492,8 @@ int ws_deserialize_datetime(
                 XML_DATETIME *tmx);
 
 
-int ws_serializer_free_mem(WsContextH cntx, 
-                XML_TYPE_PTR buf, 
+int ws_serializer_free_mem(WsContextH cntx,
+                XML_TYPE_PTR buf,
                 XmlSerializerInfo *info);
 
 

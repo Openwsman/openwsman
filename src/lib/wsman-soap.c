@@ -86,20 +86,22 @@ set_context_val(WsContextH cntx,
 		int no_dup,
 		unsigned long type);
 
+
 callback_t     *
 make_callback_entry(SoapServiceCallback proc,
 		    void *data,
 		    list_t * list_to_add)
 {
 
-	callback_t     *entry =
-	(callback_t *) u_malloc(sizeof(callback_t));
+	callback_t     *entry = (callback_t *) u_malloc(sizeof(callback_t));
 	debug("make new callback entry");
 	if (entry) {
 		lnode_init(&entry->node, data);
 		entry->proc = proc;
 		if (list_to_add)
 			list_append(list_to_add, &entry->node);
+	} else {
+		return NULL;
 	}
 	return entry;
 }
@@ -116,10 +118,10 @@ void
 ws_initialize_context(WsContextH cntx,
 		      SoapH soap)
 {
-	cntx->entries = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
 	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
-	cntx->enuninfos = hash_create(HASHCOUNT_T_MAX, 0, 0);
-	hash_set_allocator(cntx->enuninfos, NULL, free_hentry_func, NULL);
+	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
 //	cntx->last_get_name_idx = -1;
 	cntx->owner = 1;
 	cntx->soap = soap;
@@ -667,7 +669,7 @@ insert_enum_info(WsContextH cntx,
 	u_lock(cntx->soap);
 	gettimeofday(&tv, NULL);
 	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	if (create_context_entry(cntx->enuninfos, enumInfo->enumId, enumInfo)) {
+	if (create_context_entry(cntx->enuminfos, enumInfo->enumId, enumInfo)) {
 		retVal = 0;
 	}
 	u_unlock(cntx->soap);
@@ -703,7 +705,7 @@ get_locked_enuminfo(WsContextH cntx,
 		return NULL;
 	}
 	u_lock(cntx->soap);
-	hn = hash_lookup(cntx->enuninfos, enumId);
+	hn = hash_lookup(cntx->enuminfos, enumId);
 	if (hn) {
 		eInfo = (WsEnumerateInfo *)hnode_get(hn);
 		if (strcmp(eInfo->enumId, enumId)) {
@@ -758,8 +760,8 @@ remove_locked_enuminfo(WsContextH cntx,
 		u_unlock(cntx->soap);
 		return;
 	}
-	hash_delete_free(cntx->enuninfos,
-	             hash_lookup(cntx->enuninfos, enumInfo->enumId));
+	hash_delete_free(cntx->enuminfos,
+	             hash_lookup(cntx->enuminfos, enumInfo->enumId));
 	u_unlock(cntx->soap);
 }
 
@@ -1219,6 +1221,9 @@ create_subs_info(SoapOpH op,
 	char *str = NULL;
 	time_t timeout;
 	int i;
+	char *soapNs = NULL;
+
+
 	subsInfo = (WsSubscribeInfo *)u_zalloc(sizeof (WsSubscribeInfo));
 	if (subsInfo == NULL) {
 		error("No memory");
@@ -1232,7 +1237,7 @@ create_subs_info(SoapOpH op,
 		fault_code = WSE_INVALID_MESSAGE;
 		goto DONE;
 	}
-	char *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(indoc));
+	soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(indoc));
 	subsInfo->soapNs = u_strdup(soapNs);
 	node = ws_xml_get_child(subNode, 0, XML_NS_WS_MAN, WSM_SENDBOOKMARKS);
 	if(node) {
@@ -1240,7 +1245,7 @@ create_subs_info(SoapOpH op,
 	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_WS_MAN, WSM_BOOKMARK);
 	if(node) {
-		if(ws_xml_get_node_text(node) && 
+		if(ws_xml_get_node_text(node) &&
 			!strcmp(ws_xml_get_node_text(node), WSM_DEFAULTBOOKMARK)){
 			subsInfo->flags |= WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT;
 		}
@@ -1260,7 +1265,7 @@ create_subs_info(SoapOpH op,
 		WsXmlAttrH attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
 		if(attr) {
 			str = ws_xml_get_attr_value(attr);
-			if (!strcmp(str, WSEVENT_DELIVERY_MODE_PUSH) || 
+			if (!strcmp(str, WSEVENT_DELIVERY_MODE_PUSH) ||
 				!strcmp(str, WSEVENT_DELIVERY_MODE_PUSHWITHACK) ||
 				!strcmp(str, WSEVENT_DELIVERY_MODE_EVENTS) ||
 				!strcmp(str, WSEVENT_DELIVERY_MODE_PULL))
@@ -1394,7 +1399,7 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
  * @param appData Application data
  * @return status
  */
-int             
+int
 wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 {
 	WsXmlDocH       doc = NULL;
@@ -1441,7 +1446,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 //	header = ws_xml_get_soap_header(doc);
 	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
 	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
-	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);	
+	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 	header = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 	if(header)
 		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, ws_xml_get_node_text(header));
@@ -1501,7 +1506,7 @@ DONE:
  * @param appData Application data
  * @return status
  */
-int		   
+int
 wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 {
 	WsXmlDocH       doc = NULL;
@@ -1589,7 +1594,7 @@ DONE:
  * @param appData Application data
  * @return status
  */
-int		   
+int
 wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 {
 	WsXmlDocH       doc = NULL;
@@ -1660,7 +1665,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	body = ws_xml_get_soap_body(doc);
 	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_RENEW_RESP, NULL);
-	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_RENEW);	
+	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_RENEW);
 	header = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 	if(header)
 		ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, ws_xml_get_node_text(header));
@@ -1701,7 +1706,7 @@ DONE:
 	return retVal;
 }
 
-int	   
+int
 wse_pull_stub(SoapOpH op, void *appData, void * opaqueData)
 {
 	WsXmlDocH       doc = NULL;
@@ -1769,7 +1774,7 @@ DONE:
 	return retVal;
 }
 /*
-int		   
+int
 wse_ack_stub(SoapOpH op, void *appData, void * opaqueData)
 {
 	return 0;
@@ -1792,11 +1797,11 @@ wsman_get_expired_enuminfos(WsContextH cntx)
 	gettimeofday(&tv, NULL);
 	mytime = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	u_lock(cntx->soap);
-	if (hash_isempty(cntx->enuninfos)) {
+	if (hash_isempty(cntx->enuminfos)) {
 		u_unlock(cntx->soap);
 		return NULL;
 	}
-	hash_scan_begin(&hs, cntx->enuninfos);
+	hash_scan_begin(&hs, cntx->enuminfos);
 	while ((hn = hash_scan_next(&hs))) {
 		enumInfo = (WsEnumerateInfo *)hnode_get(hn);
 		if (enumInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG) {
@@ -1821,7 +1826,7 @@ wsman_get_expired_enuminfos(WsContextH cntx)
 			error("could not create list");
 			return NULL;
 		}
-		hash_scan_delfree(cntx->enuninfos, hn);
+		hash_scan_delfree(cntx->enuminfos, hn);
 		list_append(list, lnode_create(enumInfo));
 		debug("Enum expired list appended: %s", enumInfo->enumId);
 	}
@@ -1878,7 +1883,7 @@ static int time_expired(unsigned long lt)
 	gettimeofday(&tv, NULL);
 	if(tv.tv_sec * 1000 + tv.tv_usec /1000 > lt)
 		return 1;
-	else 
+	else
 		return 0;
 }
 
@@ -1892,12 +1897,12 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, u
 {
 	int retVal = 0;
 	WsXmlDocH response;
-	WsManClient *cl = wsmc_create_from_uri(cntx->subsInfo->epr_notifyto); 
+	WsManClient *cl = wsmc_create_from_uri(cntx->subsInfo->epr_notifyto);
 	if(wsman_send_request(cl, outdoc) ==0 && acked) {
 		response = wsmc_build_envelope_from_response(cl);
 		if(response == NULL) retVal = WSE_NOTIFICATION_NOACK;
 		else {
-			
+
 		}
 	}
 	ws_xml_destroy_doc(outdoc);
@@ -2007,7 +2012,7 @@ void * wse_notification_manager(void * thrdcntx)
 			}
 		}
 		if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL)) {
-			if (!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) || 
+			if (!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) ||
 				!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PUSHWITHACK)){
 				if(wse_send_notification(threadcntx, notificationDoc,1) == WSE_NOTIFICATION_NOACK)
 					break;
@@ -2065,13 +2070,13 @@ ws_clear_context_entries(WsContextH hCntx)
 }
 
 static void
-ws_clear_context_enuninfos(WsContextH hCntx)
+ws_clear_context_enuminfos(WsContextH hCntx)
 {
 	hash_t         *h;
 	if (!hCntx) {
 		return;
 	}
-	h = hCntx->enuninfos;
+	h = hCntx->enuminfos;
 	hash_free(h);
 }
 int
@@ -2137,7 +2142,7 @@ ws_destroy_context(WsContextH cntx)
 	int             retVal = 1;
 	if (cntx && cntx->owner) {
 		ws_clear_context_entries(cntx);
-		ws_clear_context_enuninfos(cntx);
+		ws_clear_context_enuminfos(cntx);
 		u_free(cntx);
 		retVal = 0;
 	}

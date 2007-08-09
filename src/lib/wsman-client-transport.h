@@ -46,6 +46,12 @@
 #define DEFAULT_USER_AGENT "Openwsman"
 #endif
 
+#define _WS_NO_AUTH "No Auth"
+#define _WS_BASIC_AUTH "Basic"
+#define _WS_DIGEST_AUTH "Digest"
+#define _WS_NTLM_AUTH "NTLM"
+#define _WS_GSSNEGOTIATE_AUTH "GSS-Negotiate"
+
 int wsman_send_request(WsManClient *cl, WsXmlDocH request);
 
 /*
@@ -80,11 +86,11 @@ char *wsman_transport_get_last_error_string(WS_LASTERR_Code err);
 extern void          wsman_transport_set_timeout(WsManClient *cl, unsigned long timeout);
 extern unsigned long wsman_transport_get_timeout(WsManClient *cl);
 
-extern void wsman_transport_set_verify_peer(WsManClient *cl, int value);
-extern int  wsman_transport_get_verify_peer(WsManClient *cl);
+extern void wsman_transport_set_verify_peer(WsManClient *cl, unsigned int value);
+extern unsigned int  wsman_transport_get_verify_peer(WsManClient *cl);
 
-extern void wsman_transport_set_verify_host(WsManClient *cl, int value);
-extern int  wsman_transport_get_verify_host(WsManClient *cl);
+extern void wsman_transport_set_verify_host(WsManClient *cl, unsigned int value);
+extern unsigned int  wsman_transport_get_verify_host(WsManClient *cl);
 
 extern void  wsman_transport_set_proxy(WsManClient *cl, const char *proxy);
 extern char *wsman_transport_get_proxy(WsManClient *cl);
