@@ -109,6 +109,9 @@ REQUEST_PASSWORD:
 
 	if ( cl->authentication.auth_request_func )
 		cl->authentication.auth_request_func(cl, ws_auth, username, password);
+	else
+		return 0;
+
 
 	if (!(*username) || strlen(*username) == 0) {
 		debug("No username. Authorization canceled");
@@ -286,8 +289,7 @@ wsmc_handler( WsManClient *cl,
 		void* user_data)
 {
 #define curl_err(str)  debug("Error = %d (%s); %s", \
-		r, curl_easy_strerror(r), str); \
-	http_code = 400
+		r, curl_easy_strerror(r), str);
 	WsManConnection *con = cl->connection;
 	CURL *curl = NULL;
 	CURLcode r;
@@ -300,6 +302,7 @@ wsmc_handler( WsManClient *cl,
 	long http_code;
 	long auth_avail = 0;
 	char *_user = NULL, *_pass = NULL;
+	//char *soapaction;
 
 	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
@@ -316,7 +319,6 @@ wsmc_handler( WsManClient *cl,
 
 	r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
 	if (r != CURLE_OK) {
-		http_code = 400;
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_URL, ...)");
 		goto DONE;
@@ -325,7 +327,6 @@ wsmc_handler( WsManClient *cl,
 
 	r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
 	if (r != CURLE_OK) {
-		http_code = 400;
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
 		goto DONE;
@@ -333,7 +334,6 @@ wsmc_handler( WsManClient *cl,
 
 	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, con->response);
 	if (r != CURLE_OK) {
-		http_code = 400;
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
 		goto DONE;
@@ -343,7 +343,6 @@ wsmc_handler( WsManClient *cl,
 	usag = malloc(12 + strlen(wsman_transport_get_agent(cl)) + 1);
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
-		http_code = 400;
 		cl->fault_string = u_strdup("Could not malloc memory");
 		curl_err("Could not malloc memory");
 		goto DONE;
@@ -352,22 +351,20 @@ wsmc_handler( WsManClient *cl,
 	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent(cl));
 	headers = curl_slist_append(headers, usag);
 
-	/*
-	   char *soapaction;
-	   soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
-	   if (soapaction) {
-	   soapact_header = malloc(12 + strlen(soapaction) + 1);
-	   if (soapact_header) {
-	   sprintf(soapact_header, "SOAPAction: %s", soapaction);
-	   headers = curl_slist_append(headers, soapact_header);
-	   }
-	   u_free(soapaction);
-	   }
-	   */
+#if 0
+	soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
+	if (soapaction) {
+		soapact_header = malloc(12 + strlen(soapaction) + 1);
+		if (soapact_header) {
+			sprintf(soapact_header, "SOAPAction: %s", soapaction);
+			headers = curl_slist_append(headers, soapact_header);
+		}
+		u_free(soapaction);
+	}
+#endif
 
 	r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	if (r != CURLE_OK) {
-		http_code = 400;
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_HTTPHEADER, ..)");
 		goto DONE;
@@ -377,37 +374,35 @@ wsmc_handler( WsManClient *cl,
 
 	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
 	if (r != CURLE_OK) {
-		http_code = 400;
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
 		goto DONE;
 	}
 
 
-	_user = wsmc_get_user(cl);
-	_pass = wsmc_get_password(cl);
 
 	while (1) {
+		u_free(_user);
+		u_free(_pass);
+		_user = wsmc_get_user(cl);
+		_pass = wsmc_get_password(cl);
 		if (_user && _pass && cl->data.auth_set) {
 			r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, cl->data.auth_set);
 			if (r != CURLE_OK) {
-				http_code = 400;
 				cl->fault_string = u_strdup(curl_easy_strerror(r));
 				curl_err("curl_easy_setopt(CURLOPT_HTTPAUTH) failed");
 				goto DONE;
 			}
-			//upwd = u_malloc(strlen(_user) + strlen(_pass) + 2);
+			u_free(upwd);
 			upwd = u_strdup_printf(  "%s:%s", _user ,  _pass);
 			if (!upwd) {
 				r = CURLE_OUT_OF_MEMORY;
-				http_code = 400;
 				cl->fault_string = u_strdup("Could not malloc memory");
 				curl_err("Could not malloc memory");
 				goto DONE;
 			}
 			r = curl_easy_setopt(curl, CURLOPT_USERPWD, upwd);
 			if (r != CURLE_OK) {
-				http_code = 400;
 				cl->fault_string = u_strdup(curl_easy_strerror(r));
 				curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
 				goto DONE;
@@ -419,14 +414,12 @@ wsmc_handler( WsManClient *cl,
 		}
 		r = curl_easy_perform(curl);
 		if (r != CURLE_OK) {
-			http_code = 400;
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_perform failed");
 			goto DONE;
 		}
 		r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		if (r != CURLE_OK) {
-			http_code = 400;
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
 			goto DONE;
@@ -438,12 +431,11 @@ wsmc_handler( WsManClient *cl,
 		/* we are here because of authentication required */
 		r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
 		if (r != CURLE_OK) {
-			http_code = 400;
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
 			goto DONE;
 		}
-		/*
+
 		if (cl->data.auth_set) {
 			if (cl->data.user) {
 				u_free(cl->data.user);
@@ -454,7 +446,7 @@ wsmc_handler( WsManClient *cl,
 				cl->data.pwd = NULL;
 			}
 		}
-		*/
+
 		cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
                         &cl->data.user, &cl->data.pwd);
                 u_buf_clear(con->response);
@@ -465,12 +457,13 @@ wsmc_handler( WsManClient *cl,
 #else
 		    r = 1000;
 #endif
-                    curl_err("User didn't provide authentication data");
-                    goto DONE;
+                    curl_err("user/password wrong or empty.");
+		    break;
                 }
         }
 
 DONE:
+	r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 	cl->response_code = http_code;
 	cl->last_error = convert_to_last_error(r);
 	curl_slist_free_all(headers);

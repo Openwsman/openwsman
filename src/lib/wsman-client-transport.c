@@ -126,8 +126,7 @@ char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
 }
 
 void wsmc_transport_set_auth_request_func(WsManClient * cl,
-						  wsman_auth_request_func_t
-						  f)
+				  wsman_auth_request_func_t f)
 {
 	cl->authentication.auth_request_func = f;
 }
