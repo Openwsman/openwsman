@@ -989,14 +989,14 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		debug("Request uuid: %s", uuid);
 		if(uuid) {
 			SoapH soap = cntx->soap;
-			lnode_t *t = list_first(soap->subscriptionList);
+			lnode_t *t = list_first(soap->subscriptionMemList);
 			while(t != NULL) {
 				WsSubscribeInfo *subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcmp(uuid+5, subsInfo->subsId)) {
 					uri = subsInfo->uri;
 					break;
 				}
-				t = list_next(soap->subscriptionList, t);
+				t = list_next(soap->subscriptionMemList, t);
 			}
 		}
 	}
@@ -1064,7 +1064,6 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 			}
 		}
 	}
-	debug("before ws_remove_context_val");
 	ws_remove_context_val(cntx, WSM_RESOURCE_URI);
 
 	if (ep != NULL) {

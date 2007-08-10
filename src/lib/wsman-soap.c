@@ -31,6 +31,7 @@
 /**
  * @author Anas Nashif
  * @author Eugene Yarmosh
+ * @author Liang Hou
  */
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
@@ -41,7 +42,6 @@
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-
 #include "wsman-dispatcher.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-xml-serialize.h"
@@ -152,7 +152,7 @@ ws_soap_initialize()
 	soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
 	soap->dispatchList = list_create(LISTCOUNT_T_MAX);
 	soap->responseList = list_create(LISTCOUNT_T_MAX);
-	soap->subscriptionList = list_create(LISTCOUNT_T_MAX);
+	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
 	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
 //	soap->enumIdleTimeout = enumIdleTimeout;
@@ -211,7 +211,23 @@ ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, void *data)
 	return;
 }
 
-
+/**
+ * Register Subscription operation sets
+ * @param cntx Context
+ * @param ops Function talbe of subscription operations
+ */
+/*static void
+ws_register_subscription_operation_set(WsContextH cntx, SubsRepositoryOpSetH ops, char *uri)
+{
+	SoapH soap = ws_context_get_runtime(cntx);
+	if(soap) {
+		soap->subscriptionOpSet = ops;
+		if(uri)
+			soap->uri_subsRepository = u_strdup(uri);
+	}
+	return;
+}
+*/
 WsContextH
 ws_create_runtime(list_t * interfaces)
 {
@@ -1349,7 +1365,6 @@ create_subs_info(SoapOpH op,
 		subsInfo->auth_data.password = NULL;
 	}
 	generate_uuid(subsInfo->subsId, EUIDLEN, 1);
-
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
 		outdoc = wsman_generate_fault(epcntx, indoc,
@@ -1419,7 +1434,8 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
-
+	char *buf = NULL;
+	int len;
 	epcntx = ws_create_ep_context(soap, _doc);
 	subsInfo = (WsSubscribeInfo *)u_zalloc(sizeof (WsSubscribeInfo));
 	wsman_status_init(&status);
@@ -1430,8 +1446,6 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		// wrong enum elements met. Fault message generated
 		goto DONE;
 	}
-	lnode_t * sinfo = lnode_create(subsInfo);
-	list_append(soap->subscriptionList, sinfo);
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("Subscribe fault");
 		doc = wsman_generate_fault(epcntx, _doc,
@@ -1442,6 +1456,19 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
 	if (!doc)
 		goto DONE;
+	lnode_t * sinfo = lnode_create(subsInfo);
+	pthread_mutex_lock(&soap->lockSubs);
+	list_append(soap->subscriptionMemList, sinfo);
+	if(soap->subscriptionOpSet) {
+		ws_xml_dump_memory_enc(_doc, &buf, &len, "UTF-8");
+		if(buf) {
+			debug("before save subscription: subsInfo->subsId = %s",subsInfo->subsId);
+			soap->subscriptionOpSet->save_subscritption(soap->uri_subsRepository, subsInfo->subsId, buf);
+			debug("after save subscription");
+			u_free(buf);
+		}
+	}
+	pthread_mutex_unlock(&soap->lockSubs);
 	body = ws_xml_get_soap_body(doc);
 //	header = ws_xml_get_soap_header(doc);
 	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
@@ -1541,25 +1568,29 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	char *uuid = ws_xml_get_node_text(inNode);
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t * t = list_first(soap->subscriptionList);
+	lnode_t * t = list_first(soap->subscriptionMemList);
 	if(t == NULL) {
 		status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
+		pthread_mutex_unlock(&soap->lockSubs);
 		goto DONE;
 	}
 	subsInfo = (WsSubscribeInfo *)t->list_data;
 	if(strcmp(subsInfo->subsId, uuid+5)) {
-		while((t == list_next(soap->subscriptionList, t))) {
+		while((t == list_next(soap->subscriptionMemList, t))) {
 			subsInfo = (WsSubscribeInfo *)t->list_data;
 			if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		}
 	}
 	if(t) {
-		list_delete(soap->subscriptionList, t);
+		list_delete(soap->subscriptionMemList, t);
 		lnode_destroy(t);
 		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSCRIBE;
+		if(soap->subscriptionOpSet) {
+			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
+		}
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if(t == NULL) {
@@ -1628,19 +1659,20 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	}
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t * t = list_first(soap->subscriptionList);
+	lnode_t * t = list_first(soap->subscriptionMemList);
 	if(t == NULL) {
 		status.fault_code = WSMAN_INVALID_PARAMETER;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
+		pthread_mutex_unlock(&soap->lockSubs);
 		goto DONE;
 	}
 	subsInfo = (WsSubscribeInfo *)t->list_data;
-	if(strcmp(subsInfo->subsId, uuid)) {
-		while((t == list_next(soap->subscriptionList, t))) {
+	if(strcmp(subsInfo->subsId, uuid+5)) {
+		while((t == list_next(soap->subscriptionMemList, t))) {
 			subsInfo = (WsSubscribeInfo *)t->list_data;
-			if(!strcmp(subsInfo->subsId, uuid)) break;
+			if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		}
 	}
 	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
@@ -1652,8 +1684,21 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			goto DONE;
 		}
 		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_RENEW;
+		if(soap->subscriptionOpSet) {
+			debug("before soap->subscriptionOpSet->update_subscription");
+			soap->subscriptionOpSet->update_subscription(soap->uri_subsRepository, uuid+5, 
+				ws_xml_get_node_text(inNode));
+			debug("after soap->subscriptionOpSet->update_subscription");
+		}
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
+	if(t == NULL) {
+                status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
+                status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+                doc = wsman_generate_fault(epcntx, _doc,
+                         status.fault_code, status.fault_detail_code, NULL);
+                goto DONE;
+        }
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("UnSubscribe fault");
 		doc = wsman_generate_fault(epcntx, _doc,
@@ -1735,7 +1780,7 @@ wse_pull_stub(SoapOpH op, void *appData, void * opaqueData)
 	inNode = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 	char *uuid = ws_xml_get_node_text(inNode);
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t * t = list_first(soap->subscriptionList);
+	lnode_t * t = list_first(soap->subscriptionMemList);
 	if(t == NULL) {
 		status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
@@ -1745,7 +1790,7 @@ wse_pull_stub(SoapOpH op, void *appData, void * opaqueData)
 	}
 	subsInfo = (WsSubscribeInfo *)t->list_data;
 	if(strcmp(subsInfo->subsId, uuid)) {
-		while((t == list_next(soap->subscriptionList, t))) {
+		while((t == list_next(soap->subscriptionMemList, t))) {
 			subsInfo = (WsSubscribeInfo *)t->list_data;
 			if(!strcmp(subsInfo->subsId, uuid)) break;
 		}

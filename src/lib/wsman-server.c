@@ -54,7 +54,7 @@
 #include "wsman-soap.h"
 #include "wsman-dispatcher.h"
 
-
+extern struct __SubsRepositoryOpSet subscription_repository_op_set;
 
 WsManListenerH *wsman_dispatch_list_new()
 {
@@ -138,6 +138,19 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 }
 
 
+SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri)
+{
+	SoapH soap = ws_context_get_runtime(cntx);
+	if(soap) {
+		soap->subscriptionOpSet = &subscription_repository_op_set;
+		if(uri) {
+			soap->uri_subsRepository = u_strdup(uri);
+			soap->subscriptionOpSet->init_subscription(uri, NULL);
+		}
+	}
+	return &subscription_repository_op_set;
+}
+
 
 void *wsman_server_auxiliary_loop_thread(void *arg)
 {
@@ -169,3 +182,48 @@ void *wsman_server_auxiliary_loop_thread(void *arg)
 	}
 	return NULL;
 }
+
+/*
+void *wsman_heartbeat_generator(void *arg)
+{
+	WsContextH cntx = (WsContextH)arg;
+	SoapH soap = cntx->soap;
+	WsSubscribeInfo *subsInfo;
+	int r;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	struct timespec timespec;
+	struct timeval tv;
+
+	if ((r = pthread_cond_init(&cond, NULL)) != 0) {
+		error("pthread_cond_init failed = %d", r);
+		return NULL;
+	}
+	if ((r = pthread_mutex_init(&mutex, NULL)) != 0) {
+		error("pthread_mutex_init failed = %d", r);
+		return NULL;
+	}
+
+	while (continue_working) {
+		pthread_mutex_lock(&mutex);
+		gettimeofday(&tv, NULL);
+		timespec.tv_sec = tv.tv_sec + 1;
+		timespec.tv_nsec = tv.tv_usec * 1000;
+		pthread_cond_timedwait(&cond, &mutex, &timespec);
+		pthread_mutex_unlock(&mutex);
+		lnode_t *node = list_first(soap->subscriptionMemList);
+		while(node) {
+			subsInfo = (WsSubscribeInfo *)node->list_data;
+			if(subsInfo->eventSentLastTime) {
+				subsInfo->eventSentLastTime = 0;
+			}
+			else
+				wsman_create_heartbeat(subsInfo);
+			node = list_next(soap->subscriptionMemList, node);
+		}
+		
+	}
+	return NULL;
+	
+}
+*/

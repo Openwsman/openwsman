@@ -31,6 +31,7 @@
 /**
  * @author Anas Nashif
  * @author Vadim Revyakin
+ * @author Liang Hou
  */
 
 #define _GNU_SOURCE
@@ -312,7 +313,21 @@ static int server_callback(struct shttpd_arg_t *arg)
 	return n;
 }
 
-
+static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEntryH entry)
+{
+	WsmanMessage *wsman_msg = wsman_soap_message_new();
+	if(wsman_msg == NULL) return;
+	char *strdoc = entry->strdoc;
+	u_buf_construct(wsman_msg->request, strdoc, strlen(strdoc)+1, strlen(strdoc)+1);
+	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
+	wsman_soap_message_destroy(wsman_msg);
+	lnode_t *node = list_last(cntx->soap->subscriptionMemList);
+	WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
+	//Delete new subscription file coz in fact we've got it
+	cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
+	//Update UUID in the memory
+	strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
+}
 
 static void listener_shutdown_handler(void *p)
 {
@@ -504,11 +519,28 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	WsManListenerH *listener = wsman_dispatch_list_new();
 	listener->config = ini;
 	WsContextH cntx = wsman_init_plugins(listener);
+	SubsRepositoryOpSetH ops = wsman_init_subscription_repository(cntx, wsmand_options_get_subscription_repository_uri());
+	list_t *subs_list = list_create(-1);
+	debug("subscription_repository_uri = %s", wsmand_options_get_subscription_repository_uri());
+	if(ops->load_subscription(wsmand_options_get_subscription_repository_uri(), subs_list) == 0) {
+		lnode_t *node = list_first(subs_list);
+		while(node) {
+			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
+			wsmand_start_notification_manager(cntx, entry);
+			debug("one notification started!");
+			u_free(entry->uuid);
+			u_free(entry);
+			list_delete(subs_list, node);
+			lnode_destroy(node);
+			node = list_first(subs_list);
+		}
+	}
 #ifdef MULTITHREADED_SERVER
 	int r;
 	int sock;
 	lnode_t *node;
 	pthread_t thr_id;
+//	pthread_t hb_generator_id;
 	pthread_attr_t pattrs;
 	struct timespec timespec;
 #else
@@ -601,6 +633,8 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 
 	pthread_create(&thr_id, &pattrs,
 		       wsman_server_auxiliary_loop_thread, cntx);
+
+//	pthread_create(&hb_generator_id, wsman_heartbeat_generator, cntx);
 
 	while (continue_working) {
 		if ((sock = shttpd_accept(lsn, 1000)) == -1) {

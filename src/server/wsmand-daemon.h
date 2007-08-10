@@ -39,6 +39,7 @@
 
 #define DEFAULT_SERVICE_PATH "wsman"
 #define DEFAULT_PID_PATH "/var/run/wsmand.pid"
+#define DEFAULT_SUBSCRIPTION_REPOSITORY "/var/run/subs_repository"
 
 typedef void (*WsmandShutdownFn) (void *);
 
@@ -81,6 +82,7 @@ char *wsmand_options_get_pid_file(void);
 unsigned long wsmand_options_get_enumIdleTimeout(void);
 const char *wsmand_options_get_config_file(void);
 int wsmand_options_get_foreground_debug(void);
+char * wsmand_options_get_subscription_repository_uri(void);
 
 const char **wsmand_options_get_argv(void);
 int wsmand_read_config(dictionary * ini);

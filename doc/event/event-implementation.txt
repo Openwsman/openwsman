@@ -1,0 +1,117 @@
+1. Introduction & Overview
+This document describes the High Level design of WS-Eventing feature in Openwsman. Openwsman is a project intended to provide an open-source implementation of the Web Services Management specification (WS-Management) and to expose system management information on the Linux operating system using the WS-Management protocol. WS-Management is based on a suite of web services specifications and usage requirements that exposes a set of operations focused on and covers all system management aspects.
+WS-Eventing is a feature supported by the WS-Management protocol. 
+There are three participants in WS-Eventing protocol: Subscriber, Event Source and Event Sink. 
+Subscriber is the one who subscribes a subscription, Event Source is the one who accepts a subscription and produces a subscription and Event Sink is the one who receives events. 
+Event Source can also be considered to be consisted of two parts: Subscription Manager and Notification Manager. Subscription Manager deals with the subscription while Notification Manager with the notification.
+
+2. Processing Model of WS-Eventing
+
+In our implementation openwsman acts as Event Source, which is responsible for receiving a subscription from a subscriber and sending a notification to an event sink. As there are different events created by different applications in the real world, it is important to make this process as general as possible. The solution is to put the specific eventing production in the plug-in part and intergrate shared  WS-Eventing protocol process in the framework of openwsman. That is to say, the framework and plug-in act together to accomplish a process of WS-Eventing.
+
+3. Core Data Structures
+To support WS-Eventing protocol, a few new data structures are added. The following are some of the critical ones.
+
+typedef struct __WsSubscribeInfo WsSubscribeInfo 
+// EventThreadContext
+struct __WsEventThreadContext {
+         SoapH soap;
+         WsSubscribeInfo *subsInfo;
+};
+
+typedef struct __WsEventThreadContext * WsEventThreadContextH;”
+
+
+struct __WsEventBody {
+	u_buf_t *EventAction;
+	WsXmlDocH EventContent;
+	int droppedEvents; 
+};
+
+typedef __WsEventBody * WsEventBodyH;
+
+struct __WsNotificationInfo {
+	WsXmlDocH headerOpaqueData;
+	list_t *EventList; //to hold event XML Doc
+	WsXmlDocH bookmarkDoc; //Updated bookmark
+};
+
+typedef __WsNotificationInfo * WsNotificationInfoH;
+
+typedef int (*WsEndPointNotificationManager) (WsEventThreadContextH, WsNotificationInfoH);
+
+#define WSMAN_SUBSCRIBEINFO_UNSCRIBE 0x01
+#define WSMAN_SUBSCRIBEINFO_RENEW 0x02
+#define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
+
+struct __WsSubscribeInfo {
+	pthread_mutex_t datalock;
+	unsigned long flags; //UNSCRIBE,RENEW
+	unsigned char thread_started;
+	char            subsId[EUIDLEN];
+	char *	soapNs;
+	char *	uri;
+	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
+	WsXmlDocH referenceParam;
+	char * locale; // language code
+	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
+	unsigned long expires;
+	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription. */
+	unsigned long	connectionRetryCount; // count of connection retry
+	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
+	unsigned long heartbeatInterval; 
+	WsXmlDocH bookmarkDoc;
+	unsigned char bookmarksFlag; // whether bookmark is needed
+	filter_t	*filter;
+	WsmanAuth       auth_data;
+	WsEndPointNotificationManager eventproc; // plugin related event retriever
+	list_t * notificationDoc; //to store pending notification soap documents
+ };
+
+Structure __WsSubscribeInfo contains necessary parameters defined in WS-Mangement, which determine how events are generated and how a notification is produced and sent. This structure is shared by “renew” and “unsubscribe” requests with the same “subsId”, which is generated when the service accepts a “subscribe” request. In addition, this structure contains a field “eventproc”, which is the entry to obtaining events and generating the events part of a notification envelope, and a field “notificationDoc”, which holds the pending notification envelope if the delivery mode is “http://schemas.dmtf.org/wbem/wsman/1/wsman/Pull”.
+
+A new field “list_t *subscriptionList” is added to structure of __Soap. When a “subscribe” request is dealt with successfully, a corresponding “WsSubscribeInfo” structure will be generated and appended to this list and kept until an corresponding “unsubscribe” request comes. 
+
+struct __Soap {
+        /* do not move this field */
+	pthread_mutex_t lockData;
+	void           *parserData;
+	unsigned long   uniqueIdCounter;
+
+	list_t         *inboundFilterList;
+	list_t         *outboundFilterList;
+
+	list_t         *dispatchList;
+	list_t         *responseList;
+	list_t         *processedMsgIdList;
+	pthread_mutex_t lockSubs; //lock for Subscription Repository
+	list_t	         *subscriptionMemList; //memory Repository of Subscriptions
+	char 	*uri_subsRepository; //URI of repository
+	SubsRepositoryOpSetH subscriptionOpSet; //Functions talbe of Subscription Repository
+	WsContextH      cntx;
+	              //TBD claen up and initilaize it;
+
+	unsigned long   lastResponseListScanTicks;
+
+	              //TBD:? ? ? Make it thread and pass as parameters
+	int             resendCount;
+	unsigned long   resentTimeout[SOAP_MAX_RESENT_COUNT];
+
+	list_t         *WsSerializerAllocList;
+
+	void           *dispatcherData;
+	DispatcherCallback dispatcherProc;
+	void *listener;
+};
+typedef struct __WsEventThreadContext * WsEventThreadContextH;
+void * wse_notification_manager(void * thrdcntx); //Thread to be created to handle event report
+
+Five stubs are added to “wsman-soap.h”
+
+int          wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int 	wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int 	wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
+int	wse_pull_stub(SoapOpH op, void *appData, void * opaqueData); 
+
+These stubs deal with common things of WS-Evening. And any specific things are to be handled in the plug-in endpoints. A notification manager is created in wse_subscribe_stub in response of a notification request and stopped in case of a corresponding unsubscription request.
+

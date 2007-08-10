@@ -83,6 +83,31 @@ typedef struct __dispatch_t *SoapDispatchH;
 
 typedef SoapDispatchH (*DispatcherCallback) (WsContextH, void *, WsXmlDocH);
 
+typedef int (*SubscriptionOpInit) (char *, void *);
+typedef int (*SubscriptionOpFinalize) (char *, void *);
+typedef int (*SubscriptionOpSave) (char *, char *, char *);
+typedef int (*SubscriptionOpDelete) (char *, char *);
+typedef int (*SubscriptionOpGet)(char *, char *, char *);
+typedef int (*SubscriptionOpUpdate)(char *, char *, char *);
+typedef int (*SubscriptionOpLoad) (char *, list_t *);
+
+struct __SubsRepositoryEntry {
+        char *strdoc;
+        char *uuid;
+};
+typedef struct __SubsRepositoryEntry *SubsRepositoryEntryH;
+
+struct __SubsRepositoryOpSet{
+        SubscriptionOpInit init_subscription; //entry of initializing subscripton repository
+        SubscriptionOpFinalize finalize_subscription; //entry of finalizing subscription repository
+        SubscriptionOpLoad load_subscription; //entry of loading all of subscriptions
+        SubscriptionOpGet get_subscription; //entry of geting a subscription from the repository
+        SubscriptionOpSave save_subscritption; //entry of saving a subscription in the repository
+        SubscriptionOpUpdate update_subscription; //entry of updating a subscription
+        SubscriptionOpDelete delete_subscription; //entry of deleting a subscription from the repository
+};
+typedef struct __SubsRepositoryOpSet *SubsRepositoryOpSetH;
+
 
 struct __SoapOp {
 	unsigned        __undefined;
@@ -101,8 +126,12 @@ struct __Soap {
 	list_t         *dispatchList;
 	list_t         *responseList;
 	list_t         *processedMsgIdList;
-	pthread_mutex_t lockSubs;
-	list_t	         *subscriptionList;
+	
+	 pthread_mutex_t lockSubs; //lock for Subscription Repository
+        list_t           *subscriptionMemList; //memory Repository of Subscriptions
+        char    *uri_subsRepository; //URI of repository
+        SubsRepositoryOpSetH subscriptionOpSet; //Functions talbe of Subscription Repository
+
 
 	WsContextH      cntx;
 	              //TBD claen up and initilaize it;
@@ -316,7 +345,8 @@ struct __WsEnumerateInfo {
 #define WSMAN_SUBSCRIBEINFO_RENEW 0x02
 #define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
 struct __WsSubscribeInfo {
-	pthread_mutex_t datalock;
+	pthread_mutex_t notificationlock;
+	pthread_cond_t notificationcond;
 	unsigned long flags; //UNSCRIBE,RENEW
 	unsigned char thread_started;
 	char            subsId[EUIDLEN];
@@ -332,12 +362,14 @@ struct __WsSubscribeInfo {
 	                                         which indicates that Push Mode delivery should be used. */
 	unsigned long	connectionRetryCount; // count of connection retry
 	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
-	unsigned long heartbeatInterval;
+	unsigned long heartbeatInterval; //Interval to send a heartbeart
+	unsigned char eventSentLastTime; //To indicate whether an event is sent since last heartbeat
 	WsXmlDocH bookmarkDoc;
 	unsigned char bookmarksFlag; // whether bookmark is needed
 	filter_t	*filter;
 	WsmanAuth       auth_data;
 	WsEndPointNotificationManager eventproc; // plugin related event retriever
+	WsXmlDocH tempNotificationdoc; //temporary notification document
 	list_t * notificationDoc; //to store pending notification soap documents
 };
 
@@ -405,7 +437,6 @@ int             wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
 int		   wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
 int		   wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
 int		   wse_pull_stub(SoapOpH op, void *appData, void * opaqueData);
-//int		   wse_ack_stub(SoapOpH op, void *appData, void * opaqueData);
 
 SoapOpH
 soap_create_op(SoapH soap,

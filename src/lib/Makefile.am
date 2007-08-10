@@ -19,7 +19,8 @@ wsmaninclude_HEADERS = \
 	wsman-declarations.h \
 	wsman-soap.h \
 	wsman-epr.h \
-	wsman-soap-envelope.h
+	wsman-soap-envelope.h \
+	wsman-subscription-repository.h
 
 OWSMAN_INCLUDES = \
 	wsman-declarations.h \
@@ -58,6 +59,7 @@ libwsman_la_SOURCES = \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
 	wsman-soap-message.c \
+	wsman-subscription-repository.c \
 	$(OWSMAN_INCLUDES)
 
 

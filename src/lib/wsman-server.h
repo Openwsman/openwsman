@@ -36,11 +36,14 @@
 #define WSMAN_SERVER_H_
 
 #include "wsman-plugins.h"
+#include "wsman-subscription-repository.h"
 
 int continue_working;
 
 WsContextH wsman_init_plugins(WsManListenerH *listener);
+SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri);
 WsManListenerH *wsman_dispatch_list_new(void);
 void *wsman_server_auxiliary_loop_thread(void *arg);
+//void *wsman_heartbeat_generator(void *arg);
 
 #endif

@@ -69,6 +69,7 @@ static char *ssl_key_file = NULL;
 static char *service_path = DEFAULT_SERVICE_PATH;
 static char *ssl_cert_file = NULL;
 static char *pid_file = DEFAULT_PID_PATH;
+static char *uri_subscription_repository = DEFAULT_SUBSCRIPTION_REPOSITORY;
 static int daemon_flag = 0;
 static int no_plugin_flag = 0;
 static int use_ssl = 0;
@@ -112,7 +113,8 @@ int wsmand_parse_options(int argc, char **argv)
 		 "Alternate configuration file", "<file>"},
 		{"pid-file", 'p', U_OPTION_ARG_STRING, &pid_file,
 		 "PID file", "<file>"},
-
+		{"subscription-repository-location", 'r',  U_OPTION_ARG_STRING, &uri_subscription_repository,
+		"Subscription Repository Location", "<uri>"},
 		{NULL}
 	};
 
@@ -166,7 +168,7 @@ int wsmand_read_config(dictionary * ini)
 	log_location = iniparser_getstr(ini, "server:log_location");
 	min_threads = iniparser_getint(ini, "server:min_threads", 1);
 	max_threads = iniparser_getint(ini, "server:max_threads", 4);
-
+	uri_subscription_repository = iniparser_getstring(ini, "server:subs_repository", DEFAULT_SUBSCRIPTION_REPOSITORY);
 	return 1;
 }
 
@@ -199,6 +201,11 @@ char *wsmand_options_get_basic_password_file(void)
 char *wsmand_options_get_service_path(void)
 {
 	return service_path;
+}
+
+char * wsmand_options_get_subscription_repository_uri(void)
+{
+	return uri_subscription_repository;
 }
 
 int wsmand_options_get_daemon_flag(void)
