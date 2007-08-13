@@ -346,7 +346,9 @@ struct __WsEnumerateInfo {
 #define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
+#ifndef _WIN32
 	pthread_cond_t notificationcond;
+#endif
 	unsigned long flags; //UNSCRIBE,RENEW
 	unsigned char thread_started;
 	char            subsId[EUIDLEN];
