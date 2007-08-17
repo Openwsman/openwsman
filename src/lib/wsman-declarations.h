@@ -105,7 +105,7 @@
 
 #define END_POINT_UNSUBSCRIBE(t,ns)   \
 {WS_DISP_TYPE_UNSUBSCRIBE,NULL,NULL,EVT_ACTION_UNSUBSCRIBE, NULL,    \
-	t##_TypeInfo,(WsProcType)t##_Subscribe_EP,ns,NULL}
+	t##_TypeInfo,(WsProcType)t##_UnSubscribe_EP,ns,NULL}
 
 #define END_POINT_RENEW(t,ns)	\
 {WS_DISP_TYPE_RENEW,NULL,NULL,EVT_ACTION_RENEW, NULL,	\

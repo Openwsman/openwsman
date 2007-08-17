@@ -633,6 +633,7 @@ int
 CimResource_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
 {
 	int retval = 0;
+	sleep(1);
 	return retval;
 }
 
@@ -669,7 +670,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	}
 */
 // to do here: create indication filter here and something else necessary
-//	subsInfo->eventproc = CimResource_EventThread_EP;
+	subsInfo->eventproc = CimResource_EventThread_EP;
 
 /*	
 	nodeH = ws_xml_get_child(nodeH, 0, XML_NS_EVENTING, WSEVENT_FILTER);

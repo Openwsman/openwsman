@@ -87,7 +87,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
         	while (n--)
         	{
         		lnode_t *node;
-			if(strstr(namelist[n]->d_name,"uuid") == NULL) {
+			if(strstr(namelist[n]->d_name,"uuid") == NULL || strlen(namelist[n]->d_name) < 41) {
 				u_free(namelist[n]);
 				continue;
 			}
@@ -133,7 +133,6 @@ int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscript
 	char buf[U_NAME_MAX];
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
-	debug("before open %s", buf);
 	FILE *subsfile = fopen(buf, "w");
 	if(subsfile == NULL) return -1;
 	fprintf(subsfile, "%s", subscriptionDoc);

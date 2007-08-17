@@ -526,8 +526,8 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 		lnode_t *node = list_first(subs_list);
 		while(node) {
 			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
+			debug("load subscription %s", entry->uuid);
 			wsmand_start_notification_manager(cntx, entry);
-			debug("one notification started!");
 			u_free(entry->uuid);
 			u_free(entry);
 			list_delete(subs_list, node);
@@ -634,7 +634,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	pthread_create(&thr_id, &pattrs,
 		       wsman_server_auxiliary_loop_thread, cntx);
 
-//	pthread_create(&hb_generator_id, wsman_heartbeat_generator, cntx);
+//	pthread_create(&hb_generator_id, wsman_heartbeat_thread, cntx);
 
 	while (continue_working) {
 		if ((sock = shttpd_accept(lsn, 1000)) == -1) {

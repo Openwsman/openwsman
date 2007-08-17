@@ -1408,6 +1408,8 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 		res = 1;
 		goto DONE;
 	}
+	tmx->tm.tm_year -= 1900;
+	tmx->tm.tm_mon -= 1;
 	if (hours < 0) {
 		tmx->tz_min = 60 * hours - mins;
 	} else {

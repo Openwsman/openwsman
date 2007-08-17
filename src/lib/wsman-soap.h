@@ -32,6 +32,7 @@
  * @author Anas Nashif
  * @author Eugene Yarmosh
  * @author Sumeet Kukreja, Dell Inc.
+ * @author Liang Hou
  */
 
 #ifndef WSMAN_SOAP_H_
@@ -351,6 +352,7 @@ struct __WsSubscribeInfo {
 #endif
 	unsigned long flags; //UNSCRIBE,RENEW
 	unsigned char thread_started;
+	long heartbeatCountdown; //countdown of heartbeat, when it is 0, a heartbeat generated
 	char            subsId[EUIDLEN];
 	char *	soapNs;
 	char *	uri;
@@ -372,6 +374,7 @@ struct __WsSubscribeInfo {
 	WsmanAuth       auth_data;
 	WsEndPointNotificationManager eventproc; // plugin related event retriever
 	WsXmlDocH tempNotificationdoc; //temporary notification document
+	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
 	list_t * notificationDoc; //to store pending notification soap documents
 };
 
@@ -519,7 +522,11 @@ int             wsman_check_status(WsmanStatus * s);
 
 void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
 
+void wsman_heartbeat_generator(WsContextH cntx, void *opaqueData);
+
 WsEventThreadContextH ws_create_event_thread_context(SoapH soap, WsSubscribeInfo *subsInfo);
+
+void * wse_notification_sender(void * thrdcntx);
 
 void * wse_notification_manager(void * thrdcntx);
 

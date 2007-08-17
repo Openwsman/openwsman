@@ -179,22 +179,20 @@ void *wsman_server_auxiliary_loop_thread(void *arg)
 		pthread_mutex_unlock(&mutex);
 
 		wsman_timeouts_manager(cntx, NULL);
+		wsman_heartbeat_generator(cntx, NULL);
 	}
 	return NULL;
 }
-
 /*
-void *wsman_heartbeat_generator(void *arg)
+void *wsman_heartbeat_thread(void *arg)
 {
 	WsContextH cntx = (WsContextH)arg;
-	SoapH soap = cntx->soap;
-	WsSubscribeInfo *subsInfo;
 	int r;
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 	struct timespec timespec;
 	struct timeval tv;
-
+	lnode_t *temp;
 	if ((r = pthread_cond_init(&cond, NULL)) != 0) {
 		error("pthread_cond_init failed = %d", r);
 		return NULL;
@@ -211,18 +209,7 @@ void *wsman_heartbeat_generator(void *arg)
 		timespec.tv_nsec = tv.tv_usec * 1000;
 		pthread_cond_timedwait(&cond, &mutex, &timespec);
 		pthread_mutex_unlock(&mutex);
-		lnode_t *node = list_first(soap->subscriptionMemList);
-		while(node) {
-			subsInfo = (WsSubscribeInfo *)node->list_data;
-			if(subsInfo->eventSentLastTime) {
-				subsInfo->eventSentLastTime = 0;
-			}
-			else
-				wsman_create_heartbeat(subsInfo);
-			node = list_next(soap->subscriptionMemList, node);
-		}
-		
-	}
+		wsman_heartbeat_generator(cntx, NULL);
 	return NULL;
 	
 }

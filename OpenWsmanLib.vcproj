@@ -40,9 +40,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D &quot;_CRT_SECURE_NO_DEPRECATE&quot;"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libiconv\include;.\libxml2\include;.\src\lib;.\src\libu;.\src\cpp"
-				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC;_WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
