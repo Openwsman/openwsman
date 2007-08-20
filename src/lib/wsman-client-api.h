@@ -160,8 +160,8 @@ typedef enum {
 		char * delivery_uri;
 		char * reference;
 		WsmanDeliveryMode delivery_mode;
-		unsigned int heartbeat_interval;
-		unsigned int expires;
+		float heartbeat_interval;
+		float expires;
 		hash_t *selectors;
 		hash_t *properties;
 		unsigned int timeout;

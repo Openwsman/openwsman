@@ -664,7 +664,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 	}
 	
 	char            buf[20];
-	sprintf(buf, "PT%uS", (unsigned int) options->expires);
+	sprintf(buf, "PT%fS", options->expires);
 	ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	if(options->filter) {
 		filter = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_FILTER, options->filter);
@@ -672,7 +672,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			ws_xml_add_node_attr(filter, XML_NS_EVENTING, WSEVENT_DIALECT, options->dialect);
 	}
 	if(options->heartbeat_interval) {
-		sprintf(buf, "PT%uS", (unsigned int) options->heartbeat_interval / 1000);
+		sprintf(buf, "PT%fS", options->heartbeat_interval);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSM_HEARTBEATS, buf);
 	}
 	if (options->flags & FLAG_EVENT_SENDBOOKMARK) {
@@ -817,8 +817,7 @@ wsmc_create_request(WsManClient * cl,
 		node = ws_xml_add_child(ws_xml_get_soap_body(request),
 				XML_NS_EVENTING, WSEVENT_RENEW, NULL);
 		char            buf[20];
-		sprintf(buf, "PT%u.%uS", (unsigned int) options->expires/ 1000,
-				(unsigned int) options->expires % 1000);
+		sprintf(buf, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
 			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);

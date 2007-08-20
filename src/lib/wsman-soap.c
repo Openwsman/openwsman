@@ -1634,13 +1634,6 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 			if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		}
 	}
-	if(t) {
-//		list_delete(soap->subscriptionMemList, t);
-//		lnode_destroy(t);
-		if(soap->subscriptionOpSet) {
-			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
-		}
-	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if(t == NULL) {
                 status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
@@ -1656,6 +1649,9 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	}
 	pthread_mutex_lock(&subsInfo->notificationlock);
+	if(soap->subscriptionOpSet) {
+		soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
+	}
 	subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSCRIBE;
 	debug("subscription %s unsubscribed", subsInfo->subsId);
 	pthread_mutex_unlock(&subsInfo->notificationlock);
@@ -1684,6 +1680,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlDocH       doc = NULL;
 	int             retVal = 0;
 	int		r;
+	char * str = NULL;
 	WsSubscribeInfo *subsInfo;
 	WsmanStatus     status;
 	WsXmlNodeH      inNode;
@@ -1728,45 +1725,38 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		}
 	}
-	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
-	inNode = ws_xml_get_child(inNode, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
-	if(t) {
-		wsman_set_expiretime(inNode, &subsInfo->expires, &status.fault_code);
-		if (status.fault_code != WSMAN_RC_OK) {
-			status.fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
-			goto DONE;
-		}
-		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_RENEW;
-		if(soap->subscriptionOpSet) {
-			debug("before soap->subscriptionOpSet->update_subscription");
-			soap->subscriptionOpSet->update_subscription(soap->uri_subsRepository, uuid+5, 
-				ws_xml_get_node_text(inNode));
-			debug("after soap->subscriptionOpSet->update_subscription");
-		}
-	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if(t == NULL) {
-                status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
-                status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-                doc = wsman_generate_fault(epcntx, _doc,
-                         status.fault_code, status.fault_detail_code, NULL);
-                goto DONE;
-        }
-	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
-                debug("UnSubscribe fault");
+		status.fault_code = WSMAN_INVALID_PARAMETER;
+		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
+		pthread_mutex_unlock(&soap->lockSubs);
 		goto DONE;
 	}
-	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
-	if (!doc)
+	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
+	inNode = ws_xml_get_child(inNode, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
+	pthread_mutex_lock(&subsInfo->notificationlock);
+	wsman_set_expiretime(inNode, &subsInfo->expires, &status.fault_code);
+	if (status.fault_code != WSMAN_RC_OK) {
+		status.fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
+		pthread_mutex_unlock(&subsInfo->notificationlock);
 		goto DONE;
-	body = ws_xml_get_soap_body(doc);
-	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_RENEW_RESP, NULL);
-	header = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_RENEW);
-	header = ws_xml_get_child(header, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
-	if(header)
-		ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, ws_xml_get_node_text(header));
+	}
+	wsman_expiretime2xmldatetime(subsInfo->expires, &str);
+	if(soap->subscriptionOpSet) {
+		soap->subscriptionOpSet->update_subscription(soap->uri_subsRepository, uuid+5, 
+			str);
+		debug("subscription %s updated!", uuid);
+	}
+	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
+                debug("renew fault in plug-in");
+		doc = wsman_generate_fault(epcntx, _doc,
+			 status.fault_code, status.fault_detail_code, NULL);
+		pthread_mutex_unlock(&subsInfo->notificationlock);
+		goto DONE;
+	}
+	debug("subscription %s notification manager status is %d", subsInfo->subsId, subsInfo->thread_started);
 	if(subsInfo->thread_started == 0) {
 		pthread_t eventreport;
 		pthread_attr_t pattrs;
@@ -1775,6 +1765,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			status.fault_code = WSMAN_INTERNAL_ERROR;
 			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
 			retVal = 1;
+			pthread_mutex_unlock(&subsInfo->notificationlock);
 			goto DONE;
 		}
 
@@ -1784,6 +1775,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			status.fault_code = WSMAN_INTERNAL_ERROR;
 			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
 			retVal = 1;
+			pthread_mutex_unlock(&subsInfo->notificationlock);
 			goto DONE;
 		}
 		WsEventThreadContextH thr_cntx = ws_create_event_thread_context(soap, subsInfo);
@@ -1792,15 +1784,25 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			status.fault_code = WSMAN_INTERNAL_ERROR;
 			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
 			retVal = 1;
+			pthread_mutex_unlock(&subsInfo->notificationlock);
 			goto DONE;
 		}
 	}
+	pthread_mutex_unlock(&subsInfo->notificationlock);
+	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+	if (!doc)
+		goto DONE;
+	body = ws_xml_get_soap_body(doc);
+	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_RENEW_RESP, NULL);
+	if(header)
+		ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
 DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	}
 	ws_serializer_free_all(epcntx);
 	ws_destroy_context(epcntx);
+	u_free(str);
 	return retVal;
 }
 
@@ -2147,7 +2149,7 @@ void * wse_notification_manager(void * thrdcntx)
 		notificationDoc = reservedDoc;
 		retVal = subsInfo->eventproc(threadcntx, notificationInfo);
 		if(time_expired(subsInfo->expires)) {
-			debug("Notification uuid:%s expirres period %d", subsInfo->subsId, subsInfo->expires);
+			debug("Notification uuid:%s expirres period %ul", subsInfo->subsId, subsInfo->expires);
 			break;
 		}
 		if(retVal == WSE_NOTIFICATION_DRAOPEVENTS) {
