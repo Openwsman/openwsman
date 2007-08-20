@@ -608,8 +608,13 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 	}
 
 	epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
-	f = (filter_t *)u_zalloc(sizeof(filter_t));
-	f->epr = epr;
+	if (epr == NULL) {
+		enumInfo->filter = NULL;
+		return;
+	} else {
+		f = (filter_t *)u_zalloc(sizeof(filter_t));
+		f->epr = epr;
+	}
 	fnode = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
 	if (fnode)
 		f->resultClass = u_strdup(ws_xml_get_node_text(fnode));

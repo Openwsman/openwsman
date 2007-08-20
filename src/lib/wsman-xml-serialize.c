@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
 
-/** 
+/**
  * @author Eugene Yarmosh
  * @author Vadim Revyakin
  */
@@ -112,7 +112,7 @@ WsXmlNodeH xml_serializer_get_child(XmlSerializationData * data)
 
 	if (g_NameNameAliaseTable) {
 		int index = 0;
-		while (node == NULL && 
+		while (node == NULL &&
 				g_NameNameAliaseTable[index].name != NULL) {
 			if (!strcmp(g_NameNameAliaseTable[index].name, name))
 			       	node = ws_xml_get_child(data->xmlNode,
@@ -179,7 +179,7 @@ handle_attrs(struct __XmlSerializationData *data,
 	debug("alligned databuf = %p; pad = 0x%x", DATA_BUF(data), pad);
 
 	if (data->mode == XML_SMODE_FREE_MEM) {
-		// XXXXX   free memory 
+		// XXXXX   free memory
 		goto DONE;
 	}
 	if (data->mode == XML_SMODE_SERIALIZE) {
@@ -322,7 +322,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				tmp = *((XML_TYPE_UINT64 *) data->
 				      elementBuf);
 			else {
-				error("unsupported uint size + %d", 
+				error("unsupported uint size + %d",
 						8 * valSize);
 				retVal = WS_ERR_INVALID_PARAMETER;
 				goto DONE;
@@ -356,7 +356,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
-				if (ws_xml_find_attr_bool(child, 
+				if (ws_xml_find_attr_bool(child,
 						     XML_NS_SCHEMA_INSTANCE,
 						     XML_SCHEMA_NIL)) {
 					DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
@@ -804,7 +804,7 @@ int do_serialize_dyn_size_array(XmlSerializationData * data)
 
 	if (pad)
 		pad = al - pad;
-	
+
 	retVal = DATA_SIZE(data) + pad;
 	if (DATA_BUF(data) + retVal > data->stopper) {
 		return WS_ERR_INVALID_PARAMETER;
@@ -916,7 +916,7 @@ int do_serialize_struct(XmlSerializationData * data)
 
 	TRACE_ENTER;
 
-	debug("handle %d structure %s ptr = %p", DATA_COUNT(data),
+	debug("handle %d structure \"%s\" ptr = %p", DATA_COUNT(data),
 	      data->elementInfo->name, data->elementBuf);
 	if (data->mode != XML_SMODE_SERIALIZE &&
 	    data->mode != XML_SMODE_DESERIALIZE &&
@@ -933,7 +933,7 @@ int do_serialize_struct(XmlSerializationData * data)
 	retVal = pad + XML_IS_HEAD(savedElement) ?
 	    DATA_SIZE(data) : DATA_ALL_SIZE(data);
 	if ((char *) DATA_BUF(data) + retVal > data->stopper) {
-		error("size of %d structures %s exceeds stopper (%p > %p)",
+		error("size of %d structures \"%s\" exceeds stopper (%p > %p)",
 		      DATA_COUNT(data), DATA_ELNAME(data),
 		      (char *) DATA_BUF(data) + retVal, data->stopper);
 		return WS_ERR_INVALID_PARAMETER;
@@ -1005,7 +1005,7 @@ int do_serialize_struct(XmlSerializationData * data)
 			debug("retval: %d", tmp);
 
 			if (tmp < 0) {
-				error("handling element %s failed = %d",
+				error("handling of element \"%s\" failed = %d",
 				      DATA_ELNAME(data), tmp);
 				retVal = tmp;
 				goto DONE;
@@ -1159,8 +1159,7 @@ void *ws_deserialize(WsContextH cntx,
 	}
 
 	size = myinfo.size;
-	if ((data.elementBuf =
-	     xml_serializer_alloc(&data, size, 1)) != NULL) {
+	if ((data.elementBuf = xml_serializer_alloc(&data, size, 1)) != NULL) {
 		retPtr = data.elementBuf;
 		data.stopper = (char *) retPtr + size;
 		if (myinfo.proc(&data) <= 0) {
@@ -1168,6 +1167,7 @@ void *ws_deserialize(WsContextH cntx,
 			retPtr = NULL;
 			ws_serializer_free_mem(cntx, data.elementBuf,
 					       &myinfo);
+			error("Error during serialization");
 		}
 	}
 	TRACE_EXIT;

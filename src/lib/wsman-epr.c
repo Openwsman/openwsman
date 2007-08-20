@@ -69,13 +69,13 @@ SER_NS_STR(XML_NS_WS_MAN, WSM_RESOURCE_URI, 1),
 
 SER_START_ITEMS(epr_t)
 SER_NS_STR(XML_NS_ADDRESSING, WSA_ADDRESS, 1),
-	SER_NS_STRUCT(XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, 1,
+SER_NS_STRUCT(XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, 1,
 			ReferenceParameters), SER_END_ITEMS(epr_t);
 
 
 
 epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
-	const char *epr_node_name, const char *ns) 
+	const char *epr_node_name, const char *ns)
 {
 	epr_t *epr;
         epr = (epr_t *) ws_deserialize(cntx,

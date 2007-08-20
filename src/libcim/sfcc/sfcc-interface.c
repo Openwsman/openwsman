@@ -463,8 +463,7 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 	      opcount);
 	if (opcount > count) {
 		statusP->fault_code = WSMAN_INVALID_SELECTORS;
-		statusP->fault_detail_code =
-		    WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
+		statusP->fault_detail_code = WSMAN_DETAIL_INSUFFICIENT_SELECTORS;
 		debug("insuffcient selectors");
 		goto cleanup;
 	} else if (opcount < hash_count(keys)) {
@@ -480,8 +479,7 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 		    CMGetKey(objectpath, (char *) hnode_getkey(hn), &rc);
 		if (rc.rc != 0) {	// key not found
 			statusP->fault_code = WSMAN_INVALID_SELECTORS;
-			statusP->fault_detail_code =
-			    WSMAN_DETAIL_UNEXPECTED_SELECTORS;
+			statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
 			debug("unexpcted selectors");
 			break;
 		}
@@ -750,14 +748,20 @@ cim_enum_instances(CimClientInfo * client,
 		       	(enumInfo->flags & WSMAN_ENUMINFO_ASSOC )) {
 		char *class = NULL;
 		epr_t *epr;
-		epr = (epr_t *)filter->epr;
-		class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
-		objectpath = newCMPIObjectPath(client->cim_namespace,
-			class, NULL);
-		wsman_epr_selector_cb(filter->epr,
-				cim_add_keys_from_filter_cb, objectpath);
-		debug( "ObjectPath: %s",
-				CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+		if (filter) {
+			epr = (epr_t *)filter->epr;
+			class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
+			objectpath = newCMPIObjectPath(client->cim_namespace,
+					class, NULL);
+			wsman_epr_selector_cb(filter->epr,
+					cim_add_keys_from_filter_cb, objectpath);
+			debug( "ObjectPath: %s",
+					CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+		} else {
+			status->fault_code = WXF_INVALID_REPRESENTATION;
+			status->fault_detail_code = WSMAN_DETAIL_OK;
+			goto cleanup;
+		}
 	} else {
 		objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
@@ -793,6 +797,8 @@ cim_enum_instances(CimClientInfo * client,
 		cim_to_wsman_status(rc, status);
 		if (rc.msg)
 			CMRelease(rc.msg);
+		if (objectpath)
+			CMRelease(objectpath);
 		goto cleanup;
 	}
 	CMPIArray *enumArr = enumeration->ft->toArray(enumeration, NULL);
@@ -815,11 +821,7 @@ cim_enum_instances(CimClientInfo * client,
 
 	if (objectpath)
 		CMRelease(objectpath);
-	return;
-
       cleanup:
-	if (objectpath)
-		CMRelease(objectpath);
 	return;
 }
 
