@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 	}
 
 	filename = (char *) wsmand_options_get_config_file();
-	ini = iniparser_load(filename);
+	ini = iniparser_new(filename);
 	debug("Using conf file: %s", filename);
 	if (ini == NULL) {
 		fprintf(stderr, "Cannot parse file [%s]\n", filename);
@@ -300,6 +300,6 @@ int main(int argc, char **argv)
 	wsman_plugins_unload(listener);
 	u_free(listener);
 	debug_destroy_handlers();
-	iniparser_freedict(ini);
+	iniparser_free(ini);
 	return 0;
 }

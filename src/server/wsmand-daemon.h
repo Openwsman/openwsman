@@ -39,7 +39,11 @@
 
 #define DEFAULT_SERVICE_PATH "wsman"
 #define DEFAULT_PID_PATH "/var/run/wsmand.pid"
-#define DEFAULT_SUBSCRIPTION_REPOSITORY "/var/run/subs_repository"
+#ifdef PACKAGE_SUBSCRIPTION_DIR
+#define DEFAULT_SUBSCRIPTION_REPOSITORY PACKAGE_SUBSCRIPTION_DIR
+#else
+#define DEFAULT_SUBSCRIPTION_REPOSITORY "/var/lib/openwsman/subscriptions"
+#endif
 
 typedef void (*WsmandShutdownFn) (void *);
 

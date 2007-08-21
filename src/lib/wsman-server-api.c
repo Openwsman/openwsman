@@ -72,7 +72,7 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 	if (config_file) {
 		debug("reading config file 2");
 		dictionary *ini;
-		ini = iniparser_load(config_file);
+		ini = iniparser_new(config_file);
 		if (ini) {
 			listener->config = ini;
 		}
@@ -99,7 +99,7 @@ void *wsman_server_create_config(char *config_file)
 
 	if (config_file) {
 		debug("reading config file 1");
-		ini = iniparser_load(config_file);
+		ini = iniparser_new(config_file);
 		if (ini) {
 			listener->config = ini;
 		}
