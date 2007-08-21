@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
 #ifndef _U_LIBU_H_
@@ -32,7 +32,6 @@
 #include <u/md5.h>
 #include <u/list.h>
 #include <u/base64.h>
-#include <u/strlib.h>
 #include <u/iniparser.h>
 #include <u/uerr.h>
 #include <u/uoption.h>
@@ -50,6 +49,6 @@
 
 #ifndef FALSE
 #define FALSE    0
-#endif  /* FALSE */ 
+#endif  /* FALSE */
 
 #endif /* !_U_LIBU_H_ */
