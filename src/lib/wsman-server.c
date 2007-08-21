@@ -183,34 +183,4 @@ void *wsman_server_auxiliary_loop_thread(void *arg)
 	}
 	return NULL;
 }
-/*
-void *wsman_heartbeat_thread(void *arg)
-{
-	WsContextH cntx = (WsContextH)arg;
-	int r;
-	pthread_mutex_t mutex;
-	pthread_cond_t cond;
-	struct timespec timespec;
-	struct timeval tv;
-	lnode_t *temp;
-	if ((r = pthread_cond_init(&cond, NULL)) != 0) {
-		error("pthread_cond_init failed = %d", r);
-		return NULL;
-	}
-	if ((r = pthread_mutex_init(&mutex, NULL)) != 0) {
-		error("pthread_mutex_init failed = %d", r);
-		return NULL;
-	}
 
-	while (continue_working) {
-		pthread_mutex_lock(&mutex);
-		gettimeofday(&tv, NULL);
-		timespec.tv_sec = tv.tv_sec + 1;
-		timespec.tv_nsec = tv.tv_usec * 1000;
-		pthread_cond_timedwait(&cond, &mutex, &timespec);
-		pthread_mutex_unlock(&mutex);
-		wsman_heartbeat_generator(cntx, NULL);
-	return NULL;
-	
-}
-*/

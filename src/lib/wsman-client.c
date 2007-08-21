@@ -655,25 +655,26 @@ wsman_set_subscribe_options(WsManClient * cl,
 	WsXmlNodeH filter = NULL;
 	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
 	WsXmlNodeH temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
+	WsXmlNodeH node2;
+	char buf[32];
 	if(temp) {
 		ws_xml_add_node_attr(temp, XML_NS_EVENTING, WSEVENT_DELIVERY_MODE, wsmc_create_delivery_mode_str(options->delivery_mode));
-		temp = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
-		ws_xml_add_child(temp, XML_NS_ADDRESSING, WSA_TO, options->delivery_uri);
+		node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
+		ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_TO, options->delivery_uri);
+		if(options->heartbeat_interval) {
+			snprintf(buf, 32, "PT%fS", options->heartbeat_interval);
+			ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_HEARTBEATS, buf);
+		}
 		if(options->reference)
 			ws_xml_add_child(temp, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, options->reference);
 	}
 	
-	char            buf[20];
-	sprintf(buf, "PT%fS", options->expires);
+	snprintf(buf, 32, "PT%fS", options->expires);
 	ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	if(options->filter) {
 		filter = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_FILTER, options->filter);
 		if(options->dialect)
 			ws_xml_add_node_attr(filter, XML_NS_EVENTING, WSEVENT_DIALECT, options->dialect);
-	}
-	if(options->heartbeat_interval) {
-		sprintf(buf, "PT%fS", options->heartbeat_interval);
-		ws_xml_add_child(node, XML_NS_EVENTING, WSM_HEARTBEATS, buf);
 	}
 	if (options->flags & FLAG_EVENT_SENDBOOKMARK) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SENDBOOKMARKS, NULL);

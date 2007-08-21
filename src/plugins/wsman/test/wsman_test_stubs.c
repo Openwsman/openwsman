@@ -97,6 +97,51 @@ int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
     return 0;
 }
 
+int
+WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
+{
+	int retval = 0;
+	sleep(30);
+	return retval;
+}
+
+int 
+WsManTest_Subscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	debug("CIM Subscription");
+	int retval = 0;
+// to do here: create indication filter here and something else necessary
+	subsInfo->eventproc = WsManTest_EventThread_EP;
+
+	return retval;
+}
+
+int WsManTest_Renew_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
+
+int WsManTest_UnSubscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
+
+int WsManTest_Evt_Pull_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return 0;
+}
 
 
 

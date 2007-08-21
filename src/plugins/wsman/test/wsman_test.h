@@ -65,6 +65,27 @@ int WsManTest_Release_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
 int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
 WsManTest* WsManTest_Put_EP(WsContextH cntx);
 WsManTest* WsManTest_Get_EP (WsContextH cntx);
+int 
+WsManTest_Subscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+int WsManTest_Renew_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+int WsManTest_UnSubscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+int WsManTest_Evt_Pull_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData);
+int
+WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo);
+
+
 
 
 

@@ -115,6 +115,7 @@ lnode_t *list_prev(list_t *, lnode_t *);
 lnode_t *list_del_first(list_t *);
 lnode_t *list_del_last(list_t *);
 lnode_t *list_delete(list_t *, lnode_t *);
+lnode_t *list_delete2(list_t *, lnode_t *);
 
 void list_process(list_t *, void *, void (*)(list_t *, lnode_t *, void *));
 

@@ -205,6 +205,28 @@ lnode_t *list_delete(list_t *list, lnode_t *del)
 }
 
 /*
+ * Delete the given node from the list. Return next node
+ */
+
+lnode_t *list_delete2(list_t *list, lnode_t *del)
+{
+    lnode_t *next = del->next;
+    lnode_t *prev = del->prev;
+
+    assert (list_contains(list, del));
+
+    prev->next = next;
+    next->prev = prev;
+    list->nodecount--;
+
+    del->next = del->prev = NULL;
+    if (next == &list->nilnode) {
+	   return NULL;
+    }
+    return next;
+}
+
+/*
  * For each node in the list, execute the given function. The list,
  * current node and the given context pointer are passed on each
  * call to the function.

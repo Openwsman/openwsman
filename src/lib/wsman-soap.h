@@ -345,13 +345,14 @@ struct __WsEnumerateInfo {
 #define WSMAN_SUBSCRIBEINFO_UNSCRIBE 0x01
 #define WSMAN_SUBSCRIBEINFO_RENEW 0x02
 #define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
+#define WSMAN_SUBSCRIBEINFO_MANAGER_STARTED 0x08
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
+	pthread_mutex_t notification_sender_mutex;
 #ifndef _WIN32
 	pthread_cond_t notificationcond;
 #endif
-	unsigned long flags; //UNSCRIBE,RENEW
-	unsigned char thread_started;
+	unsigned long flags; 
 	long heartbeatCountdown; //countdown of heartbeat, when it is 0, a heartbeat generated
 	char            subsId[EUIDLEN];
 	char *	soapNs;
