@@ -45,8 +45,6 @@
 #include "wsman-dispatcher.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-xml-serialize.h"
-//#include "wsman-client.h"
-//#include "wsman-client-api.h"
 #include "wsman-soap-envelope.h"
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
@@ -628,9 +626,7 @@ WsmanMessage *wsman_get_msg_from_op(SoapOpH op)
 
 
 
-		//    ENUMERATION STUFF
-
-
+//    ENUMERATION STUFF
 #define ENUM_EXPIRED(enuminfo, mytime) \
 	((enumInfo->expires > 0) &&        \
 	(enumInfo->expires > mytime))
@@ -761,9 +757,6 @@ unlock_enuminfo(WsContextH cntx, WsEnumerateInfo *enumInfo)
 	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	u_unlock(cntx->soap);
 }
-
-
-
 
 
 static void

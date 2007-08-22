@@ -48,7 +48,7 @@
 /**
  * @defgroup XMLParserGeneric Generic XML Parser Interface
  * @brief Generic XML Parser interface functions
- * 
+ *
  * @{
  */
 
@@ -102,7 +102,7 @@ static int is_xml_val_true(const char *text)
  * Enumerate namespaces in a node
  * @param node XML node
  * @param callback Namespace Enumeration callback
- * @param data Callback data 
+ * @param data Callback data
  */
 static int
 ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void *data)
@@ -148,12 +148,12 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 /**
  * Add QName attribute
  * @param node Parent XML node
- * @param nameNs Child Namespace 
+ * @param nameNs Child Namespace
  * @param name Child Name
  * @param valueNs Namespace for value
  * @param value Child Value
  * @return Child XML node
- * @note 
+ * @note
  * if namespaces has been changed after this function is called, itis caller's
  * responsibility to update QName fields accordingly
  */
@@ -182,7 +182,7 @@ WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
  * @param callback enumeration callback
  * @param data Callback data
  * @param bWalkUpTree Flag FIXME
- * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero) 
+ * @brief Enumerates all namespaces defined at the node and optionally (if bIncludeParents isn't zero)
  * walks up the parent chain
  */
 void ws_xml_ns_enum(WsXmlNodeH node,
@@ -218,10 +218,10 @@ WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
 */
 
 /**
- * Create an empty envelope with a <b>Header</b> and a <b>Body</b> 
+ * Create an empty envelope with a <b>Header</b> and a <b>Body</b>
  * @param soap Soap handler
  * @param soapVersion The SOAP version to be used for creating the envelope
- * @return An XMl document  
+ * @return An XMl document
  */
 WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
 {
@@ -390,7 +390,7 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
  * @param doc The XML document
  * @param nsUri Namespace URI
  * @param name Node name
- * @return found text 
+ * @return found text
  */
 char *ws_xml_find_text_in_doc(WsXmlDocH doc, const char *nsUri,
 			      const char *name)
@@ -406,7 +406,7 @@ char *ws_xml_find_text_in_doc(WsXmlDocH doc, const char *nsUri,
  * @param nsUri Namespace URI
  * @param name Node name
  * @param bRecursive Recursive flag
- * @return found text 
+ * @return found text
  */
 char *ws_xml_find_text_in_tree(WsXmlNodeH head, const char *nsUri,
 			       const char *name, int bRecursive)
@@ -447,9 +447,9 @@ SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
 
 
 
-WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc, 
-		const char *rootNsUri, 
-		const char *rootName ) 
+WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
+		const char *rootNsUri,
+		const char *rootName )
 {
 	SoapH soap = ws_xml_get_doc_soap_handle(doc);
 	return ws_xml_create_doc(soap, rootNsUri, rootName);
@@ -473,16 +473,14 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 
 		parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList");
 		if (parserData->nsHolder != NULL) {
-			WsXmlNodeH node = ws_xml_get_doc_root(
-					parserData->nsHolder);
+			WsXmlNodeH node = ws_xml_get_doc_root(parserData->nsHolder);
 			retVal = 0;
 			soap->parserData = parserData;
 			if (nsData) {
 				int i;
 				for (i = 0; nsData[i].uri != NULL; i++) {
 					WsXmlNsData *nsd = &nsData[i];
-					ws_xml_define_ns(node, nsd->uri,
-							 nsd->prefix, 0);
+					ws_xml_define_ns(node, nsd->uri, nsd->prefix, 0);
 				}
 			}
 		}
@@ -496,12 +494,12 @@ int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
 	return retVal;
 }
 
+
 void ws_xml_parser_destroy(SoapH soap)
 {
 	if (soap && soap->parserData) {
 		u_lock(soap);
-		ws_xml_destroy_doc(((WsXmlParserData *) soap->parserData)->
-				   nsHolder);
+		ws_xml_destroy_doc(((WsXmlParserData *) soap->parserData)->nsHolder);
 		xml_parser_destroy(soap);
 		u_free(soap->parserData);
 		soap->parserData = NULL;
@@ -528,8 +526,8 @@ WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc)
  * @param callback Enumeration callback
  * @param data Callback data
  * @param bRecursive Recursive flag
- * @return 
- * 
+ * @return
+ *
  */
 int
 ws_xml_enum_children(WsXmlNodeH parent,
@@ -724,7 +722,7 @@ ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName)
  * @param nsUri Namespace URI
  * @param name Node name
  * @return status
- * 
+ *
  */
 int ws_xml_set_node_name(WsXmlNodeH node, const char *nsUri,
 			 const char *name)
@@ -893,16 +891,14 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 			 const char *name)
 {
 	int retVal = 0;
-	if (node) {
-		char *nodeNsUri = ws_xml_get_node_name_ns(node);
-		if ((nsUri == nodeNsUri) ||
-		    (nsUri != NULL && nodeNsUri != NULL &&
-		     !strcmp(nodeNsUri, nsUri))) {
-			if (name == NULL ||
-			    !strcmp(name,
-				    ws_xml_get_node_local_name(node)))
-				retVal = 1;
-		}
+	char *nodeNsUri = NULL;
+	if (!node)
+		return 0;
+	nodeNsUri = ws_xml_get_node_name_ns(node);
+	if ((nsUri == nodeNsUri) || (nsUri != NULL && nodeNsUri != NULL &&
+			 !strcmp(nodeNsUri, nsUri))) {
+		if (name == NULL || !strcmp(name, ws_xml_get_node_local_name(node)))
+			retVal = 1;
 	}
 	return retVal;
 }
@@ -912,14 +908,12 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri, const char *prefix)
 {
 	WsXmlNsH ns = NULL;
-	if (soap) {
-		WsXmlParserData *data =
-		    (WsXmlParserData *) soap->parserData;
-		if (data && data->nsHolder) {
-			WsXmlNodeH root =
-			    ws_xml_get_doc_root(data->nsHolder);
-			ns = ws_xml_find_ns(root, uri, prefix, 0);
-		}
+	WsXmlParserData *data = (WsXmlParserData *) soap->parserData;
+	if (!soap)
+		return NULL;
+	if (data && data->nsHolder) {
+		WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);
+		ns = ws_xml_find_ns(root, uri, prefix, 0);
 	}
 	return ns;
 }
@@ -1063,7 +1057,7 @@ char *ws_xml_get_ns_prefix(WsXmlNsH ns)
 /**
  * Get Namespace URI
  * @param ns Namespace
- * @return URI of namespace, NULL of not found 
+ * @return URI of namespace, NULL of not found
  */
 char *ws_xml_get_ns_uri(WsXmlNsH ns)
 {
@@ -1146,7 +1140,7 @@ ws_xml_add_child_format(WsXmlNodeH node, const char *nsUri,
 /**
  * Check of namespace prefix is OK.
  * @param ns Namespace
- * @param newPrefix New prefix 
+ * @param newPrefix New prefix
  * @param bDefault FIXME
  * @return 1 if Ok, 0 if not
  */
@@ -1209,14 +1203,14 @@ ws_xml_define_ns(WsXmlNodeH node, const char *nsUri, const char *nsPrefix,
 /**
  * Add QName child
  * @param parent Parent XML node
- * @param nameNs Child Namespace 
+ * @param nameNs Child Namespace
  * @param name Child Name
  * @param valueNs Namespace for value
  * @param value Child Value
  * @return Child XML node
  * @note if namespaces has been changed after this function is called, it is caller's
  * responsibility to update QName fields accordingly
- * 
+ *
  */
 WsXmlNodeH
 ws_xml_add_qname_child(WsXmlNodeH parent,
