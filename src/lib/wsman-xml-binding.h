@@ -99,5 +99,8 @@ int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node);
 
 void xml_parser_unlink_node(WsXmlNodeH node);
 void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char* prefix);
+void xml_parser_node_set_lang(WsXmlNodeH node,  const char *lang);
+
+void xml_parser_copy_node(WsXmlNodeH src, WsXmlNodeH dst);
 
 #endif				/*XML_BINDING_LIBXML2_H_ */

@@ -946,10 +946,23 @@ void xml_parser_unlink_node(WsXmlNodeH node)
 	return;
 }
 
-
+void xml_parser_node_set_lang(WsXmlNodeH node,  const char *lang)
+{
+	xmlNodeSetLang((xmlNodePtr) node, BAD_CAST lang);
+}
 
 
 void xml_parser_set_ns(WsXmlNodeH r, WsXmlNsH ns, const char *prefix)
 {
 	xmlSetNs((xmlNodePtr) r, (xmlNsPtr) ns);
+}
+
+void xml_parser_copy_node(WsXmlNodeH src, WsXmlNodeH dst)
+{
+	if (src && dst) {
+		xmlNodePtr x = xmlDocCopyNode((xmlNodePtr) src,
+				   ((xmlDocPtr) src)->doc, 1);
+		if (x)
+			xmlAddChild((xmlNodePtr) dst, x);
+	}
 }

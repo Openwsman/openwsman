@@ -36,8 +36,6 @@
 #include <wsman_config.h>
 #endif
 
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
 
 #include "wsman-xml-api.h"
 #include "wsman-client-api.h"
@@ -355,12 +353,7 @@ void ws_xml_duplicate_tree(WsXmlNodeH dstNode, WsXmlNodeH srcNode)
 
 void ws_xml_copy_node(WsXmlNodeH src, WsXmlNodeH dst)
 {
-	if (src && dst) {
-		xmlNodePtr x = xmlDocCopyNode((xmlNodePtr) src,
-				   ((xmlDocPtr) src)->doc, 1);
-		if (x)
-			xmlAddChild((xmlNodePtr) dst, x);
-	}
+	xml_parser_copy_node(src, dst);
 }
 
 
@@ -1433,7 +1426,7 @@ int ws_xml_set_node_text(WsXmlNodeH node, const char *text)
 
 void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang)
 {
-	xmlNodeSetLang((xmlNodePtr) node, BAD_CAST lang);
+	xml_parser_node_set_lang(node, lang);
 }
 
 
