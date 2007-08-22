@@ -151,7 +151,7 @@ ws_soap_initialize()
 	soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
 	soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
 	soap->dispatchList = list_create(LISTCOUNT_T_MAX);
-	soap->responseList = list_create(LISTCOUNT_T_MAX);
+	//soap->responseList = list_create(LISTCOUNT_T_MAX);
 	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
 	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
@@ -829,24 +829,24 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char **str)
 	int gmtoffset_minute = (time_t)__timezone%60;
 	*str = u_malloc(30);
 	if(*str) {
-		if(gmtoffset_hour > 0) 	
-			snprintf(*str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u", 
+		if(gmtoffset_hour > 0)
+			snprintf(*str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10, 
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
 			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
 			gmtoffset_minute%10);
 		else {
 			gmtoffset_hour = 0 - gmtoffset_hour;
 			gmtoffset_minute = 0 - gmtoffset_minute;
-			snprintf(*str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u", 
+			snprintf(*str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10, 
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
 			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
 			gmtoffset_minute%10);
 		}
-			
+
 	}
 }
 
@@ -1761,7 +1761,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	wsman_expiretime2xmldatetime(subsInfo->expires, &str);
 	if(soap->subscriptionOpSet) {
-		soap->subscriptionOpSet->update_subscription(soap->uri_subsRepository, uuid+5, 
+		soap->subscriptionOpSet->update_subscription(soap->uri_subsRepository, uuid+5,
 			str);
 		debug("subscription %s updated!", uuid);
 	}
@@ -1989,7 +1989,7 @@ wsman_timeouts_manager(WsContextH cntx, void *opaqueData)
 }
 
 
-void 
+void
 wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 {
 	SoapH soap = cntx->soap;
@@ -2000,10 +2000,10 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 	while(node) {
 		subsInfo = (WsSubscribeInfo *)node->list_data;
 		pthread_mutex_lock(&subsInfo->notificationlock);
-//		debug("subscription %s status = %d, event sent last time = %d, heartbeat = %d", 
+//		debug("subscription %s status = %d, event sent last time = %d, heartbeat = %d",
 //			subsInfo->subsId, subsInfo->flags & WSMAN_SUBSCRIBEINFO_MANAGER_STARTED,
 //			subsInfo->eventSentLastTime, subsInfo->heartbeatInterval);
-		if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSCRIBE && 
+		if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSCRIBE &&
 			(subsInfo->flags & WSMAN_SUBSCRIBEINFO_MANAGER_STARTED) == 0) {
 			temp = list_delete2(soap->subscriptionMemList, node);
 			debug("uuid:%s deleted from the memory", subsInfo->subsId);
@@ -2015,9 +2015,9 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 		if(time_expired(subsInfo->expires)) {
 			destroy_pending_notifications(subsInfo->notificationDoc);
 			goto LOOP;
-			
+
 		}
-		if(subsInfo->heartbeatInterval == 0 || 
+		if(subsInfo->heartbeatInterval == 0 ||
 			(subsInfo->flags & WSMAN_SUBSCRIBEINFO_MANAGER_STARTED) == 0) {
 			goto LOOP;
 		}
@@ -2035,7 +2035,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 		}
 		subsInfo->heartbeatCountdown = subsInfo->heartbeatInterval;
 LOOP:
-		pthread_mutex_unlock(&subsInfo->notificationlock);		
+		pthread_mutex_unlock(&subsInfo->notificationlock);
 		node = list_next(soap->subscriptionMemList, node);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
@@ -2061,7 +2061,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, u
 		}
 	}
 	wsmc_release(cl);
-*/	
+*/
 	return retVal;
 }
 
@@ -2626,7 +2626,7 @@ destroy_op_entry(op_t * entry)
 	if (list_contains(soap->dispatchList, &entry->dispatch->node)) {
 		list_delete(soap->dispatchList, &entry->dispatch->node);
 	}
-	unlink_response_entry(soap, entry);
+	//unlink_response_entry(soap, entry);
 	u_unlock(soap);
 NULL_SOAP:
 	destroy_dispatch_entry(entry->dispatch);
@@ -2699,6 +2699,7 @@ soap_destroy_fw(SoapH soap)
 	}
 	list_destroy(soap->processedMsgIdList);
 
+#if 0
 	while (!list_isempty(soap->responseList)) {
 		lnode_t        *node = list_del_first(soap->responseList);
 		op_t           *entry = (op_t *) node->list_data;
@@ -2706,6 +2707,7 @@ soap_destroy_fw(SoapH soap)
 		lnode_destroy(node);
 	}
 	list_destroy(soap->responseList);
+#endif
 
 	list_destroy_nodes(soap->inboundFilterList);
 	list_destroy(soap->inboundFilterList);

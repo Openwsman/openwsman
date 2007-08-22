@@ -125,23 +125,23 @@ struct __Soap {
 	list_t         *outboundFilterList;
 
 	list_t         *dispatchList;
-	list_t         *responseList;
+	//list_t         *responseList;
 	list_t         *processedMsgIdList;
-	
-	 pthread_mutex_t lockSubs; //lock for Subscription Repository
-        list_t           *subscriptionMemList; //memory Repository of Subscriptions
-        char    *uri_subsRepository; //URI of repository
+
+	pthread_mutex_t lockSubs; //lock for Subscription Repository
+        list_t         	*subscriptionMemList; //memory Repository of Subscriptions
+        char		*uri_subsRepository; //URI of repository
         SubsRepositoryOpSetH subscriptionOpSet; //Functions talbe of Subscription Repository
 
 
 	WsContextH      cntx;
-	              //TBD claen up and initilaize it;
+	              //TBD clenn up and initilaize it;
 
-	unsigned long   lastResponseListScanTicks;
+	//unsigned long   lastResponseListScanTicks;
 
 	              //TBD:? ? ? Make it thread and pass as parameters
-	int             resendCount;
-	unsigned long   resentTimeout[SOAP_MAX_RESENT_COUNT];
+	//int             resendCount;
+	//unsigned long   resentTimeout[SOAP_MAX_RESENT_COUNT];
 
 	list_t         *WsSerializerAllocList;
 
@@ -157,13 +157,13 @@ struct _WsXmlDoc {
 	unsigned long   prefixIndex; // to enumerate not well known namespaces
 };
 
-
+#if 0
 struct __DispatchResponse {
 	char           *buf;
 	int             httpCode;
 };
 typedef struct __DispatchResponse DispatchResponse;
-
+#endif
 
 struct _WS_CONTEXT_ENTRY {
 	lnode_t        *node;
@@ -182,7 +182,7 @@ struct _WS_CONTEXT {
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
 	/* the fields below are for optimization */
-	WS_CONTEXT_ENTRY *last_entry;
+	//WS_CONTEXT_ENTRY *last_entry;
 //	int             last_get_name_idx;
 };
 
@@ -232,7 +232,6 @@ struct __WsDispatchInterfaceInfo {
 	WsDispatchEndPointInfo *endPoints;
 };
 typedef struct __WsDispatchInterfaceInfo WsDispatchInterfaceInfo;
-
 struct __DispatchToEpMap {
 	SoapDispatchH   disp;
 	WsDispatchEndPointInfo *ep;
@@ -352,7 +351,7 @@ struct __WsSubscribeInfo {
 #ifndef _WIN32
 	pthread_cond_t notificationcond;
 #endif
-	unsigned long flags; 
+	unsigned long flags;
 	long heartbeatCountdown; //countdown of heartbeat, when it is 0, a heartbeat generated
 	char            subsId[EUIDLEN];
 	char *	soapNs;
@@ -380,7 +379,7 @@ struct __WsSubscribeInfo {
 };
 
 
-
+#if 0
 enum __WsmanFilterDialect {
 	WSMAN_FILTER_XPATH,
 	WSMAN_FILTER_SELECTOR
@@ -394,7 +393,7 @@ enum __WsmanPolymorphismMode {
 	POLYMORPHISM_NONE
 };
 typedef enum __WsmanPolymorphismMode WsmanPolymorphismMode;
-
+#endif
 
 
 typedef int     (*SoapServiceCallback) (SoapOpH, void *, void *);
@@ -413,9 +412,12 @@ make_callback_entry(SoapServiceCallback proc,
 
 
 SoapH           ws_soap_initialize(void);
+
 void            ws_set_context_enumIdleTimeout(WsContextH cntx,
                             unsigned long timeout);
+
 void            soap_destroy_fw(SoapH soap);
+
 SoapH           ws_context_get_runtime(WsContextH hCntx);
 
 
@@ -424,6 +426,7 @@ int
 wsman_register_interface(WsContextH cntx,
 			 WsDispatchInterfaceInfo * wsInterface,
 			 WsManDispatcherInfo * dispInfo);
+
 int
 wsman_register_endpoint(WsContextH cntx,
 			WsDispatchInterfaceInfo * wsInterface,
@@ -432,16 +435,27 @@ wsman_register_endpoint(WsContextH cntx,
 
 
 int             ws_transfer_put_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             ws_transfer_delete_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wsman_identify_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wsenum_enumerate_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wsenum_pull_raw_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wsenum_release_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int             wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int		   wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int		   wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
+
 int		   wse_pull_stub(SoapOpH op, void *appData, void * opaqueData);
 
 SoapOpH
@@ -498,17 +512,14 @@ WsmanKnownStatusCode wsman_find_httpcode_for_value(WsXmlDocH doc);
 WsmanKnownStatusCode wsman_find_httpcode_for_fault_code(WsmanFaultCodeType faultCode);
 
 
-
 WsXmlDocH
-wsman_generate_fault(
-		     WsContextH cntx,
+wsman_generate_fault( WsContextH cntx,
 		     WsXmlDocH inDoc,
 		     WsmanFaultCodeType faultCode,
 		     WsmanFaultDetailType faultDetail,
 		     char *fault_msg);
 void
-wsman_generate_fault_buffer(
-			    WsContextH cntx,
+wsman_generate_fault_buffer( WsContextH cntx,
 			    WsXmlDocH inDoc,
 			    WsmanFaultCodeType faultCode,
 			    WsmanFaultDetailType faultDetail,
@@ -517,8 +528,8 @@ wsman_generate_fault_buffer(
 			    int *len);
 
 
-
 void            wsman_status_init(WsmanStatus * s);
+
 int             wsman_check_status(WsmanStatus * s);
 
 void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);

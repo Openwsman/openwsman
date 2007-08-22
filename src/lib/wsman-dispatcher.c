@@ -100,7 +100,7 @@ static int is_wk_header(WsXmlNodeH header)
 	return 0;
 }
 
-
+#if 0
 int unlink_response_entry(SoapH soap, op_t * entry)
 {
 	int retVal = 0;
@@ -124,7 +124,7 @@ int unlink_response_entry(SoapH soap, op_t * entry)
 	}
 	return retVal;
 }
-
+#endif
 
 
 

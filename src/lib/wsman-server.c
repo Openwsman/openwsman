@@ -47,12 +47,15 @@
 #include <dlfcn.h>
 #endif
 #include "u/libu.h"
+#if 0
 #include "wsman-faults.h"
 #include "wsman-xml-api.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
-#include "wsman-soap.h"
 #include "wsman-dispatcher.h"
+#endif
+#include "wsman-server.h"
+#include "wsman-soap.h"
 
 extern struct __SubsRepositoryOpSet subscription_repository_op_set;
 
@@ -138,7 +141,8 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 }
 
 
-SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri)
+SubsRepositoryOpSetH
+wsman_init_subscription_repository(WsContextH cntx, char *uri)
 {
 	SoapH soap = ws_context_get_runtime(cntx);
 	if(soap) {

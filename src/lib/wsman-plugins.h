@@ -29,7 +29,7 @@
  *******************************************************************************/
 
 /**
- * @author Anas Nashif 
+ * @author Anas Nashif
  */
 
 
@@ -56,7 +56,6 @@ typedef struct _WsManPlugin
 {
     void *p_handle;
     char *p_name;
-    int  started;	
     void *data;	/* user data */
     int  (*init)( void *self, void **data);
     /* Clean-up */
@@ -67,7 +66,7 @@ typedef struct _WsManPlugin
 } WsManPlugin;
 
 struct __WsManListenerH {
-       list_t *plugins;	
+       list_t *plugins;
        dictionary *config;
 };
 typedef struct __WsManListenerH WsManListenerH;

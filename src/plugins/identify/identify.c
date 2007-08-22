@@ -55,11 +55,11 @@
 //
 // ************ Serialization type information for resource ************
 //
-// It creates an array of items with name wsmid_identify_TypeInfo 
-// It can be used in calls to WsSerialize and WsDeserialize 
+// It creates an array of items with name wsmid_identify_TypeInfo
+// It can be used in calls to WsSerialize and WsDeserialize
 //
 SER_START_ITEMS(wsmid_identify)
-SER_NS_STR(XML_NS_WSMAN_ID, WSMID_PROTOCOL_VERSION, 1), 
+SER_NS_STR(XML_NS_WSMAN_ID, WSMID_PROTOCOL_VERSION, 1),
 SER_NS_STR(XML_NS_WSMAN_ID, WSMID_PRODUCT_VENDOR, 1),
 SER_NS_STR(XML_NS_WSMAN_ID, WSMID_PRODUCT_VERSION, 1),
 SER_END_ITEMS(wsmid_identify);
@@ -82,7 +82,7 @@ FINISH_NAMESPACES(wsmid_identify);
 
 
 static list_t *
-set_namespaces(void) 
+set_namespaces(void)
 {
 
   int i;
@@ -105,7 +105,7 @@ set_namespaces(void)
 
 void get_endpoints(void *self, void **data)
 {
-    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
+    WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;
@@ -116,7 +116,7 @@ void get_endpoints(void *self, void **data)
     ifc->wsmanResourceUri = NULL;
     ifc->extraData = NULL;
     ifc->namespaces = set_namespaces();
-    ifc->endPoints = wsmid_identify_EndPoints;			
+    ifc->endPoints = wsmid_identify_EndPoints;
 }
 
 

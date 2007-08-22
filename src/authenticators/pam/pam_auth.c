@@ -64,14 +64,14 @@ static char *service = "openwsman";
 
 
 #define debug_dlsym(sym) \
-    debug("Could not dlsym %s", sym)
+	debug("Could not dlsym %s", sym)
 
 #ifdef STANDALONE
 
 #include <stdio.h>
 
 #define debug(frmt, ...) \
-        printf(frmt, __VA_ARGS__); printf("\n")
+	printf(frmt, __VA_ARGS__); printf("\n")
 
 #define PAM_start pam_start
 #define PAM_authenticate pam_authenticate
@@ -91,7 +91,7 @@ static char *service = "openwsman";
 int
 initialize(void *arg)
 {
-    return 0;
+	return 0;
 }
 
 #else // !STANDALONE && !NO_DLLOAD
@@ -102,9 +102,9 @@ initialize(void *arg)
 
 
 static int (*PAM_start)(const char *service_name,
-                        const char *user,
-                        const struct pam_conv *pam_conversation,
-                        pam_handle_t **pamh);
+		const char *user,
+		const struct pam_conv *pam_conversation,
+		pam_handle_t **pamh);
 static int (*PAM_authenticate)(pam_handle_t *pamh, int flags);
 static int (*PAM_acct_mgmt)(pam_handle_t *pamh, int flags);
 static int (*PAM_end)(pam_handle_t *pamh, int pam_status);
@@ -115,51 +115,51 @@ static int (*PAM_strerror)(pam_handle_t *pamh, int errnum);
 int
 initialize(void *arg)
 {
-    void *hnd;
+	void *hnd;
 
-    hnd = dlopen(LIBPAM, RTLD_LAZY | RTLD_GLOBAL);
-    if (hnd == NULL) {
-        debug("Could not dlopen %s", LIBPAM);
-        return 1;
-    }
-    PAM_start = dlsym(hnd, "pam_start");
-    if (PAM_start == NULL) {
-        debug_dlsym("pam_start");
-        dlclose(hnd);
-        return 1;
-    }
-    PAM_authenticate = dlsym(hnd, "pam_authenticate");
-    if (PAM_authenticate == NULL) {
-        debug_dlsym("pam_authenticate");
-        dlclose(hnd);
-        return 1;
-    }
-    PAM_acct_mgmt = dlsym(hnd, "pam_acct_mgmt");
-    if (PAM_acct_mgmt == NULL) {
-        debug_dlsym("pam_acct_mgmt");
-        dlclose(hnd);
-        return 1;
-    }
-    PAM_end = dlsym(hnd, "pam_end");
-    if (PAM_end == NULL) {
-        debug_dlsym("pam_end");
-        dlclose(hnd);
-        return 1;
-    }
-    PAM_strerror = dlsym(hnd, "pam_strerror");
-    if (PAM_strerror == NULL) {
-        debug_dlsym("pam_strerror");
-        dlclose(hnd);
-        return 1;
-    }
+	hnd = dlopen(LIBPAM, RTLD_LAZY | RTLD_GLOBAL);
+	if (hnd == NULL) {
+		debug("Could not dlopen %s", LIBPAM);
+		return 1;
+	}
+	PAM_start = dlsym(hnd, "pam_start");
+	if (PAM_start == NULL) {
+		debug_dlsym("pam_start");
+		dlclose(hnd);
+		return 1;
+	}
+	PAM_authenticate = dlsym(hnd, "pam_authenticate");
+	if (PAM_authenticate == NULL) {
+		debug_dlsym("pam_authenticate");
+		dlclose(hnd);
+		return 1;
+	}
+	PAM_acct_mgmt = dlsym(hnd, "pam_acct_mgmt");
+	if (PAM_acct_mgmt == NULL) {
+		debug_dlsym("pam_acct_mgmt");
+		dlclose(hnd);
+		return 1;
+	}
+	PAM_end = dlsym(hnd, "pam_end");
+	if (PAM_end == NULL) {
+		debug_dlsym("pam_end");
+		dlclose(hnd);
+		return 1;
+	}
+	PAM_strerror = dlsym(hnd, "pam_strerror");
+	if (PAM_strerror == NULL) {
+		debug_dlsym("pam_strerror");
+		dlclose(hnd);
+		return 1;
+	}
 
 
-    if (arg != NULL) {
-        service = (char *)arg;
-    }
-//    debug_level = dbg_lvl;
+	if (arg != NULL) {
+		service = (char *)arg;
+	}
+	//    debug_level = dbg_lvl;
 
-    return 0;
+	return 0;
 }
 
 
@@ -169,30 +169,29 @@ initialize(void *arg)
 
 static int
 pwd_conv(int num_msg, const struct pam_message **msgm,
-        struct pam_response **response, void *appdata_ptr)
+		struct pam_response **response, void *appdata_ptr)
 {
-    char *pwd = (char *)appdata_ptr;
-    int n;
-    struct pam_response *reply;
-    // printf("pwd_conv started\n");
-    reply = (struct pam_response *) calloc(num_msg,
-                        sizeof(struct pam_response));
-    if (reply == NULL) {
-        debug("No %s", "memory");
-        return PAM_CONV_ERR;
-    }
+	char *pwd = (char *)appdata_ptr;
+	int n;
+	struct pam_response *reply;
+	reply = (struct pam_response *) calloc(num_msg,
+			sizeof(struct pam_response));
+	if (reply == NULL) {
+		debug("No %s", "memory");
+		return PAM_CONV_ERR;
+	}
 
-    for (n = 0; n < num_msg; n++) {
-        switch (msgm[n]->msg_style) {
-            case PAM_PROMPT_ECHO_OFF:
-            case PAM_PROMPT_ECHO_ON:
-                reply[n].resp = strdup(pwd);
-                break;
-        }
-    }
+	for (n = 0; n < num_msg; n++) {
+		switch (msgm[n]->msg_style) {
+		case PAM_PROMPT_ECHO_OFF:
+		case PAM_PROMPT_ECHO_ON:
+			reply[n].resp = strdup(pwd);
+			break;
+		}
+	}
 
-    *response = reply;
-    return PAM_SUCCESS;
+	*response = reply;
+	return PAM_SUCCESS;
 }
 
 #ifdef STANDALONE
@@ -201,37 +200,37 @@ static
 int
 authorize(char *username, const char *password)
 {
-    struct pam_conv conv = {
-        pwd_conv,
-        (void *)password
-    };
-    pam_handle_t   *pamh = NULL;
-    int             r;
-    int             res = 0;
-    // printf("service = %s\n", service);
-    r = PAM_start(service, username, &conv, &pamh);
-    if (r != PAM_SUCCESS) {
-        debug("pam_start failed = %d(%s)", r, PAM_strerror(pamh, r));
-        return 0;
-    }
+	struct pam_conv conv = {
+		pwd_conv,
+		(void *)password
+	};
+	pam_handle_t   *pamh = NULL;
+	int             r;
+	int             res = 0;
+	// printf("service = %s\n", service);
+	r = PAM_start(service, username, &conv, &pamh);
+	if (r != PAM_SUCCESS) {
+		debug("pam_start failed = %d(%s)", r, PAM_strerror(pamh, r));
+		return 0;
+	}
 
-    r = PAM_authenticate(pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
-    if (r != PAM_SUCCESS) {
-        debug("pam_authenticate failed = %d(%s)", r, PAM_strerror(pamh, r));
-        goto DONE;
-    }
-    r = PAM_acct_mgmt(pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
-    if (r != PAM_SUCCESS) {
-        debug("pam_ acct_mgmt failed = %d(%s)", r, PAM_strerror(pamh, r));
-        goto DONE;
-    }
-    res = 1;
+	r = PAM_authenticate(pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	if (r != PAM_SUCCESS) {
+		debug("pam_authenticate failed = %d(%s)", r, PAM_strerror(pamh, r));
+		goto DONE;
+	}
+	r = PAM_acct_mgmt(pamh, PAM_SILENT | PAM_DISALLOW_NULL_AUTHTOK);
+	if (r != PAM_SUCCESS) {
+		debug("pam_ acct_mgmt failed = %d(%s)", r, PAM_strerror(pamh, r));
+		goto DONE;
+	}
+	res = 1;
 DONE:
-    r = PAM_end(pamh, r);
-    if (r != PAM_SUCCESS) {
-        debug("pam_end failed = %d(%s)", r, PAM_strerror(pamh, r));
-    }
-    return res;
+	r = PAM_end(pamh, r);
+	if (r != PAM_SUCCESS) {
+		debug("pam_end failed = %d(%s)", r, PAM_strerror(pamh, r));
+	}
+	return res;
 }
 
 #ifdef STANDALONE
@@ -244,30 +243,30 @@ DONE:
 
 int main(int argc, char **argv)
 {
-    char *user;
-    char *pwd;
-    int res;
+	char *user;
+	char *pwd;
+	int res;
 
-    if ((argc != 3) && (argc != 4)) {
-        printf("Usage: wsmand_pam <user> <password> [<service>]\n");
-        return 1;
-    }
+	if ((argc != 3) && (argc != 4)) {
+		printf("Usage: wsmand_pam <user> <password> [<service>]\n");
+		return 1;
+	}
 
-    if (argc == 4) {
-        service = argv[3];
-    }
+	if (argc == 4) {
+		service = argv[3];
+	}
 
-    if (authorize(argv[1], argv[2])) {
-        printf("Authenticated\n");
-    } else {
-        printf("Not Authenticated\n");
-    }
-    if (authorize(argv[1], argv[2])) {
-        printf("Authenticated\n");
-    } else {
-        printf("Not Authenticated\n");
-    }
-    return 0;
+	if (authorize(argv[1], argv[2])) {
+		printf("Authenticated\n");
+	} else {
+		printf("Not Authenticated\n");
+	}
+	if (authorize(argv[1], argv[2])) {
+		printf("Authenticated\n");
+	} else {
+		printf("Not Authenticated\n");
+	}
+	return 0;
 }
 
 #endif

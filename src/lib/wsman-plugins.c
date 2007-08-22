@@ -112,7 +112,6 @@ plugin_init(WsManPlugin *self, const char *p_name)
                 &&  dlsym(self->p_handle, "init"))
         {
             self->init			        = 0 ;
-            self->started	                = 0 ;
             PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
         }
     } else {
