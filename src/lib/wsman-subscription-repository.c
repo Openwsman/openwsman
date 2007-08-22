@@ -157,7 +157,7 @@ int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 		FILE *subsfile = fopen(buf, "w");
 		fprintf(subsfile, "%s", temp);
 		fclose(subsfile);
-		u_free(temp);
+		ws_xml_free_memory(temp);
 	}
 	return 0;
 }

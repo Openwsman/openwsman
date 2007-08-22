@@ -2036,14 +2036,21 @@ LOOP:
 
 static void delete_event_body(WsEventBodyH event)
 {
-	if(event->EventAction) u_buf_free(event->EventAction);
+	if(event->EventAction) u_free(event->EventAction);
 	if(event->EventContent) ws_xml_destroy_doc(event->EventContent);
 }
 
 static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, unsigned char acked)
 {
 	int retVal = 0;
-	debug("one notification sending now!");
+	if(outdoc == NULL) return 0;
+#if 1
+	char *buf;
+	int len;
+	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
+	debug("notification [%s] sent", buf);
+	ws_xml_free_memory(buf);
+#endif
 /*	WsXmlDocH response;
 	WsManClient *cl = wsmc_create_from_uri(cntx->subsInfo->epr_notifyto);
 	if(wsman_send_request(cl, outdoc) ==0 && acked) {
@@ -2127,12 +2134,13 @@ void * wse_notification_manager(void * thrdcntx)
 		debug("pthread_create failed =%d", r);
 		return NULL;
 	}
-	WsXmlNodeH header = ws_xml_get_soap_header(notificationDoc);
-	WsXmlNodeH body = ws_xml_get_soap_body(notificationDoc);
 	WsXmlNodeH node = NULL;
 	WsXmlNodeH temp = NULL;
+	WsXmlNodeH header = NULL;
+	WsXmlNodeH body = NULL;
 	WsEventBodyH eventbody = NULL;
 	lnode_t *eventdata = NULL;
+	header = ws_xml_get_soap_header(notificationDoc);
 	if (ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, subsInfo->epr_notifyto) == NULL)
 		return NULL;
 	if(subsInfo->referenceParam) {
@@ -2157,15 +2165,21 @@ void * wse_notification_manager(void * thrdcntx)
 			debug("Notification uuid:%s expires period : %lu", subsInfo->subsId, subsInfo->expires);
 			break;
 		}
+		header = ws_xml_get_soap_header(notificationDoc);
+		body = ws_xml_get_soap_body(notificationDoc);
 		if(retVal == WSE_NOTIFICATION_DRAOPEVENTS) {
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_ACTION, WSMAN_ACTION_DROPPEDEVENTS);
 			eventdata = list_first(notificationInfo->EventList);
 			eventbody = (WsEventBodyH)eventdata->list_data;
 			node = ws_xml_add_child_format(body, XML_NS_WS_MAN, WSM_DROPPEDEVENTS, "%d", eventbody->droppedEvents);
 			if(node)
-				ws_xml_add_node_attr(node, NULL, WSM_ACTION, (char *)u_buf_ptr(eventbody->EventAction));
+				ws_xml_add_node_attr(node, NULL, WSM_ACTION, eventbody->EventAction);
 		}
 		else if(retVal == 0 ) {
+			if(notificationInfo->headerOpaqueData) {
+				temp = ws_xml_get_doc_root(notificationInfo->headerOpaqueData);
+				ws_xml_duplicate_tree(header, temp);
+			}
 			if(subsInfo->bookmarksFlag && notificationInfo->bookmarkDoc) {
 				node = ws_xml_add_child(header, XML_NS_WS_MAN, WSM_BOOKMARK,NULL);
 				if(node) {
@@ -2185,37 +2199,43 @@ void * wse_notification_manager(void * thrdcntx)
 					eventbody = (WsEventBodyH)eventdata->list_data;
 					temp = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_EVENT, NULL);
 					if(eventbody->EventAction)  {
-						ws_xml_add_node_attr(temp, XML_NS_WS_MAN, WSM_ACTION, (char *)u_buf_ptr(eventbody->EventAction));
+						ws_xml_add_node_attr(temp, XML_NS_WS_MAN, WSM_ACTION, eventbody->EventAction);
 					}
 					else {
 						ws_xml_add_node_attr(temp, XML_NS_WS_MAN, WSM_ACTION, WSMAN_ACTION_EVENT);
 					}
 					if(temp) {
 						node = ws_xml_get_doc_root(eventbody->EventContent);
-						for (i = 0;
+						ws_xml_duplicate_tree(temp, node);
+/*						for (i = 0;
 								(child =
 								 ws_xml_get_child(node, i, NULL, NULL)) != NULL;
 								i++) {
 							ws_xml_duplicate_tree(temp, child);
 						}
-					}
+*/					}
 					delete_event_body(eventbody);
 					list_del_first(notificationInfo->EventList);
+					lnode_destroy(eventdata);
 				}
 			}
 			else {
 				eventdata = list_first(notificationInfo->EventList);
 				if(eventdata) {
 					eventbody = (WsEventBodyH)eventdata->list_data;
+					if(eventbody->EventAction)
+						ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACTION, eventbody->EventAction);
 					node = ws_xml_get_doc_root(eventbody->EventContent);
-					for (i = 0;
+					ws_xml_duplicate_tree(body, node);
+/*					for (i = 0;
 							(child =
 						 	ws_xml_get_child(node, i, NULL, NULL)) != NULL;
 							i++) {
 						ws_xml_duplicate_tree(body, child);
 					}
-					delete_event_body(eventbody);
+*/					delete_event_body(eventbody);
 					list_del_first(notificationInfo->EventList);
+					lnode_destroy(eventdata);
 				}
 			}
 			if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) ||
@@ -2246,6 +2266,7 @@ void * wse_notification_manager(void * thrdcntx)
 	debug("notificaiton manager created for %s stops", subsInfo->subsId);
 	pthread_mutex_unlock(&subsInfo->notificationlock);
 	return NULL;
+
 }
 
 

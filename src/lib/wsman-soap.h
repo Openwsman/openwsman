@@ -274,7 +274,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_NOACK 3
 
 struct __WsEventBody {
-	u_buf_t *EventAction;
+	char *EventAction;
 	WsXmlDocH EventContent;
 	int droppedEvents;
 };

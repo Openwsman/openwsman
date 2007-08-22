@@ -44,8 +44,12 @@
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
+#include "wsman-xml.h"
+#include "wsman-client-api.h"
 #include "wsman-xml-serializer.h"
-#include "wsman-dispatcher.h"
+
+#include "wsman-soap-envelope.h"
+#include "wsman-soap-message.h"
 
 #include "wsman_test.h"
 
@@ -101,7 +105,26 @@ int
 WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
 {
 	int retval = 0;
-	sleep(30);
+	sleep(1);
+	notificationinfo->headerOpaqueData = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "EventTopics");
+	WsXmlNodeH node = ws_xml_get_doc_root(notificationinfo->headerOpaqueData);
+	if(node) {
+		ws_xml_set_node_text(node, "openwsman.event.test");
+	}
+	WsEventBodyH eventbody = u_malloc(sizeof(*eventbody));
+	eventbody->EventAction = u_strdup(XML_NS_OPENWSMAN"/EventReport");
+	eventbody->EventContent = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "TestReport");
+	if(eventbody->EventContent == NULL) return retval;
+	node = ws_xml_get_doc_root(eventbody->EventContent);
+	time_t timest = time(0);
+	struct tm tm;
+	localtime_r(&timest, &tm);
+	ws_xml_add_child_format(node, XML_NS_OPENWSMAN"/test", "EventTime","%u-%u%u-%u%uT%u%u:%u%u:%u%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10);
+	lnode_t *docnode = lnode_create(eventbody);
+	list_append(notificationinfo->EventList, docnode);
 	return retval;
 }
 
