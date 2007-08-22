@@ -46,7 +46,6 @@
 #include "wsman-types.h"
 #include "wsman-xml-api.h"
 #include "wsman-xml-binding.h"
-#include <unistd.h>
 
 struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscriptionOpInit, LocalSubscriptionOpFinalize, LocalSubscriptionOpLoad, LocalSubscriptionOpGet, LocalSubscriptionOpSave, LocalSubscriptionOpUpdate, LocalSubscriptionOpDelete};
 
