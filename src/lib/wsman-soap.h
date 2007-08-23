@@ -345,6 +345,9 @@ struct __WsEnumerateInfo {
 #define WSMAN_SUBSCRIBEINFO_RENEW 0x02
 #define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
 #define WSMAN_SUBSCRIBEINFO_MANAGER_STARTED 0x08
+#define WSMAN_SUBSCRIPTION_CQL 0x10
+#define WSMAN_SUBSCRIPTION_WQL 0x20
+#define WSMAN_SUBSCRIPTION_SELECTORSET 0x40
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
 	pthread_mutex_t notification_sender_mutex;

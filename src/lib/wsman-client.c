@@ -672,7 +672,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 	snprintf(buf, 32, "PT%fS", options->expires);
 	ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	if(options->filter) {
-		filter = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_FILTER, options->filter);
+		filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSEVENT_FILTER, options->filter);
 		if(options->dialect)
 			ws_xml_add_node_attr(filter, NULL, WSEVENT_DIALECT, options->dialect);
 	}

@@ -725,10 +725,9 @@ int wsman_parse_enum_request(WsContextH cntx,
 }
 
 
-int wsman_parse_event_request(WsContextH cntx, WsSubscribeInfo * subsInfo)
+int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo)
 {
 	WsXmlNodeH node;
-	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	if (!doc)
 		return 0;
 
@@ -738,22 +737,49 @@ int wsman_parse_event_request(WsContextH cntx, WsSubscribeInfo * subsInfo)
 					WSEVENT_SUBSCRIBE))) {
 		WsXmlNodeH filter = ws_xml_get_child(node,
 				0, XML_NS_WS_MAN, WSM_FILTER);
-
+		if(filter == NULL) {
+			filter = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_FILTER);
+		}
 		// Filter
 		if (filter) {
-			char *attrVal = ws_xml_find_attr_value(filter,
-					NULL, WSM_DIALECT);
-			if (!attrVal) attrVal = WSM_XPATH_FILTER_DIALECT;
-			if (strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 || strcmp(attrVal, WSM_XPATH_EVENTROOT_FILTER) == 0) {
-				filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-				f->query = u_strdup(ws_xml_get_node_text(filter));
-				debug("Xpath filter: %s", f->query );
-				subsInfo->filter = f;
-			}
-		else {
-			subsInfo->filter = NULL;
-			}
+			char *attrVal = NULL;
+			 WsXmlAttrH attr = ws_xml_get_node_attr(filter, 0);
+			 char *attrname = NULL;
+			 if(attr) attrname = ws_xml_get_attr_name(attr);
+			 if(strcmp(attrname, WSM_DIALECT) == 0 || attr == NULL) {
+			 	attrVal = ws_xml_get_attr_value(attr);
+				if (strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 || 
+					strcmp(attrVal, WSM_XPATH_EVENTROOT_FILTER) == 0 ||
+					strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
+					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
+					!attrVal) {
+					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+					f->query = u_strdup(ws_xml_get_node_text(filter));
+					debug("Xpath filter: %s", f->query );
+					subsInfo->filter = f;
+					if ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 )
+						subsInfo->flags |= WSMAN_SUBSCRIPTION_CQL;
+					else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 )
+						subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
+				}
+			 }
+			 else {
+			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
+				attrname = ws_xml_get_attr_name(attr);
+				attrVal = ws_xml_get_attr_value(attr);
+				if(!strcasecmp(ns, "xmlns") && !strcmp(attrVal, subsInfo->uri)) {
+					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+					f->query = u_strdup(ws_xml_get_node_text(filter));
+					debug("Xpath filter: %s", f->query );
+					subsInfo->filter = f;
+				}
+			 }
 		}
+	}
+	else {
+		node = ws_xml_get_soap_header(doc);
+		if(ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET))
+			subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
 	}
 	return 1;
 }
