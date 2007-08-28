@@ -628,7 +628,7 @@ cleanup:
 	ws_destroy_context(cntx);
 	return 0;
 }
-
+//#ifdef ENABLE_EVENTING_SUPPORT
 int
 CimResource_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
 {
@@ -714,4 +714,4 @@ int CimResource_Evt_Pull_EP(WsContextH cntx,
 {
 	return 0;
 }
-
+//#ifdef ENABLE_EVENTING_SUPPORT

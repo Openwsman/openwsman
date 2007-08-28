@@ -105,7 +105,6 @@ int
 WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
 {
 	int retval = 0;
-	sleep(1);
 	notificationinfo->headerOpaqueData = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "EventTopics");
 	WsXmlNodeH node = ws_xml_get_doc_root(notificationinfo->headerOpaqueData);
 	if(node) {

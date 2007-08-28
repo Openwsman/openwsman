@@ -540,7 +540,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	int sock;
 	lnode_t *node;
 	pthread_t thr_id;
-//	pthread_t hb_generator_id;
+	pthread_t notificationManager_id;
 	pthread_attr_t pattrs;
 	struct timespec timespec;
 #else
@@ -634,7 +634,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	pthread_create(&thr_id, &pattrs,
 		       wsman_server_auxiliary_loop_thread, cntx);
 
-//	pthread_create(&hb_generator_id, wsman_heartbeat_thread, cntx);
+	pthread_create(&notificationManager_id, &pattrs, wsman_notification_manager, cntx);
 
 	while (continue_working) {
 		if ((sock = shttpd_accept(lsn, 1000)) == -1) {

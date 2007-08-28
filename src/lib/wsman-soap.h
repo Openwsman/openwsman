@@ -272,6 +272,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_DRAOPEVENTS 1
 #define WSE_NOTIFICATION_HEARTBEAT 2
 #define WSE_NOTIFICATION_NOACK 3
+#define WSE_NOTIFICATION_EVENTS_PENDING 4
 
 struct __WsEventBody {
 	char *EventAction;
@@ -341,19 +342,17 @@ struct __WsEnumerateInfo {
 	filter_t	*filter;
 };
 
-#define WSMAN_SUBSCRIBEINFO_UNSCRIBE 0x01
+#define WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE 0x01
 #define WSMAN_SUBSCRIBEINFO_RENEW 0x02
 #define WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT	0x04
 #define WSMAN_SUBSCRIBEINFO_MANAGER_STARTED 0x08
 #define WSMAN_SUBSCRIPTION_CQL 0x10
 #define WSMAN_SUBSCRIPTION_WQL 0x20
 #define WSMAN_SUBSCRIPTION_SELECTORSET 0x40
+#define WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING 0x80
+#define WSMAN_SUBSCRIPTION_CANCELLED 0x100
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
-	pthread_mutex_t notification_sender_mutex;
-#ifndef _WIN32
-	pthread_cond_t notificationcond;
-#endif
 	unsigned long flags;
 	long heartbeatCountdown; //countdown of heartbeat, when it is 0, a heartbeat generated
 	char            subsId[EUIDLEN];
@@ -376,9 +375,10 @@ struct __WsSubscribeInfo {
 	filter_t	*filter;
 	WsmanAuth       auth_data;
 	WsEndPointNotificationManager eventproc; // plugin related event retriever
-	WsXmlDocH tempNotificationdoc; //temporary notification document
+	WsXmlDocH templateDoc; //template notificaiton document
+	WsXmlDocH notificationDoc; //single notification document to be sent
 	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
-	list_t * notificationDoc; //to store pending notification soap documents
+	list_t * notificationDocList; //to store pending notification soap documents
 };
 
 
@@ -543,7 +543,7 @@ WsEventThreadContextH ws_create_event_thread_context(SoapH soap, WsSubscribeInfo
 
 void * wse_notification_sender(void * thrdcntx);
 
-void * wse_notification_manager(void * thrdcntx);
+void wse_notification_manager(void * cntx);
 
 int outbound_addressing_filter(SoapOpH opHandle, void *data,
 			       void *opaqueData);

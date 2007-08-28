@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Liang Hou
  */
 
 #ifndef WSMAN_SERVER_H_
@@ -44,7 +45,6 @@ WsContextH wsman_init_plugins(WsManListenerH *listener);
 SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri);
 WsManListenerH *wsman_dispatch_list_new(void);
 void *wsman_server_auxiliary_loop_thread(void *arg);
-//void *wsman_mem_subscription_collector(void *arg);
-//void *wsman_heartbeat_thread(void *arg);
+void *wsman_notification_manager(void *arg);
 
 #endif
