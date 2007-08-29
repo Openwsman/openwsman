@@ -115,7 +115,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 	char *buf = NULL;
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	if(subscription_list == NULL) 
-		subscription_list = list_create(LISTCOUNT_T_MAX);
+		return -1;
 	if (0 > (n = scandir (uri_repository, &namelist, 0, alphasort)))
     	{
        	 return -1;
@@ -129,7 +129,6 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			}
 			char *subs_path = u_strdup_printf ("%s/%s", uri_repository, namelist[n]->d_name);
 			FILE *subs = fopen(subs_path, "r");
-			debug("subs_path = %s",subs_path);
 			u_free(subs_path);
 			count = 0;
 			buf = NULL;
@@ -137,15 +136,12 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 				memset(block, 0, 512);
 				m = fread(block, 1, 511, subs);
 				if(m > 0) {
-					debug("read [%s] from file, len = %d",block, m);
 					count += m;
-					debug("buf = %0x, count = %d", buf, count);
-					buf = u_realloc(buf, count);
-					if(count - m == 0) {
+					if(count - m == 0) 
 						count++;
+					buf = u_realloc(buf, count);
+					if(count - m == 1)
 						memset(buf, 0, count);
-					}
-					debug("buf = %0x",buf);
 					strcat(buf, block);
 				}
 			}
