@@ -146,7 +146,12 @@ int WsManTest_Renew_EP(WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData)
 {
-	return 0;
+	debug("CIM Subscription");
+	int retval = 0;
+// to do here: create indication filter here and something else necessary
+	subsInfo->eventproc = WsManTest_EventThread_EP;
+
+	return retval;
 }
 
 int WsManTest_UnSubscribe_EP(WsContextH cntx,

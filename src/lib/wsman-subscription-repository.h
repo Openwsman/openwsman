@@ -35,7 +35,8 @@
 
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData);
 int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData);
-int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char *subscriptionDoc);
+int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char **subscriptionDoc);
+int LocalSubscriptionOpSearch(char * uri_repository, char * uuid);
 int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list);
 int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscriptionDoc);
 int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire);

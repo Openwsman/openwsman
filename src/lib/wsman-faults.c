@@ -390,6 +390,15 @@ WsmanFaultCodeTable fault_code_table[] =
 		"UnsupportedFeature", 
 		"The specified feature is not supported." 
 	},
+    	{
+    		WSE_INVALID_EXPIRATION_TIME,
+		WSMAN_ACTION_FAULT,
+		XML_NS_EVENTING,
+		FAULT_RECEIVER_CODE,
+		"Invalid expiration",
+		"The expiration time is invalid"
+		
+    	},
 	{ 
 		WSMAN_UNKNOWN,
 		NULL,

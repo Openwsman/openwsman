@@ -47,7 +47,7 @@
 #include "wsman-xml-api.h"
 #include "wsman-xml-binding.h"
 
-struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscriptionOpInit, LocalSubscriptionOpFinalize, LocalSubscriptionOpLoad, LocalSubscriptionOpGet, LocalSubscriptionOpSave, LocalSubscriptionOpUpdate, LocalSubscriptionOpDelete};
+struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscriptionOpInit, LocalSubscriptionOpFinalize, LocalSubscriptionOpLoad, LocalSubscriptionOpGet, LocalSubscriptionOpSearch, LocalSubscriptionOpSave, LocalSubscriptionOpUpdate, LocalSubscriptionOpDelete};
 
 static int LocalSubscriptionInitFlag = 0;
 
@@ -64,9 +64,46 @@ int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData)
 	return 0;
 }
 
-int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char  *subscriptionDoc)
+int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char  **subscriptionDoc)
+{
+	char block[512];
+	char *buf = NULL;
+	int count,m;
+	count = m = 0;
+	*subscriptionDoc = NULL;
+	if(LocalSubscriptionInitFlag == 0) return -1;
+	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
+	FILE *fp = fopen(subs_path, "r");
+	u_free(subs_path);
+	if(fp == NULL) return -1; 
+	while(!feof(fp)) {
+				memset(block, 0, 512);
+				m = fread(block, 1, 511, fp);
+				if(m > 0) {
+					debug("read [%s] from file, len = %d",block, m);
+					count += m;
+					debug("buf = %0x, count = %d", buf, count);
+					buf = u_realloc(buf, count);
+					if(count - m == 0) {
+						count++;
+						memset(buf, 0, count);
+					}
+					strcat(buf, block);
+				}
+	}
+	fclose(fp);
+	*subscriptionDoc = buf;
+	return 0;
+}
+
+int LocalSubscriptionOpSearch(char * uri_repository, char * uuid)
 {
 	if(LocalSubscriptionInitFlag == 0) return -1;
+	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
+	FILE *fp = fopen(subs_path, "r");
+	u_free(subs_path);
+	if(fp == NULL) return -1; 
+	fclose(fp);
 	return 0;
 }
 

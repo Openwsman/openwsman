@@ -757,6 +757,16 @@ remove_locked_enuminfo(WsContextH cntx,
 	u_unlock(cntx->soap);
 }
 
+static int time_expired(unsigned long lt)
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	if(tv.tv_sec * 1000 + tv.tv_usec /1000 > lt)
+		return 1;
+	else
+		return 0;
+}
+
 static void
 wsman_set_expiretime(WsXmlNodeH  node,
                     unsigned long * expire,
@@ -1208,16 +1218,6 @@ cleanup:
 	return retVal;
 }
 
-static int time_expired(unsigned long lt)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	if(tv.tv_sec * 1000 + tv.tv_usec /1000 > lt)
-		return 1;
-	else
-		return 0;
-}
-
 static list_t *
 wsman_get_expired_enuminfos(WsContextH cntx)
 {
@@ -1438,6 +1438,18 @@ create_subs_info(SoapOpH op,
 					}
 		}
 	}
+	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
+	if (node == NULL) {
+		debug("No wsen:Expires");
+		subsInfo->expires = 0;
+	}
+	else {
+		wsman_set_expiretime(node, &subsInfo->expires, &fault_code);
+		if (fault_code != WSMAN_RC_OK) {
+			debug("Invalid expiration time!");
+			goto DONE;
+		}
+	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
 	//"push" is the default delivery mode
 	subsInfo->deliveryMode = u_strdup(WSEVENT_DELIVERY_MODE_PUSH);
@@ -1518,18 +1530,6 @@ create_subs_info(SoapOpH op,
 			}
 		}
 	}
-	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
-	if (node == NULL) {
-		debug("No wsen:Expires");
-		subsInfo->expires = 0;
-	}
-	else {
-		wsman_set_expiretime(node, &subsInfo->expires, &fault_code);
-		if (fault_code != WSMAN_RC_OK) {
-			fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
-			goto DONE;
-		}
-	}
 	wsman_parse_event_request(indoc, subsInfo);
 	if (msg->auth_data.username != NULL) {
 		subsInfo->auth_data.username =
@@ -1541,9 +1541,6 @@ create_subs_info(SoapOpH op,
 		subsInfo->auth_data.password = NULL;
 	}
 	generate_uuid(subsInfo->subsId, EUIDLEN, 1);
-	FILE *fp = fopen("/tmp/create_subs_info.log", "a+");
-	fprintf(fp, "created subsInfo->subsId address %p, subsInfo->subsId = %s\n", subsInfo->subsId, subsInfo->subsId);
-	fclose(fp);
 	create_notification_template(_op->cntx->soap, indoc, subsInfo);
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
@@ -1587,9 +1584,6 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	epcntx = ws_create_ep_context(soap, _doc);
 	wsman_status_init(&status);
 	doc = create_subs_info(op, epcntx, _doc, &subsInfo);
-	FILE *fp = fopen("/tmp/create_subs_info.log", "a+");
-	fprintf(fp, "in subscribe stub : created subsInfo address %p, subsInfo->subsId address %p\n", subsInfo, subsInfo->subsId);
-	fclose(fp);
 	if (doc != NULL) {
 		goto DONE;
 	}
@@ -1621,6 +1615,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	pthread_mutex_lock(&soap->lockSubs);
 	list_append(soap->subscriptionMemList, sinfo);
 	pthread_mutex_unlock(&soap->lockSubs);
+	debug("subscription uuid:%s kept in the memory", subsInfo->subsId);
 	body = ws_xml_get_soap_body(doc);
 	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
 	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
@@ -1634,34 +1629,6 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	temp = ws_xml_add_child(inNode, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, NULL);
 	if(temp)
 		ws_xml_add_child_format(temp, XML_NS_EVENTING, WSEVENT_IDENTIFIER, "uuid:%s", subsInfo->subsId);
-// To create the event report thread
-/*	pthread_t eventreport;
-	pthread_attr_t pattrs;
-	if ((r = pthread_attr_init(&pattrs)) != 0) {
-		debug("pthread_attr_init failed = %d", r);
-		status.fault_code = WSMAN_INTERNAL_ERROR;
-		status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-		retVal = 1;
-		goto DONE;
-	}
-
-	if ((r = pthread_attr_setdetachstate(&pattrs,
-					     PTHREAD_CREATE_DETACHED)) !=0) {
-		debug("pthread_attr_setdetachstate = %d", r);
-		status.fault_code = WSMAN_INTERNAL_ERROR;
-		status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-		retVal = 1;
-		goto DONE;
-	}
-	WsEventThreadContextH thr_cntx = ws_create_event_thread_context(soap, subsInfo);
-	if((r = pthread_create(&eventreport, &pattrs, wse_notification_manager, thr_cntx))) {
-		debug("pthread_create failed =%d", r);
-		status.fault_code = WSMAN_INTERNAL_ERROR;
-		status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-		retVal = 1;
-		goto DONE;
-	}
-*/
 DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
@@ -1710,45 +1677,44 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	}
 	char *uuid = ws_xml_get_node_text(inNode);
+	lnode_t *t = NULL;
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t * t = list_first(soap->subscriptionMemList);
-	if(t == NULL) {
-		status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
-		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
-		pthread_mutex_unlock(&soap->lockSubs);
-		goto DONE;
-	}
-	subsInfo = (WsSubscribeInfo *)t->list_data;
-	if(strcmp(subsInfo->subsId, uuid+5)) {
-		while(t) {
-			subsInfo = (WsSubscribeInfo *)t->list_data;
-			if(!strcmp(subsInfo->subsId, uuid+5)) break;
-			t = list_next(soap->subscriptionMemList, t);
+	if(!list_isempty(soap->subscriptionMemList)) {
+		t = list_first(soap->subscriptionMemList);
+		subsInfo = (WsSubscribeInfo *)t->list_data;
+		if(strcmp(subsInfo->subsId, uuid+5)) {
+			while((t == list_next(soap->subscriptionMemList, t))) {
+				subsInfo = (WsSubscribeInfo *)t->list_data;
+				if(!strcmp(subsInfo->subsId, uuid+5)) break;
+			}
 		}
 	}
+	if(t == NULL) {
+		if(soap->subscriptionOpSet->search_subscription(soap->uri_subsRepository, uuid+5)) {
+			status.fault_code = WSMAN_INVALID_PARAMETER;
+			status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+			doc = wsman_generate_fault(epcntx, _doc,
+			 	status.fault_code, status.fault_detail_code, NULL);
+			pthread_mutex_unlock(&soap->lockSubs);
+			goto DONE;
+		}
+	}
+	else {
+		pthread_mutex_lock(&subsInfo->notificationlock);	
+		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
+		pthread_mutex_unlock(&subsInfo->notificationlock);
+	}
 	pthread_mutex_unlock(&soap->lockSubs);
-	if(t == NULL || subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) {
-                status.fault_code = WSMAN_DETAIL_INVALID_VALUE;
-                status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-                doc = wsman_generate_fault(epcntx, _doc,
-                         status.fault_code, status.fault_detail_code, NULL);
-                goto DONE;
-        }
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("UnSubscribe fault");
 		doc = wsman_generate_fault(epcntx, _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
-	pthread_mutex_lock(&subsInfo->notificationlock);
 	if(soap->subscriptionOpSet) {
 		soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
 	}
-	subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
-	debug("subscription %s unsubscribed", subsInfo->subsId);
-	pthread_mutex_unlock(&subsInfo->notificationlock);
+	debug("subscription %s unsubscribed", uuid);
 	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
 	if (!doc)
 		goto DONE;
@@ -1786,7 +1752,6 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
-
 	epcntx = ws_create_ep_context(soap, _doc);
 	wsman_status_init(&status);
 	body = ws_xml_get_soap_body(_doc);
@@ -1801,31 +1766,39 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	}
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t * t = list_first(soap->subscriptionMemList);
-	if(t == NULL) {
-		status.fault_code = WSMAN_INVALID_PARAMETER;
-		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
-		pthread_mutex_unlock(&soap->lockSubs);
-		goto DONE;
-	}
-	subsInfo = (WsSubscribeInfo *)t->list_data;
-	if(strcmp(subsInfo->subsId, uuid+5)) {
-		while((t == list_next(soap->subscriptionMemList, t))) {
-			subsInfo = (WsSubscribeInfo *)t->list_data;
-			if(!strcmp(subsInfo->subsId, uuid+5)) break;
+	lnode_t *t = NULL;
+	if(!list_isempty(soap->subscriptionMemList)) {
+		t = list_first(soap->subscriptionMemList);
+		subsInfo = (WsSubscribeInfo *)t->list_data;
+		if(strcmp(subsInfo->subsId, uuid+5)) {
+			while((t == list_next(soap->subscriptionMemList, t))) {
+				subsInfo = (WsSubscribeInfo *)t->list_data;
+				if(!strcmp(subsInfo->subsId, uuid+5)) break;
+			}
 		}
 	}
-	pthread_mutex_unlock(&soap->lockSubs);
 	if(t == NULL) {
-		status.fault_code = WSMAN_INVALID_PARAMETER;
-		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
-		pthread_mutex_unlock(&soap->lockSubs);
-		goto DONE;
+		char *buf;
+		if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf)) {
+			status.fault_code = WSMAN_INVALID_PARAMETER;
+			status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+			doc = wsman_generate_fault(epcntx, _doc,
+			 	status.fault_code, status.fault_detail_code, NULL);
+			pthread_mutex_unlock(&soap->lockSubs);
+			goto DONE;
+		}
+		doc = ws_xml_read_memory(soap, buf, strlen(buf), "UTF-8", 0);
+		u_free(buf);
+		doc = create_subs_info(op, epcntx, doc, &subsInfo);
+		if(doc) {
+			pthread_mutex_unlock(&soap->lockSubs);
+			goto DONE;
+		}
+		t = lnode_create(subsInfo);
+		list_append(soap->subscriptionMemList, t);
+		debug("subscription uuid:% reloaded in the memory", uuid+5);
 	}
+	pthread_mutex_unlock(&soap->lockSubs);
 	inNode = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_RENEW);
 	inNode = ws_xml_get_child(inNode, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
 	pthread_mutex_lock(&subsInfo->notificationlock);
@@ -1851,39 +1824,6 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 		goto DONE;
 	}
-/*	debug("subscription %s notification manager status is %d", subsInfo->subsId, subsInfo->flags & WSMAN_SUBSCRIBEINFO_MANAGER_STARTED);
-	if((subsInfo->flags & WSMAN_SUBSCRIBEINFO_MANAGER_STARTED) == 0) {
-		pthread_t eventreport;
-		pthread_attr_t pattrs;
-		if ((r = pthread_attr_init(&pattrs)) != 0) {
-			debug("pthread_attr_init failed = %d", r);
-			status.fault_code = WSMAN_INTERNAL_ERROR;
-			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-			retVal = 1;
-			pthread_mutex_unlock(&subsInfo->notificationlock);
-			goto DONE;
-		}
-
-		if ((r = pthread_attr_setdetachstate(&pattrs,
-					     PTHREAD_CREATE_DETACHED)) !=0) {
-			debug("pthread_attr_setdetachstate = %d", r);
-			status.fault_code = WSMAN_INTERNAL_ERROR;
-			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-			retVal = 1;
-			pthread_mutex_unlock(&subsInfo->notificationlock);
-			goto DONE;
-		}
-		WsEventThreadContextH thr_cntx = ws_create_event_thread_context(soap, subsInfo);
-		if((r = pthread_create(&eventreport, &pattrs, wse_notification_manager, thr_cntx))) {
-			debug("pthread_create failed =%d", r);
-			status.fault_code = WSMAN_INTERNAL_ERROR;
-			status.fault_detail_code = OWSMAN_SYSTEM_ERROR;
-			retVal = 1;
-			pthread_mutex_unlock(&subsInfo->notificationlock);
-			goto DONE;
-		}
-	}
-	*/
 	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
 	if (!doc)
 		goto DONE;
@@ -1897,7 +1837,6 @@ DONE:
 	}
 	ws_serializer_free_all(epcntx);
 	ws_destroy_context(epcntx);
-	u_free(str);
 	return retVal;
 }
 
@@ -2138,23 +2077,20 @@ void wse_notification_manager(void * cntx)
 		if(subsInfo->eventproc == NULL) goto LOOP;
 		pthread_mutex_lock(&subsInfo->notificationlock);
 		if(((subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) ||
-			subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED) &&
+			subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED ||
+			time_expired(subsInfo->expires)) &&
 			((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING ) == 0)) {
 			lnode_t *nodetemp = list_delete2(soap->subscriptionMemList, subsnode);
-			debug("uuid:%s deleted from the memory", subsInfo->subsId);
+			if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE)
+				debug("Unsubscribed!uuid:%s deleted from the memory", subsInfo->subsId);
+			else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED)
+				debug("Cancelled! uuid:%s deleted from the memory", subsInfo->subsId);
+			else
+				debug("Expired! uuid:%s deleted from the memory", subsInfo->subsId);
 			destroy_subsinfo(subsInfo);
 			lnode_destroy(subsnode);
 			subsnode = nodetemp;
 			continue;
-		}
-		if(time_expired(subsInfo->expires) ){
-			if ((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING ) == 0) {
-				ws_xml_destroy_doc(subsInfo->notificationDoc);
-				destroy_pending_notifications(subsInfo->notificationDocList);
-			}
-			else
-				debug("uuid:%s events sent pending!", subsInfo->subsId);
-			goto LOOP;
 		}
 		WsNotificationInfoH notificationInfo = u_malloc(sizeof(*notificationInfo));
 		notificationInfo->EventList = list_create(-1);
@@ -2231,20 +2167,27 @@ void wse_notification_manager(void * cntx)
 		if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL)) {
 			subsInfo->notificationDoc = notificationDoc;
 			subsInfo->eventSentLastTime = 1;
-			if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL) &&
-				(subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING) == 0) {
-				if(pthread_create(&eventsender, &pattrs, wse_notification_sender, threadcntx) == 0) {
-					subsInfo->flags |= WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING;
+			if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL) ) {
+				if((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING) == 0) {
+					if(pthread_create(&eventsender, &pattrs, wse_notification_sender, threadcntx) == 0) {
+						subsInfo->flags |= WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING;
+					}
+					else {
+					debug("thread created for %s failed![ %s ]", subsInfo->subsId, strerror(errno));
+					}
 				}
 				else {
-					debug("thread created for %s failed![ %s ]", subsInfo->subsId, strerror(errno));
+					ws_xml_destroy_doc(notificationDoc);
+					subsInfo->notificationDoc = NULL;
 				}
+				
 			}
 		}
 		else {
 			lnode_t *docnode = lnode_create(notificationDoc);
 			list_append(subsInfo->notificationDocList, docnode);
 		}
+			
 LOOP2:	
 		u_free(notificationInfo);
 		notificationDoc = NULL;

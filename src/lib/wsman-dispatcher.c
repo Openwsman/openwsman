@@ -970,6 +970,8 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	WsManDispatcherInfo *dispInfo = (WsManDispatcherInfo *) data;
 	WsDispatchEndPointInfo *ep = NULL;
 	WsDispatchEndPointInfo *ep_custom = NULL;
+	WsXmlDocH notdoc = NULL;
+	WsXmlNodeH nodedoc = NULL;
 	int i, resUriMatch = 0;
 	char *ns = NULL;
 
@@ -997,6 +999,22 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 					break;
 				}
 				t = list_next(soap->subscriptionMemList, t);
+			}
+			if(t == NULL) {
+				char *buf = NULL;
+				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf) == 0) {
+					notdoc = ws_xml_read_memory(soap, buf, strlen(buf), "UTF-8", 0);
+					if(notdoc) {
+						nodedoc = ws_xml_get_soap_header(notdoc);
+						if(nodedoc) {
+							nodedoc = ws_xml_get_child(nodedoc, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
+							if(nodedoc) {
+								uri = ws_xml_get_node_text(nodedoc);
+							}
+						}
+					}
+					u_free(buf);
+				}
 			}
 		}
 	}
@@ -1082,6 +1100,8 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 	}
       cleanup:
+	if(notdoc)
+		ws_xml_destroy_doc(notdoc);
 	if (ns)
 		u_free(ns);
 	return disp;
