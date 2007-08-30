@@ -391,6 +391,6 @@ char *md52char(md5_byte_t digest[16])
         str[2*i]=ctbl[(digest[i]>>4)&0xf];
         str[2*i+1]=ctbl[digest[i]&0xf];
     }
-    str[33]='\0';
+    str[32]='\0';
     return str;
 }
