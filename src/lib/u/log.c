@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
 static const char rcsid[] =
@@ -27,7 +27,7 @@ static const char rcsid[] =
 
 #include <u/syslog.h>
 
-/* applications that use libu will defined their own "int facility" variable */
+/* applications that use libu will define their own "int facility" variable */
 extern int facility;
 
 /* log hook. if not-zero use this function to write log messages */
@@ -50,20 +50,20 @@ static __INLINE__ const char* u_log_label(int lev)
 {
     switch(lev)
     {
-    case LOG_CRIT:   
+    case LOG_CRIT:
         return "crt";
-    case LOG_ERR:    
+    case LOG_ERR:
         return "err";
     case LOG_WARNING:
         return "wrn";
-    case LOG_NOTICE: 
-        return "not"; 
-    case LOG_INFO:   
-        return "inf"; 
-    case LOG_DEBUG:  
-        return "dbg"; 
-    default: 
-        syslog(LOG_WARNING, 
+    case LOG_NOTICE:
+        return "not";
+    case LOG_INFO:
+        return "inf";
+    case LOG_DEBUG:
+        return "dbg";
+    default:
+        syslog(LOG_WARNING,
                "[wrn][%d:::] unknown log level: %d", getpid(), lev);
         return "unk";
     }
@@ -75,7 +75,7 @@ static int u_log(int fac, int level, const char *fmt, ...)
     va_list ap;
     char buf[U_MAX_LOG_LENGTH];
 
-    va_start(ap, fmt); 
+    va_start(ap, fmt);
 
     if(hook)
     {
@@ -84,9 +84,9 @@ static int u_log(int fac, int level, const char *fmt, ...)
             va_end(ap);
             return ~0; /* buffer too small */
         }
-        buf[U_MAX_LOG_LENGTH - 1] = 0; 
+        buf[U_MAX_LOG_LENGTH - 1] = 0;
         hook(hook_arg, level, buf);
-    } else 
+    } else
         vsyslog(fac | level, fmt, ap);
 
     va_end(ap);
@@ -107,7 +107,7 @@ int u_log_set_hook(u_log_hook_t func, void *arg, u_log_hook_t *old, void **parg)
     return 0;
 }
 
-int u_log_write_ex(int fac, int lev, int ctx, const char* file, int line, 
+int u_log_write_ex(int fac, int lev, int ctx, const char* file, int line,
     const char *func, const char* fmt, ...)
 {
     va_list ap;
@@ -118,7 +118,7 @@ int u_log_write_ex(int fac, int lev, int ctx, const char* file, int line,
     save_errno(savederr);
 
     /* build the message to send to the log system */
-    va_start(ap, fmt); 
+    va_start(ap, fmt);
     rc = vsnprintf(msg, U_MAX_LOG_LENGTH, fmt, ap);
     va_end(ap);
 
@@ -127,10 +127,10 @@ int u_log_write_ex(int fac, int lev, int ctx, const char* file, int line,
 
     /* ok, send the msg to the logger */
     if(ctx)
-        u_log(fac, lev, "[%s][%d:%s:%d:%s] %s", 
+        u_log(fac, lev, "[%s][%d:%s:%d:%s] %s",
                u_log_label(lev), getpid(), file, line, func, msg);
     else
-        u_log(fac, lev, "[%s][%d:::] %s", 
+        u_log(fac, lev, "[%s][%d:::] %s",
                u_log_label(lev), getpid(), msg);
 
     restore_errno(savederr);

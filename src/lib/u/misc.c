@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
 static const char rcsid[] =
@@ -8,7 +8,7 @@ static const char rcsid[] =
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
-    
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -27,6 +27,7 @@ static const char rcsid[] =
 #include <dirent.h>
 #endif
 
+#include <u/os.h>
 #include <u/misc.h>
 #include <u/carpal.h>
 #include <u/memory.h>
@@ -69,7 +70,7 @@ void u_trim(char *s)
         memmove(s, p, 1 + strlen(p));
 }
 
-/** \brief Returns \c 1 if \p ln is a blank string i.e. a string formed by 
+/** \brief Returns \c 1 if \p ln is a blank string i.e. a string formed by
            ONLY spaces and/or tabs characters.
  */
 __INLINE__ int u_isblank_str(const char *ln)
@@ -80,7 +81,7 @@ __INLINE__ int u_isblank_str(const char *ln)
     return 1;
 }
 
-/** \brief Returns \c 0 if \p c is neither a CR (\\r) or a LF (\\n), 
+/** \brief Returns \c 0 if \p c is neither a CR (\\r) or a LF (\\n),
      not-zero otherwise.
  */
 __INLINE__ int u_isnl(int c)
@@ -108,7 +109,7 @@ char *u_strdup(const char *s)
     return u_strndup(s, strlen(s));
 }
 
-/** \brief Save the PID of the calling process to a file named \p pf 
+/** \brief Save the PID of the calling process to a file named \p pf
      (that should be a fully qualified path).
      Returns \c 0 on success, not-zero on error.
  */
@@ -124,7 +125,7 @@ int u_savepid (const char *pf)
     return 0;
 }
 
-/** \brief  Safe string copy, see also the U_SSTRNCPY define 
+/** \brief  Safe string copy, see also the U_SSTRNCPY define
   Safe string copy which null-terminates the destination string \a dst before
   copying the source string \a src for no more than \a size bytes.
   Returns a pointer to the destination string \a dst.
@@ -154,7 +155,7 @@ void* u_memdup(const void *src, size_t size)
  * Tokenize the \p delim separated string \p wlist and place its
  * pieces (at most \p tokv_sz - 1) into \p tokv.
  *
- * \param wlist     list of strings possibily separated by chars in \p delim 
+ * \param wlist     list of strings possibily separated by chars in \p delim
  * \param delim     set of token separators
  * \param tokv      pre-allocated string array
  * \param tokv_sz   number of cells in \p tokv array
@@ -322,7 +323,7 @@ int u_path_is_absolute (const char *filename)
     int ret = 0;
 
 #ifdef WIN32
-    if (filename[1] == ':') ret = 1; 
+    if (filename[1] == ':') ret = 1;
 #endif
 
     /* we'll count as absolute paths specified using "." */

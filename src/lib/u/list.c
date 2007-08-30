@@ -31,7 +31,6 @@
 #define prev list_prev
 #define data list_data
 
-#define pool list_pool
 #define fre list_free
 #define size list_size
 
@@ -45,9 +44,6 @@
 #define lnode_next(N)		((N)->next)
 #define lnode_prev(N)		((N)->prev)
 
-#ifdef KAZLIB_RCSID
-static const char rcsid[] = "$Id: list.c,v 1.19.2.1 2000/04/17 01:07:21 kaz Exp $";
-#endif
 
 /*
  * Initialize a list object supplied by the client such that it becomes a valid
@@ -97,7 +93,7 @@ void list_destroy(list_t *list)
 }
 
 /*
- * Free all of the nodes of a list. The list must contain only 
+ * Free all of the nodes of a list. The list must contain only
  * dynamically allocated nodes. After this call, the list
  * is empty.
  */
@@ -118,25 +114,6 @@ void list_destroy_nodes(list_t *list)
     list_init(list, list->maxcount);
 }
 
-/*
- * Return all of the nodes of a list to a node pool. The nodes in
- * the list must all have come from the same pool.
- */
-
-void list_return_nodes(list_t *list, lnodepool_t *pool)
-{
-    lnode_t *lnode = list_first_priv(list), *tmp, *nil = list_nil(list);
-
-    while (lnode != nil) {
-	tmp = lnode->next;
-	lnode->next = NULL;
-	lnode->prev = NULL;
-	lnode_return(pool, lnode);
-	lnode = tmp;
-    }
-
-    list_init(list, list->maxcount);
-}
 
 /*
  * Insert the node ``new'' into the list immediately after ``this'' node.
@@ -284,112 +261,6 @@ void lnode_destroy(lnode_t *lnode)
     free(lnode);
 }
 
-/*
- * Initialize a node pool object to use a user-supplied set of nodes.
- * The ``nodes'' pointer refers to an array of lnode_t objects, containing
- * ``n'' elements.
- */
-
-lnodepool_t *lnode_pool_init(lnodepool_t *pool, lnode_t *nodes, listcount_t n)
-{
-    listcount_t i;
-
-    assert (n != 0);
-
-    pool->pool = nodes;
-    pool->fre = nodes;
-    pool->size = n;
-    for (i = 0; i < n - 1; i++) {
-	nodes[i].next = nodes + i + 1;
-    }
-    nodes[i].next = NULL;
-    nodes[i].prev = nodes;	/* to make sure node is marked ``on list'' */
-    return pool;
-}
-
-/*
- * Create a dynamically allocated pool of n nodes.
- */
-
-lnodepool_t *lnode_pool_create(listcount_t n)
-{
-    lnodepool_t *pool;
-    lnode_t *nodes;
-
-    assert (n != 0);
-
-    pool = malloc(sizeof *pool);
-    if (!pool)
-	return NULL;
-    nodes = malloc(n * sizeof *nodes);
-    if (!nodes) {
-	free(pool);
-	return NULL;
-    }
-    lnode_pool_init(pool, nodes, n);
-    return pool;
-}
-
-/*
- * Determine whether the given pool is from this pool.
- */
-
-int lnode_pool_isfrom(lnodepool_t *pool, lnode_t *node)
-{
-    listcount_t i;
-
-    /* this is carefully coded this way because ANSI C forbids pointers
-       to different objects from being subtracted or compared other
-       than for exact equality */
-
-    for (i = 0; i < pool->size; i++) {
-	if (pool->pool + i == node)
-	    return 1;
-    }
-    return 0;
-}
-
-/*
- * Destroy a dynamically allocated pool of nodes.
- */
-
-void lnode_pool_destroy(lnodepool_t *p)
-{
-    free(p->pool);
-    free(p);
-}
-
-/*
- * Borrow a node from a node pool. Returns a null pointer if the pool
- * is exhausted. 
- */
-
-lnode_t *lnode_borrow(lnodepool_t *pool, void *data)
-{
-    lnode_t *new = pool->fre;
-    if (new) {
-	pool->fre = new->next;
-	new->data = data;
-	new->next = NULL;
-	new->prev = NULL;
-    }
-    return new;
-}
-
-/*
- * Return a node to a node pool. A node must be returned to the pool
- * from which it came.
- */
-
-void lnode_return(lnodepool_t *pool, lnode_t *node)
-{
-    assert (lnode_pool_isfrom(pool, node));
-    assert (!lnode_is_in_a_list(node));
-
-    node->next = pool->fre;
-    node->prev = node;
-    pool->fre = node;
-}
 
 /*
  * Determine whether the given list contains the given node.
@@ -408,164 +279,6 @@ int list_contains(list_t *list, lnode_t *node)
     return 0;
 }
 
-/*
- * A more generalized variant of list_transfer. This one removes a
- * ``slice'' from the source list and appends it to the destination
- * list.
- */
-
-void list_extract(list_t *dest, list_t *source, lnode_t *first, lnode_t *last)
-{
-    listcount_t moved = 1;
-
-    assert (first == NULL || list_contains(source, first));
-    assert (last == NULL || list_contains(source, last));
-
-    if (first == NULL || last == NULL)
-	return;
-
-    /* adjust the destination list so that the slice is spliced out */
-
-    first->prev->next = last->next;
-    last->next->prev = first->prev;
-
-    /* graft the splice at the end of the dest list */
-
-    last->next = &dest->nilnode;
-    first->prev = dest->nilnode.prev;
-    dest->nilnode.prev->next = first;
-    dest->nilnode.prev = last;
-
-    while (first != last) {
-	first = first->next;
-	assert (first != list_nil(source));	/* oops, last before first! */
-	moved++;
-    }
-    
-    /* assert no overflows */
-    assert (source->nodecount - moved <= source->nodecount);
-    assert (dest->nodecount + moved >= dest->nodecount);
-
-    /* assert no weirdness */
-    assert (moved <= source->nodecount);
-
-    source->nodecount -= moved;
-    dest->nodecount += moved;
-
-    /* assert list sanity */
-    assert (list_verify(source));
-    assert (list_verify(dest));
-}
-
-
-/*
- * Split off a trailing sequence of nodes from the source list and relocate
- * them to the tail of the destination list. The trailing sequence begins
- * with node ``first'' and terminates with the last node of the source
- * list. The nodes are added to the end of the new list in their original
- * order.
- */
-
-void list_transfer(list_t *dest, list_t *source, lnode_t *first)
-{
-    listcount_t moved = 1;
-    lnode_t *last;
-
-    assert (first == NULL || list_contains(source, first));
-
-    if (first == NULL)
-	return;
-
-    last = source->nilnode.prev;
-
-    source->nilnode.prev = first->prev;
-    first->prev->next = &source->nilnode;
-
-    last->next = &dest->nilnode;
-    first->prev = dest->nilnode.prev;
-    dest->nilnode.prev->next = first;
-    dest->nilnode.prev = last;
-
-    while (first != last) {
-	first = first->next;
-	moved++;
-    }
-    
-    /* assert no overflows */
-    assert (source->nodecount - moved <= source->nodecount);
-    assert (dest->nodecount + moved >= dest->nodecount);
-
-    /* assert no weirdness */
-    assert (moved <= source->nodecount);
-
-    source->nodecount -= moved;
-    dest->nodecount += moved;
-
-    /* assert list sanity */
-    assert (list_verify(source));
-    assert (list_verify(dest));
-}
-
-void list_merge(list_t *dest, list_t *sour,
-	int compare (const void *, const void *))
-{
-    lnode_t *dn, *sn, *tn;
-    lnode_t *d_nil = list_nil(dest), *s_nil = list_nil(sour);
-
-    /* Nothing to do if source and destination list are the same. */
-    if (dest == sour)
-	return;
-
-    /* overflow check */
-    assert (list_count(sour) + list_count(dest) >= list_count(sour));
-
-    /* lists must be sorted */
-    assert (list_is_sorted(sour, compare));
-    assert (list_is_sorted(dest, compare));
-
-    dn = list_first_priv(dest);
-    sn = list_first_priv(sour);
-
-    while (dn != d_nil && sn != s_nil) {
-	if (compare(lnode_get(dn), lnode_get(sn)) >= 0) {
-	    tn = lnode_next(sn);
-	    list_delete(sour, sn);
-	    list_ins_before(dest, sn, dn);
-	    sn = tn;
-	} else {
-	    dn = lnode_next(dn);
-	}
-    }
-
-    if (dn != d_nil)
-	return;
-
-    if (sn != s_nil)
-	list_transfer(dest, sour, sn);
-}
-
-void list_sort(list_t *list, int compare(const void *, const void *))
-{
-    list_t extra;
-    listcount_t middle;
-    lnode_t *node;
-
-    if (list_count(list) > 1) {
-	middle = list_count(list) / 2;
-	node = list_first_priv(list);
-
-	list_init(&extra, list_count(list) - middle);
-
-	while (middle--)
-	    node = lnode_next(node);
-	
-	list_transfer(&extra, list, node);
-	list_sort(list, compare);
-	list_sort(&extra, compare);
-	list_merge(list, &extra, compare);
-    } 
-    assert (list_is_sorted(list, compare));
-}
 
 lnode_t *list_find(list_t *list, const void *key, int compare(const void *, const void *))
 {
@@ -575,7 +288,7 @@ lnode_t *list_find(list_t *list, const void *key, int compare(const void *, cons
 	if (compare(lnode_get(node), key) == 0)
 	    return node;
     }
-    
+
     return 0;
 }
 
@@ -609,7 +322,6 @@ int list_is_sorted(list_t *list, int compare(const void *, const void *))
 
 #undef list_isempty
 #undef list_isfull
-#undef lnode_pool_isempty
 #undef list_append
 #undef list_prepend
 #undef list_first
@@ -636,7 +348,7 @@ int list_isempty(list_t *list)
 
 /*
  * Return 1 if the list is full, 0 otherwise
- * Permitted only on bounded lists. 
+ * Permitted only on bounded lists.
  */
 
 int list_isfull(list_t *list)
@@ -647,14 +359,6 @@ int list_isfull(list_t *list)
     return list->nodecount == list->maxcount;
 }
 
-/*
- * Check if the node pool is empty.
- */
-
-int lnode_pool_isempty(lnodepool_t *pool)
-{
-    return (pool->fre == NULL);
-}
 
 /*
  * Add the given node at the end of the list
@@ -747,7 +451,7 @@ void *lnode_get(lnode_t *lnode)
 }
 
 /*
- * Retrieve the node's successor. If there is no successor, 
+ * Retrieve the node's successor. If there is no successor,
  * NULL is returned.
  */
 
@@ -802,7 +506,7 @@ int list_verify(list_t *list)
 
     if (count != 0 || node != nil)
 	return 0;
-    
+
     return 1;
 }
 
@@ -817,7 +521,7 @@ typedef char input_t[256];
 
 static int tokenize(char *string, ...)
 {
-    char **tokptr; 
+    char **tokptr;
     va_list arglist;
     int tokcount = 0;
 
@@ -896,7 +600,7 @@ int main(void)
 		}
 		val = dupstring(tok1);
 		ln = lnode_create(val);
-	
+
 		if (!val || !ln) {
 		    puts("allocation failure");
 		    if (ln)
@@ -904,7 +608,7 @@ int main(void)
 		    free(val);
 		    break;
 		}
-    
+
 		list_append(l, ln);
 		break;
 	    case 'd':

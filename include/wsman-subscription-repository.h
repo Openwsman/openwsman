@@ -31,7 +31,11 @@
 /**
  * @author Liang Hou
  */
- #include "wsman-soap.h"
+
+#ifndef SUBSCRIPTION_REPO_H
+#define SUBSCRIPTION_REPO_H
+
+#include "wsman-soap.h"
 
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData);
 int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData);
@@ -41,4 +45,6 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list);
 int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscriptionDoc);
 int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire);
 int LocalSubscriptionOpDelete (char * uri_repository, char * uuid);
- 
+
+#endif
+

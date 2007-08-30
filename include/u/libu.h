@@ -16,9 +16,6 @@
 #include <u/misc.h>
 #include <u/buf.h>
 #include <u/os.h>
-#ifndef NO_LOG
-#include <u/log.h>
-#endif
 
 
 #include <u/debug.h>

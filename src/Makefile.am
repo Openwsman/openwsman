@@ -1,13 +1,10 @@
 
 
-SUBDIRS = libu lib cpp
+SUBDIRS = lib cpp
 
 
 if DISABLE_PLUGINS
 else
-if BUILD_LIBCIM 
-SUBDIRS += libcim
-endif
 SUBDIRS += plugins 
 endif
 

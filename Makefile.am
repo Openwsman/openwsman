@@ -1,4 +1,4 @@
-SUBDIRS = src doc etc tests examples
+SUBDIRS = include src doc etc tests examples
 AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
 
 wsmanincludedir = $(includedir)/openwsman

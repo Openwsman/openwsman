@@ -50,31 +50,6 @@
 #include "wsman-soap-message.h"
 #include "wsman-client-transport.h"
 
-WsXmlNsData     g_wsNsData[] =
-{
-	{XML_NS_SOAP_1_2, "s"},
-	{XML_NS_ADDRESSING, "wsa"},
-	{XML_NS_EVENTING, "wse"},
-	{XML_NS_ENUMERATION, "wsen"},
-	{XML_NS_SCHEMA_INSTANCE, "xsi"},
-	{XML_NS_CIM_SCHEMA, "cim"},
-	{XML_NS_WS_MAN_CAT, "cat"},
-	{XML_NS_WSMAN_ID, "wsmid"},
-	{XML_NS_XML_SCHEMA, "xs"},
-	{XML_NS_WS_MAN, "wsman"},
-	{XML_NS_CIM_BINDING, "wsmb"},
-	{XML_NS_OPENWSMAN, "owsman"},
-	{XML_NS_TRANSFER, "wxf"},
-	{NULL, NULL}
-};
-
-WsManDialectData g_wsDialectData[] =
-{
-	{WSM_WQL_FILTER_DIALECT, "wql"},
-	{WSM_SELECTOR_FILTER_DIALECT, "selector"},
-	{NULL, NULL}
-};
-
 
 static int
 set_context_val(WsContextH cntx,
@@ -155,7 +130,7 @@ ws_soap_initialize()
 	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
 //	soap->enumIdleTimeout = enumIdleTimeout;
 	u_init_lock(soap);
-	ws_xml_parser_initialize(soap, g_wsNsData);
+	ws_xml_parser_initialize(soap);
 	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
 	soap_add_filter(soap, outbound_control_header_filter, NULL, 0);
 	return soap;

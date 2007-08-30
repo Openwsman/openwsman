@@ -28,7 +28,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
-/** 
+/**
  * @author Eugene Yarmosh
  * @author Vadim Revyakin
  */
@@ -49,7 +49,7 @@
 struct __XmlSerializationData
 {
 	WsContextH cntx;
-	char *elementBuf; 
+	char *elementBuf;
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
 	int mode;
@@ -74,46 +74,29 @@ typedef struct __XmlSerializationData XmlSerializationData;
 #define DATA_BUF(d) ((d)->elementBuf)
 
 
-
+#if 0
 struct __NameAliase
 {
         char* name;
         char* aliase;
 };
 typedef struct __NameAliase NameAliase;
+#endif
 // NameAliase* g_NameNameAliaseTable;
 
 
-
-//void enforce_mustunderstand_if_needed(WsContextH cntx, WsXmlNodeH node);
-
-//int do_serialize_uint(struct __XmlSerializationData* data, int valSize);
-
 void* ws_serializer_alloc(WsContextH cntx, int size);
-//int do_serializer_free(WsContextH cntx, void* ptr);
+
 int ws_serializer_free(WsContextH cntx, void* ptr);
 
 void *xml_serializer_alloc(XmlSerializationData *data, int size, int zeroInit);
 
 int xml_serializer_free(XmlSerializationData *data, void *buf);
 
-//XML_TYPE_PTR make_dst_ptr(XmlSerializationData *data, int size);
-
 void xml_serializer_free_scalar_mem(XmlSerializationData *data);
 
 WsXmlNodeH xml_serializer_add_child(XmlSerializationData *data, char *value);
 
 WsXmlNodeH xml_serializer_get_child(XmlSerializationData *data);
-
-//XmlSerialiseDynamicSizeData *make_dyn_size_data(XmlSerializationData *data);
-/*
-void initialize_xml_serialization_data(XmlSerializationData *data, WsContextH cntx, 
-			XmlSerializerInfo *elementInfo, XML_TYPE_PTR dataBuf, int mode,
-			char *nameNs, char *ns, WsXmlNodeH xmlNode);
-*/
-
-
-
-
 
 #endif //WS_XML_SERIALIZATION_H

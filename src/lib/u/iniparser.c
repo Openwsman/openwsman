@@ -42,6 +42,7 @@ extern "C" {
 /* strlib.c following */
 
 #define ASCIILINESZ 1024
+// #define INIPARSER_EXTENDED_FEATURES 1
 /*-------------------------------------------------------------------------*/
 /**
   @brief    Convert a string to lowercase.
@@ -423,7 +424,7 @@ static void dictionary_unset(dictionary * d, char * key)
   output file pointers.
  */
 /*--------------------------------------------------------------------------*/
-
+#ifdef INIPARSER_EXTENDED_FEATURES
 static void dictionary_dump(dictionary *d, FILE *f)
 {
     int i;
@@ -442,6 +443,7 @@ static void dictionary_dump(dictionary *d, FILE *f)
 
     return;
 }
+#endif
 
 
 /* iniparser.c.c following */
@@ -558,10 +560,12 @@ char * iniparser_getsecname(dictionary * d, int n)
   purposes mostly.
  */
 /*--------------------------------------------------------------------------*/
+#ifdef INIPARSER_EXTENDED_FEATURES
 void iniparser_dump(dictionary * d, FILE * f)
 {
     dictionary_dump(d,f);
 }
+#endif
 
 
 /*-------------------------------------------------------------------------*/
@@ -576,6 +580,7 @@ void iniparser_dump(dictionary * d, FILE * f)
  */
 /*--------------------------------------------------------------------------*/
 
+#ifdef INIPARSER_EXTENDED_FEATURES
 void iniparser_dump_ini(dictionary * d, FILE * f)
 {
     int     i, j ;
@@ -615,6 +620,7 @@ void iniparser_dump_ini(dictionary * d, FILE * f)
     fprintf(f, "\n");
     return ;
 }
+#endif
 
 /*-------------------------------------------------------------------------*/
 /**

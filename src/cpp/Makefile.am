@@ -3,14 +3,12 @@ wsmanincludedir = $(includedir)/openwsman/cpp
 
 INCLUDES =  \
 	   -I$(top_srcdir) \
-	   -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/libu \
+	   -I$(top_srcdir)/include \
 	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\"
 
 LIBS = \
     $(XML_LIBS)  \
-    $(top_builddir)/src/libu/libwsman_utils.la \
     $(top_builddir)/src/lib/libwsman.la \
     $(top_builddir)/src/lib/libwsman_client.la 
 

@@ -34,7 +34,7 @@
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
- 
+
 #include "stdlib.h"
 #include "stdio.h"
 #include <string.h>
@@ -54,7 +54,7 @@ static int LocalSubscriptionInitFlag = 0;
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData)
 {
 	LocalSubscriptionInitFlag = 1;
-	
+
 	return 0;
 }
 
@@ -75,7 +75,7 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char  **subscript
 	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	FILE *fp = fopen(subs_path, "r");
 	u_free(subs_path);
-	if(fp == NULL) return -1; 
+	if(fp == NULL) return -1;
 	while(!feof(fp)) {
 				memset(block, 0, 512);
 				m = fread(block, 1, 511, fp);
@@ -102,7 +102,7 @@ int LocalSubscriptionOpSearch(char * uri_repository, char * uuid)
 	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	FILE *fp = fopen(subs_path, "r");
 	u_free(subs_path);
-	if(fp == NULL) return -1; 
+	if(fp == NULL) return -1;
 	fclose(fp);
 	return 0;
 }
@@ -114,7 +114,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 	char block[512];
 	char *buf = NULL;
 	if(LocalSubscriptionInitFlag == 0) return -1;
-	if(subscription_list == NULL) 
+	if(subscription_list == NULL)
 		return -1;
 	if (0 > (n = scandir (uri_repository, &namelist, 0, alphasort)))
     	{
@@ -137,7 +137,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 				m = fread(block, 1, 511, subs);
 				if(m > 0) {
 					count += m;
-					if(count - m == 0) 
+					if(count - m == 0)
 						count++;
 					buf = u_realloc(buf, count);
 					if(count - m == 1)

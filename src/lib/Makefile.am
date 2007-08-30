@@ -1,55 +1,21 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
-wsmanincludedir = $(includedir)/openwsman
-wsmaninclude_HEADERS = \
-	wsman-types.h \
-	wsman-names.h \
-	wsman-debug.h \
-	wsman-client.h  \
-	wsman-client-api.h \
-	wsman-xml-api.h \
-	wsman-client-transport.h \
-	wsman-xml-serializer.h \
-    	wsman-server-api.h \
-	wsman-faults.h \
-	wsman-soap-message.h \
-	wsman-api.h \
-  	wsman-xml-api.h \
-	wsman-client.h \
-	wsman-declarations.h \
-	wsman-soap.h \
-	wsman-epr.h \
-	wsman-soap-envelope.h \
-	wsman-subscription-repository.h
-
-OWSMAN_INCLUDES = \
-	wsman-declarations.h \
-	wsman-faults.h \
-	wsman-soap.h \
-	wsman-soap-envelope.h \
-	wsman-xml.h \
-	wsman-epr.h \
-	wsman-soap.h \
-	wsman-soap-message.h \
-	wsman-server.h \
-	wsman-plugins.h \
-	wsman-dispatcher.h \
-	wsman-faults.h \
-	wsman-xml.h \
-	wsman-xml-binding.h \
-	wsman-xml-serialize.h \
-	wsman-soap-message.h \
-	$(wsmaninclude_HEADERS)
-
-	
-
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
 	wsman-plugins.c \
-    wsman-server-api.c
+    	wsman-server-api.c
+
+
+UTIL_SOURCES = u/buf.c  \
+		u/log.c u/memory.c u/misc.c  u/uri.c  u/uuid.c \
+		u/lock.c u/md5.c u/strings.c u/list.c u/hash.c u/base64.c \
+		u/iniparser.c u/debug.c u/uerr.c \
+		u/uoption.c u/gettimeofday.c u/syslog.c  \
+		u/pthreadx_win32.c u/os.c
 
 libwsman_la_SOURCES = \
-	wsman-xml-binding.c \
+	$(UTIL_SOURCES) \
+	wsman-libxml2-binding.c \
 	wsman-xml.c \
 	wsman-epr.c \
 	wsman-dispatcher.c \
@@ -59,25 +25,23 @@ libwsman_la_SOURCES = \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
 	wsman-soap-message.c \
-	wsman-subscription-repository.c \
-	$(OWSMAN_INCLUDES)
+	wsman-subscription-repository.c 
 
 
 libwsman_curl_client_transport_la_SOURCES = \
-		wsman-client-transport.c \
-		wsman-curl-client-transport.c
+	wsman-client-transport.c \
+	wsman-curl-client-transport.c
 
 
 libwsman_client_la_SOURCES = \
 	wsman-client.c 
 
 INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src/libu \
+	   -I$(top_srcdir)/include \
 	   $(XML_CFLAGS) 
 
 LIBS = \
-        $(XML_LIBS)  \
-       $(top_builddir)/src/libu/libwsman_utils.la 
+        $(XML_LIBS) 
 
 
 
@@ -92,8 +56,6 @@ libwsman_client_la_LDFLAGS= -version-info 1:0
 
 libwsman_server_la_LIBADD = -ldl
 libwsman_server_la_LDFLAGS= -version-info 1:0
-
-
 
 
 lib_LTLIBRARIES = \

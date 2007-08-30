@@ -1115,8 +1115,8 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 	    ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
 
 	if (val && strstr(val, WSA_EPR)) {
-		SoapH soap = ws_xml_get_doc_soap_handle(ws_xml_get_node_doc(baseNode));
-		epr = ws_xml_read_memory(soap, val, strlen(val), NULL, 0);
+		//SoapH soap = ws_xml_get_doc_soap_handle(ws_xml_get_node_doc(baseNode));
+		epr = ws_xml_read_memory(NULL, val, strlen(val), NULL, 0);
 	}
 
 	if (set || (set = ws_xml_add_child(baseNode,

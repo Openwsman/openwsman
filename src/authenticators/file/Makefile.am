@@ -4,8 +4,7 @@ authdir = @PACKAGE_AUTH_DIR@
 libwsman_file_auth_la_SOURCES = \
 	file_auth.c
 
-INCLUDES = -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/libu
+INCLUDES = -I$(top_srcdir)/include
 
 libwsman_file_auth_la_LIBADD = $(CRYPT_LIBS)
 

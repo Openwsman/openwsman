@@ -46,9 +46,8 @@ extern "C" {
 struct _WsXmlDoc;
 typedef struct _WsXmlDoc* WsXmlDocH;
 
- struct _WS_CONTEXT;
- typedef struct _WS_CONTEXT* WsContextH;
-
+struct _WS_CONTEXT;
+typedef struct _WS_CONTEXT* WsContextH;
 
 
 struct __WsXmlNode
@@ -68,22 +67,6 @@ struct __WsXmlNs
     int __undefined;
 };
 typedef struct __WsXmlNs* WsXmlNsH;
-
-struct __WsXmlNsData
-{
-    char* uri;
-    char* prefix;
-};
-typedef struct __WsXmlNsData WsXmlNsData;
-
-extern WsXmlNsData g_wsNsData[];
-
-struct __WsManDialectData
-{
-    char* uri;
-    char* name;
-};
-typedef struct __WsManDialectData WsManDialectData;
 
 
 #ifdef __cplusplus

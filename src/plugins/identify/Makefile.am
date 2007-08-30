@@ -6,8 +6,7 @@ libwsman_identify_plugin_la_SOURCES = \
 	identify_stubs.c \
 	identify.h
 
-INCLUDES = -I$(top_srcdir)/src/lib \
-	   -I$(top_srcdir)/src/libu 
+INCLUDES = -I$(top_srcdir)/include
 
 LIBS = \
     $(XML_LIBS) 

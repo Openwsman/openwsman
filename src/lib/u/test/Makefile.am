@@ -1,6 +1,5 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
-INCLUDES = \
-	   -I$(top_srcdir)/src/libu
+INCLUDES = -I$(top_srcdir)/include
 
 LIBS = -lpthread \
        $(top_builddir)/src/libu/libwsman_utils.la 

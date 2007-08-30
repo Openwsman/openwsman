@@ -648,7 +648,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 
 static void
 wsman_set_subscribe_options(WsManClient * cl,
-			WsXmlNodeH body, 
+			WsXmlNodeH body,
 			const char* resource_uri,
 			client_opt_t *options)
 {
@@ -668,7 +668,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 		if(options->reference)
 			ws_xml_add_child(temp, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, options->reference);
 	}
-	
+
 	snprintf(buf, 32, "PT%fS", options->expires);
 	ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	if(options->filter) {
@@ -765,6 +765,8 @@ wsmc_create_request(WsManClient * cl,
 
 	body = ws_xml_get_soap_body(request);
 	header = ws_xml_get_soap_header(request);
+	if (!body  || !header )
+		return NULL;
 	if ((options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
 		WsXmlNodeH opset = ws_xml_add_child(header,
 				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
@@ -776,18 +778,18 @@ wsmc_create_request(WsManClient * cl,
 
 	switch (action) {
 	case WSMAN_ACTION_IDENTIFY:
-		ws_xml_add_child(ws_xml_get_soap_body(request),
+		ws_xml_add_child(body,
 				XML_NS_WSMAN_ID, WSMID_IDENTIFY, NULL);
 		break;
         case WSMAN_ACTION_CUSTOM:
                 break;
         case WSMAN_ACTION_ENUMERATION:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
 		wsman_set_enumeration_options(cl, body, resource_uri, options);
 		break;
 	case WSMAN_ACTION_PULL:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_PULL, NULL);
 		if (data) {
 			ws_xml_add_child(node, XML_NS_ENUMERATION,
@@ -795,7 +797,7 @@ wsmc_create_request(WsManClient * cl,
 		}
 		break;
 	case WSMAN_ACTION_RELEASE:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_RELEASE, NULL);
 		if (data) {
 			ws_xml_add_child(node, XML_NS_ENUMERATION,
@@ -803,19 +805,19 @@ wsmc_create_request(WsManClient * cl,
 		}
 		break;
 	case WSMAN_ACTION_SUBSCRIBE:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
 		wsman_set_subscribe_options(cl, body, resource_uri, options);
 		break;
 	case WSMAN_ACTION_UNSUBSCRIBE:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
 		if(data) {
 			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
 	case WSMAN_ACTION_RENEW:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_RENEW, NULL);
 		char            buf[20];
 		sprintf(buf, "PT%fS", options->expires);
@@ -825,7 +827,7 @@ wsmc_create_request(WsManClient * cl,
 		}
 		break;
 	case WSMAN_ACTION_EVENT_PULL:
-		node = ws_xml_add_child(ws_xml_get_soap_body(request),
+		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSEVENT_DELIVERY_MODE_PULL, NULL);
 		if (data) {
 			ws_xml_add_child(node, XML_NS_ENUMERATION,
@@ -907,6 +909,8 @@ _wsmc_action_create(WsManClient * cl,
 	WsXmlDocH       request = wsmc_create_request(cl,
 			(char *)resource_uri, options,
 			WSMAN_ACTION_TRANSFER_CREATE, NULL, NULL);
+	if (!request)
+		return NULL;
 	handle_resource_request(cl, request, data, typeInfo, (char *)resource_uri);
 
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
@@ -975,6 +979,8 @@ _wsmc_action_put(WsManClient * cl,
 	WsXmlDocH       request = wsmc_create_request(cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, NULL);
+	if (!request)
+		return NULL;
 	handle_resource_request(cl, request, data, typeInfo, resource_uri);
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
@@ -1037,6 +1043,8 @@ wsmc_action_delete(WsManClient * cl,
 	WsXmlDocH       request = wsmc_create_request(cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_DELETE, NULL, NULL);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1056,6 +1064,8 @@ wsmc_action_get(WsManClient * cl,
 	WsXmlDocH       request = wsmc_create_request(cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_GET, NULL, NULL);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1085,6 +1095,8 @@ wsmc_action_get_and_put(WsManClient * cl,
 	put_request = wsmc_create_request(cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, (void *) get_response);
+	if (!put_request)
+		return NULL;
 
 	wsmc_set_put_prop(get_response, put_request, options);
 	//ws_xml_destroy_doc(get_response);
@@ -1111,10 +1123,14 @@ wsmc_action_invoke(WsManClient * cl,
 	hscan_t         hs;
 	hnode_t        *hn;
 	WsXmlDocH       response;
+	WsXmlNodeH body = NULL;
         WsXmlDocH       request = wsmc_create_request(cl,
                 resource_uri, options,
                 WSMAN_ACTION_CUSTOM, (char *)method, NULL);
-	WsXmlNodeH body = ws_xml_get_soap_body(request);
+	if (!request)
+		return NULL;
+
+	body = ws_xml_get_soap_body(request);
 
 	if ((!options->properties ||
                     hash_count(options->properties) == 0) &&
@@ -1233,6 +1249,8 @@ wsmc_action_identify(WsManClient * cl,
 	WsXmlDocH       response;
 	WsXmlDocH       request = wsmc_create_request(cl, NULL, options,
 			WSMAN_ACTION_IDENTIFY, NULL, NULL);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;

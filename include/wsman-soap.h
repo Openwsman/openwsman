@@ -120,14 +120,13 @@ typedef struct __SoapOp *SoapOpH;
 struct __Soap {
 	/* do not move this field */
 	pthread_mutex_t lockData;
-	void           *parserData;
+	//void           *parserData;
 	unsigned long   uniqueIdCounter;
 
 	list_t         *inboundFilterList;
 	list_t         *outboundFilterList;
 
 	list_t         *dispatchList;
-	//list_t         *responseList;
 	list_t         *processedMsgIdList;
 
 	pthread_mutex_t lockSubs; //lock for Subscription Repository
@@ -137,14 +136,6 @@ struct __Soap {
 
 
 	WsContextH      cntx;
-	              //TBD clenn up and initilaize it;
-
-	//unsigned long   lastResponseListScanTicks;
-
-	              //TBD:? ? ? Make it thread and pass as parameters
-	//int             resendCount;
-	//unsigned long   resentTimeout[SOAP_MAX_RESENT_COUNT];
-
 	list_t         *WsSerializerAllocList;
 
 	void           *dispatcherData;
@@ -155,17 +146,9 @@ typedef struct __Soap *SoapH;
 
 struct _WsXmlDoc {
 	void           *parserDoc;
-	SoapH           fw;
 	unsigned long   prefixIndex; // to enumerate not well known namespaces
 };
 
-#if 0
-struct __DispatchResponse {
-	char           *buf;
-	int             httpCode;
-};
-typedef struct __DispatchResponse DispatchResponse;
-#endif
 
 struct _WS_CONTEXT_ENTRY {
 	lnode_t        *node;
@@ -277,7 +260,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_EVENTS_PENDING 4
 
 struct __WsEventBody {
-	char *EventAction;
+	u_buf_t *EventAction;
 	WsXmlDocH EventContent;
 	int droppedEvents;
 };

@@ -80,12 +80,6 @@ struct __WsXmlDumpNodeTreeData {
 };
 typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
-
-extern WsXmlNsData g_wsNsData[];
-extern WsManDialectData g_wsDialectData[];
-
-
-
 WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
 
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
@@ -94,7 +88,7 @@ WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node);
 
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 
-int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[]);
+int ws_xml_parser_initialize(SoapH soap);
 
 void ws_xml_parser_destroy(SoapH soap);
 
@@ -106,13 +100,12 @@ char *ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
 WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
 			   const char *encoding, unsigned long options);
+
 WsXmlDocH ws_xml_read_memory(SoapH soap, const char *buf, size_t size,
 			     const char *encoding, unsigned long options);
 
 WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
 			    const char *rootName);
-WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri,
-			   const char *prefix);
 
 int ws_xml_check_xpath(WsXmlDocH doc, const char *xpath_expr);
 
@@ -120,10 +113,7 @@ int ws_xml_utf8_strlen(char *buf);
 
 void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang);
 
-
-
 void ws_xml_unlink_node(WsXmlNodeH node);
-
 
 
 /** @} */

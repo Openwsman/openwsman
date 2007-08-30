@@ -55,15 +55,12 @@
 #include "wsman-xml-serialize.h"
 #include "wsman-soap-envelope.h"
 
-NameAliase *g_NameNameAliaseTable;
-
 struct __WsSerializerMemEntry {
 	WsContextH cntx;
 	char buf[1];
 };
+
 typedef struct __WsSerializerMemEntry WsSerializerMemEntry;
-
-
 
 void *xml_serializer_alloc(XmlSerializationData * data, int size,
 			   int zeroInit)
@@ -109,7 +106,7 @@ WsXmlNodeH xml_serializer_get_child(XmlSerializationData * data)
 	debug("name = %s:%s in %s [%d]", ns, name,
 	      ws_xml_get_node_local_name(data->xmlNode), data->index);
 	node = ws_xml_get_child(data->xmlNode, data->index, ns, name);
-
+#if 0
 	if (g_NameNameAliaseTable) {
 		int index = 0;
 		while (node == NULL &&
@@ -122,6 +119,7 @@ WsXmlNodeH xml_serializer_get_child(XmlSerializationData * data)
 			index++;
 		}
 	}
+#endif
 	debug("returned %p; %s",
 	      node, node ? ws_xml_get_node_local_name(node) : "");
 	TRACE_EXIT;

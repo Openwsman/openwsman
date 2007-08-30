@@ -320,8 +320,7 @@ static WsXmlNodeH validate_mustunderstand_headers(op_t * op)
 	}
 
 	if (child != NULL) {
-		debug("Mustunderstand Fault: %s",
-		      ws_xml_get_node_text(child));
+		debug("Mustunderstand Fault: %s", ws_xml_get_node_text(child));
 	}
 	return child;
 }

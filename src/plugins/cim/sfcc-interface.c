@@ -542,18 +542,13 @@ instance2xml(CimClientInfo * client,
 	WsXmlNodeH r;
 
 
-	WsXmlDocH doc = ws_xml_get_node_doc(body);
-	SoapH soap = ws_xml_get_doc_soap_handle(doc);
-
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	classname = objectpath->ft->getClassName(objectpath, NULL);
 	class_namespace = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
 
-	//r = ws_xml_add_child(body, NULL, final_class, NULL);
-
-	WsXmlDocH d = ws_xml_create_doc(soap, class_namespace, final_class);
+	WsXmlDocH d = ws_xml_create_doc(NULL, class_namespace, final_class);
 	u_free(final_class);
 	r = ws_xml_get_doc_root(d);
 	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);

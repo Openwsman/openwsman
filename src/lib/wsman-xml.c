@@ -57,16 +57,46 @@
  * @param buf Text buffer
  * @param bufsize Buffer size
  */
+struct __WsXmlNsData
+{
+    char* uri;
+    char* prefix;
+};
+typedef struct __WsXmlNsData WsXmlNsData;
+
+static WsXmlNsData     g_wsNsData[] =
+{
+	{XML_NS_SOAP_1_2, "s"},
+	{XML_NS_ADDRESSING, "wsa"},
+	{XML_NS_EVENTING, "wse"},
+	{XML_NS_ENUMERATION, "wsen"},
+	{XML_NS_SCHEMA_INSTANCE, "xsi"},
+	{XML_NS_CIM_SCHEMA, "cim"},
+	{XML_NS_WS_MAN_CAT, "cat"},
+	{XML_NS_WSMAN_ID, "wsmid"},
+	{XML_NS_XML_SCHEMA, "xs"},
+	{XML_NS_WS_MAN, "wsman"},
+	{XML_NS_CIM_BINDING, "wsmb"},
+	{XML_NS_OPENWSMAN, "owsman"},
+	{XML_NS_TRANSFER, "wxf"},
+	{NULL, NULL}
+};
+
 void
 ws_xml_make_default_prefix(WsXmlNodeH node,
 			   const char *uri, char *buf, int bufsize)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-	WsXmlNsH ns;
 
-	if (doc != NULL &&
-	    (ns = ws_xml_find_wk_ns(doc->fw, uri, NULL)) != NULL)
-		strncpy(buf, ws_xml_get_ns_prefix(ns), bufsize);
+	if (doc != NULL && uri != NULL) {
+		int i;
+		for (i = 0; g_wsNsData[i].uri != NULL; i++) {
+			WsXmlNsData *nsd = &g_wsNsData[i];
+			if (strcmp(uri, nsd->uri) == 0 ) {
+				sprintf(buf, "%s",  nsd->prefix );
+			}
+		}
+	}
 	else if (bufsize >= 12)
 		sprintf(buf, "n%lu", ++doc->prefixIndex);
 	else
@@ -195,25 +225,6 @@ void ws_xml_ns_enum(WsXmlNodeH node,
 }
 
 
-/**
- * Get the SOAP operation from the body of the envelope
- * @param doc The XML document containing the envelope
- * @return The XML node with the operation
- *
- */
-
-/*
-WsXmlNodeH ws_xml_get_soap_operation(WsXmlDocH doc)
-{
-    WsXmlNodeH node = NULL;
-    WsXmlNodeH body = ws_xml_get_soap_body(doc);
-
-    if ( body )
-        node = ws_xml_get_child(body, 0, NULL, NULL);
-
-    return node;
-}
-*/
 
 /**
  * Create an empty envelope with a <b>Header</b> and a <b>Body</b>
@@ -233,10 +244,8 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
 		WsXmlNodeH root = ws_xml_get_doc_root(doc);
 
 		if (root == NULL ||
-		    ws_xml_add_child(root, soapVersion, "Header",
-				     NULL) == NULL ||
-		    ws_xml_add_child(root, soapVersion, "Body",
-				     NULL) == NULL) {
+		    ws_xml_add_child(root, soapVersion, "Header", NULL) == NULL ||
+		    ws_xml_add_child(root, soapVersion, "Body", NULL) == NULL) {
 			ws_xml_destroy_doc(doc);
 			doc = NULL;
 		}
@@ -255,33 +264,28 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
 WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
 {
 	WsXmlDocH dst = NULL;
+	WsXmlNodeH srcRoot = NULL;
+	SoapH soap = NULL;
+	const char *name, *nsUri;
 
-	if (srcDoc) {
-		WsXmlNodeH srcRoot = ws_xml_get_doc_root(srcDoc);
-		if (srcRoot) {
-			SoapH soap = dstSoap;
-			const char *name =
-			    ws_xml_get_node_local_name(srcRoot);
-			const char *nsUri =
-			    ws_xml_get_node_name_ns(srcRoot);
+	if (!srcDoc)
+		return NULL;
+	srcRoot = ws_xml_get_doc_root(srcDoc);
+	if (!srcRoot)
+		return NULL;
+	soap = dstSoap;
+	name = ws_xml_get_node_local_name(srcRoot);
+	nsUri = ws_xml_get_node_name_ns(srcRoot);
+	if ((dst = ws_xml_create_doc(NULL, nsUri, name)) != NULL) {
+		int i;
+		WsXmlNodeH node;
+		WsXmlNodeH dstRoot =
+			ws_xml_get_doc_root(dst);
 
-			if (soap == NULL)
-				soap = ws_xml_get_doc_soap_handle(srcDoc);
-
-			if ((dst =
-			     ws_xml_create_doc(soap, nsUri,
-					       name)) != NULL) {
-				int i;
-				WsXmlNodeH node;
-				WsXmlNodeH dstRoot =
-				    ws_xml_get_doc_root(dst);
-
-				for (i = 0; (node = ws_xml_get_child(srcRoot,
-								i, NULL, NULL)) != NULL; i++) {
-					ws_xml_duplicate_tree(dstRoot,
-							      node);
-				}
-			}
+		for (i = 0; (node = ws_xml_get_child(srcRoot,
+						i, NULL, NULL)) != NULL; i++) {
+			ws_xml_duplicate_tree(dstRoot,
+					node);
 		}
 	}
 	return dst;
@@ -376,45 +380,6 @@ void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
 }
 
 
-#if 0
-
-/**
- * Find a text in an XML document
- * @param doc The XML document
- * @param nsUri Namespace URI
- * @param name Node name
- * @return found text
- */
-char *ws_xml_find_text_in_doc(WsXmlDocH doc, const char *nsUri,
-			      const char *name)
-{
-	WsXmlNodeH root = ws_xml_get_doc_root(doc);
-	return ws_xml_find_text_in_tree(root, nsUri, name, 1);
-}
-
-
-/**
- * Find a text in a XML tree
- * @param head The head node of the tree
- * @param nsUri Namespace URI
- * @param name Node name
- * @param bRecursive Recursive flag
- * @return found text
- */
-char *ws_xml_find_text_in_tree(WsXmlNodeH head, const char *nsUri,
-			       const char *name, int bRecursive)
-{
-	WsXmlNodeH node = head;
-
-	if (!ws_xml_is_node_qname(head, nsUri, name))
-		node = ws_xml_find_in_tree(head, nsUri, name, bRecursive);
-
-	if (node)
-		return ws_xml_get_node_text(node);
-
-	return NULL;
-}
-#endif
 
 /**
  * Free Memory
@@ -425,27 +390,11 @@ void ws_xml_free_memory(void *ptr)
 	xml_parser_free_memory(ptr);
 }
 
-/**
- * Get SOAP handle of an XML document
- * @param doc XML document
- * @return SOAP handle
- */
-SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc)
-{
-	SoapH soap = NULL;
-	if (doc)
-		soap = doc->fw;
-	return soap;
-}
-
-
-
 WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
 		const char *rootNsUri,
 		const char *rootName )
 {
-	SoapH soap = ws_xml_get_doc_soap_handle(doc);
-	return ws_xml_create_doc(soap, rootNsUri, rootName);
+	return ws_xml_create_doc(NULL, rootNsUri, rootName);
 }
 
 /**
@@ -453,51 +402,17 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-int ws_xml_parser_initialize(SoapH soap, WsXmlNsData nsData[])
+int ws_xml_parser_initialize(SoapH soap)
 {
-	int retVal = -1;
-	WsXmlParserData *parserData = NULL;
-
-	parserData = (WsXmlParserData *) u_zalloc(sizeof(WsXmlParserData));
-
-	if (soap != NULL && parserData) {
-		u_lock(soap);
-		xml_parser_initialize(soap);
-
-		parserData->nsHolder = ws_xml_create_doc(soap, NULL, "NsList");
-		if (parserData->nsHolder != NULL) {
-			WsXmlNodeH node = ws_xml_get_doc_root(parserData->nsHolder);
-			retVal = 0;
-			soap->parserData = parserData;
-			if (nsData) {
-				int i;
-				for (i = 0; nsData[i].uri != NULL; i++) {
-					WsXmlNsData *nsd = &nsData[i];
-					ws_xml_define_ns(node, nsd->uri, nsd->prefix, 0);
-				}
-			}
-		}
-		u_unlock(soap);
-	}
-
-	if (retVal != 0 && parserData) {
-		u_free(parserData);
-	}
-
+	int retVal = 1;
+	xml_parser_initialize(soap);
 	return retVal;
 }
 
 
 void ws_xml_parser_destroy(SoapH soap)
 {
-	if (soap && soap->parserData) {
-		u_lock(soap);
-		ws_xml_destroy_doc(((WsXmlParserData *) soap->parserData)->nsHolder);
-		xml_parser_destroy(soap);
-		u_free(soap->parserData);
-		soap->parserData = NULL;
-		u_unlock(soap);
-	}
+	xml_parser_destroy(soap);
 }
 
 
@@ -681,8 +596,7 @@ ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName)
 		error("No memory");
 		return NULL;
 	}
-	wsDoc->fw = soap;
-	if (xml_parser_create_doc(wsDoc, rootName) != 0) {
+	if (!xml_parser_create_doc(wsDoc, rootName) ) {
 		error("xml_parser_create_doc failed");
 		u_free(wsDoc);
 		return NULL;
@@ -693,7 +607,6 @@ ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName)
 	}
 
 	rootNode = ws_xml_get_doc_root((WsXmlDocH) wsDoc);
-
 
 	ws_xml_make_default_prefix(rootNode, rootNsUri, prefix,
 				   sizeof(prefix));
@@ -897,19 +810,6 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 }
 
 
-
-WsXmlNsH ws_xml_find_wk_ns(SoapH soap, const char *uri, const char *prefix)
-{
-	WsXmlNsH ns = NULL;
-	WsXmlParserData *data = (WsXmlParserData *) soap->parserData;
-	if (!soap)
-		return NULL;
-	if (data && data->nsHolder) {
-		WsXmlNodeH root = ws_xml_get_doc_root(data->nsHolder);
-		ns = ws_xml_find_ns(root, uri, prefix, 0);
-	}
-	return ns;
-}
 
 /**
  * Get SOAP envelope
@@ -1428,16 +1328,6 @@ void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang)
 {
 	xml_parser_node_set_lang(node, lang);
 }
-
-
-// Utitlities
-/*
-int is_root_node(WsXmlNodeH node)
-{
-    WsXmlNodeH root = ws_xml_get_doc_root(ws_xml_get_node_doc(node));
-    return (root == node);
-}
-*/
 
 
 void ws_xml_dump_node_tree(FILE * f, WsXmlNodeH node)
