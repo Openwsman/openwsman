@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libiconv\include;.\libxml2\include;.\src\lib;.\src\libu;.\src\cpp"
+				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libiconv\include;.\libxml2\include;.\src\lib;.\src\lib\u;.\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -109,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libxml2\include;.\src\lib;.\src\libu;.\src\cpp"
+				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libxml2\include;.\src\lib;.\src\lib\u;.\src\cpp"
 				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -159,55 +159,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\libu\base64.c"
+				RelativePath=".\src\lib\u\base64.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\buf.c"
+				RelativePath=".\src\lib\u\buf.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\debug.c"
+				RelativePath=".\src\lib\u\debug.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\dictionary.c"
+				RelativePath=".\src\lib\u\dictionary.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\gettimeofday.c"
+				RelativePath=".\src\lib\u\gettimeofday.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\hash.c"
+				RelativePath=".\src\lib\u\hash.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\iniparser.c"
+				RelativePath=".\src\lib\u\iniparser.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\list.c"
+				RelativePath=".\src\lib\u\list.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\lock.c"
+				RelativePath=".\src\lib\u\lock.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\log.c"
+				RelativePath=".\src\lib\u\log.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\md5.c"
+				RelativePath=".\src\lib\u\md5.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\memory.c"
+				RelativePath=".\src\lib\u\memory.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\misc.c"
+				RelativePath=".\src\lib\u\misc.c"
 				>
 			</File>
 			<File
@@ -215,35 +215,35 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\os.c"
+				RelativePath=".\src\lib\u\os.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\pthreadx_win32.c"
+				RelativePath=".\src\lib\u\pthreadx_win32.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\strings.c"
+				RelativePath=".\src\lib\u\strings.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\syslog.c"
+				RelativePath=".\src\lib\u\syslog.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\uerr.c"
+				RelativePath=".\src\lib\u\uerr.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\uoption.c"
+				RelativePath=".\src\lib\u\uoption.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\uri.c"
+				RelativePath=".\src\lib\u\uri.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\uuid.c"
+				RelativePath=".\src\lib\u\uuid.c"
 				>
 			</File>
 			<File
@@ -287,7 +287,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-xml-binding.c"
+				RelativePath=".\src\lib\wsman-libxml2-binding.c"
 				>
 			</File>
 			<File
@@ -305,23 +305,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\src\libu\u\base64.h"
+				RelativePath=".\include\u\base64.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\buf.h"
+				RelativePath=".\include\u\buf.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\carpal.h"
+				RelativePath=".\include\u\carpal.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\debug.h"
+				RelativePath=".\include\u\debug.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\dictionary.h"
+				RelativePath=".\include\u\dictionary.h"
 				>
 			</File>
 			<File
@@ -329,47 +329,47 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\gettimeofday.h"
+				RelativePath=".\include\u\gettimeofday.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\hash.h"
+				RelativePath=".\include\u\hash.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\iniparser.h"
+				RelativePath=".\include\u\iniparser.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\libu.h"
+				RelativePath=".\include\u\libu.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\list.h"
+				RelativePath=".\include\u\list.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\lock.h"
+				RelativePath=".\include\u\lock.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\log.h"
+				RelativePath=".\include\u\log.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\logprv.h"
+				RelativePath=".\include\u\logprv.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\md5.h"
+				RelativePath=".\include\u\md5.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\memory.h"
+				RelativePath=".\include\u\memory.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\misc.h"
+				RelativePath=".\include\u\misc.h"
 				>
 			</File>
 			<File
@@ -377,59 +377,59 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\os.h"
+				RelativePath=".\include\u\os.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\pthreadx.h"
+				RelativePath=".\include\u\pthreadx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\strings.h"
+				RelativePath=".\include\u\strings.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\strlib.h"
+				RelativePath=".\include\u\strlib.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\syslog.h"
+				RelativePath=".\include\u\syslog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\uerr.h"
+				RelativePath=".\include\u\uerr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\uoption.h"
+				RelativePath=".\include\u\uoption.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\uri.h"
+				RelativePath=".\include\u\uri.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\libu\u\uuid.h"
+				RelativePath=".\include\u\uuid.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-client-api.h"
+				RelativePath=".\include\wsman-client-api.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-client-transport.h"
+				RelativePath=".\include\wsman-client-transport.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-faults.h"
+				RelativePath=".\include\wsman-faults.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-xml-serialize.h"
+				RelativePath=".\include\wsman-xml-serialize.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-xml-serializer.h"
+				RelativePath=".\include\wsman-xml-serializer.h"
 				>
 			</File>
 			<File
