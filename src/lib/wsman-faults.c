@@ -394,7 +394,7 @@ WsmanFaultCodeTable fault_code_table[] =
     		WSE_INVALID_EXPIRATION_TIME,
 		WSMAN_ACTION_FAULT,
 		XML_NS_EVENTING,
-		FAULT_RECEIVER_CODE,
+		FAULT_SENDER_CODE,
 		"InvalidExpirationTime",
 		"The expiration time is invalid"
 
