@@ -47,7 +47,7 @@
 #include "wsman-dispatcher.h"
 
 #include "wsman-xml.h"
-#include "wsman-xml-serializer.h" 
+#include "wsman-xml-serializer.h"
 #include "wsman-soap-envelope.h"
 #include "wsman-soap-message.h"
 #include "wsman-faults.h"
@@ -58,7 +58,7 @@
 WsmanFaultDetailTable fault_detail_table[] =
 {
 	{ WSMAN_DETAIL_OK, NULL },
-	{ WSMAN_DETAIL_ACK, "Ack" }, 
+	{ WSMAN_DETAIL_ACK, "Ack" },
 	{ WSMAN_DETAIL_ACTION_MISMATCH, "ActionMismatch" },
 	{ WSMAN_DETAIL_ALREADY_EXISTS, "AlreadyExists" },
 	{ WSMAN_DETAIL_AMBIGUOUS_SELECTORS, "AmbigousSelectors" },
@@ -122,300 +122,300 @@ WsmanFaultDetailTable fault_detail_table[] =
 	// SOAP
 	{ SOAP_DETAIL_HEADER_NOT_UNDERSTOOD, "HeaderNotUnderstood" },
 
-	// OpenWSMAN 
+	// OpenWSMAN
 	{ OWSMAN_DETAIL_ENDPOINT_ERROR, "Unknown" },
-	{ OWSMAN_NO_DETAILS, "Unknown" }    
+	{ OWSMAN_NO_DETAILS, "Unknown" }
 };
 
 
 
 WsmanFaultCodeTable fault_code_table[] =
 {
-	{ 
+	{
 		SOAP_FAULT_MUSTUNDERSTAND,
 		WSA_ACTION_FAULT,
 		XML_NS_SOAP_1_2,
-		FAULT_MUSTUNDERSTAND_CODE,        
-		"", 
+		FAULT_MUSTUNDERSTAND_CODE,
+		"",
 		"The WS-Management service cannot process a SOAP header in the request that" \
 		"is marked as mustUnderstand by the client.  This could be caused by the use" \
 		"of a version of the protocol which is not supported, or may be an" \
 		"incompatibility  between the client and server implementations."
 	},
-	{ 
+	{
 		WSA_ENDPOINT_UNAVAILABLE,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
-		FAULT_SENDER_CODE,        
-		"EndpointUnavailable", 
+		FAULT_SENDER_CODE,
+		"EndpointUnavailable",
 		""
 	},
-	{ 
+	{
 		WSMAN_ACCESS_DENIED,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"AccessDenied", 
+		"AccessDenied",
 		"The sender was not authorized to access the resource."
 	},
-	{ 
+	{
 		WSA_ACTION_NOT_SUPPORTED,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
-		"ActionNotSupported", 
+		"ActionNotSupported",
 		"The action is not supported by the service."
 	},
-	{ 
+	{
 		WSMAN_ALREADY_EXISTS,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"AlreadyExists", 
+		"AlreadyExists",
 		"The sender attempted to create a resource which already exists."
 	},
-	{ 
+	{
 		WSEN_CANNOT_PROCESS_FILTER,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
-		"CannotProcessFilter", 
-		"The requested filter could not be processed." 
+		"CannotProcessFilter",
+		"The requested filter could not be processed."
 	},
-	{ 
+	{
 		WSMAN_CANNOT_PROCESS_FILTER,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"CannotProcessFilter", 
-		"The requested filter could not be processed." 
+		"CannotProcessFilter",
+		"The requested filter could not be processed."
 	},
-	{ 
+	{
 		WSMAN_CONCURRENCY,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"Concurrency", 
-		"The action could not be completed due to concurrency or locking problems." 
+		"Concurrency",
+		"The action could not be completed due to concurrency or locking problems."
 	},
-	{ 
+	{
 		WSMAN_CONCURRENCY,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"Concurrency", 
-		"The action could not be completed due to concurrency or locking problems." 
+		"Concurrency",
+		"The action could not be completed due to concurrency or locking problems."
 	},
-	{ 
+	{
 		WSA_DESTINATION_UNREACHABLE,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
-		"DestinationUnreachable", 
+		"DestinationUnreachable",
 		"No route can be determined to reach the destination role defined by the WS-Addressing To."
 	},
-	{ 
+	{
 		WSMAN_ENCODING_LIMIT,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"EncodingLimit", 
-		"An internal encoding limit was exceeded in a request or would be violated if the message were processed." 
+		"EncodingLimit",
+		"An internal encoding limit was exceeded in a request or would be violated if the message were processed."
 	},
-	{ 
+	{
 		WSA_ENDPOINT_UNAVAILABLE,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_RECEIVER_CODE,
-		"EndpointUnavailable", 
+		"EndpointUnavailable",
 		"The specified endpoint is currently unavailable."
 	},
-	{ 
+	{
 		WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
-		"FilterDialectRequestedUnavailable", 
-		"The requested filtering dialect is not supported." 
+		"FilterDialectRequestedUnavailable",
+		"The requested filtering dialect is not supported."
 	},
-	{ 
+	{
 		WSEN_FILTERING_NOT_SUPPORTED,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
-		"FilteringNotSupported", 
-		"Filtered enumeration is not supported." 
+		"FilteringNotSupported",
+		"Filtered enumeration is not supported."
 	},
-	{ 
+	{
 		WSMAN_FRAGMENT_DIALECT_NOT_SUPPORTED,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
-		"FragmentDialectNotSupported", 
-		"The requested fragment filtering dialect or language is not supported." 
+		"FragmentDialectNotSupported",
+		"The requested fragment filtering dialect or language is not supported."
 	},
-	{ 
+	{
 		WSMAN_INTERNAL_ERROR,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
-		"InternalError", 
-		"The service cannot comply with the request due to internal processing errors." 
+		"InternalError",
+		"The service cannot comply with the request due to internal processing errors."
 	},
-	{ 
+	{
 		WSEN_INVALID_ENUMERATION_CONTEXT,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
-		"InvalidEnumerationContext", 
-		"The supplied enumeration context is invalid." 
+		"InvalidEnumerationContext",
+		"The supplied enumeration context is invalid."
 	},
-	{ 
+	{
 		WSA_INVALID_MESSAGE_INFORMATION_HEADER,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
-		"InvalidMessageInformationHeader", 
+		"InvalidMessageInformationHeader",
 		"A message information header is not valid and the message cannot be processed."
 	},
-	{ 
+	{
 		WSMAN_INVALID_OPTIONS,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"InvalidOptions", 
-		"One or more options are not valid." 
+		"InvalidOptions",
+		"One or more options are not valid."
 	},
-	{ 
+	{
 		WSMAN_INVALID_PARAMETER,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"InvalidParameter", 
-		"An operation parameter is not valid." 
+		"InvalidParameter",
+		"An operation parameter is not valid."
 	},
-	{ 
+	{
 		WXF_INVALID_REPRESENTATION,
 		WSXF_ACTION_FAULT,
 		XML_NS_TRANSFER,
 		FAULT_SENDER_CODE,
-		"InvalidRepresentation", 
-		"The XML content is not valid." 
+		"InvalidRepresentation",
+		"The XML content is not valid."
 	},
-	{ 
+	{
 		WSMAN_INVALID_SELECTORS,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"InvalidSelectors", 
-		"The Selectors for the resource are not valid." 
+		"InvalidSelectors",
+		"The Selectors for the resource are not valid."
 	},
-	{ 
+	{
 		WSA_MESSAGE_INFORMATION_HEADER_REQUIRED,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
-		"MessageInformationHeaderRequired", 
+		"MessageInformationHeaderRequired",
 		"A required header is missing."
 	},
-	{ 
+	{
 		WSMAN_NO_ACK,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"NoAck", 
-		"The receiver did not acknowledge the event delivery." 
+		"NoAck",
+		"The receiver did not acknowledge the event delivery."
 	},
-	{ 
+	{
 		WSMAN_QUOTA_LIMIT,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"QuotaLimit", 
-		"The service is busy servicing other requests." 
+		"QuotaLimit",
+		"The service is busy servicing other requests."
 	},
-	{ 
+	{
 		WSMAN_SCHEMA_VALIDATION_ERROR,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"SchemaValidationError", 
-		"The supplied SOAP violates the corresponding XML schema definition." 
+		"SchemaValidationError",
+		"The supplied SOAP violates the corresponding XML schema definition."
 	},
-	{ 
+	{
 		WSEN_TIMED_OUT,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
-		"TimedOut", 
-		"The enumerator has timed out and is no longer valid." 
+		"TimedOut",
+		"The enumerator has timed out and is no longer valid."
 	},
-	{ 
+	{
 		WSMAN_TIMED_OUT,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
-		"TimedOut", 
-		"The operation has timed out." 
+		"TimedOut",
+		"The operation has timed out."
 	},
-	{ 
+	{
 		WSEN_UNSUPPORTED_EXPIRATION_TYPE,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
-		"UnsupportedExpirationType", 
-		"The specified expiration type is not supported." 
+		"UnsupportedExpirationType",
+		"The specified expiration type is not supported."
 	},
-	{ 
+	{
 		WSMAN_UNSUPPORTED_FEATURE,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
-		"UnsupportedFeature", 
-		"The specified feature is not supported." 
+		"UnsupportedFeature",
+		"The specified feature is not supported."
 	},
-	{ 
+	{
 		WSMAN_UNSUPPORTED_FEATURE,
 		WSMAN_ACTION_FAULT,
 		XML_NS_CIM_BINDING,
 		FAULT_RECEIVER_CODE,
-		"PolymorphismModeNotSupported", 
-		"The specified feature is not supported." 
+		"PolymorphismModeNotSupported",
+		"The specified feature is not supported."
 	},
-	{ 
+	{
     		WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
 		WSMB_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
-		"UnsupportedFeature", 
-		"The specified feature is not supported." 
+		"UnsupportedFeature",
+		"The specified feature is not supported."
 	},
     	{
     		WSE_INVALID_EXPIRATION_TIME,
 		WSMAN_ACTION_FAULT,
 		XML_NS_EVENTING,
 		FAULT_RECEIVER_CODE,
-		"Invalid expiration",
+		"InvalidExpirationTime",
 		"The expiration time is invalid"
-		
+
     	},
-	{ 
+	{
 		WSMAN_UNKNOWN,
 		NULL,
 		NULL,
 		NULL,
-		NULL, 
-		NULL 
+		NULL,
+		NULL
 	}
 };
 
 
 
-void 
-wsman_set_fault( WsmanMessage *msg, 
-		WsmanFaultCodeType fault_code, 
-		WsmanFaultDetailType fault_detail_code, 
-		const char *details) 
+void
+wsman_set_fault( WsmanMessage *msg,
+		WsmanFaultCodeType fault_code,
+		WsmanFaultDetailType fault_detail_code,
+		const char *details)
 {
 	if (!wsman_fault_occured(msg)) {
 		msg->status.fault_code = fault_code;
@@ -425,10 +425,10 @@ wsman_set_fault( WsmanMessage *msg,
 	return;
 }
 
-int 
-wsman_is_fault_envelope( WsXmlDocH doc ) 
+int
+wsman_is_fault_envelope( WsXmlDocH doc )
 {
-	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),  
+	WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
 			0 , XML_NS_SOAP_1_2 , SOAP_FAULT);
 	if ( node != NULL )
 		return 1;
@@ -437,7 +437,7 @@ wsman_is_fault_envelope( WsXmlDocH doc )
 }
 
 WsmanKnownStatusCode
-wsman_find_httpcode_for_value( WsXmlDocH doc ) 
+wsman_find_httpcode_for_value( WsXmlDocH doc )
 {
 	WsmanKnownStatusCode httpcode = 200;
 	char *xp = ws_xml_get_xpath_value(doc, FAULT_XPATH_EXPR );
@@ -458,10 +458,10 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faul
 	int i;
 	WsmanKnownStatusCode httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
 	int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
-	for (i = 0; i < nfaults; i++) 
-	{	
+	for (i = 0; i < nfaults; i++)
+	{
 		if (fault_code_table[i].fault_code == faultCode )
-		{  
+		{
 			if (strcmp(fault_code_table[i].code, FAULT_RECEIVER_CODE ) == 0) {
 				httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
 				break;
@@ -480,10 +480,10 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faul
 
 }
 
-WsXmlDocH 
-wsman_generate_fault( WsContextH cntx, 
-		WsXmlDocH in_doc, 
-		WsmanFaultCodeType faultCode, 
+WsXmlDocH
+wsman_generate_fault( WsContextH cntx,
+		WsXmlDocH in_doc,
+		WsmanFaultCodeType faultCode,
 		WsmanFaultDetailType faultDetail,
 		char *fault_msg)
 {
@@ -492,9 +492,9 @@ wsman_generate_fault( WsContextH cntx,
 	char *reason, *detail;
 
 	int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
-	for (i = 0; i < nfaults; i++) 
-	{	
-		if (fault_code_table[i].fault_code == faultCode ) {        
+	for (i = 0; i < nfaults; i++)
+	{
+		if (fault_code_table[i].fault_code == faultCode ) {
 			if (fault_msg!= NULL ) {
 				reason = fault_msg;
 			} else {
@@ -505,38 +505,38 @@ wsman_generate_fault( WsContextH cntx,
 				detail = fault_detail_table[faultDetail].detail;
 				//debug("Fault detail: %s", fault_detail_table[faultDetail].detail);
 			}
-			else 
+			else
 				detail = NULL;
 
 			fault =  wsman_create_fault_envelope(cntx, in_doc,
 					fault_code_table[i].code,
-					fault_code_table[i].subCodeNs,                 
+					fault_code_table[i].subCodeNs,
 					fault_code_table[i].subCode,
 					fault_code_table[i].fault_action,
 					NULL,
-					reason, 
+					reason,
 					detail);
 			break;
-		} 
+		}
 	}
-	return fault;                      
+	return fault;
 }
 
 
 
 void
-wsman_generate_fault_buffer ( WsContextH cntx, 
-		WsXmlDocH in_doc, 
-		WsmanFaultCodeType faultCode, 
-		WsmanFaultDetailType faultDetail, 
-		char * fault_msg, 
-		char **buf,  
+wsman_generate_fault_buffer ( WsContextH cntx,
+		WsXmlDocH in_doc,
+		WsmanFaultCodeType faultCode,
+		WsmanFaultDetailType faultDetail,
+		char * fault_msg,
+		char **buf,
 		int* len)
-{	
+{
 
-	WsXmlDocH doc = wsman_generate_fault(cntx, in_doc, faultCode, faultDetail, fault_msg);   
+	WsXmlDocH doc = wsman_generate_fault(cntx, in_doc, faultCode, faultDetail, fault_msg);
 	debug( "Fault Code: %d", faultCode);
-	ws_xml_dump_memory_enc(doc, buf, len, NULL);	
+	ws_xml_dump_memory_enc(doc, buf, len, NULL);
 	ws_xml_destroy_doc(doc);
 	return;
 }
@@ -545,8 +545,8 @@ wsman_generate_fault_buffer ( WsContextH cntx,
 
 
 
-int 
-wsman_fault_occured(WsmanMessage *msg) 
+int
+wsman_fault_occured(WsmanMessage *msg)
 {
 	return (msg->status.fault_code == WSMAN_RC_OK ) ?  0 : 1;
 }
