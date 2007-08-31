@@ -344,7 +344,6 @@ struct __WsSubscribeInfo {
 	char *	soapNs;
 	char *	uri;
 	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
-	WsXmlDocH referenceParam;
 	char * locale; // language code
 	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
 	unsigned long expires;

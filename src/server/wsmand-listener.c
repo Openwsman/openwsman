@@ -313,7 +313,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	return n;
 }
 
-static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEntryH entry)
+static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEntryH entry, int subsNum)
 {
 	WsmanMessage *wsman_msg = wsman_soap_message_new();
 	if(wsman_msg == NULL) return;
@@ -321,12 +321,14 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 	u_buf_construct(wsman_msg->request, strdoc, strlen(strdoc)+1, strlen(strdoc)+1);
 	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
 	wsman_soap_message_destroy(wsman_msg);
-	lnode_t *node = list_last(cntx->soap->subscriptionMemList);
-	WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
-	//Delete new subscription file coz in fact we've got it
-	cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
-	//Update UUID in the memory
-	strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
+	if(list_count(cntx->soap->subscriptionMemList) > subsNum) {
+		lnode_t *node = list_last(cntx->soap->subscriptionMemList);
+		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
+		//Delete new subscription file coz in fact we've got it
+		cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
+		//Update UUID in the memory
+		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
+	}
 }
 
 static void listener_shutdown_handler(void *p)
@@ -527,7 +529,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 		while(node) {
 			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
 			debug("load subscription %s", entry->uuid);
-			wsmand_start_notification_manager(cntx, entry);
+			wsmand_start_notification_manager(cntx, entry, list_count(cntx->soap->subscriptionMemList));
 			u_free(entry->uuid);
 			u_free(entry);
 			list_delete(subs_list, node);
@@ -535,6 +537,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 			node = list_first(subs_list);
 		}
 	}
+	list_destroy(subs_list);
 #ifdef MULTITHREADED_SERVER
 	int r;
 	int sock;
