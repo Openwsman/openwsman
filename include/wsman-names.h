@@ -270,6 +270,7 @@
 #define WSEVENT_IDENTIFIER		"Identifier"
 #define WSEVENT_FILTER			"Filter"
 #define WSEVENT_DIALECT		"Dialect"
+#define WSEVENT_ACTION_FAULT	"http://schemas.xmlsoap.org/ws/2004/08/eventing/fault"
 
 //WS-Eventing delivery mode
 #define WSEVENT_DELIVERY_MODE_PUSH "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
