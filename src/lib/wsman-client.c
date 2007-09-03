@@ -655,7 +655,8 @@ wsman_set_subscribe_options(WsManClient * cl,
 	WsXmlNodeH filter = NULL;
 	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
 	WsXmlNodeH temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
-	WsXmlNodeH node2;
+	WsXmlNodeH node2 = NULL;
+	WsXmlNodeH node3 = NULL;
 	char buf[32];
 	if(temp) {
 		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, wsmc_create_delivery_mode_str(options->delivery_mode));
@@ -665,8 +666,13 @@ wsman_set_subscribe_options(WsManClient * cl,
 			snprintf(buf, 32, "PT%fS", options->heartbeat_interval);
 			ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_HEARTBEATS, buf);
 		}
-		if(options->reference)
-			ws_xml_add_child(temp, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, options->reference);
+		if(options->reference) {
+			WsXmlDocH doc = ws_xml_read_memory(NULL, options->reference, strlen(options->reference), "UTF-8", 0);
+			node3 = ws_xml_get_doc_root(doc);
+			temp = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, NULL);
+			if(temp) 
+				ws_xml_duplicate_children(temp, node3);
+		}
 	}
 
 	snprintf(buf, 32, "PT%fS", options->expires);

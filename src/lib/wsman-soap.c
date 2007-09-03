@@ -1506,8 +1506,12 @@ create_subs_info(SoapOpH op,
 		}
 		str = ws_xml_get_node_text(ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS));
 		debug("event sink: %s", str);
-		if(str)
+		if(str && strcmp(str, ""))
 			subsInfo->epr_notifyto = u_strdup(str);
+		else {
+			fault_code = WSE_INVALID_MESSAGE;
+		}
+			
 	}
 	wsman_parse_event_request(indoc, subsInfo);
 	if (msg->auth_data.username != NULL) {
@@ -1987,7 +1991,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, u
 {
 	int retVal = 0;
 	if(outdoc == NULL) return 0;
-#if 0
+#if 1
 	char *buf = NULL;
 	int len;
 	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
