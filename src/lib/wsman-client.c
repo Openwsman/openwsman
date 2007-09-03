@@ -660,7 +660,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 	if(temp) {
 		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, wsmc_create_delivery_mode_str(options->delivery_mode));
 		node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
-		ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_TO, options->delivery_uri);
+		ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		if(options->heartbeat_interval) {
 			snprintf(buf, 32, "PT%fS", options->heartbeat_interval);
 			ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_HEARTBEATS, buf);

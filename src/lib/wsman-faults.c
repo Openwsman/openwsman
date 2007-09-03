@@ -392,12 +392,20 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
     	{
     		WSE_INVALID_EXPIRATION_TIME,
-		WSMAN_ACTION_FAULT,
+		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
 		FAULT_SENDER_CODE,
 		"InvalidExpirationTime",
 		"The expiration time is invalid"
 
+    	},
+    	{
+		WSE_INVALID_MESSAGE,
+		WSEVENT_ACTION_FAULT,
+		XML_NS_EVENTING,
+		FAULT_SENDER_CODE,
+		"InvalidMessage",
+		"The request message has unknown or invalid content and cannot be processed."
     	},
 	{
 		WSMAN_UNKNOWN,

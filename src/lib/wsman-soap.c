@@ -1504,7 +1504,7 @@ create_subs_info(SoapOpH op,
 			fault_code = WSE_INVALID_MESSAGE;
 			goto DONE;
 		}
-		str = ws_xml_get_node_text(ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_TO));
+		str = ws_xml_get_node_text(ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS));
 		debug("event sink: %s", str);
 		if(str)
 			subsInfo->epr_notifyto = u_strdup(str);
