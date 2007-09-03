@@ -87,7 +87,7 @@ ws_xml_make_default_prefix(WsXmlNodeH node,
 			   const char *uri, char *buf, int bufsize)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-	int i;
+	int i = 0;
 	if (doc != NULL && uri != NULL) {
 		for (i = 0; g_wsNsData[i].uri != NULL; i++) {
 			WsXmlNsData *nsd = &g_wsNsData[i];
