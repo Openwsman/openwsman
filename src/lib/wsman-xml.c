@@ -87,17 +87,17 @@ ws_xml_make_default_prefix(WsXmlNodeH node,
 			   const char *uri, char *buf, int bufsize)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-
+	int i;
 	if (doc != NULL && uri != NULL) {
-		int i;
 		for (i = 0; g_wsNsData[i].uri != NULL; i++) {
 			WsXmlNsData *nsd = &g_wsNsData[i];
 			if (strcmp(uri, nsd->uri) == 0 ) {
 				sprintf(buf, "%s",  nsd->prefix );
+				return;
 			}
 		}
 	}
-	else if (bufsize >= 12)
+	if(g_wsNsData[i].uri == NULL && bufsize >= 12)
 		sprintf(buf, "n%lu", ++doc->prefixIndex);
 	else
 		buf[0] = 0;

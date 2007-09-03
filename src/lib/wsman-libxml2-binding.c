@@ -607,10 +607,9 @@ make_new_xml_node(xmlNodePtr base,
 {
 	xmlNodePtr newNode = NULL;
 	xmlNsPtr ns = NULL;
-
 	if (uri == NULL ||
 			(ns =
-			 (xmlNsPtr) xml_parser_ns_find((WsXmlNodeH) base, uri, name, 1,
+			 (xmlNsPtr) xml_parser_ns_find((WsXmlNodeH) base, uri, NULL, 1,
 				 1)) != NULL) {
 		if ((newNode = xmlNewNode(ns, BAD_CAST name)) != NULL) {
 			if (value != NULL)
