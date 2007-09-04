@@ -350,7 +350,7 @@ struct __WsSubscribeInfo {
 	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription.
 	                                         Implied value is 'http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push',
 	                                         which indicates that Push Mode delivery should be used. */
-	unsigned long	connectionRetryCount; // count of connection retry
+	unsigned int	connectionRetryCount; // count of connection retry
 	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
 	unsigned long heartbeatInterval; //Interval to send a heartbeart
 	unsigned char eventSentLastTime; //To indicate whether an event is sent since last heartbeat

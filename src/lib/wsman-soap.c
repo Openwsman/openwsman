@@ -48,7 +48,9 @@
 #include "wsman-soap-envelope.h"
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
-#include "wsman-client-transport.h"
+
+#include <curl/curl.h>
+#include <curl/easy.h>
 
 
 static int
@@ -1467,14 +1469,15 @@ create_subs_info(SoapOpH op,
 				str = ws_xml_get_attr_value(attr);
 				subsInfo->connectionRetryCount = atol(str);
 			}
-			if(str[0]=='P'){
+			str = ws_xml_get_node_text(temp);
+			if(str && str[0]=='P'){
 				//  xml duration
 				if (ws_deserialize_duration(str, &timeout)) {
 					fault_code = WSEN_INVALID_EXPIRATION_TIME;
 					goto DONE;
 				}
 				debug("connect retry= %ul", timeout);
-				subsInfo->connectionRetryinterval = timeout * 1000;
+				subsInfo->connectionRetryinterval = timeout;
 			}
 		}
 		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_LOCALE);
@@ -1987,28 +1990,126 @@ static void delete_notification_info(WsNotificationInfoH notificationInfo) {
 	}
 }
 
-static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, unsigned char acked)
+static size_t
+response_handler( void *ptr, size_t size, size_t nmemb, void *data)
+{
+	u_buf_t *buf = data;
+	size_t len;
+
+	len = size * nmemb;
+	u_buf_append(buf, ptr, len);
+	debug("response_handler: thread %p recieved %d bytes\n", pthread_self(), len, u_buf_len(buf));
+	return len;
+}
+
+static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, WsSubscribeInfo *subsInfo, unsigned char acked)
 {
 	int retVal = 0;
 	if(outdoc == NULL) return 0;
-#if 1
+	CURL *curl;
+	CURLcode r = CURLE_OK;
+	struct curl_slist *headers=NULL;
 	char *buf = NULL;
+	u_buf_t *response = NULL;
+	u_buf_create(&response);
 	int len;
-	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
-	debug("notification [%s] sent, len = %d", buf, len);
-	ws_xml_free_memory(buf);
-#endif
-/*	WsXmlDocH response;
-	WsManClient *cl = wsmc_create_from_uri(cntx->subsInfo->epr_notifyto);
-	if(wsman_send_request(cl, outdoc) ==0 && acked) {
-		response = wsmc_build_envelope_from_response(cl);
-		if(response == NULL) retVal = WSE_NOTIFICATION_NOACK;
-		else {
+	curl = curl_easy_init();
+	if (curl == NULL) {
+		debug("Could not init easy curl");
+		retVal = -1;
+		goto DONE;
+	}
+/*	r = curl_easy_setopt(curl, CURLOPT_TIMEOUT, DEFAULT_NOTIFICATION_SENDEING_TIMEOUT);
+	if (r != 0) {
+		debug("CURLOPT_TIMEOUT set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+*/	r = curl_easy_setopt(curl, CURLOPT_URL, subsInfo->epr_notifyto);
+	if(r != 0) {
+		debug("CURLOPT_URL set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+	r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, response_handler);
+	if (r != 0) {
+		debug("CURLOPT_WRITEFUNCTION set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+	if (r != CURLE_OK) {
+		debug("CURLOPT_WRITEDATA set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+	headers = curl_slist_append(headers,
+			"Content-Type: application/soap+xml;charset=UTF-8");
+	headers = curl_slist_append(headers, "User-Agent: openwsman");
 
+	r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+	if (r != CURLE_OK) {
+		debug("CURLOPT_HTTPHEADER set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
+	
+	debug("notification [%s] sent, len = %d", buf, len);	
+	
+	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
+	if (r != CURLE_OK) {
+		debug("CURLOPT_POSTFIELDS set failed: %s", curl_easy_strerror(r));
+		retVal = -1;
+		goto DONE;
+	}
+	unsigned int i = subsInfo->connectionRetryCount;
+	do {
+		r = curl_easy_perform(curl);
+		if (r == CURLE_OK) 
+			break;
+		else {
+			debug("curl_easy_perform failed, %s", curl_easy_strerror(r));
+			if(i == 0) {
+				break;
+			}
+		}
+		if(subsInfo->connectionRetryinterval) sleep(subsInfo->connectionRetryinterval);
+		i--;
+        } while(1);
+	if(acked) {
+		retVal = WSE_NOTIFICATION_NOACK;
+		if(r != CURLE_OK) {
+			goto DONE;
+		}
+		debug("response data: %s", u_buf_ptr(response));
+		WsXmlDocH ackdoc = ws_xml_read_memory(NULL, u_buf_ptr(response), u_buf_len(response), "UTF-8", 0);
+		if(ackdoc) {
+			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
+			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
+			WsXmlNodeH temp = NULL;
+			srcnode = ws_xml_get_child(srcnode, 0, WSA_ADDRESS, WSA_MESSAGE_ID);
+			if(node) {
+				temp = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_RELATES_TO);
+				if(temp) {
+					if(!strcasecmp(ws_xml_get_node_text(srcnode),
+						ws_xml_get_node_text(temp))) {
+						node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ACTION);
+						if(!strcasecmp(ws_xml_get_node_text(node), WSMAN_ACTION_ACK))
+							retVal = 0;
+					}
+						
+				}
+			}
+			ws_xml_destroy_doc(ackdoc);
 		}
 	}
-	wsmc_release(cl);
-*/	return retVal;
+DONE:
+	ws_xml_free_memory(buf);
+	curl_slist_free_all(headers);
+	u_buf_free(response);
+	return retVal;
 }
 
 
@@ -2024,11 +2125,11 @@ void * wse_notification_sender(void * thrdcntx)
 		if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL)) {
 			if (!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) ||
 				!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PUSHWITHACK)){
-				if(wse_send_notification(threadcntx, subsInfo->notificationDoc, 1) == WSE_NOTIFICATION_NOACK)
+				if(wse_send_notification(threadcntx, subsInfo->notificationDoc, subsInfo, 1) == WSE_NOTIFICATION_NOACK)
 					subsInfo->flags |= WSMAN_SUBSCRIPTION_CANCELLED;
 			}
 			else
-				wse_send_notification(threadcntx, subsInfo->notificationDoc, 0);
+				wse_send_notification(threadcntx, subsInfo->notificationDoc, subsInfo, 0);
 			ws_xml_destroy_doc(subsInfo->notificationDoc);
 			subsInfo->notificationDoc = NULL;
 		}
@@ -2058,6 +2159,7 @@ void wse_notification_manager(void * cntx)
 	SoapH soap = contex->soap;
 	pthread_t eventsender;
 	pthread_attr_t pattrs;
+	char uuidBuf[50];
 	int r;
 	if ((r = pthread_attr_init(&pattrs)) != 0) {
 		debug("pthread_attr_init failed = %d", r);
@@ -2097,6 +2199,8 @@ void wse_notification_manager(void * cntx)
 		notificationDoc = ws_xml_duplicate_doc(soap, subsInfo->templateDoc);
 		header = ws_xml_get_soap_header(notificationDoc);
 		body = ws_xml_get_soap_body(notificationDoc);
+		generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+		ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
 		threadcntx = ws_create_event_thread_context(soap, subsInfo);
 		retVal = subsInfo->eventproc(threadcntx, notificationInfo);
 		u_free(threadcntx);
