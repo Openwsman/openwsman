@@ -2053,7 +2053,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 		retVal = -1;
 		goto DONE;
 	}
-	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
 	
 	debug("notification [%s] sent, len = %d", buf, len);	
@@ -2089,7 +2089,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
 			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
 			WsXmlNodeH temp = NULL;
-			srcnode = ws_xml_get_child(srcnode, 0, WSA_ADDRESS, WSA_MESSAGE_ID);
+			srcnode = ws_xml_get_child(srcnode, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
 			if(node) {
 				temp = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_RELATES_TO);
 				if(temp) {
