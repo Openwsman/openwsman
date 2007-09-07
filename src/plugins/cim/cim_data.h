@@ -83,9 +83,6 @@ int CimResource_UnSubscribe_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
 		WsmanStatus *status,
 		void *opaqueData);
 
-int CimResource_Evt_Pull_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
-                WsmanStatus *status,
-                void *opaqueData);
 
 //A thread to be created when subscription is handled successfully
 int CimResource_EventThread_EP(WsEventThreadContextH cntx, WsNotificationInfoH notificationinfo);

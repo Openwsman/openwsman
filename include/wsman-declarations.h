@@ -111,9 +111,6 @@
 {WS_DISP_TYPE_RENEW,NULL,NULL,EVT_ACTION_RENEW, NULL,	\
 	t##_TypeInfo,(WsProcType)t##_Renew_EP,ns,NULL}
 
-#define END_POINT_EVT_PULL(t,ns)		\
-{WS_DISP_TYPE_EVT_PULL,NULL,NULL,EVT_ACTION_PULL, NULL,	\
-	t##_TypeInfo,(WsProcType)t##_Evt_Pull_EP,ns,NULL}
 
 #define END_POINT_PRIVATE_EP(t, ns)                \
   { WS_DISP_TYPE_PRIVATE, NULL, NULL, a, NULL,           \

@@ -162,13 +162,4 @@ int WsManTest_UnSubscribe_EP(WsContextH cntx,
 	return 0;
 }
 
-int WsManTest_Evt_Pull_EP(WsContextH cntx,
-		WsSubscribeInfo* subsInfo,
-		WsmanStatus *status,
-		void *opaqueData)
-{
-	return 0;
-}
-
-
 

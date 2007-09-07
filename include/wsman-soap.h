@@ -44,7 +44,7 @@
 #include "wsman-xml-api.h"
 
 #define SOAP_MAX_RESENT_COUNT       10
-
+#define PEDNING_EVENT_MAX_COUNT	10
 
 
 #define WS_DISP_TYPE_MASK               0xffff
@@ -260,7 +260,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_EVENTS_PENDING 4
 
 struct __WsEventBody {
-	u_buf_t *EventAction;
+	char *EventAction;
 	WsXmlDocH EventContent;
 	int droppedEvents;
 };
@@ -360,9 +360,9 @@ struct __WsSubscribeInfo {
 	WsmanAuth       auth_data;
 	WsEndPointNotificationManager eventproc; // plugin related event retriever
 	WsXmlDocH templateDoc; //template notificaiton document
-	WsXmlDocH notificationDoc; //single notification document to be sent
 	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
 	list_t * notificationDocList; //to store pending notification soap documents
+	list_t * pull_notificationDocList; //to store pending pull soap documents
 };
 
 
@@ -526,6 +526,8 @@ void wsman_heartbeat_generator(WsContextH cntx, void *opaqueData);
 WsEventThreadContextH ws_create_event_thread_context(SoapH soap, WsSubscribeInfo *subsInfo);
 
 void * wse_notification_sender(void * thrdcntx);
+
+void *wse_heartbeat_sender(void * thrdcntx);
 
 void wse_notification_manager(void * cntx);
 

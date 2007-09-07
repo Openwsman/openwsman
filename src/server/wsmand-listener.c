@@ -331,6 +331,26 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 	}
 }
 
+static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
+{
+	int retVal = 0;
+	WsXmlDocH doc = ws_xml_read_memory(soap, entry->strdoc, strlen(entry->strdoc), "UTF-8", 0);
+	if(doc) {
+		WsXmlNodeH node = ws_xml_get_soap_body(doc);
+		if(node) {
+			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
+			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
+			if(node == NULL) { //No specified expiration, delete it
+				debug("subscription %s deleted from the repository", entry->uuid);
+				soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
+				retVal = 1;
+			}
+		}
+		ws_xml_destroy_doc(doc);
+	}
+	return retVal;
+}
+
 static void listener_shutdown_handler(void *p)
 {
 	int *a = (int *) p;
@@ -528,8 +548,10 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 		lnode_t *node = list_first(subs_list);
 		while(node) {
 			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
-			debug("load subscription %s", entry->uuid);
-			wsmand_start_notification_manager(cntx, entry, list_count(cntx->soap->subscriptionMemList));
+			if(wsmand_clean_subsrepository(cntx->soap, entry) == 0) {
+				debug("load subscription %s", entry->uuid);
+				wsmand_start_notification_manager(cntx, entry, list_count(cntx->soap->subscriptionMemList));
+			}
 			u_free(entry->uuid);
 			u_free(entry);
 			list_delete(subs_list, node);

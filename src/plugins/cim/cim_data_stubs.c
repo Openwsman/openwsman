@@ -706,12 +706,4 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 {
 	return 0;
 }
-
-int CimResource_Evt_Pull_EP(WsContextH cntx,
-		WsSubscribeInfo* subsInfo,
-		WsmanStatus *status,
-		void *opaqueData)
-{
-	return 0;
-}
 //#ifdef ENABLE_EVENTING_SUPPORT
