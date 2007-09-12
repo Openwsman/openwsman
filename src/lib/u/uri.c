@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
 static const char rcsid[] =
@@ -143,7 +143,7 @@ int u_uri_parse(const char *s, u_uri_t ** pu)
 	uri_string = u_strdup(s);
 	/*
 	   end = strchr (uri_string, '#');
-	   if (!end) 
+	   if (!end)
 	 */
 	end = uri_string + strlen(uri_string);
 	question = memchr(uri_string, '?', end - uri_string);
@@ -220,6 +220,8 @@ hash_t *u_parse_query(const char *query)
 
 		/* zero-term the name part and set the value pointer */
 		*val++ = 0;
+		u_trim(key);
+		u_trim(val);
 		if (u_string_unify(key) || u_string_unify(val)) {
 			u_free(key);
 			dbg("Could not unify query: %s", tok);
