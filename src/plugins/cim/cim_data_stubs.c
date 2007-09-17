@@ -637,7 +637,7 @@ CimResource_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH 
 	return retval;
 }
 
-int 
+int
 CimResource_Subscribe_EP(WsContextH cntx,
 		WsSubscribeInfo* subsInfo,
 		WsmanStatus *status,
@@ -672,10 +672,10 @@ CimResource_Subscribe_EP(WsContextH cntx,
 // to do here: create indication filter here and something else necessary
 	subsInfo->eventproc = CimResource_EventThread_EP;
 
-/*	
+/*
 	nodeH = ws_xml_get_child(nodeH, 0, XML_NS_EVENTING, WSEVENT_FILTER);
 	if (nodeH) {
-			char *attrVal = ws_xml_find_attr_value(nodeH, 
+			char *attrVal = ws_xml_find_attr_value(nodeH,
 					NULL, WSM_DIALECT);
 			if ( attrVal && strcmp(attrVal,WSM_ASSOCIATION_FILTER_DIALECT) == 0 ) {
 				wsman_parse_assoc_filter(cntx, nodeH, &subsInfo->filter, &subsInfo->flags);

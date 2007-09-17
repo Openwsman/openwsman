@@ -69,6 +69,7 @@ epr_t *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 	const char *epr_node_name, const char *ns);
 
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data);
+char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
 
 #endif

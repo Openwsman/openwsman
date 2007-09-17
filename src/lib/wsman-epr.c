@@ -87,6 +87,32 @@ epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 }
 
 
+char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
+{
+	int i;
+	char *value = NULL;
+	XML_NODE_ATTR *a;
+	Selector *ss =
+		(Selector *) epr->refparams.selectorset.selectors.data;
+	if (ss == NULL) {
+			debug("epr->refparams.selectors.data == NULL\n");
+		return;
+	}
+	for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+		Selector *s;
+		s = ss + i;
+		a = s->attrs;
+		while (a) {
+			if (strcmp(a->name, WSM_NAME) == 0 && strcmp(a->value, name) == 0 ) {
+				value =  u_strdup(s->value);
+				break;
+			}
+			a = a->next;
+		}
+	}
+	return value;
+}
+
 
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 {

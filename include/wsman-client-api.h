@@ -542,7 +542,7 @@ typedef enum {
 	WsXmlDocH wsmc_action_renew(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
 				 const char *uuid);
-	
+
 
 	/**
 	 * Send a Pull request
@@ -705,6 +705,10 @@ typedef enum {
 
 	void wsmc_set_options_from_uri(const char *resource_uri,
 					client_opt_t * options);
+
+	void wsmc_set_filter(const char *filter, client_opt_t * options);
+
+	void wsmc_set_dialect(const char *dialect, client_opt_t * options);
 
 	void wsmc_add_selector(client_opt_t * options,
 				       const char *key, const char *value);

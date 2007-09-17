@@ -296,7 +296,7 @@ wsmc_options_destroy(client_opt_t * op)
 		hash_free(op->properties);
 	}
 	u_free(op->filter);
-	u_free(op->dialect);
+	//u_free(op->dialect);
 	u_free(op->fragment);
 	u_free(op->cim_ns);
 	u_free(op);
@@ -485,6 +485,18 @@ wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 }
 
 void
+wsmc_set_filter(const char *filter, client_opt_t * options)
+{
+	options->filter = u_strdup(filter);
+}
+
+void
+wsmc_set_dialect(const char *dialect, client_opt_t * options)
+{
+	options->dialect = u_strdup(dialect);
+}
+
+void
 wsmc_add_selector_from_uri(WsXmlDocH doc,
 		const char *resource_uri)
 {
@@ -670,7 +682,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			WsXmlDocH doc = ws_xml_read_memory(NULL, options->reference, strlen(options->reference), "UTF-8", 0);
 			node3 = ws_xml_get_doc_root(doc);
 			temp = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, NULL);
-			if(temp) 
+			if(temp)
 				ws_xml_duplicate_children(temp, node3);
 		}
 	}

@@ -1,0 +1,59 @@
+
+
+#include "wsman-api.h"
+
+
+char *_identify(WsManClient * cl, client_opt_t * options, char *encoding);
+char *_pull(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding);
+char *_release(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding);
+char *_enumerate(WsManClient * cl, const char *resource_uri, client_opt_t * options,  char *encoding);
+char *_get(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
+void _set_assoc_filter(client_opt_t *options);
+
+char *_identify(WsManClient * cl, client_opt_t * options, char *encoding) {
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc = wsmc_action_identify(cl, options);
+	ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+	ws_xml_destroy_doc(doc);
+	return buf;
+}
+char *_enumerate(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding) {
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc  = wsmc_action_enumerate(cl, resource_uri,options);
+	ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+	ws_xml_destroy_doc(doc);
+	return buf;
+}
+char *_pull(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding) {
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc  = wsmc_action_pull(cl, resource_uri,options, enumContext);
+	ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+	ws_xml_destroy_doc(doc);
+	return buf;
+}
+char *_release(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding) {
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc  = wsmc_action_release(cl, resource_uri,options, enumContext);
+	ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+	ws_xml_destroy_doc(doc);
+	return buf;
+}
+char *_get(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding) {
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc  = wsmc_action_get(cl, resource_uri, options);
+	ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+	ws_xml_destroy_doc(doc);
+	return buf;
+}
+
+
+
+void _set_assoc_filter(client_opt_t *options) {
+	wsmc_set_action_option(options, FLAG_CIM_ASSOCIATORS);
+	return;
+}
