@@ -19,7 +19,6 @@ WSM_ASSOCIATION_FILTER_DIALECT  =  "http://schemas.dmtf.org/wbem/wsman/1/cimbind
 namespaces =  { "s": NS_SOAP_12 ,"wsa": NS_WS_ADDRESSING , "wsen": NS_WS_ENUMERATION,
 		            "wxf": NS_WS_TRANSFER,"wsman": NS_WS_MANAGEMENT , "fabrikam": FABRIKAM}
 
-url = "http://wsman:secret@localhost:8889/wsman"
 allclass =  "http://schemas.dmtf.org/wbem/wscim/1/*"
 
 class EndPointReference:
