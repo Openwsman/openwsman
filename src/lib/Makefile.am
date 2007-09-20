@@ -1,9 +1,12 @@
 AM_CFLAGS = @CFLAGS@ -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\""
 
+if DISABLE_SERVER
+else
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
 	wsman-plugins.c \
-    	wsman-server-api.c
+    wsman-server-api.c
+endif
 
 
 UTIL_SOURCES = u/buf.c  \
@@ -54,15 +57,22 @@ libwsman_la_LDFLAGS= -version-info 1:0
 libwsman_client_la_LIBADD = $(LIBS) libwsman_curl_client_transport.la
 libwsman_client_la_LDFLAGS= -version-info 1:0
 
+if DISABLE_SERVER
+else
 libwsman_server_la_LIBADD = -ldl
 libwsman_server_la_LDFLAGS= -version-info 1:0
+endif
 
 
 lib_LTLIBRARIES = \
 		 libwsman.la \
 		 libwsman_curl_client_transport.la \
-		 libwsman_client.la \
-		 libwsman_server.la
+		 libwsman_client.la 
+		 
+if DISABLE_SERVER
+else
+lib_LTLIBRARIES += libwsman_server.la
+endif
 
 EXTRA_DIST = \
 	wsman-win-client-transport.c
