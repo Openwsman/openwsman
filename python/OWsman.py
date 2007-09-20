@@ -32,6 +32,22 @@ class EndPointReference:
     	def setReferenceParameters(self, value):
         	self._ReferenceParameters = value
 
+	def toxml(self, rootElement , rootNs):
+		root = ElementTree.Element("{" + rootNs + "}" + rootElement)
+		address = ElementTree.SubElement(root, "{" + NS_WS_ADDRESSING + "}Address")
+		address.text = self._Address
+		param = ElementTree.SubElement(root, "{" + NS_WS_ADDRESSING + "}ReferenceParameters")
+		ruri = ElementTree.SubElement(param, "{" + NS_WS_MANAGEMENT + "}ResourceURI")
+		ruri.text = self._ReferenceParameters._resource_uri
+		sset = ElementTree.SubElement(param, "{" + NS_WS_MANAGEMENT + "}SelectorSet")
+		selectors = self._ReferenceParameters._selector_set
+		for selector in selectors.keys():
+			s = ElementTree.SubElement(sset, "{" + NS_WS_MANAGEMENT + "}Selector")
+			s.set("Name", selector)
+			s.text = selectors[selector]
+
+		return root
+
 
 class ReferenceParameters:
     	def setResourceURI(self, value):
@@ -43,19 +59,23 @@ class ReferenceParameters:
 
 
 class WsmanClient:
-	def __init__(self):
+	def __init__(self, hostname, port , path, scheme, username, password):
 		self.uri = None
-		self.hostname = None
-		self.port = None
-		self.path = None
-		self.scheme = None
-		self.username = None
-		self.password = None
-	def create(self, hostname, port , path, scheme, username, password):
+		self.hostname = hostname
+		self.port = port
+		self.path = path
+		self.scheme = scheme
+		self.username = username
+		self.password = password
 		self.hdl = OpenWSMan.wsmc_create(hostname, port , path, scheme, username, password)
 	def create_from_uri(self, uri):
 		self.hdl = OpenWSMan.wsmc_create_from_uri(uri)
 
+class WsmanException(Exception):
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+	    	return repr(self.value)
 
 class Wsman:
 	namespaces =  { "s": NS_SOAP_12 ,"wsa": NS_WS_ADDRESSING , "wsen": NS_WS_ENUMERATION,
@@ -72,6 +92,16 @@ class Wsman:
 	def GetItems(self, xmlresp):
 		items = xmlresp.xpath("/s:Envelope/s:Body/wsen:PullResponse/wsen:Items/*", self.namespaces )
 		return items
+
+	def Epr(self):
+		epr = EndPointReference()
+		param = ReferenceParameters()
+		epr.setAddress( "%s://%s:%d/wsman" %(self.cl.scheme, self.cl.hostname, self.cl.port ) )
+		param.setResourceURI(self.resource_uri)
+		param.setSelectorSet(self.get_selectors())
+		epr.setReferenceParameters(param)
+		return epr
+
 
 	def Identify(self):
 		op = OpenWSMan.wsmc_options_init()
@@ -99,23 +129,116 @@ class Wsman:
 
 		return items
 
+        def Get(self, selectors):
+                resp = Wsman.Get(self, self.resource_uri, selectors)
+                env = ElementTree.parse(StringIO(resp))
+                self.xmlresp = env.xpath("//s:Body/*", self.namespaces)[0]
+                self._set()
+                self.resource_uri = self.xmlresp.nsmap[self.xmlresp.prefix]
+
+	def Invoke(self, ruri, method, selectors, input):
+		op = OpenWSMan.wsmc_options_init()
+		for x in selectors.keys():
+			OpenWSMan.wsmc_add_selector(op, x, selectors[x])
+		resp = None
+		try:
+			print input
+			resp = OpenWSMan._invoke(self.cl.hdl, ruri, op, method, input, len(input), self.encoding)
+			print resp
+			code = OpenWSMan.wsmc_get_response_code(self.cl.hdl)
+			if (code != 200): raise WsmanException(code)
+		except WsmanException, e:
+			env = ElementTree.parse(StringIO(resp))
+			subcode = env.xpath("//s:Body/s:Fault/s:Code/s:Subcode/s:Value", self.namespaces)[0]
+			reason = env.xpath("//s:Body/s:Fault/s:Reason/s:Text", self.namespaces)[0]
+			if subcode.text:
+				print "Wsman Exception: %s" % subcode.text
+			if reason.text:
+				print "Reason: %s" % reason.text
+			print
+			exit()
+		return resp
+
+	def Put(self, ruri, selectors, input):
+		op = OpenWSMan.wsmc_options_init()
+		for x in selectors.keys():
+			OpenWSMan.wsmc_add_selector(op, x, selectors[x])
+		resp = None
+		try:
+			print input
+			resp = OpenWSMan._put(self.cl.hdl, ruri, op, input, len(input), self.encoding)
+			print resp
+			code = OpenWSMan.wsmc_get_response_code(self.cl.hdl)
+			if (code != 200): raise WsmanException(code)
+		except WsmanException, e:
+			env = ElementTree.parse(StringIO(resp))
+			subcode = env.xpath("//s:Body/s:Fault/s:Code/s:Subcode/s:Value", self.namespaces)[0]
+			reason = env.xpath("//s:Body/s:Fault/s:Reason/s:Text", self.namespaces)[0]
+			if subcode.text:
+				print "Wsman Exception: %s" % subcode.text
+			if reason.text:
+				print "Reason: %s" % reason.text
+			print
+			exit()
+		return resp
+
+
 	# FIXME
 	def Associations(self, object):
 		path = obgect.getpath()
 		items = Wsman.Enumerate(self, allclass, dialect=WSM_ASSOCIATION_FILTER_DIALECT, assoc=True , filter=path)
 		return items
 
-	def Get(self, ruri, selectors):
+	def Get(self, ResourceURI=None, Selectors={}):
 		op = OpenWSMan.wsmc_options_init()
-		for x in selectors.keys():
-			OpenWSMan.wsmc_add_selector(op, x, selectors[x])
-		resp = OpenWSMan._get(self.cl.hdl, ruri, op, self.encoding)
+		for selector in Selectors.keys():
+			OpenWSMan.wsmc_add_selector(op, selector, Selectors[selector])
+		if ResourceURI is not None:
+			self.resource_uri = ResourceURI
+		resp = OpenWSMan._get(self.cl.hdl, self.resource_uri, op, self.encoding)
 		return resp
+
 	def get_from_epr(self, epr):
 		resp = Wsman.Get(self, epr._ReferenceParameters._resource_uri, epr._ReferenceParameters._selector_set)
 		env = ElementTree.parse(StringIO(resp))
 		self.xmlresp = env.xpath("//s:Body/*", self.namespaces)[0]
 		self._set()
+
+        def get_array_value(self, prop):
+                arr = []
+                for el in self.xmlresp.getiterator():
+                        res = self.xmlresp.xpath(el.prefix + ":" + prop , el.nsmap )
+                        if isinstance(res, list) and len(res) > 0 :
+                                for i in res:
+                                        arr.append(i.text)
+                                return arr
+                return arr
+
+        def get_value(self, prop):
+                for el in self.xmlresp.getiterator():
+                        res = self.xmlresp.xpath(el.prefix + ":" + prop , el.nsmap )
+                        if isinstance(res, list) and len(res) > 0 :
+                                return res[0].text
+                        else:
+                                return None
+
+        def _getObject(self, classname, arg):
+                exec "from %s import %s" %(classname, classname)
+                exec "c = %s(self.cl)" %(classname)
+                return c
+
+        def _getClassName(self, epr):
+                ruri = epr._ReferenceParameters._resource_uri
+                clsname_split = ruri.split('/')
+                clsname = clsname_split[len(clsname_split)-1]
+                return clsname
+
+        def dump(self, indent=""):
+                print indent + "Instance of " + self.resource_uri + " {"
+                self.dump_properties(indent)
+                print indent + "}"
+
+
 
 	def get_epr(self, xmlresp , prop):
 		for el in xmlresp.getiterator():
@@ -142,3 +265,29 @@ class Wsman:
 				return epr
 			else:
 				return None
+
+
+	def get_textual_value(self, key, val, isKey=False, array=False, valueMap={}, indent=""):
+		if not val:
+			if array:
+				return indent + "  " + key + ": []"
+			else:
+				return indent + "  " + key + ": "
+
+		if array:
+			arr = ""
+			for b in val:
+				if valueMap.has_key(b):
+					arr =  arr + valueMap[b] + ", "
+				else:
+					arr = arr + b + ",  "
+			return indent + "  " + key + ": [  " + arr + "]"
+		else:
+			if valueMap.has_key(val):
+				st =  valueMap[val]
+				return indent + "  " + key + ": " + st
+			else:
+				if isKey:
+					return indent + "  [" + key + "]: " + val
+				else:
+					return indent + "  " + key + ": " + val
