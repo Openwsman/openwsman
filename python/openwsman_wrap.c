@@ -2722,6 +2722,60 @@ SWIG_FromCharPtr(const char *cptr)
 }
 
 
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val) 
+{
+  if (PyInt_Check(obj)) {
+    long v = PyInt_AsLong(obj);
+    if (v >= 0) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      return SWIG_OverflowError;
+    }
+  } else if (PyLong_Check(obj)) {
+    unsigned long v = PyLong_AsUnsignedLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    unsigned long v = PyLong_AsUnsignedLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      double d;
+      int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
+      if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, ULONG_MAX)) {
+	if (val) *val = (unsigned long)(d);
+	return res;
+      }
+    }
+  }
+#endif
+  return SWIG_TypeError;
+}
+
+
+SWIGINTERNINLINE int
+SWIG_AsVal_size_t (PyObject * obj, size_t *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long (obj, val ? &v : 0);
+  if (SWIG_IsOK(res) && val) *val = (size_t)(v);
+  return res;
+}
+
+
   #define SWIG_From_long   PyInt_FromLong 
 
 #ifdef __cplusplus
@@ -3242,6 +3296,225 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap__delete(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  WsManClient *arg1 = (WsManClient *) 0 ;
+  char *arg2 = (char *) 0 ;
+  client_opt_t *arg3 = (client_opt_t *) 0 ;
+  char *arg4 = (char *) 0 ;
+  char *result = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:_delete",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_WsManClient, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "_delete" "', argument " "1"" of type '" "WsManClient *""'"); 
+  }
+  arg1 = (WsManClient *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "_delete" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_client_opt_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "_delete" "', argument " "3"" of type '" "client_opt_t *""'"); 
+  }
+  arg3 = (client_opt_t *)(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "_delete" "', argument " "4"" of type '" "char *""'");
+  }
+  arg4 = (char *)(buf4);
+  result = (char *)_delete(arg1,(char const *)arg2,arg3,arg4);
+  resultobj = SWIG_FromCharPtr((const char *)result);
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap__invoke(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  WsManClient *arg1 = (WsManClient *) 0 ;
+  char *arg2 = (char *) 0 ;
+  client_opt_t *arg3 = (client_opt_t *) 0 ;
+  char *arg4 = (char *) 0 ;
+  char *arg5 = (char *) 0 ;
+  size_t arg6 ;
+  char *arg7 = (char *) 0 ;
+  char *result = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  int res5 ;
+  char *buf5 = 0 ;
+  int alloc5 = 0 ;
+  size_t val6 ;
+  int ecode6 = 0 ;
+  int res7 ;
+  char *buf7 = 0 ;
+  int alloc7 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOO:_invoke",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_WsManClient, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "_invoke" "', argument " "1"" of type '" "WsManClient *""'"); 
+  }
+  arg1 = (WsManClient *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "_invoke" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_client_opt_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "_invoke" "', argument " "3"" of type '" "client_opt_t *""'"); 
+  }
+  arg3 = (client_opt_t *)(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "_invoke" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = (char *)(buf4);
+  res5 = SWIG_AsCharPtrAndSize(obj4, &buf5, NULL, &alloc5);
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "_invoke" "', argument " "5"" of type '" "char const *""'");
+  }
+  arg5 = (char *)(buf5);
+  ecode6 = SWIG_AsVal_size_t(obj5, &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "_invoke" "', argument " "6"" of type '" "size_t""'");
+  } 
+  arg6 = (size_t)(val6);
+  res7 = SWIG_AsCharPtrAndSize(obj6, &buf7, NULL, &alloc7);
+  if (!SWIG_IsOK(res7)) {
+    SWIG_exception_fail(SWIG_ArgError(res7), "in method '" "_invoke" "', argument " "7"" of type '" "char *""'");
+  }
+  arg7 = (char *)(buf7);
+  result = (char *)_invoke(arg1,(char const *)arg2,arg3,(char const *)arg4,(char const *)arg5,arg6,arg7);
+  resultobj = SWIG_FromCharPtr((const char *)result);
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  if (alloc5 == SWIG_NEWOBJ) free((char*)buf5);
+  if (alloc7 == SWIG_NEWOBJ) free((char*)buf7);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  if (alloc5 == SWIG_NEWOBJ) free((char*)buf5);
+  if (alloc7 == SWIG_NEWOBJ) free((char*)buf7);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap__put(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  WsManClient *arg1 = (WsManClient *) 0 ;
+  char *arg2 = (char *) 0 ;
+  client_opt_t *arg3 = (client_opt_t *) 0 ;
+  char *arg4 = (char *) 0 ;
+  size_t arg5 ;
+  char *arg6 = (char *) 0 ;
+  char *result = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  size_t val5 ;
+  int ecode5 = 0 ;
+  int res6 ;
+  char *buf6 = 0 ;
+  int alloc6 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:_put",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_WsManClient, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "_put" "', argument " "1"" of type '" "WsManClient *""'"); 
+  }
+  arg1 = (WsManClient *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "_put" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_client_opt_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "_put" "', argument " "3"" of type '" "client_opt_t *""'"); 
+  }
+  arg3 = (client_opt_t *)(argp3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "_put" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = (char *)(buf4);
+  ecode5 = SWIG_AsVal_size_t(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "_put" "', argument " "5"" of type '" "size_t""'");
+  } 
+  arg5 = (size_t)(val5);
+  res6 = SWIG_AsCharPtrAndSize(obj5, &buf6, NULL, &alloc6);
+  if (!SWIG_IsOK(res6)) {
+    SWIG_exception_fail(SWIG_ArgError(res6), "in method '" "_put" "', argument " "6"" of type '" "char *""'");
+  }
+  arg6 = (char *)(buf6);
+  result = (char *)_put(arg1,(char const *)arg2,arg3,(char const *)arg4,arg5,arg6);
+  resultobj = SWIG_FromCharPtr((const char *)result);
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  if (alloc6 == SWIG_NEWOBJ) free((char*)buf6);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  if (alloc4 == SWIG_NEWOBJ) free((char*)buf4);
+  if (alloc6 == SWIG_NEWOBJ) free((char*)buf6);
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_wsmc_add_selector(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   client_opt_t *arg1 = (client_opt_t *) 0 ;
@@ -3322,6 +3595,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"_release", _wrap__release, METH_VARARGS, NULL},
 	 { (char *)"_enumerate", _wrap__enumerate, METH_VARARGS, NULL},
 	 { (char *)"_get", _wrap__get, METH_VARARGS, NULL},
+	 { (char *)"_delete", _wrap__delete, METH_VARARGS, NULL},
+	 { (char *)"_invoke", _wrap__invoke, METH_VARARGS, NULL},
+	 { (char *)"_put", _wrap__put, METH_VARARGS, NULL},
 	 { (char *)"wsmc_add_selector", _wrap_wsmc_add_selector, METH_VARARGS, NULL},
 	 { (char *)"wsmc_get_response_code", _wrap_wsmc_get_response_code, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }

@@ -60,6 +60,9 @@ _pull = _OpenWSMan._pull
 _release = _OpenWSMan._release
 _enumerate = _OpenWSMan._enumerate
 _get = _OpenWSMan._get
+_delete = _OpenWSMan._delete
+_invoke = _OpenWSMan._invoke
+_put = _OpenWSMan._put
 wsmc_add_selector = _OpenWSMan.wsmc_add_selector
 wsmc_get_response_code = _OpenWSMan.wsmc_get_response_code
 
