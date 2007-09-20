@@ -786,7 +786,7 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	struct tm tm;
 	localtime_r(&t, &tm);
 	int gmtoffset_hour = (time_t)__timezone/3600;
-	int gmtoffset_minute = (time_t)__timezone%60;
+	int gmtoffset_minute = ((time_t)__timezone - gmtoffset_hour * 3600 ) /60;
 	if(gmtoffset_hour > 0)
 		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
@@ -1595,7 +1595,9 @@ create_subs_info(SoapOpH op,
 		}
 			
 	}
-	wsman_parse_event_request(indoc, subsInfo);
+	if(wsman_parse_event_request(indoc, subsInfo, &fault_code, &fault_detail_code)) {
+		goto DONE;
+	}
 	if (msg->auth_data.username != NULL) {
 		subsInfo->auth_data.username =
 				u_strdup(msg->auth_data.username);
@@ -1699,7 +1701,8 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	body = ws_xml_get_soap_body(doc);
 	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
 	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
-	ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
+	if(subsInfo->expires)
+		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
 	if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL))
 		ws_xml_add_child_format(inNode, XML_NS_ENUMERATION, 
 		WSENUM_ENUMERATION_CONTEXT, "uuid:%s", subsInfo->subsId);

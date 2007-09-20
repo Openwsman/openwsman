@@ -723,9 +723,39 @@ int wsman_parse_enum_request(WsContextH cntx,
 	}
 	return 1;
 }
-
-
-int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo)
+/*
+static char *xpathtowql(char *prefix, char *classname, char *str) 
+{
+	char wql[512];
+	int count = 0;
+	int n = 0;
+	char * p = NULL;
+	memset(wql, 0, 512);
+	n = snprintf(wql, 512, "select * from %s where", classname);
+	if(n > 0) count += n;
+	while(*str == ' ' && *str!='\0') str++; 
+	if(*str == '.' && *(str+1) == '[') {
+		*str = 0x20; 
+		*(str+1) = 0x20;
+	}
+	if((p = strstr(str, "]"))) *p= ' ';
+	p = str;
+	int k;
+	while((p = strstr(p, prefix))) {
+		k = 0;
+		while(k < strlen(prefix) + 1) {
+			*p = 0x20;
+			p++;
+			k++;
+		}
+	}
+	strncat(wql, str, 512-count);
+	p = u_strdup(wql);
+	return p;
+}
+*/
+int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode, 
+	WsmanFaultDetailType *detailcode)
 {
 	WsXmlNodeH node;
 	if (!doc)
@@ -746,11 +776,9 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo)
 			 WsXmlAttrH attr = ws_xml_get_node_attr(filter, 0);
 			 char *attrname = NULL;
 			 if(attr) attrname = ws_xml_get_attr_name(attr);
-			 if(strcmp(attrname, WSM_DIALECT) == 0 || attr == NULL) {
+			 if(attr && strcmp(attrname, WSM_DIALECT) == 0) {
 			 	attrVal = ws_xml_get_attr_value(attr);
-				if (strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 || 
-					strcmp(attrVal, WSM_XPATH_EVENTROOT_FILTER) == 0 ||
-					strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
+				if (	strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
 					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
 					!attrVal) {
 					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
@@ -762,26 +790,53 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo)
 					else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 )
 						subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
 				}
+				else {
+					*faultcode = WSE_FILTERING_NOT_SUPPORTED;
+					return -1;
+				}
 			 }
 			 else {
-			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
+			 	*faultcode = WSE_FILTERING_NOT_SUPPORTED;
+				return -1;
+/*			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
 				attrname = ws_xml_get_attr_name(attr);
 				attrVal = ws_xml_get_attr_value(attr);
 				if(!strcasecmp(ns, "xmlns") && !strcmp(attrVal, subsInfo->uri)) {
 					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-					f->query = u_strdup(ws_xml_get_node_text(filter));
+					ns = strrchr(attrVal, '/');
+					if(ns) {
+						f->query = xpathtowql(attrname, ns+1, ws_xml_get_node_text(filter));
+					}
 					debug("Xpath filter: %s", f->query );
+					if(f->query == NULL) {
+						*faultcode = WSE_FILTERING_NOT_SUPPORTED;
+						return -1;
+					}
 					subsInfo->filter = f;
+					subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
 				}
-			 }
+				else {
+					*faultcode = WSE_FILTERING_NOT_SUPPORTED;
+					return -1;
+				}
+*/			 }
+
+		}
+		else {
+			*faultcode = WSE_INVALID_MESSAGE;
+			return -1;
 		}
 	}
 	else {
 		node = ws_xml_get_soap_header(doc);
 		if(ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET))
 			subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
+		else {
+			*faultcode = WSE_INVALID_MESSAGE;
+			return -1;
+		}
 	}
-	return 1;
+	return 0;
 }
 
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,

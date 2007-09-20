@@ -400,6 +400,14 @@ WsmanFaultCodeTable fault_code_table[] =
 
     	},
     	{
+    		WSE_FILTERING_NOT_SUPPORTED,
+		WSEVENT_ACTION_FAULT,
+		XML_NS_EVENTING,
+		FAULT_SENDER_CODE,
+		"FilteringNotSupported",
+		"Filtering over the event source is not supported"
+    	},
+    	{
 		WSE_INVALID_MESSAGE,
 		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
