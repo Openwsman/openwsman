@@ -29,6 +29,12 @@ char *_pull(WsManClient * cl, const char *resource_uri, client_opt_t * options, 
 char *_release(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding);
 char *_enumerate(WsManClient * cl, const char *resource_uri, client_opt_t * options,  char *encoding);
 char *_get(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
+char *_delete(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
+char *_invoke(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *method, const char *data, size_t size, char *encoding);
+
+char *_put(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *data, size_t size, char *encoding);
+
+
 void wsmc_add_selector(client_opt_t * options, const char *key, const char *value);
 
 long wsmc_get_response_code(WsManClient * cl);
