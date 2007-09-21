@@ -5,7 +5,7 @@ else
 libwsman_server_la_SOURCES = \
 	wsman-server.c  \
 	wsman-plugins.c \
-    wsman-server-api.c
+    	wsman-server-api.c
 endif
 
 
@@ -28,7 +28,8 @@ libwsman_la_SOURCES = \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
 	wsman-soap-message.c \
-	wsman-subscription-repository.c 
+	wsman-subscription-repository.c \
+	wsman-event-source.c
 
 
 libwsman_curl_client_transport_la_SOURCES = \

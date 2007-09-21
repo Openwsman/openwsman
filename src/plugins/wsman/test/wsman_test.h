@@ -83,7 +83,7 @@ int WsManTest_Evt_Pull_EP(WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData);
 int
-WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo);
+WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx);
 
 
 

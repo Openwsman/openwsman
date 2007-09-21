@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+* Copyright (C) 2004-2007 Intel Corp. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,23 +29,49 @@
 *******************************************************************************/
 
 /**
- * @author Anas Nashif
  * @author Liang Hou
  */
+ 
+#ifndef WSMAN_EVENT_SOURCE_H_
+#define WSMAN_EVENT_SOURCE_H_
 
-#ifndef WSMAN_SERVER_H_
-#define WSMAN_SERVER_H_
+#define EUIDLEN		64
 
-#include "wsman-plugins.h"
-#include "wsman-subscription-repository.h"
-#include "wsman-event-source.h"
-int continue_working;
+struct _WsXmlDoc;
 
-WsContextH wsman_init_plugins(WsManListenerH *listener);
-SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri);
-EventSourceOpSetH wsman_init_event_source(WsContextH cntx, void*data);
-WsManListenerH *wsman_dispatch_list_new(void);
-void *wsman_server_auxiliary_loop_thread(void *arg);
-void *wsman_notification_manager(void *arg);
+
+struct __WsNotificationInfo {
+	struct _WsXmlDoc *headerOpaqueData; //header content
+	char *EventAction; //event action URL
+	struct _WsXmlDoc *EventContent; //event content
+};
+typedef struct __WsNotificationInfo * WsNotificationInfoH;
+
+/*to store events for a subscription*/
+struct __event_entry {
+   char subscription_id[EUIDLEN]; //to identify the event entry
+   list_t *event_content_list; //a list holds __WsNotificationInfo
+};
+typedef struct __event_entry *event_entryH;
+
+typedef void (*clearproc) (WsNotificationInfoH);
+
+typedef int (*EventSourceInit) (void *);
+typedef int (*EventSourceFinalize) (void *);
+typedef int (*EventSourceAddEvent) (char *, WsNotificationInfoH);
+typedef int (*EventSourceAddPullEvent) (char *, WsNotificationInfoH);
+typedef int (*EventSourceGetAndDeleteEvent) (char *, WsNotificationInfoH*);
+typedef int (*EventSourceClearEvent) (char *, clearproc);
+
+/*Event Source Function Table*/
+struct __EventSourceOpSet {
+	EventSourceInit init;
+	EventSourceFinalize finalize;
+	EventSourceAddEvent add;
+	EventSourceAddPullEvent addpull;
+	EventSourceGetAndDeleteEvent delete;
+	EventSourceClearEvent clear;
+};
+typedef struct __EventSourceOpSet *EventSourceOpSetH;
 
 #endif

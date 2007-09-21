@@ -54,6 +54,9 @@
 #include "sfcc-interface.h"
 #include "cim-interface.h"
 
+#define SYSTEMCREATIONCLASSNAME "CIM_ComputerSystem"
+#define SYSTEMNAME "localhost.localdomain"
+
 typedef struct _sfcc_enumcontext {
 	CimClientInfo *ecClient;
 	CMPIEnumeration *ecEnumeration;
@@ -1514,6 +1517,8 @@ void cim_delete_instance(CimClientInfo * client, WsmanStatus * status)
 	debug("deleteInstance() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	cim_to_wsman_status(rc, status);
+	if (rc.msg)
+		CMRelease(rc.msg);
 	if (objectpath)
 		CMRelease(objectpath);
       cleanup:
@@ -1522,9 +1527,9 @@ void cim_delete_instance(CimClientInfo * client, WsmanStatus * status)
 }
 
 
-void
-cim_get_instance(CimClientInfo * client,
-		 WsContextH cntx, WsXmlNodeH body, WsmanStatus * status)
+CMPIInstance *
+cim_get_instance_from_selectors(CimClientInfo * client,
+		 WsContextH cntx, WsmanStatus * status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
@@ -1550,24 +1555,328 @@ cim_get_instance(CimClientInfo * client,
 	instance = cc->ft->getInstance(cc, objectpath,
 				       CMPI_FLAG_DeepInheritance, NULL,
 				       &rc);
-	if (instance) {
-		instance2xml(client, instance, body, NULL);
-	}
 	/* Print the results */
 	debug("getInstance() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	cim_to_wsman_status(rc, status);
+	if (rc.msg)
+		CMRelease(rc.msg);
 cleanup:
+	if (objectpath)
+		CMRelease(objectpath);
+	if (class)
+		CMRelease(class);
+	return instance;
+
+}
+
+void
+cim_get_instance(CimClientInfo * client,
+		 WsContextH cntx, WsXmlNodeH body, WsmanStatus * status)
+{
+	CMPIInstance *instance = cim_get_instance_from_selectors(client, cntx, status);
+	if(instance) {
+		instance2xml(client, instance, body, NULL);
+		CMRelease(instance);
+	}
+}
+
+static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
+{
+	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(client->cim_namespace,
+				       "CIM_IndicationFilter", rc);
+	CMAddKey(objectpath_filter, "SystemCreationClassName",
+		SYSTEMCREATIONCLASSNAME, CMPI_chars);
+	CMAddKey(objectpath_filter, "SystemName",
+		SYSTEMNAME, CMPI_chars);
+	CMAddKey(objectpath_filter, "CreationClassName",
+		"CIM_IndicationFilter", CMPI_chars);
+	CMAddKey(objectpath_filter, "Name",
+			 uuid, CMPI_chars);
+	return objectpath_filter;
+}
+
+static CMPIObjectPath *cim_indication_handler_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
+{
+	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(client->cim_namespace,
+				       "CIM_IndicationHandlerCIMXML", rc);
+	CMAddKey(objectpath_handler, "SystemCreationClassName",
+		SYSTEMCREATIONCLASSNAME, CMPI_chars);
+	CMAddKey(objectpath_handler, "SystemName",
+		SYSTEMNAME, CMPI_chars);
+	CMAddKey(objectpath_handler, "CreationClassName",
+		"CIM_IndicationHandlerCIMXML", CMPI_chars);
+	CMAddKey(objectpath_handler, "Name",
+			 uuid, CMPI_chars);
+	return objectpath_handler;
+}
+
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querystring, 
+	char *querylanguage, char *uuid, WsmanStatus *status)
+{
+	CMPIInstance *instance = NULL;
+	CMPIObjectPath *objectpath = NULL;
+	CMPIObjectPath *objectpath_r = NULL;
+	CMPIStatus rc;
+
+	CMCIClient *cc = (CMCIClient *) client->cc;
+
+	objectpath = cim_indication_filter_objectpath(client, uuid, &rc);
+	if(rc.rc) goto cleanup;
+	CMAddKey(objectpath, "Query",
+			querystring, CMPI_chars);
+	CMAddKey(objectpath, "QueryLanguage",
+			querylanguage, CMPI_chars);
+	instance = newCMPIInstance(objectpath, NULL); 
+	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
+cleanup:
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else {
+		cim_to_wsman_status(rc, status);
+	}
+	/* Print the results */
+	debug("create CIM_IndicationFilter() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	cim_to_wsman_status(rc, status);
+	if (rc.msg)
+		CMRelease(rc.msg);
+	if (objectpath_r)
+		CMRelease(objectpath_r);
+	if (instance)
+		CMRelease(instance);
+	return objectpath;
+}
+
+CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid, WsmanStatus *status)
+{
+	CMPIInstance *instance = NULL;
+	CMPIObjectPath *objectpath = NULL;
+	CMPIObjectPath *objectpath_r = NULL;
+	CMPIStatus rc;
+
+	CMCIClient *cc = (CMCIClient *) client->cc;
+
+	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
+	if(rc.rc) goto cleanup;
+	char serverpath[128];
+//	snprintf(serverpath, 128, "http://localhost:%s/eventhandler/uuid:%s", 
+//		get_server_port(),
+//		uuid);
+	snprintf(serverpath, 128, "http://localhost:%s/wsman", get_server_port());
+	CMPIValue value;
+	value.uint16 = 2;
+	CMAddKey(objectpath, "Destination",
+			serverpath, CMPI_chars);
+	CMAddKey(objectpath, "PersistenceType",
+			&value, CMPI_uint16);
+	instance = newCMPIInstance(objectpath, NULL); 
+	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
+cleanup:
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else {
+		cim_to_wsman_status(rc, status);
+	}
+	/* Print the results */
+	debug("create CIM_IndicationHandlerCIMXML() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	cim_to_wsman_status(rc, status);
+	if (rc.msg)
+		CMRelease(rc.msg);
+	if (objectpath_r)
+		CMRelease(objectpath_r);
+	if (instance)
+		CMRelease(instance);
+	return objectpath;
+}
+
+static void getcurrentdatetime(char *str)
+{
+	struct timeval tv;
+	struct tm tm;
+	gettimeofday(&tv, NULL);
+	localtime_r(&tv.tv_sec, &tm);
+	int gmtoffset_minute = (time_t)__timezone /60;
+	if(gmtoffset_minute > 0)
+		snprintf(str, 30, "%u%u%u%u%u%u%u%u%u%u%u.000000+%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_minute);
+	else {
+		gmtoffset_minute = 0 - gmtoffset_minute;
+		snprintf(str, 30, "%u%u%u%u%u%u%u%u%u%u%u.000000-%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_minute);
+	}
+
+}
+
+
+void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
+{
+	CMPIInstance *instance = NULL;
+	CMPIInstance *instance_r = NULL;
+	CMPIObjectPath *objectpath = NULL;
+	CMPIStatus rc;
+
+	CMCIClient *cc = (CMCIClient *) client->cc;
+
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	objectpath = newCMPIObjectPath(client->cim_namespace,
+				       "CIM_IndicationSubscription", NULL);
+	CMPIValue value;
+	value.ref = objectpath_filter;
+	CMAddKey(objectpath, "Filter", 
+		&value, CMPI_ref);
+	value.ref = objectpath_handler;
+	CMAddKey(objectpath, "Handler",
+		&value, CMPI_ref);
+	//set OnFatalErrorPolicy to "Ignore"
+	value.uint16 = 2;
+	CMAddKey(objectpath, "OnFatalErrorPolicy",
+		&value, CMPI_uint16);
+	//enable subscription
+	value.uint16 = 2;
+	CMAddKey(objectpath, "SubscriptionState",
+		&value, CMPI_uint16);
+	struct timeval  tv;
+	gettimeofday(&tv, NULL);
+	value.uint64 = subsInfo->expires/1000 - tv.tv_sec;
+	CMAddKey(objectpath, "subscriptionDuration",
+		&value, CMPI_uint64);
+	char currenttimestr[32];
+	getcurrentdatetime(currenttimestr);
+	
+//	CMAddKey(objectpath, "subscriptionStartTime",
+//		currenttimestr, CMPI_dateTime);
+	//set RepeatNotificationPolicy to None
+	value.uint16 = 2;
+	CMAddKey(objectpath, "RepeatNotificationPolicy",
+		&value, CMPI_uint16);
+	instance = newCMPIInstance(objectpath, NULL); 
+	instance_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
+cleanup:
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else {
+		cim_to_wsman_status(rc, status);
+	}
+	/* Print the results */
+	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	cim_to_wsman_status(rc, status);
+	if (rc.msg)
+		CMRelease(rc.msg);
 	if (objectpath)
 		CMRelease(objectpath);
 	if (instance)
 		CMRelease(instance);
-	if (class)
-		CMRelease(class);
+	if (instance_r)
+		CMRelease(instance_r);
+	if (objectpath_handler)
+		CMRelease(objectpath_handler);
+	if (objectpath_filter)
+		CMRelease(objectpath_filter);
 	return;
-
 }
 
+void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+{
+	CMPIObjectPath *objectpath = NULL;
+	CMPIInstance *instance = NULL;
+	CMPIStatus rc;
+
+	CMCIClient *cc = (CMCIClient *) client->cc;
+
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	objectpath = newCMPIObjectPath(client->cim_namespace,
+				       "CIM_IndicationSubscription", NULL);
+	CMPIValue value;
+	value.ref = objectpath_filter;
+	CMAddKey(objectpath, "Filter", 
+		&value, CMPI_ref);
+	value.ref = objectpath_handler;
+	CMAddKey(objectpath, "Handler",
+		&value, CMPI_ref);
+	struct timeval  tv;
+	gettimeofday(&tv, NULL);
+	value.uint64 = subsInfo->expires/1000 - tv.tv_sec;
+	instance = newCMPIInstance(objectpath, NULL);
+	CMSetProperty(instance, "subscriptionDuration", &value, CMPI_uint64);
+	char *properties[] = {"subscriptionDuration",NULL};
+	cc->ft->setInstance(cc, objectpath, instance, 0, properties);
+cleanup:
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else {
+		cim_to_wsman_status(rc, status);
+	}
+	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	if (rc.msg)
+		CMRelease(rc.msg);
+	if (objectpath_filter)
+		CMRelease(objectpath_filter);
+	if (objectpath_handler)
+		CMRelease(objectpath_handler);
+	if (instance)
+		CMRelease(instance);
+	return;
+}
+
+void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+{
+	CMPIStatus rc;
+
+	CMCIClient *cc = (CMCIClient *) client->cc;
+
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) goto cleanup;
+	CMPIObjectPath *objectpath_subscription = newCMPIObjectPath(client->cim_namespace,
+				       "CIM_IndicationSubscription", &rc);
+	if(rc.rc) goto cleanup;
+	CMPIValue value;
+	value.ref = objectpath_filter;
+	CMAddKey(objectpath_subscription, "Filter", 
+		&value, CMPI_ref);
+	value.ref = objectpath_handler;
+	CMAddKey(objectpath_subscription, "Handler",
+		&value, CMPI_ref);
+	rc = cc->ft->deleteInstance(cc, objectpath_subscription);
+	if(rc.rc) goto cleanup;
+	rc = cc->ft->deleteInstance(cc, objectpath_filter);
+	if(rc.rc) goto cleanup;
+	rc = cc->ft->deleteInstance(cc, objectpath_handler);
+cleanup:
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else {
+		cim_to_wsman_status(rc, status);
+	}
+	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	if (rc.msg)
+		CMRelease(rc.msg);
+	if (objectpath_filter)
+		CMRelease(objectpath_filter);
+	if (objectpath_handler)
+		CMRelease(objectpath_handler);
+	if (objectpath_subscription)
+		CMRelease(objectpath_subscription);
+	return;
+}
 
 void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 {

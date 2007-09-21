@@ -41,11 +41,21 @@
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
-#include "wsman-subscription-repository.h"
+#include "wsman-soap.h"
 #include "wsman-names.h"
 #include "wsman-types.h"
 #include "wsman-xml-api.h"
 #include "wsman-xml-binding.h"
+
+int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData);
+int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData);
+int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char **subscriptionDoc);
+int LocalSubscriptionOpSearch(char * uri_repository, char * uuid);
+int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list);
+int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscriptionDoc);
+int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire);
+int LocalSubscriptionOpDelete (char * uri_repository, char * uuid);
+
 
 struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscriptionOpInit, LocalSubscriptionOpFinalize, LocalSubscriptionOpLoad, LocalSubscriptionOpGet, LocalSubscriptionOpSearch, LocalSubscriptionOpSave, LocalSubscriptionOpUpdate, LocalSubscriptionOpDelete};
 

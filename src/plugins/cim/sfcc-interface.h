@@ -105,6 +105,10 @@ int cim_getEprAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
 int cim_getElementAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
 		     WsXmlNodeH itemsNode);
 
+CMPIInstance *
+cim_get_instance_from_selectors(CimClientInfo * client,
+		 WsContextH cntx, WsmanStatus * status);
+
 void cim_get_instance_from_enum(CimClientInfo * cc, WsContextH cntx,
 				WsXmlNodeH body, WsmanStatus * status);
 
@@ -112,5 +116,12 @@ char *cim_get_namespace_selector(hash_t * keys);
 
 void cim_delete_instance_from_enum(CimClientInfo * client,
 				   WsmanStatus * status);
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querystring, 
+	char *querylanguage, char *uuid, WsmanStatus *status);
+CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid, WsmanStatus *status);
+void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, 
+	CMPIObjectPath *handler, WsmanStatus *status);
+void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
+void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
 
 #endif				/*SFCC_INTERFACE_H_ */

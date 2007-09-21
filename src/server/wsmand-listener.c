@@ -560,6 +560,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 		}
 	}
 	list_destroy(subs_list);
+	wsman_init_event_source(cntx, NULL);
 #ifdef MULTITHREADED_SERVER
 	int r;
 	int sock;

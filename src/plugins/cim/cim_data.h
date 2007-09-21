@@ -84,8 +84,8 @@ int CimResource_UnSubscribe_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
 		void *opaqueData);
 
 
-//A thread to be created when subscription is handled successfully
-int CimResource_EventThread_EP(WsEventThreadContextH cntx, WsNotificationInfoH notificationinfo);
+//If you want to support poll, implement it.
+int CimResource_EventPoll_EP(WsEventThreadContextH cntx, WsNotificationInfoH notificationinfo);
 SER_DECLARE_TYPE(CimResource);
 DECLARE_EP_ARRAY(CimResource);
 
@@ -102,5 +102,6 @@ char *get_cim_namespace(void);
 hash_t* get_vendor_namespaces(void);
 char *get_cim_host(void);
 char *get_cim_port(void);
+char *get_server_port(void);
 
 #endif // __CIM_DATA_H__

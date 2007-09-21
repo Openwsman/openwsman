@@ -55,10 +55,11 @@
 #include "wsman-server.h"
 #include "wsman-dispatcher.h"
 #endif
-#include "wsman-server.h"
 #include "wsman-soap.h"
+#include "wsman-server.h"
 
 extern struct __SubsRepositoryOpSet subscription_repository_op_set;
+extern struct __EventSourceOpSet event_source_op_set;
 
 WsManListenerH *wsman_dispatch_list_new()
 {
@@ -156,6 +157,16 @@ wsman_init_subscription_repository(WsContextH cntx, char *uri)
 	return &subscription_repository_op_set;
 }
 
+EventSourceOpSetH 
+wsman_init_event_source(WsContextH cntx, void*data)
+{
+	SoapH soap = ws_context_get_runtime(cntx);
+	if(soap) {
+		soap->eventsourceOpSet = &event_source_op_set;
+		soap->eventsourceOpSet->init(NULL);
+	}
+	return &event_source_op_set;
+}
 
 void *wsman_server_auxiliary_loop_thread(void *arg)
 {

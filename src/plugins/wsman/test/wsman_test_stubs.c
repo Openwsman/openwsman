@@ -102,19 +102,20 @@ int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 }
 
 int
-WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
+WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 {
 	int retval = 0;
+	WsNotificationInfoH notificationinfo = u_malloc(sizeof(*notificationinfo));
+	if(notificationinfo == NULL) return -1;
 	notificationinfo->headerOpaqueData = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "EventTopics");
 	WsXmlNodeH node = ws_xml_get_doc_root(notificationinfo->headerOpaqueData);
 	if(node) {
 		ws_xml_set_node_text(node, "openwsman.event.test");
 	}
-	WsEventBodyH eventbody = u_malloc(sizeof(*eventbody));
-	eventbody->EventAction = u_strdup(XML_NS_OPENWSMAN"/EventReport");
-	eventbody->EventContent = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "TestReport");
-	if(eventbody->EventContent == NULL) return retval;
-	node = ws_xml_get_doc_root(eventbody->EventContent);
+	notificationinfo->EventAction = u_strdup(XML_NS_OPENWSMAN"/EventReport");
+	notificationinfo->EventContent = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "TestReport");
+	if(notificationinfo->EventContent == NULL) return retval;
+	node = ws_xml_get_doc_root(notificationinfo->EventContent);
 	time_t timest = time(0);
 	struct tm tm;
 	localtime_r(&timest, &tm);
@@ -122,9 +123,14 @@ WsManTest_EventThread_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH no
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10);
-	lnode_t *docnode = lnode_create(eventbody);
-	list_append(notificationinfo->EventList, docnode);
-	return retval;
+	EventSourceOpSetH opset = threadcntx->soap->eventsourceOpSet;
+	retval = opset->addpull(threadcntx->subsInfo->subsId, notificationinfo);
+	if(retval) {
+		u_free(notificationinfo->EventAction);
+		ws_xml_destroy_doc(notificationinfo->EventContent);
+		ws_xml_destroy_doc(notificationinfo->headerOpaqueData);
+		u_free(notificationinfo);
+	}
 }
 
 int 
@@ -136,7 +142,7 @@ WsManTest_Subscribe_EP(WsContextH cntx,
 	debug("CIM Subscription");
 	int retval = 0;
 // to do here: create indication filter here and something else necessary
-	subsInfo->eventproc = WsManTest_EventThread_EP;
+	subsInfo->eventpoll = WsManTest_EventPoll_EP;
 
 	return retval;
 }
@@ -149,7 +155,7 @@ int WsManTest_Renew_EP(WsContextH cntx,
 	debug("CIM Subscription");
 	int retval = 0;
 // to do here: create indication filter here and something else necessary
-	subsInfo->eventproc = WsManTest_EventThread_EP;
+	subsInfo->eventpoll = WsManTest_EventPoll_EP;
 
 	return retval;
 }

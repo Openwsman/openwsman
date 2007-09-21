@@ -42,6 +42,8 @@
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
 #include "wsman-xml-api.h"
+#include "wsman-event-source.h"
+#include "wsman-subscription-repository.h"
 
 #define SOAP_MAX_RESENT_COUNT       10
 #define PEDNING_EVENT_MAX_COUNT	10
@@ -84,34 +86,6 @@ typedef struct __dispatch_t *SoapDispatchH;
 
 typedef SoapDispatchH (*DispatcherCallback) (WsContextH, void *, WsXmlDocH);
 
-typedef int (*SubscriptionOpInit) (char *, void *);
-typedef int (*SubscriptionOpFinalize) (char *, void *);
-typedef int (*SubscriptionOpSave) (char *, char *, char *);
-typedef int (*SubscriptionOpDelete) (char *, char *);
-typedef int (*SubscriptionOpGet) (char *, char *, char **);
-typedef int (*SubscriptionOpSearch) (char *, char *);
-typedef int (*SubscriptionOpUpdate) (char *, char *, char *);
-typedef int (*SubscriptionOpLoad) (char *, list_t *);
-
-struct __SubsRepositoryEntry {
-        char *strdoc;
-        char *uuid;
-};
-typedef struct __SubsRepositoryEntry *SubsRepositoryEntryH;
-
-struct __SubsRepositoryOpSet{
-        SubscriptionOpInit init_subscription; //entry of initializing subscripton repository
-        SubscriptionOpFinalize finalize_subscription; //entry of finalizing subscription repository
-        SubscriptionOpLoad load_subscription; //entry of loading all of subscriptions
-        SubscriptionOpGet get_subscription; //entry of geting a subscription from the repository
-        SubscriptionOpSearch search_subscription; //entry of searching a subscription from the repository
-        SubscriptionOpSave save_subscritption; //entry of saving a subscription in the repository
-        SubscriptionOpUpdate update_subscription; //entry of updating a subscription
-        SubscriptionOpDelete delete_subscription; //entry of deleting a subscription from the repository
-};
-typedef struct __SubsRepositoryOpSet *SubsRepositoryOpSetH;
-
-
 struct __SoapOp {
 	unsigned        __undefined;
 };
@@ -130,10 +104,10 @@ struct __Soap {
 	list_t         *processedMsgIdList;
 
 	pthread_mutex_t lockSubs; //lock for Subscription Repository
-        list_t         	*subscriptionMemList; //memory Repository of Subscriptions
-        char		*uri_subsRepository; //URI of repository
-        SubsRepositoryOpSetH subscriptionOpSet; //Functions talbe of Subscription Repository
-
+       list_t         	*subscriptionMemList; //memory Repository of Subscriptions
+       char		*uri_subsRepository; //URI of repository
+       SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
+	EventSourceOpSetH eventsourceOpSet; //Function table of event source
 
 	WsContextH      cntx;
 	list_t         *WsSerializerAllocList;
@@ -176,6 +150,7 @@ typedef struct __WsSubscribeInfo WsSubscribeInfo;
 struct __WsEventThreadContext {
 	SoapH soap;
 	WsSubscribeInfo *subsInfo;
+	WsXmlDocH outdoc;
 };
 typedef struct __WsEventThreadContext * WsEventThreadContextH;
 
@@ -267,15 +242,9 @@ struct __WsEventBody {
 
 typedef struct __WsEventBody * WsEventBodyH;
 
-struct __WsNotificationInfo {
-	WsXmlDocH headerOpaqueData;
-	list_t *EventList;
-	WsXmlDocH bookmarkDoc;
-};
 
-typedef struct __WsNotificationInfo * WsNotificationInfoH;
 
-typedef int (*WsEndPointNotificationManager) (WsEventThreadContextH, WsNotificationInfoH);
+typedef int (*WsEndPointEventPoll) (WsEventThreadContextH);
 
 #define EUIDLEN		64
 
@@ -358,10 +327,9 @@ struct __WsSubscribeInfo {
 	unsigned char bookmarksFlag; // whether bookmark is needed
 	filter_t	*filter;
 	WsmanAuth       auth_data;
-	WsEndPointNotificationManager eventproc; // plugin related event retriever
+	WsEndPointEventPoll eventpoll; // plugin related poll process
 	WsXmlDocH templateDoc; //template notificaiton document
 	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
-	list_t * notificationDocList; //to store pending notification soap documents
 	list_t * pull_notificationDocList; //to store pending pull soap documents
 };
 
@@ -443,8 +411,6 @@ int		   wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
 
 int		   wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int		   wse_pull_stub(SoapOpH op, void *appData, void * opaqueData);
-
 SoapOpH
 soap_create_op(SoapH soap,
 	       char *inboundAction,
@@ -523,7 +489,7 @@ void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
 
 void wsman_heartbeat_generator(WsContextH cntx, void *opaqueData);
 
-WsEventThreadContextH ws_create_event_thread_context(SoapH soap, WsSubscribeInfo *subsInfo);
+WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc);
 
 void * wse_notification_sender(void * thrdcntx);
 
