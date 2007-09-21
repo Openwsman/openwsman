@@ -70,6 +70,8 @@ class WsmanClient:
 		self.hdl = OpenWSMan.wsmc_create(hostname, port , path, scheme, username, password)
 	def create_from_uri(self, uri):
 		self.hdl = OpenWSMan.wsmc_create_from_uri(uri)
+        def release(self):
+                OpenWSMan.wsmc_release(self.hdl)
 
 class WsmanException(Exception):
 	def __init__(self, value):

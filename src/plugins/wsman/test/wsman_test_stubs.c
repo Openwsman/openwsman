@@ -107,13 +107,13 @@ WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 	int retval = 0;
 	WsNotificationInfoH notificationinfo = u_malloc(sizeof(*notificationinfo));
 	if(notificationinfo == NULL) return -1;
-	notificationinfo->headerOpaqueData = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "EventTopics");
+	notificationinfo->headerOpaqueData = ws_xml_create_doc( XML_NS_OPENWSMAN"/test", "EventTopics");
 	WsXmlNodeH node = ws_xml_get_doc_root(notificationinfo->headerOpaqueData);
 	if(node) {
 		ws_xml_set_node_text(node, "openwsman.event.test");
 	}
 	notificationinfo->EventAction = u_strdup(XML_NS_OPENWSMAN"/EventReport");
-	notificationinfo->EventContent = ws_xml_create_doc(threadcntx->soap, XML_NS_OPENWSMAN"/test", "TestReport");
+	notificationinfo->EventContent = ws_xml_create_doc( XML_NS_OPENWSMAN"/test", "TestReport");
 	if(notificationinfo->EventContent == NULL) return retval;
 	node = ws_xml_get_doc_root(notificationinfo->EventContent);
 	time_t timest = time(0);

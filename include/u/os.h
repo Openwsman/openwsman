@@ -11,6 +11,14 @@
 #include <u/syslog.h>
 
 
+#ifdef __APPLE__
+struct __timezone {
+	int  tz_minuteswest; /* minutes W of Greenwich */
+	int  tz_dsttime;     /* type of dst correction */
+};
+
+#endif
+
 #if defined WIN32 && ! defined __CYGWIN__
 #define strcasecmp      stricmp
 #define strncasecmp     strnicmp

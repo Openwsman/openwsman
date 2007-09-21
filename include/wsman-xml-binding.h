@@ -41,9 +41,9 @@ struct __internalWsNode {
 };
 typedef struct __internalWsNode iWsNode;
 
-void xml_parser_initialize(SoapH soap);
+void xml_parser_initialize(void);
 
-void xml_parser_destroy(SoapH soap);
+void xml_parser_destroy(void);
 
 int xml_parser_create_doc(WsXmlDocH Doc, const char *rootName);
 
@@ -53,7 +53,7 @@ WsXmlDocH xml_parser_get_doc(WsXmlNodeH node);
 
 WsXmlNodeH xml_parser_get_root(WsXmlDocH doc);
 
-WsXmlDocH xml_parser_memory_to_doc(SoapH soap, const char *buf, size_t size,
+WsXmlDocH xml_parser_memory_to_doc( const char *buf, size_t size,
 				   const char *encoding,
 				   unsigned long options);
 
@@ -89,7 +89,7 @@ WsXmlAttrH xml_parser_attr_add(WsXmlNodeH node, const char *uri,
 
 int xml_parser_attr_remove(WsXmlAttrH attr);
 
-WsXmlDocH xml_parser_file_to_doc(SoapH soap, const char *filename,
+WsXmlDocH xml_parser_file_to_doc( const char *filename,
 				 const char *encoding,
 				 unsigned long options);
 

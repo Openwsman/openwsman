@@ -30,7 +30,6 @@
 
 /**
  * @author Anas Nashif
- * @author Sumeet Kukreja, Dell Inc.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -101,19 +100,16 @@ wsman_epr_from_request_to_response(WsXmlNodeH dstHeader, WsXmlNodeH epr)
 
 /**
  * Create a response SOAP envelope
- * @param cntx Context
  * @param rqstDoc The XML document of the request
  * @param action the Response action
  * @return Response envelope
  */
 WsXmlDocH
-wsman_create_response_envelope(WsContextH cntx,
-			       WsXmlDocH rqstDoc, const char *action)
+wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 {
-	SoapH soap = cntx->soap;
-	char *soapNs =
-	    ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
-	WsXmlDocH doc = ws_xml_create_envelope(soap, soapNs);
+
+	char *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
+	WsXmlDocH doc = ws_xml_create_envelope();
 	WsXmlNodeH dstHeader, srcHeader, srcNode;
 	if (wsman_is_identify_request(rqstDoc))
 		return doc;
@@ -171,16 +167,13 @@ wsman_create_response_envelope(WsContextH cntx,
  * @param buf Message buffer
  * @return XML document with Envelope
  */
-WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage * msg)
+WsXmlDocH wsman_build_inbound_envelope(WsmanMessage * msg)
 {
-	WsXmlDocH doc = ws_xml_read_memory(soap, u_buf_ptr(msg->request),
-					   u_buf_len(msg->request), NULL,
-					   0);
+	WsXmlDocH doc = ws_xml_read_memory( u_buf_ptr(msg->request),
+					   u_buf_len(msg->request), NULL,  0);
 
 	if (doc == NULL) {
-		wsman_set_fault(msg,
-				WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0,
-				NULL);
+		wsman_set_fault(msg, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
 		return NULL;
 	}
 	if (wsman_is_identify_request(doc)) {
@@ -198,12 +191,10 @@ WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage * msg)
  * @param name Header element name
  * @return Header value
  */
-char *wsman_get_soap_header_value(SoapH soap,
-				  WsXmlDocH doc, const char *nsUri, const char *name)
+char *wsman_get_soap_header_value( WsXmlDocH doc, const char *nsUri, const char *name)
 {
 	char *retVal = NULL;
-	WsXmlNodeH node =
-	    wsman_get_soap_header_element(soap, doc, nsUri, name);
+	WsXmlNodeH node = wsman_get_soap_header_element( doc, nsUri, name);
 
 	if (node != NULL)
 		retVal = u_str_clone(ws_xml_get_node_text(node));
@@ -214,15 +205,13 @@ char *wsman_get_soap_header_value(SoapH soap,
 
 /**
  * Get SOAP Header
- * @param fw SOAP Framework handle
  * @param doc XML document
  * @param nsUri Namespace URI
  * @param name Header element name
  * @return XML node
  */
 WsXmlNodeH
-wsman_get_soap_header_element(SoapH soap,
-			      WsXmlDocH doc, const char *nsUri, const char *name)
+wsman_get_soap_header_element(WsXmlDocH doc, const char *nsUri, const char *name)
 {
 	WsXmlNodeH node = ws_xml_get_soap_header(doc);
 	if (node && name) {
@@ -234,7 +223,6 @@ wsman_get_soap_header_element(SoapH soap,
 
 /**
  * Build SOAP Fault
- * @param  fw SOAP Framework handle
  * @param soapNsUri SOAP Namespace URI
  * @param faultNsUri Fault Namespace URI
  * @param code Fault code
@@ -244,7 +232,7 @@ wsman_get_soap_header_element(SoapH soap,
  * @return Fault XML document
  */
 WsXmlDocH
-wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri,
+wsman_build_soap_fault(const char *soapNsUri, const char *faultNsUri,
 		       const char *code, const char *subCode, const char *reason,
 		       const char *detail)
 {
@@ -253,14 +241,12 @@ wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri
 	if (faultNsUri == NULL)
 		faultNsUri = soapNsUri;
 
-	if ((doc =
-	     ws_xml_create_doc(soap, soapNsUri, SOAP_ENVELOPE)) != NULL) {
+	if ((doc = ws_xml_create_doc( soapNsUri, SOAP_ENVELOPE)) != NULL) {
 		WsXmlNodeH node;
 		WsXmlNodeH fault;
 		WsXmlNodeH root = ws_xml_get_doc_root(doc);
 		//WsXmlNodeH header = WsXmlAddChild(root, soapNsUri, SOAP_HEADER, NULL);
-		WsXmlNodeH body =
-		    ws_xml_add_child(root, soapNsUri, SOAP_BODY, NULL);
+		WsXmlNodeH body = ws_xml_add_child(root, soapNsUri, SOAP_BODY, NULL);
 
 		ws_xml_define_ns(root, soapNsUri, NULL, 0);
 		ws_xml_define_ns(root, XML_NS_ADDRESSING, NULL, 0);
@@ -268,12 +254,10 @@ wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri
 		if (strcmp(soapNsUri, faultNsUri) != 0)
 			ws_xml_define_ns(root, faultNsUri, NULL, 0);
 		if (body
-		    && (fault =
-			ws_xml_add_child(body, soapNsUri, SOAP_FAULT,
+		    && (fault = ws_xml_add_child(body, soapNsUri, SOAP_FAULT,
 					 NULL))) {
 			if (code != NULL
-			    && (node =
-				ws_xml_add_child(fault, soapNsUri,
+			    && (node = ws_xml_add_child(fault, soapNsUri,
 						 SOAP_CODE,
 						 NULL)) != NULL) {
 				ws_xml_add_qname_child(node, soapNsUri,
@@ -282,8 +266,7 @@ wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri
 
 				if (subCode != NULL
 				    &&
-				    (node =
-				     ws_xml_add_child(node, soapNsUri,
+				    (node = ws_xml_add_child(node, soapNsUri,
 						      SOAP_SUBCODE,
 						      NULL)) != NULL) {
 					ws_xml_add_qname_child(node,
@@ -294,11 +277,9 @@ wsman_build_soap_fault(SoapH soap, const char *soapNsUri, const char *faultNsUri
 				}
 			}
 			if (reason
-			    && (node =
-				ws_xml_add_child(fault, soapNsUri,
+			    && (node = ws_xml_add_child(fault, soapNsUri,
 						 SOAP_REASON, NULL))) {
-				node =
-				    ws_xml_add_child(node, soapNsUri,
+				node = ws_xml_add_child(node, soapNsUri,
 						     SOAP_TEXT, reason);
 				ws_xml_add_node_attr(node,
 						     XML_NS_XML_NAMESPACES,
@@ -496,7 +477,6 @@ int wsman_is_valid_xml_envelope(WsXmlDocH doc)
 
 /**
  * Create a Fault
- * @param cntx WS Context
  * @param rqstDoc Request document (Envelope)
  * @param code Fault code
  * @param subCodeNs Namespace of sub code
@@ -508,8 +488,7 @@ int wsman_is_valid_xml_envelope(WsXmlDocH doc)
  * @return XML document of the fault
  */
 WsXmlDocH
-wsman_create_fault_envelope(WsContextH cntx,
-			    WsXmlDocH rqstDoc,
+wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 			    const char *code,
 			    const char *subCodeNs,
 			    const char *subCode,
@@ -525,12 +504,9 @@ wsman_create_fault_envelope(WsContextH cntx,
 	char uuidBuf[50];
 	char *soapNs;
 	if (rqstDoc) {
-		doc =
-		    wsman_create_response_envelope(cntx, rqstDoc,
-						   fault_action);
+		doc = wsman_create_response_envelope(rqstDoc, fault_action);
 	} else {
-		SoapH soap = cntx->soap;
-		doc = ws_xml_create_envelope(soap, NULL);
+		doc = ws_xml_create_envelope();
 	}
 
 	if (doc == NULL) {
@@ -577,9 +553,7 @@ wsman_create_fault_envelope(WsContextH cntx,
 	return doc;
 }
 
-static void wsman_parse_filter( WsContextH cntx,
-		WsXmlNodeH filter,
-		WsEnumerateInfo * enumInfo)
+static void wsman_parse_filter( WsXmlNodeH filter, WsEnumerateInfo * enumInfo)
 {
 	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
 	f->query = u_strdup(ws_xml_get_node_text(filter));
@@ -653,6 +627,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 					WSENUM_ENUMERATE))) {
 		WsXmlNodeH filter = ws_xml_get_child(node,
 				0, XML_NS_WS_MAN, WSM_FILTER);
+		
 		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 				WSM_ENUM_MODE);
 		// Enumeration mode
@@ -711,7 +686,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 					strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0||
 					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
 					!attrVal ) {
-				wsman_parse_filter(cntx, filter, enumInfo);
+				wsman_parse_filter( filter, enumInfo);
 				if ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 )
 					enumInfo->flags |= WSMAN_ENUMINFO_CQL;
 				else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 )
@@ -724,7 +699,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 	return 1;
 }
 /*
-static char *xpathtowql(char *prefix, char *classname, char *str) 
+static char *xpathtowql(char *prefix, char *classname, char *str)
 {
 	char wql[512];
 	int count = 0;
@@ -733,9 +708,9 @@ static char *xpathtowql(char *prefix, char *classname, char *str)
 	memset(wql, 0, 512);
 	n = snprintf(wql, 512, "select * from %s where", classname);
 	if(n > 0) count += n;
-	while(*str == ' ' && *str!='\0') str++; 
+	while(*str == ' ' && *str!='\0') str++;
 	if(*str == '.' && *(str+1) == '[') {
-		*str = 0x20; 
+		*str = 0x20;
 		*(str+1) = 0x20;
 	}
 	if((p = strstr(str, "]"))) *p= ' ';
@@ -754,7 +729,7 @@ static char *xpathtowql(char *prefix, char *classname, char *str)
 	return p;
 }
 */
-int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode, 
+int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
 	WsmanFaultDetailType *detailcode)
 {
 	WsXmlNodeH node;
@@ -1171,7 +1146,7 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 
 	if (val && strstr(val, WSA_EPR)) {
 		//SoapH soap = ws_xml_get_doc_soap_handle(ws_xml_get_node_doc(baseNode));
-		epr = ws_xml_read_memory(NULL, val, strlen(val), NULL, 0);
+		epr = ws_xml_read_memory(val, strlen(val), NULL, 0);
 	}
 
 	if (set || (set = ws_xml_add_child(baseNode,
@@ -1233,7 +1208,6 @@ void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace)
 
 int wsman_is_identify_request(WsXmlDocH doc)
 {
-
 	WsXmlNodeH node = ws_xml_get_soap_body(doc);
 	node = ws_xml_get_child(node, 0, XML_NS_WSMAN_ID, WSMID_IDENTIFY);
 	if (node)
@@ -1259,9 +1233,9 @@ int wsman_is_event_related_request(WsXmlDocH doc)
 }
 
 WsXmlDocH
-wsman_create_doc(WsContextH cntx, const char *rootname)
+wsman_create_doc(const char *rootname)
 {
-	return ws_xml_create_doc(cntx->soap, NULL, (char *)rootname);
+	return ws_xml_create_doc(NULL, (char *)rootname);
 }
 
 void

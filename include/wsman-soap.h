@@ -104,15 +104,15 @@ struct __Soap {
 	list_t         *processedMsgIdList;
 
 	pthread_mutex_t lockSubs; //lock for Subscription Repository
-       list_t         	*subscriptionMemList; //memory Repository of Subscriptions
-       char		*uri_subsRepository; //URI of repository
-       SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
+    list_t         	*subscriptionMemList; //memory Repository of Subscriptions
+    char 			*uri_subsRepository; //URI of repository
+    SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
 	EventSourceOpSetH eventsourceOpSet; //Function table of event source
 
 	WsContextH      cntx;
-	list_t         *WsSerializerAllocList;
+	list_t         	*WsSerializerAllocList;
 
-	void           *dispatcherData;
+	void           	*dispatcherData;
 	DispatcherCallback dispatcherProc;
 	void *listener;
 };
@@ -389,27 +389,29 @@ wsman_register_endpoint(WsContextH cntx,
 			WsManDispatcherInfo * dispInfo);
 
 
-int             ws_transfer_put_stub(SoapOpH op, void *appData, void *opaqueData);
+int ws_transfer_put_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             ws_transfer_delete_stub(SoapOpH op, void *appData, void *opaqueData);
+int ws_transfer_delete_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wsman_identify_stub(SoapOpH op, void *appData, void *opaqueData);
+int wsman_identify_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wsenum_enumerate_stub(SoapOpH op, void *appData, void *opaqueData);
+int wsenum_enumerate_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData);
+int ws_transfer_get_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
+int wsenum_pull_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wsenum_pull_raw_stub(SoapOpH op, void *appData, void *opaqueData);
+int wsenum_pull_direct_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wsenum_release_stub(SoapOpH op, void *appData, void *opaqueData);
+int wsenum_release_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int             wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int		   wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
+int	wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData);
 
-int		   wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
+int	wse_renew_stub(SoapOpH op, void *appData, void *opaqueData);
+
+int	wse_pull_stub(SoapOpH op, void *appData, void * opaqueData);
 
 SoapOpH
 soap_create_op(SoapH soap,
@@ -466,14 +468,12 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code(WsmanFaultCodeType fault
 
 
 WsXmlDocH
-wsman_generate_fault( WsContextH cntx,
-		     WsXmlDocH inDoc,
+wsman_generate_fault(WsXmlDocH inDoc,
 		     WsmanFaultCodeType faultCode,
 		     WsmanFaultDetailType faultDetail,
 		     char *fault_msg);
 void
-wsman_generate_fault_buffer( WsContextH cntx,
-			    WsXmlDocH inDoc,
+wsman_generate_fault_buffer( WsXmlDocH inDoc,
 			    WsmanFaultCodeType faultCode,
 			    WsmanFaultDetailType faultDetail,
 			    char *fault_msg,
@@ -481,9 +481,9 @@ wsman_generate_fault_buffer( WsContextH cntx,
 			    int *len);
 
 
-void            wsman_status_init(WsmanStatus * s);
+void wsman_status_init(WsmanStatus * s);
 
-int             wsman_check_status(WsmanStatus * s);
+int wsman_check_status(WsmanStatus * s);
 
 void  wsman_timeouts_manager(WsContextH cntx, void *opaqueData);
 

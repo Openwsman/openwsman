@@ -161,7 +161,7 @@ static void example1(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &servie, Sample_Servie_TypeInfo,
@@ -244,7 +244,7 @@ static void example2(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
@@ -315,7 +315,7 @@ static void example3(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
@@ -388,7 +388,7 @@ static void example4(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc(NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
@@ -452,7 +452,7 @@ static void example5(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
@@ -589,7 +589,7 @@ static void example6(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
@@ -739,7 +739,7 @@ static void example7(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 
 	retval = ws_serialize(cntx, node, &Epr, EPR_TypeInfo,
@@ -867,7 +867,7 @@ static void example107(void)
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc(NULL, "example");
 	node = ws_xml_get_doc_root(doc);
 	WsXmlAttrH attr;
 	attr = ws_xml_add_node_attr(node, NULL, "Name", "Attribute");

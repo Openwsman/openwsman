@@ -232,20 +232,16 @@ void ws_xml_ns_enum(WsXmlNodeH node,
  * @param soapVersion The SOAP version to be used for creating the envelope
  * @return An XMl document
  */
-WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
+WsXmlDocH ws_xml_create_envelope( void )
 {
 	WsXmlDocH doc = NULL;
 
-	if (soapVersion == NULL)
-		soapVersion = XML_NS_SOAP_1_2;
-
-	if ((doc = ws_xml_create_doc(soap, soapVersion,
-			       SOAP_ENVELOPE)) != NULL) {
+	if ((doc = ws_xml_create_doc(XML_NS_SOAP_1_2, SOAP_ENVELOPE)) != NULL) {
 		WsXmlNodeH root = ws_xml_get_doc_root(doc);
 
 		if (root == NULL ||
-		    ws_xml_add_child(root, soapVersion, "Header", NULL) == NULL ||
-		    ws_xml_add_child(root, soapVersion, "Body", NULL) == NULL) {
+		    ws_xml_add_child(root, XML_NS_SOAP_1_2, "Header", NULL) == NULL ||
+		    ws_xml_add_child(root, XML_NS_SOAP_1_2, "Body", NULL) == NULL) {
 			ws_xml_destroy_doc(doc);
 			doc = NULL;
 		}
@@ -261,7 +257,7 @@ WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion)
  * @param srcDoc the Source document
  * @return The new XML document
  */
-WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
+WsXmlDocH ws_xml_duplicate_doc( WsXmlDocH srcDoc)
 {
 	WsXmlDocH dst = NULL;
 	WsXmlNodeH srcRoot = NULL;
@@ -270,22 +266,22 @@ WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc)
 
 	if (!srcDoc)
 		return NULL;
+
 	srcRoot = ws_xml_get_doc_root(srcDoc);
+
 	if (!srcRoot)
 		return NULL;
-	soap = dstSoap;
+
 	name = ws_xml_get_node_local_name(srcRoot);
 	nsUri = ws_xml_get_node_name_ns(srcRoot);
-	if ((dst = ws_xml_create_doc(NULL, nsUri, name)) != NULL) {
+	if ((dst = ws_xml_create_doc(nsUri, name)) != NULL) {
 		int i;
 		WsXmlNodeH node;
-		WsXmlNodeH dstRoot =
-			ws_xml_get_doc_root(dst);
+		WsXmlNodeH dstRoot = ws_xml_get_doc_root(dst);
 
 		for (i = 0; (node = ws_xml_get_child(srcRoot,
 						i, NULL, NULL)) != NULL; i++) {
-			ws_xml_duplicate_tree(dstRoot,
-					node);
+			ws_xml_duplicate_tree(dstRoot, node);
 		}
 	}
 	return dst;
@@ -394,7 +390,7 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
 		const char *rootNsUri,
 		const char *rootName )
 {
-	return ws_xml_create_doc(NULL, rootNsUri, rootName);
+	return ws_xml_create_doc(rootNsUri, rootName);
 }
 
 /**
@@ -402,17 +398,16 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-int ws_xml_parser_initialize(SoapH soap)
+int ws_xml_parser_initialize()
 {
-	int retVal = 1;
-	xml_parser_initialize(soap);
-	return retVal;
+	xml_parser_initialize();
+	return 1;
 }
 
 
-void ws_xml_parser_destroy(SoapH soap)
+void ws_xml_parser_destroy()
 {
-	xml_parser_destroy(soap);
+	xml_parser_destroy();
 }
 
 
@@ -560,20 +555,17 @@ char *ws_xml_get_node_text(WsXmlNodeH node)
  * @param options Parser options
  * @return XML document
  */
-WsXmlDocH ws_xml_read_memory(SoapH soap,
-			     const char *buf,
-			     size_t size,
-			     const char *encoding, unsigned long options)
+WsXmlDocH ws_xml_read_memory( const char *buf, size_t size, const char *encoding, 
+		unsigned long options)
 {
-	return xml_parser_memory_to_doc(soap, buf, size, encoding,
-					options);
+	return xml_parser_memory_to_doc(buf, size, encoding, options);
 }
 
 
-WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
+WsXmlDocH ws_xml_read_file(const char *filename,
 			   const char *encoding, unsigned long options)
 {
-	return xml_parser_file_to_doc(soap, filename, encoding, options);
+	return xml_parser_file_to_doc( filename, encoding, options);
 }
 
 
@@ -585,7 +577,7 @@ WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
  * @return XML document
  */
 WsXmlDocH
-ws_xml_create_doc(SoapH soap, const char *rootNsUri, const char *rootName)
+ws_xml_create_doc( const char *rootNsUri, const char *rootName)
 {
 	WsXmlDocH wsDoc = (WsXmlDocH) u_zalloc(sizeof(*wsDoc));
 	WsXmlNodeH rootNode;

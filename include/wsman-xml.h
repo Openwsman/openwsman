@@ -80,17 +80,17 @@ struct __WsXmlDumpNodeTreeData {
 };
 typedef struct __WsXmlDumpNodeTreeData WsXmlDumpNodeTreeData;
 
-WsXmlDocH ws_xml_create_envelope(SoapH soap, char *soapVersion);
+WsXmlDocH ws_xml_create_envelope(void);
 
-WsXmlDocH ws_xml_duplicate_doc(SoapH dstSoap, WsXmlDocH srcDoc);
+WsXmlDocH ws_xml_duplicate_doc(WsXmlDocH srcDoc);
 
 WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node);
 
 SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 
-int ws_xml_parser_initialize(SoapH soap);
+int ws_xml_parser_initialize();
 
-void ws_xml_parser_destroy(SoapH soap);
+void ws_xml_parser_destroy();
 
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
@@ -98,14 +98,13 @@ char *ws_xml_get_node_name_ns_uri(WsXmlNodeH node);
 
 char *ws_xml_get_node_name_ns_prefix(WsXmlNodeH node);
 
-WsXmlDocH ws_xml_read_file(SoapH soap, const char *filename,
+WsXmlDocH ws_xml_read_file(const char *filename,
 			   const char *encoding, unsigned long options);
 
-WsXmlDocH ws_xml_read_memory(SoapH soap, const char *buf, size_t size,
+WsXmlDocH ws_xml_read_memory(const char *buf, size_t size,
 			     const char *encoding, unsigned long options);
 
-WsXmlDocH ws_xml_create_doc(SoapH soap, const char *rootNsUri,
-			    const char *rootName);
+WsXmlDocH ws_xml_create_doc( const char *rootNsUri, const char *rootName);
 
 int ws_xml_check_xpath(WsXmlDocH doc, const char *xpath_expr);
 

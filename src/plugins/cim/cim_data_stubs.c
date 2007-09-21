@@ -196,7 +196,7 @@ CimResource_Delete_EP( SoapOpH op,
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
 	} else {
-		if ( (doc = wsman_create_response_envelope(cntx, in_doc, NULL)) ) {
+		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
 			if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
 				cim_delete_instance_from_enum(cimclient, &status);
 			} else {
@@ -207,14 +207,14 @@ CimResource_Delete_EP( SoapOpH op,
 
 		if (status.fault_code != 0) {
 			ws_xml_destroy_doc(doc);
-			doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+			doc = wsman_generate_fault(in_doc, status.fault_code,
 					status.fault_detail_code, NULL);
 		}
 	}
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 				status.fault_code, status.fault_detail_code, NULL);
 	}
 	if (doc) {
@@ -256,10 +256,10 @@ CimResource_Get_EP( SoapOpH op,
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+		doc = wsman_generate_fault( in_doc, status.fault_code,
 				status.fault_detail_code, NULL);
 	} else {
-		if ( (doc = wsman_create_response_envelope(cntx, in_doc, NULL)) ) {
+		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
 			WsXmlNodeH body = ws_xml_get_soap_body(doc);
 			if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
 				cim_get_instance_from_enum(cimclient, cntx, body, &status);
@@ -272,7 +272,7 @@ CimResource_Get_EP( SoapOpH op,
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 				status.fault_code, status.fault_detail_code, NULL);
 	}
 	if ( doc ) {
@@ -317,7 +317,7 @@ CimResource_Custom_EP( SoapOpH op,
 	if (!strstr(action, cimclient->resource_uri)) {
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
 		status.fault_detail_code = OWSMAN_NO_DETAILS;
-		doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+		doc = wsman_generate_fault( in_doc, status.fault_code,
 				status.fault_detail_code, NULL);
 		debug("action not supported");
 		goto cleanup;
@@ -325,18 +325,18 @@ CimResource_Custom_EP( SoapOpH op,
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+		doc = wsman_generate_fault(in_doc, status.fault_code,
 				status.fault_detail_code, NULL);
 	} else {
 
-		if ((doc = wsman_create_response_envelope(cntx, in_doc, NULL))) {
+		if ((doc = wsman_create_response_envelope( in_doc, NULL))) {
 			WsXmlNodeH body = ws_xml_get_soap_body(doc);
 			cim_invoke_method(cimclient, cntx, body, &status);
 		}
 
 		if (status.fault_code != 0) {
 			ws_xml_destroy_doc(doc);
-			doc = wsman_generate_fault(cntx, in_doc, status.fault_code,
+			doc = wsman_generate_fault( in_doc, status.fault_code,
 					status.fault_detail_code, NULL);
 		}
 	}
@@ -397,7 +397,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	}
 
 	if (enumInfo->maxItems > 0) {
-		doc = wsman_create_response_envelope(cntx, in_doc , NULL);
+		doc = wsman_create_response_envelope( in_doc , NULL);
 		WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
 		cim_get_enum_items(cimclient, cntx, node,
@@ -456,7 +456,7 @@ CimResource_Pull_EP( WsContextH cntx,
 		if (!cimclient) {
 			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
 			status->fault_detail_code = 0;
-			doc = wsman_generate_fault(cntx, in_doc, status->fault_code,
+			doc = wsman_generate_fault( in_doc, status->fault_code,
 				status->fault_detail_code, NULL);
 			goto cleanup;
 		}
@@ -466,12 +466,12 @@ CimResource_Pull_EP( WsContextH cntx,
 	if (!verify_class_namespace(cimclient) ) {
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault(cntx, in_doc, status->fault_code,
+		doc = wsman_generate_fault( in_doc, status->fault_code,
 				status->fault_detail_code, NULL);
 		goto cleanup;
 	}
 
-	doc = wsman_create_response_envelope(cntx, in_doc, NULL);
+	doc = wsman_create_response_envelope( in_doc, NULL);
 	body = ws_xml_get_soap_body(doc);
 	pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION,
 			WSENUM_PULL_RESP, NULL);
@@ -528,8 +528,7 @@ CimResource_Create_EP( SoapOpH op,
 		goto cleanup;
 	}
 
-	if ((doc = wsman_create_response_envelope(cntx,
-					soap_get_op_doc(op, 1), NULL))) {
+	if ((doc = wsman_create_response_envelope( soap_get_op_doc(op, 1), NULL))) {
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
 		WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
 		if (!ws_xml_get_child(in_body, 0, NULL, NULL)) {
@@ -548,7 +547,7 @@ CimResource_Create_EP( SoapOpH op,
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 				status.fault_code, status.fault_detail_code, NULL);
 	}
 
@@ -599,8 +598,7 @@ CimResource_Put_EP( SoapOpH op,
 	}
 
 
-	if ((doc = wsman_create_response_envelope(cntx,
-					soap_get_op_doc(op, 1), NULL))) {
+	if ((doc = wsman_create_response_envelope( soap_get_op_doc(op, 1), NULL))) {
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
 		WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
 		if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
@@ -614,7 +612,7 @@ CimResource_Put_EP( SoapOpH op,
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 				status.fault_code, status.fault_detail_code, NULL);
 	}
 
@@ -680,20 +678,20 @@ CimResource_Subscribe_EP(WsContextH cntx,
 		}
 	}
 	else {
-		indicationfilter = cim_create_indication_filter(cimclient, subsInfo->filter->query, "WQL", 
+		indicationfilter = cim_create_indication_filter(cimclient, subsInfo->filter->query, "WQL",
 			subsInfo->subsId, status);
 	}
 	if(status->fault_code ) {
 		retval = 1;
 		goto cleanup;
 	}
-	
+
 	indicationhandler = cim_create_indication_handler(cimclient, subsInfo->subsId, status);
 	if(status->fault_code) {
 		retval = 1;
 		goto cleanup;
 	}
-	cim_create_indication_subscription(cimclient, subsInfo, 
+	cim_create_indication_subscription(cimclient, subsInfo,
 		indicationfilter, indicationhandler, status);
 	if(status->fault_code)
 		retval = 1;

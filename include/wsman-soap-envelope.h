@@ -41,23 +41,21 @@
 
 int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc);
 
-char *wsman_get_soap_header_value(SoapH soap, WsXmlDocH doc, const char *nsUri,
-				  const char *name);
+char *wsman_get_soap_header_value( WsXmlDocH doc, const char *nsUri,
+				  			const char *name);
 
-WsXmlNodeH wsman_get_soap_header_element(SoapH soap,
-					 WsXmlDocH doc, const char *nsUri,
+WsXmlNodeH wsman_get_soap_header_element(WsXmlDocH doc, const char *nsUri,
 					 const char *name);
 
-WsXmlDocH wsman_build_soap_fault(SoapH soap, const char *soapNsUri,
+WsXmlDocH wsman_build_soap_fault( const char *soapNsUri,
 				 const char *faultNsUri, const char *code,
 				 const char *subCode, const char *reason,
 				 const char *detail);
 
 
-WsXmlDocH wsman_create_response_envelope(WsContextH cntx,
-					 WsXmlDocH rqstDoc, const char *action);
+WsXmlDocH wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action);
 
-WsXmlDocH wsman_build_inbound_envelope(SoapH soap, WsmanMessage * msg);
+WsXmlDocH wsman_build_inbound_envelope( WsmanMessage * msg);
 
 WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc,
 			     const char *code, const char *subCodeNs, const char *subCode,
@@ -65,7 +63,7 @@ WsXmlDocH wsman_create_fault(WsContextH cntx, WsXmlDocH rqstDoc,
 			     void (*addDetailProc) (WsXmlNodeH, void *),
 			     void *addDetailProcData);
 
-WsXmlDocH wsman_create_fault_envelope(WsContextH cntx,
+WsXmlDocH wsman_create_fault_envelope(
 				      WsXmlDocH rqstDoc,
 				      const char *code,
 				      const char *subCodeNs,
@@ -124,7 +122,7 @@ int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
 int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode, 
 	WsmanFaultDetailType *detailcode);
 
-WsXmlDocH wsman_create_doc(WsContextH cntx, const char *rootname);
+WsXmlDocH wsman_create_doc(const char *rootname);
 
 void wsman_destroy_doc(WsXmlDocH doc);
 

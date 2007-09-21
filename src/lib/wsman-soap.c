@@ -90,14 +90,13 @@ free_hentry_func(hnode_t * n, void *arg)
 
 
 void
-ws_initialize_context(WsContextH cntx,
-		      SoapH soap)
+ws_initialize_context(WsContextH cntx, SoapH soap)
 {
 	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
 	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+
 	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
 	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
-//	cntx->last_get_name_idx = -1;
 	cntx->owner = 1;
 	cntx->soap = soap;
 }
@@ -115,7 +114,7 @@ ws_create_context(SoapH soap)
 SoapH
 ws_soap_initialize()
 {
-	SoapH           soap = (SoapH) u_zalloc(sizeof(*soap));
+	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
 
 	if (soap == NULL) {
 		error("Could not alloc memory");
@@ -123,6 +122,7 @@ ws_soap_initialize()
 	}
 	//fw->dispatchList.listOwner = fw;
 	soap->cntx = ws_create_context(soap);
+
 	soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
 	soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
 	soap->dispatchList = list_create(LISTCOUNT_T_MAX);
@@ -130,9 +130,10 @@ ws_soap_initialize()
 	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
 	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
-//	soap->enumIdleTimeout = enumIdleTimeout;
+	//	soap->enumIdleTimeout = enumIdleTimeout;
 	u_init_lock(soap);
 	ws_xml_parser_initialize(soap);
+
 	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
 	soap_add_filter(soap, outbound_control_header_filter, NULL, 0);
 	return soap;
@@ -189,18 +190,19 @@ ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, void *data)
 WsContextH
 ws_create_runtime(list_t * interfaces)
 {
-	SoapH           soap = ws_soap_initialize();
+	SoapH soap = ws_soap_initialize();
 	WsManDispatcherInfo *dispInfo;
-	int             size;
-	lnode_t        *node;
+	int size;
+	lnode_t *node;
 	if (soap == NULL) {
 		error("Could not initialize soap");
 		return NULL;
 	}
+
 	if (interfaces == NULL) {
-		error("NULL interfaces");
 		return soap->cntx;
 	}
+
 	size = calculate_map_count(interfaces);
 	dispInfo = (WsManDispatcherInfo *) u_zalloc(size);
 	if (dispInfo == NULL) {
@@ -303,7 +305,7 @@ wsman_register_endpoint(WsContextH cntx,
 	case WS_DISP_TYPE_DIRECT_PULL:
 		debug("Registering endpoint for direct Pull");
 		action = ep->inAction;
-		callbackProc = wsenum_pull_raw_stub;
+		callbackProc = wsenum_pull_direct_stub;
 		break;
 	case WS_DISP_TYPE_GET:
 		debug("Registering endpoint for Get");
@@ -416,11 +418,9 @@ wsman_identify_stub(SoapOpH op,
 
 	if ((data = endPoint(cntx, status, opaqueData)) == NULL) {
 		error("Identify Fault");
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
-					    WSMAN_INTERNAL_ERROR, 0, NULL);
+		doc = wsman_generate_fault(soap_get_op_doc(op, 1), WSMAN_INTERNAL_ERROR, 0, NULL);
 	} else {
-		doc = wsman_create_response_envelope(cntx,
-			soap_get_op_doc(op, 1), NULL);
+		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			WSMID_IDENTIFY_RESPONSE, (char *) info->data, NULL, 1);
 		ws_serializer_free_mem(cntx, data, typeInfo);
@@ -467,10 +467,10 @@ ws_transfer_put_stub(SoapOpH op,
 			    	(char *) info->data, NULL, 0, 0);
 
 	if ((retVal = endPoint(cntx, data, &outData, &status, opaqueData))) {
-		doc = wsman_generate_fault(cntx, _doc, status.fault_code,
+		doc = wsman_generate_fault( _doc, status.fault_code,
 					   status.fault_detail_code, NULL);
 	} else {
-		doc = wsman_create_response_envelope(cntx, _doc, NULL);
+		doc = wsman_create_response_envelope(_doc, NULL);
 		if (outData) {
 			ws_serialize(cntx, ws_xml_get_soap_body(doc), outData,
 				     typeInfo, TRANSFER_PUT_RESP,
@@ -507,12 +507,11 @@ ws_transfer_delete_stub(SoapOpH op,
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
 		warning("Transfer Delete fault");
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault(soap_get_op_doc(op, 1),
 					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
 		debug("Creating Response doc");
-		doc = wsman_create_response_envelope(cntx,
-				soap_get_op_doc(op, 1), NULL);
+		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
 	}
 
 	if (doc) {
@@ -547,12 +546,11 @@ ws_transfer_get_stub(SoapOpH op,
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
 		warning("Transfer Get fault");
-		doc = wsman_generate_fault(cntx, soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
 		debug("Creating Response doc");
-		doc = wsman_create_response_envelope(cntx,
-			soap_get_op_doc(op, 1), NULL);
+		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
 
 		ws_serialize(cntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			 TRANSFER_GET_RESP, (char *) info->data, NULL, 1);
@@ -747,6 +745,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
                     WsmanFaultCodeType *fault_code)
 {
 	struct timeval  tv;
+	struct __timezone *tz;
 	time_t timeout;
 	char *text;
 	XML_DATETIME tmx;
@@ -774,7 +773,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout -= (time_t)__timezone;
+	timeout -= (time_t)tz;
 	*expire = timeout * 1000;
 DONE:
 	return;
@@ -785,8 +784,9 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	time_t t = expire/1000;
 	struct tm tm;
 	localtime_r(&t, &tm);
-	int gmtoffset_hour = (time_t)__timezone/3600;
-	int gmtoffset_minute = ((time_t)__timezone - gmtoffset_hour * 3600 ) /60;
+	struct __timezone *tz;
+	int gmtoffset_hour = (time_t)tz/3600;
+	int gmtoffset_minute = ((time_t)tz - gmtoffset_hour * 3600 ) /60;
 	if(gmtoffset_hour > 0)
 		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
@@ -887,7 +887,7 @@ create_enum_info(SoapOpH op,
 
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
-		outdoc = wsman_generate_fault(epcntx, indoc,
+		outdoc = wsman_generate_fault(indoc,
 			 fault_code, fault_detail_code, NULL);
 		u_free(enumInfo);
 	} else {
@@ -954,7 +954,7 @@ wsenum_enumerate_stub(SoapOpH op,
 
 	if (endPoint && (retVal = endPoint(epcntx, enumInfo, &status, opaqueData))) {
                 debug("enumeration fault");
-		doc = wsman_generate_fault(epcntx, _doc,
+		doc = wsman_generate_fault( _doc,
 			 status.fault_code, status.fault_detail_code, NULL);
 		destroy_enuminfo(enumInfo);
 		goto DONE;
@@ -963,7 +963,7 @@ wsenum_enumerate_stub(SoapOpH op,
 		doc = enumInfo->pullResultPtr;
 		enumInfo->index++;
 	} else {
-		doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+		doc = wsman_create_response_envelope( _doc, NULL);
 	}
 
 	if (!doc)
@@ -1028,20 +1028,19 @@ wsenum_release_stub(SoapOpH op,
 		op, WSENUM_RELEASE, &status);
 
 	if (enumInfo == NULL) {
-		doc = wsman_generate_fault(soapCntx, _doc,
+		doc = wsman_generate_fault( _doc,
 			status.fault_code, status.fault_detail_code, NULL);
 
 	} else {
 		if (endPoint && (retVal = endPoint(soapCntx,
 						enumInfo, &status, opaqueData))) {
 			error("endPoint error");
-			doc = wsman_generate_fault(soapCntx, _doc,
+			doc = wsman_generate_fault( _doc,
 				WSMAN_INTERNAL_ERROR,
 				OWSMAN_DETAIL_ENDPOINT_ERROR, NULL);
 			unlock_enuminfo(soapCntx, enumInfo);
 		} else {
-			doc = wsman_create_response_envelope(
-						soapCntx, _doc, NULL);
+			doc = wsman_create_response_envelope( _doc, NULL);
 			debug("Releasing context: %s", enumInfo->enumId);
 			remove_locked_enuminfo(soapCntx, enumInfo);
 			destroy_enuminfo(enumInfo);
@@ -1083,19 +1082,18 @@ wsenum_pull_stub(SoapOpH op, void *appData,
 		op, WSENUM_PULL, &status);
 
 	if (enumInfo == NULL) {
-		doc = wsman_generate_fault(soapCntx, _doc,
-			status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
 	locked = 1;
 	if ((retVal = endPoint(ws_create_ep_context(soap, _doc),
 						enumInfo, &status, opaqueData))) {
-		doc = wsman_generate_fault(soapCntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault(_doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
 	enumInfo->index++;
-	doc = wsman_create_response_envelope(soapCntx, _doc, NULL);
+	doc = wsman_create_response_envelope( _doc, NULL);
+
 	if (!doc) {
 		goto DONE;
 	}
@@ -1141,7 +1139,7 @@ DONE:
 }
 
 int
-wsenum_pull_raw_stub(SoapOpH op,
+wsenum_pull_direct_stub(SoapOpH op,
 		     void *appData,
 			void *opaqueData)
 {
@@ -1166,8 +1164,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 		subsInfo = search_pull_subs_info(soap, _doc);
 		if(subsInfo == NULL) {
 			error("Invalid enumeration context...");
-			doc = wsman_generate_fault(soapCntx, _doc,
-				status.fault_code, status.fault_detail_code, NULL);
+			doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 			goto cleanup;
 		}
 	}
@@ -1176,8 +1173,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 
 		if ((retVal = endPoint(ws_create_ep_context(soap, _doc),
 						enumInfo, &status, opaqueData))) {
-			doc = wsman_generate_fault(soapCntx, _doc,
-			 	status.fault_code, status.fault_detail_code, NULL);
+			doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 //			ws_remove_context_val(soapCntx, cntxName);
 			goto cleanup;
 		}
@@ -1210,11 +1206,11 @@ wsenum_pull_raw_stub(SoapOpH op,
 		}
 	}
 	else { //pull things from notifications
-		doc = ws_xml_create_envelope(soap, subsInfo->soapNs);
+		doc = ws_xml_create_envelope();
 		WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
 		docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
 		if(docnode) {
-			ws_xml_add_child_format(docnode, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 
+			ws_xml_add_child_format(docnode, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT,
 				"uuid:%s", subsInfo->subsId);
 		}
 		pthread_mutex_lock(&subsInfo->notificationlock);
@@ -1226,7 +1222,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 			WsXmlNodeH header = ws_xml_get_soap_header(_doc);
 			if (ws_xml_get_child(header, 0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL) != NULL) {
 				WsXmlNodeH response_header =ws_xml_get_soap_header(doc);
-				response_header = ws_xml_add_child(response_header, XML_NS_WS_MAN, 
+				response_header = ws_xml_add_child(response_header, XML_NS_WS_MAN,
 					WSM_TOTAL_ESTIMATE, NULL);
 				if(response_header)
 					ws_xml_add_node_attr(response_header, XML_NS_SCHEMA_INSTANCE, XML_SCHEMA_NIL, "true");
@@ -1237,7 +1233,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 			if(max_elements > 1 && count > 1) {
 				docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
 			}
-			while(max_elements > 0) {	
+			while(max_elements > 0) {
 				notifnode = list_first(subsInfo->pull_notificationDocList);
 				if(notifnode == NULL) break;
 				WsEventBodyH eventbody = (WsEventBodyH)notifnode->list_data;
@@ -1254,8 +1250,7 @@ wsenum_pull_raw_stub(SoapOpH op,
 		}
 		else {
 			status.fault_code = WSMAN_TIMED_OUT;
-			doc = wsman_generate_fault(soapCntx, _doc,
-			 	status.fault_code, status.fault_detail_code, NULL);
+			doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		}
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 	}
@@ -1407,10 +1402,10 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 
 
 static void
-create_notification_template(SoapH soap, WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
+create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 {
 	int i;
-	WsXmlDocH notificationDoc = ws_xml_create_envelope(soap, subsInfo->soapNs);
+	WsXmlDocH notificationDoc = ws_xml_create_envelope();
 	WsXmlNodeH temp = NULL;
 	WsXmlNodeH node = NULL;
 	WsXmlNodeH header = NULL;
@@ -1429,8 +1424,8 @@ create_notification_template(SoapH soap, WsXmlDocH indoc, WsSubscribeInfo *subsI
 			ws_xml_duplicate_tree(header, temp);
 		}
 	}
-	subsInfo->templateDoc = ws_xml_duplicate_doc(soap, notificationDoc);
-	subsInfo->heartbeatDoc = ws_xml_duplicate_doc(soap, notificationDoc);
+	subsInfo->templateDoc = ws_xml_duplicate_doc(notificationDoc);
+	subsInfo->heartbeatDoc = ws_xml_duplicate_doc( notificationDoc);
 	temp = ws_xml_get_soap_header(subsInfo->heartbeatDoc);
 	temp = ws_xml_add_child(temp, XML_NS_ADDRESSING, WSA_ACTION, WSMAN_ACTION_HEARTBEAT);
 	ws_xml_add_node_attr(temp, XML_NS_XML_SCHEMA, SOAP_MUST_UNDERSTAND, "true");
@@ -1489,7 +1484,7 @@ create_subs_info(SoapOpH op,
 			subsInfo->flags |= WSMAN_SUBSCRIBEINFO_BOOKMARK_DEFAULT;
 		}
 		else {
-			subsInfo->bookmarkDoc = ws_xml_create_doc(_op->cntx->soap, XML_NS_WS_MAN, WSM_BOOKMARK);
+			subsInfo->bookmarkDoc = ws_xml_create_doc(XML_NS_WS_MAN, WSM_BOOKMARK);
 			temp = ws_xml_get_doc_root(subsInfo->bookmarkDoc);
 			for (i = 0;
 					(child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++) {
@@ -1591,7 +1586,7 @@ create_subs_info(SoapOpH op,
 		else {
 			fault_code = WSE_INVALID_MESSAGE;
 		}
-			
+
 	}
 	if(wsman_parse_event_request(indoc, subsInfo, &fault_code, &fault_detail_code)) {
 		goto DONE;
@@ -1607,11 +1602,10 @@ create_subs_info(SoapOpH op,
 	}
 	generate_uuid(subsInfo->subsId, EUIDLEN, 1);
 	if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL))
-		create_notification_template(_op->cntx->soap, indoc, subsInfo);
+		create_notification_template(indoc, subsInfo);
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
-		outdoc = wsman_generate_fault(epcntx, indoc,
-			 fault_code, fault_detail_code, NULL);
+		outdoc = wsman_generate_fault(indoc, fault_code, fault_detail_code, NULL);
 		destroy_subsinfo(subsInfo);
 	} else {
 		*sInfo = subsInfo;
@@ -1655,12 +1649,11 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("Subscribe fault");
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		destroy_subsinfo(subsInfo);
 		goto DONE;
 	}
-	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+	doc = wsman_create_response_envelope(_doc, NULL);
 	if (!doc)
 		goto DONE;
 	char str[30];
@@ -1702,7 +1695,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(subsInfo->expires)
 		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
 	if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL))
-		ws_xml_add_child_format(inNode, XML_NS_ENUMERATION, 
+		ws_xml_add_child_format(inNode, XML_NS_ENUMERATION,
 		WSENUM_ENUMERATION_CONTEXT, "uuid:%s", subsInfo->subsId);
 	inNode = temp;
 	if(inNode){
@@ -1777,29 +1770,28 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		if(soap->subscriptionOpSet->search_subscription(soap->uri_subsRepository, uuid+5)) {
 			status.fault_code = WSMAN_INVALID_PARAMETER;
 			status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-			doc = wsman_generate_fault(epcntx, _doc,
+			doc = wsman_generate_fault( _doc,
 			 	status.fault_code, status.fault_detail_code, NULL);
 			pthread_mutex_unlock(&soap->lockSubs);
 			goto DONE;
 		}
 	}
 	else {
-		pthread_mutex_lock(&subsInfo->notificationlock);	
+		pthread_mutex_lock(&subsInfo->notificationlock);
 		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("UnSubscribe fault");
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
 	if(soap->subscriptionOpSet) {
 		soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
 	}
 	debug("subscription %s unsubscribed", uuid);
-	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+	doc = wsman_create_response_envelope( _doc, NULL);
 	if (!doc)
 		goto DONE;
 DONE:
@@ -1845,8 +1837,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(uuid == NULL) {
 		status.fault_code = WSE_INVALID_MESSAGE;
 		status.fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
 	pthread_mutex_lock(&soap->lockSubs);
@@ -1863,8 +1854,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	if(t == NULL) {
 		status.fault_code = WSE_UNABLE_TO_RENEW;
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		pthread_mutex_unlock(&soap->lockSubs);
 		goto DONE;
 	}
@@ -1886,15 +1876,14 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 			str);
 		debug("subscription %s updated!", uuid);
 	}
-	
+
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("renew fault in plug-in");
-		doc = wsman_generate_fault(epcntx, _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 		goto DONE;
 	}
-	doc = wsman_create_response_envelope(epcntx, _doc, NULL);
+	doc = wsman_create_response_envelope( _doc, NULL);
 	if (!doc)
 		goto DONE;
 	body = ws_xml_get_soap_body(doc);
@@ -1942,7 +1931,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 			goto LOOP;
 		}
 		if(time_expired(subsInfo->expires)) {
-			
+
 			goto LOOP;
 
 		}
@@ -2040,9 +2029,9 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	}
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
-	
-	debug("notification [%s] sent, len = %d", buf, len);	
-	
+
+	debug("notification [%s] sent, len = %d", buf, len);
+
 	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
 	if (r != CURLE_OK) {
 		debug("CURLOPT_POSTFIELDS set failed: %s", curl_easy_strerror(r));
@@ -2052,7 +2041,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	unsigned int i = subsInfo->connectionRetryCount;
 	do {
 		r = curl_easy_perform(curl);
-		if (r == CURLE_OK) 
+		if (r == CURLE_OK)
 			break;
 		else {
 			debug("curl_easy_perform failed, %s", curl_easy_strerror(r));
@@ -2069,7 +2058,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 			goto DONE;
 		}
 		debug("response data: %s", u_buf_ptr(response));
-		WsXmlDocH ackdoc = ws_xml_read_memory(NULL, u_buf_ptr(response), u_buf_len(response), "UTF-8", 0);
+		WsXmlDocH ackdoc = ws_xml_read_memory( u_buf_ptr(response), u_buf_len(response), "UTF-8", 0);
 		if(ackdoc) {
 			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
 			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
@@ -2084,7 +2073,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 						if(!strcasecmp(ws_xml_get_node_text(node), WSMAN_ACTION_ACK))
 							retVal = 0;
 					}
-						
+
 				}
 			}
 			ws_xml_destroy_doc(ackdoc);
@@ -2108,7 +2097,7 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 	WsSubscribeInfo * subsInfo = threadcntx->subsInfo;
 	if(flag == 1)
 		debug("wse_notification_sender for %s stated", subsInfo->subsId);
-	else 
+	else
 		debug("wse_heartbeat_sender for %s started", subsInfo->subsId);
 	pthread_mutex_lock(&subsInfo->notificationlock);
 	if(flag == 1)
@@ -2120,7 +2109,7 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 			notificationDoc = threadcntx->outdoc;
 		}
 		else
-	 		notificationDoc = ws_xml_duplicate_doc(threadcntx->soap, subsInfo->heartbeatDoc);
+	 		notificationDoc = ws_xml_duplicate_doc(subsInfo->heartbeatDoc);
 		if (!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) ||
 			!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PUSHWITHACK)){
 			if(wse_send_notification(threadcntx, notificationDoc, subsInfo, 1) == WSE_NOTIFICATION_NOACK)
@@ -2180,7 +2169,7 @@ void wse_notification_manager(void * cntx)
 	pthread_mutex_lock(&soap->lockSubs);
 	subsnode = list_first(soap->subscriptionMemList);
 	while(subsnode) {
-		subsInfo = (WsSubscribeInfo *)subsnode->list_data;	
+		subsInfo = (WsSubscribeInfo *)subsnode->list_data;
 		pthread_mutex_lock(&subsInfo->notificationlock);
 		if(((subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) ||
 			subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED ||
@@ -2209,10 +2198,10 @@ void wse_notification_manager(void * cntx)
 			}
 		}
 		WsNotificationInfoH notificationInfo = NULL;
-		if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source 
+		if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
 			goto LOOP;
 
-		notificationDoc = ws_xml_duplicate_doc(soap, subsInfo->templateDoc);
+		notificationDoc = ws_xml_duplicate_doc(subsInfo->templateDoc);
 		header = ws_xml_get_soap_header(notificationDoc);
 		body = ws_xml_get_soap_body(notificationDoc);
 		if(notificationInfo->headerOpaqueData) {
@@ -2291,9 +2280,6 @@ LOOP:
 //#endif
 
 
-		// SUPPORTING FUNCTIONS
-
-
 WsContextH
 ws_get_soap_context(SoapH soap)
 {
@@ -2334,10 +2320,9 @@ ws_clear_context_enuminfos(WsContextH hCntx)
 	hash_free(h);
 }
 int
-ws_remove_context_val(WsContextH cntx,
-		      char *name)
+ws_remove_context_val(WsContextH cntx, char *name)
 {
-	int             retVal = 1;
+	int retVal = 1;
 	if (cntx && name) {
 		hnode_t        *hn;
 		u_lock(cntx->soap);
@@ -2347,12 +2332,12 @@ ws_remove_context_val(WsContextH cntx,
 			hash_delete_free(cntx->entries, hn);
 			retVal = 0;
 		}
+		debug("2");
 		u_unlock(cntx->soap);
 	}
+	debug("3");
 	return retVal;
 }
-
-
 
 int
 ws_set_context_ulong_val(WsContextH cntx,
@@ -2404,7 +2389,7 @@ ws_destroy_context(WsContextH cntx)
 }
 
 
-hnode_t        *
+hnode_t*
 create_context_entry(hash_t * h,
 		     char *name,
 		     void *val)
@@ -2418,7 +2403,7 @@ create_context_entry(hash_t * h,
 SoapH
 ws_context_get_runtime(WsContextH cntx)
 {
-	SoapH           soap = NULL;
+	SoapH soap = NULL;
 	if (cntx)
 		soap = cntx->soap;
 	return soap;
@@ -2459,7 +2444,7 @@ set_context_val(WsContextH cntx,
 
 
 
-void           *
+void *
 get_context_val(WsContextH cntx, char *name)
 {
 	char           *val = NULL;
@@ -2476,7 +2461,7 @@ get_context_val(WsContextH cntx, char *name)
 }
 
 
-void           *
+void *
 ws_get_context_val(WsContextH cntx, char *name, int *size)
 {
 	return get_context_val(cntx, name);
@@ -2484,10 +2469,9 @@ ws_get_context_val(WsContextH cntx, char *name, int *size)
 
 
 unsigned long
-ws_get_context_ulong_val(WsContextH cntx,
-			 char *name)
+ws_get_context_ulong_val(WsContextH cntx, char *name)
 {
-	void           *ptr = get_context_val(cntx, name);
+	void  *ptr = get_context_val(cntx, name);
 	if (ptr != NULL)
 		return *((unsigned long *) ptr);
 	return 0;
@@ -2569,45 +2553,6 @@ soap_set_op_doc(SoapOpH op,
 	return retVal;
 }
 
-char           *
-soap_get_op_action(SoapOpH op,
-		   int inbound)
-{
-	char           *action = NULL;
-	if (op) {
-		op_t           *e = (op_t *) op;
-		action = (!inbound) ? e->dispatch->outboundAction :
-			e->dispatch->inboundAction;
-	}
-	return action;
-}
-
-void
-soap_set_op_action(SoapOpH op,
-		   char *action,
-		   int inbound)
-{
-	if (op && action) {
-		op_t           *e = (op_t *) op;
-
-		if (!inbound) {
-			u_free(e->dispatch->outboundAction);
-			e->dispatch->outboundAction = u_str_clone(action);
-		} else {
-			u_free(e->dispatch->inboundAction);
-			e->dispatch->inboundAction = u_str_clone(action);
-		}
-	}
-}
-
-unsigned long
-soap_get_op_flags(SoapOpH op)
-{
-	if (op) {
-		return ((op_t *) op)->dispatch->flags;
-	}
-	return 0;
-}
 
 SoapH
 soap_get_op_soap(SoapOpH op)
@@ -2714,6 +2659,9 @@ ws_get_context_xml_doc_val(WsContextH cntx,
 void
 soap_destroy_fw(SoapH soap)
 {
+	if (soap == NULL )
+		return;
+
 	if (soap->dispatcherProc)
 		soap->dispatcherProc(soap->cntx, soap->dispatcherData, NULL);
 

@@ -109,12 +109,12 @@ myXmlErrorReporting (void *ctx, const char* msg, ...)
 	u_free(string);
 }
 
-void xml_parser_initialize(SoapH soap)
+void xml_parser_initialize()
 {
 	xmlSetGenericErrorFunc(NULL, myXmlErrorReporting);
 }
 
-void xml_parser_destroy(SoapH soap)
+void xml_parser_destroy()
 {
 }
 
@@ -207,14 +207,12 @@ WsXmlNodeH xml_parser_get_root(WsXmlDocH doc)
 }
 
 WsXmlDocH
-xml_parser_file_to_doc(SoapH soap, const char *filename,
+xml_parser_file_to_doc( const char *filename,
 		const char *encoding, unsigned long options)
 {
 	xmlDocPtr xmlDoc;
 	WsXmlDocH Doc = NULL;
-	if (soap == NULL) {
-		return NULL;
-	}
+
 	xmlDoc = xmlReadFile(filename, encoding,
 			XML_PARSE_NONET | XML_PARSE_NSCLEAN);
 	if (xmlDoc == NULL) {
@@ -233,7 +231,7 @@ xml_parser_file_to_doc(SoapH soap, const char *filename,
 }
 
 WsXmlDocH
-xml_parser_memory_to_doc(SoapH soap, const char *buf, size_t size,
+xml_parser_memory_to_doc( const char *buf, size_t size,
 		const char *encoding, unsigned long options)
 {
 	WsXmlDocH Doc = NULL;
@@ -253,7 +251,6 @@ xml_parser_memory_to_doc(SoapH soap, const char *buf, size_t size,
 	}
 
 	xmlDoc->_private = Doc;
-	//Doc->fw = soap;
 	Doc->parserDoc = xmlDoc;
 
 	return Doc;

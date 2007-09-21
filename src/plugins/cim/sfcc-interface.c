@@ -551,7 +551,7 @@ instance2xml(CimClientInfo * client,
 					 (char *) classname->hdl);
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
 
-	WsXmlDocH d = ws_xml_create_doc(NULL, class_namespace, final_class);
+	WsXmlDocH d = ws_xml_create_doc( class_namespace, final_class);
 	u_free(final_class);
 	r = ws_xml_get_doc_root(d);
 	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);
@@ -1611,7 +1611,7 @@ static CMPIObjectPath *cim_indication_handler_objectpath(CimClientInfo *client, 
 	return objectpath_handler;
 }
 
-CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querystring, 
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querystring,
 	char *querylanguage, char *uuid, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
@@ -1627,7 +1627,7 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 			querystring, CMPI_chars);
 	CMAddKey(objectpath, "QueryLanguage",
 			querylanguage, CMPI_chars);
-	instance = newCMPIInstance(objectpath, NULL); 
+	instance = newCMPIInstance(objectpath, NULL);
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
@@ -1660,7 +1660,7 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
 	if(rc.rc) goto cleanup;
 	char serverpath[128];
-//	snprintf(serverpath, 128, "http://localhost:%s/eventhandler/uuid:%s", 
+//	snprintf(serverpath, 128, "http://localhost:%s/eventhandler/uuid:%s",
 //		get_server_port(),
 //		uuid);
 	snprintf(serverpath, 128, "http://localhost:%s/wsman", get_server_port());
@@ -1670,7 +1670,7 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 			serverpath, CMPI_chars);
 	CMAddKey(objectpath, "PersistenceType",
 			&value, CMPI_uint16);
-	instance = newCMPIInstance(objectpath, NULL); 
+	instance = newCMPIInstance(objectpath, NULL);
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
@@ -1733,7 +1733,7 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 				       "CIM_IndicationSubscription", NULL);
 	CMPIValue value;
 	value.ref = objectpath_filter;
-	CMAddKey(objectpath, "Filter", 
+	CMAddKey(objectpath, "Filter",
 		&value, CMPI_ref);
 	value.ref = objectpath_handler;
 	CMAddKey(objectpath, "Handler",
@@ -1753,14 +1753,14 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 		&value, CMPI_uint64);
 	char currenttimestr[32];
 	getcurrentdatetime(currenttimestr);
-	
+
 //	CMAddKey(objectpath, "subscriptionStartTime",
 //		currenttimestr, CMPI_dateTime);
 	//set RepeatNotificationPolicy to None
 	value.uint16 = 2;
 	CMAddKey(objectpath, "RepeatNotificationPolicy",
 		&value, CMPI_uint16);
-	instance = newCMPIInstance(objectpath, NULL); 
+	instance = newCMPIInstance(objectpath, NULL);
 	instance_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
@@ -1803,7 +1803,7 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 				       "CIM_IndicationSubscription", NULL);
 	CMPIValue value;
 	value.ref = objectpath_filter;
-	CMAddKey(objectpath, "Filter", 
+	CMAddKey(objectpath, "Filter",
 		&value, CMPI_ref);
 	value.ref = objectpath_handler;
 	CMAddKey(objectpath, "Handler",
@@ -1849,7 +1849,7 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	if(rc.rc) goto cleanup;
 	CMPIValue value;
 	value.ref = objectpath_filter;
-	CMAddKey(objectpath_subscription, "Filter", 
+	CMAddKey(objectpath_subscription, "Filter",
 		&value, CMPI_ref);
 	value.ref = objectpath_handler;
 	CMAddKey(objectpath_subscription, "Handler",

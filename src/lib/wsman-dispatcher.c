@@ -140,8 +140,7 @@ generate_op_fault(op_t * op,
 	if (op->in_doc == NULL) {
 		return;
 	}
-	op->out_doc = wsman_generate_fault(op->cntx, op->in_doc, faultCode,
-					   faultDetail, NULL);
+	op->out_doc = wsman_generate_fault(op->in_doc, faultCode, faultDetail, NULL);
 	return;
 }
 
@@ -183,8 +182,7 @@ static int check_for_duplicate_selectors(op_t * op)
 	hash_t *h;
 
 	header =
-	    wsman_get_soap_header_element(op->dispatch->fw, op->in_doc,
-					  NULL, NULL);
+	    wsman_get_soap_header_element( op->in_doc, NULL, NULL);
 	if ((node =
 	     ws_xml_get_child(header, 0, XML_NS_WS_MAN,
 			      WSM_SELECTOR_SET)) == NULL) {
@@ -237,8 +235,7 @@ static int validate_control_headers(op_t * op)
 	char *mu = NULL;
 
 	header =
-	    wsman_get_soap_header_element(op->dispatch->fw, op->in_doc,
-					  NULL, NULL);
+	    wsman_get_soap_header_element( op->in_doc,  NULL, NULL);
 	maxsize =
 	    ws_xml_get_child(header, 0, XML_NS_WS_MAN,
 			     WSM_MAX_ENVELOPE_SIZE);
@@ -295,8 +292,7 @@ static WsXmlNodeH validate_mustunderstand_headers(op_t * op)
 	int i;
 	char *nsUri;
 
-	header = wsman_get_soap_header_element(op->dispatch->fw,
-					       op->in_doc, NULL, NULL);
+	header = wsman_get_soap_header_element(op->in_doc, NULL, NULL);
 	nsUri = ws_xml_get_node_name_ns(header);
 
 	for (i = 0;
@@ -347,9 +343,7 @@ static int check_supported_dialect(const char *dialect)
 static int check_unsupported_features(op_t * op)
 {
 	WsXmlNodeH enumurate;
-	WsXmlNodeH header = wsman_get_soap_header_element(op->dispatch->fw,
-							  op->in_doc, NULL,
-							  NULL);
+	WsXmlNodeH header = wsman_get_soap_header_element( op->in_doc, NULL, NULL);
 	WsXmlNodeH body = ws_xml_get_soap_body(op->in_doc);
 	int retVal = 0;
 	SoapH soap;
@@ -451,9 +445,7 @@ static int check_unsupported_features(op_t * op)
  */
 static int wsman_is_duplicate_message_id(op_t * op)
 {
-	WsXmlNodeH header = wsman_get_soap_header_element(op->dispatch->fw,
-							  op->in_doc, NULL,
-							  NULL);
+	WsXmlNodeH header = wsman_get_soap_header_element(op->in_doc, NULL, NULL);
 	int retVal = 0;
 	SoapH soap;
 	WsXmlNodeH msgIdNode;
@@ -545,7 +537,7 @@ outbound_control_header_filter(SoapOpH opHandle,
 	WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
 	WsXmlNodeH inHeaders =
-	    wsman_get_soap_header_element(soap, in_doc, NULL, NULL);
+	    wsman_get_soap_header_element(in_doc, NULL, NULL);
 	WsXmlNodeH maxsize;
 
 	if (!inHeaders)
@@ -579,7 +571,7 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
 
 	WsXmlNodeH outHeaders =
-	    wsman_get_soap_header_element(soap, out_doc, NULL, NULL);
+	    wsman_get_soap_header_element(out_doc, NULL, NULL);
 
 	if (outHeaders) {
 		if (ws_xml_get_child(outHeaders, 0,
@@ -594,19 +586,12 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 		}
 		if (in_doc != NULL) {
 			WsXmlNodeH inMsgIdNode;
-			inMsgIdNode = wsman_get_soap_header_element(soap,
-								    in_doc,
-								    XML_NS_ADDRESSING,
+			inMsgIdNode = wsman_get_soap_header_element(in_doc,XML_NS_ADDRESSING,
 								    WSA_MESSAGE_ID);
 			if (inMsgIdNode != NULL &&
-			    !ws_xml_get_child(outHeaders, 0,
-					      XML_NS_ADDRESSING,
-					      WSA_RELATES_TO)) {
-				ws_xml_add_child(outHeaders,
-						 XML_NS_ADDRESSING,
-						 WSA_RELATES_TO,
-						 ws_xml_get_node_text
-						 (inMsgIdNode));
+			    !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO)) {
+				ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO,
+						 ws_xml_get_node_text(inMsgIdNode));
 			}
 		}
 	}
@@ -726,8 +711,7 @@ dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 	}
 
 	if (wsman_fault_occured(msg)) {
-		wsman_generate_fault_buffer(soap->cntx,
-					    in_doc,
+		wsman_generate_fault_buffer(in_doc,
 					    msg->status.fault_code,
 					    msg->status.fault_detail_code,
 					    msg->status.fault_msg,
@@ -835,7 +819,7 @@ void
 dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 {
 	op_t *op = NULL;
-	WsXmlDocH in_doc = wsman_build_inbound_envelope(soap, msg);
+	WsXmlDocH in_doc = wsman_build_inbound_envelope( msg);
 	SoapDispatchH dispatch = NULL;
 	debug("Inbound call...");
 
@@ -870,8 +854,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 }
 
 
-static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
-				       char *uri)
+static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, char *uri)
 {
 	char *ns = NULL;
 	lnode_t *node = NULL;
@@ -892,6 +875,7 @@ static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
 		}
 		node = list_next(r->namespaces, node);
 	}
+	debug("out");
 	return ns;
 }
 
@@ -958,10 +942,6 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 	return (WsEndPointRelease) ep->serviceEndPoint;
 }
 
-
-
-
-
 SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 {
 	SoapDispatchH disp = NULL;
@@ -1002,7 +982,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 			if(t == NULL) {
 				char *buf = NULL;
 				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf) == 0) {
-					notdoc = ws_xml_read_memory(soap, buf, strlen(buf), "UTF-8", 0);
+					notdoc = ws_xml_read_memory( buf, strlen(buf), "UTF-8", 0);
 					if(notdoc) {
 						nodedoc = ws_xml_get_soap_header(notdoc);
 						if(nodedoc) {
@@ -1022,11 +1002,10 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		goto cleanup;
 	}
 	while (node != NULL) {
-		WsDispatchInterfaceInfo *ifc =
-		    (WsDispatchInterfaceInfo *) node->list_data;
+		debug("blah");
+		WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *) node->list_data;
 		if (wsman_is_identify_request(doc)) {
-			if ((ns =
-			     wsman_dispatcher_match_ns(ifc,
+			if ((ns = wsman_dispatcher_match_ns(ifc,
 						       XML_NS_WSMAN_ID))) {
 				r = ifc;
 				resUriMatch = 1;
@@ -1052,9 +1031,11 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 		node = list_next((list_t *) dispInfo->interfaces, node);
 	}
+	debug("out");
 
 	if (wsman_is_identify_request(doc) && r != NULL) {
 		ep = &r->endPoints[0];
+		debug("out");
 	} else if (r != NULL) {
 		char *ptr = action;
 		/*
@@ -1085,6 +1066,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 
 	if (ep != NULL) {
 		for (i = 0; i < dispInfo->mapCount; i++) {
+		debug("out");
 			if (dispInfo->map[i].ep == ep) {
 				disp = dispInfo->map[i].disp;
 				break;
@@ -1092,13 +1074,15 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 	} else if (ep_custom != NULL) {
 		for (i = 0; i < dispInfo->mapCount; i++) {
+		debug("out");
 			if (dispInfo->map[i].ep == ep_custom) {
 				disp = dispInfo->map[i].disp;
 				break;
 			}
 		}
 	}
-      cleanup:
+	debug("out");
+cleanup:
 	if(notdoc)
 		ws_xml_destroy_doc(notdoc);
 	if (ns)

@@ -497,8 +497,7 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faul
 }
 
 WsXmlDocH
-wsman_generate_fault( WsContextH cntx,
-		WsXmlDocH in_doc,
+wsman_generate_fault( WsXmlDocH in_doc,
 		WsmanFaultCodeType faultCode,
 		WsmanFaultDetailType faultDetail,
 		char *fault_msg)
@@ -524,7 +523,7 @@ wsman_generate_fault( WsContextH cntx,
 			else
 				detail = NULL;
 
-			fault =  wsman_create_fault_envelope(cntx, in_doc,
+			fault =  wsman_create_fault_envelope( in_doc,
 					fault_code_table[i].code,
 					fault_code_table[i].subCodeNs,
 					fault_code_table[i].subCode,
@@ -541,8 +540,7 @@ wsman_generate_fault( WsContextH cntx,
 
 
 void
-wsman_generate_fault_buffer ( WsContextH cntx,
-		WsXmlDocH in_doc,
+wsman_generate_fault_buffer ( WsXmlDocH in_doc,
 		WsmanFaultCodeType faultCode,
 		WsmanFaultDetailType faultDetail,
 		char * fault_msg,
@@ -550,7 +548,7 @@ wsman_generate_fault_buffer ( WsContextH cntx,
 		int* len)
 {
 
-	WsXmlDocH doc = wsman_generate_fault(cntx, in_doc, faultCode, faultDetail, fault_msg);
+	WsXmlDocH doc = wsman_generate_fault( in_doc, faultCode, faultDetail, fault_msg);
 	debug( "Fault Code: %d", faultCode);
 	ws_xml_dump_memory_enc(doc, buf, len, NULL);
 	ws_xml_destroy_doc(doc);

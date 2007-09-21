@@ -189,7 +189,7 @@ int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 	WsXmlDocH doc= NULL;
 	char *temp;
 	int len = 0;
-	doc = xml_parser_file_to_doc((SoapH)-1, buf, "UTF-8", 0);
+	doc = xml_parser_file_to_doc( buf, "UTF-8", 0);
 	if(doc) {
 		WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
 			0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);

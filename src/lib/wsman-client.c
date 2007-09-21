@@ -111,7 +111,7 @@ wsmc_build_envelope(WsContextH cntx,
 	WsXmlNodeH      node;
 	char            uuidBuf[100];
 	WsXmlNodeH      header;
-	WsXmlDocH       doc = ws_xml_create_envelope(ws_context_get_runtime(cntx), NULL);
+	WsXmlDocH       doc = ws_xml_create_envelope();
 	if (!doc)
 		return NULL;
 
@@ -259,19 +259,17 @@ wsmc_get_endpoint(WsManClient * cl)
 
 
 WsXmlDocH
-wsmc_read_file(WsManClient * cl, char *filename,
+wsmc_read_file( char *filename,
 		char *encoding, unsigned long options)
 {
-	return ws_xml_read_file(ws_context_get_runtime(cl->wscntx),
-			filename, encoding, options);
+	return ws_xml_read_file( filename, encoding, options);
 }
 
 WsXmlDocH
-wsmc_read_memory(WsManClient * cl, char *buf,
+wsmc_read_memory( char *buf,
 		size_t size, char *encoding, unsigned long options)
 {
-	return ws_xml_read_memory(ws_context_get_runtime(cl->wscntx),
-			buf, size, encoding, options);
+	return ws_xml_read_memory( buf, size, encoding, options);
 }
 
 client_opt_t *
@@ -679,7 +677,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_HEARTBEATS, buf);
 		}
 		if(options->reference) {
-			WsXmlDocH doc = ws_xml_read_memory(NULL, options->reference, strlen(options->reference), "UTF-8", 0);
+			WsXmlDocH doc = ws_xml_read_memory( options->reference, strlen(options->reference), "UTF-8", 0);
 			node3 = ws_xml_get_doc_root(doc);
 			temp = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, NULL);
 			if(temp)
@@ -764,8 +762,7 @@ wsmc_create_request(WsManClient * cl,
 	char           *_action = NULL;
 
 	if (action == WSMAN_ACTION_IDENTIFY) {
-		request = ws_xml_create_envelope(
-				ws_context_get_runtime(cl->wscntx), NULL);
+		request = ws_xml_create_envelope();
 	} else {
 		if (method) {
 			if (strchr(method, '/'))
@@ -962,7 +959,7 @@ wsmc_action_create_fromtext(WsManClient * cl,
 		client_opt_t *options,
 		const char *data, size_t size, const char *encoding)
 {
-	WsXmlDocH source_doc = wsmc_read_memory(cl, (char *)data, size,
+	WsXmlDocH source_doc = wsmc_read_memory( (char *)data, size,
 			(char *)encoding, 0);
 	WsXmlDocH response;
 	if (source_doc == NULL) {
@@ -1029,7 +1026,7 @@ wsmc_action_put_fromtext(WsManClient * cl,
 		client_opt_t *options,
 		const char *data, size_t size, const char *encoding)
 {
-	WsXmlDocH source_doc = wsmc_read_memory(cl, (char *)data, size,
+	WsXmlDocH source_doc = wsmc_read_memory( (char *)data, size,
 			(char *)encoding, 0);
 	WsXmlDocH response;
 	if (source_doc == NULL) {
@@ -1206,7 +1203,7 @@ wsmc_action_invoke_fromtext(WsManClient * cl,
 		return NULL;
 	}
 	if ( data != NULL) {
-		WsXmlDocH doc = wsmc_read_memory(cl,
+		WsXmlDocH doc = wsmc_read_memory(
 				(char *)data, size, (char *)encoding, 0);
 		WsXmlNodeH n;
 		if (doc == NULL) {
@@ -1583,8 +1580,7 @@ wsmc_build_envelope_from_response(WsManClient * cl)
 		error("NULL response");
 		return NULL;
 	}
-	doc = ws_xml_read_memory(ws_context_get_runtime(cl->wscntx),
-			u_buf_ptr(buffer), u_buf_len(buffer), NULL, 0);
+	doc = ws_xml_read_memory( u_buf_ptr(buffer), u_buf_len(buffer), NULL, 0);
 	if (doc == NULL) {
 		error("could not create xmldoc from response");
 	}
@@ -1744,11 +1740,12 @@ wsmc_create(const char *hostname,
 {
 	WsManClient    *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
 	wsc->hdl = &wsc->data;
+	
 	if (pthread_mutex_init(&wsc->mutex, NULL)) {
 		u_free(wsc);
 		return NULL;
 	}
-	wsc->wscntx = ws_create_runtime(NULL);
+	wsc->wscntx = (WsContextH) u_zalloc(sizeof (WsContextH *)); //ws_create_runtime(NULL);
 
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = u_strdup(scheme ? scheme : "http");

@@ -1,1 +1,1 @@
-swig -python openwsman.i ; gcc -c -fPIC  openwsman.c openwsman_wrap.c -I /usr/include/python2.5 `pkg-config --libs --cflags openwsman`; gcc -shared openwsman.o openwsman_wrap.o -o _OpenWSMan.so `pkg-config --libs --cflags openwsman`
+swig -python openwsman.i ; gcc -c -fPIC  openwsman.c openwsman_wrap.c `python-config --cflags` `pkg-config --libs --cflags openwsman`; ld -bundle -flat_namespace -undefined suppress -o _OpenWSMan.so  openwsman.o openwsman_wrap.o  `pkg-config --libs openwsman`
