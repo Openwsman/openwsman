@@ -1,8 +1,10 @@
-%module OpenWSMan
+%module pywsman
 %{
 #include "wsman-api.h"
 #include "wsman-names.h"
+#include "openwsman.h"
 %}
+
 
 
 

@@ -1,1 +1,0 @@
-swig -python openwsman.i ; gcc -c -fPIC  openwsman.c openwsman_wrap.c `python-config --cflags` `pkg-config --libs --cflags openwsman`; ld -bundle -flat_namespace -undefined suppress -o _OpenWSMan.so  openwsman.o openwsman_wrap.o  `pkg-config --libs openwsman`

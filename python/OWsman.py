@@ -1,4 +1,4 @@
-import OpenWSMan
+import pywsman
 from lxml import etree as ElementTree
 from lxml import objectify
 from StringIO import StringIO
