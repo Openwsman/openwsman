@@ -733,7 +733,7 @@ static int time_expired(unsigned long lt)
 	struct timeval tv;
 	if(lt == 0) return 0; // 0 means it never expires
 	gettimeofday(&tv, NULL);
-	if(!(tv.tv_sec * 1000 + tv.tv_usec /1000 < lt))
+	if(!(tv.tv_sec< lt))
 		return 1;
 	else
 		return 0;
@@ -745,7 +745,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
                     WsmanFaultCodeType *fault_code)
 {
 	struct timeval  tv;
-	struct __timezone *tz;
+//	struct __timezone *tz;
 	time_t timeout;
 	char *text;
 	XML_DATETIME tmx;
@@ -762,8 +762,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
 			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
 			goto DONE;
 		}
-		*expire = (tv.tv_sec + timeout) * 1000 +
-			tv.tv_usec / 1000;
+		*expire = tv.tv_sec + timeout;
 		goto DONE;
 	}
 
@@ -773,22 +772,22 @@ wsman_set_expiretime(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout -= (time_t)tz;
-	*expire = timeout * 1000;
+	timeout -= __timezone;
+	*expire = timeout;
 DONE:
 	return;
 }
 
 static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 {
-	time_t t = expire/1000;
+	time_t t = expire;
 	struct tm tm;
 	localtime_r(&t, &tm);
-	struct __timezone *tz;
-	int gmtoffset_hour = (time_t)tz/3600;
-	int gmtoffset_minute = ((time_t)tz - gmtoffset_hour * 3600 ) /60;
+//	struct __timezone *tz;
+	int gmtoffset_hour = __timezone/3600;
+	int gmtoffset_minute = (__timezone - gmtoffset_hour * 3600 ) /60;
 	if(gmtoffset_hour > 0)
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
@@ -797,7 +796,7 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	else {
 		gmtoffset_hour = 0 - gmtoffset_hour;
 		gmtoffset_minute = 0 - gmtoffset_minute;
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,

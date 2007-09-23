@@ -334,7 +334,7 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 {
 	int retVal = 0;
-	WsXmlDocH doc = ws_xml_read_memory(soap, entry->strdoc, strlen(entry->strdoc), "UTF-8", 0);
+	WsXmlDocH doc = ws_xml_read_memory(entry->strdoc, strlen(entry->strdoc), "UTF-8", 0);
 	if(doc) {
 		WsXmlNodeH node = ws_xml_get_soap_body(doc);
 		if(node) {
