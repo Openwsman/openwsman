@@ -139,7 +139,7 @@ WsManTest_Subscribe_EP(WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData)
 {
-	debug("CIM Subscription");
+	debug("Test Subscribe Call");
 	int retval = 0;
 // to do here: create indication filter here and something else necessary
 	subsInfo->eventpoll = WsManTest_EventPoll_EP;

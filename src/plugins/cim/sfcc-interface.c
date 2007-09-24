@@ -70,7 +70,7 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	char *sub, *target_class = NULL;
 	hscan_t hs;
 	hnode_t *hn;
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
+	if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 		if ( (enumInfo->flags & WSMAN_ENUMINFO_EPR ) &&
 			!(enumInfo->flags & WSMAN_ENUMINFO_OBJEPR))  {
 			target_class = classname;
@@ -549,14 +549,12 @@ instance2xml(CimClientInfo * client,
 	classname = objectpath->ft->getClassName(objectpath, NULL);
 	class_namespace = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
-	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
-
+	final_class = classname->ft->getCharPtr(classname, NULL);
 	WsXmlDocH d = ws_xml_create_doc( class_namespace, final_class);
-	u_free(final_class);
 	r = ws_xml_get_doc_root(d);
 	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);
 
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
+	if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
@@ -575,7 +573,7 @@ instance2xml(CimClientInfo * client,
 		CMPIString *propertyname;
 		CMPIData data;
 		CMPIStatus is_key;
-		if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
+		if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
 			data = instance->ft->getProperty(instance,
