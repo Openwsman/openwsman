@@ -772,7 +772,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout -= __timezone;
+	timeout += __timezone;
 	*expire = timeout;
 DONE:
 	return;
@@ -1984,12 +1984,12 @@ response_handler( void *ptr, size_t size, size_t nmemb, void *data)
 static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, WsSubscribeInfo *subsInfo, unsigned char acked)
 {
 	int retVal = 0;
-	WsManClient *notificaitonSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
-	wsmc_transport_init(notificaitonSender, NULL);
-	wsman_send_request(notificaitonSender, outdoc);
+	WsManClient *notificationSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
+	wsmc_transport_init(notificationSender, NULL);
+	wsman_send_request(notificationSender, outdoc);
 	if(acked) {
 		retVal = WSE_NOTIFICATION_NOACK;
-		WsXmlDocH ackdoc = wsmc_build_envelope_from_response(notificaitonSender);
+		WsXmlDocH ackdoc = wsmc_build_envelope_from_response(notificationSender);
 		if(ackdoc) {
 			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
 			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
@@ -2010,7 +2010,8 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 			ws_xml_destroy_doc(ackdoc);
 		}
 	}
-	wsmc_release(notificaitonSender);
+	wsmc_release(notificationSender);
+	wsmc_transport_fini(notificationSender);
 	return retVal;
 /*	int retVal = 0;
 	if(outdoc == NULL) return 0;
