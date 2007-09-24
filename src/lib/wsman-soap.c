@@ -49,8 +49,8 @@
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
 
-#include <curl/curl.h>
-#include <curl/easy.h>
+#include "wsman-client-api.h"
+#include "wsman-client-transport.h"
 
 
 static int
@@ -1984,6 +1984,35 @@ response_handler( void *ptr, size_t size, size_t nmemb, void *data)
 static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, WsSubscribeInfo *subsInfo, unsigned char acked)
 {
 	int retVal = 0;
+	WsManClient *notificaitonSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
+	wsmc_transport_init(notificaitonSender, NULL);
+	wsman_send_request(notificaitonSender, outdoc);
+	if(acked) {
+		retVal = WSE_NOTIFICATION_NOACK;
+		WsXmlDocH ackdoc = wsmc_build_envelope_from_response(notificaitonSender);
+		if(ackdoc) {
+			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
+			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
+			WsXmlNodeH temp = NULL;
+			srcnode = ws_xml_get_child(srcnode, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
+			if(node) {
+				temp = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_RELATES_TO);
+				if(temp) {
+					if(!strcasecmp(ws_xml_get_node_text(srcnode),
+						ws_xml_get_node_text(temp))) {
+						node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ACTION);
+						if(!strcasecmp(ws_xml_get_node_text(node), WSMAN_ACTION_ACK))
+							retVal = 0;
+					}
+
+				}
+			}
+			ws_xml_destroy_doc(ackdoc);
+		}
+	}
+	wsmc_release(notificaitonSender);
+	return retVal;
+/*	int retVal = 0;
 	if(outdoc == NULL) return 0;
 	CURL *curl;
 	CURLcode r = CURLE_OK;
@@ -2084,7 +2113,7 @@ DONE:
 	u_buf_free(response);
 	curl_easy_cleanup(curl);
 	return retVal;
-
+*/
 }
 
 

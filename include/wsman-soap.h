@@ -104,9 +104,9 @@ struct __Soap {
 	list_t         *processedMsgIdList;
 
 	pthread_mutex_t lockSubs; //lock for Subscription Repository
-    list_t         	*subscriptionMemList; //memory Repository of Subscriptions
-    char 			*uri_subsRepository; //URI of repository
-    SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
+	list_t         	*subscriptionMemList; //memory Repository of Subscriptions
+	char 			*uri_subsRepository; //URI of repository
+	SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
 	EventSourceOpSetH eventsourceOpSet; //Function table of event source
 
 	WsContextH      cntx;

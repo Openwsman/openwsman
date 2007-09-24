@@ -57,8 +57,6 @@
 #include <time.h>
 #include <assert.h>
 
-#include <curl/curl.h>
-#include <curl/easy.h>
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -120,17 +118,6 @@ static void initialize_logging(void)
 	debug_add_handler(debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
 
 }				/* initialize_logging */
-
-static int initialize_curl(void)
-{
-	CURLcode r; 
-	r = curl_global_init(CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32);
-	if (r == CURLE_OK) {
-		return 0;
-	}
-	else 
-		return -1;
-}
 
 static void signal_handler(int sig_num)
 {
@@ -303,7 +290,7 @@ int main(int argc, char **argv)
 	sigaction(SIGHUP, &sig_action, NULL);
 
 	initialize_logging();
-	if(initialize_curl()) exit(-1);
+	
 	if ((listener = wsmand_start_server(ini)) == NULL) {
 		wsman_plugins_unload(listener);
 		u_free(listener);

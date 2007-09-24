@@ -52,11 +52,12 @@ LIBS = \
 libwsman_curl_client_transport_la_LIBADD = $(CURL_LIBS)
 libwsman_curl_client_transport_la_LDFLAGS = -version-info 1:0
 
-libwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
-libwsman_la_LDFLAGS= -version-info 1:0
-
 libwsman_client_la_LIBADD = $(LIBS) libwsman_curl_client_transport.la
 libwsman_client_la_LDFLAGS= -version-info 1:0
+
+libwsman_la_LIBADD = $(LIBS) -lpthread $(libwsman_client_la_LIBADD) libwsman_client.la
+libwsman_la_LDFLAGS= -version-info 1:0
+
 
 if DISABLE_SERVER
 else
