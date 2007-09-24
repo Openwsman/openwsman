@@ -70,7 +70,8 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	char *sub, *target_class = NULL;
 	hscan_t hs;
 	hnode_t *hn;
-	if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
+	if (strcmp(client->requested_class, "*")  && 
+			enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 		if ( (enumInfo->flags & WSMAN_ENUMINFO_EPR ) &&
 			!(enumInfo->flags & WSMAN_ENUMINFO_OBJEPR))  {
 			target_class = classname;
@@ -93,13 +94,8 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
 			debug("namespace=%s", (char *) hnode_get(hn));
-			if ((sub =
-			     strstr(target_class,
-				    (char *) hnode_getkey(hn)))) {
-				ns = u_strdup_printf("%s/%s",
-						     (char *)
-						     hnode_get(hn),
-						     target_class);
+			if ((sub =  strstr(target_class, (char *) hnode_getkey(hn)))) {
+				ns = u_strdup_printf("%s/%s",(char *) hnode_get(hn), target_class);
 				debug("vendor namespace match...");
 				break;
 			}
@@ -542,15 +538,17 @@ instance2xml(CimClientInfo * client,
 	CMPIConstClass *_class = NULL;
 	char *final_class = NULL;
 	int numproperties = 0;
-	WsXmlNodeH r;
-
+	WsXmlNodeH r= NULL;
+	WsXmlDocH d = NULL;
 
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	classname = objectpath->ft->getClassName(objectpath, NULL);
 	class_namespace = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
-	final_class = classname->ft->getCharPtr(classname, NULL);
-	WsXmlDocH d = ws_xml_create_doc( class_namespace, final_class);
+	
+	final_class = u_strdup(strrchr(class_namespace, '/') + 1); 
+	// final_class = classname->ft->getCharPtr(classname, NULL);
+	d = ws_xml_create_doc( class_namespace, final_class);
 	r = ws_xml_get_doc_root(d);
 	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);
 
