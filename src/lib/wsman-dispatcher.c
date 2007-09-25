@@ -874,8 +874,7 @@ static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, char *uri)
 			break;
 		}
 		node = list_next(r->namespaces, node);
-	}
-	debug("out");
+	}	
 	return ns;
 }
 

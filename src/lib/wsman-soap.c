@@ -2361,10 +2361,8 @@ ws_remove_context_val(WsContextH cntx, char *name)
 			hash_delete_free(cntx->entries, hn);
 			retVal = 0;
 		}
-		debug("2");
 		u_unlock(cntx->soap);
 	}
-	debug("3");
 	return retVal;
 }
 
