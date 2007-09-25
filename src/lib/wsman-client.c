@@ -1135,8 +1135,7 @@ wsmc_action_invoke(WsManClient * cl,
 	hnode_t        *hn;
 	WsXmlDocH       response;
 	WsXmlNodeH body = NULL;
-        WsXmlDocH       request = wsmc_create_request(cl,
-                resource_uri, options,
+        WsXmlDocH       request = wsmc_create_request(cl, resource_uri, options,
                 WSMAN_ACTION_CUSTOM, (char *)method, NULL);
 	if (!request)
 		return NULL;
@@ -1212,6 +1211,10 @@ wsmc_action_invoke_fromtext(WsManClient * cl,
 	} else {
             warning("No XML provided");
         }
+	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
+	}
+
 
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -1242,6 +1245,10 @@ wsmc_action_invoke_serialized(WsManClient * cl,
 	if (data != NULL) {
 		handle_resource_request(cl, request, data, typeInfo, (char *)resourceUri);
 	}
+	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
+		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
+	}
+
 
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -1735,7 +1742,7 @@ wsmc_create(const char *hostname,
 {
 	WsManClient    *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
 	wsc->hdl = &wsc->data;
-	
+
 	if (pthread_mutex_init(&wsc->mutex, NULL)) {
 		u_free(wsc);
 		return NULL;

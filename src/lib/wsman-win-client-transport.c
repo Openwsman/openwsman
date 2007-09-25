@@ -113,10 +113,16 @@ int wsmc_transport_init(WsManClient *cl, void *arg)
 		cl->lock_session_handle = 0L;
 		return 0;
 	}
+
+	//cl->session_handle = WinHttpOpen(agent,
+	//		      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+	//		      WINHTTP_NO_PROXY_NAME,
+	//		      WINHTTP_NO_PROXY_BYPASS, 0);
+
 	cl->session_handle = WinHttpOpen(agent,
-			      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-			      WINHTTP_NO_PROXY_NAME,
-			      WINHTTP_NO_PROXY_BYPASS, 0);
+		WINHTTP_ACCESS_TYPE_NAMED_PROXY, 
+		L"_", L"*", 0 );
+
 	cl->lock_session_handle = 0L;
 	u_free(agent);
 	if (cl->session_handle == NULL) {
@@ -353,8 +359,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 						       WINHTTP_QUERY_STATUS_CODE
 						       |
 						       WINHTTP_QUERY_FLAG_NUMBER,
-						       NULL, &dwStatusCode,
-						       &dwSize, NULL);
+						       WINHTTP_HEADER_NAME_BY_INDEX, &dwStatusCode,
+						       &dwSize, WINHTTP_NO_HEADER_INDEX);
 		}
 		if (!bResults) {
 			if (updated) {
@@ -390,7 +396,54 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					continue;
 				}
 			} else {
+				
+				bResults = WinHttpQueryAuthSchemes(request,
+								   &dwSupportedSchemes,
+								   &dwFirstScheme,
+								   &dwTarget);
+
+				// Set the credentials before resending the request.
+				if (bResults) {
+					if (!ws_auth || !cl->data.user ||
+						!cl->data.pwd) {
+						// we don't have credentials
+						bDone = TRUE;
+						bResults = 0;
 				break;
+			}
+					dwSelectedScheme =
+						ChooseAuthScheme(dwSupportedSchemes,
+								 ws_auth);
+
+					if (dwSelectedScheme == 0) {
+						bDone = TRUE;
+						bResults = 0;
+						break;
+					}
+					pwd = convert_to_unicode(cl->data.pwd);
+					usr = convert_to_unicode(cl->data.user);
+					if ((pwd == NULL) || (usr == NULL)) {
+						bDone = TRUE;
+						bResults = 0;
+						break;
+					}
+					bResults = WinHttpSetCredentials(request,
+									 dwTarget,
+									 dwSelectedScheme,
+									 usr, pwd,
+									 NULL);
+					u_free(pwd);
+					u_free(usr);
+				}
+				if (cleanup_request_data(request)) {
+					// the problems to read data
+					bDone = TRUE;
+					break;
+				}
+				lastErr = 0;
+				bResults = 0;
+				updated = 1;
+				continue;
 			}
 		}
 		switch (dwStatusCode) {
@@ -421,6 +474,28 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				bDone = TRUE;
 				break;
 			}
+			if(ws_auth  == AUTH_SCHEME_NTLM)
+			{
+				DWORD data = WINHTTP_AUTOLOGON_SECURITY_LEVEL_MEDIUM;
+				DWORD dataSize = sizeof(DWORD);
+				bResults = WinHttpSetOption(
+					request,
+					WINHTTP_OPTION_AUTOLOGON_POLICY,
+					&data,
+					dataSize);
+				if (!bResults) 
+				{ 
+					lastErr = GetLastError();
+					bDone = TRUE;					
+
+				}
+				if (cleanup_request_data(request)) {
+				// the problems to read data
+				bDone = TRUE;
+				}
+				break;
+			}
+			
 			bResults = WinHttpQueryAuthSchemes(request,
 							   &dwSupportedSchemes,
 							   &dwFirstScheme,

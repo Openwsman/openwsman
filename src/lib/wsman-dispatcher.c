@@ -1002,7 +1002,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		goto cleanup;
 	}
 	while (node != NULL) {
-		debug("blah");
+		
 		WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *) node->list_data;
 		if (wsman_is_identify_request(doc)) {
 			if ((ns = wsman_dispatcher_match_ns(ifc,
@@ -1031,7 +1031,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 		node = list_next((list_t *) dispInfo->interfaces, node);
 	}
-	debug("out");
+	
 
 	if (wsman_is_identify_request(doc) && r != NULL) {
 		ep = &r->endPoints[0];
@@ -1065,23 +1065,21 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	ws_remove_context_val(cntx, WSM_RESOURCE_URI);
 
 	if (ep != NULL) {
-		for (i = 0; i < dispInfo->mapCount; i++) {
-		debug("out");
+		for (i = 0; i < dispInfo->mapCount; i++) {		
 			if (dispInfo->map[i].ep == ep) {
 				disp = dispInfo->map[i].disp;
 				break;
 			}
 		}
 	} else if (ep_custom != NULL) {
-		for (i = 0; i < dispInfo->mapCount; i++) {
-		debug("out");
+		for (i = 0; i < dispInfo->mapCount; i++) {		
 			if (dispInfo->map[i].ep == ep_custom) {
 				disp = dispInfo->map[i].disp;
 				break;
 			}
 		}
 	}
-	debug("out");
+	
 cleanup:
 	if(notdoc)
 		ws_xml_destroy_doc(notdoc);
