@@ -71,6 +71,22 @@ namespace WsmanClientNamespace
 	typedef std::map<std::string, std::string> NameValuePairs;
 	typedef std::map<std::string, std::string>::const_iterator PairsIterator;
 
+	typedef enum {
+		WSMAN_DELIVERY_PUSH = 0,
+		WSMAN_DELIVERY_PUSHWITHACK,
+		WSMAN_DELIVERY_EVENTS,
+		WSMAN_DELIVERY_PULL
+	}NotificationDeliveryMode;
+
+	typedef struct __SubscribeInfo{
+		string filter;
+		string dialect;
+		string delivery_uri;
+		NotificationDeliveryMode delivery_mode;
+		float heartbeat_interval;
+		float expires;
+	}SubscribeInfo;
+
 	// Wsman Client Interface class
 	class WsmanClient
 	{
@@ -95,6 +111,15 @@ namespace WsmanClientNamespace
 
 		// Invokes a method and returns the results of the method call.
 		virtual string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const = 0;
+
+		// Submit a subscription
+		virtual string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const = 0;
+
+		// Renew a subscription
+		virtual string Renew(const string &identifier) const = 0;
+
+		// Terminate a subscription
+		virtual void Unsubscribe(const string &identifier) const = 0;
 	};
 } // namespace WsmanClientNamespace
 #endif

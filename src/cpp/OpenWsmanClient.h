@@ -68,6 +68,15 @@ namespace WsmanClientNamespace
 			// Invokes a method and returns the results of the method call.
 			string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const;
 
+			// Submit a subscription
+			string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const;
+
+			// Renew a subscription
+			string Renew(const string &identifier, float expire) const;
+			
+			// Terminate a subscription
+			void Unsubscribe(const string &identifier) const;
+
 			// Set auth method
 			void SetAuth(const char *auth_method = "digest");
 

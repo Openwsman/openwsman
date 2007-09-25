@@ -642,6 +642,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 {
 	debug("CIM Subscription");
 	int retval = 0;
+	/*
 	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
 	WsXmlNodeH nodeH = ws_xml_get_soap_body(in_doc);
 	CimClientInfo *cimclient = NULL;
@@ -705,6 +706,7 @@ cleanup:
 	if(indicationsubscription)
 		CMRelease(indicationsubscription);
 	CimResource_destroy(cimclient);
+	*/
 	return retval;
 }
 

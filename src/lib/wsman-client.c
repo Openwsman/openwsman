@@ -294,9 +294,11 @@ wsmc_options_destroy(client_opt_t * op)
 		hash_free(op->properties);
 	}
 	u_free(op->filter);
-	//u_free(op->dialect);
+	u_free(op->dialect);
 	u_free(op->fragment);
 	u_free(op->cim_ns);
+	u_free(op->delivery_uri);
+	u_free(op->reference);
 	u_free(op);
 	return;
 }
@@ -783,7 +785,7 @@ wsmc_create_request(WsManClient * cl,
 	header = ws_xml_get_soap_header(request);
 	if (!body  || !header )
 		return NULL;
-	if ((options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
+	if (options && (options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
 		WsXmlNodeH opset = ws_xml_add_child(header,
 				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
 		WsXmlNodeH op = ws_xml_add_child(opset,
@@ -842,13 +844,6 @@ wsmc_create_request(WsManClient * cl,
 			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
-	case WSMAN_ACTION_EVENT_PULL:
-		node = ws_xml_add_child(body,
-				XML_NS_ENUMERATION, WSEVENT_DELIVERY_MODE_PULL, NULL);
-		if (data) {
-			ws_xml_add_child(node, XML_NS_ENUMERATION,
-					WSENUM_ENUMERATION_CONTEXT, (char *) data);
-		}
 	case WSMAN_ACTION_NONE:
 	case WSMAN_ACTION_TRANSFER_CREATE:
 	case WSMAN_ACTION_TEST:

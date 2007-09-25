@@ -25,6 +25,7 @@ static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
 static string XmlDocToString(WsXmlDocH& doc);
 static client_opt_t *SetDefaultOptions();
+static string GetSubscribeIdentifier(WsXmlDocH& doc);
 static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
 
@@ -228,6 +229,73 @@ string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodNa
 	string xml = ExtractPayload(doc);
 	ws_xml_destroy_doc(doc);
 	return xml;
+}
+
+string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const
+{
+	client_opt_t *options = NULL;
+	options = SetDefaultOptions();
+	WsXmlDocH doc;
+	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
+	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
+	options->dialect = u_strdup(info.dialect.c_str());
+	options->filter = u_strdup(info.filter.c_str());
+	options->expires = info.expires;
+	options->heartbeat_interval = info.heartbeat_interval;
+	doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options);
+	wsmc_options_destroy(options);
+	CheckWsmanResponse(cl, doc);
+	string xml = ExtractPayload(doc);
+	identifier = GetSubscribeIdentifier(doc);
+	ws_xml_destroy_doc(doc);
+	return xml;
+}
+
+string OpenWsmanClient::Renew(const string &identifier, float expire) const
+{
+	client_opt_t *options = NULL;
+	options = SetDefaultOptions();
+	WsXmlDocH doc;
+	options->expires = expire;
+	doc = wsmc_action_renew(cl, NULL, options, identifier.c_str());
+	wsmc_options_destroy(options);
+	CheckWsmanResponse(cl, doc);
+	string xml = ExtractPayload(doc);
+	ws_xml_destroy_doc(doc);
+	return xml;
+}
+			
+void OpenWsmanClient::Unsubscribe(const string &identifier) const
+{
+	client_opt_t *options = NULL;
+	options = SetDefaultOptions();
+	WsXmlDocH doc;
+	doc = wsmc_action_unsubscribe(cl, NULL, options, identifier.c_str());
+	wsmc_options_destroy(options);
+	CheckWsmanResponse(cl, doc);
+	ws_xml_destroy_doc(doc);
+	return;
+}
+
+
+string GetSubscribeIdentifier(WsXmlDocH& doc)
+{
+	string str;
+	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
+	
+	if(bodyNode == NULL) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER);
+	if(bodyNode) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP);
+	if(bodyNode) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
+	if(bodyNode) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
+	if(bodyNode) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
+	if(bodyNode) return str;
+	char *identifier = ws_xml_get_node_text(bodyNode);
+	return string(identifier);
 }
 
 string ExtractPayload(WsXmlDocH& doc)
