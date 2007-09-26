@@ -1969,18 +1969,6 @@ static void delete_notification_info(WsNotificationInfoH notificationInfo) {
 	}
 }
 
-static size_t
-response_handler( void *ptr, size_t size, size_t nmemb, void *data)
-{
-	u_buf_t *buf = data;
-	size_t len;
-
-	len = size * nmemb;
-	u_buf_append(buf, ptr, len);
-	debug("response_handler: thread %p recieved %d bytes\n", pthread_self(), len, u_buf_len(buf));
-	return len;
-}
-
 static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, WsSubscribeInfo *subsInfo, unsigned char acked)
 {
 	int retVal = 0;
@@ -2011,110 +1999,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 		}
 	}
 	wsmc_release(notificationSender);
-	wsmc_transport_fini(notificationSender);
 	return retVal;
-/*	int retVal = 0;
-	if(outdoc == NULL) return 0;
-	CURL *curl;
-	CURLcode r = CURLE_OK;
-	struct curl_slist *headers=NULL;
-	char *buf = NULL;
-	u_buf_t *response = NULL;
-	u_buf_create(&response);
-	int len;
-	curl = curl_easy_init();
-	if (curl == NULL) {
-		debug("Could not init easy curl");
-		retVal = -1;
-		goto DONE;
-	}
-	r = curl_easy_setopt(curl, CURLOPT_URL, subsInfo->epr_notifyto);
-	if(r != 0) {
-		debug("CURLOPT_URL set failed: %s", curl_easy_strerror(r));
-		retVal = -1;
-		goto DONE;
-	}
-	r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, response_handler);
-	if (r != 0) {
-		debug("CURLOPT_WRITEFUNCTION set failed: %s", curl_easy_strerror(r));
-		retVal = -1;
-		goto DONE;
-	}
-	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
-	if (r != CURLE_OK) {
-		debug("CURLOPT_WRITEDATA set failed: %s", curl_easy_strerror(r));
-		retVal = -1;
-		goto DONE;
-	}
-	headers = curl_slist_append(headers,
-			"Content-Type: application/soap+xml;charset=UTF-8");
-	headers = curl_slist_append(headers, "User-Agent: openwsman");
-
-	r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-	if (r != CURLE_OK) {
-		debug("CURLOPT_HTTPHEADER set failed: %s", curl_easy_strerror(r));
-		retVal = -1;
-		goto DONE;
-	}
-	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-	ws_xml_dump_memory_enc(outdoc, &buf, &len, "UTF-8");
-
-	debug("notification [%s] sent, len = %d", buf, len);
-
-	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
-	if (r != CURLE_OK) {
-		debug("CURLOPT_POSTFIELDS set failed: %s", curl_easy_strerror(r));
-		retVal = -1;
-		goto DONE;
-	}
-	unsigned int i = subsInfo->connectionRetryCount;
-	do {
-		r = curl_easy_perform(curl);
-		if (r == CURLE_OK)
-			break;
-		else {
-			debug("curl_easy_perform failed, %s", curl_easy_strerror(r));
-			if(i == 0) {
-				break;
-			}
-		}
-		if(subsInfo->connectionRetryinterval) sleep(subsInfo->connectionRetryinterval);
-		i--;
-        } while(1);
-	if(acked) {
-		retVal = WSE_NOTIFICATION_NOACK;
-		if(r != CURLE_OK) {
-			goto DONE;
-		}
-		debug("response data: %s", u_buf_ptr(response));
-		WsXmlDocH ackdoc = ws_xml_read_memory( u_buf_ptr(response), u_buf_len(response), "UTF-8", 0);
-		if(ackdoc) {
-			WsXmlNodeH node = ws_xml_get_soap_header(ackdoc);
-			WsXmlNodeH srcnode = ws_xml_get_soap_header(outdoc);
-			WsXmlNodeH temp = NULL;
-			srcnode = ws_xml_get_child(srcnode, 0, XML_NS_ADDRESSING, WSA_MESSAGE_ID);
-			if(node) {
-				temp = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_RELATES_TO);
-				if(temp) {
-					if(!strcasecmp(ws_xml_get_node_text(srcnode),
-						ws_xml_get_node_text(temp))) {
-						node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ACTION);
-						if(!strcasecmp(ws_xml_get_node_text(node), WSMAN_ACTION_ACK))
-							retVal = 0;
-					}
-
-				}
-			}
-			ws_xml_destroy_doc(ackdoc);
-		}
-	}
-DONE:
-	ws_xml_free_memory(buf);
-	curl_slist_free_all(headers);
-	u_buf_free(response);
-	curl_easy_cleanup(curl);
-	return retVal;
-*/
 }
 
 
