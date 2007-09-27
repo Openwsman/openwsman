@@ -9,8 +9,11 @@ INCLUDES =  \
 LIBS = \
        $(OPENSSL_LIBS) \
        $(top_builddir)/src/lib/libwsman.la \
-       $(top_builddir)/src/lib/libwsman_server.la \
-       $(top_builddir)/src/lib/libwsman_client.la
+       $(top_builddir)/src/lib/libwsman_server.la 
+
+if ENABLE_EVENTING_SUPPORT
+LIBS +=  $(top_builddir)/src/lib/libwsman_client.la
+endif
 
 if USE_OPENSSL
 INCLUDES += $(OPENSSL_CFLAGS)

@@ -27,10 +27,13 @@ libwsman_la_SOURCES = \
 	wsman-xml-serialize.c \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
-	wsman-soap-message.c \
+	wsman-soap-message.c 
+
+if ENABLE_EVENTING_SUPPORT
+libwsman_la_SOURCES +=  \
 	wsman-subscription-repository.c \
 	wsman-event-source.c
-
+endif
 
 libwsman_curl_client_transport_la_SOURCES = \
 	wsman-client-transport.c \
@@ -55,7 +58,12 @@ libwsman_curl_client_transport_la_LDFLAGS = -version-info 1:0
 libwsman_client_la_LIBADD = $(LIBS) libwsman_curl_client_transport.la
 libwsman_client_la_LDFLAGS= -version-info 1:0
 
-libwsman_la_LIBADD = $(LIBS) -lpthread $(libwsman_client_la_LIBADD) libwsman_client.la
+libwsman_la_LIBADD = $(LIBS) -lpthread 
+
+if ENABLE_EVENTING_SUPPORT
+libwsman_la_LIBADD += $(libwsman_client_la_LIBADD) libwsman_client.la
+endif
+
 libwsman_la_LDFLAGS= -version-info 1:0
 
 

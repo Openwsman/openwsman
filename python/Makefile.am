@@ -33,11 +33,11 @@ _pywsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 python_LTLIBRARIES = _pywsman.la
 
 openwsman_wrap.c: $(SWIG_SOURCES)
-	swig -python -o $@ $<
+	$(SWIG) -python -o $@ $<
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(libdir)/python${PYTHON_VERSION}/site-packages
-	@INSTALL@ -m 0644 pywsman.py $(DESTDIR)$(libdir)/python${PYTHON_VERSION}/site-packages
+	$(mkinstalldirs) ${pythondir}/site-packages
+	@INSTALL@ -m 0644 pywsman.py ${pythondir}
 
 CLEANFILES= $(GENERATED)
 
