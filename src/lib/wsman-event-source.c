@@ -40,6 +40,7 @@
 
 int MemEventSourceInit (void *opaqueData);
 int MemEventSourceFinalize (void *opaqueData);
+int MemEventSourceCount(char *uuid);
 int MemEventSourceAddEvent (char *uuid, WsNotificationInfoH notification);
 int MemEventSourceAddPullEvent (char *uuid, WsNotificationInfoH notification) ;
 int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification);
@@ -49,8 +50,8 @@ list_t *global_event_list = NULL;
 int max_pull_event_number = 16;
 
 struct __EventSourceOpSet event_source_op_set ={MemEventSourceInit, MemEventSourceFinalize, 
-	MemEventSourceAddEvent, MemEventSourceAddPullEvent,MemEventSourceGetAndDeleteEvent,
-	MemEventSourceClearEvent};
+	MemEventSourceCount, MemEventSourceAddEvent, MemEventSourceAddPullEvent,
+	MemEventSourceGetAndDeleteEvent, MemEventSourceClearEvent};
 
 int MemEventSourceInit (void *opaqueData) {
 	global_event_list = list_create(-1);
@@ -60,6 +61,21 @@ int MemEventSourceInit (void *opaqueData) {
 }
 
 int MemEventSourceFinalize (void *opaqueData)  {
+	return 0;
+}
+
+int MemEventSourceCount(char *uuid) {
+	lnode_t *node = NULL;
+	event_entryH entry = NULL;
+	node = list_first(global_event_list);
+	while(node) {
+		entry = (event_entryH)node->list_data;
+		if(!strcasecmp(entry->subscription_id, uuid))
+			break;
+		node = list_next(global_event_list, node);
+	}
+	if(node)
+		return list_count(entry->event_content_list);
 	return 0;
 }
 
@@ -83,7 +99,6 @@ int MemEventSourceAddEvent (char *uuid, WsNotificationInfoH notification) {
 	}
 	node = lnode_create(notification);
 	list_append(entry->event_content_list, node);
-	debug("Add Event for %s", entry->subscription_id);
 	return 0;
 }
 
@@ -109,7 +124,6 @@ int MemEventSourceAddPullEvent (char *uuid, WsNotificationInfoH notification) {
 		return -1;
 	node = lnode_create(notification);
 	list_append(entry->event_content_list, node);
-	debug("Add Pull Event for %s", entry->subscription_id);
 	return 0;
 }
 
@@ -118,6 +132,7 @@ int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notificati
 	event_entryH entry = NULL;
 	*notification = NULL;
 	node = list_first(global_event_list);
+	debug("enter MemEventSourceGetAndDeleteEvent");
 	while(node) {
 		entry = (event_entryH)node->list_data;
 		if(!strcasecmp(entry->subscription_id, uuid))
@@ -132,12 +147,12 @@ int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notificati
 	list_delete(entry->event_content_list, node);
 	*notification = (WsNotificationInfoH)node->list_data;
 	lnode_destroy(node);
-	debug("Get event for %s", uuid);
 	return 0;
 }
 
 int MemEventSourceClearEvent (char *uuid, clearproc proc) {
 	lnode_t *node = NULL;
+	lnode_t *tmp = NULL;
 	event_entryH entry = NULL;
 	WsNotificationInfoH notification;
 	node = list_first(global_event_list);
@@ -154,14 +169,17 @@ int MemEventSourceClearEvent (char *uuid, clearproc proc) {
 	lnode_destroy(node);
 	node = list_first(entry->event_content_list);
 	while(node) {
-		list_delete(entry->event_content_list, node);
 		notification = (WsNotificationInfoH)node->list_data;
 		if(proc)
 			proc(notification);
+		tmp = list_next(entry->event_content_list, node);
+		list_delete(entry->event_content_list, node);
 		lnode_destroy(node);
+		node = tmp;
 	}
 	list_destroy(entry->event_content_list);
 	u_free(entry);
 	return 0;
 }
+
 

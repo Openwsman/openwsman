@@ -58,6 +58,7 @@ typedef void (*clearproc) (WsNotificationInfoH);
 
 typedef int (*EventSourceInit) (void *);
 typedef int (*EventSourceFinalize) (void *);
+typedef int (*EventSourceCount) (char *);
 typedef int (*EventSourceAddEvent) (char *, WsNotificationInfoH);
 typedef int (*EventSourceAddPullEvent) (char *, WsNotificationInfoH);
 typedef int (*EventSourceGetAndDeleteEvent) (char *, WsNotificationInfoH*);
@@ -67,6 +68,7 @@ typedef int (*EventSourceClearEvent) (char *, clearproc);
 struct __EventSourceOpSet {
 	EventSourceInit init;
 	EventSourceFinalize finalize;
+	EventSourceCount count;
 	EventSourceAddEvent add;
 	EventSourceAddPullEvent addpull;
 	EventSourceGetAndDeleteEvent delete;

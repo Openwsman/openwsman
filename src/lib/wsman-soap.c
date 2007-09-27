@@ -337,6 +337,7 @@ wsman_register_endpoint(WsContextH cntx,
 		action = ep->inAction;
 		callbackProc = ws_transfer_put_stub;
 		break;
+#ifdef ENABLE_EVENTING_SUPPORT
 	case WS_DISP_TYPE_SUBSCRIBE:
 		debug("Registering endpoint for Subscribe");
 		action = ep->inAction;
@@ -351,6 +352,7 @@ wsman_register_endpoint(WsContextH cntx,
 		action = ep->inAction;
 		callbackProc = wse_renew_stub;
 		break;
+#endif
 	case WS_DISP_TYPE_RAW_DOC:
 		action = ep->inAction;
 		callbackProc = (SoapServiceCallback) ep->serviceEndPoint;
@@ -1137,6 +1139,15 @@ DONE:
 	return retVal;
 }
 
+static void delete_notification_info(WsNotificationInfoH notificationInfo) {
+	if(notificationInfo) {
+		ws_xml_destroy_doc(notificationInfo->EventContent);
+		ws_xml_destroy_doc(notificationInfo->headerOpaqueData);
+		u_free(notificationInfo->EventAction);
+		u_free(notificationInfo);
+	}
+}
+
 int
 wsenum_pull_direct_stub(SoapOpH op,
 		     void *appData,
@@ -1155,6 +1166,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 	int locked = 0;
 	WsEnumerateInfo *enumInfo;
 	WsSubscribeInfo *subsInfo = NULL;
+	WsNotificationInfoH notificationInfo = NULL;
 	wsman_status_init(&status);
 	enumInfo = get_locked_enuminfo(soapCntx,
 	                               _doc, op, WSENUM_PULL, &status);
@@ -1204,6 +1216,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 				}
 		}
 	}
+#ifdef ENABLE_EVENTING_SUPPORT
 	else { //pull things from notifications
 		doc = ws_xml_create_envelope();
 		WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
@@ -1213,10 +1226,9 @@ wsenum_pull_direct_stub(SoapOpH op,
 				"uuid:%s", subsInfo->subsId);
 		}
 		pthread_mutex_lock(&subsInfo->notificationlock);
-		int count = list_count(subsInfo->pull_notificationDocList);
+		int count = soap->eventsourceOpSet->count(subsInfo->subsId);
 		int max_elements = 1;
 		if(count > 0) {
-			lnode_t *notifnode = NULL;
 			WsXmlDocH notidoc = NULL;
 			WsXmlNodeH header = ws_xml_get_soap_header(_doc);
 			if (ws_xml_get_child(header, 0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL) != NULL) {
@@ -1233,17 +1245,12 @@ wsenum_pull_direct_stub(SoapOpH op,
 				docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
 			}
 			while(max_elements > 0) {
-				notifnode = list_first(subsInfo->pull_notificationDocList);
-				if(notifnode == NULL) break;
-				WsEventBodyH eventbody = (WsEventBodyH)notifnode->list_data;
-				notidoc = eventbody->EventContent;
+				if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo))
+					break;
+				notidoc = notificationInfo->EventContent;
 				WsXmlNodeH tempnode = ws_xml_get_doc_root(notidoc);
 				ws_xml_duplicate_children(docnode, tempnode);
-				list_delete(subsInfo->pull_notificationDocList, notifnode);
-				u_free(eventbody->EventAction);
-				ws_xml_destroy_doc(eventbody->EventContent);
-				u_free(eventbody);
-				lnode_destroy(notifnode);
+				delete_notification_info(notificationInfo);
 				max_elements--;
 			}
 		}
@@ -1253,6 +1260,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 		}
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 	}
+#endif
 cleanup:
 	if (locked) {
 		unlock_enuminfo(soapCntx, enumInfo);
@@ -1350,7 +1358,7 @@ wsman_timeouts_manager(WsContextH cntx, void *opaqueData)
 }
 
 
-//#ifdef ENABLE_EVENTING_SUPPORT
+#ifdef ENABLE_EVENTING_SUPPORT
 WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
 {
 	WsEventThreadContextH eventcntx = u_malloc(sizeof(*eventcntx));
@@ -1361,21 +1369,6 @@ WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsI
 }
 
 static void
-destroy_pending_notifications(list_t *list)
-{
-	if (!list_isempty(list)) {
-		lnode_t * node;
-		WsXmlDocH doc;
-		while((node = list_first(list))) {
-			doc = (WsXmlDocH)node->list_data;
-			ws_xml_destroy_doc(doc);
-			list_del_first(list);
-			lnode_destroy(node);
-		}
-	}
-}
-
-static void
 destroy_subsinfo(WsSubscribeInfo * subsInfo)
 {
 	if(subsInfo == NULL) return;
@@ -1383,7 +1376,6 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	u_free(subsInfo->auth_data.username);
 	u_free(subsInfo->auth_data.password);
 	u_free(subsInfo->epr_notifyto);
-	u_free(subsInfo->deliveryMode);
 	u_free(subsInfo->locale);
 	u_free(subsInfo->soapNs);
 	u_free(subsInfo->contentEncoding);
@@ -1394,8 +1386,6 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	ws_xml_destroy_doc(subsInfo->bookmarkDoc);
 	ws_xml_destroy_doc(subsInfo->templateDoc);
 	ws_xml_destroy_doc(subsInfo->heartbeatDoc);
-	destroy_pending_notifications(subsInfo->pull_notificationDocList);
-	list_destroy(subsInfo->pull_notificationDocList);
 	u_free(subsInfo);
 }
 
@@ -1464,7 +1454,6 @@ create_subs_info(SoapOpH op,
 		goto DONE;
 	}
 	subsInfo->uri = u_strdup(wsman_get_resource_uri(epcntx, indoc));
-	subsInfo->pull_notificationDocList = list_create(-1);
 	if(!subNode) {
 		message("No subsribe body");
 		fault_code = WSE_INVALID_MESSAGE;
@@ -1509,69 +1498,80 @@ create_subs_info(SoapOpH op,
 		}
 	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
-	if(node){
-		WsXmlAttrH attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
-		if(attr) {
-			str = ws_xml_get_attr_value(attr);
-			if (!strcmp(str, WSEVENT_DELIVERY_MODE_PUSH) ||
-				!strcmp(str, WSEVENT_DELIVERY_MODE_PUSHWITHACK) ||
-				!strcmp(str, WSEVENT_DELIVERY_MODE_EVENTS) ||
-				!strcmp(str, WSEVENT_DELIVERY_MODE_PULL))
-				subsInfo->deliveryMode = u_strdup(str);
-			else {
-				debug("Unsupported delivery mode : %s",ws_xml_get_attr_value(attr));
-				fault_code = WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE;
-				goto DONE;
-			}
+	if(node == NULL) {
+		fault_code = WSE_INVALID_MESSAGE;
+		goto DONE;
+	}
+	WsXmlAttrH attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
+	if(attr) {
+		str = ws_xml_get_attr_value(attr);
+		if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_PUSH)) {
+			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PUSH;
+		}
+		else if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_PUSHWITHACK)) {
+			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PUSHWITHACK;
+		}
+		else if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_EVENTS))  {
+			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_EVENTS;
+		}
+		else if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_PULL)) {
+			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PULL;
 		}
 		else {
-			//"push" is the default delivery mode
-			subsInfo->deliveryMode = u_strdup(WSEVENT_DELIVERY_MODE_PUSH);
+			debug("Unsupported delivery mode : %s",ws_xml_get_attr_value(attr));
+			fault_code = WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE;
+			goto DONE;
 		}
-		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CONTENTCODING);
-		if(temp){
-			str = ws_xml_get_node_text(temp);
-			subsInfo->contentEncoding = u_strdup(str);
+	}
+	else {
+		//"push" is the default delivery mode
+		subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PUSH;
+	}
+	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CONTENTCODING);
+	if(temp){
+		str = ws_xml_get_node_text(temp);
+		subsInfo->contentEncoding = u_strdup(str);
+	}
+	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CONNECTIONRETRY);
+	if(temp) {
+		attr = ws_xml_find_node_attr(temp, NULL, WSM_TOTAL);
+		if(attr) {
+			str = ws_xml_get_attr_value(attr);
+			subsInfo->connectionRetryCount = atol(str);
 		}
-		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CONNECTIONRETRY);
-		if(temp) {
-			attr = ws_xml_find_node_attr(temp, NULL, WSM_TOTAL);
-			if(attr) {
-				str = ws_xml_get_attr_value(attr);
-				subsInfo->connectionRetryCount = atol(str);
+		str = ws_xml_get_node_text(temp);
+		if(str && str[0]=='P'){
+			//  xml duration
+			if (ws_deserialize_duration(str, &timeout)) {
+				fault_code = WSEN_INVALID_EXPIRATION_TIME;
+				goto DONE;
 			}
-			str = ws_xml_get_node_text(temp);
-			if(str && str[0]=='P'){
-				//  xml duration
-				if (ws_deserialize_duration(str, &timeout)) {
-					fault_code = WSEN_INVALID_EXPIRATION_TIME;
-					goto DONE;
-				}
-				debug("connect retry= %ul", timeout);
-				subsInfo->connectionRetryinterval = timeout;
+			debug("connect retry= %ul", timeout);
+			subsInfo->connectionRetryinterval = timeout;
+		}
+	}
+	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_LOCALE);
+	if(temp) {
+		attr = ws_xml_find_node_attr(temp, XML_NS_WS_MAN, WSM_LOCALE);
+		if(attr)
+			subsInfo->locale = u_strdup(ws_xml_get_attr_value(attr));
+	}
+	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_HEARTBEATS);
+	if(temp) {
+		str = ws_xml_get_node_text(temp);
+		debug("[heartbeat interval = %s]",str);
+		if(str[0]=='P') {
+			//  xml duration
+			if (ws_deserialize_duration(str, &timeout)) {
+				fault_code = WSEN_INVALID_EXPIRATION_TIME;
+				goto DONE;
 			}
+			debug("timeout = %d", timeout);
+			subsInfo->heartbeatInterval = timeout * 1000;
+			subsInfo->heartbeatCountdown = subsInfo->heartbeatInterval;
 		}
-		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_LOCALE);
-		if(temp) {
-			attr = ws_xml_find_node_attr(temp, XML_NS_WS_MAN, WSM_LOCALE);
-			if(attr)
-				subsInfo->locale = u_strdup(ws_xml_get_attr_value(attr));
-		}
-		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_HEARTBEATS);
-		if(temp) {
-			str = ws_xml_get_node_text(temp);
-			debug("[heartbeat interval = %s]",str);
-			if(str[0]=='P') {
-				//  xml duration
-				if (ws_deserialize_duration(str, &timeout)) {
-					fault_code = WSEN_INVALID_EXPIRATION_TIME;
-					goto DONE;
-				}
-				debug("timeout = %d", timeout);
-				subsInfo->heartbeatInterval = timeout * 1000;
-				subsInfo->heartbeatCountdown = subsInfo->heartbeatInterval;
-			}
-		}
+	}
+	if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL) {
 		node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_NOTIFY_TO);
 		if(node == NULL) {
 			message("No notification destination");
@@ -1585,7 +1585,6 @@ create_subs_info(SoapOpH op,
 		else {
 			fault_code = WSE_INVALID_MESSAGE;
 		}
-
 	}
 	if(wsman_parse_event_request(indoc, subsInfo, &fault_code, &fault_detail_code)) {
 		goto DONE;
@@ -1600,7 +1599,7 @@ create_subs_info(SoapOpH op,
 		subsInfo->auth_data.password = NULL;
 	}
 	generate_uuid(subsInfo->subsId, EUIDLEN, 1);
-	if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL))
+	if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL)
 		create_notification_template(indoc, subsInfo);
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
@@ -1693,7 +1692,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
 	if(subsInfo->expires)
 		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
-	if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL))
+	if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
 		ws_xml_add_child_format(inNode, XML_NS_ENUMERATION,
 		WSENUM_ENUMERATION_CONTEXT, "uuid:%s", subsInfo->subsId);
 	inNode = temp;
@@ -1934,7 +1933,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 			goto LOOP;
 
 		}
-		if(subsInfo->heartbeatInterval == 0 || strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL) == 0) {
+		if(subsInfo->heartbeatInterval == 0 || subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL) {
 			goto LOOP;
 		}
 		subsInfo->heartbeatCountdown -= 1000;
@@ -1958,15 +1957,6 @@ LOOP:
 		node = list_next(soap->subscriptionMemList, node);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
-}
-
-static void delete_notification_info(WsNotificationInfoH notificationInfo) {
-	if(notificationInfo) {
-		ws_xml_destroy_doc(notificationInfo->EventContent);
-		ws_xml_destroy_doc(notificationInfo->headerOpaqueData);
-		u_free(notificationInfo->EventAction);
-		u_free(notificationInfo);
-	}
 }
 
 static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, WsSubscribeInfo *subsInfo, unsigned char acked)
@@ -2013,26 +2003,26 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 		debug("wse_notification_sender for %s stated", subsInfo->subsId);
 	else
 		debug("wse_heartbeat_sender for %s started", subsInfo->subsId);
+	WsXmlDocH notificationDoc = NULL;
 	pthread_mutex_lock(&subsInfo->notificationlock);
 	if(flag == 1)
 		subsInfo->eventSentLastTime = 1;
 	if(!(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) &&
-		!time_expired(subsInfo->expires)) {
-		WsXmlDocH notificationDoc = NULL;
+		!time_expired(subsInfo->expires)) {	
 		if(flag) {
 			notificationDoc = threadcntx->outdoc;
 		}
 		else
 	 		notificationDoc = ws_xml_duplicate_doc(subsInfo->heartbeatDoc);
-		if (!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_EVENTS) ||
-			!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PUSHWITHACK)){
+		if (subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS  ||
+			subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK){
 			if(wse_send_notification(threadcntx, notificationDoc, subsInfo, 1) == WSE_NOTIFICATION_NOACK)
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_CANCELLED;
 		}
 		else
 			wse_send_notification(threadcntx, notificationDoc, subsInfo, 0);
-		ws_xml_destroy_doc(notificationDoc);
 	}
+	ws_xml_destroy_doc(notificationDoc);
 	subsInfo->flags &= ~WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING;
 	debug("[ wse_notification_sender thread for %s quit! ]",subsInfo->subsId);
 	pthread_mutex_unlock(&subsInfo->notificationlock);
@@ -2060,7 +2050,6 @@ void wse_notification_manager(void * cntx)
 	WsXmlNodeH body = NULL;
 	WsXmlNodeH node = NULL;
 	WsXmlNodeH temp = NULL;
-	WsEventBodyH eventbody = NULL;
 	lnode_t *eventdata = NULL;
 	lnode_t *subsnode = NULL;
 	lnode_t *tempnode = NULL;
@@ -2111,10 +2100,12 @@ void wse_notification_manager(void * cntx)
 				goto LOOP;
 			}
 		}
+		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
+			goto LOOP;
 		WsNotificationInfoH notificationInfo = NULL;
 		if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
 			goto LOOP;
-
+		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL) goto LOOP;
 		notificationDoc = ws_xml_duplicate_doc(subsInfo->templateDoc);
 		header = ws_xml_get_soap_header(notificationDoc);
 		body = ws_xml_get_soap_body(notificationDoc);
@@ -2129,7 +2120,7 @@ void wse_notification_manager(void * cntx)
 				ws_xml_duplicate_children(node, temp);
 			}
 		}
-*/		if(!strcmp(subsInfo->deliveryMode, WSMAN_ACTION_EVENTS)) {
+*/		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS) {
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_ACTION, WSEVENT_DELIVERY_MODE_EVENTS);
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
@@ -2156,7 +2147,7 @@ void wse_notification_manager(void * cntx)
 		else{
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
-			if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PUSHWITHACK))
+			if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK)
 				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 			if(notificationInfo->EventAction)
 				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACTION, notificationInfo->EventAction);
@@ -2165,12 +2156,8 @@ void wse_notification_manager(void * cntx)
 			node = ws_xml_get_doc_root(notificationInfo->EventContent);
 			ws_xml_duplicate_children(body, node);
 			delete_notification_info(notificationInfo);
-			if(!strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL)) {
-				tempnode = lnode_create(notificationDoc);
-				list_append(subsInfo->pull_notificationDocList, tempnode);
-			}
 		}
-		if(strcmp(subsInfo->deliveryMode, WSEVENT_DELIVERY_MODE_PULL)) {
+		if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL) {
 			if((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING) == 0) {
 				threadcntx = ws_create_event_context(soap, subsInfo, notificationDoc);
 				if(pthread_create(&eventsender, &pattrs, wse_notification_sender, threadcntx) == 0) {
@@ -2191,7 +2178,7 @@ LOOP:
 
 
 
-//#endif
+#endif
 
 
 WsContextH

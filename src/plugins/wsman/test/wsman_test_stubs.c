@@ -100,7 +100,7 @@ int WsManTest_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 
     return 0;
 }
-
+#ifdef ENABLE_EVENTING_SUPPORT
 int
 WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 {
@@ -124,7 +124,10 @@ WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10);
 	EventSourceOpSetH opset = threadcntx->soap->eventsourceOpSet;
-	retval = opset->addpull(threadcntx->subsInfo->subsId, notificationinfo);
+	if(threadcntx->subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
+		retval = opset->addpull(threadcntx->subsInfo->subsId, notificationinfo);
+	else
+		retval = opset->add(threadcntx->subsInfo->subsId, notificationinfo);
 	if(retval) {
 		u_free(notificationinfo->EventAction);
 		ws_xml_destroy_doc(notificationinfo->EventContent);
@@ -168,4 +171,4 @@ int WsManTest_UnSubscribe_EP(WsContextH cntx,
 	return 0;
 }
 
-
+#endif

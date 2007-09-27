@@ -541,6 +541,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	WsManListenerH *listener = wsman_dispatch_list_new();
 	listener->config = ini;
 	WsContextH cntx = wsman_init_plugins(listener);
+#ifdef ENABLE_EVENTING_SUPPORT
 	SubsRepositoryOpSetH ops = wsman_init_subscription_repository(cntx, wsmand_options_get_subscription_repository_uri());
 	list_t *subs_list = list_create(-1);
 	debug("subscription_repository_uri = %s", wsmand_options_get_subscription_repository_uri());
@@ -561,6 +562,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	}
 	list_destroy(subs_list);
 	wsman_init_event_source(cntx, NULL);
+#endif
 #ifdef MULTITHREADED_SERVER
 	int r;
 	int sock;
@@ -659,9 +661,9 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 
 	pthread_create(&thr_id, &pattrs,
 		       wsman_server_auxiliary_loop_thread, cntx);
-
+#ifdef ENABLE_EVENTING_SUPPORT
 	pthread_create(&notificationManager_id, &pattrs, wsman_notification_manager, cntx);
-
+#endif
 	while (continue_working) {
 		if ((sock = shttpd_accept(lsn, 1000)) == -1) {
 			continue;

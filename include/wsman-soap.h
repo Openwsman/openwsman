@@ -234,16 +234,6 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_NOACK 3
 #define WSE_NOTIFICATION_EVENTS_PENDING 4
 
-struct __WsEventBody {
-	char *EventAction;
-	WsXmlDocH EventContent;
-	int droppedEvents;
-};
-
-typedef struct __WsEventBody * WsEventBodyH;
-
-
-
 typedef int (*WsEndPointEventPoll) (WsEventThreadContextH);
 
 #define EUIDLEN		64
@@ -305,6 +295,12 @@ struct __WsEnumerateInfo {
 #define WSMAN_SUBSCRIPTION_SELECTORSET 0x40
 #define WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING 0x80
 #define WSMAN_SUBSCRIPTION_CANCELLED 0x100
+
+#define WS_EVENT_DELIVERY_MODE_PUSH 1 /* http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push */
+#define WS_EVENT_DELIVERY_MODE_PUSHWITHACK 2 /* http://schemas.dmtf.org/wbem/wsman/1/wsman/PushWithAck */
+#define WS_EVENT_DELIVERY_MODE_EVENTS 3 /* "	http://schemas.dmtf.org/wbem/wsman/1/wsman/Events */
+#define WS_EVENT_DELIVERY_MODE_PULL 4 /* http://schemas.dmtf.org/wbem/wsman/1/wsman/Pull */
+
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
 	unsigned long flags;
@@ -316,8 +312,8 @@ struct __WsSubscribeInfo {
 	char * locale; // language code
 	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
 	unsigned long expires;
-	char *	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription.
-	                                         Implied value is 'http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push',
+	int	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription.
+	                                         Implied value is WS_EVENT_DELIVERY_MODE_PUSH,
 	                                         which indicates that Push Mode delivery should be used. */
 	unsigned int	connectionRetryCount; // count of connection retry
 	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect

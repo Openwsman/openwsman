@@ -963,6 +963,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	}
 	uri = wsman_get_resource_uri(cntx, doc);
 	action = wsman_get_action(cntx, doc);
+#ifdef ENABLE_EVENTING_SUPPORT
 	if(wsman_is_event_related_request(doc)) {
 		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 		char *uuid = ws_xml_get_node_text(temp);
@@ -996,6 +997,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 			}
 		}
 	}
+#endif
 	debug("uri: %s, action: %s", uri, action);
 	if ((!uri || !action) && !wsman_is_identify_request(doc)) {
 		goto cleanup;
