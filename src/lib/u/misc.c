@@ -45,6 +45,36 @@ __INLINE__ int u_isblank(int c)
 {
     return c == ' ' || c == '\t';
 }
+/** \brief Returns \c 0 if \p c is not a quote, not-zero otherwise.
+ */
+__INLINE__ int u_isquote(int c)
+{
+    return c == '"';
+}
+
+
+void u_trim_quotes(char *s)
+{
+    char *p;
+
+    if(!s)
+        return;
+
+    /* trim trailing blanks */
+    p = s + strlen(s) -1;
+    while(s < p && u_isquote(*p))
+        --p;
+    p[1] = 0;
+
+    /* trim leading blanks */
+    p = s;
+    while(*p && u_isquote(*p))
+        ++p;
+
+    if(p > s)
+        memmove(s, p, 1 + strlen(p));	
+}
+
 
 /** \brief Removes leading and trailing blanks (spaces and tabs) from \p s
  */

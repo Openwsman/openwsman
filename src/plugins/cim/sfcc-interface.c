@@ -1715,7 +1715,7 @@ static void getcurrentdatetime(char *str)
 void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
-	CMPIInstance *instance_r = NULL;
+	CMPIObjectPath *instance_r = NULL;
 	CMPIObjectPath *objectpath = NULL;
 	CMPIStatus rc;
 

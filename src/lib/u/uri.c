@@ -222,6 +222,7 @@ hash_t *u_parse_query(const char *query)
 		*val++ = 0;
 		u_trim(key);
 		u_trim(val);
+		u_trim_quotes(val);
 		if (u_string_unify(key) || u_string_unify(val)) {
 			u_free(key);
 			dbg("Could not unify query: %s", tok);

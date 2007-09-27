@@ -49,6 +49,8 @@ extern "C" {
 int isstrdigit(char *str);
 int u_isnl(int c);
 void u_trim(char *s);
+void u_trim_quotes(char *);
+int u_isquote(int c);
 int u_isblank(int c);
 int u_isblank_str(const char *ln);
 char *u_strndup(const char *s, size_t len);
