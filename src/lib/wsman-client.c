@@ -1650,7 +1650,7 @@ wsmc_create_from_uri(const char* endpoint)
 			uri->scheme,
 			uri->user,
 			uri->pwd);
-
+	u_uri_free(uri);
 	return cl;
 }
 
