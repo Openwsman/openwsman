@@ -35,7 +35,7 @@
 #include "wsman_config.h"
 #endif
 #include "u/libu.h"
-#include "wsman-event-source.h"
+#include "wsman-event-pool.h"
 
 
 int MemEventPoolInit (void *opaqueData);
