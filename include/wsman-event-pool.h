@@ -56,24 +56,24 @@ typedef struct __event_entry *event_entryH;
 
 typedef void (*clearproc) (WsNotificationInfoH);
 
-typedef int (*EventSourceInit) (void *);
-typedef int (*EventSourceFinalize) (void *);
-typedef int (*EventSourceCount) (char *);
-typedef int (*EventSourceAddEvent) (char *, WsNotificationInfoH);
-typedef int (*EventSourceAddPullEvent) (char *, WsNotificationInfoH);
-typedef int (*EventSourceGetAndDeleteEvent) (char *, WsNotificationInfoH*);
-typedef int (*EventSourceClearEvent) (char *, clearproc);
+typedef int (*EventPoolInit) (void *);
+typedef int (*EventPoolFinalize) (void *);
+typedef int (*EventPoolCount) (char *);
+typedef int (*EventPoolAddEvent) (char *, WsNotificationInfoH);
+typedef int (*EventPoolAddPullEvent) (char *, WsNotificationInfoH);
+typedef int (*EventPoolGetAndDeleteEvent) (char *, WsNotificationInfoH*);
+typedef int (*EventPoolClearEvent) (char *, clearproc);
 
 /*Event Source Function Table*/
-struct __EventSourceOpSet {
-	EventSourceInit init;
-	EventSourceFinalize finalize;
-	EventSourceCount count;
-	EventSourceAddEvent add;
-	EventSourceAddPullEvent addpull;
-	EventSourceGetAndDeleteEvent delete;
-	EventSourceClearEvent clear;
+struct __EventPoolOpSet {
+	EventPoolInit init;
+	EventPoolFinalize finalize;
+	EventPoolCount count;
+	EventPoolAddEvent add;
+	EventPoolAddPullEvent addpull;
+	EventPoolGetAndDeleteEvent delete;
+	EventPoolClearEvent clear;
 };
-typedef struct __EventSourceOpSet *EventSourceOpSetH;
+typedef struct __EventPoolOpSet *EventPoolOpSetH;
 
 #endif

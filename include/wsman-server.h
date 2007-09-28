@@ -38,12 +38,12 @@
 
 #include "wsman-plugins.h"
 #include "wsman-subscription-repository.h"
-#include "wsman-event-source.h"
+#include "wsman-event-pool.h"
 int continue_working;
 
 WsContextH wsman_init_plugins(WsManListenerH *listener);
 SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *uri);
-EventSourceOpSetH wsman_init_event_source(WsContextH cntx, void*data);
+EventPoolOpSetH wsman_init_event_pool(WsContextH cntx, void*data);
 WsManListenerH *wsman_dispatch_list_new(void);
 void *wsman_server_auxiliary_loop_thread(void *arg);
 void *wsman_notification_manager(void *arg);

@@ -42,7 +42,7 @@
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
 #include "wsman-xml-api.h"
-#include "wsman-event-source.h"
+#include "wsman-event-pool.h"
 #include "wsman-subscription-repository.h"
 
 #define SOAP_MAX_RESENT_COUNT       10
@@ -107,7 +107,7 @@ struct __Soap {
 	list_t         	*subscriptionMemList; //memory Repository of Subscriptions
 	char 			*uri_subsRepository; //URI of repository
 	SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
-	EventSourceOpSetH eventsourceOpSet; //Function table of event source
+	EventPoolOpSetH eventpoolOpSet; //Function table of event source
 
 	WsContextH      cntx;
 	list_t         	*WsSerializerAllocList;
@@ -326,7 +326,6 @@ struct __WsSubscribeInfo {
 	WsEndPointEventPoll eventpoll; // plugin related poll process
 	WsXmlDocH templateDoc; //template notificaiton document
 	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
-	list_t * pull_notificationDocList; //to store pending pull soap documents
 };
 
 

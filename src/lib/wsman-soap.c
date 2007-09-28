@@ -1226,7 +1226,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 				"uuid:%s", subsInfo->subsId);
 		}
 		pthread_mutex_lock(&subsInfo->notificationlock);
-		int count = soap->eventsourceOpSet->count(subsInfo->subsId);
+		int count = soap->eventpoolOpSet->count(subsInfo->subsId);
 		int max_elements = 1;
 		if(count > 0) {
 			WsXmlDocH notidoc = NULL;
@@ -1245,7 +1245,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 				docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
 			}
 			while(max_elements > 0) {
-				if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo))
+				if(soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo))
 					break;
 				notidoc = notificationInfo->EventContent;
 				WsXmlNodeH tempnode = ws_xml_get_doc_root(notidoc);
@@ -2080,7 +2080,7 @@ void wse_notification_manager(void * cntx)
 			((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING ) == 0)) {
 			lnode_t *nodetemp = list_delete2(soap->subscriptionMemList, subsnode);
 			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, subsInfo->subsId);
-			soap->eventsourceOpSet->clear(subsInfo->subsId, delete_notification_info);
+			soap->eventpoolOpSet->clear(subsInfo->subsId, delete_notification_info);
 			if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE)
 				debug("Unsubscribed!uuid:%s deleted", subsInfo->subsId);
 			else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED)
@@ -2103,7 +2103,7 @@ void wse_notification_manager(void * cntx)
 		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
 			goto LOOP;
 		WsNotificationInfoH notificationInfo = NULL;
-		if(soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
+		if(soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
 			goto LOOP;
 		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL) goto LOOP;
 		notificationDoc = ws_xml_duplicate_doc(subsInfo->templateDoc);
@@ -2139,7 +2139,7 @@ void wse_notification_manager(void * cntx)
 					ws_xml_duplicate_children(temp, node);
 				}
 				delete_notification_info(notificationInfo);
-				soap->eventsourceOpSet->delete(subsInfo->subsId, &notificationInfo);
+				soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo);
 			}
 //			tempnode = lnode_create(notificationDoc);
 //			list_append(subsInfo->notificationDocList, tempnode);

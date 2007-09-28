@@ -38,33 +38,33 @@
 #include "wsman-event-source.h"
 
 
-int MemEventSourceInit (void *opaqueData);
-int MemEventSourceFinalize (void *opaqueData);
-int MemEventSourceCount(char *uuid);
-int MemEventSourceAddEvent (char *uuid, WsNotificationInfoH notification);
-int MemEventSourceAddPullEvent (char *uuid, WsNotificationInfoH notification) ;
-int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification);
-int MemEventSourceClearEvent (char *uuid, clearproc proc);
+int MemEventPoolInit (void *opaqueData);
+int MemEventPoolFinalize (void *opaqueData);
+int MemEventPoolCount(char *uuid);
+int MemEventPoolAddEvent (char *uuid, WsNotificationInfoH notification);
+int MemEventPoolAddPullEvent (char *uuid, WsNotificationInfoH notification) ;
+int MemEventPoolGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification);
+int MemEventPoolClearEvent (char *uuid, clearproc proc);
 
 list_t *global_event_list = NULL;
 int max_pull_event_number = 16;
 
-struct __EventSourceOpSet event_source_op_set ={MemEventSourceInit, MemEventSourceFinalize, 
-	MemEventSourceCount, MemEventSourceAddEvent, MemEventSourceAddPullEvent,
-	MemEventSourceGetAndDeleteEvent, MemEventSourceClearEvent};
+struct __EventPoolOpSet event_pool_op_set ={MemEventPoolInit, MemEventPoolFinalize, 
+	MemEventPoolCount, MemEventPoolAddEvent, MemEventPoolAddPullEvent,
+	MemEventPoolGetAndDeleteEvent, MemEventPoolClearEvent};
 
-int MemEventSourceInit (void *opaqueData) {
+int MemEventPoolInit (void *opaqueData) {
 	global_event_list = list_create(-1);
 	if(opaqueData)
 		max_pull_event_number = *(int *)opaqueData;
 	return 0;
 }
 
-int MemEventSourceFinalize (void *opaqueData)  {
+int MemEventPoolFinalize (void *opaqueData)  {
 	return 0;
 }
 
-int MemEventSourceCount(char *uuid) {
+int MemEventPoolCount(char *uuid) {
 	lnode_t *node = NULL;
 	event_entryH entry = NULL;
 	node = list_first(global_event_list);
@@ -79,7 +79,7 @@ int MemEventSourceCount(char *uuid) {
 	return 0;
 }
 
-int MemEventSourceAddEvent (char *uuid, WsNotificationInfoH notification) {
+int MemEventPoolAddEvent (char *uuid, WsNotificationInfoH notification) {
 	lnode_t *node = NULL;
 	event_entryH entry = NULL;
 	if(notification == NULL) return 0;
@@ -102,7 +102,7 @@ int MemEventSourceAddEvent (char *uuid, WsNotificationInfoH notification) {
 	return 0;
 }
 
-int MemEventSourceAddPullEvent (char *uuid, WsNotificationInfoH notification) {
+int MemEventPoolAddPullEvent (char *uuid, WsNotificationInfoH notification) {
 	lnode_t *node = NULL;
 	event_entryH entry = NULL;
 	if(notification == NULL) return 0;
@@ -127,7 +127,7 @@ int MemEventSourceAddPullEvent (char *uuid, WsNotificationInfoH notification) {
 	return 0;
 }
 
-int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification) {
+int MemEventPoolGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification) {
 	lnode_t *node = NULL;
 	event_entryH entry = NULL;
 	*notification = NULL;
@@ -150,7 +150,7 @@ int MemEventSourceGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notificati
 	return 0;
 }
 
-int MemEventSourceClearEvent (char *uuid, clearproc proc) {
+int MemEventPoolClearEvent (char *uuid, clearproc proc) {
 	lnode_t *node = NULL;
 	lnode_t *tmp = NULL;
 	event_entryH entry = NULL;

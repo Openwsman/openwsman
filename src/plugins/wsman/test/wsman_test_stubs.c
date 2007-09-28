@@ -123,7 +123,7 @@ WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10);
-	EventSourceOpSetH opset = threadcntx->soap->eventsourceOpSet;
+	EventPoolOpSetH opset = threadcntx->soap->eventpoolOpSet;
 	if(threadcntx->subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
 		retval = opset->addpull(threadcntx->subsInfo->subsId, notificationinfo);
 	else
@@ -158,7 +158,7 @@ int WsManTest_Renew_EP(WsContextH cntx,
 	debug("CIM Subscription");
 	int retval = 0;
 // to do here: create indication filter here and something else necessary
-	subsInfo->eventpoll = WsManTest_EventPoll_EP;
+//	subsInfo->eventpoll = WsManTest_EventPoll_EP;
 
 	return retval;
 }
