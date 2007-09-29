@@ -71,6 +71,32 @@ char *_put(WsManClient * cl, const char *resource_uri, client_opt_t * options,
 	return buf;
 }
 
+char *_subscribe(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding) {
+	char *buf = NULL;
+        int len;
+        WsXmlDocH doc  = wsmc_action_subscribe(cl, resource_uri, options);
+        ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+        ws_xml_destroy_doc(doc);
+        return buf;
+}
+
+char *_renew(WsManClient *cl, client_opt_t *options, char *identifier, char *encoding) {
+	char *buf = NULL;
+        int len;
+        WsXmlDocH doc  = wsmc_action_renew(cl, options, identifier);
+        ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+        ws_xml_destroy_doc(doc);
+        return buf;
+}
+
+char *_unsubscribe(WsManClient *cl, client_opt_t *options, char *identifier, char *encoding) {
+	char *buf = NULL;
+        int len;
+        WsXmlDocH doc  = wsmc_action_unsubscribe(cl, options, identifier);
+        ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
+        ws_xml_destroy_doc(doc);
+        return buf;
+}
 
 void _set_assoc_filter(client_opt_t *options) {
 	wsmc_set_action_option(options, FLAG_CIM_ASSOCIATORS);
