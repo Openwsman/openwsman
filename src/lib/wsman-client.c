@@ -1816,6 +1816,7 @@ wsmc_release(WsManClient * cl)
 	if (cl->wscntx) {
 		SoapH           soap = ws_context_get_runtime(cl->wscntx);
 		soap_destroy_fw(soap);
+		u_free(cl->wscntx);
 		cl->wscntx = NULL;
 	}
 	wsman_transport_close_transport(cl);

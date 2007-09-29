@@ -132,7 +132,6 @@ int MemEventPoolGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification
 	event_entryH entry = NULL;
 	*notification = NULL;
 	node = list_first(global_event_list);
-	debug("enter MemEventSourceGetAndDeleteEvent");
 	while(node) {
 		entry = (event_entryH)node->list_data;
 		if(!strcasecmp(entry->subscription_id, uuid))
