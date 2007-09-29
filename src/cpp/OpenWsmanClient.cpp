@@ -257,7 +257,7 @@ string OpenWsmanClient::Renew(const string &identifier, float expire) const
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
 	options->expires = expire;
-	doc = wsmc_action_renew(cl, NULL, options, identifier.c_str());
+	doc = wsmc_action_renew(cl, options, identifier.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
@@ -270,7 +270,7 @@ void OpenWsmanClient::Unsubscribe(const string &identifier) const
 	client_opt_t *options = NULL;
 	options = SetDefaultOptions();
 	WsXmlDocH doc;
-	doc = wsmc_action_unsubscribe(cl, NULL, options, identifier.c_str());
+	doc = wsmc_action_unsubscribe(cl, options, identifier.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	ws_xml_destroy_doc(doc);

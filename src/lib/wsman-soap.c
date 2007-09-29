@@ -1757,22 +1757,20 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soap->subscriptionMemList)) {
 		t = list_first(soap->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcmp(subsInfo->subsId, uuid+5)) {
+		if(strcasecmp(subsInfo->subsId, uuid+5)) {
 			while((t == list_next(soap->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
-				if(!strcmp(subsInfo->subsId, uuid+5)) break;
+				if(!strcasecmp(subsInfo->subsId, uuid+5)) break;
 			}
 		}
 	}
 	if(t == NULL) {
-		if(soap->subscriptionOpSet->search_subscription(soap->uri_subsRepository, uuid+5)) {
-			status.fault_code = WSMAN_INVALID_PARAMETER;
-			status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
-			doc = wsman_generate_fault( _doc,
-			 	status.fault_code, status.fault_detail_code, NULL);
-			pthread_mutex_unlock(&soap->lockSubs);
-			goto DONE;
-		}
+		status.fault_code = WSMAN_INVALID_PARAMETER;
+		status.fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+		doc = wsman_generate_fault( _doc,
+		 	status.fault_code, status.fault_detail_code, NULL);
+		pthread_mutex_unlock(&soap->lockSubs);
+		goto DONE;
 	}
 	else {
 		pthread_mutex_lock(&subsInfo->notificationlock);
@@ -1782,11 +1780,9 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	pthread_mutex_unlock(&soap->lockSubs);
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("UnSubscribe fault");
+		subsInfo->flags &= ~WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
 		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
-	}
-	if(soap->subscriptionOpSet) {
-		soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, uuid+5);
 	}
 	debug("subscription %s unsubscribed", uuid);
 	doc = wsman_create_response_envelope( _doc, NULL);
@@ -1843,7 +1839,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soap->subscriptionMemList)) {
 		t = list_first(soap->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcmp(subsInfo->subsId, uuid+5)) {
+		if(strcasecmp(subsInfo->subsId, uuid+5)) {
 			while((t == list_next(soap->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcmp(subsInfo->subsId, uuid+5)) break;

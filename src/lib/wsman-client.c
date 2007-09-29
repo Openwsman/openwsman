@@ -1350,7 +1350,7 @@ wsmc_action_subscribe_and_pull(WsManClient * cl,
 
 	while (enumContext != NULL && enumContext[0] != 0) {
 		long rc = wsmc_get_response_code(cl);
-		doc = wsmc_action_evt_pull(cl, resource_uri, options, enumContext);
+		doc = wsmc_action_pull(cl, resource_uri, options, enumContext);
 
 		if (rc != 200 && rc != 400 && rc != 500) {
 			return 0;
@@ -1420,40 +1420,6 @@ wsmc_action_pull(WsManClient * cl,
 	return response;
 }
 
-WsXmlDocH wsmc_action_evt_pull(WsManClient * cl, const char *resource_uri,
-			      client_opt_t * options,
-			      const char *enumContext)
-{
-	WsXmlDocH       response;
-	WsXmlNodeH      node;
-
-	if (enumContext || (enumContext && enumContext[0] == 0)) {
-		WsXmlDocH       request = wsmc_create_request(cl,
-				resource_uri, options,
-				WSMAN_ACTION_EVENT_PULL,
-				NULL, (char *)enumContext);
-		if (wsman_send_request(cl, request)) {
-			ws_xml_destroy_doc(request);
-			//            u_free(enumContext);
-			return NULL;
-		}
-		response = wsmc_build_envelope_from_response(cl);
-		//        u_free(enumContext);
-		ws_xml_destroy_doc(request);
-	} else {
-		error("No enumeration context ???");
-		return NULL;
-	}
-
-	node = ws_xml_get_child(ws_xml_get_soap_body(response),
-			0, NULL, NULL);
-
-	if (node == NULL ||
-			(strcmp(ws_xml_get_node_local_name(node), WSENUM_PULL_RESP)) != 0) {
-		error("no Pull response");
-	}
-	return response;
-}
 
 
 WsXmlDocH
@@ -1499,13 +1465,13 @@ WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
 	return response;
 }
 
-WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, const char *resource_uri,
+WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, 
 				 client_opt_t * options,
 				 const char *uuid)
 {
 	WsXmlDocH       response;
 	WsXmlDocH       request = wsmc_create_request(cl,
-			resource_uri, options,
+			NULL, options,
 			WSMAN_ACTION_UNSUBSCRIBE, NULL, (void *)uuid);
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
@@ -1516,13 +1482,13 @@ WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, const char *resource_uri,
 	return response;
 }
 
-WsXmlDocH wsmc_action_renew(WsManClient * cl, const char *resource_uri,
+WsXmlDocH wsmc_action_renew(WsManClient * cl, 
 				 client_opt_t * options,
 				 const char *uuid)
 {
 	WsXmlDocH       response;
 	WsXmlDocH       request = wsmc_create_request(cl,
-			resource_uri, options,
+			NULL, options,
 			WSMAN_ACTION_RENEW, NULL, (void *)uuid);
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
