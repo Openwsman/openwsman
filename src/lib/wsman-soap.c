@@ -902,7 +902,22 @@ static void destroy_filter(filter_t *filter)
 	if (filter->epr) {
 		//u_free(filter->epr);
 	}
-
+	if(filter->assocClass) {
+		u_free(filter->assocClass);
+	}
+	if(filter->query) {
+		u_free(filter->query);
+	}
+	if(filter->resultClass) {
+		u_free(filter->resultClass);
+	}
+	if(filter->resultRole) {
+		u_free(filter->resultRole);
+	}
+	if(filter->role) {
+		u_free(filter->role);
+	}
+	u_free(filter);
 }
 
 static void
@@ -1359,6 +1374,10 @@ wsman_timeouts_manager(WsContextH cntx, void *opaqueData)
 
 
 #ifdef ENABLE_EVENTING_SUPPORT
+static int destination_reachable(char *url)
+{
+	return 0;
+}
 WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
 {
 	WsEventThreadContextH eventcntx = u_malloc(sizeof(*eventcntx));
@@ -1406,12 +1425,7 @@ create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_NOTIFY_TO);
 	node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
 	if(node) {
-		for (i = 0;
-		     (temp =
-		      ws_xml_get_child(node, i, NULL, NULL)) != NULL;
-		     i++) {
-			ws_xml_duplicate_tree(header, temp);
-		}
+		ws_xml_duplicate_children(header, node);
 	}
 	subsInfo->templateDoc = ws_xml_duplicate_doc(notificationDoc);
 	subsInfo->heartbeatDoc = ws_xml_duplicate_doc( notificationDoc);
@@ -1474,10 +1488,7 @@ create_subs_info(SoapOpH op,
 		else {
 			subsInfo->bookmarkDoc = ws_xml_create_doc(XML_NS_WS_MAN, WSM_BOOKMARK);
 			temp = ws_xml_get_doc_root(subsInfo->bookmarkDoc);
-			for (i = 0;
-					(child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++) {
-						ws_xml_duplicate_tree(temp, child);
-					}
+			ws_xml_duplicate_children(temp, node);
 		}
 	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
@@ -1498,10 +1509,6 @@ create_subs_info(SoapOpH op,
 		}
 	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
-	if(node == NULL) {
-		fault_code = WSE_INVALID_MESSAGE;
-		goto DONE;
-	}
 	WsXmlAttrH attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
 	if(attr) {
 		str = ws_xml_get_attr_value(attr);
@@ -1514,13 +1521,8 @@ create_subs_info(SoapOpH op,
 		else if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_EVENTS))  {
 			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_EVENTS;
 		}
-		else if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_PULL)) {
-			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PULL;
-		}
 		else {
-			debug("Unsupported delivery mode : %s",ws_xml_get_attr_value(attr));
-			fault_code = WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE;
-			goto DONE;
+			subsInfo->deliveryMode = WS_EVENT_DELIVERY_MODE_PULL;
 		}
 	}
 	else {
@@ -1531,24 +1533,6 @@ create_subs_info(SoapOpH op,
 	if(temp){
 		str = ws_xml_get_node_text(temp);
 		subsInfo->contentEncoding = u_strdup(str);
-	}
-	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CONNECTIONRETRY);
-	if(temp) {
-		attr = ws_xml_find_node_attr(temp, NULL, WSM_TOTAL);
-		if(attr) {
-			str = ws_xml_get_attr_value(attr);
-			subsInfo->connectionRetryCount = atol(str);
-		}
-		str = ws_xml_get_node_text(temp);
-		if(str && str[0]=='P'){
-			//  xml duration
-			if (ws_deserialize_duration(str, &timeout)) {
-				fault_code = WSEN_INVALID_EXPIRATION_TIME;
-				goto DONE;
-			}
-			debug("connect retry= %ul", timeout);
-			subsInfo->connectionRetryinterval = timeout;
-		}
 	}
 	temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_LOCALE);
 	if(temp) {
@@ -1580,8 +1564,12 @@ create_subs_info(SoapOpH op,
 		}
 		str = ws_xml_get_node_text(ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS));
 		debug("event sink: %s", str);
-		if(str && strcmp(str, ""))
+		if(str && strcmp(str, "")) {
 			subsInfo->epr_notifyto = u_strdup(str);
+			if(destination_reachable(str)) {
+				fault_code = WSMAN_EVENT_DELIVER_TO_UNUSABLE;
+			}
+		}
 		else {
 			fault_code = WSE_INVALID_MESSAGE;
 		}

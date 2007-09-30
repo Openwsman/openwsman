@@ -264,6 +264,7 @@
 
 #define WSEVENT_DELIVERY		"Delivery"
 #define WSEVENT_NOTIFY_TO		"NotifyTo"
+#define WSEVENT_ENDTO			"EndTo"
 #define WSEVENT_EXPIRES		"Expires"
 #define WSEVENT_DELIVERY_MODE   "Mode"
 #define WSEVENT_SUBSCRIPTION_MANAGER "SubscriptionManager"

@@ -624,6 +624,8 @@ instance2xml(CimClientInfo * client,
 		CMRelease(classname);
 	if (objectpath)
 		CMRelease(objectpath);
+	if (final_class)
+		u_free(final_class);
 	if (class_namespace)
 		u_free(class_namespace);
 }

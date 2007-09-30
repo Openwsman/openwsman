@@ -343,6 +343,7 @@ static int check_supported_dialect(const char *dialect)
 static int check_unsupported_features(op_t * op)
 {
 	WsXmlNodeH enumurate;
+	WsXmlNodeH subscribe;
 	WsXmlNodeH header = wsman_get_soap_header_element( op->in_doc, NULL, NULL);
 	WsXmlNodeH body = ws_xml_get_soap_body(op->in_doc);
 	int retVal = 0;
@@ -357,6 +358,7 @@ static int check_unsupported_features(op_t * op)
 		retVal = 1;
 		generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 					WSMAN_DETAIL_ADDRESSING_MODE);
+		goto DONE;
 	}
 	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_LOCALE);
 	if (n != NULL) {
@@ -368,6 +370,7 @@ static int check_unsupported_features(op_t * op)
 			generate_op_fault(op,
 						WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_LOCALE);
+			goto DONE;
 		}
 	}
 	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN,
@@ -381,14 +384,14 @@ static int check_unsupported_features(op_t * op)
 			generate_op_fault(op,
 						WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_FRAGMENT_LEVEL_ACCESS);
+			goto DONE;
 		}
 	}
 
 	enumurate =
 	    ws_xml_get_child(body, 0, XML_NS_ENUMERATION,
 			     WSENUM_ENUMERATE);
-	if (!enumurate)
-		return retVal;
+	if (enumurate) {
 
 	n = ws_xml_get_child(enumurate, 0, XML_NS_ENUMERATION,
 			     WSENUM_END_TO);
@@ -403,6 +406,7 @@ static int check_unsupported_features(op_t * op)
 	if (n != NULL && m != NULL) {
 		retVal = 1;
 		generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
+		goto DONE;
 	} else if (n || m) {
 		char *dia = NULL;
 		if (n) {
@@ -415,9 +419,12 @@ static int check_unsupported_features(op_t * op)
 		else
 			retVal = check_supported_dialect (WSM_XPATH_FILTER_DIALECT);
 
-		if (retVal)
+		if (retVal) {
+			retVal = 1;
 			generate_op_fault(op, WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,
 						0);
+			goto DONE;
+			}
 	}
 	k = ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
 	if (k)
@@ -428,11 +435,47 @@ static int check_unsupported_features(op_t * op)
 			retVal = 1;
 			generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 						WSMAN_DETAIL_FILTERING_REQUIRED);
+			goto DONE;
 		}
 
 	}
-
-
+	}
+	subscribe = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
+	if(subscribe) {
+		n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_ENDTO);
+		if(n) {
+			retVal = 1;
+			generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
+					WSMAN_DETAIL_ADDRESSING_MODE);
+			goto DONE;
+		}
+		n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
+		if(n == NULL) {
+			retVal = 1;
+			generate_op_fault(op, WSE_INVALID_MESSAGE, 0);
+			goto DONE;
+		}
+		WsXmlAttrH attr = ws_xml_find_node_attr(n, NULL,WSEVENT_DELIVERY_MODE);
+		if(attr) {
+			mu = ws_xml_get_attr_value(attr);
+			if (strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSH) && 
+				strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSHWITHACK) &&
+				strcasecmp(mu, WSEVENT_DELIVERY_MODE_EVENTS) &&
+				strcasecmp(mu, WSEVENT_DELIVERY_MODE_PULL)) {
+				debug("Unsupported delivery mode : %s",ws_xml_get_attr_value(attr));
+				retVal = 1;
+				generate_op_fault(op, WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE, 0);
+				goto DONE;
+			}
+		}
+		m = ws_xml_get_child(n, 0, XML_NS_WS_MAN, WSM_CONNECTIONRETRY);
+		if(m) {
+			retVal = 1;
+			generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE, WSMAN_DETAIL_DELIVERY_RETRIES);
+			goto DONE;
+		}
+	}
+DONE:
 	return retVal;
 }
 
