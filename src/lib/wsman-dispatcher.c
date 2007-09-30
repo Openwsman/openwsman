@@ -1148,7 +1148,6 @@ SoapDispatchH wsman_dispatch_create(SoapH soap, char *inboundAction, char *outbo
 {
 
 	SoapDispatchH disp = NULL;
-	debug("Creating dispatch");
 	if (soap && role == NULL) {
 		disp =
 		    create_dispatch_entry(soap, inboundAction,

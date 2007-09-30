@@ -392,7 +392,7 @@ wsman_register_endpoint(WsContextH cntx,
 
 
 
-		//   ENDPOINTS STUBS
+/*  ENDPOINTS STUBS */
 
 
 
