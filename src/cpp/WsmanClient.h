@@ -116,7 +116,7 @@ namespace WsmanClientNamespace
 		virtual string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const = 0;
 
 		// Renew a subscription
-		virtual string Renew(const string &identifier) const = 0;
+		virtual string Renew(const string &identifier, float expire) const = 0;
 
 		// Terminate a subscription
 		virtual void Unsubscribe(const string &identifier) const = 0;
