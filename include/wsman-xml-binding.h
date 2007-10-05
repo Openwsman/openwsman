@@ -100,7 +100,7 @@ WsXmlAttrH xml_parser_attr_get(WsXmlNodeH node, int which);
 void xml_parser_free_memory(void *ptr);
 
 void xml_parser_doc_to_memory(WsXmlDocH doc, char **buf,
-			      int *ptrSize, char *encoding);
+			      int *ptrSize, const char *encoding);
 
 void xml_parser_doc_dump(FILE * f, WsXmlDocH doc);
 

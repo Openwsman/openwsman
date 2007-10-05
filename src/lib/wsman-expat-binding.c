@@ -117,7 +117,7 @@ int xml_parser_utf8_strlen(char *buf)
 }
 
 void xml_parser_doc_to_memory(WsXmlDocH doc, char **buf,
-		int *ptrSize, char *encoding)
+		int *ptrSize, const char *encoding)
 {
 	if (doc && buf && ptrSize)
 		xmlDocDumpMemoryEnc(doc->parserDoc,

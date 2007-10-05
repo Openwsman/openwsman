@@ -370,7 +370,7 @@ int ws_xml_utf8_strlen(char *buf)
  * @param encoding The encoding to be used
  */
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
-			    char *encoding)
+			    const char *encoding)
 {
 	xml_parser_doc_to_memory(doc, buf, ptrSize, encoding);
 }

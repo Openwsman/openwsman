@@ -100,7 +100,7 @@ void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
 void ws_xml_dump_doc(FILE * f, WsXmlDocH doc);
 
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
-			    char *encoding);
+			    const char *encoding);
 
 	// WSXmlDoc handling
 
