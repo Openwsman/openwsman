@@ -36,7 +36,7 @@ openwsman_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) -python -o $@ $<
 
 install-data-local:
-	$(mkinstalldirs) ${pythondir}/site-packages
+	$(mkinstalldirs) ${pythondir}
 	@INSTALL@ -m 0644 pywsman.py ${pythondir}
 
 CLEANFILES= $(GENERATED)
