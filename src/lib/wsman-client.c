@@ -259,15 +259,15 @@ wsmc_get_endpoint(WsManClient * cl)
 
 
 WsXmlDocH
-wsmc_read_file( char *filename,
-		char *encoding, unsigned long options)
+wsmc_read_file( const char *filename,
+		const char *encoding, unsigned long options)
 {
 	return ws_xml_read_file( filename, encoding, options);
 }
 
 WsXmlDocH
 wsmc_read_memory( char *buf,
-		size_t size, char *encoding, unsigned long options)
+		size_t size, const char *encoding, unsigned long options)
 {
 	return ws_xml_read_memory( buf, size, encoding, options);
 }

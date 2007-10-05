@@ -309,8 +309,8 @@ typedef enum {
 	 * @param XML options
 	 * @return XML document
 	 */
-	WsXmlDocH wsmc_read_file( char *filename,
-					 char *encoding,
+	WsXmlDocH wsmc_read_file( const char *filename,
+					 const char *encoding,
 					 unsigned long options);
 	/**
 	 * Read buffer into an XML document
@@ -322,7 +322,7 @@ typedef enum {
 	 * @return XML document
 	 */
 	WsXmlDocH wsmc_read_memory( char *buf,
-					   size_t size, char *encoding,
+					   size_t size, const char *encoding,
 					   unsigned long options);
 
 	/**
