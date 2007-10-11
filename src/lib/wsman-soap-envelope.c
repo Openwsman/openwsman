@@ -753,9 +753,10 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFa
 			 if(attr) attrname = ws_xml_get_attr_name(attr);
 			 if(attr && strcmp(attrname, WSM_DIALECT) == 0) {
 			 	attrVal = ws_xml_get_attr_value(attr);
-				if (	strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
+				if (	attrVal && ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
 					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
-					!attrVal) {
+					strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ||
+					strcmp(attrVal,WSM_XPATH_EVENTROOT_FILTER) == 0 )) {
 					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
 					f->query = u_strdup(ws_xml_get_node_text(filter));
 					debug("Xpath filter: %s", f->query );
@@ -771,8 +772,11 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFa
 				}
 			 }
 			 else {
-			 	*faultcode = WSE_FILTERING_NOT_SUPPORTED;
-				return -1;
+			 	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
+				f->query = u_strdup(ws_xml_get_node_text(filter));
+				debug("Xpath filter: %s", f->query );
+				subsInfo->filter = f;
+				
 /*			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
 				attrname = ws_xml_get_attr_name(attr);
 				attrVal = ws_xml_get_attr_value(attr);
