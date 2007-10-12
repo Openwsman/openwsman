@@ -1233,6 +1233,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 	}
 #ifdef ENABLE_EVENTING_SUPPORT
 	else { //pull things from notifications
+		ws_xml_destroy_doc(doc);
 		doc = ws_xml_create_envelope();
 		WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
 		docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
