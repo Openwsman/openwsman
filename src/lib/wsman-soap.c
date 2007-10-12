@@ -1626,6 +1626,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
 	char *buf = NULL;
+	char *expiresstr = NULL;
 	int len;
 	epcntx = ws_create_ep_context(soap, _doc);
 	wsman_status_init(&status);
@@ -1648,6 +1649,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		temp = ws_xml_get_child(ws_xml_get_soap_body(_doc), 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 		temp = ws_xml_get_child(temp, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 		if(temp) {
+			expiresstr = strdup(ws_xml_get_node_text(temp));
 			ws_xml_set_node_text(temp, str);
 		}
 		ws_xml_dump_memory_enc(_doc, &buf, &len, "UTF-8");
@@ -1679,7 +1681,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	inNode = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP, NULL);
 	temp = ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER, NULL);
 	if(subsInfo->expires)
-		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
+		ws_xml_add_child(inNode, XML_NS_EVENTING, WSEVENT_EXPIRES, expiresstr);
 	if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
 		ws_xml_add_child_format(inNode, XML_NS_ENUMERATION,
 		WSENUM_ENUMERATION_CONTEXT, "uuid:%s", subsInfo->subsId);
@@ -1696,6 +1698,7 @@ DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	}
+	u_free(expiresstr);
 	ws_serializer_free_all(epcntx);
 	ws_destroy_context(epcntx);
 	return retVal;

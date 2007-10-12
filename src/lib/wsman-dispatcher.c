@@ -442,14 +442,14 @@ static int check_unsupported_features(op_t * op)
 	}
 	subscribe = ws_xml_get_child(body, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 	if(subscribe) {
-		n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_ENDTO);
+	/*	n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_ENDTO);
 		if(n) {
 			retVal = 1;
 			generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 					WSMAN_DETAIL_ADDRESSING_MODE);
 			goto DONE;
 		}
-		n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
+	*/	n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
 		if(n == NULL) {
 			retVal = 1;
 			generate_op_fault(op, WSE_INVALID_MESSAGE, 0);
