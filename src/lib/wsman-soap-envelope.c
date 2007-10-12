@@ -170,7 +170,7 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 WsXmlDocH wsman_build_inbound_envelope(WsmanMessage * msg)
 {
 	WsXmlDocH doc = ws_xml_read_memory( u_buf_ptr(msg->request),
-					   u_buf_len(msg->request), NULL,  0);
+					   u_buf_len(msg->request), msg->charset,  0);
 
 	if (doc == NULL) {
 		wsman_set_fault(msg, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);

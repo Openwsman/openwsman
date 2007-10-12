@@ -97,8 +97,8 @@ extern "C" {
 		WsContextH wscntx;
 		WsManClientData data;
 		WsManConnection *connection;
-                WsManAuthData authentication;
-                WsManProxyData proxy_data;
+              WsManAuthData authentication;
+              WsManProxyData proxy_data;
 #ifdef _WIN32
 		void* session_handle;
 		long lock_session_handle;
@@ -107,8 +107,9 @@ extern "C" {
 		char *fault_string;
 		WS_LASTERR_Code last_error;
 		void *transport;
-                unsigned long transport_timeout;
-                char * user_agent;
+		char *content_encoding;
+              unsigned long transport_timeout;
+              char * user_agent;
 		FILE *dumpfile;
 		long initialized;
 	};

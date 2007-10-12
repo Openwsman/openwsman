@@ -243,6 +243,13 @@ wsmc_get_user(WsManClient * cl)
 
 
 char *
+wsmc_get_encoding(WsManClient *cl)
+{
+	return cl->content_encoding;
+}
+
+
+char *
 wsmc_get_password(WsManClient * cl)
 {
 	return   cl->data.pwd ? u_strdup( cl->data.pwd ) : NULL;
@@ -1550,7 +1557,7 @@ wsmc_build_envelope_from_response(WsManClient * cl)
 		error("NULL response");
 		return NULL;
 	}
-	doc = ws_xml_read_memory( u_buf_ptr(buffer), u_buf_len(buffer), NULL, 0);
+	doc = ws_xml_read_memory( u_buf_ptr(buffer), u_buf_len(buffer), cl->content_encoding, 0);
 	if (doc == NULL) {
 		error("could not create xmldoc from response");
 	}
@@ -1620,6 +1627,11 @@ wsmc_create_from_uri(const char* endpoint)
 	return cl;
 }
 
+int
+wsmc_set_encoding(WsManClient *cl, const char *encoding)
+{
+	cl->content_encoding = u_strdup(encoding);
+}
 
 int
 wsmc_check_for_fault(WsXmlDocH doc )
@@ -1727,6 +1739,7 @@ wsmc_create(const char *hostname,
 	wsc->data.auth_set = 0;
 	wsc->initialized = 0;
 	wsc->transport_timeout = 0;
+	wsc->content_encoding = u_strdup("UTF-8");
 #ifdef _WIN32
 	wsc->session_handle = 0;
 #endif
@@ -1784,6 +1797,10 @@ wsmc_release(WsManClient * cl)
 		soap_destroy_fw(soap);
 		u_free(cl->wscntx);
 		cl->wscntx = NULL;
+	}
+	if (cl->content_encoding) {
+		u_free(cl->content_encoding);
+		cl->content_encoding = NULL;
 	}
 	wsman_transport_close_transport(cl);
 

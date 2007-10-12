@@ -58,6 +58,7 @@ typedef struct _WsmanStatus WsmanStatus;
 
 struct _WsmanMessage {
   const char          *method;
+  char	*charset;
   WsmanStatus         status;
   u_buf_t     *request;
   u_buf_t     *response;

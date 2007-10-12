@@ -798,7 +798,7 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 			error("not fault envelope");
 		}
 
-		ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");
+		ws_xml_dump_memory_enc(op->out_doc, &buf, &len, msg->charset);
 		u_buf_set(msg->response, buf, len);
 		ws_xml_destroy_doc(op->out_doc);
 		op->out_doc = NULL;
@@ -831,7 +831,7 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 		    wsman_find_httpcode_for_value(op->out_doc);
 	}
 
-	ws_xml_dump_memory_enc(op->out_doc, &buf, &len, "UTF-8");
+	ws_xml_dump_memory_enc(op->out_doc, &buf, &len, msg->charset);
 	u_buf_set(msg->response, buf, len);
 	ws_xml_destroy_doc(op->out_doc);
 	op->out_doc = NULL;
@@ -1023,9 +1023,10 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 				t = list_next(soap->subscriptionMemList, t);
 			}
 			if(t == NULL) {
-				char *buf = NULL;
-				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf) == 0) {
-					notdoc = ws_xml_read_memory( buf, strlen(buf), "UTF-8", 0);
+				unsigned char *buf = NULL;
+				int len;
+				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf, &len) == 0) {
+					notdoc = ws_xml_read_memory( buf, len, "UTF-8", 0);
 					if(notdoc) {
 						nodedoc = ws_xml_get_soap_header(notdoc);
 						if(nodedoc) {

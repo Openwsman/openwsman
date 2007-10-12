@@ -53,7 +53,6 @@
 #include <dlfcn.h>
 #endif
 
-
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
@@ -142,7 +141,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	const char *content_type;
 //    char *default_path;
 //    const char *path;
-//    const char *encoding;
+	char *encoding;
 	int status = WSMAN_STATUS_OK;
 	char *fault_reason = NULL;
 
@@ -181,23 +180,55 @@ static int server_callback(struct shttpd_arg_t *arg)
 		fault_reason = "Unsupported content type";
 		goto DONE;
 	}
-
+	if(content_type) {
+		char *p = strstr(content_type, "charset");
+		if(p) {
+			p += strlen("charset");
+			p++;
+			wsman_msg->charset = u_strdup(p);
+			encoding = u_strdup(p);
+		}
+	}
 	SoapH soap = (SoapH) arg->user_data;
 	wsman_msg->status.fault_code = WSMAN_RC_OK;
 	wsman_msg->http_headers = shttpd_get_all_headers(arg);
 
 	// Get request from http server
 	size_t length = shttpd_get_post_query_len(arg);
-	char *body = shttpd_get_post_query(arg);
+	unsigned char *body = shttpd_get_post_query(arg);
 	if (body == NULL) {
 		status = WSMAN_STATUS_BAD_REQUEST;
 		fault_reason = "No request body";
 		error("NULL request body. len = %d", length);
 	}
-	else {
-		debug("Posted request: %s", body);
+#if 0	
+	if(strcmp(wsman_msg->charset, "UTF-8")) {
+		iconv_t cd = iconv_open("UTF-8", wsman_msg->charset);
+		if(cd == -1) {
+			status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+			fault_reason = "Specified encoding unsupported";
+			goto DONE;
+		}
+		char *mbbuf = u_zalloc(length);
+		size_t outbuf_len = length;
+		size_t inbuf_len = length;
+		char *inbuf = body;
+		char *outbuf = mbbuf;
+		size_t coverted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
+		if( coverted == -1) {
+			status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
+			fault_reason = "Cannot covert specified encoding";
+			goto DONE;
+		}
+		iconv_close(cd);
+//		u_buf_construct(wsman_msg->request, mbbuf, length - outbuf_len, length - outbuf_len);
+		debug("***coverted = %d***", length - outbuf_len);
+		
 	}
+#endif		
 	u_buf_construct(wsman_msg->request, body, length, length);
+	debug("Posted request: %s, wsman_msg len = %d", u_buf_ptr(wsman_msg->request),
+			u_buf_len(wsman_msg->request));
 
 	// some plugins can use credentials for its
 	// own authentication
@@ -215,7 +246,8 @@ static int server_callback(struct shttpd_arg_t *arg)
 
 	if (wsman_msg->request) {
 		// we don't need request any more
-		(void) u_buf_steal(wsman_msg->request);
+//		if(strcmp(wsman_msg->charset, "UTF-8") == 0)
+			(void) u_buf_steal(wsman_msg->request);
 		u_buf_free(wsman_msg->request);
 		wsman_msg->request = NULL;
 	}
@@ -233,9 +265,9 @@ static int server_callback(struct shttpd_arg_t *arg)
 	debug("message len = %d", shttp_msg->length);
 	shttp_msg->response = u_buf_steal(wsman_msg->response);
 	shttp_msg->ind = 0;
-
       DONE:
-
+	 wsman_soap_message_destroy(wsman_msg);
+/*	u_free(wsman_msg->charset);
 	if (wsman_msg->response) {
 		u_buf_free(wsman_msg->response);
 		wsman_msg->response = NULL;
@@ -248,7 +280,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	if (fault_reason == NULL) {
 		fault_reason = shttp_reason_phrase(status);
 	}
-	debug("Response (status) %d (%s)", status, fault_reason);
+*/	debug("Response (status) %d (%s)", status, fault_reason);
 
 	// Here we begin to create the http response.
 	// Create the headers at first.
@@ -276,11 +308,11 @@ static int server_callback(struct shttpd_arg_t *arg)
 	}
 
 	n += snprintf(arg->buf + n, arg->buflen - n,
-		      "Content-Type: %s\r\n", SOAP1_2_CONTENT_TYPE);
+		      "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
 	n += snprintf(arg->buf + n, arg->buflen - n,
 		      "Content-Length: %d\r\n", shttp_msg->length);
 	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");
-
+	u_free(encoding);
 	// add response body to output buffer
       CONTINUE:
 	k = arg->buflen - n;
@@ -307,7 +339,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	debug("%s", arg->buf);
 	u_free(shttp_msg->response);
 	u_free(shttp_msg);
-
+	
 	arg->last = 1;
 	arg->state = NULL;
 	return n;
@@ -317,8 +349,8 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 {
 	WsmanMessage *wsman_msg = wsman_soap_message_new();
 	if(wsman_msg == NULL) return;
-	char *strdoc = entry->strdoc;
-	u_buf_construct(wsman_msg->request, strdoc, strlen(strdoc)+1, strlen(strdoc)+1);
+	unsigned char *strdoc = entry->strdoc;
+	u_buf_construct(wsman_msg->request, strdoc, entry->len, entry->len);
 	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
 	wsman_soap_message_destroy(wsman_msg);
 	if(list_count(cntx->soap->subscriptionMemList) > subsNum) {
@@ -334,7 +366,7 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 {
 	int retVal = 0;
-	WsXmlDocH doc = ws_xml_read_memory( entry->strdoc, strlen(entry->strdoc), "UTF-8", 0);
+	WsXmlDocH doc = ws_xml_read_memory( entry->strdoc, entry->len, "UTF-8", 0);
 
 	if(doc) {
 		WsXmlNodeH node = ws_xml_get_soap_body(doc);

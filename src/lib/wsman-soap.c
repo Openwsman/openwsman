@@ -1626,7 +1626,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
-	char *buf = NULL;
+	unsigned char *buf = NULL;
 	char *expiresstr = NULL;
 	int len;
 	epcntx = ws_create_ep_context(soap, _doc);
@@ -1951,6 +1951,8 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 {
 	int retVal = 0;
 	WsManClient *notificationSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
+	if(subsInfo->contentEncoding)
+		wsmc_set_encoding(notificationSender, subsInfo->contentEncoding);
 	wsmc_transport_init(notificationSender, NULL);
 	wsman_send_request(notificationSender, outdoc);
 	if(acked) {

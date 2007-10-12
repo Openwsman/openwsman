@@ -39,15 +39,16 @@
 
 typedef int (*SubscriptionOpInit) (char *, void *);
 typedef int (*SubscriptionOpFinalize) (char *, void *);
-typedef int (*SubscriptionOpSave) (char *, char *, char *);
+typedef int (*SubscriptionOpSave) (char *, char *, unsigned char *);
 typedef int (*SubscriptionOpDelete) (char *, char *);
-typedef int (*SubscriptionOpGet) (char *, char *, char **);
+typedef int (*SubscriptionOpGet) (char *, char *, unsigned char **, int *);
 typedef int (*SubscriptionOpSearch) (char *, char *);
 typedef int (*SubscriptionOpUpdate) (char *, char *, char *);
 typedef int (*SubscriptionOpLoad) (char *, list_t *);
 
 struct __SubsRepositoryEntry {
-        char *strdoc;
+        unsigned char *strdoc;
+	 int * len;
         char *uuid;
 };
 typedef struct __SubsRepositoryEntry *SubsRepositoryEntryH;

@@ -67,7 +67,7 @@ wsman_soap_message_new()
     WsmanMessage *wsman_msg = u_zalloc(sizeof(WsmanMessage));
     u_buf_create(&wsman_msg->request);
     u_buf_create(&wsman_msg->response);
-
+//    wsman_msg->charset = "UTF-8";
     wsman_msg->status.fault_code = 0;
     wsman_msg->status.fault_detail_code = 0;
     wsman_msg->status.fault_msg = NULL;
@@ -79,6 +79,7 @@ wsman_soap_message_destroy(WsmanMessage* wsman_msg)
 {
     u_buf_free(wsman_msg->response);
     u_buf_free(wsman_msg->request);
+    u_free(wsman_msg->charset);
     if (wsman_msg->status.fault_msg) {
         u_free(wsman_msg->status.fault_msg);
     }

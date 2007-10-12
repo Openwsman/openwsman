@@ -199,6 +199,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 	return len;
 }
 
+
 static void *
 init_curl_transport(WsManClient *cl)
 {
@@ -296,12 +297,13 @@ wsmc_handler( WsManClient *cl,
 	char *upwd = NULL;
 	char *usag = NULL;
 	struct curl_slist *headers=NULL;
-	char *buf = NULL;
+	unsigned char *buf = NULL;
 	int len;
 	char *soapact_header = NULL;
 	long http_code;
 	long auth_avail = 0;
 	char *_user = NULL, *_pass = NULL;
+	u_buf_t *response = NULL;
 	//char *soapaction;
 
 	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
@@ -324,22 +326,22 @@ wsmc_handler( WsManClient *cl,
 		goto DONE;
 	}
 
-
 	r = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_handler);
 	if (r != CURLE_OK) {
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ..)");
 		goto DONE;
 	}
-
-	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, con->response);
+	u_buf_create(&response);
+	r = curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
 	if (r != CURLE_OK) {
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_WRITEDATA, ..)");
 		goto DONE;
 	}
-	headers = curl_slist_append(headers,
-			"Content-Type: application/soap+xml;charset=UTF-8");
+	char content_type[64];
+	snprintf(content_type, 64, "Content-Type: application/soap+xml;charset=%s", cl->content_encoding);
+	headers = curl_slist_append(headers, content_type);
 	usag = malloc(12 + strlen(wsman_transport_get_agent(cl)) + 1);
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
@@ -370,16 +372,26 @@ wsmc_handler( WsManClient *cl,
 		goto DONE;
 	}
 
-	ws_xml_dump_memory_enc(rqstDoc, &buf, &len, "UTF-8");
-
+	ws_xml_dump_memory_enc(rqstDoc, &buf, &len, cl->content_encoding);
+	int count = 0;
+#if 0
+	while(count < len) {
+		printf("%c",buf[count++]);
+	}
+#endif
+	debug("*****set post buf len = %d******",len);
 	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buf);
 	if (r != CURLE_OK) {
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
 		curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ..)");
 		goto DONE;
 	}
-
-
+	r = curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
+	if (r != CURLE_OK) {
+		cl->fault_string = u_strdup(curl_easy_strerror(r));
+		curl_err("Could not curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, ..)");
+		goto DONE;
+	}
 
 	while (1) {
 		u_free(_user);
@@ -449,7 +461,7 @@ wsmc_handler( WsManClient *cl,
 
 		cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
                         &cl->data.user, &cl->data.pwd);
-                u_buf_clear(con->response);
+                u_buf_clear(response);
                 if (cl->data.auth_set == 0) {
                     /* FIXME: user wants to cancel authentication */
 #if LIBCURL_VERSION_NUM > 0x70C01
@@ -461,12 +473,38 @@ wsmc_handler( WsManClient *cl,
 		    break;
                 }
         }
-
+#if 0
+	unsigned char *mbbuf = NULL;
+	iconv_t cd;
+	if(strcmp(cl->content_encoding, "UTF-8")) {
+                cd = iconv_open("UTF-8", cl->content_encoding);
+                if(cd == -1) {
+			cl->last_error = WS_LASTERR_BAD_CONTENT_ENCODING;
+			goto DONE2;
+                }
+                mbbuf = u_zalloc(u_buf_len(response));
+                size_t outbuf_len = u_buf_len(response);
+                size_t inbuf_len = outbuf_len;
+                char *inbuf = u_buf_ptr(response);
+                char *outbuf = mbbuf;
+                size_t coverted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
+		  iconv_close(cd);
+                if( coverted == -1) {
+			cl->last_error = WS_LASTERR_BAD_CONTENT_ENCODING; 
+			goto DONE2;
+                }
+                u_buf_append(con->response, mbbuf, u_buf_len(response) - inbuf_len);
+        }
+	u_free(mbbuf);
+#endif
+	u_buf_append(con->response, u_buf_ptr(response), u_buf_len(response));
 DONE:
 	r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 	cl->response_code = http_code;
 	cl->last_error = convert_to_last_error(r);
+DONE2:	
 	curl_slist_free_all(headers);
+	u_buf_free(response);
 	u_free(soapact_header);
 	u_free(usag);
 	u_free(upwd);

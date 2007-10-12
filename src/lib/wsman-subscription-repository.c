@@ -49,10 +49,10 @@
 
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData);
 int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData);
-int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char **subscriptionDoc);
+int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char **subscriptionDoc, int *len);
 int LocalSubscriptionOpSearch(char * uri_repository, char * uuid);
 int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list);
-int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscriptionDoc);
+int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *subscriptionDoc);
 int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire);
 int LocalSubscriptionOpDelete (char * uri_repository, char * uuid);
 
@@ -74,11 +74,12 @@ int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData)
 	return 0;
 }
 
-int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char  **subscriptionDoc)
+int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **subscriptionDoc, int *len)
 {
-	char block[512];
+	unsigned char block[512];
 	char *buf = NULL;
 	int count,m;
+	int pre_count;
 	count = m = 0;
 	*subscriptionDoc = NULL;
 	if(LocalSubscriptionInitFlag == 0) return -1;
@@ -91,18 +92,16 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, char  **subscript
 				m = fread(block, 1, 511, fp);
 				if(m > 0) {
 					debug("read [%s] from file, len = %d",block, m);
+					pre_count = count;
 					count += m;
 					debug("buf = %0x, count = %d", buf, count);
 					buf = u_realloc(buf, count);
-					if(count - m == 0) {
-						count++;
-						memset(buf, 0, count);
-					}
-					strcat(buf, block);
+					memcpy(buf+pre_count, block, m);
 				}
 	}
 	fclose(fp);
 	*subscriptionDoc = buf;
+	*len = count;
 	return 0;
 }
 
@@ -121,8 +120,9 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 {
 	struct dirent **namelist;
 	int n, m, count;
+	int pre_count;
 	char block[512];
-	char *buf = NULL;
+	unsigned char *buf = NULL;
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	if(subscription_list == NULL)
 		return -1;
@@ -146,19 +146,17 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 				memset(block, 0, 512);
 				m = fread(block, 1, 511, subs);
 				if(m > 0) {
+					pre_count = count;
 					count += m;
-					if(count - m == 0)
-						count++;
 					buf = u_realloc(buf, count);
-					if(count - m == 1)
-						memset(buf, 0, count);
-					strcat(buf, block);
+					memcpy(buf+pre_count, block, m);
 				}
 			}
 			fclose(subs);
 			SubsRepositoryEntryH entry = u_malloc(sizeof(*entry));
 			if(entry) {
 				entry->strdoc = buf;
+				entry->len = count;
 				entry->uuid = u_strdup(namelist[n]->d_name);
 				node = lnode_create(entry);
             			list_append(subscription_list, node);
@@ -170,7 +168,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
     	}
 	return 0;
 }
-int LocalSubscriptionOpSave (char * uri_repository, char * uuid, char *subscriptionDoc)
+int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *subscriptionDoc)
 {
 	char buf[U_NAME_MAX];
 	if(LocalSubscriptionInitFlag == 0) return -1;

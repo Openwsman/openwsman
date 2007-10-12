@@ -207,6 +207,13 @@ typedef enum {
 					 const char *password);
 
 	/**
+	* Set request/response content encoding type. Default encoding type is "UTF-8"
+	* @param cl Client handle
+	* @param encoding type of encoding, for example "UTF-16"
+	* @ return zero for success, others for an error
+	*/
+	int wsmc_set_encoding(WsManClient *cl, const char *encoding);
+	/**
 	 * Release client
 	 * @param cl Client handle that was created with wsman_create_client
 	 * @return void
@@ -271,6 +278,13 @@ typedef enum {
 	 * @return username
 	 */
 	char *wsmc_get_password(WsManClient * cl);
+
+	/**
+	* Get request/response content encoding type. Default encoding type is "UTF-8"
+	* @param cl Client handle
+	* @ return request encoding string
+	*/
+	char *wsmc_get_encoding(WsManClient *cl);
 
 	/**
 	 * Get endpoint from handle

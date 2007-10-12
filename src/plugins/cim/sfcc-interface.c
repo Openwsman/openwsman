@@ -1661,7 +1661,7 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 //	snprintf(serverpath, 128, "http://localhost:%s/eventhandler/uuid:%s",
 //		get_server_port(),
 //		uuid);
-	snprintf(serverpath, 128, "http://localhost:%s/wsman", get_server_port());
+	snprintf(serverpath, 128, "http://%s:%s@localhost:%s/wsman", client->username, client->password,get_server_port());
 	CMPIValue value;
 	value.uint16 = 2;
 	CMAddKey(objectpath, "Destination",
@@ -1747,8 +1747,8 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	struct timeval  tv;
 	gettimeofday(&tv, NULL);
 	value.uint64 = subsInfo->expires/1000 - tv.tv_sec;
-	CMAddKey(objectpath, "subscriptionDuration",
-		&value, CMPI_uint64);
+//	CMAddKey(objectpath, "subscriptionDuration",
+//		&value, CMPI_uint64);
 	char currenttimestr[32];
 	getcurrentdatetime(currenttimestr);
 
