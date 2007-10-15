@@ -86,6 +86,8 @@ int CimResource_UnSubscribe_EP(WsContextH cntx, WsSubscribeInfo* subsInfo,
 
 //If you want to support poll, implement it.
 int CimResource_EventPoll_EP(WsEventThreadContextH cntx, WsNotificationInfoH notificationinfo);
+//Subscription cancel routine
+int CimResource_SubscriptionCancel_EP(WsEventThreadContextH cntx);
 SER_DECLARE_TYPE(CimResource);
 DECLARE_EP_ARRAY(CimResource);
 

@@ -235,6 +235,7 @@ typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 #define WSE_NOTIFICATION_EVENTS_PENDING 4
 
 typedef int (*WsEndPointEventPoll) (WsEventThreadContextH);
+typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 
 #define EUIDLEN		64
 
@@ -324,6 +325,7 @@ struct __WsSubscribeInfo {
 	filter_t	*filter;
 	WsmanAuth       auth_data;
 	WsEndPointEventPoll eventpoll; // plugin related poll process
+	WsEndPointSubscriptionCancel cancel; //plugin related subscription cancel routine
 	WsXmlDocH templateDoc; //template notificaiton document
 	WsXmlDocH heartbeatDoc; //Fixed heartbeat document
 };

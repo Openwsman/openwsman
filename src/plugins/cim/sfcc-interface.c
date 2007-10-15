@@ -1743,13 +1743,15 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	value.uint16 = 2;
 	CMAddKey(objectpath, "SubscriptionState",
 		&value, CMPI_uint16);
-	struct timeval  tv;
-	gettimeofday(&tv, NULL);
-	value.uint64 = subsInfo->expires/1000 - tv.tv_sec;
-//	CMAddKey(objectpath, "subscriptionDuration",
-//		&value, CMPI_uint64);
-	char currenttimestr[32];
-	getcurrentdatetime(currenttimestr);
+	if(subsInfo->expires) {
+		struct timeval  tv;
+		gettimeofday(&tv, NULL);
+		value.uint64 = subsInfo->expires - tv.tv_sec;
+		CMAddKey(objectpath, "subscriptionDuration",
+			&value, CMPI_uint64);
+	}
+//	char currenttimestr[32];
+//	getcurrentdatetime(currenttimestr);
 
 //	CMAddKey(objectpath, "subscriptionStartTime",
 //		currenttimestr, CMPI_dateTime);
@@ -1807,7 +1809,7 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 		&value, CMPI_ref);
 	struct timeval  tv;
 	gettimeofday(&tv, NULL);
-	value.uint64 = subsInfo->expires/1000 - tv.tv_sec;
+	value.uint64 = subsInfo->expires - tv.tv_sec;
 	instance = newCMPIInstance(objectpath, NULL);
 	CMSetProperty(instance, "subscriptionDuration", &value, CMPI_uint64);
 	char *properties[] = {"subscriptionDuration",NULL};
@@ -1818,7 +1820,7 @@ cleanup:
 	} else {
 		cim_to_wsman_status(rc, status);
 	}
-	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
+	debug("cim_update_indication_subscription() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	if (rc.msg)
 		CMRelease(rc.msg);
@@ -1828,6 +1830,8 @@ cleanup:
 		CMRelease(objectpath_handler);
 	if (instance)
 		CMRelease(instance);
+	if (objectpath)
+		CMRelease(objectpath);
 	return;
 }
 
@@ -1862,7 +1866,7 @@ cleanup:
 	} else {
 		cim_to_wsman_status(rc, status);
 	}
-	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
+	debug("cim_delete_indication_subscription() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	if (rc.msg)
 		CMRelease(rc.msg);

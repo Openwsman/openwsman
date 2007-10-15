@@ -83,7 +83,9 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->requested_class = wsman_get_class_name(cntx);
 
 	cimclient->method = wsman_get_method_name(cntx);
-	cimclient->username = u_strdup(username);
+	if(username)
+		cimclient->username = u_strdup(username);
+	if(password)
 	cimclient->password = u_strdup(password);
 	if (cimclient->selectors) {
 		_tmp = cim_get_namespace_selector(cimclient->selectors);
@@ -680,6 +682,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	}
 // to do here: create indication filter here and something else necessary
 	subsInfo->eventpoll= CimResource_EventPoll_EP;
+	subsInfo->cancel = CimResource_SubscriptionCancel_EP;
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
 		instance= cim_get_instance_from_selectors(cimclient, cntx, status);
 		if(instance) {
@@ -736,17 +739,10 @@ int CimResource_Renew_EP(WsContextH cntx,
 			return retval;
 		}
 	}
-/*
-	if (!verify_class_namespace(cimclient)) {
-		error("resource uri namespace mismatch");
-		status->fault_code = WSA_DESTINATION_UNREACHABLE;
-		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		retval = 1;
-		return retval;
-	}
-*/	cim_update_indication_subscription(cimclient, subsInfo, status);
+	cim_update_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
+	CimResource_destroy(cimclient);
 	return retval;
 }
 
@@ -755,7 +751,7 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData)
 {
-	debug("CIM Renew");
+	debug("CIM UnSubscribe");
 	int retval = 0;
 	CimClientInfo *cimclient = NULL;
 	if ( subsInfo ) {
@@ -769,17 +765,16 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 			return retval;
 		}
 	}
-/*
-	if (!verify_class_namespace(cimclient)) {
-		error("resource uri namespace mismatch");
-		status->fault_code = WSA_DESTINATION_UNREACHABLE;
-		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		retval = 1;
-		return retval;
-	}
-*/	cim_delete_indication_subscription(cimclient, subsInfo, status);
+	cim_delete_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
+	CimResource_destroy(cimclient);
 	return retval;
+}
+
+int CimResource_SubscriptionCancel_EP(WsEventThreadContextH cntx)
+{
+	WsmanStatus status;
+	return CimResource_UnSubscribe_EP(cntx->soap->cntx, cntx->subsInfo, &status, NULL);
 }
 #endif

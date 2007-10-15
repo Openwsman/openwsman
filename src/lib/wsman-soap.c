@@ -2064,6 +2064,7 @@ void wse_notification_manager(void * cntx)
 	while(subsnode) {
 		subsInfo = (WsSubscribeInfo *)subsnode->list_data;
 		pthread_mutex_lock(&subsInfo->notificationlock);
+		threadcntx = ws_create_event_context(soap, subsInfo, NULL);
 		if(((subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) ||
 			subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED ||
 			time_expired(subsInfo->expires)) &&
@@ -2071,6 +2072,8 @@ void wse_notification_manager(void * cntx)
 			lnode_t *nodetemp = list_delete2(soap->subscriptionMemList, subsnode);
 			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, subsInfo->subsId);
 			soap->eventpoolOpSet->clear(subsInfo->subsId, delete_notification_info);
+			if(subsInfo->cancel)
+				subsInfo->cancel(threadcntx);
 			if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE)
 				debug("Unsubscribed!uuid:%s deleted", subsInfo->subsId);
 			else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED)
@@ -2079,13 +2082,12 @@ void wse_notification_manager(void * cntx)
 				debug("Expired! uuid:%s deleted", subsInfo->subsId);
 			destroy_subsinfo(subsInfo);
 			lnode_destroy(subsnode);
+			u_free(threadcntx);
 			subsnode = nodetemp;
 			continue;
 		}
 		if(subsInfo->eventpoll) { //poll the events
-			threadcntx = ws_create_event_context(soap, subsInfo, NULL);
 			retVal = subsInfo->eventpoll(threadcntx);
-			u_free(threadcntx);
 			if(retVal == WSE_NOTIFICATION_EVENTS_PENDING) {
 				goto LOOP;
 			}
@@ -2160,6 +2162,8 @@ void wse_notification_manager(void * cntx)
 		}
 
 LOOP:
+		if(threadcntx)
+			u_free(threadcntx);
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 		subsnode = list_next(soap->subscriptionMemList, subsnode);
 	}
