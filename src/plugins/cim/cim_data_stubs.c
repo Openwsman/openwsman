@@ -83,6 +83,8 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->requested_class = wsman_get_class_name(cntx);
 
 	cimclient->method = wsman_get_method_name(cntx);
+	cimclient->username = u_strdup(username);
+	cimclient->password = u_strdup(password);
 	if (cimclient->selectors) {
 		_tmp = cim_get_namespace_selector(cimclient->selectors);
 	}
@@ -91,9 +93,10 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	} else {
 		cimclient->cim_namespace = get_cim_namespace();
 	}
-
-	cimclient->resource_uri = u_strdup(r);
-	cimclient->method_args = wsman_get_method_args(cntx, r );
+	if(r) {
+		cimclient->resource_uri = u_strdup(r);
+		cimclient->method_args = wsman_get_method_args(cntx, r );
+	}
 	show_extensions = wsman_get_option_set(cntx, NULL, WSMB_SHOW_EXTENSION );
 
 	if (show_extensions && strcmp(show_extensions, "true") == 0) {
@@ -120,6 +123,10 @@ CimResource_destroy(CimClientInfo *cimclient)
 		hash_free(cimclient->selectors);
 		debug("selectors destroyed");
 	}
+	if (cimclient->username)
+		u_free(cimclient->username);
+	if (cimclient->password)
+		u_free(cimclient->password);
 	cim_release_client(cimclient);
 	u_free(cimclient);
 	debug("cimclient destroyed");
@@ -729,7 +736,7 @@ int CimResource_Renew_EP(WsContextH cntx,
 			return retval;
 		}
 	}
-
+/*
 	if (!verify_class_namespace(cimclient)) {
 		error("resource uri namespace mismatch");
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -737,7 +744,7 @@ int CimResource_Renew_EP(WsContextH cntx,
 		retval = 1;
 		return retval;
 	}
-	cim_update_indication_subscription(cimclient, subsInfo, status);
+*/	cim_update_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
 	return retval;
@@ -762,7 +769,7 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 			return retval;
 		}
 	}
-
+/*
 	if (!verify_class_namespace(cimclient)) {
 		error("resource uri namespace mismatch");
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -770,7 +777,7 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 		retval = 1;
 		return retval;
 	}
-	cim_delete_indication_subscription(cimclient, subsInfo, status);
+*/	cim_delete_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
 	return retval;

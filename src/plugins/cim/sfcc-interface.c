@@ -1658,10 +1658,9 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
 	if(rc.rc) goto cleanup;
 	char serverpath[128];
-//	snprintf(serverpath, 128, "http://localhost:%s/eventhandler/uuid:%s",
-//		get_server_port(),
-//		uuid);
-	snprintf(serverpath, 128, "http://%s:%s@localhost:%s/wsman", client->username, client->password,get_server_port());
+	snprintf(serverpath, 128, "http://%s:%s@localhost:%s/wsman/eventsink/%s", client->username, client->password,
+			get_server_port(), uuid);
+//	snprintf(serverpath, 128, "http://localhost/eventsink");
 	CMPIValue value;
 	value.uint16 = 2;
 	CMAddKey(objectpath, "Destination",
