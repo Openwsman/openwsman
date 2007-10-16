@@ -1,5 +1,6 @@
 
 
+void init_pywsman(void);
 char *_identify(WsManClient * cl, client_opt_t * options, char *encoding);
 char *_pull(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding);
 char *_release(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *enumContext, char *encoding);
