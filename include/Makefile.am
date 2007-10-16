@@ -25,3 +25,11 @@ wsmaninclude_HEADERS = \
 	wsman-subscription-repository.h \
 	wsman-event-pool.h
 
+EXTRA_DIST = wsman-xml.h \
+	     wsman-xml-binding.h \
+	     wsman-dispatcher.h \
+	     wsman-xml-serialize.h  \
+	     wsman-server.h \
+	     wsman-plugins.h
+
+

@@ -20,6 +20,7 @@ LIBS = \
 
 GENERATED = openwsman_wrap.c \
 	    pywsman.py
+
 SWIG_SOURCES = openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
 			 openwsman.c \
@@ -32,13 +33,11 @@ _pywsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 python_LTLIBRARIES = _pywsman.la
 
-openwsman_wrap.c: $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -python -o $@ $<
 
-install-data-local:
-	$(mkinstalldirs) ${pythondir}
-	@INSTALL@ -m 0644 pywsman.py ${pythondir}
-	@INSTALL@ -m 0644 OWsman.py ${pythondir}
 
 CLEANFILES= $(GENERATED)
+
+EXTRA_DIST = openwsman.h 
 
