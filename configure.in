@@ -62,7 +62,7 @@ fi
 AC_SUBST(OWSMAN_DEBUG_FLAGS)
 
 
-eventing_default=no
+eventing_default=yes
 AC_ARG_ENABLE(eventing,
 		[  --enable-eventing=[no/yes] turn on WS-Eventing [default=no]],,
               enable_eventing=$eventing_default)
@@ -328,8 +328,6 @@ AC_ARG_ENABLE(more-warnings,
 	      [  --disable-more-warnings  Inhibit compiler warnings],
 	      set_more_warnings=no)
 
-echo $GCC
-echo $set_more_warnings
 if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-Wall -Wstrict-prototypes -Wmissing-declarations \
