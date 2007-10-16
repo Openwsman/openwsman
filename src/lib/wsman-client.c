@@ -574,9 +574,6 @@ wsmc_create_action_str(WsmanAction action)
 	case WSMAN_ACTION_RENEW:
 		action_str = wsman_make_action(XML_NS_EVENTING, WSEVENT_RENEW);
 		break;
-	case WSMAN_ACTION_EVENT_PULL:
-		action_str = u_strdup(EVT_ACTION_PULL);
-		break;
 	case WSMAN_ACTION_NONE:
 	case WSMAN_ACTION_IDENTIFY:
 	case WSMAN_ACTION_TEST:

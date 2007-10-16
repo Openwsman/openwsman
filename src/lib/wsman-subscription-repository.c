@@ -77,7 +77,7 @@ int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData)
 int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **subscriptionDoc, int *len)
 {
 	unsigned char block[512];
-	char *buf = NULL;
+	unsigned char *buf = NULL;
 	int count,m;
 	int pre_count;
 	count = m = 0;

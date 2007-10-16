@@ -134,6 +134,7 @@ WsManTest_EventPoll_EP(WsEventThreadContextH threadcntx)
 		ws_xml_destroy_doc(notificationinfo->headerOpaqueData);
 		u_free(notificationinfo);
 	}
+	return 0;
 }
 
 int 

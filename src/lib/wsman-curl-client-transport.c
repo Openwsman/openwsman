@@ -297,7 +297,7 @@ wsmc_handler( WsManClient *cl,
 	char *upwd = NULL;
 	char *usag = NULL;
 	struct curl_slist *headers=NULL;
-	unsigned char *buf = NULL;
+	char *buf = NULL;
 	int len;
 	char *soapact_header = NULL;
 	long http_code;
@@ -373,8 +373,8 @@ wsmc_handler( WsManClient *cl,
 	}
 
 	ws_xml_dump_memory_enc(rqstDoc, &buf, &len, cl->content_encoding);
-	int count = 0;
 #if 0
+	int count = 0;
 	while(count < len) {
 		printf("%c",buf[count++]);
 	}
@@ -502,7 +502,6 @@ DONE:
 	r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 	cl->response_code = http_code;
 	cl->last_error = convert_to_last_error(r);
-DONE2:	
 	curl_slist_free_all(headers);
 	u_buf_free(response);
 	u_free(soapact_header);

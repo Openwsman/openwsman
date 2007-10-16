@@ -639,7 +639,7 @@ cleanup:
 }
 #ifdef ENABLE_EVENTING_SUPPORT
 int
-CimResource_EventPoll_EP(WsEventThreadContextH threadcntx,WsNotificationInfoH notificationinfo)
+CimResource_EventPoll_EP(WsEventThreadContextH cntx)
 {
 	int retval = 0;
 	return retval;
@@ -653,14 +653,11 @@ CimResource_Subscribe_EP(WsContextH cntx,
 {
 	debug("CIM Subscription");
 	int retval = 0;
-	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
-	WsXmlNodeH nodeH = ws_xml_get_soap_body(in_doc);
 	CimClientInfo *cimclient = NULL;
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *indicationfilter = NULL;
 	CMPIObjectPath *indicationhandler = NULL;
 	CMPIObjectPath *indicationsubscription = NULL;
-	hash_t *h;
 	if ( subsInfo ) {
 		cimclient = CimResource_Init(cntx,
 				subsInfo->auth_data.username,

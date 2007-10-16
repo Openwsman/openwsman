@@ -108,7 +108,7 @@ WsXmlDocH
 wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 {
 
-	char *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
+//	char *soapNs = ws_xml_get_node_name_ns(ws_xml_get_doc_root(rqstDoc));
 	WsXmlDocH doc = ws_xml_create_envelope();
 	WsXmlNodeH dstHeader, srcHeader, srcNode;
 	if (wsman_is_identify_request(rqstDoc))

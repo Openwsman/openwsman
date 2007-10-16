@@ -117,7 +117,7 @@ digest_auth_callback(char *realm, char *method, struct digest *dig)
 
 	return ws_authorize_digest(filename, &wsdig);
 }
-
+/*
 static char *shttp_reason_phrase(int status)
 {
 	if (status == WSMAN_STATUS_OK) {
@@ -125,7 +125,7 @@ static char *shttp_reason_phrase(int status)
 	}
 	return "Error";
 }
-
+*/
 
 typedef struct {
 	char *response;
@@ -141,7 +141,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	const char *content_type;
 //    char *default_path;
 //    const char *path;
-	char *encoding;
+	char *encoding = NULL;
 	int status = WSMAN_STATUS_OK;
 	char *fault_reason = NULL;
 
@@ -195,7 +195,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 
 	// Get request from http server
 	size_t length = shttpd_get_post_query_len(arg);
-	unsigned char *body = shttpd_get_post_query(arg);
+	char *body = shttpd_get_post_query(arg);
 	if (body == NULL) {
 		status = WSMAN_STATUS_BAD_REQUEST;
 		fault_reason = "No request body";
@@ -366,7 +366,7 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 {
 	int retVal = 0;
-	WsXmlDocH doc = ws_xml_read_memory( entry->strdoc, entry->len, "UTF-8", 0);
+	WsXmlDocH doc = ws_xml_read_memory( (char *)entry->strdoc, entry->len, "UTF-8", 0);
 
 	if(doc) {
 		WsXmlNodeH node = ws_xml_get_soap_body(doc);

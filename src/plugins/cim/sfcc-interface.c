@@ -57,6 +57,8 @@
 #define SYSTEMCREATIONCLASSNAME "CIM_ComputerSystem"
 #define SYSTEMNAME "localhost.localdomain"
 
+extern char *get_server_port(void);
+
 typedef struct _sfcc_enumcontext {
 	CimClientInfo *ecClient;
 	CMPIEnumeration *ecEnumeration;
@@ -1687,7 +1689,7 @@ cleanup:
 		CMRelease(instance);
 	return objectpath;
 }
-
+/*
 static void getcurrentdatetime(char *str)
 {
 	struct timeval tv;
@@ -1711,7 +1713,7 @@ static void getcurrentdatetime(char *str)
 	}
 
 }
-
+*/
 
 void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
 {
@@ -1721,10 +1723,10 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	CMPIStatus rc;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
-
+	CMPIObjectPath *objectpath_handler = NULL;
 	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
 	if(rc.rc) goto cleanup;
-	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
 	if(rc.rc) goto cleanup;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", NULL);
@@ -1791,12 +1793,12 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMPIObjectPath *objectpath = NULL;
 	CMPIInstance *instance = NULL;
 	CMPIStatus rc;
-
+	CMPIObjectPath *objectpath_handler = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
 	if(rc.rc) goto cleanup;
-	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
 	if(rc.rc) goto cleanup;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", NULL);
@@ -1838,16 +1840,19 @@ cleanup:
 void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIStatus rc;
-
+	CMPIObjectPath *objectpath_subscription = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
-
+	CMPIObjectPath *objectpath_handler = NULL;
 	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) goto cleanup;
-	CMPIObjectPath *objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) goto cleanup;
-	CMPIObjectPath *objectpath_subscription = newCMPIObjectPath(client->cim_namespace,
+	if(rc.rc) 
+		goto cleanup;
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	if(rc.rc) 
+		goto cleanup;
+	objectpath_subscription = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", &rc);
-	if(rc.rc) goto cleanup;
+	if(rc.rc)
+		goto cleanup;
 	CMPIValue value;
 	value.ref = objectpath_filter;
 	CMAddKey(objectpath_subscription, "Filter",

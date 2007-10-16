@@ -990,6 +990,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	WsDispatchEndPointInfo *ep = NULL;
 	WsDispatchEndPointInfo *ep_custom = NULL;
 	WsXmlDocH notdoc = NULL;
+	WsXmlNodeH nodedoc = NULL;
 	int i, resUriMatch = 0;
 	char *ns = NULL;
 
@@ -1023,7 +1024,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 				unsigned char *buf = NULL;
 				int len;
 				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf, &len) == 0) {
-					notdoc = ws_xml_read_memory( buf, len, "UTF-8", 0);
+					notdoc = ws_xml_read_memory( (char *)buf, len, "UTF-8", 0);
 					if(notdoc) {
 						nodedoc = ws_xml_get_soap_header(notdoc);
 						if(nodedoc) {

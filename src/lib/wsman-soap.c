@@ -1172,7 +1172,9 @@ wsenum_pull_direct_stub(SoapOpH op,
 	SoapH           soap = soap_get_op_soap(op);
 	WsContextH      soapCntx = ws_get_soap_context(soap);
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
-
+#ifdef ENABLE_EVENTING_SUPPORT
+	WsNotificationInfoH notificationInfo = NULL;
+#endif
 
 	WsEndPointPull  endPoint = (WsEndPointPull) ep->serviceEndPoint;
 	int             retVal = 0;
@@ -1411,7 +1413,6 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 static void
 create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 {
-	int i;
 	WsXmlDocH notificationDoc = ws_xml_create_envelope();
 	WsXmlNodeH temp = NULL;
 	WsXmlNodeH node = NULL;
@@ -1443,7 +1444,7 @@ create_subs_info(SoapOpH op,
 {
 	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
 	WsXmlNodeH	subNode = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
-	WsXmlNodeH	temp, child;
+	WsXmlNodeH	temp;
 	WsXmlDocH outdoc = NULL;
 	WsSubscribeInfo *subsInfo;
 	op_t           *_op = (op_t *) op;
@@ -1452,7 +1453,7 @@ create_subs_info(SoapOpH op,
 	WsmanFaultDetailType fault_detail_code = WSMAN_DETAIL_OK;
 	char *str = NULL;
 	time_t timeout;
-	int i, r;
+	int r;
 	char *soapNs = NULL;
 
 	*sInfo = NULL;
@@ -1624,7 +1625,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
-	unsigned char *buf = NULL;
+	char *buf = NULL;
 	char *expiresstr = NULL;
 	int len;
 	epcntx = ws_create_ep_context(soap, _doc);
@@ -1653,7 +1654,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		}
 		ws_xml_dump_memory_enc(_doc, &buf, &len, "UTF-8");
 		if(buf) {
-			soap->subscriptionOpSet->save_subscritption(soap->uri_subsRepository, subsInfo->subsId, buf);
+			soap->subscriptionOpSet->save_subscritption(soap->uri_subsRepository, subsInfo->subsId, (unsigned char*)buf);
 			u_free(buf);
 		}
 	}
@@ -1983,7 +1984,6 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 
 static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 {
-	lnode_t *node;
 	if(thrdcntx == NULL) return NULL;
 	WsEventThreadContextH threadcntx = (WsEventThreadContextH)thrdcntx;
 	WsSubscribeInfo * subsInfo = threadcntx->subsInfo;
@@ -2020,27 +2020,24 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 
 void * wse_heartbeat_sender(void *thrdcntx)
 {
-	wse_event_sender(thrdcntx, 0);
+	return wse_event_sender(thrdcntx, 0);
 }
 
 void *wse_notification_sender(void *thrdcntx)
 {
-	wse_event_sender(thrdcntx, 1);
+	return wse_event_sender(thrdcntx, 1);
 }
 
 void wse_notification_manager(void * cntx)
 {
-	int i, retVal;
-	WsXmlNodeH child = NULL;
+	int retVal;
 	WsSubscribeInfo * subsInfo = NULL;
 	WsXmlDocH notificationDoc =NULL;
 	WsXmlNodeH header = NULL;
 	WsXmlNodeH body = NULL;
 	WsXmlNodeH node = NULL;
 	WsXmlNodeH temp = NULL;
-	lnode_t *eventdata = NULL;
 	lnode_t *subsnode = NULL;
-	lnode_t *tempnode = NULL;
 	WsEventThreadContextH threadcntx = NULL;
 	WsContextH contex = (WsContextH)cntx;
 	SoapH soap = contex->soap;
