@@ -132,7 +132,7 @@ ws_soap_initialize()
 	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
 	//	soap->enumIdleTimeout = enumIdleTimeout;
 	u_init_lock(soap);
-	ws_xml_parser_initialize(soap);
+	ws_xml_parser_initialize();
 
 	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
 	soap_add_filter(soap, outbound_control_header_filter, NULL, 0);
@@ -729,7 +729,6 @@ remove_locked_enuminfo(WsContextH cntx,
 	             hash_lookup(cntx->enuminfos, enumInfo->enumId));
 	u_unlock(cntx->soap);
 }
-
 static int time_expired(unsigned long lt)
 {
 	struct timeval tv;
@@ -1181,7 +1180,6 @@ wsenum_pull_direct_stub(SoapOpH op,
 	int locked = 0;
 	WsEnumerateInfo *enumInfo;
 	WsSubscribeInfo *subsInfo = NULL;
-	WsNotificationInfoH notificationInfo = NULL;
 	wsman_status_init(&status);
 	enumInfo = get_locked_enuminfo(soapCntx,
 	                               _doc, op, WSENUM_PULL, &status);
@@ -1998,7 +1996,7 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 	if(flag == 1)
 		subsInfo->eventSentLastTime = 1;
 	if(!(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) &&
-		!time_expired(subsInfo->expires)) {	
+		!time_expired(subsInfo->expires)) {
 		if(flag) {
 			notificationDoc = threadcntx->outdoc;
 		}
@@ -2592,7 +2590,7 @@ soap_destroy_fw(SoapH soap)
 	list_destroy(soap->WsSerializerAllocList);
 
 
-	ws_xml_parser_destroy(soap);
+	ws_xml_parser_destroy();
 
 	ws_destroy_context(soap->cntx);
 	u_free(soap);

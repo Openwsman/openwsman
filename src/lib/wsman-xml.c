@@ -261,7 +261,6 @@ WsXmlDocH ws_xml_duplicate_doc( WsXmlDocH srcDoc)
 {
 	WsXmlDocH dst = NULL;
 	WsXmlNodeH srcRoot = NULL;
-	SoapH soap = NULL;
 	const char *name, *nsUri;
 
 	if (!srcDoc)
@@ -555,7 +554,7 @@ char *ws_xml_get_node_text(WsXmlNodeH node)
  * @param options Parser options
  * @return XML document
  */
-WsXmlDocH ws_xml_read_memory( const char *buf, size_t size, const char *encoding, 
+WsXmlDocH ws_xml_read_memory( const char *buf, size_t size, const char *encoding,
 		unsigned long options)
 {
 	return xml_parser_memory_to_doc(buf, size, encoding, options);

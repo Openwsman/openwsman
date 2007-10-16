@@ -458,7 +458,7 @@ static int check_unsupported_features(op_t * op)
 		WsXmlAttrH attr = ws_xml_find_node_attr(n, NULL,WSEVENT_DELIVERY_MODE);
 		if(attr) {
 			mu = ws_xml_get_attr_value(attr);
-			if (strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSH) && 
+			if (strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSH) &&
 				strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSHWITHACK) &&
 				strcasecmp(mu, WSEVENT_DELIVERY_MODE_EVENTS) &&
 				strcasecmp(mu, WSEVENT_DELIVERY_MODE_PULL)) {
@@ -576,7 +576,6 @@ outbound_control_header_filter(SoapOpH opHandle,
 	char *buf = NULL;
 	int len;
 	char *mu = NULL;
-	SoapH soap = soap_get_op_soap(opHandle);
 	WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
 	WsXmlNodeH inHeaders =
@@ -609,7 +608,6 @@ outbound_control_header_filter(SoapOpH opHandle,
 int
 outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 {
-	SoapH soap = soap_get_op_soap(opHandle);
 	WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
 
@@ -917,7 +915,7 @@ static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, char *uri)
 			break;
 		}
 		node = list_next(r->namespaces, node);
-	}	
+	}
 	return ns;
 }
 
@@ -992,7 +990,6 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	WsDispatchEndPointInfo *ep = NULL;
 	WsDispatchEndPointInfo *ep_custom = NULL;
 	WsXmlDocH notdoc = NULL;
-	WsXmlNodeH nodedoc = NULL;
 	int i, resUriMatch = 0;
 	char *ns = NULL;
 
@@ -1047,7 +1044,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		goto cleanup;
 	}
 	while (node != NULL) {
-		
+
 		WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *) node->list_data;
 		if (wsman_is_identify_request(doc)) {
 			if ((ns = wsman_dispatcher_match_ns(ifc,
@@ -1076,7 +1073,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 		node = list_next((list_t *) dispInfo->interfaces, node);
 	}
-	
+
 
 	if (wsman_is_identify_request(doc) && r != NULL) {
 		ep = &r->endPoints[0];
@@ -1110,21 +1107,21 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	ws_remove_context_val(cntx, WSM_RESOURCE_URI);
 
 	if (ep != NULL) {
-		for (i = 0; i < dispInfo->mapCount; i++) {		
+		for (i = 0; i < dispInfo->mapCount; i++) {
 			if (dispInfo->map[i].ep == ep) {
 				disp = dispInfo->map[i].disp;
 				break;
 			}
 		}
 	} else if (ep_custom != NULL) {
-		for (i = 0; i < dispInfo->mapCount; i++) {		
+		for (i = 0; i < dispInfo->mapCount; i++) {
 			if (dispInfo->map[i].ep == ep_custom) {
 				disp = dispInfo->map[i].disp;
 				break;
 			}
 		}
 	}
-	
+
 cleanup:
 	if(notdoc)
 		ws_xml_destroy_doc(notdoc);
