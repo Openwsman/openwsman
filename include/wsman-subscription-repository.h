@@ -48,7 +48,7 @@ typedef int (*SubscriptionOpLoad) (char *, list_t *);
 
 struct __SubsRepositoryEntry {
         unsigned char *strdoc;
-	 int * len;
+	int len;
         char *uuid;
 };
 typedef struct __SubsRepositoryEntry *SubsRepositoryEntryH;
