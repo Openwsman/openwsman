@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libiconv\include;.\libxml2\include;.\src\lib;.\src\lib\u;.\src\cpp"
-				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;.\libiconv\include;.\libxml2\include;.\include;.\src\cpp"
+				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
 				AdditionalDependencies="libxml2_a.lib winhttp.lib"
-				OutputFile="..\..\Lib\$(ProjectName)D.lib"
+				OutputFile=".\Lib\$(ProjectName)D.lib"
 				AdditionalLibraryDirectories="C:\Program Files\Microsoft Platform SDK\Lib;.\libxml2\lib;$(MSSDK)\Lib"
 			/>
 			<Tool
@@ -109,8 +109,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Program Files\Microsoft Platform SDK\include;$(MSSDK)\include;.\libxml2\include;.\src\lib;.\src\lib\u;.\src\cpp"
-				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;.\libiconv\include;.\libxml2\include;.\include;.\src\cpp"
+				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -130,7 +130,7 @@
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
 				AdditionalDependencies="libxml2_a.lib winhttp.lib"
-				OutputFile="..\Lib\$(ProjectName).lib"
+				OutputFile=".\Lib\$(ProjectName).lib"
 				AdditionalLibraryDirectories="C:\Program Files\Microsoft Platform SDK\Lib;.\libxml2\lib;$(MSSDK)\Lib"
 			/>
 			<Tool
@@ -168,10 +168,6 @@
 			</File>
 			<File
 				RelativePath=".\src\lib\u\debug.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\lib\u\dictionary.c"
 				>
 			</File>
 			<File
@@ -259,15 +255,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-dispatcher.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\lib\wsman-epr.c"
 				>
 			</File>
 			<File
 				RelativePath=".\src\lib\wsman-faults.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\lib\wsman-libxml2-binding.c"
 				>
 			</File>
 			<File
@@ -279,15 +275,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-soap.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\lib\wsman-win-client-transport.c"
-				>
-			</File>
-			<File
-				RelativePath=".\src\lib\wsman-libxml2-binding.c"
 				>
 			</File>
 			<File
@@ -318,10 +306,6 @@
 			</File>
 			<File
 				RelativePath=".\include\u\debug.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\u\dictionary.h"
 				>
 			</File>
 			<File
@@ -386,10 +370,6 @@
 			</File>
 			<File
 				RelativePath=".\include\u\strings.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\u\strlib.h"
 				>
 			</File>
 			<File

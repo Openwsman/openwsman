@@ -96,7 +96,7 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
 		(Selector *) epr->refparams.selectorset.selectors.data;
 	if (ss == NULL) {
 			debug("epr->refparams.selectors.data == NULL\n");
-		return;
+		return NULL;
 	}
 	for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
 		Selector *s;

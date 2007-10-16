@@ -771,7 +771,7 @@ wsmc_create_request(WsManClient * cl,
 	WsXmlNodeH      header;
 	WsXmlNodeH      node;
 	char           *_action = NULL;
-
+	char            buf[20];
 	if (action == WSMAN_ACTION_IDENTIFY) {
 		request = ws_xml_create_envelope();
 	} else {
@@ -846,7 +846,6 @@ wsmc_create_request(WsManClient * cl,
 	case WSMAN_ACTION_RENEW:
 		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_RENEW, NULL);
-		char            buf[20];
 		sprintf(buf, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
@@ -1631,6 +1630,7 @@ int
 wsmc_set_encoding(WsManClient *cl, const char *encoding)
 {
 	cl->content_encoding = u_strdup(encoding);
+	return 0;
 }
 
 int
