@@ -461,6 +461,13 @@ cim_epr_to_objectpath(epr_t *epr) {
 	
 }
 
+
+static int 
+cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
+	// code
+	return 0;
+}
+
 static int
 cim_verify_keys(CMPIObjectPath * objectpath,
 		hash_t * keys, WsmanStatus * statusP)
@@ -513,8 +520,9 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 			statusP->fault_detail_code = WSMAN_DETAIL_OK;
 			u_free(cv);
 		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address != NULL) {
-			CMPIObjectPath *objectpath = cim_epr_to_objectpath(epr);
-			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath, NULL)) ) == 0 ) {
+			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(epr);
+			// if (cim_opcmp(objectpath, opjectpath_epr) == 0) {
+			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath_epr, NULL)) ) == 0 ) {
 				statusP->fault_code = WSMAN_RC_OK;
 				statusP->fault_detail_code = WSMAN_DETAIL_OK;
 				u_free(cv);	
