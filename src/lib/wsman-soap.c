@@ -2146,8 +2146,8 @@ void wse_notification_manager(void * cntx)
 		}
 		if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL) {
 			if((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING) == 0) {
-				threadcntx = ws_create_event_context(soap, subsInfo, notificationDoc);
-				if(pthread_create(&eventsender, &pattrs, wse_notification_sender, threadcntx) == 0) {
+				WsEventThreadContextH threadcntx2 = ws_create_event_context(soap, subsInfo, notificationDoc);
+				if(pthread_create(&eventsender, &pattrs, wse_notification_sender, threadcntx2) == 0) {
 					subsInfo->flags |= WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING;
 				}
 				else {
