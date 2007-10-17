@@ -1763,18 +1763,15 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		pthread_mutex_unlock(&soap->lockSubs);
 		goto DONE;
 	}
-	else {
-		pthread_mutex_lock(&subsInfo->notificationlock);
-		subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
-		pthread_mutex_unlock(&subsInfo->notificationlock);
-	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
-                debug("UnSubscribe fault");
-		subsInfo->flags &= ~WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
+               debug("UnSubscribe fault");
 		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
 		goto DONE;
 	}
+	pthread_mutex_lock(&subsInfo->notificationlock);
+	subsInfo->flags |= WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE;
+	pthread_mutex_unlock(&subsInfo->notificationlock);
 	debug("subscription %s unsubscribed", uuid);
 	doc = wsman_create_response_envelope( _doc, NULL);
 	if (!doc)
@@ -2067,7 +2064,7 @@ void wse_notification_manager(void * cntx)
 			lnode_t *nodetemp = list_delete2(soap->subscriptionMemList, subsnode);
 			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, subsInfo->subsId);
 			soap->eventpoolOpSet->clear(subsInfo->subsId, delete_notification_info);
-			if(subsInfo->cancel)
+			if(!(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) && subsInfo->cancel)
 				subsInfo->cancel(threadcntx);
 			if(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE)
 				debug("Unsubscribed!uuid:%s deleted", subsInfo->subsId);
