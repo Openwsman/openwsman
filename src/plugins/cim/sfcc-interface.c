@@ -395,8 +395,6 @@ cim_verify_class_keys(CMPIConstClass * class,
 		      hash_t * keys, WsmanStatus * statusP)
 {
 	CMPIStatus rc;
-	//hscan_t hs;
-	//hnode_t *hn;
 	int count, ccount = 0;
 	int numproperties, i;
 	debug("verify class selectors");
@@ -439,6 +437,29 @@ cim_verify_class_keys(CMPIConstClass * class,
 	return statusP->fault_code;
 }
 
+static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
+		const char *value)
+{
+	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
+	debug("adding selector %s=%s", key, value );
+	CMAddKey(op, key, value, CMPI_chars);
+	return 0;
+}
+
+static CMPIObjectPath * 
+cim_epr_to_objectpath(epr_t *epr) {
+	CMPIStatus rc;
+	CMPIObjectPath * objectpath;
+    char * class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
+    // FIXME
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
+    wsman_epr_selector_cb(epr,
+                     cim_add_keys_from_filter_cb, objectpath);
+    debug( "ObjectPath: %s",
+                     CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+     return objectpath;
+	
+}
 
 static int
 cim_verify_keys(CMPIObjectPath * objectpath,
@@ -484,22 +505,39 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 			debug("unexpcted selectors");
 			break;
 		}
+		
 		cv = value2Chars(data.type, &data.value);
+		epr_t *epr = NULL;
 		if (strcmp(cv, (char *) hnode_get(hn)) == 0) {
 			statusP->fault_code = WSMAN_RC_OK;
 			statusP->fault_detail_code = WSMAN_DETAIL_OK;
 			u_free(cv);
+		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address != NULL) {
+			CMPIObjectPath *objectpath = cim_epr_to_objectpath(epr);
+			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath, NULL)) ) == 0 ) {
+				statusP->fault_code = WSMAN_RC_OK;
+				statusP->fault_detail_code = WSMAN_DETAIL_OK;
+				u_free(cv);	
+			} else {
+				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
+				statusP->fault_detail_code =
+						    WSMAN_DETAIL_INVALID_RESOURCEURI;		
+				debug("invalid resource_uri %s != %s", cv,
+						(char *)CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
+				u_free(cv);	
+				break;
+			}
 		} else {
 			statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 			statusP->fault_detail_code =
 			    WSMAN_DETAIL_INVALID_RESOURCEURI;
 			debug("invalid resource_uri %s != %s", cv,
-			      (char *) hnode_get(hn));
+			      (char *) hnode_get(hn)); 
 			u_free(cv);
 			break;
 		}
 	}
-      cleanup:
+cleanup:
 	debug("getKey rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	return statusP->fault_code;
@@ -647,6 +685,7 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 
 	if (client->requested_class)
 		debug("class available");
+	
 	CMPIObjectPath *objectpath =
 	    newCMPIObjectPath(client->cim_namespace,
 			      client->requested_class, NULL);
@@ -656,6 +695,7 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 							       &rc);
 	debug("enumInstanceNames rc=%d, msg=%s", rc.rc,
 	      (rc.msg) ? (char *) rc.msg->hdl : NULL);
+	
 	if (rc.rc != 0) {
 		cim_to_wsman_status(rc, statusP);
 		//statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -674,8 +714,7 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 			CMPIObjectPath *op = CMClone(data.value.ref, NULL);
 			CMPIString *opstr = CMObjectPathToString(op, NULL);
 			debug("objectpath: %s", (char *) opstr->hdl);
-			if (cim_verify_keys
-			    (op, client->selectors, &statusPP) != 0) {
+			if (cim_verify_keys(op, client->selectors, &statusPP) != 0) {
 				if (opstr)
 					CMRelease(opstr);
 				if (op)
@@ -720,14 +759,6 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 }
 
 
-static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
-		const char *value)
-{
-	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
-	debug("adding selector %s=%s", key, value );
-	CMAddKey(op, key, value, CMPI_chars);
-	return 0;
-}
 
 void
 cim_enum_instances(CimClientInfo * client,
@@ -1267,10 +1298,6 @@ cleanup:
 
 
 
-
-
-
-
 void
 cim_get_instance_from_enum(CimClientInfo * client,
 			   WsContextH cntx,
@@ -1622,7 +1649,8 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	objectpath = cim_indication_filter_objectpath(client, uuid, &rc);
-	if(rc.rc) goto cleanup;
+	if(rc.rc) 
+		goto cleanup;
 	CMAddKey(objectpath, "Query",
 			querystring, CMPI_chars);
 	CMAddKey(objectpath, "QueryLanguage",
@@ -1797,9 +1825,11 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) goto cleanup;
+	if(rc.rc)
+		goto cleanup;
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) goto cleanup;
+	if(rc.rc)
+		goto cleanup;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", NULL);
 	CMPIValue value;
@@ -1861,10 +1891,13 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMAddKey(objectpath_subscription, "Handler",
 		&value, CMPI_ref);
 	rc = cc->ft->deleteInstance(cc, objectpath_subscription);
-	if(rc.rc) goto cleanup;
+	if(rc.rc) 
+		goto cleanup;
 	rc = cc->ft->deleteInstance(cc, objectpath_filter);
-	if(rc.rc) goto cleanup;
+	if(rc.rc) 
+		goto cleanup;
 	rc = cc->ft->deleteInstance(cc, objectpath_handler);
+	
 cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code = WSA_ACTION_NOT_SUPPORTED;

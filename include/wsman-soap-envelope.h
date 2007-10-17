@@ -87,7 +87,7 @@ void wsman_set_estimated_total(WsXmlDocH in_doc,
 char *wsman_get_selector(WsContextH cntx, WsXmlDocH doc, const char *name,
 			 const int index);
 
-hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node);
+hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node);
 
 hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc);
 
@@ -119,7 +119,7 @@ char *wsman_get_option_set(WsContextH cntx, WsXmlDocH doc, const char *op);
 
 int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
 
-int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode, 
+int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
 	WsmanFaultDetailType *detailcode);
 
 WsXmlDocH wsman_create_doc(const char *rootname);

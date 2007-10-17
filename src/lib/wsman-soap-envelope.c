@@ -627,7 +627,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 					WSENUM_ENUMERATE))) {
 		WsXmlNodeH filter = ws_xml_get_child(node,
 				0, XML_NS_WS_MAN, WSM_FILTER);
-		
+
 		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 				WSM_ENUM_MODE);
 		// Enumeration mode
@@ -776,7 +776,7 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFa
 				f->query = u_strdup(ws_xml_get_node_text(filter));
 				debug("Xpath filter: %s", f->query );
 				subsInfo->filter = f;
-				
+
 /*			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
 				attrname = ws_xml_get_attr_name(attr);
 				attrVal = ws_xml_get_attr_value(attr);
@@ -972,9 +972,10 @@ hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 
 
 
-hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
+hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node;
+	WsXmlNodeH epr;
 	int index = 0;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
@@ -986,8 +987,7 @@ hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
 		return NULL;
 	}
 	while ((selector =
-		ws_xml_get_child(node, index++, XML_NS_WS_MAN,
-				 WSM_SELECTOR))) {
+		ws_xml_get_child(node, index++, XML_NS_WS_MAN,  WSM_SELECTOR))) {
 		char *attrVal =
 		    ws_xml_find_attr_value(selector, XML_NS_WS_MAN,
 					   WSM_NAME);
@@ -996,14 +996,22 @@ hash_t *wsman_get_selectors_from_epr(WsXmlNodeH epr_node)
 			    ws_xml_find_attr_value(selector, NULL,
 						   WSM_NAME);
 
-		debug("Selector: %s=%s", attrVal,
-		      ws_xml_get_node_text(selector));
 		if (attrVal) {
 			if (!hash_lookup(h, attrVal)) {
-				if (!hash_alloc_insert
-				    (h, attrVal,
-				     ws_xml_get_node_text(selector))) {
-					error("hash_alloc_insert failed");
+				epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
+						WSA_EPR);
+				if (epr) {
+					debug("+++++++++++++++++++++++++++++++++++++++++++++: epr: %s", attrVal);
+					epr_t *epr = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
+					if (!hash_alloc_insert(h, attrVal, epr)) {
+						error("hash_alloc_insert failed");
+					}
+				} else {
+					debug("++++++++++++++++++++++++++++++++++++++++++++++: text");
+					if (!hash_alloc_insert(h, attrVal,
+							ws_xml_get_node_text(selector))) {
+						error("hash_alloc_insert failed");
+					}
 				}
 			} else {
 				error("duplicate selector");
@@ -1031,7 +1039,7 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 
 	header = ws_xml_get_soap_header(doc);
 	if (header) {
-		h = wsman_get_selectors_from_epr(header);
+		h = wsman_get_selectors_from_epr(cntx, header);
 	}
 	return h;
 }
@@ -1081,7 +1089,7 @@ wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 		return NULL;
 	}
 
-	return  wsman_get_selectors_from_epr(node);
+	return  wsman_get_selectors_from_epr(cntx, node);
 }
 
 
