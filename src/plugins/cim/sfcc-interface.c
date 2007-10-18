@@ -450,13 +450,13 @@ static CMPIObjectPath *
 cim_epr_to_objectpath(epr_t *epr) {
 	CMPIStatus rc;
 	CMPIObjectPath * objectpath;
-    char * class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
+    char * class = strrchr(epr->refparams.uri, '/') + 1;
     // FIXME
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
     wsman_epr_selector_cb(epr,
                      cim_add_keys_from_filter_cb, objectpath);
-    debug( "ObjectPath: %s",
-                     CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+//    debug( "ObjectPath: %s",
+ //                    CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
      return objectpath;
 	
 }
@@ -464,8 +464,39 @@ cim_epr_to_objectpath(epr_t *epr) {
 
 static int 
 cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
-	// code
-	return 0;
+	CMPIStatus rc;
+	unsigned int i = 0;
+	unsigned int count = CMGetKeyCount(op2, &rc);
+	debug("count = %d", count);
+	char *cv1,*cv2;
+	int match = 0;
+	while (i < count) {
+		CMPIString *name1 = NULL;
+		CMPIData value1 = CMGetKeyAt(op2, i, &name1, &rc);
+		if(rc.rc) goto DONE;
+		i++;
+		char *p1 = CMGetCharsPtr(name1, &rc);
+		if(rc.rc) 
+			goto DONE;
+		CMPIData value2 = CMGetKey(op1, p1, &rc);
+		if(rc.rc) goto DONE;
+		cv1 = value2Chars(value1.type, &value1.value);
+		cv2 = value2Chars(value2.type, &value2.value);
+		match = strcmp(cv1,cv2);
+		u_free(cv1);
+		u_free(cv2);
+		if(match == 0) 
+			continue;
+		else  
+			goto DONE;
+	}
+DONE:
+	CMRelease(op1);
+	CMRelease(op2);
+	if(rc.rc || match) 
+		return 1;
+	else
+		return 0;
 }
 
 static int
@@ -521,8 +552,9 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 			u_free(cv);
 		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address != NULL) {
 			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(epr);
-			// if (cim_opcmp(objectpath, opjectpath_epr) == 0) {
-			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath_epr, NULL)) ) == 0 ) {
+			CMPIObjectPath *objectpath_epr2 = CMClone(data.value.ref, NULL);
+			if (cim_opcmp(objectpath_epr2, objectpath_epr) == 0) {
+//			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath_epr, NULL)) ) == 0 ) {
 				statusP->fault_code = WSMAN_RC_OK;
 				statusP->fault_detail_code = WSMAN_DETAIL_OK;
 				u_free(cv);	
