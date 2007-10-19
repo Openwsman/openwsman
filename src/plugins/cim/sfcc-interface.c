@@ -1698,15 +1698,14 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 	instance = newCMPIInstance(objectpath, NULL);
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
-	if (rc.rc == CMPI_RC_ERR_FAILED) {
-			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
-	} else {
-		cim_to_wsman_status(rc, status);
-	}
 	/* Print the results */
 	debug("create CIM_IndicationFilter() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
-	cim_to_wsman_status(rc, status);
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else if(rc.rc != 11){ // an object already exists. We take this erros as success
+		cim_to_wsman_status(rc, status);
+	}
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath_r)
@@ -1740,15 +1739,14 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 	instance = newCMPIInstance(objectpath, NULL);
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
-	if (rc.rc == CMPI_RC_ERR_FAILED) {
-			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
-	} else {
-		cim_to_wsman_status(rc, status);
-	}
 	/* Print the results */
 	debug("create CIM_IndicationHandlerCIMXML() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
-	cim_to_wsman_status(rc, status);
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else if(rc.rc != 11){ // an object already exists. We take this erros as success
+		cim_to_wsman_status(rc, status);
+	}
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath_r)
@@ -1832,15 +1830,14 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	instance = newCMPIInstance(objectpath, NULL);
 	instance_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
-	if (rc.rc == CMPI_RC_ERR_FAILED) {
-			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
-	} else {
-		cim_to_wsman_status(rc, status);
-	}
 	/* Print the results */
 	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
-	cim_to_wsman_status(rc, status);
+	if (rc.rc == CMPI_RC_ERR_FAILED) {
+			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
+	} else if (rc.rc != 11){ // an object already exists. We take this erros as success
+		cim_to_wsman_status(rc, status);
+	}
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath)

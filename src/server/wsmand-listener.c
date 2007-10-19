@@ -357,7 +357,7 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 		lnode_t *node = list_last(cntx->soap->subscriptionMemList);
 		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
 		//Delete new subscription file coz in fact we've got it
-		cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
+//		cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
 		//Update UUID in the memory
 		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
 	}

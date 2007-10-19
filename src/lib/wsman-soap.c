@@ -1586,7 +1586,14 @@ create_subs_info(SoapOpH op,
 		subsInfo->auth_data.username = NULL;
 		subsInfo->auth_data.password = NULL;
 	}
-	generate_uuid(subsInfo->subsId, EUIDLEN, 1);
+	temp = ws_xml_get_soap_header(indoc);
+	temp = ws_xml_get_child(temp, 0, XML_NS_OPENWSMAN, "FormerUID");
+	if(temp) { //it is a request from the saved reqeust. So we recover the former UUID
+		strncpy(subsInfo->subsId, ws_xml_get_node_text(temp), EUIDLEN);
+		debug("Recover to uuid:%s",subsInfo->subsId);
+	}
+	else
+		generate_uuid(subsInfo->subsId, EUIDLEN, 1);
 	if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL)
 		create_notification_template(indoc, subsInfo);
 DONE:
@@ -1652,6 +1659,8 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 			expiresstr = strdup(ws_xml_get_node_text(temp));
 			ws_xml_set_node_text(temp, str);
 		}
+		temp = ws_xml_get_soap_header(_doc);
+		ws_xml_add_child(temp, XML_NS_OPENWSMAN, "FormerUID", subsInfo->subsId);
 		ws_xml_dump_memory_enc(_doc, &buf, &len, "UTF-8");
 		if(buf) {
 			soap->subscriptionOpSet->save_subscritption(soap->uri_subsRepository, subsInfo->subsId, (unsigned char*)buf);
@@ -1748,7 +1757,7 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soap->subscriptionMemList)) {
 		t = list_first(soap->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcasecmp(subsInfo->subsId, uuid+5)) {
+		if(strcasecmp(subsInfo->subsId, uuid+5)) {			
 			while((t == list_next(soap->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcasecmp(subsInfo->subsId, uuid+5)) break;
