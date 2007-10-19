@@ -976,6 +976,7 @@ hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node;
 	WsXmlNodeH epr;
+	epr_t *eprp = NULL;
 	int index = 0;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
@@ -1002,12 +1003,12 @@ hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 						WSA_EPR);
 				if (epr) {
 					debug("+++++++++++++++++++++++++++++++++++++++++++++: epr: %s", attrVal);
-					epr_t *epr = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
-					if (!hash_alloc_insert(h, attrVal, epr)) {
+					eprp = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
+					if (!hash_alloc_insert(h, attrVal, eprp)) {
 						error("hash_alloc_insert failed");
 					}
 				} else {
-					debug("++++++++++++++++++++++++++++++++++++++++++++++: text");
+					debug("++++++++++++++++++++++++++++++++++++++++++++++: text: %s", attrVal);
 					if (!hash_alloc_insert(h, attrVal,
 							ws_xml_get_node_text(selector))) {
 						error("hash_alloc_insert failed");
