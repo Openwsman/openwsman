@@ -1,7 +1,7 @@
 
 
-pylibdir = $(DESTDIR)$(shell python -c 'import sys; print sys.path[2]')
-pythondir = $(DESTDIR)$(pylibdir)/site-packages
+#pylibdir = $(shell python -c 'import sys; print sys.path[2]')
+#pythondir = $(pylibdir)/site-packages
 
 
 INCLUDES =  \

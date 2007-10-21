@@ -447,8 +447,7 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 }
 
 static CMPIObjectPath * 
-cim_epr_to_objectpath(epr_t *epr) {
-	CMPIStatus rc;
+cim_epr_to_objectpath(epr_t *epr) {	
 	CMPIObjectPath * objectpath;
     char * class = strrchr(epr->refparams.uri, '/') + 1;
     // FIXME
