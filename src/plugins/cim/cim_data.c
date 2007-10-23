@@ -53,6 +53,7 @@ hash_t *vendor_namespaces = NULL;
 char *cim_host = "localhost";
 char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
 char *server_port = "8889";
+char *cim_client_frontend = "XML";
 
 SER_START_ITEMS(CimResource)
 SER_END_ITEMS(CimResource);
@@ -152,6 +153,7 @@ void set_config( void *self, dictionary *config )
     cim_namespace = iniparser_getstr (config, "cim:default_cim_namespace");
     char *namespaces = iniparser_getstr (config, "cim:vendor_namespaces");
     cim_host = iniparser_getstring(config, "cim:host", "localhost");
+    cim_client_frontend = iniparser_getstring(config, "cim:cim_client_frontend", "XML");
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
     server_port = iniparser_getstring(config, "server:port", "8889");
     debug("vendor namespaces: %s", namespaces);
@@ -180,6 +182,12 @@ char *
 get_cim_host()
 {
     return cim_host;
+}
+
+char *
+get_cim_client_frontend()
+{
+    return cim_client_frontend;
 }
 
 char *

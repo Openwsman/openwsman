@@ -20,6 +20,7 @@ CimClientInfo *cim_getclient_from_enum_context(WsEnumerateInfo * enumInfo);
 CMCIClient *cim_connect_to_cimom(char *cim_host, char *cim_port,
 				 char *cim_host_userid,
 				 char *cim_host_passwd,
+				 char * frontend,
 				 WsmanStatus * status);
 
 void cim_release_client(CimClientInfo * cimclient);

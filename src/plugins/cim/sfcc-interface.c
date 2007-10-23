@@ -75,7 +75,7 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	char *sub, *target_class = NULL;
 	hscan_t hs;
 	hnode_t *hn;
-	if (strcmp(client->requested_class, "*")  && 
+	if (strcmp(client->requested_class, "*")  &&
 			enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 		if ( (enumInfo->flags & WSMAN_ENUMINFO_EPR ) &&
 			!(enumInfo->flags & WSMAN_ENUMINFO_OBJEPR))  {
@@ -449,8 +449,8 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 	return 0;
 }
 
-static CMPIObjectPath * 
-cim_epr_to_objectpath(epr_t *epr) {	
+static CMPIObjectPath *
+cim_epr_to_objectpath(epr_t *epr) {
 	CMPIObjectPath * objectpath;
     char * class = strrchr(epr->refparams.uri, '/') + 1;
     // FIXME
@@ -460,11 +460,11 @@ cim_epr_to_objectpath(epr_t *epr) {
 //    debug( "ObjectPath: %s",
  //                    CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
      return objectpath;
-	
+
 }
 
 
-static int 
+static int
 cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
 	CMPIStatus rc;
 	unsigned int i = 0;
@@ -478,7 +478,7 @@ cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
 		if(rc.rc) goto DONE;
 		i++;
 		char *p1 = CMGetCharsPtr(name1, &rc);
-		if(rc.rc) 
+		if(rc.rc)
 			goto DONE;
 		CMPIData value2 = CMGetKey(op1, p1, &rc);
 		if(rc.rc) goto DONE;
@@ -487,15 +487,15 @@ cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
 		match = strcmp(cv1,cv2);
 		u_free(cv1);
 		u_free(cv2);
-		if(match == 0) 
+		if(match == 0)
 			continue;
-		else  
+		else
 			goto DONE;
 	}
 DONE:
 	CMRelease(op1);
 	CMRelease(op2);
-	if(rc.rc || match) 
+	if(rc.rc || match)
 		return 1;
 	else
 		return 0;
@@ -545,7 +545,7 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 			debug("unexpcted selectors");
 			break;
 		}
-		
+
 		cv = value2Chars(data.type, &data.value);
 		epr_t *epr = NULL;
 		if (strcmp(cv, (char *) hnode_get(hn)) == 0) {
@@ -559,14 +559,14 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 //			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath_epr, NULL)) ) == 0 ) {
 				statusP->fault_code = WSMAN_RC_OK;
 				statusP->fault_detail_code = WSMAN_DETAIL_OK;
-				u_free(cv);	
+				u_free(cv);
 			} else {
 				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 				statusP->fault_detail_code =
-						    WSMAN_DETAIL_INVALID_RESOURCEURI;		
+						    WSMAN_DETAIL_INVALID_RESOURCEURI;
 				debug("invalid resource_uri %s != %s", cv,
 						(char *)CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
-				u_free(cv);	
+				u_free(cv);
 				break;
 			}
 		} else {
@@ -574,7 +574,7 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 			statusP->fault_detail_code =
 			    WSMAN_DETAIL_INVALID_RESOURCEURI;
 			debug("invalid resource_uri %s != %s", cv,
-			      (char *) hnode_get(hn)); 
+			      (char *) hnode_get(hn));
 			u_free(cv);
 			break;
 		}
@@ -627,8 +627,8 @@ instance2xml(CimClientInfo * client,
 	classname = objectpath->ft->getClassName(objectpath, NULL);
 	class_namespace = cim_find_namespace_for_class(client, enumInfo,
 					 (char *) classname->hdl);
-	
-	final_class = u_strdup(strrchr(class_namespace, '/') + 1); 
+
+	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
 	// final_class = classname->ft->getCharPtr(classname, NULL);
 	d = ws_xml_create_doc( class_namespace, final_class);
 	r = ws_xml_get_doc_root(d);
@@ -727,7 +727,7 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 
 	if (client->requested_class)
 		debug("class available");
-	
+
 	CMPIObjectPath *objectpath =
 	    newCMPIObjectPath(client->cim_namespace,
 			      client->requested_class, NULL);
@@ -737,7 +737,7 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 							       &rc);
 	debug("enumInstanceNames rc=%d, msg=%s", rc.rc,
 	      (rc.msg) ? (char *) rc.msg->hdl : NULL);
-	
+
 	if (rc.rc != 0) {
 		cim_to_wsman_status(rc, statusP);
 		//statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -1191,16 +1191,19 @@ CMCIClient *cim_connect_to_cimom(char *cim_host,
 				 char *cim_port,
 				 char *cim_host_userid,
 				 char *cim_host_passwd,
+				 char *frontend,
 				 WsmanStatus * status)
 {
 
 	CMPIStatus rc;
-	//setenv("SFCC_CLIENT", "SfcbLocal", 1);
-	CMCIClient *cimclient = cmciConnect(cim_host, NULL, cim_port,
+	if (strcmp(frontend, "XML") == 0) 
+		frontend = "http";
+	
+	CMCIClient *cimclient = cmciConnect(cim_host, frontend , cim_port,
 					    cim_host_userid,
 					    cim_host_passwd, &rc);
 	if (cimclient == NULL) {
-		//debug( "Connection to CIMOM failed: %s", (char *)rc.msg->hdl);
+		debug( "Connection to CIMOM failed");
 	} else {
 		debug("new cimclient: 0x%8x", cimclient);
 		debug("new cimclient: %d", cimclient->ft->ftVersion);
@@ -1691,7 +1694,7 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	objectpath = cim_indication_filter_objectpath(client, uuid, &rc);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
 	CMAddKey(objectpath, "Query",
 			querystring, CMPI_chars);
@@ -1916,10 +1919,10 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	CMPIObjectPath *objectpath_handler = NULL;
 	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
 	objectpath_subscription = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", &rc);
@@ -1933,13 +1936,13 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMAddKey(objectpath_subscription, "Handler",
 		&value, CMPI_ref);
 	rc = cc->ft->deleteInstance(cc, objectpath_subscription);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
 	rc = cc->ft->deleteInstance(cc, objectpath_filter);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
 	rc = cc->ft->deleteInstance(cc, objectpath_handler);
-	
+
 cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code = WSA_ACTION_NOT_SUPPORTED;

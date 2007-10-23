@@ -100,6 +100,7 @@ void cleanup( void *self, void *data );
 void set_config( void *self, dictionary *config );
 
 char *get_cim_namespace(void);
+char *get_cim_client_frontend(void);
 
 hash_t* get_vendor_namespaces(void);
 char *get_cim_host(void);

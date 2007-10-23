@@ -67,12 +67,16 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	char *show_extensions;
 	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 	WsmanStatus status;
-
+	
 	wsman_status_init(&status);
 	r = wsman_get_resource_uri(cntx, NULL);
 	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
+		
+	debug("Connecting using sfcc %s frontend", get_cim_client_frontend());
+	
 	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
-			get_cim_port(), username, password , &status);
+			get_cim_port(), username, password , get_cim_client_frontend(), &status);
+	
 	if (!cimclient->cc)
 		return NULL;
 
