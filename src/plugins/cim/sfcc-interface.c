@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif
+ * @author Liang Hou
  * @author Sumeet Kukreja, Dell Inc.
  */
 #ifdef HAVE_CONFIG_H
@@ -53,6 +54,8 @@
 
 #include "sfcc-interface.h"
 #include "cim-interface.h"
+
+#include "wsman-cimxmllistener-path.h"
 
 #define SYSTEMCREATIONCLASSNAME "CIM_ComputerSystem"
 #define SYSTEMNAME "localhost.localdomain"
@@ -1725,9 +1728,11 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 
 	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
 	if(rc.rc) goto cleanup;
+	char *servicepath = create_cimxml_listener_path(uuid);
 	char serverpath[128];
-	snprintf(serverpath, 128, "http://%s:%s@localhost:%s/wsman/eventsink/%s", client->username, client->password,
-			get_server_port(), uuid);
+	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
+			get_server_port(), servicepath);
+	u_free(servicepath);
 //	snprintf(serverpath, 128, "http://localhost/eventsink");
 	CMPIValue value;
 	value.uint16 = 2;
@@ -1837,6 +1842,7 @@ cleanup:
 	} else if (rc.rc != 11){ // an object already exists. We take this erros as success
 		cim_to_wsman_status(rc, status);
 	}
+	add_cimxml_listener_path(subsInfo->subsId);
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath)
@@ -1938,6 +1944,7 @@ cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 	} else {
+		delete_cimxml_listener_path(subsInfo->subsId);
 		cim_to_wsman_status(rc, status);
 	}
 	debug("cim_delete_indication_subscription() rc=%d, msg=%s",

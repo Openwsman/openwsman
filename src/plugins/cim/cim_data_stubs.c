@@ -30,7 +30,7 @@
 
 /**
  * @author Anas Nashif
- * 
+ * @author Liang Hou
  * Contributions from:
  * @author Sumeet Kukreja, Dell Inc.
  */
@@ -680,6 +680,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 // to do here: create indication filter here and something else necessary
 	subsInfo->eventpoll= CimResource_EventPoll_EP;
 	subsInfo->cancel = CimResource_SubscriptionCancel_EP;
+	subsInfo->vendor_namespaces = cimclient->namespaces;
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
 		instance= cim_get_instance_from_selectors(cimclient, cntx, status);
 		if(instance) {

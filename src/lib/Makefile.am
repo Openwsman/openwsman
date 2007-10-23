@@ -33,7 +33,9 @@ libwsman_la_SOURCES = \
 if ENABLE_EVENTING_SUPPORT
 libwsman_la_SOURCES +=  \
 	wsman-subscription-repository.c \
-	wsman-event-pool.c
+	wsman-event-pool.c \
+	wsman-cimxmllistener-path.c \
+	wsman-cimindication-processor.c
 endif
 
 libwsman_curl_client_transport_la_SOURCES = \

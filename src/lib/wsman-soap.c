@@ -1236,6 +1236,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 		ws_xml_destroy_doc(doc);
 		doc = ws_xml_create_envelope();
 		WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
+		WsXmlNodeH docheader = ws_xml_get_soap_header(doc);
 		docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
 		if(docnode) {
 			ws_xml_add_child_format(docnode, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT,
@@ -1263,9 +1264,10 @@ wsenum_pull_direct_stub(SoapOpH op,
 			while(max_elements > 0) {
 				if(soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo))
 					break;
+				ws_xml_add_child(docheader, XML_NS_ADDRESSING, WSA_ACTION, notificationInfo->EventAction);
 				notidoc = notificationInfo->EventContent;
 				WsXmlNodeH tempnode = ws_xml_get_doc_root(notidoc);
-				ws_xml_duplicate_children(docnode, tempnode);
+				ws_xml_duplicate_tree(docnode, tempnode);
 				delete_notification_info(notificationInfo);
 				max_elements--;
 			}

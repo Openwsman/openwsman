@@ -309,6 +309,7 @@ struct __WsSubscribeInfo {
 	char            subsId[EUIDLEN];
 	char *	soapNs;
 	char *	uri;
+	hash_t *	vendor_namespaces; //CIM vendor namespaces;
 	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
 	char * locale; // language code
 	char * contentEncoding; //"UTF-8" or "UTF-16" or something else

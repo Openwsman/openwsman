@@ -780,11 +780,31 @@ isregistered(struct shttpd_ctx *ctx, const char *url)
 {
 	struct userurl	*p;
 
-	for (p = ctx->urls; p != NULL; p = p->next)
+	for (p = ctx->urls; p != NULL; p = p->next) {
+//		debug("*******registered url : %s**********", p->url);
 		if (strcmp(p->url, url) == 0)
 			return (p);
+	}
 
 	return (NULL);
+}
+
+char *shttp_reason_phrase(int code) {
+	struct http_code_map {
+		int code;
+		char *reason_phrase;
+	};
+	struct http_code_map maps[] = {
+			{200, "OK"},
+			{0, NULL}
+	};
+	int i = 0;
+	while(maps[i].code) {
+		if(maps[i].code == code)
+			return maps[i].reason_phrase;
+		i++;
+	}
+	return NULL;
 }
 
 

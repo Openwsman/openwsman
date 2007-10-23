@@ -75,6 +75,7 @@
 
 #define SOAP1_2_CONTENT_TYPE       "application/soap+xml;charset=UTF-8"
 #define SOAP_CONTENT_TYPE          "application/soap+xml"
+#define CIMXML_CONTENT_TYPE    "application/xml"
 
 #define SOAP_SKIP_DEF_FILTERS       0x01
 #define SOAP_ACTION_PREFIX          0x02 // otherwise exact

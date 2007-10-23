@@ -138,7 +138,7 @@ extern char    *shttpd_get_post_query(struct shttpd_arg_t *);
 extern int		shttpd_get_http_version(struct shttpd_arg_t *);
 extern const char *     shttpd_get_uri(struct shttpd_arg_t *);
 
-
+extern char *shttp_reason_phrase(int code);
 
 
 /*
