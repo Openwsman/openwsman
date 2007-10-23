@@ -1196,8 +1196,8 @@ CMCIClient *cim_connect_to_cimom(char *cim_host,
 {
 
 	CMPIStatus rc;
-	if (strcmp(frontend, "XML") == 0) 
-		frontend = "http";
+	if (strcmp(frontend, "SfcbLocal") != 0) 
+		frontend = "http";			
 	
 	CMCIClient *cimclient = cmciConnect(cim_host, frontend , cim_port,
 					    cim_host_userid,
