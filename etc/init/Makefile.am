@@ -1,4 +1,4 @@
 SUBDIRS = 
 
-EXTRA_DIST = wsmand.sh.in
+EXTRA_DIST = openwsmand.sh.in
 

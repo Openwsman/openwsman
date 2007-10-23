@@ -1,22 +1,22 @@
 #!/bin/sh
 #
 ### BEGIN INIT INFO
-# Provides: wsmand
+# Provides: openwsmand
 # Required-Start: $remote_fs
 # Required-Stop: $network
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6 
 # Short-Description: Openwsman Daemon
-# Description: wsmand
+# Description: openwsmand
 #       Start/Stop the Openwsman Daemon
 ### END INIT INFO
 #
 #
 # chkconfig: 2345 36 64
 # description: Openwsman Daemon
-# processname: wsmand
+# processname: openwsmand
 
-NAME=wsmand
+NAME=openwsmand
 DAEMON=/usr/sbin/$NAME
 OPTIONS=
 PIDFILE=/var/run/$NAME.pid
