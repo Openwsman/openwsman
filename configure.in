@@ -373,7 +373,7 @@ AC_OUTPUT([
         etc/Makefile
         etc/owsmangencert.sh
         etc/init/Makefile
-        etc/init/wsmand.sh
+        etc/init/openwsmand.sh
         tests/Makefile
         tests/client/Makefile
         tests/xml/Makefile

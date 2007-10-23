@@ -22,9 +22,9 @@ endif
 
 
 
-sbin_PROGRAMS = wsmand
+sbin_PROGRAMS = openwsmand
 
-wsmand_SOURCES = \
+openwsmand_SOURCES = \
 		 wsmand-listener.h \
 		 wsmand-daemon.c \
 		 wsmand-daemon.h \
@@ -32,7 +32,7 @@ wsmand_SOURCES = \
 		 wsmand-auth.h \
 		 wsmand.c 
 
-wsmand_SOURCES += \
+openwsmand_SOURCES += \
                  shttpd.h \
                  shttpd.c \
 		 wsmand-listener.c

@@ -42,7 +42,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %files
 %defattr(-,root,root)
 %{_libdir}/*.so*
-%{_sbindir}/wsmand
+%{_sbindir}/openwsmand
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/plugins
 %{_libdir}/openwsman/plugins/*so*
