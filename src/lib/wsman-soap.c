@@ -39,6 +39,7 @@
 
 #define _GNU_SOURCE
 
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
@@ -1379,6 +1380,10 @@ wsman_timeouts_manager(WsContextH cntx, void *opaqueData)
 #ifdef ENABLE_EVENTING_SUPPORT
 static int destination_reachable(char *url)
 {
+	u_uri_t *uri = NULL;
+	if (u_uri_parse((const char *)url, &uri)) {
+				return 1;
+	}
 	return 0;
 }
 WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
@@ -1457,7 +1462,6 @@ create_subs_info(SoapOpH op,
 	time_t timeout;
 	int r;
 	char *soapNs = NULL;
-
 	*sInfo = NULL;
 	subsInfo = (WsSubscribeInfo *)u_zalloc(sizeof (WsSubscribeInfo));
 	if (subsInfo == NULL) {
@@ -1570,10 +1574,12 @@ create_subs_info(SoapOpH op,
 			subsInfo->epr_notifyto = u_strdup(str);
 			if(destination_reachable(str)) {
 				fault_code = WSMAN_EVENT_DELIVER_TO_UNUSABLE;
+				goto DONE;
 			}
 		}
 		else {
 			fault_code = WSE_INVALID_MESSAGE;
+			goto DONE;
 		}
 	}
 	if(wsman_parse_event_request(indoc, subsInfo, &fault_code, &fault_detail_code)) {

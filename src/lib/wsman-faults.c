@@ -383,6 +383,14 @@ WsmanFaultCodeTable fault_code_table[] =
 		"The specified feature is not supported."
 	},
 	{
+		WSMAN_EVENT_DELIVER_TO_UNUSABLE,
+		WSMAN_ACTION_FAULT,
+		XML_NS_CIM_BINDING,
+		FAULT_RECEIVER_CODE,
+		"DevliveryToUnusable",
+		"The wse:NotifyTo address is not usable because it is incorrect"
+	},
+	{
     		WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
 		WSMB_ACTION_FAULT,
 		XML_NS_WS_MAN,
