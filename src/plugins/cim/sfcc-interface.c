@@ -288,13 +288,18 @@ xml2property(CMPIInstance * instance,
 
 void
 property2xml(CimClientInfo * client, CMPIData data,
-	     char *name, WsXmlNodeH node, char *resource_uri, int is_key)
+	     const char *name, WsXmlNodeH node, char *resource_uri, int is_key)
 {
+
 	char *valuestr = NULL;
 
+	/* debug ("%s %d=%d %d=%d", name , data.type, CMPI_null,  data.state,CMPI_nullValue); */
 	if (CMIsArray(data)) {
-		 WsXmlNodeH nilnode;
-		if (data.type == CMPI_null && data.state == CMPI_nullValue) {
+		WsXmlNodeH nilnode;
+		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT 
+				&& data.state == CMPI_nullValue) {
+			return;
+		} else if (data.type == CMPI_null && data.state == CMPI_nullValue) {
 			nilnode = ws_xml_add_child(node, resource_uri, name,
 					     NULL);
 			ws_xml_add_node_attr(nilnode,
@@ -317,7 +322,10 @@ property2xml(CimClientInfo * client, CMPIData data,
 			}
 		}
 	} else {
-		if (data.type != CMPI_null && data.state != CMPI_nullValue) {
+		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT 
+				&&  data.state == CMPI_nullValue) {	
+			return;
+		} else if (data.type != CMPI_null && data.state != CMPI_nullValue) {
 			WsXmlNodeH refpoint = NULL;
 			WsXmlNodeH propnode;
 
@@ -614,13 +622,13 @@ instance2xml(CimClientInfo * client,
 	     WsXmlNodeH body, WsEnumerateInfo * enumInfo)
 {
 	int i = 0;
-	char *class_namespace = NULL;	//, *resource_uri_ns = NULL;
+	char *class_namespace = NULL;
 	CMPIObjectPath *objectpath;
 	CMPIString *classname;
 	CMPIConstClass *_class = NULL;
 	char *final_class = NULL;
 	int numproperties = 0;
-	WsXmlNodeH r= NULL;
+	WsXmlNodeH xmlr = NULL;
 	WsXmlDocH d = NULL;
 
 	objectpath = instance->ft->getObjectPath(instance, NULL);
@@ -629,10 +637,10 @@ instance2xml(CimClientInfo * client,
 					 (char *) classname->hdl);
 
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
-	// final_class = classname->ft->getCharPtr(classname, NULL);
+	
 	d = ws_xml_create_doc( class_namespace, final_class);
-	r = ws_xml_get_doc_root(d);
-	ws_xml_set_ns( r, class_namespace, CIM_RESOURCE_NS_PREFIX);
+	xmlr = ws_xml_get_doc_root(d);
+	ws_xml_set_ns( xmlr, class_namespace, CIM_RESOURCE_NS_PREFIX);
 
 	if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
@@ -645,7 +653,7 @@ instance2xml(CimClientInfo * client,
 	}
 
 
-	if (!ws_xml_ns_add(r, XML_NS_SCHEMA_INSTANCE, XML_NS_SCHEMA_INSTANCE_PREFIX)) {
+	if (!ws_xml_ns_add(xmlr, XML_NS_SCHEMA_INSTANCE, XML_NS_SCHEMA_INSTANCE_PREFIX)) {
 		debug("namespace failed: %s", client->resource_uri);
 	}
 
@@ -653,7 +661,8 @@ instance2xml(CimClientInfo * client,
 		CMPIString *propertyname;
 		CMPIData data;
 		CMPIStatus is_key;
-		if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
+		if (strcmp(client->requested_class, "*")  
+				&& enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
 			data = instance->ft->getProperty(instance,
@@ -667,7 +676,7 @@ instance2xml(CimClientInfo * client,
 		}
 
 		objectpath->ft->getKey(objectpath, (char *) propertyname->hdl, &is_key);
-		property2xml(client, data, (char *) propertyname->hdl, r,
+		property2xml(client, data, (char *) propertyname->hdl, xmlr,
 			     class_namespace, is_key.rc);
 		CMRelease(propertyname);
 	}
@@ -687,7 +696,7 @@ instance2xml(CimClientInfo * client,
 		ws_xml_copy_node(r , body);
 	}
 #endif
-	ws_xml_copy_node(r , body);
+	ws_xml_copy_node(xmlr , body);
 
 	gettimeofday(&tv1, NULL);
 	t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
@@ -1202,6 +1211,7 @@ CMCIClient *cim_connect_to_cimom(char *cim_host,
 	CMCIClient *cimclient = cmciConnect(cim_host, frontend , cim_port,
 					    cim_host_userid,
 					    cim_host_passwd, &rc);
+	
 	if (cimclient == NULL) {
 		debug( "Connection to CIMOM failed");
 	} else {

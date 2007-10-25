@@ -108,6 +108,10 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	if (show_extensions && strcmp(show_extensions, "true") == 0) {
 		cimclient->flags |= FLAG_CIM_EXTENSIONS;
 	}
+	if (get_omit_schema_optional() == 1) {
+		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
+	}
+	
 	u_free(show_extensions);
 	return cimclient;
 }

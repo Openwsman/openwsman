@@ -248,7 +248,6 @@ typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 #define WSMAN_ENUMINFO_EPR          	  0x000400
 #define WSMAN_ENUMINFO_OBJEPR          	  0x000800
 #define WSMAN_ENUMINFO_EXT          	  0x001000
-/* The value 0x010000 is already assigned to flag WSMAN_ENUMINFO_INWORK_FLAG */
 #define WSMAN_ENUMINFO_ASSOC          	  0x020000
 #define WSMAN_ENUMINFO_REF          	  0x040000
 #define WSMAN_ENUMINFO_CQL          	  0x080000

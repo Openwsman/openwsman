@@ -38,7 +38,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri);
 void xml2property(CMPIInstance * instance, CMPIData data, char *name,
 		  char *value);
 
-void property2xml(CimClientInfo * client, CMPIData data, char *name,
+void property2xml(CimClientInfo * client, CMPIData data, const char *name,
 		  WsXmlNodeH node, char *resourceUri, int is_key);
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);

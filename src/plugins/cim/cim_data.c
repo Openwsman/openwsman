@@ -54,6 +54,7 @@ char *cim_host = "localhost";
 char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
 char *server_port = "8889";
 char *cim_client_frontend = "XML";
+int omit_schema_optional = 0;
 
 SER_START_ITEMS(CimResource)
 SER_END_ITEMS(CimResource);
@@ -156,6 +157,7 @@ void set_config( void *self, dictionary *config )
     cim_client_frontend = iniparser_getstring(config, "cim:cim_client_frontend", "XML");
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
     server_port = iniparser_getstring(config, "server:port", "8889");
+    omit_schema_optional = iniparser_getboolean(config, "cim:omit_schema_optional", 0);
     debug("vendor namespaces: %s", namespaces);
     if (namespaces) {
       hash_t * t = u_parse_query(namespaces);
@@ -188,6 +190,11 @@ char *
 get_cim_client_frontend()
 {
     return cim_client_frontend;
+}
+
+int get_omit_schema_optional()
+{
+	return omit_schema_optional;
 }
 
 char *

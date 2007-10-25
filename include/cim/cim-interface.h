@@ -18,12 +18,11 @@ struct __CimClientInfo
 	char*           method;
 	hash_t          *method_args;
 	char*           requested_class;
-	char* 		username;
-	char* 		password;
+	char* 			username;
+	char* 			password;
 	unsigned long   flags;
-
-
 };
+
 typedef struct __CimClientInfo CimClientInfo;
 
 #endif 

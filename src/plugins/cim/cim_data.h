@@ -39,6 +39,8 @@
 #include "wsman-declarations.h"
 #include "wsman-xml-serializer.h"
 
+
+
 // The resource is modeled as a struct
 struct __CimResource
 {
@@ -106,5 +108,5 @@ hash_t* get_vendor_namespaces(void);
 char *get_cim_host(void);
 char *get_cim_port(void);
 char *get_server_port(void);
-
+int get_omit_schema_optional(void);
 #endif // __CIM_DATA_H__
