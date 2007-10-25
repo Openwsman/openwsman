@@ -71,6 +71,60 @@ namespace WsmanExceptionNamespace
 		{
 			return error;
 		}
+		 string getStrErr()
+                {
+                        string res = "Unknown error";
+                        switch(error)
+                        {
+                        	case WSMAN_SUCCESS:
+					res = "Operation succeeded";
+					break;
+				case WSMAN_GENERAL_ERROR:
+					res = "General error occured";
+					break;
+				case WSMAN_TRANSPORT_ERROR:
+					res = "Transport error occured";
+					break;
+				case WSMAN_HTTP_ERROR:
+					res = "HTTP error occured";
+					break;
+				case WSMAN_SOAP_FAULT:
+					res = "SOAP error occured";
+					break;
+				case WSMAN_TYPE_CONVERSION_ERROR:
+					res = "Conversion type error occured";
+					break;
+				case WSMAN_XML_ERROR:
+					res = "XML error occured";
+					break;
+				case WSMAN_MISSING_INPUT:
+					res = "Missing input error occured";
+					break;
+				case WSMAN_RESPONSE_UNKNOWN:
+					res = "Response unknown";
+					break;
+				case WSMAN_MUST_UNDERSTAND:
+					res = "Must understand error";
+					break;
+				case WSMAN_SOAP_MESSAGE_INVALID:
+					res = "SOAP message invalid";
+					break;
+				case WSMAN_SOAP_HDR_OVERFLOW:
+					res = "Overflow soap header";
+					break;
+				case WSMAN_UDP_ERROR:
+					res = "UDP error occured";
+					break;
+				case WSMAN_TCP_ERROR:
+					res = "TCP error occured";
+					break;
+				case WSMAN_CONNECT_ERROR:
+					res = "Connection error occured";
+					break;
+                        }
+                        return res;
+                }
+
 	};
 }
 #endif

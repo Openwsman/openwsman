@@ -74,6 +74,12 @@ extern void wsmc_transport_fini(WsManClient *cl);
 extern void   wsman_transport_set_agent(WsManClient *cl, const char *agent);
 extern char * wsman_transport_get_agent (WsManClient *cl);
 
+extern void wsman_transport_set_userName(WsManClient *cl, char *user_name);
+extern void wsman_transport_set_password(WsManClient *cl, char *password);
+
+extern void wsman_transport_set_proxy_username(WsManClient *cl, char *proxy_username );
+extern void wsman_transport_set_proxy_password(WsManClient *cl, char *proxy_password );
+
 extern void   wsman_transport_set_auth_method(WsManClient *cl, const char *am);
 extern char * wsman_transport_get_auth_method (WsManClient *cl);
 

@@ -44,7 +44,13 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		// search for a client cert with this name
 		const char *cert,
 		// search for a cient cert with this oid
-		const char *oid
+		const char *oid,
+		 // proxy address include proxy port^M
+		const char *proxy,
+		//proxy user name 
+		const char *proxy_username,
+		//proxy password
+		const char *proxy_password
 #endif
 		)
 {
@@ -53,6 +59,7 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 	SetAuth(auth_method);	
 #ifdef _WIN32
 	SetClientCert(oid, cert, local);
+	SetProxy(proxy,proxy_username,proxy_password);
 #endif
 }
 
@@ -432,6 +439,20 @@ void OpenWsmanClient::SetAuth(const char *auth_method)
 	}
 }
 
+void OpenWsmanClient::SetUserName(const char *user_name)
+{
+	if (user_name) {
+		wsman_transport_set_userName(cl, (char*)user_name);
+	}
+}
+void OpenWsmanClient::SetPassword(const char *password)
+{
+       if (password) {
+	   	wsman_transport_set_password(cl, (char*)password);
+       }
+}
+
+
 #ifdef _WIN32
 void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const bool local)
 {
@@ -444,6 +465,22 @@ void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const boo
 	}
 
 	wsman_transport_set_calocal(cl, local);
+}
+
+void OpenWsmanClient::SetProxy(const char *proxy, const char *proxy_username, const char *proxy_password)
+{
+        if (proxy) {
+                wsman_transport_set_proxy(cl, (char*)proxy);
+        }
+
+
+        if (proxy_username) {
+                wsman_transport_set_proxy_username(cl, (char*)proxy_username);
+        }
+
+        if (proxy_password) {
+                wsman_transport_set_proxy_password(cl, (char*)proxy_password);
+        }
 }
 
 #else

@@ -156,6 +156,15 @@ char *wsman_transport_get_proxy(WsManClient *cl)
 	return cl->proxy_data.proxy ? u_strdup( cl->proxy_data.proxy ) : NULL;
 }
 
+void wsman_transport_set_userName(WsManClient * cl, char *arg)
+{
+        cl->data.user = arg;
+}
+
+void wsman_transport_set_password(WsManClient * cl, char *arg)
+{
+        cl->data.pwd = arg;
+}
 
 void wsman_transport_set_proxyauth(WsManClient * cl, const char *arg)
 {
@@ -284,6 +293,16 @@ BOOL wsman_transport_get_calocal(WsManClient *cl)
 {
 	return cl->authentication.calocal;
 }
+
+void wsman_transport_set_proxy_username(WsManClient *cl, char *proxy_username )
+{
+        cl->proxy_data.proxy_username = proxy_username;
+}
+void wsman_transport_set_proxy_password(WsManClient *cl, char *proxy_password )
+{
+        cl->proxy_data.proxy_password = proxy_password;
+}
+
 #endif
 
 

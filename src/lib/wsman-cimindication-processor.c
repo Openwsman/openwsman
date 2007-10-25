@@ -218,6 +218,7 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	WsXmlDocH indicationResponse = NULL;
 	SoapH soap = cntx->soap;
 	char *servicepath = cntx->servicepath;
+	debug("in CIM_Indication_call:: %s", u_buf_ptr(message->request));
 	indicationRequest = ws_xml_read_memory(u_buf_ptr(message->request), u_buf_len(message->request), 
 		"UTF-8", 0);
 	if(indicationRequest == NULL) {

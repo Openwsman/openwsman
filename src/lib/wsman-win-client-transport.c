@@ -100,7 +100,7 @@ static wchar_t *convert_to_unicode(char *str)
 int wsmc_transport_init(WsManClient *cl, void *arg)
 {
 	wchar_t *agent;
-
+	wchar_t *proxy;
 	if (cl->session_handle != NULL) {
 		return 0;
 	}
@@ -113,15 +113,24 @@ int wsmc_transport_init(WsManClient *cl, void *arg)
 		cl->lock_session_handle = 0L;
 		return 0;
 	}
+	if(!cl->proxy_data.proxy){
 
-	//cl->session_handle = WinHttpOpen(agent,
-	//		      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-	//		      WINHTTP_NO_PROXY_NAME,
-	//		      WINHTTP_NO_PROXY_BYPASS, 0);
+                cl->session_handle = WinHttpOpen(agent,
+                                          WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                          WINHTTP_NO_PROXY_NAME,
+                                          WINHTTP_NO_PROXY_BYPASS, 0);
+        }
+        else
+        {
+                proxy = convert_to_unicode(cl->proxy_data.proxy);
+                cl->session_handle = WinHttpOpen(agent,
+                                          WINHTTP_ACCESS_TYPE_NAMED_PROXY,
+                                          proxy,
+                                          WINHTTP_NO_PROXY_BYPASS, 0);
+                if (proxy)
+                        u_free(proxy);
 
-	cl->session_handle = WinHttpOpen(agent,
-		WINHTTP_ACCESS_TYPE_NAMED_PROXY, 
-		L"_", L"*", 0 );
+        }
 
 	cl->lock_session_handle = 0L;
 	u_free(agent);
@@ -270,7 +279,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	size_t len;
 	u_buf_t *ubuf;
 	PCCERT_CONTEXT certificate;
-
+	wchar_t *proxy_username;
+	wchar_t *proxy_password;
 	if (cl->session_handle == NULL && wsmc_transport_init(cl, NULL)) {
 		error("could not initialize transport");
 		lastErr = GetLastError();
@@ -331,9 +341,37 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 			lastErr = GetLastError();
 			bDone = TRUE;
 
-	}
+		}
 		bResults = FALSE;
 	}
+	if(cl->proxy_data.proxy_username)
+        {
+                proxy_username = convert_to_unicode(cl->proxy_data.proxy_username);
+                bResults = WinHttpSetOption(request, WINHTTP_OPTION_PROXY_USERNAME,
+                                                                        proxy_username, wcslen(proxy_username));
+                u_free(proxy_username);
+                if (!bResults)
+                {
+                        lastErr = GetLastError();
+                        bDone = TRUE;
+
+                }
+                bResults = FALSE;
+        }
+	 if(cl->proxy_data.proxy_password)
+        {
+                proxy_password = convert_to_unicode(cl->proxy_data.proxy_password);
+                bResults = WinHttpSetOption(request, WINHTTP_OPTION_PROXY_PASSWORD,
+                                                                        proxy_password, wcslen(proxy_password));
+                u_free(proxy_password);
+                if (!bResults)
+                {
+                        lastErr = GetLastError();
+                        bDone = TRUE;
+
+                }
+                bResults = FALSE;
+        }
 	while (!bDone) {
 		bResult = WinHttpSendRequest(request,
 					     WINHTTP_NO_ADDITIONAL_HEADERS,

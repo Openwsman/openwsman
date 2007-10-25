@@ -87,6 +87,10 @@ extern "C" {
 	struct _WsManProxyData {
 		char *proxy;
 		char *proxy_auth;
+#ifdef _WIN32
+		char *proxy_username;
+		char *proxy_password;
+#endif
 	};
 	typedef struct _WsManProxyData WsManProxyData;
 
