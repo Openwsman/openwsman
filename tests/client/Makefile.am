@@ -21,6 +21,7 @@ test_enumeration_SOURCES = test_enumeration.c
 test_pull_SOURCES = test_pull.c
 test_subscribe_SOURCES = test_subscribe.c
 test_unsubscribe_SOURCES = test_unsubscribe.c
+test_renew_SOURCES = test_renew.c
 
 noinst_PROGRAMS = \
 		  test_references \
@@ -31,7 +32,8 @@ noinst_PROGRAMS = \
 		  test_enumeration \
 		  test_pull \
 		  test_subscribe \
-		  test_unsubscribe
+		  test_unsubscribe \
+		  test_renew
 	
    
 

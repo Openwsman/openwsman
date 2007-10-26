@@ -1384,6 +1384,7 @@ static int destination_reachable(char *url)
 	if (u_uri_parse((const char *)url, &uri)) {
 				return 1;
 	}
+	u_free(uri);
 	return 0;
 }
 WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
@@ -1820,7 +1821,8 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      body;
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
-
+	char * expirestr = NULL;
+	
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointSubscribe endPoint =
 			(WsEndPointSubscribe)ep->serviceEndPoint;
@@ -1862,6 +1864,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	inNode = ws_xml_get_child(inNode, 0, XML_NS_EVENTING ,WSEVENT_EXPIRES);
 	pthread_mutex_lock(&subsInfo->notificationlock);
 	wsman_set_expiretime(inNode, &subsInfo->expires, &status.fault_code);
+	expirestr = ws_xml_get_node_text(inNode);
 	pthread_mutex_unlock(&subsInfo->notificationlock);
 	if (status.fault_code != WSMAN_RC_OK) {
 		status.fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
@@ -1887,8 +1890,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		goto DONE;
 	body = ws_xml_get_soap_body(doc);
 	body = ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_RENEW_RESP, NULL);
-	if(header)
-		ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, str);
+	ws_xml_add_child(body, XML_NS_EVENTING, WSEVENT_EXPIRES, expirestr);
 DONE:
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
