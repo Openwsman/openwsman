@@ -62,20 +62,20 @@ typedef struct {
     const char *password;
 } ServerData;
 
-typedef struct {						
+typedef struct {
     /* Explanation of what you should see */
     const char *explanation;
 
    const char *uuid;
 
    int expiration;
-	
+
     const char* xpath_expression;
-    
+
     char* expected_value;
 
     /* What the final status code should be. */
-    unsigned int final_status;		
+    unsigned int final_status;
 
     unsigned int auth_data;
 
@@ -88,30 +88,30 @@ ServerData sd[] = {
 
 TestData tests[] = {
     {
-        "Renew a subscription to 60 seconds expiration", 
+        "Renew a subscription to 60 seconds expiration",
         NULL,
         60,
         "/s:Envelope/s:Body/wse:RenewResponse/wse:Expires",
-        "PT60.000000S",	    
-        200, 
+        "PT60.000000S",
+        200,
         0
     } ,
     {
-        "Renew a nonexistent subscription", 
+        "Renew a nonexistent subscription",
         "uuid:c3db3884-3d5c-1d5c-8003-6ae2ccb7d000",
         60,
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-        "wsa:DestinationUnreachable",	    
-        400, 
+        "wsa:DestinationUnreachable",
+        400,
         0
     },
     {
-        "Renew a subscription to nonexpiration", 
+        "Renew a subscription to nonexpiration",
         NULL,
         0,
         "/s:Envelope/s:Body/wse:RenewResponse/wse:Expires",
-        "PT0.000000S",	    
-        200, 
+        "PT0.000000S",
+        200,
         0
     }
 };
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
                 sd[0].path,
                 sd[0].scheme,
                 sd[0].username,
-                sd[0].password);		
+                sd[0].password);
         wsmc_transport_init(cl, NULL);
         options = wsmc_options_init();
 	options->delivery_uri = u_strdup("http://localhost:80/eventsink");
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 		wsmc_options_destroy(options);
         	wsmc_release(cl);
     }
-    for (i = 0; i < ntests; i++) 
+    for (i = 0; i < ntests; i++)
     {
         printf ("Test %3d: %s ", i + 1, tests[i].explanation);
         cl= wsmc_create(
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
                 sd[0].path,
                 sd[0].scheme,
                 sd[0].username,
-                sd[0].password);		
+                sd[0].password);
         wsmc_transport_init(cl, NULL);
         options = wsmc_options_init();
 	options->expires = tests[i].expiration;
@@ -184,14 +184,14 @@ int main(int argc, char** argv)
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE;
 	}
-	printf("wsmc_get_response_code : %d\n",wsmc_get_response_code(cl));
+	printf("wsmc_get_response_code : %lu\n",wsmc_get_response_code(cl));
 	if (tests[i].final_status != wsmc_get_response_code(cl)) {
             printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n",
                                     wsmc_get_response_code(cl));
             goto CONTINUE;
         }
-	
-        if ((char *)tests[i].expected_value != NULL) 
+
+        if ((char *)tests[i].expected_value != NULL)
         {
 		char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
             if (xp)
@@ -199,12 +199,12 @@ int main(int argc, char** argv)
                 if (strncmp(xp,(char *)tests[i].expected_value, strlen((char *)tests[i].expected_value)) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",(char *)tests[i].xpath_expression, xp);	
+                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",(char *)tests[i].xpath_expression, xp);
                 u_free(xp);
             } else {
             	 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
                 printf(" No %s\t\033[22;31mFAILED\033[m\n", (char *)tests[i].xpath_expression);
-                
+
             }
         } else {
            printf("\t\t\033[22;32mPASSED\033[m\n");
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
 CONTINUE:
         wsmc_options_destroy(options);
         wsmc_release(cl);
-    }		
+    }
     return 0;
 }
 

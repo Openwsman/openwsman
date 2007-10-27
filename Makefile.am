@@ -23,3 +23,4 @@ uninstall-local:
 	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman++.pc
 	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman-server.pc
 
+EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln
