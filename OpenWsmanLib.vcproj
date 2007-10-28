@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="..\lib"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			UseOfMFC="0"
@@ -255,6 +255,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\lib\wsman-dispatcher.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\lib\wsman-epr.c"
 				>
 			</File>
@@ -272,6 +276,10 @@
 			</File>
 			<File
 				RelativePath=".\src\lib\wsman-soap-message.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\lib\wsman-soap.c"
 				>
 			</File>
 			<File
