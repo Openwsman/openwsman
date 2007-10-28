@@ -774,7 +774,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout += __timezone;
+	timeout += (time_t) __timezone;
 	*expire = timeout;
 DONE:
 	return;
@@ -784,10 +784,12 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 {
 	time_t t = expire;
 	struct tm tm;
+	int gmtoffset_hour;
+	int gmtoffset_minute;
 	localtime_r(&t, &tm);
 //	struct __timezone *tz;
-	int gmtoffset_hour = __timezone/3600;
-	int gmtoffset_minute = (__timezone - gmtoffset_hour * 3600 ) /60;
+	gmtoffset_hour = (int) __timezone/3600;
+	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
 	if(gmtoffset_hour > 0)
 		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
@@ -813,6 +815,7 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 {
 	WsSubscribeInfo *subsInfo = NULL;
 	char *uuid = NULL;
+	lnode_t *lnode;
 	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL);
 	if(node) {
@@ -821,7 +824,7 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 	}
 	if(uuid == NULL) return subsInfo;
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t *lnode = list_first(soap->subscriptionMemList);
+	lnode = list_first(soap->subscriptionMemList);
 	while(lnode) {
 		subsInfo = (WsSubscribeInfo *)lnode->list_data;
 		if(!strcmp(subsInfo->subsId, uuid+5)) break;

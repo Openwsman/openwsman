@@ -351,6 +351,7 @@ static int check_unsupported_features(op_t * op)
 	WsXmlNodeH n, m, k;
 	char *resource_uri = NULL;
 	char *mu = NULL;
+	WsXmlAttrH attr = NULL;
 	soap = op->dispatch->fw;
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
@@ -455,7 +456,7 @@ static int check_unsupported_features(op_t * op)
 			generate_op_fault(op, WSE_INVALID_MESSAGE, 0);
 			goto DONE;
 		}
-		WsXmlAttrH attr = ws_xml_find_node_attr(n, NULL,WSEVENT_DELIVERY_MODE);
+		attr = ws_xml_find_node_attr(n, NULL,WSEVENT_DELIVERY_MODE);
 		if(attr) {
 			mu = ws_xml_get_attr_value(attr);
 			if (strcasecmp(mu, WSEVENT_DELIVERY_MODE_PUSH) &&
