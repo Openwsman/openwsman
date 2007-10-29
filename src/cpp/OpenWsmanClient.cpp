@@ -289,20 +289,22 @@ string GetSubscribeIdentifier(WsXmlDocH& doc)
 {
 	string str;
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
-	
+	WsXmlNodeH tmp = NULL;
+	if(bodyNode == NULL) return str;
+	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP);
 	if(bodyNode == NULL) return str;
 	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIPTION_MANAGER);
-	if(bodyNode) return str;
-	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP);
-	if(bodyNode) return str;
-	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
-	if(bodyNode) return str;
-	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
-	if(bodyNode) return str;
-	bodyNode = ws_xml_get_child(bodyNode, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
-	if(bodyNode) return str;
+	if(bodyNode == NULL) return str;
+	tmp = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
+	if(tmp == NULL) {
+		tmp = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
+		if(tmp == NULL) return str;
+	}
+	bodyNode = ws_xml_get_child(tmp, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
+	if(bodyNode == NULL) return str;
 	char *identifier = ws_xml_get_node_text(bodyNode);
-	return string(identifier);
+	str = string(identifier);
+	return str;
 }
 
 string ExtractPayload(WsXmlDocH& doc)

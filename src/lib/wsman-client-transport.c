@@ -158,12 +158,16 @@ char *wsman_transport_get_proxy(WsManClient *cl)
 
 void wsman_transport_set_userName(WsManClient * cl, char *arg)
 {
-        cl->data.user = arg;
+	if(arg) {
+		cl->data.user = u_strdup(arg);
+	}
 }
 
 void wsman_transport_set_password(WsManClient * cl, char *arg)
 {
-        cl->data.pwd = arg;
+	if(arg) {
+		cl->data.pwd = u_strdup(arg);
+	}
 }
 
 void wsman_transport_set_proxyauth(WsManClient * cl, const char *arg)
