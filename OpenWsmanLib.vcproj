@@ -255,10 +255,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\lib\wsman-dispatcher.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\lib\wsman-epr.c"
 				>
 			</File>
