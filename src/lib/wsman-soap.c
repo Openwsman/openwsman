@@ -53,99 +53,12 @@
 #include "wsman-client-api.h"
 #include "wsman-client-transport.h"
 
-
-static int
-set_context_val(WsContextH cntx,
-		char *name,
-		void *val,
-		int size,
-		int no_dup,
-		unsigned long type);
+/*    ENUMERATION STUFF */
+#define ENUM_EXPIRED(enuminfo, mytime) \
+	((enumInfo->expires > 0) &&        \
+	(enumInfo->expires > mytime))
 
 
-callback_t     *
-make_callback_entry(SoapServiceCallback proc,
-		    void *data,
-		    list_t * list_to_add)
-{
-
-	callback_t     *entry = (callback_t *) u_malloc(sizeof(callback_t));
-	debug("make new callback entry");
-	if (entry) {
-		lnode_init(&entry->node, data);
-		entry->proc = proc;
-		if (list_to_add)
-			list_append(list_to_add, &entry->node);
-	} else {
-		return NULL;
-	}
-	return entry;
-}
-
-static void
-free_hentry_func(hnode_t * n, void *arg)
-{
-	u_free(hnode_getkey(n));
-	u_free(n);
-}
-
-
-void
-ws_initialize_context(WsContextH cntx, SoapH soap)
-{
-	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
-	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
-
-	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
-	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
-	cntx->owner = 1;
-	cntx->soap = soap;
-}
-
-WsContextH
-ws_create_context(SoapH soap)
-{
-	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
-	if (cntx) {
-		ws_initialize_context(cntx, soap);
-	}
-	return cntx;
-}
-
-SoapH
-ws_soap_initialize()
-{
-	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
-
-	if (soap == NULL) {
-		error("Could not alloc memory");
-		return NULL;
-	}
-	//fw->dispatchList.listOwner = fw;
-	soap->cntx = ws_create_context(soap);
-
-	soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
-	soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
-	soap->dispatchList = list_create(LISTCOUNT_T_MAX);
-	//soap->responseList = list_create(LISTCOUNT_T_MAX);
-	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
-	soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
-	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
-	//	soap->enumIdleTimeout = enumIdleTimeout;
-	u_init_lock(soap);
-	ws_xml_parser_initialize();
-
-	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
-	soap_add_filter(soap, outbound_control_header_filter, NULL, 0);
-	return soap;
-}
-
-void
-ws_set_context_enumIdleTimeout(WsContextH cntx,
-                               unsigned long timeout)
-{
-	cntx->enumIdleTimeout = timeout;
-}
 
 /**
  * Calculate needed space for interface array with Endpoints
@@ -187,6 +100,468 @@ ws_register_dispatcher(WsContextH cntx, DispatcherCallback proc, void *data)
 	}
 	return;
 }
+
+static int
+set_context_val(WsContextH cntx,
+		char *name,
+		void *val,
+		int size,
+		int no_dup,
+		unsigned long type);
+
+static void
+free_hentry_func(hnode_t * n, void *arg)
+{
+	u_free(hnode_getkey(n));
+	u_free(n);
+}
+
+
+static void
+remove_locked_enuminfo(WsContextH cntx,
+                       WsEnumerateInfo * enumInfo)
+{
+	u_lock(cntx->soap);
+	if (!(enumInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG)) {
+		error("locked enuminfo unlocked");
+		u_unlock(cntx->soap);
+		return;
+	}
+	hash_delete_free(cntx->enuminfos,
+	             hash_lookup(cntx->enuminfos, enumInfo->enumId));
+	u_unlock(cntx->soap);
+}
+static int time_expired(unsigned long lt)
+{
+	struct timeval tv;
+	if(lt == 0) return 0; // 0 means it never expires
+	gettimeofday(&tv, NULL);
+	if(!(tv.tv_sec< lt))
+		return 1;
+	else
+		return 0;
+}
+
+static void
+wsman_set_expiretime(WsXmlNodeH  node,
+                    unsigned long * expire,
+                    WsmanFaultCodeType *fault_code)
+{
+	struct timeval  tv;
+//	struct __timezone *tz;
+	time_t timeout;
+	char *text;
+	XML_DATETIME tmx;
+	gettimeofday(&tv, NULL);
+	text = ws_xml_get_node_text(node);
+	if (text == NULL) {
+		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+		return;
+	}
+	debug("wsen:Expires = %s", text);
+	if (text[0] == 'P') {
+		//  xml duration
+		if (ws_deserialize_duration(text, &timeout)) {
+			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			goto DONE;
+		}
+		*expire = tv.tv_sec + timeout;
+		goto DONE;
+	}
+
+	// timeout is XML datetime type
+	if (ws_deserialize_datetime(text, &tmx)) {
+		*fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
+		goto DONE;
+	}
+	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
+	timeout += (time_t) __timezone;
+	*expire = timeout;
+DONE:
+	return;
+}
+
+static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
+{
+	time_t t = expire;
+	struct tm tm;
+	int gmtoffset_hour;
+	int gmtoffset_minute;
+	localtime_r(&t, &tm);
+//	struct __timezone *tz;
+	gmtoffset_hour = (int) __timezone/3600;
+	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
+	if(gmtoffset_hour > 0)
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
+			gmtoffset_minute%10);
+	else {
+		gmtoffset_hour = 0 - gmtoffset_hour;
+		gmtoffset_minute = 0 - gmtoffset_minute;
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
+			gmtoffset_minute%10);
+	}
+
+}
+
+static WsSubscribeInfo*
+search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
+{
+	WsSubscribeInfo *subsInfo = NULL;
+	char *uuid = NULL;
+	lnode_t *lnode;
+	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
+	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL);
+	if(node) {
+		node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		uuid = ws_xml_get_node_text(node);
+	}
+	if(uuid == NULL) return subsInfo;
+	pthread_mutex_lock(&soap->lockSubs);
+	lnode = list_first(soap->subscriptionMemList);
+	while(lnode) {
+		subsInfo = (WsSubscribeInfo *)lnode->list_data;
+		if(!strcmp(subsInfo->subsId, uuid+5)) break;
+		lnode = list_next(soap->subscriptionMemList, lnode);
+	}
+	pthread_mutex_unlock(&soap->lockSubs);
+	if(lnode == NULL) return NULL;
+	return subsInfo;
+}
+
+
+static WsXmlDocH
+create_enum_info(SoapOpH op,
+		 WsContextH epcntx,
+              	 WsXmlDocH indoc,
+		 WsEnumerateInfo **eInfo)
+{
+	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
+	WsXmlNodeH  header = ws_xml_get_soap_header(indoc);
+	WsXmlDocH outdoc = NULL;
+	WsEnumerateInfo *enumInfo;
+	WsmanMessage   *msg = wsman_get_msg_from_op(op);
+	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
+	WsmanFaultDetailType fault_detail_code = WSMAN_DETAIL_OK;
+	char *uri, *to;
+
+	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
+	if (enumInfo == NULL) {
+		error("No memory");
+		fault_code = WSMAN_INTERNAL_ERROR;
+		goto DONE;
+	}
+	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
+	to = ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
+	uri =  ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
+
+	enumInfo->epr_to = u_strdup(to);
+	enumInfo->epr_uri = u_strdup(uri);
+	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
+	if (node == NULL) {
+		debug("No wsen:Expires");
+		enumInfo->expires = 0;
+	}
+	else {
+		wsman_set_expiretime(node, &(enumInfo->expires), &fault_code);
+		if (fault_code != WSMAN_RC_OK) {
+			fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
+			goto DONE;
+		}
+	}
+	if (msg->auth_data.username != NULL) {
+		enumInfo->auth_data.username =
+				u_strdup(msg->auth_data.username);
+		enumInfo->auth_data.password =
+				u_strdup(msg->auth_data.password);
+	} else {
+		enumInfo->auth_data.username = NULL;
+		enumInfo->auth_data.password = NULL;
+	}
+	generate_uuid(enumInfo->enumId, EUIDLEN, 1);
+
+DONE:
+	if (fault_code != WSMAN_RC_OK) {
+		outdoc = wsman_generate_fault(indoc,
+			 fault_code, fault_detail_code, NULL);
+		u_free(enumInfo);
+	} else {
+		*eInfo = enumInfo;
+	}
+	return outdoc;
+}
+
+static void destroy_filter(filter_t *filter)
+{
+	if (filter->epr) {
+		//u_free(filter->epr);
+	}
+	if(filter->assocClass) {
+		u_free(filter->assocClass);
+	}
+	if(filter->query) {
+		u_free(filter->query);
+	}
+	if(filter->resultClass) {
+		u_free(filter->resultClass);
+	}
+	if(filter->resultRole) {
+		u_free(filter->resultRole);
+	}
+	if(filter->role) {
+		u_free(filter->role);
+	}
+	u_free(filter);
+}
+
+static void
+destroy_enuminfo(WsEnumerateInfo * enumInfo)
+{
+	u_free(enumInfo->auth_data.username);
+	u_free(enumInfo->auth_data.password);
+	u_free(enumInfo->epr_to);
+	u_free(enumInfo->epr_uri);
+	if (enumInfo->filter)
+		destroy_filter(enumInfo->filter);
+	u_free(enumInfo);
+}
+
+static int
+wsman_verify_enum_info(SoapOpH op,
+		       WsEnumerateInfo * enumInfo,
+		       WsXmlDocH doc,
+		       WsmanStatus * status)
+{
+
+	WsmanMessage   *msg = wsman_get_msg_from_op(op);
+
+	WsXmlNodeH  header = ws_xml_get_soap_header(doc);
+	char *to =  ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
+	char *uri=  ws_xml_get_node_text(
+			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
+
+	if (strcmp(enumInfo->epr_to, to) != 0 ||
+			strcmp(enumInfo->epr_uri, uri) != 0 ) {
+		status->fault_code = WSA_MESSAGE_INFORMATION_HEADER_REQUIRED;
+		status->fault_detail_code = 0;
+		debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
+		debug("verifying enumeration context: SHOULD uri: %s, to: %s", enumInfo->epr_uri, enumInfo->epr_to);
+		return 0;
+	}
+
+	if (msg->auth_data.username && msg->auth_data.password) {
+		if (strcmp(msg->auth_data.username,
+				enumInfo->auth_data.username) != 0 &&
+				strcmp(msg->auth_data.password,
+				enumInfo->auth_data.password) != 0) {
+			status->fault_code = WSMAN_ACCESS_DENIED;
+			status->fault_detail_code = 0;
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
+
+static int
+insert_enum_info(WsContextH cntx,
+		WsEnumerateInfo *enumInfo)
+{
+	struct timeval tv;
+	int retVal = 1;
+
+	u_lock(cntx->soap);
+	gettimeofday(&tv, NULL);
+	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	if (create_context_entry(cntx->enuminfos, enumInfo->enumId, enumInfo)) {
+		retVal = 0;
+	}
+	u_unlock(cntx->soap);
+	return retVal;
+}
+
+
+
+static WsEnumerateInfo *
+get_locked_enuminfo(WsContextH cntx,
+                    WsXmlDocH doc,
+                    SoapOpH op,
+                    char *action,
+                    WsmanStatus *status)
+{
+	hnode_t *hn;
+	WsEnumerateInfo *eInfo = NULL;
+	char            *enumId = NULL;
+	WsXmlNodeH      node = ws_xml_get_soap_body(doc);
+
+	if (node && (node = ws_xml_get_child(node,
+			0, XML_NS_ENUMERATION, action))) {
+		node = ws_xml_get_child(node, 0,
+			XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
+		if (node) {
+			enumId = ws_xml_get_node_text(node);
+		}
+	}
+	debug("enum context: %s", enumId);
+
+	if (enumId == NULL) {
+		status->fault_code = WSEN_INVALID_ENUMERATION_CONTEXT;
+		return NULL;
+	}
+	u_lock(cntx->soap);
+	hn = hash_lookup(cntx->enuminfos, enumId);
+	if (hn) {
+		eInfo = (WsEnumerateInfo *)hnode_get(hn);
+		if (strcmp(eInfo->enumId, enumId)) {
+			error("enum context mismatch: %s == %s",
+			     eInfo->enumId, enumId);
+			status->fault_code = WSMAN_INTERNAL_ERROR;
+		} else if (wsman_verify_enum_info(op, eInfo, doc,status)) {
+			if (eInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG) {
+				status->fault_code = WSMAN_CONCURRENCY;
+			} else {
+				eInfo->flags |= WSMAN_ENUMINFO_INWORK_FLAG;
+			}
+		}
+	} else {
+		status->fault_code = WSEN_INVALID_ENUMERATION_CONTEXT;
+	}
+
+	if (status->fault_code != WSMAN_RC_OK) {
+		eInfo = NULL;
+	}
+	u_unlock(cntx->soap);
+	return eInfo;
+}
+
+static void
+unlock_enuminfo(WsContextH cntx, WsEnumerateInfo *enumInfo)
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	u_lock(cntx->soap);
+	if (!(enumInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG)) {
+		error("locked enuminfo unlocked");
+		u_unlock(cntx->soap);
+		return;
+	}
+	enumInfo->flags &= ~WSMAN_ENUMINFO_INWORK_FLAG;
+	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	u_unlock(cntx->soap);
+}
+
+static void
+ws_clear_context_entries(WsContextH hCntx)
+{
+	hash_t         *h;
+	if (!hCntx) {
+		return;
+	}
+	h = hCntx->entries;
+	hash_free(h);
+}
+
+static void
+ws_clear_context_enuminfos(WsContextH hCntx)
+{
+	hash_t         *h;
+	if (!hCntx) {
+		return;
+	}
+	h = hCntx->enuminfos;
+	hash_free(h);
+}
+
+callback_t *
+make_callback_entry(SoapServiceCallback proc,
+		    void *data,
+		    list_t * list_to_add)
+{
+
+	callback_t     *entry = (callback_t *) u_malloc(sizeof(callback_t));
+	debug("make new callback entry");
+	if (entry) {
+		lnode_init(&entry->node, data);
+		entry->proc = proc;
+		if (list_to_add)
+			list_append(list_to_add, &entry->node);
+	} else {
+		return NULL;
+	}
+	return entry;
+}
+
+
+
+void
+ws_initialize_context(WsContextH cntx, SoapH soap)
+{
+	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+
+	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
+	cntx->owner = 1;
+	cntx->soap = soap;
+}
+
+WsContextH
+ws_create_context(SoapH soap)
+{
+	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
+	if (cntx) {
+		ws_initialize_context(cntx, soap);
+	}
+	return cntx;
+}
+
+SoapH
+ws_soap_initialize()
+{
+	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
+
+	if (soap == NULL) {
+		error("Could not alloc memory");
+		return NULL;
+	}	
+	soap->cntx = ws_create_context(soap);
+
+	soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
+	soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
+	soap->dispatchList = list_create(LISTCOUNT_T_MAX);
+	//soap->responseList = list_create(LISTCOUNT_T_MAX);
+	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
+	soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
+	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
+	//	soap->enumIdleTimeout = enumIdleTimeout;
+	u_init_lock(soap);
+	ws_xml_parser_initialize();
+
+	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
+	soap_add_filter(soap, outbound_control_header_filter, NULL, 0);
+	return soap;
+}
+
+void
+ws_set_context_enumIdleTimeout(WsContextH cntx,
+                               unsigned long timeout)
+{
+	cntx->enumIdleTimeout = timeout;
+}
+
+
 
 WsContextH
 ws_create_runtime(list_t * interfaces)
@@ -582,358 +957,6 @@ WsmanMessage *wsman_get_msg_from_op(SoapOpH op)
 }
 
 
-
-//    ENUMERATION STUFF
-#define ENUM_EXPIRED(enuminfo, mytime) \
-	((enumInfo->expires > 0) &&        \
-	(enumInfo->expires > mytime))
-
-
-static int
-wsman_verify_enum_info(SoapOpH op,
-		       WsEnumerateInfo * enumInfo,
-		       WsXmlDocH doc,
-		       WsmanStatus * status)
-{
-
-	WsmanMessage   *msg = wsman_get_msg_from_op(op);
-
-	WsXmlNodeH  header = ws_xml_get_soap_header(doc);
-	char *to =  ws_xml_get_node_text(
-			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
-	char *uri=  ws_xml_get_node_text(
-			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
-
-	if (strcmp(enumInfo->epr_to, to) != 0 ||
-			strcmp(enumInfo->epr_uri, uri) != 0 ) {
-		status->fault_code = WSA_MESSAGE_INFORMATION_HEADER_REQUIRED;
-		status->fault_detail_code = 0;
-		debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
-		debug("verifying enumeration context: SHOULD uri: %s, to: %s", enumInfo->epr_uri, enumInfo->epr_to);
-		return 0;
-	}
-
-	if (msg->auth_data.username && msg->auth_data.password) {
-		if (strcmp(msg->auth_data.username,
-				enumInfo->auth_data.username) != 0 &&
-				strcmp(msg->auth_data.password,
-				enumInfo->auth_data.password) != 0) {
-			status->fault_code = WSMAN_ACCESS_DENIED;
-			status->fault_detail_code = 0;
-			return 0;
-		}
-	}
-	return 1;
-}
-
-
-
-static int
-insert_enum_info(WsContextH cntx,
-		WsEnumerateInfo *enumInfo)
-{
-	struct timeval tv;
-	int retVal = 1;
-
-	u_lock(cntx->soap);
-	gettimeofday(&tv, NULL);
-	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	if (create_context_entry(cntx->enuminfos, enumInfo->enumId, enumInfo)) {
-		retVal = 0;
-	}
-	u_unlock(cntx->soap);
-	return retVal;
-}
-
-
-
-static WsEnumerateInfo *
-get_locked_enuminfo(WsContextH cntx,
-                    WsXmlDocH doc,
-                    SoapOpH op,
-                    char *action,
-                    WsmanStatus *status)
-{
-	hnode_t *hn;
-	WsEnumerateInfo *eInfo = NULL;
-	char            *enumId = NULL;
-	WsXmlNodeH      node = ws_xml_get_soap_body(doc);
-
-	if (node && (node = ws_xml_get_child(node,
-			0, XML_NS_ENUMERATION, action))) {
-		node = ws_xml_get_child(node, 0,
-			XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-		if (node) {
-			enumId = ws_xml_get_node_text(node);
-		}
-	}
-	debug("enum context: %s", enumId);
-
-	if (enumId == NULL) {
-		status->fault_code = WSEN_INVALID_ENUMERATION_CONTEXT;
-		return NULL;
-	}
-	u_lock(cntx->soap);
-	hn = hash_lookup(cntx->enuminfos, enumId);
-	if (hn) {
-		eInfo = (WsEnumerateInfo *)hnode_get(hn);
-		if (strcmp(eInfo->enumId, enumId)) {
-			error("enum context mismatch: %s == %s",
-			     eInfo->enumId, enumId);
-			status->fault_code = WSMAN_INTERNAL_ERROR;
-		} else if (wsman_verify_enum_info(op, eInfo, doc,status)) {
-			if (eInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG) {
-				status->fault_code = WSMAN_CONCURRENCY;
-			} else {
-				eInfo->flags |= WSMAN_ENUMINFO_INWORK_FLAG;
-			}
-		}
-	} else {
-		status->fault_code = WSEN_INVALID_ENUMERATION_CONTEXT;
-	}
-
-	if (status->fault_code != WSMAN_RC_OK) {
-		eInfo = NULL;
-	}
-	u_unlock(cntx->soap);
-	return eInfo;
-}
-
-static void
-unlock_enuminfo(WsContextH cntx, WsEnumerateInfo *enumInfo)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	u_lock(cntx->soap);
-	if (!(enumInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG)) {
-		error("locked enuminfo unlocked");
-		u_unlock(cntx->soap);
-		return;
-	}
-	enumInfo->flags &= ~WSMAN_ENUMINFO_INWORK_FLAG;
-	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	u_unlock(cntx->soap);
-}
-
-
-static void
-remove_locked_enuminfo(WsContextH cntx,
-                       WsEnumerateInfo * enumInfo)
-{
-	u_lock(cntx->soap);
-	if (!(enumInfo->flags & WSMAN_ENUMINFO_INWORK_FLAG)) {
-		error("locked enuminfo unlocked");
-		u_unlock(cntx->soap);
-		return;
-	}
-	hash_delete_free(cntx->enuminfos,
-	             hash_lookup(cntx->enuminfos, enumInfo->enumId));
-	u_unlock(cntx->soap);
-}
-static int time_expired(unsigned long lt)
-{
-	struct timeval tv;
-	if(lt == 0) return 0; // 0 means it never expires
-	gettimeofday(&tv, NULL);
-	if(!(tv.tv_sec< lt))
-		return 1;
-	else
-		return 0;
-}
-
-static void
-wsman_set_expiretime(WsXmlNodeH  node,
-                    unsigned long * expire,
-                    WsmanFaultCodeType *fault_code)
-{
-	struct timeval  tv;
-//	struct __timezone *tz;
-	time_t timeout;
-	char *text;
-	XML_DATETIME tmx;
-	gettimeofday(&tv, NULL);
-	text = ws_xml_get_node_text(node);
-	if (text == NULL) {
-		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
-		return;
-	}
-	debug("wsen:Expires = %s", text);
-	if (text[0] == 'P') {
-		//  xml duration
-		if (ws_deserialize_duration(text, &timeout)) {
-			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
-			goto DONE;
-		}
-		*expire = tv.tv_sec + timeout;
-		goto DONE;
-	}
-
-	// timeout is XML datetime type
-	if (ws_deserialize_datetime(text, &tmx)) {
-		*fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
-		goto DONE;
-	}
-	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout += (time_t) __timezone;
-	*expire = timeout;
-DONE:
-	return;
-}
-
-static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
-{
-	time_t t = expire;
-	struct tm tm;
-	int gmtoffset_hour;
-	int gmtoffset_minute;
-	localtime_r(&t, &tm);
-//	struct __timezone *tz;
-	gmtoffset_hour = (int) __timezone/3600;
-	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
-	if(gmtoffset_hour > 0)
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	else {
-		gmtoffset_hour = 0 - gmtoffset_hour;
-		gmtoffset_minute = 0 - gmtoffset_minute;
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	}
-
-}
-
-static WsSubscribeInfo*
-search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
-{
-	WsSubscribeInfo *subsInfo = NULL;
-	char *uuid = NULL;
-	lnode_t *lnode;
-	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
-	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL);
-	if(node) {
-		node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
-		uuid = ws_xml_get_node_text(node);
-	}
-	if(uuid == NULL) return subsInfo;
-	pthread_mutex_lock(&soap->lockSubs);
-	lnode = list_first(soap->subscriptionMemList);
-	while(lnode) {
-		subsInfo = (WsSubscribeInfo *)lnode->list_data;
-		if(!strcmp(subsInfo->subsId, uuid+5)) break;
-		lnode = list_next(soap->subscriptionMemList, lnode);
-	}
-	pthread_mutex_unlock(&soap->lockSubs);
-	if(lnode == NULL) return NULL;
-	return subsInfo;
-}
-
-
-static WsXmlDocH
-create_enum_info(SoapOpH op,
-		 WsContextH epcntx,
-              	 WsXmlDocH indoc,
-		 WsEnumerateInfo **eInfo)
-{
-	WsXmlNodeH  node = ws_xml_get_soap_body(indoc);
-	WsXmlNodeH  header = ws_xml_get_soap_header(indoc);
-	WsXmlDocH outdoc = NULL;
-	WsEnumerateInfo *enumInfo;
-	WsmanMessage   *msg = wsman_get_msg_from_op(op);
-	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
-	WsmanFaultDetailType fault_detail_code = WSMAN_DETAIL_OK;
-	char *uri, *to;
-
-	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
-	if (enumInfo == NULL) {
-		error("No memory");
-		fault_code = WSMAN_INTERNAL_ERROR;
-		goto DONE;
-	}
-	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
-	to = ws_xml_get_node_text(
-			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
-	uri =  ws_xml_get_node_text(
-			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
-
-	enumInfo->epr_to = u_strdup(to);
-	enumInfo->epr_uri = u_strdup(uri);
-	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_EXPIRES);
-	if (node == NULL) {
-		debug("No wsen:Expires");
-		enumInfo->expires = 0;
-	}
-	else {
-		wsman_set_expiretime(node, &(enumInfo->expires), &fault_code);
-		if (fault_code != WSMAN_RC_OK) {
-			fault_detail_code = WSMAN_DETAIL_EXPIRATION_TIME;
-			goto DONE;
-		}
-	}
-	if (msg->auth_data.username != NULL) {
-		enumInfo->auth_data.username =
-				u_strdup(msg->auth_data.username);
-		enumInfo->auth_data.password =
-				u_strdup(msg->auth_data.password);
-	} else {
-		enumInfo->auth_data.username = NULL;
-		enumInfo->auth_data.password = NULL;
-	}
-	generate_uuid(enumInfo->enumId, EUIDLEN, 1);
-
-DONE:
-	if (fault_code != WSMAN_RC_OK) {
-		outdoc = wsman_generate_fault(indoc,
-			 fault_code, fault_detail_code, NULL);
-		u_free(enumInfo);
-	} else {
-		*eInfo = enumInfo;
-	}
-	return outdoc;
-}
-
-static void destroy_filter(filter_t *filter)
-{
-	if (filter->epr) {
-		//u_free(filter->epr);
-	}
-	if(filter->assocClass) {
-		u_free(filter->assocClass);
-	}
-	if(filter->query) {
-		u_free(filter->query);
-	}
-	if(filter->resultClass) {
-		u_free(filter->resultClass);
-	}
-	if(filter->resultRole) {
-		u_free(filter->resultRole);
-	}
-	if(filter->role) {
-		u_free(filter->role);
-	}
-	u_free(filter);
-}
-
-static void
-destroy_enuminfo(WsEnumerateInfo * enumInfo)
-{
-	u_free(enumInfo->auth_data.username);
-	u_free(enumInfo->auth_data.password);
-	u_free(enumInfo->epr_to);
-	u_free(enumInfo->epr_uri);
-	if (enumInfo->filter)
-		destroy_filter(enumInfo->filter);
-	u_free(enumInfo);
-}
 
 /**
  * Enumeration Stub for processing enumeration requests
@@ -2207,27 +2230,8 @@ ws_get_soap_context(SoapH soap)
 */
 
 
-static void
-ws_clear_context_entries(WsContextH hCntx)
-{
-	hash_t         *h;
-	if (!hCntx) {
-		return;
-	}
-	h = hCntx->entries;
-	hash_free(h);
-}
 
-static void
-ws_clear_context_enuminfos(WsContextH hCntx)
-{
-	hash_t         *h;
-	if (!hCntx) {
-		return;
-	}
-	h = hCntx->enuminfos;
-	hash_free(h);
-}
+
 int
 ws_remove_context_val(WsContextH cntx, char *name)
 {
@@ -2616,15 +2620,15 @@ soap_destroy_fw(SoapH soap)
 
 
 void
-wsman_status_init(WsmanStatus * s)
+wsman_status_init(WsmanStatus * status)
 {
-	s->fault_code = 0;
-	s->fault_detail_code = 0;
-	s->fault_msg = NULL;
+	status->fault_code = 0;
+	status->fault_detail_code = 0;
+	status->fault_msg = NULL;
 }
 
 int
-wsman_check_status(WsmanStatus * s)
+wsman_check_status(WsmanStatus * status)
 {
-	return s->fault_code;
+	return status->fault_code;
 }

@@ -630,7 +630,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 
 		WsXmlNodeH opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 				WSM_ENUM_MODE);
-		// Enumeration mode
+		/* Enumeration mode */
 		if (opt) {
 			char *text = ws_xml_get_node_text(opt);
 			if (text != NULL) {
@@ -641,7 +641,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 			}
 		}
 
-		// Polymorphism
+		/* Polymorphism */
 		opt = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING,
 				WSMB_POLYMORPHISM_MODE);
 		if (opt) {
@@ -657,7 +657,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 			enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
 		}
 
-		// Enum Optimization
+		/* Enum Optimization */
 		opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 				WSM_OPTIMIZE_ENUM);
 		if (opt) {

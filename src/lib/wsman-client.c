@@ -93,10 +93,25 @@ wsman_make_action(char *uri, char *op_name)
 }
 
 
-
-WsContextH wsmc_create_runtime (void)
+static void
+free_hentry_func(hnode_t * n, void *arg)
 {
-	return ws_create_runtime(NULL);
+	u_free(hnode_getkey(n));
+	u_free(n);
+}
+
+
+WsContextH 
+wsmc_create_runtime (void)
+{		
+	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
+
+	if (cntx) {		
+		cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+		hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+		cntx->owner = 1;
+	}	
+	return cntx;
 }
 
 
@@ -1790,8 +1805,10 @@ wsmc_release(WsManClient * cl)
 		cl->connection = NULL;
 	}
 	if (cl->wscntx) {
-		SoapH           soap = ws_context_get_runtime(cl->wscntx);
+		/*
+		SoapH soap = ws_context_get_runtime(cl->wscntx);
 		soap_destroy_fw(soap);
+		*/
 		u_free(cl->wscntx);
 		cl->wscntx = NULL;
 	}

@@ -100,32 +100,6 @@ static int is_wk_header(WsXmlNodeH header)
 	return 0;
 }
 
-#if 0
-int unlink_response_entry(SoapH soap, op_t * entry)
-{
-	int retVal = 0;
-
-	if (soap && entry) {
-		int try = u_try_lock(soap);
-
-		lnode_t *node = list_first(soap->responseList);
-		while (node != NULL) {
-			if (entry == (op_t *) node->list_data) {
-				list_delete(soap->responseList, node);
-				u_free(node);
-				retVal = 1;
-				break;
-			}
-			node = list_next(soap->responseList, node);
-		}
-
-		if (!try)
-			u_unlock(soap);
-	}
-	return retVal;
-}
-#endif
-
 
 
 static void
@@ -285,7 +259,8 @@ static int validate_control_headers(op_t * op)
 }
 
 
-static WsXmlNodeH validate_mustunderstand_headers(op_t * op)
+static WsXmlNodeH 
+validate_mustunderstand_headers(op_t * op)
 {
 	WsXmlNodeH child = NULL;
 	WsXmlNodeH header;
@@ -321,7 +296,8 @@ static WsXmlNodeH validate_mustunderstand_headers(op_t * op)
 	return child;
 }
 
-static int check_supported_dialect(const char *dialect)
+static int
+check_supported_dialect(const char *dialect)
 {
 	if (strcmp(dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0)
 		return 0;
@@ -340,7 +316,8 @@ static int check_supported_dialect(const char *dialect)
  * @param op operation
  * @return status
  */
-static int check_unsupported_features(op_t * op)
+static int
+check_unsupported_features(op_t * op)
 {
 	WsXmlNodeH enumurate;
 	WsXmlNodeH subscribe;
@@ -714,33 +691,6 @@ static int process_filters(op_t * op, int inbound, void *opaqueData)
 	return 0;
 }
 
-#if 0
-static int
-soap_add_disp_filter(SoapDispatchH disp,
-		     SoapServiceCallback callbackProc,
-		     void *callbackData, int inbound)
-{
-	callback_t *entry = NULL;
-	if (disp) {
-		list_t *list = (!inbound) ?
-		    disp->outboundFilterList : disp->inboundFilterList;
-		entry =
-		    make_callback_entry(callbackProc, callbackData, list);
-	}
-	return (entry == NULL);
-}
-
-int
-soap_add_op_filter(SoapOpH op,
-		   SoapServiceCallback proc, void *data, int inbound)
-{
-	if (op)
-		return soap_add_disp_filter((SoapDispatchH) ((op_t *) op)->
-					    dispatch, proc, data, inbound);
-	return 1;
-}
-#endif
-
 
 
 static void
@@ -806,8 +756,7 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 	}
 
 
-	retVal =
-	    op->dispatch->serviceCallback((SoapOpH) op,
+	retVal = op->dispatch->serviceCallback((SoapOpH) op,
 					  op->dispatch->serviceData,
 					  opaqueData);
 	if (op->out_doc == NULL) {
@@ -896,7 +845,8 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 }
 
 
-static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, char *uri)
+static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, 
+		char *uri)
 {
 	char *ns = NULL;
 	lnode_t *node = NULL;
@@ -1136,7 +1086,6 @@ cleanup:
 /*
  * Create dispatch Entry
  *
- * @todo support for custom roles
  * @param fw Soap Framework Handle
  * @param inboundAction Inbound Action
  * @param outboundAction Outbound Action
@@ -1183,11 +1132,12 @@ create_dispatch_entry(SoapH soap,
  * @param flags Flags
  * @return Dispatch Handle
  */
-SoapDispatchH wsman_dispatch_create(SoapH soap, char *inboundAction, char *outboundAction,	//optional
-				    char *role,	//reserved, must be NULL
-				    SoapServiceCallback callbackProc,
-				    void *callbackData,
-				    unsigned long flags)
+SoapDispatchH wsman_dispatch_create(SoapH soap, 
+		char *inboundAction, char *outboundAction,	//optional
+		char *role,	//reserved, must be NULL
+		SoapServiceCallback callbackProc,
+		void *callbackData,
+		unsigned long flags)
 {
 
 	SoapDispatchH disp = NULL;
