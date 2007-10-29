@@ -463,13 +463,13 @@ CimResource_Pull_EP( WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData)
 {
-	debug( "Pull Endpoint Called");
-	WsXmlDocH doc = NULL;
-	CimClientInfo *cimclient = NULL;
 	
+	WsXmlDocH doc = NULL;
+	CimClientInfo *cimclient = NULL;	
 	WsXmlNodeH body, pullnode;
 	int max;
-
+	debug( "Pull Endpoint Called");
+	
 	if ( enumInfo) {
 		cimclient = cim_getclient_from_enum_context(enumInfo);
 		if (!cimclient) {

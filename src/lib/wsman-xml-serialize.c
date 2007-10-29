@@ -1421,10 +1421,13 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 
 void *ws_serializer_alloc(WsContextH cntx, int size)
 {
-	SoapH soap = ws_context_get_runtime(cntx);
+	SoapH soap = NULL;
 	WsSerializerMemEntry *ptr = NULL;
 	TRACE_ENTER;
-	if (soap != NULL && (ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
+	if (cntx)
+		soap = cntx->soap;
+	if (soap != NULL && 
+			(ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
 		lnode_t *node;
 		ptr->cntx = cntx;
 		u_lock(soap);
@@ -1444,8 +1447,10 @@ void *ws_serializer_alloc(WsContextH cntx, int size)
 static int do_serializer_free(WsContextH cntx, void *ptr)
 {
 	lnode_t *node = NULL;
-	SoapH soap = ws_context_get_runtime(cntx);
+	SoapH soap = NULL;
 	TRACE_ENTER;
+	if (cntx)
+		soap = cntx->soap;
 	if (soap && ptr != NULL) {
 		u_lock(soap);
 		node = list_first(soap->WsSerializerAllocList);
