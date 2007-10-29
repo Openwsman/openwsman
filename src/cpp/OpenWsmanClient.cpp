@@ -45,7 +45,7 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		const char *cert,
 		// search for a cient cert with this oid
 		const char *oid,
-		 // proxy address include proxy port^M
+		 // proxy address include proxy port
 		const char *proxy,
 		//proxy user name 
 		const char *proxy_username,
