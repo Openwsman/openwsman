@@ -2556,16 +2556,6 @@ destroy_dispatch_entry(SoapDispatchH entry)
 	}
 }
 
-WsXmlDocH
-ws_get_context_xml_doc_val(WsContextH cntx,
-			   char *name)
-{
-//	return (WsXmlDocH) get_context_val(cntx, name);
-	return cntx->indoc;
-}
-
-
-
 
 void
 soap_destroy_fw(SoapH soap)

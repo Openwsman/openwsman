@@ -384,7 +384,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	debug("CIM Enumeration");
 	WsXmlDocH doc;
 	int retval = 0;
-	WsXmlDocH in_doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	
 	CimClientInfo *cimclient = NULL;
 
 	if ( enumInfo ) {
@@ -416,7 +416,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	}
 
 	if (enumInfo->maxItems > 0) {
-		doc = wsman_create_response_envelope( in_doc , NULL);
+		doc = wsman_create_response_envelope( cntx->indoc , NULL);
 		WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
 		cim_get_enum_items(cimclient, cntx, node,
@@ -466,7 +466,7 @@ CimResource_Pull_EP( WsContextH cntx,
 	debug( "Pull Endpoint Called");
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
-	WsXmlDocH in_doc =  ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	
 	WsXmlNodeH body, pullnode;
 	int max;
 
@@ -475,7 +475,7 @@ CimResource_Pull_EP( WsContextH cntx,
 		if (!cimclient) {
 			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
 			status->fault_detail_code = 0;
-			doc = wsman_generate_fault( in_doc, status->fault_code,
+			doc = wsman_generate_fault( cntx->indoc, status->fault_code,
 				status->fault_detail_code, NULL);
 			goto cleanup;
 		}
@@ -485,12 +485,12 @@ CimResource_Pull_EP( WsContextH cntx,
 	if (!verify_class_namespace(cimclient) ) {
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault( in_doc, status->fault_code,
+		doc = wsman_generate_fault( cntx->indoc, status->fault_code,
 				status->fault_detail_code, NULL);
 		goto cleanup;
 	}
 
-	doc = wsman_create_response_envelope( in_doc, NULL);
+	doc = wsman_create_response_envelope( cntx->indoc, NULL);
 	body = ws_xml_get_soap_body(doc);
 	pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION,
 			WSENUM_PULL_RESP, NULL);

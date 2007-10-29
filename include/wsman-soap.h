@@ -431,23 +431,31 @@ char           *soap_get_op_dest_url(SoapOpH op);
 
 
 WsContextH      ws_create_context(SoapH soap);
+
 void            ws_initialize_context(WsContextH hCntx, SoapH soap);
+
 WsContextH      ws_create_runtime(list_t * interfaces);
+
 WsContextH      ws_create_ep_context(SoapH soap, WsXmlDocH doc);
+
 WsContextH      ws_get_soap_context(SoapH soap);
+
 int             ws_destroy_context(WsContextH hCntx);
 
-WsXmlDocH       ws_get_context_xml_doc_val(WsContextH cntx, char *name);
 void           *get_context_val(WsContextH hCntx, char *name);
+
 void           *ws_get_context_val(WsContextH cntx, char *name, int *size);
+
 unsigned long   ws_get_context_ulong_val(WsContextH cntx, char *name);
 
 int             ws_set_context_ulong_val(WsContextH cntx, char *name, unsigned long val);
+
 int             ws_set_context_xml_doc_val(WsContextH cntx, char *name, WsXmlDocH val);
+
 int             ws_remove_context_val(WsContextH hCntx, char *name);
 
-
 hnode_t        *
+
 create_context_entry(hash_t * h,
 		     char *name,
 		     void *val);

@@ -617,7 +617,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 		WsEnumerateInfo * enumInfo)
 {
 	WsXmlNodeH node;
-	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	WsXmlDocH doc = cntx->indoc;
 	if (!doc)
 		return 0;
 
@@ -825,7 +825,7 @@ char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 	int index = 0;
 	WsXmlNodeH node, option;
 	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 		if (!doc)
 			return NULL;
 	}
@@ -857,7 +857,7 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 {
 	int max_elements = 0;
 	if (doc == NULL)
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 
 	if (doc) {
 		WsXmlNodeH node = ws_xml_get_soap_body(doc);
@@ -915,7 +915,7 @@ char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 	WsXmlNodeH header, node;
 
 	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 		if (!doc)
 			return NULL;
 	}
@@ -932,7 +932,7 @@ hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
 	char *input = NULL;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
-	WsXmlDocH doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+	WsXmlDocH doc = cntx->indoc;
 	if (doc) {
 		WsXmlNodeH in_node;
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -1033,7 +1033,7 @@ hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 	hash_t *h = NULL;
 
 	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 		if (!doc)
 			return NULL;
 	}
@@ -1052,7 +1052,7 @@ wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 	WsXmlNodeH node, assInst, object;
 
 	if (doc == NULL) {
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 		if (!doc)
 			return NULL;
 	}
@@ -1099,7 +1099,7 @@ char *wsman_get_selector(WsContextH cntx,
 {
 	char *val = NULL;
 	if (doc == NULL)
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 	if (doc) {
 		WsXmlNodeH header = ws_xml_get_soap_header(doc);
 		WsXmlNodeH node =
@@ -1139,7 +1139,7 @@ char *wsman_get_action(WsContextH cntx, WsXmlDocH doc)
 {
 	char *val = NULL;
 	if (doc == NULL)
-		doc = ws_get_context_xml_doc_val(cntx, WSFW_INDOC);
+		doc = cntx->indoc;
 	if (doc) {
 		WsXmlNodeH header = ws_xml_get_soap_header(doc);
 		WsXmlNodeH node =
