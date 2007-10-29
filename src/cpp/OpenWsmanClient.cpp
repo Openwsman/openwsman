@@ -162,7 +162,9 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 			wsmc_options_destroy(options);
 			throw e;
 		}
-		enumRes.push_back(ExtractItems(doc));
+		string payload = ExtractItems(doc);
+		if (payload.length() > 0)
+			enumRes.push_back(payload);
 		u_free(enumContext);
 		enumContext = wsmc_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
@@ -320,14 +322,18 @@ string ExtractPayload(WsXmlDocH& doc)
 
 string ExtractItems(WsXmlDocH& doc)
 {
+	string payload;
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
 	WsXmlNodeH pullResponse = ws_xml_get_child(bodyNode, 0, XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 	WsXmlNodeH itemsNode = ws_xml_get_child(pullResponse, 0, XML_NS_ENUMERATION, WSENUM_ITEMS);
 	WsXmlNodeH n = ws_xml_get_child(itemsNode, 0 , NULL, NULL );
-	char *buf = NULL;
-	wsmc_node_to_buf( n, &buf);
-	string payload = string(buf);
-	u_free(buf);
+	if (n) {
+		char *buf = NULL;
+		wsmc_node_to_buf( n, &buf);
+		payload = string(buf);
+		u_free(buf);
+		
+	}
 	return payload;
 }
 

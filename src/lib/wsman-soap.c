@@ -1023,7 +1023,8 @@ wsenum_enumerate_stub(SoapOpH op,
 	}
 
 	soapCntx = ws_get_soap_context(soap);
-	if (enumInfo->index == enumInfo->totalItems) {
+	if (enumInfo->index == enumInfo->totalItems && 
+			( enumInfo->flags & WSMAN_ENUMINFO_OPT ) == WSMAN_ENUMINFO_OPT ) {
 		ws_serialize_str(epcntx, resp_node, NULL,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		ws_serialize_str(epcntx, resp_node,
@@ -2217,19 +2218,6 @@ ws_get_soap_context(SoapH soap)
 {
 	return soap->cntx;
 }
-
-
-/*
-  void destroy_context_entry(WS_CONTEXT_ENTRY* entry)
-  {
-  if ( (entry->options & WS_CONTEXT_FREE_DATA) != 0 )
-  u_free(entry->node->list_data);
-  u_free(entry->name);
-  u_free(entry);
-  }
-*/
-
-
 
 
 int

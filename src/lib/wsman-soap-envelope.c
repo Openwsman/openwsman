@@ -675,7 +675,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 			}
 		}
 
-		// Filter
+		/* Filter */
 		if (filter) {
 			char *attrVal = ws_xml_find_attr_value(filter,
 					NULL, WSM_DIALECT);
