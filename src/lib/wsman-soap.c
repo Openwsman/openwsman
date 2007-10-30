@@ -1407,9 +1407,10 @@ wsman_timeouts_manager(WsContextH cntx, void *opaqueData)
 #ifdef ENABLE_EVENTING_SUPPORT
 static int destination_reachable(char *url)
 {
+	int valid = 0;
 	u_uri_t *uri = NULL;
 	if (u_uri_parse((const char *)url, &uri)) {
-				return 1;
+		valid = 1;
 	}
 	u_free(uri);
 	return 0;

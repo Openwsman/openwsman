@@ -359,7 +359,9 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 	const char *content_type;
 	int status = WSMAN_STATUS_OK;
 	char *fault_reason = NULL;
+	char *uuid = NULL;
 	cimxml_context *cntx = NULL;
+	SoapH soap = NULL;
 	ShttpMessage *shttp_msg = (ShttpMessage *) arg->state;
 	int n = 0;
 	int k;
@@ -384,6 +386,7 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 		debug("Unsupported method %s", method);
 		status = WSMAN_STATUS_METHOD_NOT_ALLOWED;
 		fault_reason = "POST method supported only";
+		goto DONE;
 	}
 
 
@@ -402,7 +405,8 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 		fault_reason = "Unsupported operation";
 		goto DONE;
 	}
-	cntx = (cimxml_context *) arg->user_data;
+	soap = (SoapH) arg->user_data;
+	uuid = arg->uuid;
 	wsman_msg->status.fault_code = WSMAN_RC_OK;
 	wsman_msg->http_headers = shttpd_get_all_headers(arg);
 
@@ -427,6 +431,9 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 
 	// Call dispatcher. Real request handling
 	if (status == WSMAN_STATUS_OK) {
+		cntx = u_malloc(sizeof(cimxml_context));
+		cntx->soap = soap;
+		cntx->uuid = uuid;
 		CIM_Indication_call(cntx, wsman_msg, NULL);
 		status = wsman_msg->http_code;
 	}
@@ -454,12 +461,8 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 	shttp_msg->ind = 0;
 
     DONE:
-	 wsman_soap_message_destroy(wsman_msg);
-	 if(cntx) {
-	 	u_free(cntx->servicepath);
-	 	u_free(cntx);
-	 }
-	 if (fault_reason == NULL) {
+	wsman_soap_message_destroy(wsman_msg);
+	if (fault_reason == NULL) {
 		fault_reason = shttp_reason_phrase(status);
 	}
 	debug("Response (status) %d (%s)", status, fault_reason);
@@ -597,22 +600,24 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	if (ctx == NULL) {
 		return NULL;
 	}
-	shttpd_register_url(ctx, wsmand_options_get_service_path(),
+	shttpd_register_url(ctx, wsmand_options_get_service_path(), NULL,
 			    server_callback, 0, (void *) soap);
 #ifdef ENABLE_EVENTING_SUPPORT
-	 list_t *listenerpath = get_cimxml_listener_path();
-	 if(listenerpath) {
-               lnode_t *node = list_first(listenerpath);
-               while(node) {
-                       char *path = (char *)node->list_data;
-			  cimxml_context *cimcntx = u_malloc(sizeof(cimxml_context));
-			  cimcntx->servicepath = u_strdup(path);
-			  cimcntx->soap = soap;
-                       shttpd_register_url(ctx, path, cimxml_listener_callback,
-                                       0, (void *)cimcntx);
-			  debug("********registered service path: %s*********", path);
-                       node = list_next(listenerpath, node);
+	char ** service_paths = NULL;
+	int number = 0;
+	int i = 0;
+	get_cimxml_listener_paths(&service_paths, &number);
+	 if(number) {
+               while(i < number) {
+			char *uuid = strrchr(service_paths[i], '/') + 1;
+//			cimxml_context *cimcntx = create_cimxml_listener_context(uuid, soap);
+			shttpd_register_url(ctx, service_paths[i], uuid, cimxml_listener_callback,
+                                       0, (void *)soap);
+			debug("********registered service path: %s*********", service_paths[i]);
+			u_free(service_paths[i]);
+			i++;
                }
+		u_free(service_paths);
        }
 #endif
 	if (wsmand_options_get_digest_password_file()) {

@@ -34,8 +34,8 @@
 #include "u/libu.h"
 #include "wsman-cimxmllistener-path.h"
 
-static list_t *cimxml_listener_path_list = NULL;
-
+static hash_t *cimxml_listener_path = NULL;
+static pthread_mutex_t cimxml_listener_path_lock;
 char * create_cimxml_listener_path(char *uuid)
 {
 	char path[128];
@@ -45,37 +45,65 @@ char * create_cimxml_listener_path(char *uuid)
 
 int add_cimxml_listener_path(char *uuid)
 {
-	if(cimxml_listener_path_list == NULL)
-		cimxml_listener_path_list = list_create(-1);
+	pthread_mutex_lock(&cimxml_listener_path_lock);
+	if(cimxml_listener_path == NULL)
+		cimxml_listener_path = hash_create(HASHCOUNT_T_MAX,0,0);
 	char *path = create_cimxml_listener_path(uuid);
-	lnode_t *node = lnode_create(path);
-	list_append(cimxml_listener_path_list, node);
+	hash_alloc_insert(cimxml_listener_path, uuid, path);
+	pthread_mutex_unlock(&cimxml_listener_path_lock);
 	return 0;
 }
 
-list_t * get_cimxml_listener_path(void)
+char * get_cimxml_listener_path(char *uuid)
 {
-	return cimxml_listener_path_list;
+	pthread_mutex_lock(&cimxml_listener_path_lock);
+	hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
+	char *service_path = hnode_get(hn);
+	pthread_mutex_unlock(&cimxml_listener_path_lock);
+	return service_path;
+}
+
+void get_cimxml_listener_paths(char ***paths, int *num)
+{
+	hscan_t hs;
+	hnode_t *hn;
+	*paths = NULL;
+	*num = 0;
+	pthread_mutex_lock(&cimxml_listener_path_lock);
+	if(cimxml_listener_path == NULL) {
+		pthread_mutex_unlock(&cimxml_listener_path_lock);
+		return;
+	}
+	int count = hash_count(cimxml_listener_path);
+	if(count == 0) {
+		pthread_mutex_unlock(&cimxml_listener_path_lock);
+		return;
+	}
+	char **servicepaths = u_malloc(count*sizeof(char*));
+	hash_scan_begin(&hs, cimxml_listener_path);
+	int i = 0;
+	while ((hn = hash_scan_next(&hs))) {
+		servicepaths[i] = u_strdup((char*) hnode_get(hn));
+		i++;
+    	}
+	*paths = servicepaths;
+	*num = count;
+	pthread_mutex_unlock(&cimxml_listener_path_lock);
 }
 
 int delete_cimxml_listener_path(char *uuid)
 {
-	char *path = NULL;
-	if(cimxml_listener_path_list == NULL) return 0;
-	lnode_t *node = list_first(cimxml_listener_path_list);
-	char *service_path = create_cimxml_listener_path(uuid);
-	while(node) {
-		path= (char*)node->list_data;
-		if(strstr(path, service_path)) {
-			break;
-		}
-		node = list_next(cimxml_listener_path_list, node);
+	pthread_mutex_lock(&cimxml_listener_path_lock);
+	if(cimxml_listener_path == NULL) {
+		pthread_mutex_unlock(&cimxml_listener_path_lock);
+		return 0;
 	}
-	u_free(service_path);
-	if(node == NULL) return -1;
-	list_delete(cimxml_listener_path_list, node);
-	u_free(path);
-	lnode_destroy(node);
+	hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
+	if(hn) {
+		u_free(hnode_get(hn));
+		hash_delete_free(cimxml_listener_path, hn);
+	}
+	pthread_mutex_unlock(&cimxml_listener_path_lock);
 	return 0;
 }
 

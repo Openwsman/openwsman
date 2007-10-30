@@ -35,7 +35,9 @@
 #define _WSMAN_CIMXMLLISTENER_H
 #include "u/libu.h"
 
-list_t * get_cimxml_listener_path(void);
+char * get_cimxml_listener_path(char *uuid);
+
+void get_cimxml_listener_paths(char ***paths, int *num);
 
 char * create_cimxml_listener_path(char *uuid);
 

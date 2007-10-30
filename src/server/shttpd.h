@@ -37,6 +37,7 @@ struct shttpd_arg_t {
 	void		*state;		/* User state */
 	int		last;		/* Marks the last call */
 	void		*user_data;	/* User-defined data */
+	char		*uuid;		/* Especially for CIM indiation listener */
 	char		*buf;		/* Buffer to fill */
 	size_t		buflen;		/* Buffer length */
 };
@@ -121,7 +122,7 @@ extern void		shttpd_addmimetype(struct shttpd_ctx *,
 extern int		shttpd_open_port(int port);
 extern void		shttpd_listen(struct shttpd_ctx *ctx, int sock);
 extern void		shttpd_register_url(struct shttpd_ctx *ctx,
-				const char *url, shttpd_callback_t callback,
+				const char *url, const char *uuid, shttpd_callback_t callback,
 				int authnotneeded, void *user_data);
 extern void		shttpd_protect_url(struct shttpd_ctx *ctx,
 				const char *url, const char *file);

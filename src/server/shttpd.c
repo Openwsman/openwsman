@@ -327,6 +327,7 @@ struct envvar {
 struct userurl {
 	struct userurl		*next;
 	char		*url;
+	char		*uuid; //specially for cim indication
 	shttpd_callback_t	func;
 	int authnotneeded;
 	void			*data;
@@ -828,6 +829,7 @@ do_embedded(struct conn *c)
 	arg.last	= 0;
 	arg.state	= c->state;
 	arg.user_data	= url->data;
+	arg.uuid = url->uuid;
 	arg.buf		= c->local.buf + c->local.head;
 	arg.buflen	= IO_SPACELEN(&c->local);
 
@@ -996,7 +998,7 @@ shttpd_get_env(struct shttpd_arg_t *arg, const char *env_name)
 
 void
 shttpd_register_url(struct shttpd_ctx *ctx,
-		const char *url, shttpd_callback_t cb,
+		const char *url, const char *uuid, shttpd_callback_t cb,
 		int authnotneeded, void *data)
 {
 	struct userurl	*p;
@@ -1007,6 +1009,8 @@ shttpd_register_url(struct shttpd_ctx *ctx,
 		p->authnotneeded = authnotneeded;
 		p->url		= u_strdup(url);
 		p->next		= ctx->urls;
+		if(uuid)
+			p->uuid = u_strdup(uuid);
 		ctx->urls	= p;
 	}
 }
@@ -2474,6 +2478,7 @@ shttpd_fini(struct shttpd_ctx *ctx)
 	/* Free allocated userurls */
 	for (u = ctx->urls; u != NULL; u = u1) {
 		u1 = u->next;
+		if(u->uuid) free(u->uuid);
 		free(u->url);
 		free(u);
 	}

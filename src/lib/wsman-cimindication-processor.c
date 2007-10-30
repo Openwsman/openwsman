@@ -41,7 +41,6 @@
 #include "wsman-event-pool.h"
 #include "wsman-cimindication-processor.h"
 
-
 static int isvalidCIMIndicationExport(WsXmlDocH doc){
 	if(doc == NULL) return 0;
 	WsXmlNodeH node = ws_xml_get_doc_root(doc);
@@ -217,7 +216,7 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	WsXmlDocH indicationRequest = NULL;
 	WsXmlDocH indicationResponse = NULL;
 	SoapH soap = cntx->soap;
-	char *servicepath = cntx->servicepath;
+	char *uuid = cntx->uuid;
 	debug("in CIM_Indication_call:: %s", u_buf_ptr(message->request));
 	indicationRequest = ws_xml_read_memory(u_buf_ptr(message->request), u_buf_len(message->request), 
 		"UTF-8", 0);
@@ -233,7 +232,6 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	}
 	//to do here: put indication in event pool
 	WsSubscribeInfo *subsInfo = NULL;
-	char *uuid = strrchr(servicepath, '/') + 1;
 	list_t *subslist = soap->subscriptionMemList;
 	lnode_t *node = list_first(subslist);
 	while(node) {
@@ -252,6 +250,7 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	u_buf_construct(message->response, response, len, len);
 	message->http_code = WSMAN_STATUS_OK;
 DONE:
+	u_free(cntx);
 	ws_xml_destroy_doc(indicationRequest);
 	ws_xml_destroy_doc(indicationResponse);
 }

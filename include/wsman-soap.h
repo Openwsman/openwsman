@@ -217,8 +217,6 @@ typedef int	(*WsEndPointUnSubscribe) (WsContextH,WsSubscribeInfo *, WsmanStatus 
 
 typedef int	(*WsEndPointRenew) (WsContextH,WsSubscribeInfo *, WsmanStatus *, void *);
 
-typedef int	(*WsEndPointEventPull) (WsContextH, WsSubscribeInfo *, WsmanStatus *, void *);
-
 typedef int     (*WsEndPointEnumerate) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);
 
 typedef int     (*WsEndPointPull) (WsContextH, WsEnumerateInfo *, WsmanStatus *, void *);

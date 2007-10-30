@@ -57,7 +57,7 @@
 
 typedef struct {
         SoapH soap;
-        char *servicepath;
+        char *uuid;
 }cimxml_context;
 
 typedef enum {
@@ -71,8 +71,6 @@ typedef enum {
 	CIMXML_STATUS_HEADER_MISMATCH,
 	CIMXML_STATUS_UNSUPPORTED_OPERATION
 }CIMXMLKnownStatusCode;
-
-
 
 void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaqueData);
 
