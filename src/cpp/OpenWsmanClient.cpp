@@ -441,7 +441,7 @@ bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes)
 void OpenWsmanClient::SetAuth(const char *auth_method)
 {
 	wsman_transport_set_auth_method (cl , (char *)auth_method);
-	if (wsmc_transport_get_auth_value(cl) == 0 ) {
+	if (wsmc_transport_get_auth_value(cl) == WS_MAX_AUTH ) {
 		// Authentication method not supported, reverting to digest
 		wsman_transport_set_auth_method(cl, "digest");
 	}

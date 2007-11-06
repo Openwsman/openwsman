@@ -228,7 +228,7 @@ wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient * cl)
 			return i;
 		}
 	}
-	return WS_NO_AUTH;
+	return WS_MAX_AUTH;
 }
 
 

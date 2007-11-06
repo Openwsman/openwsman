@@ -442,7 +442,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 				// Set the credentials before resending the request.
 				if (bResults) {
-					if (!ws_auth || !cl->data.user ||
+					if (WS_MAX_AUTH == ws_auth || !cl->data.user ||
 						!cl->data.pwd) {
 						// we don't have credentials
 						bDone = TRUE;
@@ -541,7 +541,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 			// Set the credentials before resending the request.
 			if (bResults) {
-				if (!ws_auth || !cl->data.user ||
+				if (WS_MAX_AUTH == ws_auth || !cl->data.user ||
 				    !cl->data.pwd) {
 					// we don't have credentials
 					bDone = TRUE;
