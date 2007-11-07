@@ -698,41 +698,26 @@ int wsman_parse_enum_request(WsContextH cntx,
 	}
 	return 1;
 }
-/*
-static char *xpathtowql(char *prefix, char *classname, char *str)
-{
-	char wql[512];
-	int count = 0;
-	int n = 0;
-	char * p = NULL;
-	memset(wql, 0, 512);
-	n = snprintf(wql, 512, "select * from %s where", classname);
-	if(n > 0) count += n;
-	while(*str == ' ' && *str!='\0') str++;
-	if(*str == '.' && *(str+1) == '[') {
-		*str = 0x20;
-		*(str+1) = 0x20;
-	}
-	if((p = strstr(str, "]"))) *p= ' ';
-	p = str;
-	int k;
-	while((p = strstr(p, prefix))) {
-		k = 0;
-		while(k < strlen(prefix) + 1) {
-			*p = 0x20;
-			p++;
-			k++;
-		}
-	}
-	strncat(wql, str, 512-count);
-	p = u_strdup(wql);
-	return p;
+
+static int xpath2wql(WsXmlNodeH node, filter_t **f) {
+	
+	return -1;
 }
-*/
+
+static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f) {
+	WsXmlNodeH xmlnode = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
+	if(xmlnode == NULL) return -1;
+	xmlnode = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	if(xmlnode == NULL) return -1;
+	*f = u_zalloc(sizeof(filter_t));
+	return 0;
+}
+
 int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
 	WsmanFaultDetailType *detailcode)
 {
 	WsXmlNodeH node;
+	filter_t *f = NULL;
 	if (!doc)
 		return 0;
 
@@ -751,71 +736,67 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFa
 			 WsXmlAttrH attr = ws_xml_get_node_attr(filter, 0);
 			 char *attrname = NULL;
 			 if(attr) attrname = ws_xml_get_attr_name(attr);
-			 if(attr && strcmp(attrname, WSM_DIALECT) == 0) {
+			 if(attr && strcmp(attrname, WSM_DIALECT) == 0) { //to subscribe to the CIM server
 			 	attrVal = ws_xml_get_attr_value(attr);
 				if (	attrVal && ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ||
 					strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ||
 					strcmp(attrVal,WSM_XPATH_FILTER_DIALECT) == 0 ||
 					strcmp(attrVal,WSM_XPATH_EVENTROOT_FILTER) == 0 )) {
-					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-					f->query = u_strdup(ws_xml_get_node_text(filter));
-					debug("Xpath filter: %s", f->query );
-					subsInfo->filter = f;
-					if ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 )
+					if ( strcmp(attrVal,WSM_CQL_FILTER_DIALECT) == 0 ) {
+						f = (filter_t *)u_zalloc(sizeof(filter_t));
+						f->query = u_strdup(ws_xml_get_node_text(filter));
+						debug("Xpath filter: %s", f->query );
+						subsInfo->filter = f;
 						subsInfo->flags |= WSMAN_SUBSCRIPTION_CQL;
-					else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 )
+					}
+					else if ( strcmp(attrVal,WSM_WQL_FILTER_DIALECT) == 0 ) {
+						f = (filter_t *)u_zalloc(sizeof(filter_t));
+						f->query = u_strdup(ws_xml_get_node_text(filter));
+						debug("Xpath filter: %s", f->query );
+						subsInfo->filter = f;
 						subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
+					}
+					else {
+						if(xpath2wql(filter, &f)) {
+							*faultcode = WSMAN_CANNOT_PROCESS_FILTER;
+							return -1;
+						}
+						else {
+							subsInfo->filter = f;
+							subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
+						}
+					}
+						
 				}
 				else {
-					*faultcode = WSE_FILTERING_NOT_SUPPORTED;
+					*faultcode = WSMAN_CANNOT_PROCESS_FILTER;
 					return -1;
 				}
 			 }
-			 else {
-			 	filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-				f->query = u_strdup(ws_xml_get_node_text(filter));
-				debug("Xpath filter: %s", f->query );
-				subsInfo->filter = f;
-
-/*			 	char * ns = ws_xml_get_attr_ns_prefix(attr);
-				attrname = ws_xml_get_attr_name(attr);
-				attrVal = ws_xml_get_attr_value(attr);
-				if(!strcasecmp(ns, "xmlns") && !strcmp(attrVal, subsInfo->uri)) {
-					filter_t *f = (filter_t *)u_zalloc(sizeof(filter_t));
-					ns = strrchr(attrVal, '/');
-					if(ns) {
-						f->query = xpathtowql(attrname, ns+1, ws_xml_get_node_text(filter));
-					}
-					debug("Xpath filter: %s", f->query );
-					if(f->query == NULL) {
-						*faultcode = WSE_FILTERING_NOT_SUPPORTED;
-						return -1;
-					}
+			 else { //to subscribe to an Indication class
+				if(xpath2wql(filter, &f)) {
+					*faultcode = WSMAN_CANNOT_PROCESS_FILTER;
+					return -1;
+				}
+				else {
 					subsInfo->filter = f;
 					subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
 				}
-				else {
-					*faultcode = WSE_FILTERING_NOT_SUPPORTED;
-					return -1;
-				}
-*/			 }
+			}
 
 		}
-		else {
-			*faultcode = WSE_INVALID_MESSAGE;
-			return -1;
+		else { //to check whether it subscribes to an existing filter
+			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
+				*faultcode = WSMAN_CANNOT_PROCESS_FILTER;
+				return -1;
+			}
+			else {
+				subsInfo->filter = f;
+				subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
+			}
 		}
 	}
-	else {
-		node = ws_xml_get_soap_header(doc);
-		if(ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET))
-			subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
-		else {
-			*faultcode = WSE_INVALID_MESSAGE;
-			return -1;
-		}
-	}
-	return 0;
+	return 0;	
 }
 
 char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,

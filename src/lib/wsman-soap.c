@@ -1262,18 +1262,18 @@ wsenum_pull_direct_stub(SoapOpH op,
 #ifdef ENABLE_EVENTING_SUPPORT
 	else { //pull things from notifications
 		ws_xml_destroy_doc(doc);
-		doc = ws_xml_create_envelope();
-		WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
-		WsXmlNodeH docheader = ws_xml_get_soap_header(doc);
-		docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
-		if(docnode) {
-			ws_xml_add_child_format(docnode, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT,
-				"uuid:%s", subsInfo->subsId);
-		}
 		pthread_mutex_lock(&subsInfo->notificationlock);
 		int count = soap->eventpoolOpSet->count(subsInfo->subsId);
 		int max_elements = 1;
 		if(count > 0) {
+			doc = ws_xml_create_envelope();
+			WsXmlNodeH docnode = ws_xml_get_soap_body(doc);
+			WsXmlNodeH docheader = ws_xml_get_soap_header(doc);
+			docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
+			if(docnode) {
+				ws_xml_add_child_format(docnode, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT,
+					"uuid:%s", subsInfo->subsId);
+			}
 			WsXmlDocH notidoc = NULL;
 			WsXmlNodeH header = ws_xml_get_soap_header(_doc);
 			if (ws_xml_get_child(header, 0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL) != NULL) {
@@ -1412,7 +1412,7 @@ static int destination_reachable(char *url)
 	if (u_uri_parse((const char *)url, &uri)) {
 		valid = 1;
 	}
-	u_free(uri);
+	u_uri_free(uri);
 	return 0;
 }
 WsEventThreadContextH ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
@@ -1436,7 +1436,8 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	u_free(subsInfo->soapNs);
 	u_free(subsInfo->contentEncoding);
 	if (subsInfo->filter) {
-		u_free(subsInfo->filter->query);
+		if(subsInfo->filter->query)
+			u_free(subsInfo->filter->query);
 		u_free(subsInfo->filter);
 	}
 	ws_xml_destroy_doc(subsInfo->bookmarkDoc);
