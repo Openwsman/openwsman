@@ -1456,6 +1456,10 @@ create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 	WsXmlNodeH header = NULL;
 	header = ws_xml_get_soap_header(notificationDoc);
 	ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, subsInfo->epr_notifyto);
+	if(subsInfo->deliveryMode == WSMAN_DELIVERY_EVENTS ||
+		subsInfo->deliveryMode == WSMAN_DELIVERY_PUSHWITHACK) {
+		ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
+	}
 	node = ws_xml_get_soap_body(indoc);
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
@@ -2157,7 +2161,7 @@ void wse_notification_manager(void * cntx)
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
 			node = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_EVENTS, NULL);
-			ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
+//			ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 			while(notificationInfo) {
 				temp = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_EVENT, NULL);
 				if(notificationInfo->EventAction)  {
@@ -2179,8 +2183,8 @@ void wse_notification_manager(void * cntx)
 		else{
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
-			if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK)
-				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
+//			if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK)
+//				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 			if(notificationInfo->EventAction)
 				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACTION, notificationInfo->EventAction);
 			else
