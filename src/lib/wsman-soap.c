@@ -1456,8 +1456,8 @@ create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 	WsXmlNodeH header = NULL;
 	header = ws_xml_get_soap_header(notificationDoc);
 	ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_TO, subsInfo->epr_notifyto);
-	if(subsInfo->deliveryMode == WSMAN_DELIVERY_EVENTS ||
-		subsInfo->deliveryMode == WSMAN_DELIVERY_PUSHWITHACK) {
+	if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS ||
+		subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK) {
 		ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 	}
 	node = ws_xml_get_soap_body(indoc);
