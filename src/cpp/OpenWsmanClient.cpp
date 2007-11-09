@@ -247,9 +247,18 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	WsXmlDocH doc;
 	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
 	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
-	if(info.dialect != "")
+	if(info.dialect !=  "")
 		options->dialect = u_strdup(info.dialect.c_str());
-	options->filter = u_strdup(info.filter.c_str());
+	if(info.filter != "")
+		options->filter = u_strdup(info.filter.c_str());
+		// Add selectors.
+	if (info.selectorset) {
+		for (PairsIterator p = info.selectorset->begin(); p != info.selectorset->end(); ++p) {
+			if(p->second != "")
+				wsmc_add_selector(options, 
+						(char *)p->first.c_str(), (char *)p->second.c_str());
+		}
+	}
 	options->expires = info.expires;
 	options->heartbeat_interval = info.heartbeat_interval;
 	doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options);
