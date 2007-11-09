@@ -247,7 +247,8 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	WsXmlDocH doc;
 	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
 	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
-	options->dialect = u_strdup(info.dialect.c_str());
+	if(info.dialect != "")
+		options->dialect = u_strdup(info.dialect.c_str());
 	options->filter = u_strdup(info.filter.c_str());
 	options->expires = info.expires;
 	options->heartbeat_interval = info.heartbeat_interval;
