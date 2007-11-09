@@ -2033,6 +2033,8 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 
 static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 {
+	char uuidBuf[50];
+	WsXmlNodeH header;
 	if(thrdcntx == NULL) return NULL;
 	WsEventThreadContextH threadcntx = (WsEventThreadContextH)thrdcntx;
 	WsSubscribeInfo * subsInfo = threadcntx->subsInfo;
@@ -2049,8 +2051,12 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 		if(flag) {
 			notificationDoc = threadcntx->outdoc;
 		}
-		else
+		else {
 	 		notificationDoc = ws_xml_duplicate_doc(subsInfo->heartbeatDoc);
+			header = ws_xml_get_soap_header(notificationDoc);
+			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
+		}
 		if (subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS  ||
 			subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK){
 			if(wse_send_notification(threadcntx, notificationDoc, subsInfo, 1) == WSE_NOTIFICATION_NOACK)
