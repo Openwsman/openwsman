@@ -1426,7 +1426,7 @@ void *ws_serializer_alloc(WsContextH cntx, int size)
 	TRACE_ENTER;
 	if (cntx)
 		soap = cntx->soap;
-	if (soap != NULL && 
+	if (soap != NULL &&
 			(ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
 		lnode_t *node;
 		ptr->cntx = cntx;
@@ -1438,9 +1438,11 @@ void *ws_serializer_alloc(WsContextH cntx, int size)
 			list_append(soap->WsSerializerAllocList, node);
 		}
 		u_unlock(soap);
+	} else {
+		fprintf(stderr, "soap is null\n");
 	}
 	TRACE_EXIT;
-	return ptr->buf;
+	return ptr ? ptr->buf : NULL;
 }
 
 

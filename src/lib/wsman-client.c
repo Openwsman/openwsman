@@ -99,20 +99,56 @@ free_hentry_func(hnode_t * n, void *arg)
 	u_free(hnode_getkey(n));
 	u_free(n);
 }
+static void
+wsmc_initialize_context(WsContextH cntx, SoapH soap)
+{
+	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+	cntx->owner = 1;
+	debug("soap: %p", soap );
+	cntx->soap = soap;
+}
 
-
-WsContextH 
-wsmc_create_runtime (void)
-{		
+static WsContextH
+wsmc_create_context(SoapH soap)
+{
 	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
-
-	if (cntx) {		
-		cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
-		hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
-		cntx->owner = 1;
-	}	
+	if (cntx) {
+		wsmc_initialize_context(cntx, soap);
+	}
 	return cntx;
 }
+
+static SoapH
+wsmc_soap_initialize(void)
+{
+	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
+
+	if (soap == NULL) {
+		error("Could not alloc memory");
+		return NULL;
+	}
+	soap->cntx = wsmc_create_context(soap);
+
+	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
+	u_init_lock(soap);
+	ws_xml_parser_initialize();
+
+	return soap;
+}
+
+WsContextH
+wsmc_create_runtime(void)
+{
+	SoapH soap = wsmc_soap_initialize();
+	if (soap == NULL) {
+		error("Could not initialize soap");
+		return NULL;
+	}
+
+	return soap->cntx;
+}
+
 
 
 static WsXmlDocH
@@ -1483,7 +1519,7 @@ WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
 	return response;
 }
 
-WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, 
+WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl,
 				 client_opt_t * options,
 				 const char *uuid)
 {
@@ -1500,7 +1536,7 @@ WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl,
 	return response;
 }
 
-WsXmlDocH wsmc_action_renew(WsManClient * cl, 
+WsXmlDocH wsmc_action_renew(WsManClient * cl,
 				 client_opt_t * options,
 				 const char *uuid)
 {
@@ -1739,7 +1775,7 @@ wsmc_create(const char *hostname,
 		u_free(wsc);
 		return NULL;
 	}
-	wsc->wscntx = (WsContextH) u_zalloc(sizeof (WsContextH *)); //ws_create_runtime(NULL);
+	wsc->wscntx = wsmc_create_runtime();
 
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = u_strdup(scheme ? scheme : "http");

@@ -1029,7 +1029,6 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 
 	if (wsman_is_identify_request(doc) && r != NULL) {
 		ep = &r->endPoints[0];
-		debug("out");
 	} else if (r != NULL) {
 		char *ptr = action;
 		/*

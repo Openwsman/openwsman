@@ -119,7 +119,8 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 static void
 CimResource_destroy(CimClientInfo *cimclient)
 {
-
+	if (!cimclient)
+		return;
 	if (cimclient->resource_uri)
 		u_free(cimclient->resource_uri);
 	if (cimclient->method)

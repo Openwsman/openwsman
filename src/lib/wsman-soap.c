@@ -535,7 +535,7 @@ ws_soap_initialize()
 	if (soap == NULL) {
 		error("Could not alloc memory");
 		return NULL;
-	}	
+	}
 	soap->cntx = ws_create_context(soap);
 
 	soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
@@ -1023,7 +1023,7 @@ wsenum_enumerate_stub(SoapOpH op,
 	}
 
 	soapCntx = ws_get_soap_context(soap);
-	if (enumInfo->index == enumInfo->totalItems && 
+	if (enumInfo->index == enumInfo->totalItems &&
 			( enumInfo->flags & WSMAN_ENUMINFO_OPT ) == WSMAN_ENUMINFO_OPT ) {
 		ws_serialize_str(epcntx, resp_node, NULL,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
@@ -1799,7 +1799,7 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soap->subscriptionMemList)) {
 		t = list_first(soap->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcasecmp(subsInfo->subsId, uuid+5)) {			
+		if(strcasecmp(subsInfo->subsId, uuid+5)) {
 			while((t == list_next(soap->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcasecmp(subsInfo->subsId, uuid+5)) break;
@@ -1855,7 +1855,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
 	char * expirestr = NULL;
-	
+
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointSubscribe endPoint =
 			(WsEndPointSubscribe)ep->serviceEndPoint;
