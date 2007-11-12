@@ -1710,6 +1710,10 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 			querystring, CMPI_chars);
 	CMAddKey(objectpath, "QueryLanguage",
 			querylanguage, CMPI_chars);
+	char *indicationns = get_cim_indication_SourceNamespace();
+	if(indicationns)
+		CMAddKey(objectpath, "SourceNamespace",
+			indicationns, CMPI_chars);
 	instance = newCMPIInstance(objectpath, NULL);
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
