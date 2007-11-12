@@ -110,6 +110,8 @@ void ws_xml_destroy_doc(WsXmlDocH doc);
 
 char *ws_xml_get_xpath_value(WsXmlDocH doc, char *expression);
 
+WsXmlDocH ws_xml_create_soap_envelope(void);
+
 WsXmlNodeH ws_xml_get_soap_envelope(WsXmlDocH doc);
 
 WsXmlNodeH ws_xml_get_soap_header(WsXmlDocH doc);

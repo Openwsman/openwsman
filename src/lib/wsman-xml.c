@@ -801,6 +801,11 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 }
 
 
+WsXmlDocH ws_xml_create_soap_envelope(void)
+{
+	return ws_xml_create_envelope();
+}
+
 
 /**
  * Get SOAP envelope
