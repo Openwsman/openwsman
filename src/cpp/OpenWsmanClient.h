@@ -92,7 +92,8 @@ namespace WsmanClientNamespace
 			// Set passsword
 			void SetPassword(const char *password);
 
-
+			// Set encoding
+			void SetEncoding(const char *encoding);
 #ifdef _WIN32
 			// Set client certificate params
 			void SetClientCert(const char *caOid=NULL, const char *caName=NULL, const bool localCert=false);

@@ -469,7 +469,12 @@ void OpenWsmanClient::SetPassword(const char *password)
 	   	wsman_transport_set_password(cl, (char*)password);
        }
 }
-
+void OpenWsmanClient::SetEncoding(const char *encoding)
+{
+	if(encoding) {
+		wsmc_set_encoding(cl,(char *)encoding);
+	}
+}
 
 #ifdef _WIN32
 void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const bool local)

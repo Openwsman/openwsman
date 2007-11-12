@@ -278,6 +278,9 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	char *p;
 	size_t len;
 	u_buf_t *ubuf;
+	char pszAnsi[128];
+	wchar_t *pwsz;
+
 	PCCERT_CONTEXT certificate;
 	wchar_t *proxy_username;
 	wchar_t *proxy_password;
@@ -316,17 +319,20 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		dwStatusCode = 400;
 		goto DONE;
 	}
+	snprintf(pszAnsi, 128, "Content-Type: application/soap+xml;charset=%s\r\n", cl->content_encoding);
+	pwsz = convert_to_unicode(pszAnsi);
 	bResult = WinHttpAddRequestHeaders(request,
-					   L"Content-Type: application/soap+xml;charset=UTF-8\r\n",
+					   pwsz,
 					   -1,
 					   WINHTTP_ADDREQ_FLAG_ADD_IF_NEW);
+	u_free(pwsz);
 	if (!bResult) {
 		error("can't add Content-Type header");
 		dwStatusCode = 400;
 		goto DONE;
 	}
 
-	ws_xml_dump_memory_enc(rqstDoc, &buf, &errLen, "UTF-8");
+	ws_xml_dump_memory_enc(rqstDoc, &buf, &errLen, cl->content_encoding);
 	updated = 0;
 	ws_auth = wsmc_transport_get_auth_value(cl);
 	if(ws_auth  == AUTH_SCHEME_NTLM)
