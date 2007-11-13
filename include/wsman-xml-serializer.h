@@ -76,11 +76,11 @@ typedef char XML_TYPE_CHAR;
 typedef u_int8_t XML_TYPE_UINT8;
 typedef u_int16_t XML_TYPE_UINT16;
 typedef u_int32_t XML_TYPE_UINT32;
-typedef u_int32_t XML_TYPE_UINT64;
+typedef u_int64_t XML_TYPE_UINT64;
 
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
-#define PTRTOINT unsigned long
+#define PTRTOINT intptr_t
 #endif
 typedef struct {
     struct tm tm;
