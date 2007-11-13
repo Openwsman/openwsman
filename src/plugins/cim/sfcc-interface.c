@@ -54,7 +54,7 @@
 
 #include "sfcc-interface.h"
 #include "cim-interface.h"
-
+#include "cim_data.h"
 #include "wsman-cimxmllistener-path.h"
 
 #define SYSTEMCREATIONCLASSNAME "CIM_ComputerSystem"
