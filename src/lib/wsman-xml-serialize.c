@@ -168,7 +168,7 @@ handle_attrs(struct __XmlSerializationData *data,
 
 	DATA_BUF(data) = DATA_BUF(data) + sz;
 	al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
-	pad = (unsigned long) ((PTRTOINT) DATA_BUF(data) % al);
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
@@ -428,7 +428,7 @@ int do_serialize_uint8(XmlSerializationData * data)
 {
 	if (XML_IS_ATTRS(data->elementInfo)) {
 		size_t al = get_struct_align();
-		size_t pad = (unsigned long) ((PTRTOINT) DATA_BUF(data) % al);
+		size_t pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 		if (pad) {
 			pad = al - pad;
 		}
@@ -453,7 +453,7 @@ int do_serialize_uint16(XmlSerializationData * data)
 	} else {
 		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
 	}
-	pad = (unsigned long) DATA_BUF(data) % al;
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 
 	if (pad) {
 		pad = al - pad;
@@ -481,7 +481,7 @@ int do_serialize_uint32(XmlSerializationData * data)
 	} else {
 		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
 	}
-	pad = (unsigned long) DATA_BUF(data) % al;
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
@@ -508,7 +508,7 @@ int do_serialize_uint64(XmlSerializationData * data)
 	} else {
 		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
 	}
-	pad = (unsigned long) DATA_BUF(data) % al;
+        pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
@@ -540,7 +540,7 @@ int do_serialize_string(XmlSerializationData * data)
 	} else {
 		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
 	}
-	pad = (unsigned long) DATA_BUF(data) % al;
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
@@ -647,7 +647,7 @@ int do_serialize_bool(XmlSerializationData * data)
 	} else {
 		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
 	}
-	pad = (unsigned long) DATA_BUF(data) % al;
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
@@ -905,7 +905,7 @@ int do_serialize_struct(XmlSerializationData * data)
 	int savedIndex = data->index;
 	void *savedStopper = data->stopper;
 	size_t al = get_struct_align();
-	size_t pad = (unsigned long) DATA_BUF(data) % al;
+	size_t pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	size_t count;
 	size_t struct_size;
 	int savedLocalIndex;
@@ -924,7 +924,7 @@ int do_serialize_struct(XmlSerializationData * data)
 		goto DONE;
 	}
 	al = get_struct_align();
-	pad = (unsigned long) DATA_BUF(data) % al;
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
 	if (pad) {
 		pad = al - pad;
 	}
