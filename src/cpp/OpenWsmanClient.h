@@ -94,6 +94,8 @@ namespace WsmanClientNamespace
 
 			// Set encoding
 			void SetEncoding(const char *encoding);
+			// Set CIM namespace
+			void SetNamespace(const char *ns);
 #ifdef _WIN32
 			// Set client certificate params
 			void SetClientCert(const char *caOid=NULL, const char *caName=NULL, const bool localCert=false);

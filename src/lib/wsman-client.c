@@ -1682,6 +1682,18 @@ wsmc_set_encoding(WsManClient *cl, const char *encoding)
 }
 
 int
+wsmc_set_namespace(WsManClient *cl, const char *ns)
+{
+	cl->cim_ns = u_strdup(ns);
+	return 0;
+}
+
+char *wsmc_get_namespace(WsManClient *cl)
+{
+	return cl->cim_ns;
+}
+
+int
 wsmc_check_for_fault(WsXmlDocH doc )
 {
 	return wsman_is_fault_envelope(doc);
@@ -1851,6 +1863,10 @@ wsmc_release(WsManClient * cl)
 	if (cl->content_encoding) {
 		u_free(cl->content_encoding);
 		cl->content_encoding = NULL;
+	}
+	if(cl->cim_ns) {
+		u_free(cl->cim_ns);
+		cl->cim_ns = NULL;
 	}
 	wsman_transport_close_transport(cl);
 

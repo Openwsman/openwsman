@@ -112,6 +112,7 @@ extern "C" {
 		WS_LASTERR_Code last_error;
 		void *transport;
 		char *content_encoding;
+		char *cim_ns;
               unsigned long transport_timeout;
               char * user_agent;
 		FILE *dumpfile;

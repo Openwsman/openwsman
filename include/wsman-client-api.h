@@ -213,6 +213,22 @@ typedef enum {
 	* @ return zero for success, others for an error
 	*/
 	int wsmc_set_encoding(WsManClient *cl, const char *encoding);
+
+	/**
+	* Set request CIM namespace
+	* @param cl Client handle
+	* @param ns requested CIM class namespace
+	* @ return zero for success, others for an error
+	*/
+	int wsmc_set_namespace(WsManClient *cl, const char *ns);
+
+	/**
+        * Return request CIM namespace
+        * @param cl Client handle
+        * @ return requested CIM class namespace
+        */
+	char *wsmc_get_namespace(WsManClient *cl);
+
 	/**
 	 * Release client
 	 * @param cl Client handle that was created with wsman_create_client

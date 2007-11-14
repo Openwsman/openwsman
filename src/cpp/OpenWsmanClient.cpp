@@ -24,7 +24,7 @@ using namespace WsmanClientNamespace;
 static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
 static string XmlDocToString(WsXmlDocH& doc);
-static client_opt_t *SetDefaultOptions();
+static client_opt_t *SetOptions(WsManClient* cl);
 static string GetSubscribeIdentifier(WsXmlDocH& doc);
 static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
@@ -73,7 +73,7 @@ OpenWsmanClient::~OpenWsmanClient()
 string OpenWsmanClient::Create(const string &resourceUri, const string &data) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH createResponse = wsmc_action_create_fromtext(cl, 
 			resourceUri.c_str(),
 			options,
@@ -88,7 +88,7 @@ string OpenWsmanClient::Create(const string &resourceUri, const string &data) co
 void OpenWsmanClient::Delete(const string &resourceUri, const NameValuePairs *s) const
 {
 	client_opt_t *options;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	if(s)
 	{
 		// Add selectors.
@@ -109,7 +109,7 @@ void OpenWsmanClient::Delete(const string &resourceUri, const NameValuePairs *s)
 void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	if(s)
 	{
 		// Add selectors.
@@ -176,7 +176,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 string OpenWsmanClient::Get(const string &resourceUri, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	// Add selectors.
 	if (s) {
@@ -197,7 +197,7 @@ string OpenWsmanClient::Get(const string &resourceUri, const NameValuePairs *s) 
 string OpenWsmanClient::Put(const string &resourceUri, const string &content, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	// Add selectors.
 	if (s) {
@@ -218,7 +218,7 @@ string OpenWsmanClient::Put(const string &resourceUri, const string &content, co
 string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	string error;
 
@@ -243,7 +243,7 @@ string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodNa
 string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
 	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
@@ -273,7 +273,7 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 string OpenWsmanClient::Renew(const string &identifier, float expire) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	options->expires = expire;
 	doc = wsmc_action_renew(cl, options, identifier.c_str());
@@ -287,7 +287,7 @@ string OpenWsmanClient::Renew(const string &identifier, float expire) const
 void OpenWsmanClient::Unsubscribe(const string &identifier) const
 {
 	client_opt_t *options = NULL;
-	options = SetDefaultOptions();
+	options = SetOptions(cl);
 	WsXmlDocH doc;
 	doc = wsmc_action_unsubscribe(cl, options, identifier.c_str());
 	wsmc_options_destroy(options);
@@ -361,9 +361,12 @@ string XmlDocToString(WsXmlDocH& doc) {
 	return str;
 }
 
-client_opt_t * SetDefaultOptions()
+client_opt_t * SetOptions(WsManClient* cl)
 {
 	client_opt_t *options = wsmc_options_init();
+	char *ns = wsmc_get_namespace(cl);
+	if(ns)
+		options->cim_ns = u_strdup(ns);
 	return options;
 }
 
@@ -473,6 +476,12 @@ void OpenWsmanClient::SetEncoding(const char *encoding)
 {
 	if(encoding) {
 		wsmc_set_encoding(cl,(char *)encoding);
+	}
+}
+void OpenWsmanClient::SetNamespace(const char *ns)
+{
+	if(ns) {
+		wsmc_set_namespace(cl, (char *)ns);
 	}
 }
 
