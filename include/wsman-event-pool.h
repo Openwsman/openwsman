@@ -71,7 +71,7 @@ struct __EventPoolOpSet {
 	EventPoolCount count;
 	EventPoolAddEvent add;
 	EventPoolAddPullEvent addpull;
-	EventPoolGetAndDeleteEvent delete;
+	EventPoolGetAndDeleteEvent remove;
 	EventPoolClearEvent clear;
 };
 typedef struct __EventPoolOpSet *EventPoolOpSetH;

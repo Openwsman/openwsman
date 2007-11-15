@@ -1290,7 +1290,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 				docnode = ws_xml_add_child(docnode, XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
 			}
 			while(max_elements > 0) {
-				if(soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo))
+				if(soap->eventpoolOpSet->remove(subsInfo->subsId, &notificationInfo))
 					break;
 				ws_xml_add_child(docheader, XML_NS_ADDRESSING, WSA_ACTION, notificationInfo->EventAction);
 				notidoc = notificationInfo->EventContent;
@@ -2145,7 +2145,7 @@ void wse_notification_manager(void * cntx)
 		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL)
 			goto LOOP;
 		WsNotificationInfoH notificationInfo = NULL;
-		if(soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
+		if(soap->eventpoolOpSet->remove(subsInfo->subsId, &notificationInfo) ) // to get the event and delete it from the event source
 			goto LOOP;
 		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PULL) goto LOOP;
 		notificationDoc = ws_xml_duplicate_doc(subsInfo->templateDoc);
@@ -2181,7 +2181,7 @@ void wse_notification_manager(void * cntx)
 					ws_xml_duplicate_children(temp, node);
 				}
 				delete_notification_info(notificationInfo);
-				soap->eventpoolOpSet->delete(subsInfo->subsId, &notificationInfo);
+				soap->eventpoolOpSet->remove(subsInfo->subsId, &notificationInfo);
 			}
 //			tempnode = lnode_create(notificationDoc);
 //			list_append(subsInfo->notificationDocList, tempnode);
