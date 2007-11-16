@@ -382,6 +382,7 @@ char *cim_get_namespace_selector(hash_t * keys)
 	if (hn) {
 		cim_namespace = (char *) hnode_get(hn);
 		hash_delete(keys, hn);
+		hnode_destroy(hn);
 		debug("CIM Namespace: %s", cim_namespace);
 	}
 	return cim_namespace;
