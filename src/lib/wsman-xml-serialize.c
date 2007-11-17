@@ -366,7 +366,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 			}
 			tmp = strtoul(str, &end, 10);
 			if (errno) {
-				error("strtoul(%s) failed; errno = #d",
+				error("strtoul(%s) failed; errno = %d",
 				      str, errno);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
