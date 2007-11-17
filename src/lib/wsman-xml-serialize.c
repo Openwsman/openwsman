@@ -272,7 +272,7 @@ handle_attrs(struct __XmlSerializationData *data,
 static int do_serialize_uint(XmlSerializationData * data, int valSize)
 {
 	WsXmlNodeH child = NULL;
-	XML_TYPE_UINT32 tmp;
+	XML_TYPE_UINT64 tmp;
 	int retVal = DATA_ALL_SIZE(data);
 	char *end;
 	char *str;
@@ -364,7 +364,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
 			}
-			tmp = strtoul(str, &end, 10);
+			tmp = strtoull(str, &end, 10);
 			if (errno) {
 				error("strtoul(%s) failed; errno = %d",
 				      str, errno);
