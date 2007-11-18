@@ -1,4 +1,56 @@
+1.5.1
 
+    * Fixed compilation client library on windows
+    * Fixed crash in CIM plugin
+    * Fixed serialization in client library 
+
+1.5.0
+
+Openwsman 1.5 is an interim stable release toward 2.0 with all completed features since 1.0. This release serves as a checkpoint to evaluate implemented and outstanding features and to take care of bugs instead of waiting until the beta phase of 2.0.
+
+    * Structure Improvements
+          o New file structure. Header files separated from source file
+          o wsman_util library integrated into main library
+          o CIM client library (relying on SFCC) is part of the CIM plugin now 
+    * Openwsman Server:
+          o Rename server binary to openwsmand to avoid conflicts (wsmand is very generic)
+          o Accept indications 
+    * Openwsman Client:
+          o Added --encoding options to choose encoding type of sent and received messages
+          o Added options to support eventing
+          o Load custom method parameters from external file 
+    * WS-Eventing Phase 1
+          o Subscribe, Unsubscribe, Renew commands supported
+          o Heartbeat message supported. The granularity is 1 second.
+          o Four kinds of delivery modes supported: “Push”, “PushWithAck?”, “Pull”, “Events”
+          o Extensible subscription storage mechanism and local subscription storage implemented
+          o If the delivery mode is “PushWithAck?” or “Events” and there is no acknowledgment response from the event sink, the subscription will be terminated.
+          o Expired subscription will be deleted from the storage.
+          o Subscription with no expiry time will be kept until the service restarts. When the service restarts, all expired and non-expiry subscriptions will be deleted.
+          o If the delivery mode is set to “Pull”, the number of events kept in the service is limited. Any events over that limit will be discarded.
+          o Initial CIM indication support in the CIM plugin 
+    * XML abstraction layer and parser improvements
+    * Language Bindings:
+          o Python 
+    * Better support for windows authentication and client API support on windows
+    * Windows Client-side WS-Eventing support:
+    * C++ Bindings (Interface use mostly on windows)
+          o Connect using proxy server.
+          o Support replacing user name without the need to call constructor. Added api - void SetUserName?(const char *user_name)
+          o Support replacing password without the need to call constructor. Added api - void SetPassword?(const char *password)
+          o Add mechanism to extract error message (as string) using the error code inside the GeneralWsmanExeption?.
+          o Fixed bugs related to Kerberos communication in windows transport client 
+    * Integration with CIMOMs:
+          o Sfc Broker (Support local and CIMXML communication): Now it is possible to choose backend in the configuration file
+          o Openwbem (External Request handler) 
+
+    * Many many other fixes and improvements 
+
+1.2.0
+
+    * Fixed memory leaks in client, cpp client
+    * cleanup API to support external plugins and openwbem request handler
+    * General cleanup and minor fixes 
 1.1.0 
 
 Thread saftey: Moved static variables to client struct
