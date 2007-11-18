@@ -145,7 +145,7 @@ typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
 #define SER_NULL {NULL, NULL, 0, 0, 0, 0, NULL, NULL}
 
-        // Serializer Info base defines
+// Serializer Info base defines
 
 #define SER_NS_UINT8_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x),  sizeof (XML_TYPE_UINT8), \
@@ -410,15 +410,9 @@ XmlSerializerInfo t##_TypeInfo[] = {\
 }
 
 
-        // TypeInfo structures for well known types
+// TypeInfo structures for well known types
 
-
-
-
-
-
-
-        // XmlSerializationProc functions for different types
+// XmlSerializationProc functions for different types
 
 int do_serialize_uint8(struct __XmlSerializationData* data);
 int do_serialize_uint16(struct __XmlSerializationData* data);
@@ -433,7 +427,7 @@ int do_serialize_attrs(struct __XmlSerializationData* data);
 
 
 
-        // Serializer user interface
+// Serializer user interface
 
 int ws_serialize(WsContextH cntx,
                 WsXmlNodeH xmlNode,
