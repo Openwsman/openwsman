@@ -689,8 +689,10 @@ static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f) {
 	return 0;
 }
 
-int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
-	WsmanFaultDetailType *detailcode)
+int 
+wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, 
+		WsmanFaultCodeType *faultcode,
+		WsmanFaultDetailType *detailcode)
 {
 	WsXmlNodeH node;
 	filter_t *f = NULL;
@@ -781,7 +783,8 @@ int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFa
 	return 0;	
 }
 
-char* wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
+char *
+wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 		const char *op)
 {
 	char *optval = NULL;
@@ -869,7 +872,8 @@ char *wsman_get_class_name(WsContextH cntx)
 
 
 
-char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
+char *
+wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 {
 	char *val = NULL;
 	WsXmlNodeH header, node;
@@ -888,7 +892,8 @@ char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 }
 
 
-hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
+hash_t *
+wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
 	char *input = NULL;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
@@ -932,7 +937,8 @@ hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 
 
 
-hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
+hash_t *
+wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node, epr;
 	epr_t *eprp = NULL;
@@ -986,7 +992,8 @@ hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 	return NULL;
 }
 
-hash_t *wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
+hash_t *
+wsman_get_selector_list(WsContextH cntx, WsXmlDocH doc)
 {
 	WsXmlNodeH header;
 	hash_t *h = NULL;
@@ -1052,7 +1059,8 @@ wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 }
 
 
-char *wsman_get_selector(WsContextH cntx,
+char *
+wsman_get_selector(WsContextH cntx,
 			 WsXmlDocH doc, const char *name, int index)
 {
 	char *val = NULL;
@@ -1094,8 +1102,7 @@ char *wsman_get_action(WsContextH cntx, WsXmlDocH doc)
 	}
 	if (doc) {
 		WsXmlNodeH header = ws_xml_get_soap_header(doc);
-		WsXmlNodeH node =
-		    ws_xml_get_child(header, 0, XML_NS_ADDRESSING,
+		WsXmlNodeH node = ws_xml_get_child(header, 0, XML_NS_ADDRESSING,
 				     WSA_ACTION);
 		val = (!node) ? NULL : ws_xml_get_node_text(node);
 	}
@@ -1109,8 +1116,8 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 {
 	WsXmlNodeH selector = NULL;
 	WsXmlDocH epr = NULL;
-	WsXmlNodeH set =
-	    ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
+	WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, 
+			WSM_SELECTOR_SET);
 
 	if (val && strstr(val, WSA_EPR)) {
 		epr = ws_xml_read_memory(val, strlen(val), NULL, 0);

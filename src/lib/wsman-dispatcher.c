@@ -508,10 +508,17 @@ soap_add_filter(SoapH soap,
 		void *callbackData, int inbound)
 {
 	callback_t *entry = NULL;
+
 	if (soap) {
-		list_t *list = (!inbound) ?
-		    soap->outboundFilterList : soap->inboundFilterList;
-		entry = make_callback_entry(callbackProc, callbackData, list);
+		if (!inbound) {
+			if (!soap->outboundFilterList)
+				soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);			
+			entry = make_callback_entry(callbackProc, callbackData, soap->outboundFilterList);
+		} else {
+			if (!soap->inboundFilterList)
+				soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);			
+			entry = make_callback_entry(callbackProc, callbackData, soap->inboundFilterList);			
+		}		
 	}
 	if (entry == NULL)
 		return 0;
@@ -562,18 +569,14 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 	WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
 	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
 
-	WsXmlNodeH outHeaders =
-	    wsman_get_soap_header_element(out_doc, NULL, NULL);
+	WsXmlNodeH outHeaders = wsman_get_soap_header_element(out_doc, NULL, NULL);
 
 	if (outHeaders) {
-		if (ws_xml_get_child(outHeaders, 0,
-				     XML_NS_ADDRESSING,
-				     WSA_MESSAGE_ID) == NULL &&
+		if (ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,  WSA_MESSAGE_ID) == NULL &&
 		    !wsman_is_identify_request(in_doc)) {
 			char uuidBuf[100];
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
-			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,
-					 WSA_MESSAGE_ID, uuidBuf);
+			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,	 WSA_MESSAGE_ID, uuidBuf);
 			debug("Adding message id: %s", uuidBuf);
 		}
 		if (in_doc != NULL) {
@@ -596,6 +599,7 @@ static int process_filter_chain(op_t *op, list_t *list, void *opaqueData)
 {
 	int retVal = 0;	
 	callback_t *filter = NULL;
+	debug("process_filter_chain: %p", list);
 	if (list != NULL) {
 		filter = (callback_t *) list_first(list);
 		while (!retVal && filter != NULL) {
@@ -628,7 +632,7 @@ static int process_filters(op_t * op, int inbound, void *opaqueData)
 		debug("process_filter_chain returned 1 for DEF FILTERS");
 		return 1;
 	}
-
+	debug("xxxxx");
 	list = inbound ? op->dispatch->inboundFilterList :
 	    op->dispatch->outboundFilterList;
 	retVal = process_filter_chain(op, list, opaqueData);
@@ -1114,8 +1118,7 @@ SoapDispatchH wsman_dispatch_create(SoapH soap,
 
 	SoapDispatchH disp = NULL;
 	if (soap && role == NULL) {
-		disp =
-		    create_dispatch_entry(soap, inboundAction,
+		disp = create_dispatch_entry(soap, inboundAction,
 					  outboundAction, role,
 					  callbackProc, callbackData,
 					  flags);

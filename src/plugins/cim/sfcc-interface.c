@@ -803,10 +803,9 @@ static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
 		statusP->fault_detail_code =
 		    WSMAN_DETAIL_INVALID_RESOURCEURI;
 	}
-	debug("fault: %d %d", statusP->fault_code,
-	      statusP->fault_detail_code);
+	debug("fault: %d %d", statusP->fault_code, statusP->fault_detail_code);
 
-      cleanup:
+cleanup:
 
 	if (objectpath)
 		CMRelease(objectpath);
@@ -1086,27 +1085,24 @@ create_instance_from_xml(CMPIInstance * instance,
 void
 xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 {
-	int i;
-	CMPIObjectPath *objectpath =
-	    instance->ft->getObjectPath(instance, NULL);
-	CMPIString *namespace =
-	    objectpath->ft->getNameSpace(objectpath, NULL);
-	CMPIString *classname =
-	    objectpath->ft->getClassName(objectpath, NULL);
+	int i, numproperties;
+	CMPIString *namespace, *classname;
+	CMPIObjectPath *objectpath = NULL;
+	WsXmlNodeH r;
+	
+	objectpath = instance->ft->getObjectPath(instance, NULL);
+	namespace = objectpath->ft->getNameSpace(objectpath, NULL);
+	classname =objectpath->ft->getClassName(objectpath, NULL);
 
-	int numproperties = instance->ft->getPropertyCount(instance, NULL);
-
-	WsXmlNodeH r =
-	    ws_xml_get_child(body, 0, resourceUri,
-			     (char *) classname->hdl);
+	numproperties = instance->ft->getPropertyCount(instance, NULL);
+	r = ws_xml_get_child(body, 0, resourceUri,(char *) classname->hdl);
 
 	if (numproperties) {
 		for (i = 0; i < numproperties; i++) {
 			CMPIString *propertyname;
-			CMPIData data =
-			    instance->ft->getPropertyAt(instance,
-							i, &propertyname,
-							NULL);
+			CMPIData data = instance->ft->getPropertyAt(instance,
+								i, &propertyname,
+								NULL);
 			WsXmlNodeH child = ws_xml_get_child(r, 0,
 							    resourceUri,
 							    (char *)
