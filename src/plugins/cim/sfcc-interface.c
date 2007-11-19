@@ -49,7 +49,6 @@
 #include "wsman-client-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-xml-serializer.h"
 #include "wsman-epr.h"
 
 #include "sfcc-interface.h"
@@ -127,7 +126,7 @@ path2xml(CimClientInfo * client,
 #if 0
 	CMPIString *opstr = CMObjectPathToString(objectpath, NULL);
 	debug("objectpath: %s", (char *) opstr->hdl);
-	debug("++++++++++++++++ namespace: %s", (char *) namespace->hdl);
+	debug("namespace: %s", (char *) namespace->hdl);
 #endif
 	CMPIString *classname =
 	    objectpath->ft->getClassName(objectpath, NULL);
@@ -466,8 +465,10 @@ cim_epr_to_objectpath(epr_t *epr) {
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
     wsman_epr_selector_cb(epr,
                      cim_add_keys_from_filter_cb, objectpath);
-//    debug( "ObjectPath: %s",
- //                    CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+#if 0
+    debug( "ObjectPath: %s",
+                     CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+#endif
      return objectpath;
 
 }
@@ -1679,7 +1680,8 @@ static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, c
 	return objectpath_filter;
 }
 
-static CMPIObjectPath *cim_indication_handler_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
+static CMPIObjectPath 
+*cim_indication_handler_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
 {
 	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationHandlerCIMXML", rc);
