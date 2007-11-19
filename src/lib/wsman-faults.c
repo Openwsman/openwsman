@@ -408,6 +408,14 @@ WsmanFaultCodeTable fault_code_table[] =
 
     	},
     	{
+    		WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE,
+    		WSEVENT_ACTION_FAULT,
+    		XML_NS_EVENTING,
+    		FAULT_SENDER_CODE,
+    		"DeliveryModeRequestedUnavailable",
+    		"The requested delivery mode is not supported"
+    	},
+    	{
     		WSE_FILTERING_NOT_SUPPORTED,
 		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
