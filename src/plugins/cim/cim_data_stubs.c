@@ -523,16 +523,17 @@ CimResource_Create_EP( SoapOpH op,
 		void* appData,
 		void *opaqueData )
 {
-	debug( "Create Endpoint Called");
+	
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
-
-	wsman_status_init(&status);
+	
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 	WsmanMessage *msg = wsman_get_msg_from_op(op);
-
+	debug( "Create Endpoint Called");
+	wsman_status_init(&status);
+	
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
 				msg->auth_data.username, msg->auth_data.password );

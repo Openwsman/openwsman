@@ -75,12 +75,11 @@ SER_NS_STRUCT(XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, 1,
 
 
 epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
-	const char *epr_node_name, const char *ns)
+		const char *epr_node_name, const char *ns)
 {
 	epr_t *epr;
-        epr = (epr_t *) ws_deserialize(cntx,
-                                        node,
-                                        epr_t_TypeInfo,
+	epr->type = NULL;
+    epr = (epr_t *) ws_deserialize(cntx, node, epr_t_TypeInfo,
                                         epr_node_name,
                                         ns, NULL, 0, 0);
 	return epr;
@@ -92,8 +91,7 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
 	int i;
 	char *value = NULL;
 	XML_NODE_ATTR *a;
-	Selector *ss =
-		(Selector *) epr->refparams.selectorset.selectors.data;
+	Selector *ss = (Selector *) epr->refparams.selectorset.selectors.data;
 	if (ss == NULL) {
 			debug("epr->refparams.selectors.data == NULL\n");
 		return NULL;
@@ -118,8 +116,7 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 {
 	int i;
 	XML_NODE_ATTR *a;
-	Selector *ss =
-		(Selector *) epr->refparams.selectorset.selectors.data;
+	Selector *ss = (Selector *) epr->refparams.selectorset.selectors.data;
 	if (ss == NULL) {
 			debug("epr->refparams.selectors.data == NULL\n");
 		return;

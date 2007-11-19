@@ -460,16 +460,21 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 static CMPIObjectPath *
 cim_epr_to_objectpath(epr_t *epr) {
 	CMPIObjectPath * objectpath;
-    char * class = strrchr(epr->refparams.uri, '/') + 1;
+	char *class;
+	
+	if (epr && epr->refparams.uri) {
+		debug("uri: %s", epr->refparams.uri);
+		class = strrchr(epr->refparams.uri, '/') + 1;
+	}
     // FIXME
     objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
     wsman_epr_selector_cb(epr,
                      cim_add_keys_from_filter_cb, objectpath);
-#if 0
+
     debug( "ObjectPath: %s",
-                     CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
-#endif
-     return objectpath;
+                     CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
+
+    return objectpath;
 
 }
 
@@ -512,14 +517,17 @@ DONE:
 }
 
 static int
-cim_verify_keys(CMPIObjectPath * objectpath,
-		hash_t * keys, WsmanStatus * statusP)
+cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys, 
+		WsmanStatus * statusP)
 {
-	debug("verify selectors");
 	CMPIStatus rc;
 	hscan_t hs;
 	hnode_t *hn;
 	int count, opcount;
+	epr_t *epr = NULL;
+	char *cv;
+	
+	debug("verify selectors");
 
 	if (!keys) {
 		count = 0;
@@ -545,10 +553,9 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 	}
 
 	hash_scan_begin(&hs, keys);
-	char *cv;
+	
 	while ((hn = hash_scan_next(&hs))) {
-		CMPIData data =
-		    CMGetKey(objectpath, (char *) hnode_getkey(hn), &rc);
+		CMPIData data = CMGetKey(objectpath, (char *) hnode_getkey(hn), &rc);
 		if (rc.rc != 0) {	// key not found
 			statusP->fault_code = WSMAN_INVALID_SELECTORS;
 			statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
@@ -557,16 +564,16 @@ cim_verify_keys(CMPIObjectPath * objectpath,
 		}
 
 		cv = value2Chars(data.type, &data.value);
-		epr_t *epr = NULL;
-		if (strcmp(cv, (char *) hnode_get(hn)) == 0) {
+		epr =  (epr_t *)u_zalloc(sizeof (epr_t));	
+		
+		if (cv != NULL && strcmp(cv, (char *) hnode_get(hn)) == 0) {
 			statusP->fault_code = WSMAN_RC_OK;
 			statusP->fault_detail_code = WSMAN_DETAIL_OK;
 			u_free(cv);
-		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address != NULL) {
+		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address && epr->type == NULL) {
 			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(epr);
 			CMPIObjectPath *objectpath_epr2 = CMClone(data.value.ref, NULL);
 			if (cim_opcmp(objectpath_epr2, objectpath_epr) == 0) {
-//			if (strcmp(cv, (char *)CMGetCharPtr(CMObjectPathToString(objectpath_epr, NULL)) ) == 0 ) {
 				statusP->fault_code = WSMAN_RC_OK;
 				statusP->fault_detail_code = WSMAN_DETAIL_OK;
 				u_free(cv);
@@ -1478,7 +1485,7 @@ cim_create_instance(CimClientInfo * client,
 		    WsXmlNodeH in_body,
 		    WsXmlNodeH body, WsmanStatus * status)
 {
-	int i;
+	
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath, *objectpath_r;
 	CMPIStatus rc;
@@ -1486,13 +1493,12 @@ cim_create_instance(CimClientInfo * client,
 	CMPIConstClass *class;
 	WsXmlNodeH resource;
 	wsman_status_init(&statusP);
-	int numproperties = 0;
+	int numproperties = 0, i;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       client->requested_class, NULL);
-	class = cim_get_class(client,
-			      client->requested_class,
+	class = cim_get_class(client, client->requested_class,
 			      CMPI_FLAG_IncludeQualifiers, status);
 	if (class) {
 		numproperties = class->ft->getPropertyCount(class, NULL);
@@ -1545,17 +1551,14 @@ cim_create_instance(CimClientInfo * client,
 	create_instance_from_xml(instance, class,
 				 resource, client->resource_uri, status);
 	if (status->fault_code == 0) {
-		objectpath_r =
-		    cc->ft->createInstance(cc, objectpath, instance, &rc);
+		objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 		debug("createInstance() rc=%d, msg=%s", rc.rc,
 		      (rc.msg) ? (char *) rc.msg->hdl : NULL);
 		if (objectpath_r) {
-			WsXmlNodeH epr = ws_xml_add_child(body,
-							  XML_NS_TRANSFER,
+			WsXmlNodeH epr = ws_xml_add_child(body, XML_NS_TRANSFER,
 							  WXF_RESOURCE_CREATED,
 							  NULL);
-			cim_add_epr_details(client, epr,
-					    client->resource_uri,
+			cim_add_epr_details(client, epr, client->resource_uri,
 					    objectpath_r);
 		}
 		if (rc.rc == CMPI_RC_ERR_FAILED) {
