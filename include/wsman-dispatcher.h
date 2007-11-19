@@ -52,7 +52,7 @@ struct __dispatch_t {
 	char *inboundAction;
 	char *outboundAction;
 	unsigned long flags;
-	SoapH fw;
+	SoapH soap;
 	SoapServiceCallback serviceCallback;
 	void *serviceData;
 	list_t *inboundFilterList;

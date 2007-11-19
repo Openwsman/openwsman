@@ -94,7 +94,6 @@ typedef struct __SoapOp *SoapOpH;
 struct __Soap {
 	/* do not move this field */
 	pthread_mutex_t lockData;
-	//void           *parserData;
 	unsigned long   uniqueIdCounter;
 
 	list_t         *inboundFilterList;
@@ -108,10 +107,8 @@ struct __Soap {
 	char 			*uri_subsRepository; //URI of repository
 	SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
 	EventPoolOpSetH eventpoolOpSet; //Function table of event source
-
 	WsContextH      cntx;
 	list_t         	*WsSerializerAllocList;
-
 	void           	*dispatcherData;
 	DispatcherCallback dispatcherProc;
 	void *listener;
@@ -133,16 +130,13 @@ struct _WS_CONTEXT_ENTRY {
 typedef struct _WS_CONTEXT_ENTRY WS_CONTEXT_ENTRY;
 
 struct _WS_CONTEXT {
-	SoapH           soap;
-	unsigned long   enumIdleTimeout;
+	SoapH soap;
+	unsigned long enumIdleTimeout;
 	WsXmlDocH	indoc;
-	hash_t         *enuminfos;
-	hash_t         *entries;
+	hash_t *enuminfos;
+	hash_t *entries;
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
-	/* the fields below are for optimization */
-	//WS_CONTEXT_ENTRY *last_entry;
-//	int             last_get_name_idx;
 };
 
 typedef struct __WsSubscribeInfo WsSubscribeInfo;
@@ -361,15 +355,14 @@ make_callback_entry(SoapServiceCallback proc,
 
 
 
-SoapH           ws_soap_initialize(void);
+SoapH ws_soap_initialize(void);
 
-void            ws_set_context_enumIdleTimeout(WsContextH cntx,
+void ws_set_context_enumIdleTimeout(WsContextH cntx,
                             unsigned long timeout);
 
-void            soap_destroy_fw(SoapH soap);
+void soap_destroy(SoapH soap);
 
-SoapH           ws_context_get_runtime(WsContextH hCntx);
-
+SoapH ws_context_get_runtime(WsContextH hCntx);
 
 
 int
