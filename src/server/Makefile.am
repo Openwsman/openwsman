@@ -40,4 +40,4 @@ openwsmand_SOURCES += \
 		
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR) $(PACKAGE_SUBSCRIPTION_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(PACKAGE_SUBSCRIPTION_DIR)
