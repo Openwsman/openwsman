@@ -39,7 +39,7 @@ pid_t getpid(void);
 #endif
 
 #define dlclose(handle)         FreeLibrary(handle)
-        
+#define strtoull(nptr, endptr, base) _strtoul_l(nptr, endptr, base, NULL)        
 #define sleep(secs) Sleep( (secs) * 1000 )
 #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
 #define popen _popen
