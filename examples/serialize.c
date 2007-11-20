@@ -149,14 +149,14 @@ static void example1(void)
 	    SER_DYN_ARRAY("shorts", 0, 1000, uint16),
 	    SER_END_ITEMS(Sample_Servie);
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	printf("\n\n   ********   example1. Basic types  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -231,7 +231,7 @@ static void example2(void)
 	    SER_STRUCT("FOO", 1, Foo), 
 	SER_END_ITEMS(Sample);
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
@@ -239,7 +239,7 @@ static void example2(void)
 	printf
 	    ("\n\n   ********   example2. Structure with pads.  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -303,14 +303,14 @@ static void example3(void)
 	// Sample *p = NULL;
 
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	printf("\n\n   ********   example3. Skip elements.  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -376,14 +376,14 @@ static void example4(void)
 	    SER_STRUCT("EMBED", 2, Embed),
 	    SER_STR("STRING", 1), SER_END_ITEMS(Sample);
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	printf
 	    ("\n\n   ********   example4. Static structure array  ********\n");
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -440,14 +440,14 @@ static void example5(void)
 	    SER_DYN_ARRAY("foos", 0, 1000, Foo),
 	    SER_UINT16("tag", 1), SER_END_ITEMS(Sample);
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	printf("\n\n   ********   example 5: Dynamic arrays  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -576,7 +576,7 @@ static void example6(void)
 	    SER_ATTR_NS_STRUCT_FLAGS(XML_NS_WS_MAN, "STRUCT", 1, 0, Dummy),
 	    SER_END_ITEMS(Sample);
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
@@ -584,7 +584,7 @@ static void example6(void)
 	printf
 	    ("\n\n   ********   example 6. Nodes with attributes  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -726,7 +726,7 @@ static void example7(void)
 		 }
 	};
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
@@ -734,7 +734,7 @@ static void example7(void)
 	printf
 	    ("\n\n   ********   example7. Endpoint Reference  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
@@ -855,14 +855,14 @@ static void example107(void)
 {
 
 
-	WsContextH cntx;
+	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 
 	printf
 	    ("\n\n   ********   example7. Endpoint Reference  ********\n");
 
-	cntx = ws_create_runtime(NULL);
+	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;

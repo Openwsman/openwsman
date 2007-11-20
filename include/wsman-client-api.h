@@ -44,7 +44,7 @@ extern "C" {
 #include "wsman-xml-api.h"
 #include "wsman-names.h"
 #include "wsman-types.h"
-
+#include "wsman-xml-serializer.h"
 /**
  * @defgroup Client Client
  * @brief WS-Management Client
@@ -247,11 +247,11 @@ typedef enum {
 	/* WsManClient handling */
 
 	/**
-	 * Get client context
+	 * Get serialization context
 	 * @param cl Client handle
 	 * @return Context
 	 */
-	WsContextH wsmc_get_context(WsManClient * cl);
+	WsSerializerContextH wsmc_get_serialization_context(WsManClient * cl);
 
 	/**
 	 * Get host name from handle

@@ -78,8 +78,7 @@ epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 		const char *epr_node_name, const char *ns)
 {
 	epr_t *epr;
-	epr->type = NULL;
-    epr = (epr_t *) ws_deserialize(cntx, node, epr_t_TypeInfo,
+    	epr = (epr_t *) ws_deserialize(cntx->serializercntx, node, epr_t_TypeInfo,
                                         epr_node_name,
                                         ns, NULL, 0, 0);
 	return epr;

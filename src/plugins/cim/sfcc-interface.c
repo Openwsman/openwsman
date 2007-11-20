@@ -460,8 +460,7 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 static CMPIObjectPath *
 cim_epr_to_objectpath(epr_t *epr) {
 	CMPIObjectPath * objectpath;
-	char *class;
-	
+	char *class = NULL;
 	if (epr && epr->refparams.uri) {
 		debug("uri: %s", epr->refparams.uri);
 		class = strrchr(epr->refparams.uri, '/') + 1;

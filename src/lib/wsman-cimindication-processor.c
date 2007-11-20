@@ -223,12 +223,12 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	if(indicationRequest == NULL) {
 		debug("error, request cannot be parsed !");
 		wsman_set_fault(message, CIMXML_STATUS_REQUEST_NOT_VALID, 0, NULL);
-		return;
+		goto DONE;
 	}
 	if(!isvalidCIMIndicationExport(indicationRequest)) {
 		debug("error, invalid cim indication");
 		wsman_set_fault(message, CIMXML_STATUS_UNSUPPORTED_OPERATION, 0, NULL);
-		return;
+		goto DONE;
 	}
 	//to do here: put indication in event pool
 	WsSubscribeInfo *subsInfo = NULL;

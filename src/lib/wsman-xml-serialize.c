@@ -56,16 +56,38 @@
 #include "wsman-soap-envelope.h"
 
 struct __WsSerializerMemEntry {
-	WsContextH cntx;
-	char buf[1];
+	char buf[0];
 };
 
 typedef struct __WsSerializerMemEntry WsSerializerMemEntry;
 
+WsSerializerContextH ws_serializer_init()
+{
+	WsSerializerContextH serializercntx = NULL;
+	serializercntx = u_malloc(sizeof(struct __WsSerializerContext));
+	if(serializercntx == NULL) return NULL;
+	serializercntx->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
+	if(serializercntx->WsSerializerAllocList == NULL) {
+		u_free(serializercntx);
+		return NULL;
+	}
+	return serializercntx;
+}
+
+int ws_serializer_cleanup(WsSerializerContextH serctx)
+{
+	if(serctx && serctx->WsSerializerAllocList) {
+		ws_serializer_free_all(serctx);
+		list_destroy(serctx->WsSerializerAllocList);
+		u_free(serctx);
+	}
+	return 0;
+}
+
 void *xml_serializer_alloc(XmlSerializationData * data, int size,
 			   int zeroInit)
 {
-	void *ptr = ws_serializer_alloc(data->cntx, size);
+	void *ptr = ws_serializer_alloc(data->serctx, size);
 	TRACE_ENTER;
 	if (ptr && zeroInit)
 		memset(ptr, 0, size);
@@ -76,7 +98,7 @@ void *xml_serializer_alloc(XmlSerializationData * data, int size,
 
 int xml_serializer_free(XmlSerializationData * data, void *buf)
 {
-	return ws_serializer_free(data->cntx, buf);
+	return ws_serializer_free(data->serctx, buf);
 }
 
 
@@ -1031,7 +1053,7 @@ int do_serialize_struct(XmlSerializationData * data)
 
 static void
 initialize_xml_serialization_data(XmlSerializationData * data,
-				  WsContextH cntx,
+				  WsSerializerContextH serctx,
 				  XmlSerializerInfo * elementInfo,
 				  XML_TYPE_PTR dataBuf,
 				  int mode,
@@ -1041,7 +1063,7 @@ initialize_xml_serialization_data(XmlSerializationData * data,
 	debug("Initialize XML Serialization...");
 	TRACE_ENTER;
 	memset(data, 0, sizeof(XmlSerializationData));
-	data->cntx = cntx;
+	data->serctx = serctx;
 	data->elementInfo = elementInfo;
 	data->elementBuf = dataBuf;
 	data->mode = mode;
@@ -1055,7 +1077,7 @@ initialize_xml_serialization_data(XmlSerializationData * data,
 
 
 
-int ws_serialize(WsContextH cntx,
+int ws_serialize(WsSerializerContextH serctx,
 		    WsXmlNodeH xmlNode,
 		    XML_TYPE_PTR dataPtr,
 		    XmlSerializerInfo * info,
@@ -1080,7 +1102,7 @@ int ws_serialize(WsContextH cntx,
 	myinfo.ns = ns;
 	myinfo.flags |= SER_HEAD;
 	initialize_xml_serialization_data(&data,
-					  cntx,
+					  serctx,
 					  &myinfo,
 					  dataPtr,
 					  XML_SMODE_SERIALIZE,
@@ -1100,7 +1122,7 @@ int ws_serialize(WsContextH cntx,
 }
 
 
-int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf,
+int ws_serializer_free_mem(WsSerializerContextH serctx, XML_TYPE_PTR buf,
 			      XmlSerializerInfo * info)
 {
 	int retVal;
@@ -1111,7 +1133,7 @@ int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf,
 	memcpy(&myinfo, info, sizeof(XmlSerializerInfo));
 	myinfo.flags |= SER_HEAD;
 	initialize_xml_serialization_data(&data,
-					  cntx,
+					  serctx,
 					  &myinfo,
 					  buf,
 					  XML_SMODE_FREE_MEM, NULL, NULL);
@@ -1124,7 +1146,7 @@ int ws_serializer_free_mem(WsContextH cntx, XML_TYPE_PTR buf,
 }
 
 
-void *ws_deserialize(WsContextH cntx,
+void *ws_deserialize(WsSerializerContextH serctx,
 		     WsXmlNodeH xmlParent,
 		     XmlSerializerInfo * info,
 		     const char *name,
@@ -1144,7 +1166,7 @@ void *ws_deserialize(WsContextH cntx,
 	myinfo.name = name;
 	myinfo.ns = ns;
 	myinfo.flags |= SER_HEAD;
-	initialize_xml_serialization_data(&data, cntx, &myinfo, NULL,
+	initialize_xml_serialization_data(&data, serctx, &myinfo, NULL,
 					  XML_SMODE_DESERIALIZE,
 					  NULL, xmlParent);
 
@@ -1163,7 +1185,7 @@ void *ws_deserialize(WsContextH cntx,
 		if (myinfo.proc(&data) <= 0) {
 			data.elementBuf = retPtr;
 			retPtr = NULL;
-			ws_serializer_free_mem(cntx, data.elementBuf,
+			ws_serializer_free_mem(serctx, data.elementBuf,
 					       &myinfo);
 			error("Error during serialization");
 		}
@@ -1180,7 +1202,7 @@ static void enforce_mustunderstand(WsXmlNodeH node)
 }
 
 int
-ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, const char *str,
+ws_serialize_str(WsSerializerContextH serctx, WsXmlNodeH parent, const char *str,
 		 const char *nameNs, const char *name, int mustunderstand)
 {
 	WsXmlNodeH node;
@@ -1195,7 +1217,7 @@ ws_serialize_str(WsContextH cntx, WsXmlNodeH parent, const char *str,
 }
 
 
-int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent,
+int ws_serialize_uint32(WsSerializerContextH serctx, WsXmlNodeH parent,
 			unsigned long val, const char *nameNs,
 			const char *name, int mustunderstand)
 {
@@ -1212,7 +1234,7 @@ int ws_serialize_uint32(WsContextH cntx, WsXmlNodeH parent,
 }
 
 
-char *ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
+char *ws_deserialize_str(WsSerializerContextH serctx, WsXmlNodeH parent, int index,
 			 const char *nameNs, const char *name)
 {
 	char *str = NULL;
@@ -1220,10 +1242,10 @@ char *ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
 	TRACE_ENTER;
 	if (node) {
 		str = ws_xml_get_node_text(node);
-		if (cntx && str) {
+		if (serctx && str) {
 			int len = (int )strlen(str) + 1;
 			char *tmp = str;
-			if ((str = ws_serializer_alloc(cntx,
+			if ((str = ws_serializer_alloc(serctx,
 						 len * sizeof(char))))
 				strcpy(str, tmp);
 		}
@@ -1232,7 +1254,7 @@ char *ws_deserialize_str(WsContextH cntx, WsXmlNodeH parent, int index,
 	return str;
 }
 
-unsigned long ws_deserialize_uint32(WsContextH cntx,
+unsigned long ws_deserialize_uint32(WsSerializerContextH serctx,
 				    WsXmlNodeH parent, int index,
 				    const char *nameNs, const char *name)
 {
@@ -1419,79 +1441,68 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 
 
 
-void *ws_serializer_alloc(WsContextH cntx, int size)
+void *ws_serializer_alloc(WsSerializerContextH serctx, int size)
 {
-	SoapH soap = NULL;
 	WsSerializerMemEntry *ptr = NULL;
 	TRACE_ENTER;
-	if (cntx)
-		soap = cntx->soap;
-	if (soap != NULL &&
-			(ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
+	if ((ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
 		lnode_t *node;
-		ptr->cntx = cntx;
-		u_lock(soap);
+		u_lock(serctx);
 		if ((node = lnode_create(ptr)) == NULL) {
 			u_free(ptr);
 			ptr = NULL;
 		} else {
-			list_append(soap->WsSerializerAllocList, node);
+			list_append(serctx->WsSerializerAllocList, node);
 		}
-		u_unlock(soap);
-	} else {
-		fprintf(stderr, "soap is null\n");
+		u_unlock(serctx);
 	}
 	TRACE_EXIT;
 	return ptr ? ptr->buf : NULL;
 }
 
 
-static int do_serializer_free(WsContextH cntx, void *ptr)
+static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 {
 	lnode_t *node = NULL;
-	SoapH soap = NULL;
 	TRACE_ENTER;
-	if (cntx)
-		soap = cntx->soap;
-	if (soap && ptr != NULL) {
-		u_lock(soap);
-		node = list_first(soap->WsSerializerAllocList);
+	if (serctx && ptr != NULL) {
+		u_lock(serctx);
+		node = list_first(serctx->WsSerializerAllocList);
 		while (node != NULL) {
 			WsSerializerMemEntry *entry =
 			    (WsSerializerMemEntry *) node->list_data;
 
-			if (entry && entry->cntx == cntx
-			    && (!ptr || ptr == entry->buf)) {
-				// FIXME
-				//lnode_destroy (node);
-				//list_delete(soap->WsSerializerAllocList, node);
+			if (entry && (!ptr || ptr == entry->buf)) {
+				u_free(entry->buf);
+				u_free(entry);
+				lnode_destroy (node);
+				list_delete(serctx->WsSerializerAllocList, node);
 				if (ptr != NULL) {
 					break;
 				}
 			}
 			node =
-			    list_next(soap->WsSerializerAllocList, node);
+			    list_next(serctx->WsSerializerAllocList, node);
 		}
-		// list_destroy(((env_t*)soap)->WsSerializerAllocList);
-		u_unlock(soap);
+		u_unlock(serctx);
 	}
 	TRACE_EXIT;
 	return (node != NULL);
 }
 
-int ws_serializer_free(WsContextH cntx, void *ptr)
+int ws_serializer_free(WsSerializerContextH serctx, void *ptr)
 {
 	int retVal = 0;
 	TRACE_ENTER;
 	if (ptr != NULL)
-		retVal = do_serializer_free(cntx, ptr);
+		retVal = do_serializer_free(serctx, ptr);
 	TRACE_EXIT;
 	return retVal;
 }
 
-void ws_serializer_free_all(WsContextH cntx)
+void ws_serializer_free_all(WsSerializerContextH serctx)
 {
 	TRACE_ENTER;
-	do_serializer_free(cntx, NULL);
+	do_serializer_free(serctx, NULL);
 	TRACE_EXIT;
 }

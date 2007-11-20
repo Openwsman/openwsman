@@ -35,7 +35,7 @@ SER_END_ITEMS(CIM_ComputerSystem);
 
 int main(void)
 {
-    WsContextH cntx = ws_create_runtime(NULL);
+    WsSerializerContextH cntx = ws_serializer_init();
 //    SoapH soap = ws_context_get_runtime(cntx);
 
     WsXmlDocH doc = ws_xml_read_file( "cim_computersystem_02.xml", "UTF-8", 0 ); 

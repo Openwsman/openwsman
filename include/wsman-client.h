@@ -45,6 +45,7 @@ extern "C" {
 #endif				/* // !WIN32 */
 
 #include "wsman-client-api.h"
+#include "wsman-xml-serialize.h"
 #define WSMAN_CLIENT_BUSY       0x0001
 
 	struct _WsManConnection {
@@ -98,7 +99,7 @@ extern "C" {
 		void *hdl;
 		int flags;
 		pthread_mutex_t mutex;
-		WsContextH wscntx;
+		WsSerializerContextH serctx;
 		WsManClientData data;
 		WsManConnection *connection;
               WsManAuthData authentication;

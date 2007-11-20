@@ -48,7 +48,7 @@
 
 struct __XmlSerializationData
 {
-	WsContextH cntx;
+	WsSerializerContextH serctx;
 	char *elementBuf;
 	char *stopper;
 	struct __XmlSerializerInfo* elementInfo;
@@ -84,10 +84,15 @@ typedef struct __NameAliase NameAliase;
 #endif
 // NameAliase* g_NameNameAliaseTable;
 
+WsSerializerContextH ws_serializer_init(void);
 
-void* ws_serializer_alloc(WsContextH cntx, int size);
+int ws_serializer_cleanup(WsSerializerContextH serctx);
 
-int ws_serializer_free(WsContextH cntx, void* ptr);
+void* ws_serializer_alloc(WsSerializerContextH serctx, int size);
+
+int ws_serializer_free(WsSerializerContextH serctx, void* ptr);
+
+void ws_serializer_free_all(WsSerializerContextH serctx);
 
 void *xml_serializer_alloc(XmlSerializationData *data, int size, int zeroInit);
 

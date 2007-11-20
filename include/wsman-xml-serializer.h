@@ -45,7 +45,7 @@
 
 #include "wsman-types.h"
 #include "wsman-names.h"
-
+#include "u/libu.h"
 
 // Errors
 #define WS_ERR_INSUFFICIENT_RESOURCES	(-1)
@@ -125,7 +125,13 @@ struct __XmlSerializerInfo
 };
 typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
+struct __WsSerializerContext
+{
+	pthread_mutex_t lock;
+	list_t *WsSerializerAllocList;
+};
 
+typedef struct __WsSerializerContext *WsSerializerContextH;
 
 #define SER_IN            0x8000
 #define SER_OUT           0x4000
@@ -429,7 +435,7 @@ int do_serialize_attrs(struct __XmlSerializationData* data);
 
 // Serializer user interface
 
-int ws_serialize(WsContextH cntx,
+int ws_serialize(WsSerializerContextH serctx,
                 WsXmlNodeH xmlNode,
                 XML_TYPE_PTR dataPtr,
                 XmlSerializerInfo *info,
@@ -438,7 +444,7 @@ int ws_serialize(WsContextH cntx,
                 XML_NODE_ATTR *attrs,
                 int output);
 
-void *ws_deserialize(WsContextH cntx,
+void *ws_deserialize(WsSerializerContextH serctx,
                 WsXmlNodeH xmlParent,
                 XmlSerializerInfo *info,
                 const char *name,
@@ -449,7 +455,7 @@ void *ws_deserialize(WsContextH cntx,
 
 
 
-int ws_serialize_str(WsContextH cntx,
+int ws_serialize_str(WsSerializerContextH serctx,
                 WsXmlNodeH parent,
                 const char *str,
                 const char *nameNs,
@@ -457,21 +463,21 @@ int ws_serialize_str(WsContextH cntx,
                 int mustunderstand);
 
 int ws_serialize_uint32(
-                WsContextH cntx,
+                WsSerializerContextH serctx,
                 WsXmlNodeH parent,
                 unsigned long val,
                 const char *nameNs,
                 const char *name,
                 int mustunderstand);
 
-char *ws_deserialize_str(WsContextH cntx,
+char *ws_deserialize_str(WsSerializerContextH serctx,
                 WsXmlNodeH parent,
                 int index,
                 const char *nameNs,
                 const char *name);
 
 unsigned long ws_deserialize_uint32(
-                WsContextH cntx,
+                WsSerializerContextH serctx,
                 WsXmlNodeH parent,
                 int index,
                 const char *nameNs,
@@ -486,7 +492,7 @@ int ws_deserialize_datetime(
                 XML_DATETIME *tmx);
 
 
-int ws_serializer_free_mem(WsContextH cntx,
+int ws_serializer_free_mem(WsSerializerContextH serctx,
                 XML_TYPE_PTR buf,
                 XmlSerializerInfo *info);
 

@@ -44,6 +44,7 @@
 #include "wsman-xml-api.h"
 #include "wsman-event-pool.h"
 #include "wsman-subscription-repository.h"
+#include "wsman-xml-serializer.h"
 
 #define SOAP_MAX_RESENT_COUNT       10
 #define PEDNING_EVENT_MAX_COUNT	10
@@ -108,7 +109,6 @@ struct __Soap {
 	SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
 	EventPoolOpSetH eventpoolOpSet; //Function table of event source
 	WsContextH      cntx;
-	list_t         	*WsSerializerAllocList;
 	void           	*dispatcherData;
 	DispatcherCallback dispatcherProc;
 	void *listener;
@@ -135,6 +135,7 @@ struct _WS_CONTEXT {
 	WsXmlDocH	indoc;
 	hash_t *enuminfos;
 	hash_t *entries;
+	WsSerializerContextH serializercntx;
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
 };
@@ -452,9 +453,6 @@ create_context_entry(hash_t * h,
 		     void *val);
 
 void            destroy_context_entry(WS_CONTEXT_ENTRY * entry);
-
-void            ws_serializer_free_all(WsContextH cntx);
-
 
 int             wsman_fault_occured(WsmanMessage * msg);
 

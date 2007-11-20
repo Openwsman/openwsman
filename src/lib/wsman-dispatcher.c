@@ -854,7 +854,7 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 {
 	WsManDispatcherInfo *dispInfo =
 	    (WsManDispatcherInfo *) cntx->soap->dispatcherData;
-	lnode_t *node; 
+	lnode_t *node = NULL; 
 	WsDispatchInterfaceInfo *r = NULL;
 	WsDispatchEndPointInfo *ep = NULL;
 	char *ptr = ENUM_ACTION_RELEASE, *ns = NULL, *uri = NULL;

@@ -93,66 +93,8 @@ wsman_make_action(char *uri, char *op_name)
 }
 
 
-static void
-free_hentry_func(hnode_t * n, void *arg)
-{
-	u_free(hnode_getkey(n));
-	u_free(n);
-}
-static void
-wsmc_initialize_context(WsContextH cntx, SoapH soap)
-{
-	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
-	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
-	cntx->owner = 1;
-	debug("soap: %p", soap );
-	cntx->soap = soap;
-}
-
-static WsContextH
-wsmc_create_context(SoapH soap)
-{
-	WsContextH cntx = (WsContextH) u_zalloc(sizeof (*cntx));
-	if (cntx) {
-		wsmc_initialize_context(cntx, soap);
-	}
-	return cntx;
-}
-
-static SoapH
-wsmc_soap_initialize(void)
-{
-	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
-
-	if (soap == NULL) {
-		error("Could not alloc memory");
-		return NULL;
-	}
-	soap->cntx = wsmc_create_context(soap);
-
-	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
-	u_init_lock(soap);
-	ws_xml_parser_initialize();
-
-	return soap;
-}
-
-WsContextH
-wsmc_create_runtime(void)
-{
-	SoapH soap = wsmc_soap_initialize();
-	if (soap == NULL) {
-		error("Could not initialize soap");
-		return NULL;
-	}
-
-	return soap->cntx;
-}
-
-
-
 static WsXmlDocH
-wsmc_build_envelope(WsContextH cntx,
+wsmc_build_envelope(WsSerializerContextH serctx,
 		const char *action,
 		const char *reply_to_uri,
 		const char *resource_uri,
@@ -176,31 +118,31 @@ wsmc_build_envelope(WsContextH cntx,
 		to_uri = WSA_TO_ANONYMOUS;
 	}
 	if (action != NULL) {
-		ws_serialize_str(cntx, header,
+		ws_serialize_str(serctx, header,
 			(char *)action, XML_NS_ADDRESSING, WSA_ACTION, 1);
 	}
 
 	if (to_uri) {
-		ws_serialize_str(cntx, header, (char *)to_uri,
+		ws_serialize_str(serctx, header, (char *)to_uri,
 			XML_NS_ADDRESSING, WSA_TO, 1);
 	}
 	if (resource_uri) {
-		ws_serialize_str(cntx, header, (char *)resource_uri,
+		ws_serialize_str(serctx, header, (char *)resource_uri,
 				XML_NS_WS_MAN, WSM_RESOURCE_URI, 1);
 	}
 	if (uuidBuf[0] != 0) {
-		ws_serialize_str(cntx, header, uuidBuf,
+		ws_serialize_str(serctx, header, uuidBuf,
 			XML_NS_ADDRESSING, WSA_MESSAGE_ID, 1);
 	}
 	if (options->timeout) {
 		char            buf[20];
 		sprintf(buf, "PT%u.%uS", (unsigned int) options->timeout / 1000,
 				(unsigned int) options->timeout % 1000);
-		ws_serialize_str(cntx, header, buf,
+		ws_serialize_str(serctx, header, buf,
 			XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT, 0);
 	}
 	if (options->max_envelope_size) {
-		ws_serialize_uint32(cntx, header, options->max_envelope_size,
+		ws_serialize_uint32(serctx, header, options->max_envelope_size,
 				XML_NS_WS_MAN, WSM_MAX_ENVELOPE_SIZE,
 				options->flags & FLAG_MUND_MAX_ESIZE);
 	}
@@ -209,7 +151,7 @@ wsmc_build_envelope(WsContextH cntx,
 		if ((options->flags & FLAG_MUND_FRAGMENT) ==
 				FLAG_MUND_FRAGMENT)
 			mu = 1;
-		ws_serialize_str(cntx, header, options->fragment,
+		ws_serialize_str(serctx, header, options->fragment,
 				XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER,
 				1);
 	}
@@ -252,10 +194,10 @@ wsmc_get_fault_string(WsManClient * cl)
 	return cl->fault_string;
 }
 
-WsContextH
-wsmc_get_context(WsManClient * cl)
+WsSerializerContextH
+wsmc_get_serialization_context(WsManClient * cl)
 {
-	return cl->wscntx;
+	return cl->serctx;
 }
 
 
@@ -451,7 +393,7 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 
 
 static
-void wsmc_create_epr(WsContextH cntx, WsXmlNodeH epr_node,
+void wsmc_create_epr(WsSerializerContextH serctx, WsXmlNodeH epr_node,
 		const char* resource_uri,
 		client_opt_t *options)
 {
@@ -466,13 +408,13 @@ void wsmc_create_epr(WsContextH cntx, WsXmlNodeH epr_node,
 	if (options->selectors != NULL &&
 			hash_count(options->selectors) > 0) {
 		selectors = options->selectors;
-		ws_serialize_str(cntx, node, resource_uri, XML_NS_WS_MAN,
+		ws_serialize_str(serctx, node, resource_uri, XML_NS_WS_MAN,
 			WSM_RESOURCE_URI, 0);
 	} else if (options->filter &&
 		       	strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
 		selectors =  get_selectors_from_uri(options->filter);
 		wsmc_remove_query_string(options->filter, &uri);
-		ws_serialize_str(cntx, node, uri, XML_NS_WS_MAN,
+		ws_serialize_str(serctx, node, uri, XML_NS_WS_MAN,
 			WSM_RESOURCE_URI, 0);
 	}
 
@@ -515,7 +457,7 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
 	/* Build Object */
 	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
 
-	wsmc_create_epr(cl->wscntx, object, resource_uri, options );
+	wsmc_create_epr(cl->serctx, object, resource_uri, options );
 	/* Add AssociationClassName */
 	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
 			WSMB_ASSOCIATION_CLASS_NAME, NULL);
@@ -832,7 +774,7 @@ wsmc_create_request(WsManClient * cl,
 			_action = wsmc_create_action_str(action);
 		}
 
-		request = wsmc_build_envelope(cl->wscntx, _action,
+		request = wsmc_build_envelope(cl->serctx, _action,
 				WSA_TO_ANONYMOUS, (char *)resource_uri,
 				cl->data.endpoint, options);
 		u_free(_action);
@@ -946,10 +888,10 @@ handle_resource_request(WsManClient * cl, WsXmlDocH request,
 {
 	if (data && typeInfo) {
 		char           *class = u_strdup(strrchr(resource_uri, '/') + 1);
-		ws_serialize(cl->wscntx, ws_xml_get_soap_body(request),
+		ws_serialize(cl->serctx, ws_xml_get_soap_body(request),
 				data, (XmlSerializerInfo *) typeInfo,
 				class, resource_uri, NULL, 1);
-		ws_serializer_free_mem(cl->wscntx, data,
+		ws_serializer_free_mem(cl->serctx, data,
 				(XmlSerializerInfo *) typeInfo);
 		u_free(class);
 	} else if (data != NULL) {
@@ -1787,7 +1729,7 @@ wsmc_create(const char *hostname,
 		u_free(wsc);
 		return NULL;
 	}
-	wsc->wscntx = wsmc_create_runtime();
+	wsc->serctx = ws_serializer_init();
 
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = u_strdup(scheme ? scheme : "http");
@@ -1852,13 +1794,9 @@ wsmc_release(WsManClient * cl)
 		wsmc_release_conn(cl->connection);
 		cl->connection = NULL;
 	}
-	if (cl->wscntx) {
-		/*
-		SoapH soap = ws_context_get_runtime(cl->wscntx);
-		soap_destroy_fw(soap);
-		*/
-		u_free(cl->wscntx);
-		cl->wscntx = NULL;
+	if (cl->serctx) {
+		ws_serializer_cleanup(cl->serctx);
+		cl->serctx = NULL;
 	}
 	if (cl->content_encoding) {
 		u_free(cl->content_encoding);

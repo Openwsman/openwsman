@@ -12,6 +12,7 @@ wsmaninclude_HEADERS = \
 	wsman-xml-api.h \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h \
+	wsman-xml-serialize.h \
     	wsman-server-api.h \
 	wsman-faults.h \
 	wsman-soap-message.h \
