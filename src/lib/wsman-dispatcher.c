@@ -595,11 +595,11 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 
 
 
-static int process_filter_chain(op_t *op, list_t *list, void *opaqueData)
+static int 
+process_filter_chain(op_t *op, list_t *list, void *opaqueData)
 {
 	int retVal = 0;	
-	callback_t *filter = NULL;
-	debug("process_filter_chain: %p", list);
+	callback_t *filter = NULL;	
 	if (list != NULL) {
 		filter = (callback_t *) list_first(list);
 		while (!retVal && filter != NULL) {
@@ -631,8 +631,7 @@ static int process_filters(op_t * op, int inbound, void *opaqueData)
 	if (retVal) {
 		debug("process_filter_chain returned 1 for DEF FILTERS");
 		return 1;
-	}
-	debug("xxxxx");
+	}	
 	list = inbound ? op->dispatch->inboundFilterList :
 	    op->dispatch->outboundFilterList;
 	retVal = process_filter_chain(op, list, opaqueData);
@@ -855,15 +854,15 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 {
 	WsManDispatcherInfo *dispInfo =
 	    (WsManDispatcherInfo *) cntx->soap->dispatcherData;
-	char *uri = NULL;
-	lnode_t *node = list_first((list_t *) dispInfo->interfaces);
+	lnode_t *node; 
 	WsDispatchInterfaceInfo *r = NULL;
 	WsDispatchEndPointInfo *ep = NULL;
-
-	char *ns = NULL;
-	char *ptr = ENUM_ACTION_RELEASE;
+	char *ptr = ENUM_ACTION_RELEASE, *ns = NULL, *uri = NULL;
 	int i;
-
+	
+	if (dispInfo->interfaces) {
+		node = list_first((list_t *) dispInfo->interfaces);
+	}
 	uri = wsman_get_resource_uri(cntx, doc);
 
 	while (node != NULL) {
