@@ -116,7 +116,7 @@ int wsmc_transport_init(WsManClient *cl, void *arg)
 	if(!cl->proxy_data.proxy){
 
                 cl->session_handle = WinHttpOpen(agent,
-                                          WINHTTP_ACCESS_TYPE_NO_PROXY,
+                                          WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                                           WINHTTP_NO_PROXY_NAME,
                                           WINHTTP_NO_PROXY_BYPASS, 0);
         }

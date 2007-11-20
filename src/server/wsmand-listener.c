@@ -519,7 +519,6 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 	}
 	// here we can complete
 	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n\r\n");
-//	debug("************\n%s\n***********", arg->buf);
 	u_free(shttp_msg->response);
 	u_free(shttp_msg);
 	
@@ -540,8 +539,6 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 	if(list_count(cntx->soap->subscriptionMemList) > subsNum) {
 		lnode_t *node = list_last(cntx->soap->subscriptionMemList);
 		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
-		//Delete new subscription file coz in fact we've got it
-//		cntx->soap->subscriptionOpSet->delete_subscription(cntx->soap->uri_subsRepository, subs->subsId);
 		//Update UUID in the memory
 		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
 	}
@@ -610,7 +607,6 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	 if(number) {
                while(i < number) {
 			char *uuid = strrchr(service_paths[i], '/') + 1;
-//			cimxml_context *cimcntx = create_cimxml_listener_context(uuid, soap);
 			shttpd_register_url(ctx, service_paths[i], uuid, cimxml_listener_callback,
                                        0, (void *)soap);
 			debug("********registered service path: %s*********", service_paths[i]);

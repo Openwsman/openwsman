@@ -2184,7 +2184,6 @@ void wse_notification_manager(void * cntx)
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
 			node = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_EVENTS, NULL);
-//			ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 			while(notificationInfo) {
 				temp = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_EVENT, NULL);
 				if(notificationInfo->EventAction)  {
@@ -2200,14 +2199,10 @@ void wse_notification_manager(void * cntx)
 				delete_notification_info(notificationInfo);
 				soap->eventpoolOpSet->remove(subsInfo->subsId, &notificationInfo);
 			}
-//			tempnode = lnode_create(notificationDoc);
-//			list_append(subsInfo->notificationDocList, tempnode);
 		}
 		else{
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
-//			if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_PUSHWITHACK)
-//				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACKREQUESTED, NULL);
 			if(notificationInfo->EventAction)
 				ws_xml_add_child(header, XML_NS_WS_MAN, WSM_ACTION, notificationInfo->EventAction);
 			else

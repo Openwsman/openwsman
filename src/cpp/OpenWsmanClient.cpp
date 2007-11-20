@@ -55,12 +55,12 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		)
 {
 	cl = wsmc_create(host, port, path, scheme, username, password);
-	wsmc_transport_init(cl, (void*)NULL);
 	SetAuth(auth_method);	
 #ifdef _WIN32
 	SetClientCert(oid, cert, local);
 	SetProxy(proxy,proxy_username,proxy_password);
 #endif
+	wsmc_transport_init(cl, (void*)NULL);
 }
 
 // Destructor.
