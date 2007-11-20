@@ -102,12 +102,14 @@ extern "C" {
 		WsSerializerContextH serctx;
 		WsManClientData data;
 		WsManConnection *connection;
-              WsManAuthData authentication;
-              WsManProxyData proxy_data;
+        WsManAuthData authentication;
+        WsManProxyData proxy_data;
+        
 #ifdef _WIN32
 		void* session_handle;
 		long lock_session_handle;
 #endif
+		
 		long response_code;
 		char *fault_string;
 		WS_LASTERR_Code last_error;

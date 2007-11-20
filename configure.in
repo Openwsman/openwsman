@@ -230,6 +230,16 @@ if test "$PYTHON_CONFIG" = "yes" ; then
 	PYTHON_LIBS=`python-config --libs`
 	AC_SUBST(PYTHON_CFLAGS)
 	AC_SUBST(PYTHON_LIBS)
+else
+	AM_PATH_PYTHON(2.2)
+	LIBS="$LIBS $PYTHON_LIB_FLAGS"
+	PYTHON_INCLUDE_FLAGS=`python -c "import os,sys; print '-I' + os.path.join(sys.prefix, 'include', 'python' + sys.version[[:3]])"`
+	if test $prefix = NONE; then
+		pythondir=`python -c "import os,sys; print os.path.join(sys.prefix, 'lib', 'python' + sys.version[[:3]], 'site-packages')"`
+	fi
+	PYTHON_PREFIX=`python -c "import os,sys; print sys.prefix"`
+	PYTHON_EXEC_PREFIX=`python -c "import os,sys; print sys.exec_prefix"`
+	CFLAGS="$CFLAGS $PYTHON_INCLUDE_FLAGS"
 fi
 
 

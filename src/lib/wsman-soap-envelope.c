@@ -811,8 +811,6 @@ wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 				break;
 			}
 		}
-
-
 	}
 	return optval;
 }

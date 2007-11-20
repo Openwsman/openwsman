@@ -1524,12 +1524,6 @@ wsmc_free_enum_context(char *enumcontext)
 }
 
 
-
-
-
-
-
-
 /**
  * Buid Inbound Envelope from Response
  * @param cl Client Handler
@@ -1722,7 +1716,7 @@ wsmc_create(const char *hostname,
 		const char *username,
 		const char *password)
 {
-	WsManClient    *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
+	WsManClient *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
 	wsc->hdl = &wsc->data;
 
 	if (pthread_mutex_init(&wsc->mutex, NULL)) {

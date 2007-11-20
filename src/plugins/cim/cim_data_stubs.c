@@ -556,7 +556,10 @@ CimResource_Create_EP( SoapOpH op,
 			status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
 			status.fault_detail_code = 0;
 		} else {
+			char *xsd = u_strdup_printf("%s.xsd", cimclient->resource_uri);
 			if (ws_xml_get_child(in_body, 0, cimclient->resource_uri, cimclient->requested_class)) {
+				cim_create_instance(cimclient, cntx , in_body, body, &status);
+			} else if (ws_xml_get_child(in_body, 0, xsd, cimclient->requested_class)) {
 				cim_create_instance(cimclient, cntx , in_body, body, &status);
 			} else {
 				status.fault_code = WXF_INVALID_REPRESENTATION;
@@ -598,6 +601,8 @@ CimResource_Put_EP( SoapOpH op,
 
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+	WsXmlDocH indoc = soap_get_op_doc(op, 1);
+	
 	wsman_status_init(&status);
 	msg = wsman_get_msg_from_op(op);
 
@@ -618,10 +623,9 @@ CimResource_Put_EP( SoapOpH op,
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
 	}
 
-
-	if ((doc = wsman_create_response_envelope( soap_get_op_doc(op, 1), NULL))) {
+	if ((doc = wsman_create_response_envelope( indoc, NULL))) {
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
-		WsXmlNodeH in_body = ws_xml_get_soap_body(soap_get_op_doc(op, 1));
+		WsXmlNodeH in_body = ws_xml_get_soap_body(indoc);
 		if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
 			cim_put_instance(cimclient, cntx , in_body, body, &status);
 		} else {
@@ -633,7 +637,7 @@ CimResource_Put_EP( SoapOpH op,
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
+		doc = wsman_generate_fault( indoc,
 				status.fault_code, status.fault_detail_code, NULL);
 	}
 
