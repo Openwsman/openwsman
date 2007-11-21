@@ -784,6 +784,8 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 				debug("load subscription %s", entry->uuid);
 				wsmand_start_notification_manager(cntx, entry, list_count(cntx->soap->subscriptionMemList));
 			}
+			else
+				u_free(entry->strdoc);
 			u_free(entry->uuid);
 			u_free(entry);
 			list_delete(subs_list, node);

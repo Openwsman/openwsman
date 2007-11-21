@@ -102,8 +102,8 @@ extern "C" {
 		WsSerializerContextH serctx;
 		WsManClientData data;
 		WsManConnection *connection;
-        WsManAuthData authentication;
-        WsManProxyData proxy_data;
+		WsManAuthData authentication;
+		WsManProxyData proxy_data;
         
 #ifdef _WIN32
 		void* session_handle;
@@ -116,8 +116,8 @@ extern "C" {
 		void *transport;
 		char *content_encoding;
 		char *cim_ns;
-              unsigned long transport_timeout;
-              char * user_agent;
+		unsigned long transport_timeout;
+		char * user_agent;
 		FILE *dumpfile;
 		long initialized;
 	};

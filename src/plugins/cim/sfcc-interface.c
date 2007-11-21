@@ -1751,7 +1751,6 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
 			get_server_port(), servicepath);
 	u_free(servicepath);
-//	snprintf(serverpath, 128, "http://localhost/eventsink");
 	CMPIValue value;
 	value.uint16 = 2;
 	CMAddKey(objectpath, "Destination",
