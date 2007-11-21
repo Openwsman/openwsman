@@ -918,8 +918,12 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	WsManDispatcherInfo *dispInfo = (WsManDispatcherInfo *) data;
 	WsDispatchEndPointInfo *ep = NULL;
 	WsDispatchEndPointInfo *ep_custom = NULL;
+
 	WsXmlDocH notdoc = NULL;
+
+#ifdef ENABLE_EVENTING_SUPPORT
 	WsXmlNodeH nodedoc = NULL;
+#endif
 	int i, resUriMatch = 0;
 	char *ns = NULL;
 

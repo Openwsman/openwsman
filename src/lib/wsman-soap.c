@@ -158,7 +158,7 @@ remove_locked_enuminfo(WsContextH cntx,
 	u_unlock(cntx->soap);
 }
 
-
+#ifdef ENABLE_EVENTING_SUPPORT
 static int time_expired(unsigned long lt)
 {
 	struct timeval tv;
@@ -169,6 +169,47 @@ static int time_expired(unsigned long lt)
 	else
 		return 0;
 }
+
+
+static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
+{
+	time_t t = expire;
+	struct tm tm;
+	int gmtoffset_hour;
+	int gmtoffset_minute;
+	localtime_r(&t, &tm);
+//	struct __timezone *tz;
+	gmtoffset_hour = (int) __timezone/3600;
+	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
+	if(gmtoffset_hour > 0)
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
+			gmtoffset_minute%10);
+	else {
+		gmtoffset_hour = 0 - gmtoffset_hour;
+		gmtoffset_minute = 0 - gmtoffset_minute;
+		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
+			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
+			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
+			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
+			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
+			gmtoffset_minute%10);
+	}
+
+}
+
+static void delete_notification_info(WsNotificationInfoH notificationInfo) {
+	if(notificationInfo) {
+		ws_xml_destroy_doc(notificationInfo->EventContent);
+		ws_xml_destroy_doc(notificationInfo->headerOpaqueData);
+		u_free(notificationInfo->EventAction);
+		u_free(notificationInfo);
+	}
+}
+#endif
 
 static void
 wsman_set_expiretime(WsXmlNodeH  node,
@@ -209,35 +250,6 @@ DONE:
 	return;
 }
 
-static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
-{
-	time_t t = expire;
-	struct tm tm;
-	int gmtoffset_hour;
-	int gmtoffset_minute;
-	localtime_r(&t, &tm);
-//	struct __timezone *tz;
-	gmtoffset_hour = (int) __timezone/3600;
-	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
-	if(gmtoffset_hour > 0)
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	else {
-		gmtoffset_hour = 0 - gmtoffset_hour;
-		gmtoffset_minute = 0 - gmtoffset_minute;
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	}
-
-}
 
 static WsSubscribeInfo*
 search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
@@ -1197,14 +1209,6 @@ DONE:
 	return retVal;
 }
 
-static void delete_notification_info(WsNotificationInfoH notificationInfo) {
-	if(notificationInfo) {
-		ws_xml_destroy_doc(notificationInfo->EventContent);
-		ws_xml_destroy_doc(notificationInfo->headerOpaqueData);
-		u_free(notificationInfo->EventAction);
-		u_free(notificationInfo);
-	}
-}
 
 int
 wsenum_pull_direct_stub(SoapOpH op,

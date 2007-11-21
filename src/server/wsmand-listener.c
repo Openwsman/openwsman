@@ -526,7 +526,7 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 	arg->state = NULL;
 	return n;
 }
-#endif
+
 
 static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEntryH entry, int subsNum)
 {
@@ -564,6 +564,8 @@ static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 	}
 	return retVal;
 }
+#endif
+
 
 static void listener_shutdown_handler(void *p)
 {
@@ -801,7 +803,9 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	int sock;
 	lnode_t *node;
 	pthread_t thr_id;
+#ifdef ENABLE_EVENTING_SUPPORT	
 	pthread_t notificationManager_id;
+#endif
 	pthread_attr_t pattrs;
 	struct timespec timespec;
 #else
