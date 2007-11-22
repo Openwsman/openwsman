@@ -312,18 +312,18 @@ CimResource_Custom_EP( SoapOpH op,
 		void *opaqueData )
 {
 	debug( "Custom Method Endpoint Called");
-	WsXmlDocH doc = NULL;
+	WsXmlDocH doc = NULL, in_doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
-	WsXmlDocH in_doc = NULL;
+	WsmanMessage *msg = NULL;
 	char *action;
-
+	WsContextH cntx;
+	
 	wsman_status_init(&status);
-	SoapH soap = soap_get_op_soap(op);
 	in_doc = soap_get_op_doc(op, 1);
-	WsContextH cntx = ws_create_ep_context(soap, in_doc);
+	cntx = ws_create_ep_context(soap_get_op_soap(op), in_doc);
 
-	WsmanMessage *msg = wsman_get_msg_from_op(op);
+	msg = wsman_get_msg_from_op(op);
 	action = wsman_get_action(cntx, in_doc );
 	if (msg) {
 		cimclient = CimResource_Init(cntx, msg->auth_data.username,
@@ -334,7 +334,8 @@ CimResource_Custom_EP( SoapOpH op,
 			goto cleanup;
 		}
 	}
-	if (!strstr(action, cimclient->resource_uri)) {
+	if (action && cimclient->resource_uri && 
+			!strstr(action, cimclient->resource_uri)) {
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
 		status.fault_detail_code = OWSMAN_NO_DETAILS;
 		doc = wsman_generate_fault( in_doc, status.fault_code,

@@ -91,7 +91,7 @@ ws_xml_make_default_prefix(WsXmlNodeH node,
 	if (doc != NULL && uri != NULL) {
 		for (i = 0; g_wsNsData[i].uri != NULL; i++) {
 			WsXmlNsData *nsd = &g_wsNsData[i];
-			if (strcmp(uri, nsd->uri) == 0 ) {
+			if (strcmp(uri, nsd->uri) == 0 && nsd->prefix) {
 				sprintf(buf, "%s",  nsd->prefix );
 				return;
 			}
@@ -163,7 +163,7 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 			len += 1 + strlen(prefix);
 
 		if ((buf = u_malloc(len)) != NULL) {
-			if (prefix != NULL)
+			if (prefix != NULL && name != NULL)
 				sprintf(buf, "%s:%s", prefix, name);
 			else
 				strcpy(buf, name);

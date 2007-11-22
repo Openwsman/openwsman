@@ -84,10 +84,13 @@ wsmc_get_dumpfile(WsManClient *cl)
 static char*
 wsman_make_action(char *uri, char *op_name)
 {
-	size_t     len = strlen(uri) + strlen(op_name) + 2;
-	char    *ptr = (char *) malloc(len);
+	size_t len = strlen(uri) + strlen(op_name) + 2;
+	char *ptr = (char *) malloc(len);
 	if (ptr) {
-		sprintf(ptr, "%s/%s", uri, op_name);
+		if (uri && op_name)
+			sprintf(ptr, "%s/%s", uri, op_name);
+		else
+			return NULL;
 	}
 	return ptr;
 }
@@ -773,10 +776,13 @@ wsmc_create_request(WsManClient * cl,
 		} else {
 			_action = wsmc_create_action_str(action);
 		}
-
-		request = wsmc_build_envelope(cl->serctx, _action,
-				WSA_TO_ANONYMOUS, (char *)resource_uri,
-				cl->data.endpoint, options);
+		if (_action) {
+			request = wsmc_build_envelope(cl->serctx, _action,
+					WSA_TO_ANONYMOUS, (char *)resource_uri,
+					cl->data.endpoint, options);
+		} else {
+			return NULL;
+		}
 		u_free(_action);
 	}
 
@@ -914,12 +920,13 @@ _wsmc_action_create(WsManClient * cl,
 		void *typeInfo,
 		client_opt_t *options)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			(char *)resource_uri, options,
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl, (char *)resource_uri, 
+			options,
 			WSMAN_ACTION_TRANSFER_CREATE, NULL, NULL);
 	if (!request)
 		return NULL;
+	
 	handle_resource_request(cl, request, data, typeInfo, (char *)resource_uri);
 
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
@@ -984,12 +991,13 @@ _wsmc_action_put(WsManClient * cl,
 		void *typeInfo,
 		client_opt_t *options)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl,
 			resource_uri, options,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, NULL);
 	if (!request)
 		return NULL;
+	
 	handle_resource_request(cl, request, data, typeInfo, resource_uri);
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
@@ -1048,12 +1056,12 @@ wsmc_action_delete(WsManClient * cl,
 		client_opt_t *options)
 {
 
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			resource_uri, options,
-			WSMAN_ACTION_TRANSFER_DELETE, NULL, NULL);
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl, resource_uri, options,
+				WSMAN_ACTION_TRANSFER_DELETE, NULL, NULL);
 	if (!request)
 		return NULL;
+	
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1365,10 +1373,12 @@ wsmc_action_enumerate(WsManClient * cl,
 		const char *resource_uri,
 		client_opt_t *options)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			resource_uri, options,
-			WSMAN_ACTION_ENUMERATION, NULL, NULL);
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl,
+					resource_uri, options,
+					WSMAN_ACTION_ENUMERATION, NULL, NULL);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1389,17 +1399,14 @@ wsmc_action_pull(WsManClient * cl,
 	WsXmlNodeH      node;
 
 	if (enumContext || (enumContext && enumContext[0] == 0)) {
-		WsXmlDocH       request = wsmc_create_request(cl,
-				resource_uri, options,
-				WSMAN_ACTION_PULL,
-				NULL, (char *)enumContext);
+		WsXmlDocH request = wsmc_create_request(cl, resource_uri, options,
+				WSMAN_ACTION_PULL,	NULL, (char *)enumContext);
 		if (wsman_send_request(cl, request)) {
 			ws_xml_destroy_doc(request);
-			//            u_free(enumContext);
 			return NULL;
 		}
+		
 		response = wsmc_build_envelope_from_response(cl);
-		//        u_free(enumContext);
 		ws_xml_destroy_doc(request);
 	} else {
 		error("No enumeration context ???");
@@ -1427,17 +1434,17 @@ wsmc_action_release(WsManClient * cl,
 	WsXmlDocH       response;
 
 	if (enumContext || (enumContext && enumContext[0] == 0)) {
-		WsXmlDocH       request = wsmc_create_request(cl,
+		WsXmlDocH request = wsmc_create_request(cl,
 				resource_uri, options,
 				WSMAN_ACTION_RELEASE,
 				NULL, (char *)enumContext);
+		if (!request)
+			return NULL;
 		if (wsman_send_request(cl, request)) {
 			ws_xml_destroy_doc(request);
-			//            u_free(enumContext);
 			return NULL;
 		}
-		response = wsmc_build_envelope_from_response(cl);
-		//        u_free(enumContext);
+		response = wsmc_build_envelope_from_response(cl);		
 		ws_xml_destroy_doc(request);
 	} else {
 		return NULL;
@@ -1448,10 +1455,11 @@ wsmc_action_release(WsManClient * cl,
 WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			resource_uri, options,
-			WSMAN_ACTION_SUBSCRIBE, NULL, NULL);
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl,
+				resource_uri, options, WSMAN_ACTION_SUBSCRIBE, NULL, NULL);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1465,10 +1473,11 @@ WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl,
 				 client_opt_t * options,
 				 const char *uuid)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			NULL, options,
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl, NULL, options,
 			WSMAN_ACTION_UNSUBSCRIBE, NULL, (void *)uuid);
+	if (!request)
+		return NULL;
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1482,10 +1491,12 @@ WsXmlDocH wsmc_action_renew(WsManClient * cl,
 				 client_opt_t * options,
 				 const char *uuid)
 {
-	WsXmlDocH       response;
-	WsXmlDocH       request = wsmc_create_request(cl,
-			NULL, options,
-			WSMAN_ACTION_RENEW, NULL, (void *)uuid);
+	WsXmlDocH response;
+	WsXmlDocH request = wsmc_create_request(cl,
+			NULL, options, WSMAN_ACTION_RENEW, NULL, (void *)uuid);
+	if (!request)
+		return NULL;
+	
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;

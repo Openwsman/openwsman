@@ -116,26 +116,22 @@ path2xml(CimClientInfo * client,
 	 WsXmlNodeH node, char *resource_uri, CMPIValue * val)
 {
 	int i = 0, numkeys = 0;
-	char *cv = NULL;
-	char *_path_res_uri = NULL;
-	WsXmlNodeH cimns, wsman_selector_set;
+	char *_path_res_uri = NULL, *cv = NULL;
+	WsXmlNodeH cimns, wsman_selector_set, refparam;
 
 	CMPIObjectPath *objectpath = val->ref;
-	CMPIString *namespace =
-	    objectpath->ft->getNameSpace(objectpath, NULL);
+	CMPIString *namespace = objectpath->ft->getNameSpace(objectpath, NULL);
 #if 0
 	CMPIString *opstr = CMObjectPathToString(objectpath, NULL);
 	debug("objectpath: %s", (char *) opstr->hdl);
 	debug("namespace: %s", (char *) namespace->hdl);
 #endif
-	CMPIString *classname =
-	    objectpath->ft->getClassName(objectpath, NULL);
+	CMPIString *classname =  objectpath->ft->getClassName(objectpath, NULL);
 	numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
 
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS,
 			 WSA_TO_ANONYMOUS);
-	WsXmlNodeH refparam = ws_xml_add_child(node,
-					       XML_NS_ADDRESSING,
+	refparam = ws_xml_add_child(node, XML_NS_ADDRESSING,
 					       WSA_REFERENCE_PARAMETERS,
 					       NULL);
 	_path_res_uri = cim_find_namespace_for_class(client, NULL,
@@ -151,14 +147,13 @@ path2xml(CimClientInfo * client,
 
 	for (i = 0; i < numkeys; i++) {
 		CMPIString *keyname;
+		WsXmlNodeH s = NULL;
 		CMPIData data = objectpath->ft->getKeyAt(objectpath, i,
 				&keyname, NULL);
 		cv = (char *) value2Chars(data.  type, &data.  value);
-		WsXmlNodeH s = ws_xml_add_child(wsman_selector_set,
-						XML_NS_WS_MAN,
+		s = ws_xml_add_child(wsman_selector_set, XML_NS_WS_MAN,
 						WSM_SELECTOR, cv );
-		ws_xml_add_node_attr(s, NULL, "Name",
-				     (char *) keyname->hdl);
+		ws_xml_add_node_attr(s, NULL, "Name", (char *) keyname->hdl);
 		if (cv)
 			u_free(cv);
 		if (keyname)
@@ -1239,19 +1234,17 @@ cim_invoke_method(CimClientInfo * client,
 		  WsContextH cntx, WsXmlNodeH body, WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath;
-
 	CMPIStatus rc;
 	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	wsman_status_init(&statusP);
-	if (strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
+	if (client->resource_uri && 
+			strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
 		objectpath = cim_get_op_from_enum(client, &statusP);
 	} else {
-		debug
-		    ("no base class, getting instance directly with getInstance");
-		objectpath =
-		    newCMPIObjectPath(client->cim_namespace,
+		debug("no base class, getting instance directly with getInstance");
+		objectpath = newCMPIObjectPath(client->cim_namespace,
 				      client->requested_class, NULL);
 		if (objectpath != NULL)
 			cim_add_keys(objectpath, client->selectors);
@@ -1744,7 +1737,9 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
-	if(rc.rc) goto cleanup;
+	if(rc.rc) 
+		goto cleanup;
+	
 	char *servicepath = create_cimxml_listener_path(uuid);
 	char serverpath[128];
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
