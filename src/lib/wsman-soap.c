@@ -1006,7 +1006,7 @@ wsenum_enumerate_stub(SoapOpH op,
 {
 	WsXmlDocH       doc = NULL;
 	int             retVal = 0;
-	WsEnumerateInfo *enumInfo;
+	WsEnumerateInfo *enumInfo = NULL;
 	WsmanStatus     status;
 	WsXmlNodeH      resp_node, body;
 	WsContextH      soapCntx;
@@ -1020,7 +1020,6 @@ wsenum_enumerate_stub(SoapOpH op,
 	WsContextH      epcntx;
 
 	epcntx = ws_create_ep_context(soap, _doc);
-	enumInfo = (WsEnumerateInfo *)u_zalloc(sizeof (WsEnumerateInfo));
 	wsman_status_init(&status);
 	doc = create_enum_info(op, epcntx, _doc, &enumInfo);
 	if (doc != NULL) {
