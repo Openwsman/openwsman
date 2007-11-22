@@ -2175,14 +2175,7 @@ void wse_notification_manager(void * cntx)
 			temp = ws_xml_get_doc_root(notificationInfo->headerOpaqueData);
 			ws_xml_duplicate_tree(header, temp);
 		}
-/*		if(subsInfo->bookmarksFlag && notificationInfo->bookmarkDoc) {
-			node = ws_xml_add_child(header, XML_NS_WS_MAN, WSM_BOOKMARK,NULL);
-			if(node) {
-				temp = ws_xml_get_doc_root(subsInfo->bookmarkDoc);
-				ws_xml_duplicate_children(node, temp);
-			}
-		}
-*/		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS) {
+		if(subsInfo->deliveryMode == WS_EVENT_DELIVERY_MODE_EVENTS) {
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_ACTION, WSEVENT_DELIVERY_MODE_EVENTS);
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);

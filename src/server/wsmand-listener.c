@@ -206,31 +206,6 @@ static int server_callback(struct shttpd_arg_t *arg)
 		fault_reason = "No request body";
 		error("NULL request body. len = %d", length);
 	}
-#if 0	
-	if(strcmp(wsman_msg->charset, "UTF-8")) {
-		iconv_t cd = iconv_open("UTF-8", wsman_msg->charset);
-		if(cd == -1) {
-			status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-			fault_reason = "Specified encoding unsupported";
-			goto DONE;
-		}
-		char *mbbuf = u_zalloc(length);
-		size_t outbuf_len = length;
-		size_t inbuf_len = length;
-		char *inbuf = body;
-		char *outbuf = mbbuf;
-		size_t coverted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
-		if( coverted == -1) {
-			status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-			fault_reason = "Cannot covert specified encoding";
-			goto DONE;
-		}
-		iconv_close(cd);
-//		u_buf_construct(wsman_msg->request, mbbuf, length - outbuf_len, length - outbuf_len);
-		debug("***coverted = %d***", length - outbuf_len);
-		
-	}
-#endif		
 	u_buf_construct(wsman_msg->request, body, length, length);
 	debug("Posted request: %s, wsman_msg len = %d", u_buf_ptr(wsman_msg->request),
 			u_buf_len(wsman_msg->request));
@@ -251,8 +226,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 
 	if (wsman_msg->request) {
 		// we don't need request any more
-//		if(strcmp(wsman_msg->charset, "UTF-8") == 0)
-			(void) u_buf_steal(wsman_msg->request);
+		(void) u_buf_steal(wsman_msg->request);
 		u_buf_free(wsman_msg->request);
 		wsman_msg->request = NULL;
 	}
@@ -272,20 +246,12 @@ static int server_callback(struct shttpd_arg_t *arg)
 	shttp_msg->ind = 0;
       DONE:
 	 wsman_soap_message_destroy(wsman_msg);
-/*	u_free(wsman_msg->charset);
-	if (wsman_msg->response) {
-		u_buf_free(wsman_msg->response);
-		wsman_msg->response = NULL;
-	}
-	//   wsman_soap_message_destroy(wsman_msg);
-	if (wsman_msg->http_headers) {
-		hash_free(wsman_msg->http_headers);
-	}
-	u_free(wsman_msg);
+#if 0	
 	if (fault_reason == NULL) {
 		fault_reason = shttp_reason_phrase(status);
 	}
-*/	debug("Response (status) %d (%s)", status, fault_reason);
+#endif
+	debug("Response (status) %d (%s)", status, fault_reason);
 
 	// Here we begin to create the http response.
 	// Create the headers at first.
@@ -295,15 +261,6 @@ static int server_callback(struct shttpd_arg_t *arg)
 		      status, fault_reason);
 	n += snprintf(arg->buf + n, arg->buflen - n, "Server: %s/%s\r\n",
 		      PACKAGE, VERSION);
-/*
-    if (status != WSMAN_STATUS_OK) {
-        n += snprintf(arg->buf + n, arg->buflen -n, "\r\n%d %s\r\n",
-                status, fault_reason);
-        arg->last = 1;
-        u_free(shttp_msg);
-        return n;
-    }
-*/
 	if (!shttp_msg || shttp_msg->length == 0) {
 		// can't send the body of response or nothing to send
 		n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");

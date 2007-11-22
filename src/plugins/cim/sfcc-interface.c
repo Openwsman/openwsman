@@ -901,7 +901,6 @@ cim_enum_instances(CimClientInfo * client,
 	debug("Total items: %d", enumInfo->totalItems);
 	enumcontext = u_zalloc(sizeof(sfcc_enumcontext));
 	enumcontext->ecClient = client;
-	client->selectors = NULL;
 	enumcontext->ecEnumeration = enumeration;
 	enumInfo->enumResults = enumArr;
 	enumInfo->appEnumContext = enumcontext;
