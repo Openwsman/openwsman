@@ -77,6 +77,12 @@ typedef u_int8_t XML_TYPE_UINT8;
 typedef u_int16_t XML_TYPE_UINT16;
 typedef u_int32_t XML_TYPE_UINT32;
 typedef u_int64_t XML_TYPE_UINT64;
+typedef int8_t XML_TYPE_INT8;
+typedef int16_t XML_TYPE_INT16;
+typedef int32_t XML_TYPE_INT32;
+typedef int64_t XML_TYPE_INT64;
+typedef float XML_TYPE_REAL32;
+typedef double XML_TYPE_REAL64;
 
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;

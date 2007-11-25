@@ -921,12 +921,12 @@ _wsmc_action_create(WsManClient * cl,
 		client_opt_t *options)
 {
 	WsXmlDocH response;
-	WsXmlDocH request = wsmc_create_request(cl, (char *)resource_uri, 
+	WsXmlDocH request = wsmc_create_request(cl, (char *)resource_uri,
 			options,
 			WSMAN_ACTION_TRANSFER_CREATE, NULL, NULL);
 	if (!request)
 		return NULL;
-	
+
 	handle_resource_request(cl, request, data, typeInfo, (char *)resource_uri);
 
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
@@ -997,7 +997,7 @@ _wsmc_action_put(WsManClient * cl,
 			WSMAN_ACTION_TRANSFER_PUT, NULL, NULL);
 	if (!request)
 		return NULL;
-	
+
 	handle_resource_request(cl, request, data, typeInfo, resource_uri);
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
@@ -1061,7 +1061,7 @@ wsmc_action_delete(WsManClient * cl,
 				WSMAN_ACTION_TRANSFER_DELETE, NULL, NULL);
 	if (!request)
 		return NULL;
-	
+
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;
@@ -1405,7 +1405,7 @@ wsmc_action_pull(WsManClient * cl,
 			ws_xml_destroy_doc(request);
 			return NULL;
 		}
-		
+
 		response = wsmc_build_envelope_from_response(cl);
 		ws_xml_destroy_doc(request);
 	} else {
@@ -1444,7 +1444,7 @@ wsmc_action_release(WsManClient * cl,
 			ws_xml_destroy_doc(request);
 			return NULL;
 		}
-		response = wsmc_build_envelope_from_response(cl);		
+		response = wsmc_build_envelope_from_response(cl);
 		ws_xml_destroy_doc(request);
 	} else {
 		return NULL;
@@ -1496,7 +1496,7 @@ WsXmlDocH wsmc_action_renew(WsManClient * cl,
 			NULL, options, WSMAN_ACTION_RENEW, NULL, (void *)uuid);
 	if (!request)
 		return NULL;
-	
+
 	if (wsman_send_request(cl, request)) {
 		ws_xml_destroy_doc(request);
 		return NULL;

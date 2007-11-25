@@ -95,6 +95,9 @@ namespace WsmanClientNamespace
 		// Destructor.
 		virtual ~WsmanClient(){}
 
+		// Identify
+		virtual string Identify() const = 0;
+		
 		// Creates a new instance of a resource.
 		virtual string Create(const string &resourceUri, const string &xmlData) const = 0;
 

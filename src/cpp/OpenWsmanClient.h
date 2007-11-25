@@ -58,6 +58,9 @@ namespace WsmanClientNamespace
 
 			// Creates a new instance of a resource.
 			string Create(const string &resourceUri, const string &data) const;
+			
+			// Identify.
+			string Identify() const;			
 
 			// Delete a resource.
 			void Delete(const string &resourceUri, const NameValuePairs *s = NULL) const;

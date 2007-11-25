@@ -1516,7 +1516,7 @@ create_subs_info(SoapOpH op,
 	char *str = NULL;
 	time_t timeout;
 	int r;
-	char *soapNs = NULL;
+	char *soapNs = NULL, *ntext = NULL;
 	
 	
 	*sInfo = NULL;
@@ -1653,8 +1653,9 @@ create_subs_info(SoapOpH op,
 	}
 	temp = ws_xml_get_soap_header(indoc);
 	temp = ws_xml_get_child(temp, 0, XML_NS_OPENWSMAN, "FormerUID");
-	if(temp) { //it is a request from the saved reqeust. So we recover the former UUID
-		strncpy(subsInfo->subsId, ws_xml_get_node_text(temp), EUIDLEN);
+	ntext = ws_xml_get_node_text(temp);
+	if(temp && ntext) { //it is a request from the saved reqeust. So we recover the former UUID
+		strncpy(subsInfo->subsId, ntext, EUIDLEN);
 		debug("Recover to uuid:%s",subsInfo->subsId);
 	}
 	else
@@ -1712,6 +1713,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	doc = wsman_create_response_envelope(_doc, NULL);
 	if (!doc)
 		goto DONE;
+	
 	char str[30];
 	wsman_expiretime2xmldatetime(subsInfo->expires, str);
 	if(soap->subscriptionOpSet) {

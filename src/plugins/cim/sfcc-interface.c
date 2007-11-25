@@ -1237,6 +1237,7 @@ cim_invoke_method(CimClientInfo * client,
 	CMPIStatus rc;
 	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
+	WsXmlNodeH method_node = NULL;
 
 	wsman_status_init(&statusP);
 	if (client->resource_uri && 
@@ -1266,8 +1267,7 @@ cim_invoke_method(CimClientInfo * client,
 		debug("invokeMethod() rc=%d, msg=%s",
 		      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 
-		WsXmlNodeH method_node =
-		    ws_xml_add_empty_child_format(body,
+		method_node = ws_xml_add_empty_child_format(body,
 						  client->resource_uri,
 						  "%s_OUTPUT",
 						  client->method);

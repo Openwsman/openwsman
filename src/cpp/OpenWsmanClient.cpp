@@ -70,6 +70,20 @@ OpenWsmanClient::~OpenWsmanClient()
 	wsmc_release(cl);
 }
 
+string OpenWsmanClient::Identify() const
+{
+	client_opt_t *options = NULL;
+	options = SetOptions(cl);
+	WsXmlDocH identifyResponse = wsmc_action_identify(cl, 		
+			options
+			);
+	wsmc_options_destroy(options);
+	CheckWsmanResponse(cl, identifyResponse);
+	string xml = ExtractPayload(identifyResponse);
+	ws_xml_destroy_doc(identifyResponse);
+	return xml; 
+}
+
 string OpenWsmanClient::Create(const string &resourceUri, const string &data) const
 {
 	client_opt_t *options = NULL;

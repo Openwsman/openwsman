@@ -439,7 +439,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 		retVal = WS_ERR_XML_PARSING;
 		goto DONE;
 	}
-      DONE:
+DONE:
 	TRACE_EXIT;
 	return retVal;
 }

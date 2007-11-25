@@ -1126,8 +1126,7 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 		if (epr) {
 			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
 							NULL))) {
-				ws_xml_duplicate_tree(selector,
-					ws_xml_get_doc_root(epr));
+				ws_xml_duplicate_tree(selector, ws_xml_get_doc_root(epr));
 				ws_xml_add_node_attr(selector, NULL, WSM_NAME,
 						name);
 			}
