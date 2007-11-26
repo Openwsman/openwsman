@@ -22,9 +22,9 @@ After all packages are installed, compile everything and install. The server can
 a daemon, which would require root access; But it can be run in the foreground with debugging
 messages printed to stdout as well. This the help output when you run:
 
-% /usr/local/sbin/wsmand --help
+% /usr/local/sbin/openwsmand --help
 Usage:
-  wsmand [OPTION...] WS-Management Server
+  openwsmand [OPTION...] WS-Management Server
 
 Help Options:
   -?, --help                   Show help options
@@ -81,7 +81,7 @@ with the correct path to the files.
 
 To start the server in the foreground, run:
 
-% /usr/local/sbin/wsmand  -d
+% /usr/local/sbin/openwsmand  -d
 
 You can also specify the configuration file to be used on the command line using the -c option.
 
