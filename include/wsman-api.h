@@ -39,4 +39,5 @@
 #include "wsman-xml-api.h"
 #include "wsman-client-transport.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-xml-serialize.h"
 #include "wsman-debug.h"
