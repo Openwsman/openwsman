@@ -120,10 +120,10 @@ namespace WsmanClientNamespace
 		virtual string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const = 0;
 
 		// Renew a subscription
-		virtual string Renew(const string &identifier, float expire) const = 0;
+		virtual string Renew(const string &resourceUri, const string &identifier, float expire, const NameValuePairs *s = NULL) const = 0;
 
 		// Terminate a subscription
-		virtual void Unsubscribe(const string &identifier) const = 0;
+		virtual void Unsubscribe(const string &resourceUri, const string &identifier, const NameValuePairs *s = NULL) const = 0;
 	};
 } // namespace WsmanClientNamespace
 #endif

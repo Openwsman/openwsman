@@ -836,7 +836,8 @@ wsmc_create_request(WsManClient * cl,
 		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
 		if(data) {
-			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
+			if(((char *)data)[0] != 0)
+				ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
 	case WSMAN_ACTION_RENEW:
@@ -845,7 +846,8 @@ wsmc_create_request(WsManClient * cl,
 		sprintf(buf, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
-			ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
+			if(((char *)data)[0] != 0)
+				ws_xml_add_child(ws_xml_get_soap_header(request), XML_NS_EVENTING, WSEVENT_IDENTIFIER, (char *)data);
 		}
 		break;
 	case WSMAN_ACTION_NONE:
@@ -1469,13 +1471,13 @@ WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
 	return response;
 }
 
-WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl,
+WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
 				 const char *uuid)
 {
-	WsXmlDocH response;
-	WsXmlDocH request = wsmc_create_request(cl, NULL, options,
-			WSMAN_ACTION_UNSUBSCRIBE, NULL, (void *)uuid);
+	WsXmlDocH       response;
+	WsXmlDocH       request = wsmc_create_request(cl,
+			resource_uri, options,WSMAN_ACTION_UNSUBSCRIBE, NULL, (void *)uuid);
 	if (!request)
 		return NULL;
 	if (wsman_send_request(cl, request)) {
@@ -1487,13 +1489,13 @@ WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl,
 	return response;
 }
 
-WsXmlDocH wsmc_action_renew(WsManClient * cl,
+WsXmlDocH wsmc_action_renew(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
 				 const char *uuid)
 {
-	WsXmlDocH response;
-	WsXmlDocH request = wsmc_create_request(cl,
-			NULL, options, WSMAN_ACTION_RENEW, NULL, (void *)uuid);
+	WsXmlDocH       response;
+	WsXmlDocH       request = wsmc_create_request(cl,
+			resource_uri, options,WSMAN_ACTION_RENEW, NULL, (void *)uuid);
 	if (!request)
 		return NULL;
 

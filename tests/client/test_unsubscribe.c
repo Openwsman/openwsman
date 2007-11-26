@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 		goto CONTINUE;
 	}
 	const char *uuidstr = ws_xml_get_xpath_value(doc1, "/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier");
-	doc2 = wsmc_action_unsubscribe(cl, options, uuidstr);
+	doc2 = wsmc_action_unsubscribe(cl, "http://schemas.dmtf.org/wbem/wscim/1/*", options, uuidstr);
 	if(!doc2) {
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE;

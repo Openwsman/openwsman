@@ -179,7 +179,7 @@ int main(int argc, char** argv)
         wsmc_transport_init(cl, NULL);
         options = wsmc_options_init();
 	options->expires = tests[i].expiration;
-	doc = wsmc_action_renew(cl,options, tests[i].uuid);
+	doc = wsmc_action_renew(cl,"http://schemas.dmtf.org/wbem/wscim/1/*", options, tests[i].uuid);
 	if(!doc) {
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE;

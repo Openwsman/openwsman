@@ -69,9 +69,9 @@ char *_put(WsManClient * cl, const char *resource_uri, client_opt_t * options, c
 
 char *_subscribe(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
 
-char *_renew(WsManClient *cl, client_opt_t *options, char *uuid, char *encoding);
+char *_renew(WsManClient *cl, const char *resource_uri, client_opt_t *options, char *uuid, char *encoding);
 
-char *_unsubscribe(WsManClient *cl, client_opt_t *op, char *uuid, char *encoding);
+char *_unsubscribe(WsManClient *cl, const char *resource_uri, client_opt_t *op, char *uuid, char *encoding);
 
 void wsmc_set_dumpfile( WsManClient *cl, FILE *f );
 

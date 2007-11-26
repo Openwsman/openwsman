@@ -556,9 +556,9 @@ typedef enum {
 	 * @param uuid Subscription reference parameter
 	 * @return response document
 	 */
-	WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, 
+	WsXmlDocH wsmc_action_unsubscribe(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
-				 const char *uuid);
+				 const char *subsContext);
 
 
 	/**
@@ -569,9 +569,9 @@ typedef enum {
 	 * @param uuid Subscription reference parameter
 	 * @return response document
 	 */
-	WsXmlDocH wsmc_action_renew(WsManClient * cl, 
+	WsXmlDocH wsmc_action_renew(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options,
-				 const char *uuid);
+				 const char *subsContext);
 
 
 

@@ -80,19 +80,19 @@ char *_subscribe(WsManClient * cl, const char *resource_uri, client_opt_t * opti
         return buf;
 }
 
-char *_renew(WsManClient *cl, client_opt_t *options, char *identifier, char *encoding) {
+char *_renew(WsManClient *cl, const char *resource_uri, client_opt_t *options, char *identifier, char *encoding) {
 	char *buf = NULL;
         int len;
-        WsXmlDocH doc  = wsmc_action_renew(cl, options, identifier);
+        WsXmlDocH doc  = wsmc_action_renew(cl, resource_uri, options, identifier);
         ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
         ws_xml_destroy_doc(doc);
         return buf;
 }
 
-char *_unsubscribe(WsManClient *cl, client_opt_t *options, char *identifier, char *encoding) {
+char *_unsubscribe(WsManClient *cl, const char *resource_uri, client_opt_t *options, char *identifier, char *encoding) {
 	char *buf = NULL;
         int len;
-        WsXmlDocH doc  = wsmc_action_unsubscribe(cl, options, identifier);
+        WsXmlDocH doc  = wsmc_action_unsubscribe(cl, resource_uri, options, identifier);
         ws_xml_dump_memory_enc (doc, &buf, &len, encoding);
         ws_xml_destroy_doc(doc);
         return buf;

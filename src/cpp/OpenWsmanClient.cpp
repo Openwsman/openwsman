@@ -284,13 +284,20 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	return xml;
 }
 
-string OpenWsmanClient::Renew(const string &identifier, float expire) const
+string OpenWsmanClient::Renew(const string &resourceUri, const string &identifier, float expire, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
 	WsXmlDocH doc;
 	options->expires = expire;
-	doc = wsmc_action_renew(cl, options, identifier.c_str());
+	if (s) {
+		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
+			if(p->second != "")
+				wsmc_add_selector(options, 
+						(char *)p->first.c_str(), (char *)p->second.c_str());
+		}
+	}
+	doc = wsmc_action_renew(cl, (char *)resourceUri.c_str(), options, identifier.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
@@ -298,12 +305,19 @@ string OpenWsmanClient::Renew(const string &identifier, float expire) const
 	return xml;
 }
 			
-void OpenWsmanClient::Unsubscribe(const string &identifier) const
+void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &identifier, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
 	WsXmlDocH doc;
-	doc = wsmc_action_unsubscribe(cl, options, identifier.c_str());
+	if (s) {
+		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
+			if(p->second != "")
+				wsmc_add_selector(options, 
+						(char *)p->first.c_str(), (char *)p->second.c_str());
+		}
+	}
+	doc = wsmc_action_unsubscribe(cl, (char *)resourceUri.c_str(), options, identifier.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	ws_xml_destroy_doc(doc);
