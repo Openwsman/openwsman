@@ -709,7 +709,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			node3 = ws_xml_get_doc_root(doc);
 			temp = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, NULL);
 			if(temp)
-				ws_xml_duplicate_children(temp, node3);
+				ws_xml_duplicate_tree(node2, node3);
 		}
 	}
 	if(options->expires) {

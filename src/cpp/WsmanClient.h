@@ -82,6 +82,7 @@ namespace WsmanClientNamespace
 		string filter;
 		string dialect;
 		string delivery_uri;
+		string refenceParam;
 		NotificationDeliveryMode delivery_mode;
 		NameValuePairs *selectorset;
 		float heartbeat_interval;

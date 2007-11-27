@@ -861,8 +861,11 @@ char *wsman_get_class_name(WsContextH cntx)
 {
 	char *className = NULL;
 	char *resource_uri = wsman_get_resource_uri(cntx, NULL);
+	char *tmp = NULL;
 	if(resource_uri) {
-		className = u_strdup(strrchr(resource_uri, '/') + 1);
+		tmp = strrchr(resource_uri, '/');
+		if(tmp)
+			className = u_strdup(tmp + 1);
 	}
 	return className;
 }

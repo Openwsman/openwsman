@@ -1485,8 +1485,10 @@ create_notification_template(WsXmlDocH indoc, WsSubscribeInfo *subsInfo)
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
 	node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_NOTIFY_TO);
-	node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
-	if(node) {
+	temp = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
+	if(temp == NULL)
+		node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS);
+	if(node ) {
 		ws_xml_duplicate_children(header, node);
 	}
 	subsInfo->templateDoc = ws_xml_duplicate_doc(notificationDoc);

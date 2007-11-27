@@ -265,6 +265,8 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 		options->dialect = u_strdup(info.dialect.c_str());
 	if(info.filter != "")
 		options->filter = u_strdup(info.filter.c_str());
+	if(info.refenceParam != "")
+		options->reference = u_strdup(info.refenceParam.c_str());
 		// Add selectors.
 	if (info.selectorset) {
 		for (PairsIterator p = info.selectorset->begin(); p != info.selectorset->end(); ++p) {
