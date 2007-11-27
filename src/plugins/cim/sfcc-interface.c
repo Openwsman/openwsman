@@ -1770,31 +1770,6 @@ cleanup:
 		CMRelease(instance);
 	return objectpath;
 }
-/*
-static void getcurrentdatetime(char *str)
-{
-	struct timeval tv;
-	struct tm tm;
-	gettimeofday(&tv, NULL);
-	localtime_r(&tv.tv_sec, &tm);
-	int gmtoffset_minute = (time_t)__timezone /60;
-	if(gmtoffset_minute > 0)
-		snprintf(str, 30, "%u%u%u%u%u%u%u%u%u%u%u.000000+%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_minute);
-	else {
-		gmtoffset_minute = 0 - gmtoffset_minute;
-		snprintf(str, 30, "%u%u%u%u%u%u%u%u%u%u%u.000000-%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_minute);
-	}
-
-}
-*/
 
 void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
 {
@@ -1833,11 +1808,6 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 		CMAddKey(objectpath, "subscriptionDuration",
 			&value, CMPI_uint64);
 	}
-//	char currenttimestr[32];
-//	getcurrentdatetime(currenttimestr);
-
-//	CMAddKey(objectpath, "subscriptionStartTime",
-//		currenttimestr, CMPI_dateTime);
 	//set RepeatNotificationPolicy to None
 	value.uint16 = 2;
 	CMAddKey(objectpath, "RepeatNotificationPolicy",
