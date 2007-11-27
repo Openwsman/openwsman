@@ -500,6 +500,30 @@ wsmc_set_dialect(const char *dialect, client_opt_t * options)
 }
 
 void
+wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options)
+{
+	options->delivery_uri = u_strdup(delivery_uri);
+}
+
+void
+wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options)
+{
+	options->expires = event_subscription_expire;
+}
+
+void
+wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options)
+{
+	options->heartbeat_interval = heartbeat_interval;
+}
+
+void
+wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options)
+{
+	options->delivery_mode = delivery_mode;
+}
+
+void
 wsmc_add_selector_from_uri(WsXmlDocH doc,
 		const char *resource_uri)
 {

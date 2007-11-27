@@ -25,6 +25,11 @@
 #define FLAG_EVENT_SENDBOOKMARK		0X8000
 
 
+#define	WSMAN_DELIVERY_PUSH  0
+#define WSMAN_DELIVERY_PUSHWITHACK  1
+#define WSMAN_DELIVERY_EVENTS 2
+#define WSMAN_DELIVERY_PULL 3
+
 
 /* options */
 client_opt_t *wsmc_options_init(void);
@@ -82,3 +87,17 @@ long wsmc_get_response_code(WsManClient * cl);
 void wsmc_set_action_option(client_opt_t * options,
 				     unsigned int);
 
+	void
+	wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options);
+	
+
+	void
+	wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options);
+	
+
+	void
+	wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options);
+	
+
+	void
+	wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options);

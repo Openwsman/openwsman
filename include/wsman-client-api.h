@@ -757,68 +757,26 @@ typedef enum {
 	void wsmc_set_dumpfile(WsManClient *cl, FILE * f);
 
 	FILE *wsmc_get_dumpfile(WsManClient *cl);
+	
+	void
+	wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options);
+	
+
+	void
+	wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options);
+	
+
+	void
+	wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options);
+	
+
+	void
+	wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options);
+	
+	
+	
 /** @} */
 
-#if 0
-
-	int wsman_session_open(const char *server,
-			       int port,
-			       const char *path,
-			       const char *scheme,
-			       const char *username,
-			       const char *password, int flags);
-
-	char wsman_session_close(int session_id);
-
-	const char *wsman_session_error(int session_id);
-
-	char wsman_session_set_server(int sid,
-				      const char *server,
-				      int port,
-				      const char *path,
-				      const char *scheme,
-				      const char *username,
-				      const char *password);
-
-	char wsman_session_resource_locator_set(int session_id,
-						const char *resource_uri);
-
-	int wsman_session_resource_locator_new(int session_id,
-					       const char *resource_uri);
-	char wsman_session_resource_locator_add_selector(int session_id,
-							 const char *name,
-							 const char
-							 *value);
-	char wsman_session_resource_locator_clear_selectors(int
-							    session_id);
-
-	char *wsman_session_identify(int session_id, int flag);
-
-	int wsman_session_enumerate(int session_id,
-				    const char *resource_uri,
-				    const char *filter,
-				    const char *dialect, int flags);
-
-	char wsman_enumerator_release(int enumerator_id);
-	char wsman_enumerator_end(int enumerator_id);
-	char *wsman_enumerator_pull(int enumerator_id);
-	const char *wsman_enumerator_error(int enumerator_id);
-
-	char *wsman_session_transfer_get(int session_id, int flags);
-	char *wsman_session_transfer_put(int session_id,
-					 const char *xml_content,
-					 int flags);
-	char *wsman_session_transfer_create(int session_id,
-					    const char *xml_content,
-					    int flag);
-
-	char *wsman_session_invoke(int sid,
-				   const char *method,
-				   const char *xml_content, int flag);
-
-	char *wsman_session_serialize(int sid, void *data,
-				      void *type_info);
-#endif
 
 #ifdef __cplusplus
 }
