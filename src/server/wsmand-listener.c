@@ -245,7 +245,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	shttp_msg->ind = 0;
       DONE:
 	 wsman_soap_message_destroy(wsman_msg);
-#if 0	
+#if 0
 	if (fault_reason == NULL) {
 		fault_reason = shttp_reason_phrase(status);
 	}
@@ -300,7 +300,7 @@ static int server_callback(struct shttpd_arg_t *arg)
 	debug("%s", arg->buf);
 	u_free(shttp_msg->response);
 	u_free(shttp_msg);
-	
+
 	arg->last = 1;
 	arg->state = NULL;
 	return n;
@@ -354,7 +354,7 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 		fault_reason = "Unsupported content type";
 		goto DONE;
 	}
-	
+
 	if(strncmp(shttpd_get_header(arg, "CIMExport"), "MethodRequest", strlen("MethodRequest")) ||
 		strncmp(shttpd_get_header(arg, "CIMExportMethod"), "ExportIndication", strlen("ExportIndication"))) {
 		status = CIMXML_STATUS_UNSUPPORTED_OPERATION;
@@ -477,7 +477,7 @@ static int cimxml_listener_callback(struct shttpd_arg_t *arg)
 	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n\r\n");
 	u_free(shttp_msg->response);
 	u_free(shttp_msg);
-	
+
 	arg->last = 1;
 	arg->state = NULL;
 	return n;
@@ -552,7 +552,8 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 				  wsmand_options_get_ssl_cert_file(),
 				  "ssl_priv_key",
 				  wsmand_options_get_ssl_key_file(),
-				  "auth_realm", AUTHENTICATION_REALM,
+				  "auth_realm",
+				  AUTHENTICATION_REALM,
 				  "debug",
 				  wsmand_options_get_debug_level() >
 				  0 ? "1" : "0", NULL);
@@ -614,7 +615,7 @@ static void handle_socket(int sock, SoapH soap)
 		close(sock);
 		return;
 	}
-	shttpd_add(ctx, sock);
+	shttpd_add_socket(ctx, sock);
 	while (shttpd_active(ctx) && continue_working) {
 		shttpd_poll(ctx, 100);
 	}
@@ -770,7 +771,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	int sock;
 	lnode_t *node;
 	pthread_t thr_id;
-#ifdef ENABLE_EVENTING_SUPPORT	
+#ifdef ENABLE_EVENTING_SUPPORT
 	pthread_t notificationManager_id;
 #endif
 	pthread_attr_t pattrs;
@@ -790,9 +791,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	}
 #endif
 	SoapH soap = ws_context_get_runtime(cntx);
-	ws_set_context_enumIdleTimeout(cntx,
-				       wsmand_options_get_enumIdleTimeout
-				       ());
+	ws_set_context_enumIdleTimeout(cntx,wsmand_options_get_enumIdleTimeout());
 	if (initialize_basic_authenticator()) {
 		return listener;
 	}
@@ -835,7 +834,10 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	wsmand_shutdown_add_handler(listener_shutdown_handler,
 				    &continue_working);
 
-	lsn = shttpd_open_port(port);
+	if ((lsn = shttpd_open_port(port)) == -1) {
+		error("cannot open port %d", port);
+		exit(EXIT_FAILURE);
+	}
 
 #ifdef MULTITHREADED_SERVER
 	if ((r = pthread_cond_init(&shttpd_cond, NULL)) != 0) {
