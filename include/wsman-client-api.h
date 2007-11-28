@@ -641,21 +641,6 @@ typedef enum {
 				      void *callback_data);
 
 	/**
-	 * Send a Subscribe request and then use callback for subsequent Pull calls
-	 * @param cl Client handle
-	 * @param resource_uri Resource URI
-	 * @param client_opt_t Request options and flags
-	 * @param callback Function to handle Pull requests and Responses
-	 * @param callback_data Pointer to callback data
-	 * @return success
-	 */
-	int wsmc_action_subscribe_and_pull(WsManClient * cl,
-				      const char *resource_uri,
-				      client_opt_t * options,
-				      SoapResponseCallback callback,
-				      void *callback_data);
-
-	/**
 	 * Create a request envelope based on client data
 	 * @param cl Client handle
 	 * @param resource_uri Resource URI
@@ -677,6 +662,13 @@ typedef enum {
 	 * @return enumeration context
 	 */
 	char *wsmc_get_enum_context(WsXmlDocH doc);
+
+	/**
+	* Get enumeration context from subscription response
+	* @param doc Response document
+	* @return enumeration context
+	*/
+	char *wsmc_get_event_enum_context(WsXmlDocH doc);
 
 	/**
 	 * Free enumeration context

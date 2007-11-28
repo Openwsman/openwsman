@@ -1353,46 +1353,7 @@ wsmc_action_enumerate_and_pull(WsManClient * cl,
 }
 
 
-int
-wsmc_action_subscribe_and_pull(WsManClient * cl,
-		const char *resource_uri,
-		client_opt_t *options,
-		SoapResponseCallback callback,
-		void *callback_data)
-{
-	WsXmlDocH       doc;
-	char           *enumContext;
-	WsXmlDocH       enum_response = wsmc_action_subscribe(cl,
-			resource_uri, options);
 
-	if (enum_response) {
-		long rc = wsmc_get_response_code(cl);
-		if (rc == 200 || rc == 400 || rc == 500) {
-			callback(cl, enum_response, callback_data);
-		} else {
-			return 0;
-		}
-		enumContext = wsmc_get_enum_context(enum_response);
-		ws_xml_destroy_doc(enum_response);
-	} else {
-		return 0;
-	}
-
-	while (enumContext != NULL && enumContext[0] != 0) {
-		long rc = wsmc_get_response_code(cl);
-		doc = wsmc_action_pull(cl, resource_uri, options, enumContext);
-
-		if (rc != 200 && rc != 400 && rc != 500) {
-			return 0;
-		}
-		callback(cl, doc, callback_data);
-		enumContext = wsmc_get_enum_context(doc);
-		if (doc) {
-			ws_xml_destroy_doc(doc);
-		}
-	}
-	return 1;
-}
 
 WsXmlDocH
 wsmc_action_enumerate(WsManClient * cl,
@@ -1550,6 +1511,24 @@ wsmc_get_enum_context(WsXmlDocH doc)
 		}
 	} else {
 		return NULL;
+	}
+	return enumContext;
+}
+
+char *
+wsmc_get_event_enum_context(WsXmlDocH doc)
+{
+	char           *enumContext = NULL;
+	WsXmlNodeH      node = ws_xml_get_child(ws_xml_get_soap_body(doc),
+			0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE_RESP);
+
+	if (node) {
+		node = ws_xml_get_child(node, 0,
+				XML_NS_ENUMERATION,
+				WSENUM_ENUMERATION_CONTEXT);
+		if (node && ws_xml_get_node_text(node)) {
+			enumContext = u_strdup(ws_xml_get_node_text(node));
+		} 
 	}
 	return enumContext;
 }
