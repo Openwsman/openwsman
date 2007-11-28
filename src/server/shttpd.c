@@ -2186,7 +2186,7 @@ serve(struct shttpd_ctx *ctx, void *ptr)
 }
 
 void
-shttpd_add(struct shttpd_ctx *ctx, int sock)
+shttpd_add_socket(struct shttpd_ctx *ctx, int sock)
 {
 	struct conn	*c;
 	struct usa	sa;
@@ -2255,7 +2255,7 @@ do_accept(struct shttpd_ctx *ctx, void *ptr)
 	if (sock == -1)
 		elog(ERR_INFO, "do_accept(%d): %s", (int)((char *)ptr - (char *)NULL), strerror(ERRNO));
 	else
-		shttpd_add(ctx, sock);
+		shttpd_add_socket(ctx, sock);
 }
 
 /*

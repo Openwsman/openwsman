@@ -150,7 +150,7 @@ extern char *shttp_reason_phrase(int code);
  * pool for the idle thread by means of shttpd_active(), and add new
  * connection to the context by means of shttpd_add().
  */
-extern void		shttpd_add(struct shttpd_ctx *, int sock);
+extern void		shttpd_add_socket(struct shttpd_ctx *, int sock);
 extern int		shttpd_accept(int lsn_sock, int milliseconds);
 extern int		shttpd_active(struct shttpd_ctx *);
 
