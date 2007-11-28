@@ -847,9 +847,12 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 char *wsman_get_method_name(WsContextH cntx)
 {
 	char *m, *method = NULL;
+	char *tmp = NULL;
 	m = wsman_get_action(cntx, NULL);
 	if (m != NULL && m[0] != 0) {
-		method = u_strdup(strrchr(m, '/') + 1);
+		tmp = strrchr(m, '/');
+		if(tmp)
+			method = u_strdup(tmp + 1);
 		debug("method or action: %s", method);
 	}
 	return method;
@@ -1204,6 +1207,56 @@ int wsman_is_event_related_request(WsXmlDocH doc)
 		return 1;
 	else
 		return 0;
+}
+
+int time_expired(unsigned long lt)
+{
+	struct timeval tv;
+	if(lt == 0) return 0; // 0 means it never expires
+	gettimeofday(&tv, NULL);
+	if(!(tv.tv_sec< lt))
+		return 1;
+	else
+		return 0;
+}
+
+void
+wsman_set_expiretime(WsXmlNodeH  node,
+                    unsigned long * expire,
+                    WsmanFaultCodeType *fault_code)
+{
+	struct timeval  tv;
+//	struct __timezone *tz;
+	time_t timeout;
+	char *text;
+	XML_DATETIME tmx;
+	gettimeofday(&tv, NULL);
+	text = ws_xml_get_node_text(node);
+	if (text == NULL) {
+		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+		return;
+	}
+	debug("wsen:Expires = %s", text);
+	if (text[0] == 'P') {
+		//  xml duration
+		if (ws_deserialize_duration(text, &timeout)) {
+			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
+			goto DONE;
+		}
+		*expire = tv.tv_sec + timeout;
+		goto DONE;
+	}
+
+	// timeout is XML datetime type
+	if (ws_deserialize_datetime(text, &tmx)) {
+		*fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
+		goto DONE;
+	}
+	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
+	timeout += (time_t) __timezone;
+	*expire = timeout;
+DONE:
+	return;
 }
 
 WsXmlDocH

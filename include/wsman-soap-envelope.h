@@ -122,6 +122,10 @@ int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
 int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
 	WsmanFaultDetailType *detailcode);
 
+void wsman_set_expiretime(WsXmlNodeH  node, unsigned long * expire, WsmanFaultCodeType *fault_code);
+
+int time_expired(unsigned long lt);
+
 WsXmlDocH wsman_create_doc(const char *rootname);
 
 void wsman_destroy_doc(WsXmlDocH doc);

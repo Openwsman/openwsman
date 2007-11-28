@@ -99,7 +99,6 @@ static int max_threads = 4;
 int continue_working = 1;
 static int (*basic_auth_callback) (char *, char *) = NULL;
 
-
 static int
 digest_auth_callback(char *realm, char *method, struct digest *dig)
 {
@@ -505,7 +504,8 @@ static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 {
 	int retVal = 0;
 	WsXmlDocH doc = ws_xml_read_memory( (char *)entry->strdoc, entry->len, "UTF-8", 0);
-
+	unsigned long expire;
+	WsmanFaultCodeType fault_code;
 	if(doc) {
 		WsXmlNodeH node = ws_xml_get_soap_body(doc);
 		if(node) {
@@ -515,6 +515,16 @@ static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 				debug("subscription %s deleted from the repository", entry->uuid);
 				soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
 				retVal = 1;
+			}
+			else {
+				wsman_set_expiretime(node, &expire, &fault_code);
+				if(fault_code == WSMAN_DETAIL_OK) {
+					if(time_expired(expire)) {
+						debug("subscription %s deleted from the repository", entry->uuid);
+						soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
+						retVal = 1;
+					}
+				}
 			}
 		}
 		ws_xml_destroy_doc(doc);

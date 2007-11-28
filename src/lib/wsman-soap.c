@@ -159,18 +159,6 @@ remove_locked_enuminfo(WsContextH cntx,
 }
 
 #ifdef ENABLE_EVENTING_SUPPORT
-static int time_expired(unsigned long lt)
-{
-	struct timeval tv;
-	if(lt == 0) return 0; // 0 means it never expires
-	gettimeofday(&tv, NULL);
-	if(!(tv.tv_sec< lt))
-		return 1;
-	else
-		return 0;
-}
-
-
 static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 {
 	time_t t = expire;
@@ -210,45 +198,6 @@ static void delete_notification_info(WsNotificationInfoH notificationInfo) {
 	}
 }
 #endif
-
-static void
-wsman_set_expiretime(WsXmlNodeH  node,
-                    unsigned long * expire,
-                    WsmanFaultCodeType *fault_code)
-{
-	struct timeval  tv;
-//	struct __timezone *tz;
-	time_t timeout;
-	char *text;
-	XML_DATETIME tmx;
-	gettimeofday(&tv, NULL);
-	text = ws_xml_get_node_text(node);
-	if (text == NULL) {
-		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
-		return;
-	}
-	debug("wsen:Expires = %s", text);
-	if (text[0] == 'P') {
-		//  xml duration
-		if (ws_deserialize_duration(text, &timeout)) {
-			*fault_code = WSEN_INVALID_EXPIRATION_TIME;
-			goto DONE;
-		}
-		*expire = tv.tv_sec + timeout;
-		goto DONE;
-	}
-
-	// timeout is XML datetime type
-	if (ws_deserialize_datetime(text, &tmx)) {
-		*fault_code = WSEN_UNSUPPORTED_EXPIRATION_TYPE;
-		goto DONE;
-	}
-	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout += (time_t) __timezone;
-	*expire = timeout;
-DONE:
-	return;
-}
 
 
 static WsSubscribeInfo*
