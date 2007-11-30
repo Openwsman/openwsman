@@ -436,7 +436,7 @@ int do_serialize_dyn_size_array(struct __XmlSerializationData* data);
 int do_serialize_struct(struct __XmlSerializationData* data);
 int do_serialize_attrs(struct __XmlSerializationData* data);
 
-
+int hasnilvalue(XML_NODE_ATTR *attrs);
 
 
 // Serializer user interface
