@@ -290,17 +290,6 @@ handle_attrs(struct __XmlSerializationData *data,
 	return ret;
 }
 
-int hasnilvalue(XML_NODE_ATTR *attrs)
-{
-	while(attrs) {
-		if(attrs->ns && attrs->name && attrs->value && strcmp(attrs->ns, XML_NS_SCHEMA_INSTANCE) == 0 &&
-			strcmp(attrs->name, XML_SCHEMA_NIL) == 0 &&
-			strcasecmp(attrs->value, "true") == 0)
-			return 1;
-		attrs = attrs->next;
-	}
-	return 0;
-}
 
 static int do_serialize_uint(XmlSerializationData * data, int valSize)
 {
@@ -376,7 +365,6 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
 			}
-			handle_attrs(data, child, valSize);
 			if ((str = ws_xml_get_node_text(child)) == NULL) {
 				error("No text of node %s[%d]",
 				      DATA_ELNAME(data), data->index);
@@ -441,7 +429,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				goto DONE;
 			}
 		}
-		
+		handle_attrs(data, child, valSize);
 		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
 	}
 	if ((data->mode == XML_SMODE_DESERIALIZE) &&
@@ -1476,9 +1464,8 @@ void *ws_serializer_alloc(WsSerializerContextH serctx, int size)
 static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 {
 	lnode_t *node = NULL;
-	lnode_t *node2 = NULL;
 	TRACE_ENTER;
-	if (serctx) {
+	if (serctx && ptr != NULL) {
 		u_lock(serctx);
 		node = list_first(serctx->WsSerializerAllocList);
 		while (node != NULL) {
@@ -1486,18 +1473,19 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 			    (WsSerializerMemEntry *) node->list_data;
 
 			if (entry && (!ptr || ptr == entry->buf)) {
+				u_free(entry->buf);
 				u_free(entry);
-				node2 = list_delete2(serctx->WsSerializerAllocList, node);
 				lnode_destroy (node);
-				node = node2;
+				list_delete(serctx->WsSerializerAllocList, node);
 				if (ptr != NULL) {
 					break;
 				}
 			}
+			node =
+			    list_next(serctx->WsSerializerAllocList, node);
 		}
 		u_unlock(serctx);
 	}
-	debug("nodecount = %d", serctx->WsSerializerAllocList->list_nodecount);
 	TRACE_EXIT;
 	return (node != NULL);
 }
