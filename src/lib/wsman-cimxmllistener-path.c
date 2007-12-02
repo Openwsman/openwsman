@@ -36,74 +36,75 @@
 
 static hash_t *cimxml_listener_path = NULL;
 static pthread_mutex_t cimxml_listener_path_lock;
+
 char * create_cimxml_listener_path(char *uuid)
 {
-	char path[128];
-	snprintf(path, 128, "/wsman/cimindicationlistener/%s", uuid);
-	return u_strdup(path);
+		char path[128];
+		snprintf(path, 128, "/wsman/cimindicationlistener/%s", uuid);
+		return u_strdup(path);
 }
 
 int add_cimxml_listener_path(char *uuid)
 {
-	pthread_mutex_lock(&cimxml_listener_path_lock);
-	if(cimxml_listener_path == NULL)
-		cimxml_listener_path = hash_create(HASHCOUNT_T_MAX,0,0);
-	char *path = create_cimxml_listener_path(uuid);
-	hash_alloc_insert(cimxml_listener_path, uuid, path);
-	pthread_mutex_unlock(&cimxml_listener_path_lock);
-	return 0;
+		pthread_mutex_lock(&cimxml_listener_path_lock);
+		if(cimxml_listener_path == NULL)
+				cimxml_listener_path = hash_create(HASHCOUNT_T_MAX,0,0);
+		char *path = create_cimxml_listener_path(uuid);
+		hash_alloc_insert(cimxml_listener_path, uuid, path);
+		pthread_mutex_unlock(&cimxml_listener_path_lock);
+		return 0;
 }
 
 char * get_cimxml_listener_path(char *uuid)
 {
-	pthread_mutex_lock(&cimxml_listener_path_lock);
-	hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
-	char *service_path = hnode_get(hn);
-	pthread_mutex_unlock(&cimxml_listener_path_lock);
-	return service_path;
+		pthread_mutex_lock(&cimxml_listener_path_lock);
+		hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
+		char *service_path = hnode_get(hn);
+		pthread_mutex_unlock(&cimxml_listener_path_lock);
+		return service_path;
 }
 
 void get_cimxml_listener_paths(char ***paths, int *num)
 {
-	hscan_t hs;
-	hnode_t *hn;
-	*paths = NULL;
-	*num = 0;
-	pthread_mutex_lock(&cimxml_listener_path_lock);
-	if(cimxml_listener_path == NULL) {
+		hscan_t hs;
+		hnode_t *hn;
+		*paths = NULL;
+		*num = 0;
+		pthread_mutex_lock(&cimxml_listener_path_lock);
+		if(cimxml_listener_path == NULL) {
+				pthread_mutex_unlock(&cimxml_listener_path_lock);
+				return;
+		}
+		int count = hash_count(cimxml_listener_path);
+		if(count == 0) {
+				pthread_mutex_unlock(&cimxml_listener_path_lock);
+				return;
+		}
+		char **servicepaths = u_malloc(count*sizeof(char*));
+		hash_scan_begin(&hs, cimxml_listener_path);
+		int i = 0;
+		while ((hn = hash_scan_next(&hs))) {
+				servicepaths[i] = u_strdup((char*) hnode_get(hn));
+				i++;
+		}
+		*paths = servicepaths;
+		*num = count;
 		pthread_mutex_unlock(&cimxml_listener_path_lock);
-		return;
-	}
-	int count = hash_count(cimxml_listener_path);
-	if(count == 0) {
-		pthread_mutex_unlock(&cimxml_listener_path_lock);
-		return;
-	}
-	char **servicepaths = u_malloc(count*sizeof(char*));
-	hash_scan_begin(&hs, cimxml_listener_path);
-	int i = 0;
-	while ((hn = hash_scan_next(&hs))) {
-		servicepaths[i] = u_strdup((char*) hnode_get(hn));
-		i++;
-    	}
-	*paths = servicepaths;
-	*num = count;
-	pthread_mutex_unlock(&cimxml_listener_path_lock);
 }
 
 int delete_cimxml_listener_path(char *uuid)
 {
-	pthread_mutex_lock(&cimxml_listener_path_lock);
-	if(cimxml_listener_path == NULL) {
+		pthread_mutex_lock(&cimxml_listener_path_lock);
+		if(cimxml_listener_path == NULL) {
+				pthread_mutex_unlock(&cimxml_listener_path_lock);
+				return 0;
+		}
+		hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
+		if(hn) {
+				u_free(hnode_get(hn));
+				hash_delete_free(cimxml_listener_path, hn);
+		}
 		pthread_mutex_unlock(&cimxml_listener_path_lock);
 		return 0;
-	}
-	hnode_t *hn = hash_lookup(cimxml_listener_path, uuid);
-	if(hn) {
-		u_free(hnode_get(hn));
-		hash_delete_free(cimxml_listener_path, hn);
-	}
-	pthread_mutex_unlock(&cimxml_listener_path_lock);
-	return 0;
 }
 

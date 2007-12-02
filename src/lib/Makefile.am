@@ -72,7 +72,7 @@ libwsman_la_LDFLAGS= -version-info 1:0
 
 if DISABLE_SERVER
 else
-libwsman_server_la_LIBADD = -ldl
+libwsman_server_la_LIBADD = 
 libwsman_server_la_LDFLAGS= -version-info 1:0
 endif
 

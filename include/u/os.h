@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 #ifndef _LIBU_OS_H_
 #define _LIBU_OS_H_
@@ -11,7 +11,7 @@
 #include <u/syslog.h>
 
 
-#ifdef __APPLE__
+#if defined (__FreeBSD__)  || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 struct __timezone {
 	int  tz_minuteswest; /* minutes W of Greenwich */
 	int  tz_dsttime;     /* type of dst correction */
@@ -39,7 +39,7 @@ pid_t getpid(void);
 #endif
 
 #define dlclose(handle)         FreeLibrary(handle)
-#define strtoull(nptr, endptr, base) _strtoul_l(nptr, endptr, base, NULL)        
+#define strtoull(nptr, endptr, base) _strtoul_l(nptr, endptr, base, NULL)
 #define sleep(secs) Sleep( (secs) * 1000 )
 #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
 #define popen _popen
@@ -47,7 +47,7 @@ pid_t getpid(void);
 #define pclose _pclose
 #ifndef ssize_t
 typedef int ssize_t;
-#endif 
+#endif
 
 #define bzero(p, l) memset(p, 0, l)
 
@@ -112,4 +112,4 @@ const char * getpass (const char *);
 
 
 
-#endif 
+#endif

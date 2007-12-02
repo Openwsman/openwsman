@@ -2,7 +2,7 @@
 #ifndef LOCKING_H
 #define LOCKING_H
 
-#ifdef __APPLE__
+#if defined (__FreeBSD__)  || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 /* Provide the Linux initializers for MacOS X */
 #define PTHREAD_MUTEX_RECURSIVE_NP                                      PTHREAD_MUTEX_RECURSIVE
 #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP           { 0x4d555458, \

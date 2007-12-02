@@ -166,9 +166,9 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	int gmtoffset_hour;
 	int gmtoffset_minute;
 	localtime_r(&t, &tm);
-//	struct __timezone *tz;
-	gmtoffset_hour = (int) __timezone/3600;
-	gmtoffset_minute = ((int)__timezone - gmtoffset_hour * 3600 ) /60;
+	struct timezone *tz = NULL;
+	gmtoffset_hour = (int) tz/3600;
+	gmtoffset_minute = ((int)tz - gmtoffset_hour * 3600 ) /60;
 	if(gmtoffset_hour > 0)
 		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
@@ -207,7 +207,7 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 	char *uuid = NULL;
 	lnode_t *lnode;
 	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
-	
+
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL);
 	if(node) {
 		node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT);
@@ -268,7 +268,7 @@ create_enum_info(SoapOpH op,
 			goto DONE;
 		}
 	}
-	
+
 	if (msg->auth_data.username != NULL) {
 		enumInfo->auth_data.username =
 				u_strdup(msg->auth_data.username);
@@ -332,8 +332,8 @@ wsman_verify_enum_info(SoapOpH op,
 
 	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	WsXmlNodeH header = ws_xml_get_soap_header(doc);
-	
-	char *to = ws_xml_get_node_text(ws_xml_get_child(header, 0, 
+
+	char *to = ws_xml_get_node_text(ws_xml_get_child(header, 0,
 			XML_NS_ADDRESSING, WSA_TO));
 	char *uri= ws_xml_get_node_text(ws_xml_get_child(header, 0,
 			XML_NS_WS_MAN, WSM_RESOURCE_URI));
@@ -531,7 +531,7 @@ ws_soap_initialize()
 	soap->inboundFilterList = NULL;
 	soap->outboundFilterList = NULL;
 	soap->dispatchList = NULL;
-	
+
 	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	soap->processedMsgIdList = NULL;
 //	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
@@ -611,7 +611,7 @@ wsman_register_interface(WsContextH cntx,
 {
 	int i, retVal = 0;
 	WsDispatchEndPointInfo *ep = wsInterface->endPoints;
-	
+
 	for (i = 0; ep[i].serviceEndPoint != NULL; i++) {
 		if ((retVal = wsman_register_endpoint(cntx, wsInterface,
 						  &ep[i], dispInfo)) != 0) {
@@ -640,7 +640,7 @@ wsman_register_endpoint(WsContextH cntx,
 	SoapServiceCallback callbackProc = NULL;
 	SoapH soap = ws_context_get_runtime(cntx);
 	char *action = NULL;
-	
+
 	debug("Registering Endpoint: %s", ep->inAction);
 	switch (ep->flags & WS_DISP_TYPE_MASK) {
 	case WS_DISP_TYPE_IDENTIFY:
@@ -741,7 +741,7 @@ wsman_register_endpoint(WsContextH cntx,
 		break;
 	}
 
-	if (callbackProc != NULL && 
+	if (callbackProc != NULL &&
 			(disp = wsman_dispatch_create(soap, action, NULL, NULL, callbackProc, ep, flags))) {
 		dispInfo->map[dispInfo->mapCount].ep = ep;
 		dispInfo->map[dispInfo->mapCount].disp = disp;
@@ -865,7 +865,7 @@ ws_transfer_delete_stub(SoapOpH op,
 
 	void           *data;
 	WsXmlDocH       doc = NULL;
-	
+
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
 		warning("Transfer Delete fault");
@@ -905,7 +905,7 @@ ws_transfer_get_stub(SoapOpH op,
 
 	void           *data;
 	WsXmlDocH       doc = NULL;
-	
+
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
 		warning("Transfer Get fault");
@@ -1384,7 +1384,7 @@ static int destination_reachable(char *url)
 	return 0;
 }
 
-WsEventThreadContextH 
+WsEventThreadContextH
 ws_create_event_context(SoapH soap, WsSubscribeInfo *subsInfo, WsXmlDocH doc)
 {
 	WsEventThreadContextH eventcntx = u_malloc(sizeof(*eventcntx));
@@ -1468,8 +1468,8 @@ create_subs_info(SoapOpH op,
 	time_t timeout;
 	int r;
 	char *soapNs = NULL, *ntext = NULL;
-	
-	
+
+
 	*sInfo = NULL;
 	subsInfo = (WsSubscribeInfo *)u_zalloc(sizeof (WsSubscribeInfo));
 	if (subsInfo == NULL) {
@@ -1664,7 +1664,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	doc = wsman_create_response_envelope(_doc, NULL);
 	if (!doc)
 		goto DONE;
-	
+
 	char str[30];
 	wsman_expiretime2xmldatetime(subsInfo->expires, str);
 	if(soap->subscriptionOpSet) {
@@ -2441,7 +2441,7 @@ destroy_op_entry(op_t * entry)
 		list_delete(soap->dispatchList, &entry->dispatch->node);
 	}
 	u_unlock(soap);
-	
+
 NULL_SOAP:
 	destroy_dispatch_entry(entry->dispatch);
 	ws_destroy_context(entry->cntx);
@@ -2460,7 +2460,7 @@ destroy_dispatch_entry(SoapDispatchH entry)
 	if (!entry) {
 		return;
 	}
-	
+
 	u_lock(entry->soap);
 	entry->usageCount--;
 	usageCount = entry->usageCount;
@@ -2473,7 +2473,7 @@ destroy_dispatch_entry(SoapDispatchH entry)
 	u_unlock(entry->soap);
 
 	if (!usageCount) {
-		if (entry->inboundFilterList) { 
+		if (entry->inboundFilterList) {
 			list_destroy_nodes(entry->inboundFilterList);
 			list_destroy(entry->inboundFilterList);
 		}
@@ -2481,7 +2481,7 @@ destroy_dispatch_entry(SoapDispatchH entry)
 			list_destroy_nodes(entry->outboundFilterList);
 			list_destroy(entry->outboundFilterList);
 		}
-		
+
 		u_free(entry->inboundAction);
 		u_free(entry->outboundAction);
 
@@ -2506,7 +2506,7 @@ soap_destroy(SoapH soap)
 		}
 		list_destroy(soap->dispatchList);
 	}
-	
+
 	if (soap->processedMsgIdList) {
 		while (!list_isempty(soap->processedMsgIdList)) {
 			lnode_t *node = list_del_first(soap->processedMsgIdList);

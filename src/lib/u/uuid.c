@@ -128,15 +128,18 @@ generate_uuid(char *buf, int size, int bNoPrefix)
 
 #else
 #include <netdb.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <net/if.h>
 #include <net/if_arp.h>
 #include <sys/utsname.h>
-#include <sys/socket.h>
 #include <sys/param.h>
 #include <netinet/in.h>
-#include <net/if.h>
-#include <fcntl.h>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)  ||  defined(__FreeBSD__)
+#include <net/bpf.h>
+#include <net/if_dl.h>
+#include <net/if_types.h>
 
 /* return the Media Access Control (MAC) address of
    the FIRST network interface card (NIC) */
@@ -318,7 +321,7 @@ generate_uuid ( char* buf,
     clock_sequence++;
 
     // get mac address
-#ifdef __APPLE__
+#if defined(__APPLE__)  ||  defined(__FreeBSD__)
     if ( mac_address( mac, 6 ) == 0 )
 #else    
     if (mac_addr_sys(mac) == 0 )
