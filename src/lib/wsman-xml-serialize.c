@@ -1064,6 +1064,7 @@ initialize_xml_serialization_data(XmlSerializationData * data,
 	TRACE_ENTER;
 	memset(data, 0, sizeof(XmlSerializationData));
 	data->serctx = serctx;
+	u_init_lock(data->serctx);
 	data->elementInfo = elementInfo;
 	data->elementBuf = dataBuf;
 	data->mode = mode;
