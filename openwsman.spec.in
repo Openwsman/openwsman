@@ -3,7 +3,7 @@ Version:       @PACKAGE_VERSION@
 Release:        1
 License:        BSD
 Url:            http://www.openwsman.org/
-Source:         %{name}-%{version}.tar.gz
+Source:         %{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Group:          Applications/Management
 BuildRequires:  sblim-sfcc-devel curl-devel pkgconfig libxml2-devel pam-devel gcc-c++
