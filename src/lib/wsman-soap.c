@@ -166,26 +166,14 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	int gmtoffset_hour;
 	int gmtoffset_minute;
 	localtime_r(&t, &tm);
-	struct timezone *tz = NULL;
-	gmtoffset_hour = (int) tz/3600;
-	gmtoffset_minute = ((int)tz - gmtoffset_hour * 3600 ) /60;
+	gmtoffset_hour = 0;
+	gmtoffset_minute = 0;
 	if(gmtoffset_hour > 0)
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u-%u%u:%u%u",
-			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
-			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
-			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	else {
-		gmtoffset_hour = 0 - gmtoffset_hour;
-		gmtoffset_minute = 0 - gmtoffset_minute;
 		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
-			gmtoffset_hour/10, gmtoffset_hour%10, gmtoffset_minute/10,
-			gmtoffset_minute%10);
-	}
+			0, 0, 0,0);
 
 }
 
