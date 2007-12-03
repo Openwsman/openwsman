@@ -1465,6 +1465,7 @@ void *ws_serializer_alloc(WsSerializerContextH serctx, int size)
 static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 {
 	lnode_t *node = NULL;
+	lnode_t *node2 = NULL;
 	TRACE_ENTER;
 	if (serctx) {
 		u_lock(serctx);
@@ -1475,8 +1476,9 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 
 			if (entry && (!ptr || ptr == entry->buf)) {
 				u_free(entry);
-				lnode_destroy (node);
+				node2 = node;
 				node = list_delete2(serctx->WsSerializerAllocList, node);
+				lnode_destroy (node2);
 				if (ptr != NULL) {
 					break;
 				}
