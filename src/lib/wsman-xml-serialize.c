@@ -71,6 +71,7 @@ WsSerializerContextH ws_serializer_init()
 		u_free(serializercntx);
 		return NULL;
 	}
+	u_init_lock(serializercntx);
 	return serializercntx;
 }
 
@@ -1064,7 +1065,6 @@ initialize_xml_serialization_data(XmlSerializationData * data,
 	TRACE_ENTER;
 	memset(data, 0, sizeof(XmlSerializationData));
 	data->serctx = serctx;
-	u_init_lock(data->serctx);
 	data->elementInfo = elementInfo;
 	data->elementBuf = dataBuf;
 	data->mode = mode;
@@ -1466,7 +1466,7 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 {
 	lnode_t *node = NULL;
 	TRACE_ENTER;
-	if (serctx && ptr != NULL) {
+	if (serctx) {
 		u_lock(serctx);
 		node = list_first(serctx->WsSerializerAllocList);
 		while (node != NULL) {
@@ -1474,16 +1474,15 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 			    (WsSerializerMemEntry *) node->list_data;
 
 			if (entry && (!ptr || ptr == entry->buf)) {
-				u_free(entry->buf);
 				u_free(entry);
 				lnode_destroy (node);
-				list_delete(serctx->WsSerializerAllocList, node);
+				node = list_delete2(serctx->WsSerializerAllocList, node);
 				if (ptr != NULL) {
 					break;
 				}
 			}
-			node =
-			    list_next(serctx->WsSerializerAllocList, node);
+			else
+				node = list_next(serctx->WsSerializerAllocList, node);
 		}
 		u_unlock(serctx);
 	}
