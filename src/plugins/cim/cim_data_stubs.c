@@ -696,6 +696,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	subsInfo->eventpoll= CimResource_EventPoll_EP;
 	subsInfo->cancel = CimResource_SubscriptionCancel_EP;
 	subsInfo->vendor_namespaces = cimclient->namespaces;
+	subsInfo->cim_namespace = u_strdup(cimclient->cim_namespace);
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
 		instance= cim_get_instance_from_selectors(cimclient, cntx, status);
 		if(instance) {
@@ -703,15 +704,14 @@ CimResource_Subscribe_EP(WsContextH cntx,
 		}
 	}
 	else {
-		indicationfilter = cim_create_indication_filter(cimclient, subsInfo->filter->query, "WQL",
-			subsInfo->subsId, status);
+		indicationfilter = cim_create_indication_filter(cimclient, subsInfo, "WQL", status);
 	}
 	if(status->fault_code ) {
 		retval = 1;
 		goto cleanup;
 	}
 
-	indicationhandler = cim_create_indication_handler(cimclient, subsInfo->subsId, status);
+	indicationhandler = cim_create_indication_handler(cimclient, subsInfo, status);
 	if(status->fault_code) {
 		retval = 1;
 		goto cleanup;

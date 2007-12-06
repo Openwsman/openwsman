@@ -1393,6 +1393,7 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	u_free(subsInfo->locale);
 	u_free(subsInfo->soapNs);
 	u_free(subsInfo->contentEncoding);
+	u_free(subsInfo->cim_namespace);
 	if (subsInfo->filter) {
 		if(subsInfo->filter->query)
 			u_free(subsInfo->filter->query);

@@ -1655,9 +1655,9 @@ cim_get_instance(CimClientInfo * client,
 	}
 }
 
-static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
+static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
-	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(client->cim_namespace,
+	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(subsInfo->cim_namespace,
 				       "CIM_IndicationFilter", rc);
 	CMAddKey(objectpath_filter, "SystemCreationClassName",
 		SYSTEMCREATIONCLASSNAME, CMPI_chars);
@@ -1666,14 +1666,14 @@ static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, c
 	CMAddKey(objectpath_filter, "CreationClassName",
 		"CIM_IndicationFilter", CMPI_chars);
 	CMAddKey(objectpath_filter, "Name",
-			 uuid, CMPI_chars);
+			 subsInfo->subsId, CMPI_chars);
 	return objectpath_filter;
 }
 
 static CMPIObjectPath 
-*cim_indication_handler_objectpath(CimClientInfo *client, char *uuid, CMPIStatus *rc)
+*cim_indication_handler_objectpath(CimClientInfo *client, WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
-	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(client->cim_namespace,
+	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(subsInfo->cim_namespace,
 				       "CIM_IndicationHandlerCIMXML", rc);
 	CMAddKey(objectpath_handler, "SystemCreationClassName",
 		SYSTEMCREATIONCLASSNAME, CMPI_chars);
@@ -1682,12 +1682,12 @@ static CMPIObjectPath
 	CMAddKey(objectpath_handler, "CreationClassName",
 		"CIM_IndicationHandlerCIMXML", CMPI_chars);
 	CMAddKey(objectpath_handler, "Name",
-			 uuid, CMPI_chars);
+			 subsInfo->cim_namespace, CMPI_chars);
 	return objectpath_handler;
 }
 
-CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querystring,
-	char *querylanguage, char *uuid, WsmanStatus *status)
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo,
+	char *querylanguage, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
@@ -1696,11 +1696,11 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, char *querys
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
-	objectpath = cim_indication_filter_objectpath(client, uuid, &rc);
+	objectpath = cim_indication_filter_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
 	CMAddKey(objectpath, "Query",
-			querystring, CMPI_chars);
+			subsInfo->filter->query, CMPI_chars);
 	CMAddKey(objectpath, "QueryLanguage",
 			querylanguage, CMPI_chars);
 	char *indicationns = get_cim_indication_SourceNamespace();
@@ -1727,7 +1727,7 @@ cleanup:
 	return objectpath;
 }
 
-CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid, WsmanStatus *status)
+CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
@@ -1736,11 +1736,11 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, char *uuid,
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
-	objectpath = cim_indication_handler_objectpath(client, uuid, &rc);
+	objectpath = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc) 
 		goto cleanup;
 	
-	char *servicepath = create_cimxml_listener_path(uuid);
+	char *servicepath = create_cimxml_listener_path(subsInfo->subsId);
 	char serverpath[128];
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
 			get_server_port(), servicepath);
@@ -1780,9 +1780,9 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	CMPIObjectPath *objectpath_handler = NULL;
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
 	if(rc.rc) goto cleanup;
-	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc) goto cleanup;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", NULL);
@@ -1847,10 +1847,10 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMPIObjectPath *objectpath_handler = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
@@ -1896,13 +1896,13 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMPIObjectPath *objectpath_subscription = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	CMPIObjectPath *objectpath_handler = NULL;
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo->subsId, &rc);
+	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo->subsId, &rc);
+	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-	objectpath_subscription = newCMPIObjectPath(client->cim_namespace,
+	objectpath_subscription = newCMPIObjectPath(subsInfo->cim_namespace,
 				       "CIM_IndicationSubscription", &rc);
 	if(rc.rc)
 		goto cleanup;
