@@ -789,11 +789,11 @@ static void example7(void)
 
 
 
-static void example50(void)
+static void example8(void)
 {
 
 	printf
-	    ("\n\n   ********   example50. XML datetime deserialization  ********\n");
+	    ("\n\n   ********   example8. XML datetime deserialization  ********\n");
 
 	char xml_dttm[] = "2007-02-13T12:39:14-03:30";
 	XML_DATETIME dttm;
@@ -851,32 +851,151 @@ static void example106()
 #endif
 
 
-static void example107(void)
+static void example9(void)
 {
 
+}
+
+static void example10()
+{
+	char xmlstring[] = "<example><PowerState xsi:nil=\"true\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"/></example>";
+//	char xmlstring[] = "<example><PowerState state = \"critical\">5</PowerState></example>";
+	typedef struct {
+                XML_TYPE_STR value;
+                XML_NODE_ATTR *attrs;
+        } item;
+        SER_TYPEINFO_STRING_ATTR;
+	WsXmlDocH doc = ws_xml_read_memory(xmlstring, strlen(xmlstring), "UTF-8", 0);
+	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+	 printf
+            ("\n\n   ********   example10. xsi:nil attibute test  ********\n");
+	WsSerializerContextH cntx = ws_serializer_init();
+	if (cntx == NULL) {
+                printf("Error ws_create_runtime\n");
+                return;
+        }
+	item *value = (item *)ws_deserialize(cntx, node, string_attr_TypeInfo, "PowerState", NULL, NULL, 0, 0);
+	if(value->attrs)
+		printf("*********attrs->ns = %s attrs->name = %s attrs->value = %s*********\n", value->attrs->ns, value->attrs->name, value->attrs->value);
+	if(ws_havenilvalue(value->attrs))
+		printf("******** the attribute has xsi:nil ********\n");
+	ws_xml_destroy_doc(doc);
+	ws_serializer_cleanup(cntx);
+}
+
+static void example11()
+{
+	typedef struct {
+		XML_TYPE_INT8 byte1;
+		XML_TYPE_INT32 int1;
+		XML_TYPE_INT8 byte2;
+	} Foo;
+
+	typedef struct {
+		XML_TYPE_INT8 byte1;
+		XML_TYPE_INT16 short1;
+		XML_TYPE_INT32 int1;
+		char *string1;
+		Foo foo;
+	} Sample;
+
+
+	Sample sample = { -1, -127, 4, "string", {-12, 196, 8} };
+
+	SER_START_ITEMS(Foo)
+	    SER_INT8("FOOBYTE1", 1),
+	    SER_INT32("FOOINT32", 1),
+	    SER_INT8("FOOBYTE2", 1), 
+	SER_END_ITEMS(Foo);
+
+
+	SER_START_ITEMS(Sample)
+	    SER_INT8("BYTE", 1),
+	    SER_INT16("SHORT", 1),
+	    SER_INT32("INT32", 1),
+	    SER_STR("STRING", 1),
+	    SER_STRUCT("FOO", 1, Foo), 
+	SER_END_ITEMS(Sample);
 
 	WsSerializerContextH cntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
+	int retval;
 
 	printf
-	    ("\n\n   ********   example7. Endpoint Reference  ********\n");
+	    ("\n\n   ********   example11. Structure with pads (signed int test).  ********\n");
 
 	cntx = ws_serializer_init();
 	if (cntx == NULL) {
 		printf("Error ws_create_runtime\n");
 		return;
 	}
-	doc = ws_xml_create_doc(NULL, "example");
+	doc = ws_xml_create_doc( NULL, "example");
 	node = ws_xml_get_doc_root(doc);
-	WsXmlAttrH attr;
-	attr = ws_xml_add_node_attr(node, NULL, "Name", "Attribute");
-	attr = ws_xml_add_node_attr(node, NULL, "Name", "Attribute");
+
+	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
+			      CLASSNAME, NULL, NULL, 0);
+	printf("ws_serialize: %d\n", retval);
+	ws_xml_dump_node_tree(stdout, node);
+
+	node = ws_xml_get_doc_root(doc);
+	Sample *cs = (Sample *) ws_deserialize(cntx,
+					       node,
+					       Sample_TypeInfo,
+					       CLASSNAME, NULL, NULL,
+					       0, 0);
+	if (cs == NULL) {
+		printf("Errror ws_deserialize\n");
+		return;
+	}
+
+	printf("\n      initial and deserialized structures\n");
+	printf("     byte1    =    %d : %d\n", sample.byte1, cs->byte1);
+	printf("     short1   =    %d : %d\n", sample.short1, cs->short1);
+	printf("     int1     =    %d : %d\n", sample.int1, cs->int1);
+	printf("     string1  =    <%s> : <%s>\n", sample.string1,
+	       cs->string1);
+	printf("     foo :\n");
+	printf("        byte1    =    %d : %d\n", sample.foo.byte1,
+	       cs->foo.byte1);
+	printf("        int1     =    %d : %d\n", sample.foo.int1,
+	       cs->foo.int1);
+	printf("        byte2    =    %d : %d\n", sample.foo.byte2,
+	       cs->foo.byte2);
 }
 
+static void example12()
+{
+	typedef struct {
+                XML_TYPE_REAL32 value;
+                XML_NODE_ATTR *attrs;
+        } item;
+	item org = {1.257,NULL};
+	SER_TYPEINFO_REAL32_ATTR;
+	WsXmlDocH doc;
+	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+	 printf
+            ("\n\n   ********   example12. real32/64 deserialize/serialize  ********\n");
+	WsSerializerContextH cntx = ws_serializer_init();
+	if (cntx == NULL) {
+                printf("Error ws_create_runtime\n");
+                return;
+        }
+	doc = ws_xml_create_doc( NULL, "example");
+        node = ws_xml_get_doc_root(doc);
 
+        int retval = ws_serialize(cntx, node, &org, real32_TypeInfo,
+                              "PowerState", NULL, NULL, 0);
+        printf("ws_serialize: %d\n", retval);
+        ws_xml_dump_node_tree(stdout, node);
 
-
+	item *con = (item *)ws_deserialize(cntx, node, real32_TypeInfo, "PowerState", NULL, NULL, 0, 0);
+	if(con->value != org.value) {
+		printf("Mismatched! org.value = %f con->value = %f\n", org.value, con->value);
+	}
+	ws_xml_destroy_doc(doc);
+	ws_serializer_cleanup(cntx);
+}
 static void initialize_logging(void)
 {
 	debug_add_handler(wsman_debug_message_handler, DEBUG_LEVEL_ALWAYS,
@@ -924,6 +1043,11 @@ int main(int argc, char **argv)
 		example5();
 		example6();
 		example7();
+		example8();
+		example9();
+		example10();
+		example11();
+		example12();
 		return 0;
 	}
 
@@ -951,11 +1075,20 @@ int main(int argc, char **argv)
 		case 7:
 			example7();
 			break;
-		case 50:
-			example50();
+		case 8:
+			example8();
 			break;
-		case 107:
-			example107();
+		case 9:
+			example9();
+			break;
+		case 10:
+			example10();
+			break;
+		case 11:
+			example11();
+			break;
+		case 12:
+			example12();
 			break;
 		default:
 			printf("\n    No example%d()\n", num);

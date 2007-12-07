@@ -1202,8 +1202,27 @@ int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
 	return retVal;
 }
 
+int ws_xml_set_node_long(WsXmlNodeH node, long Val)
+{
+	int retVal = -1;
+	if (node) {
+		char buf[12];
+		sprintf(buf, "%ld", Val);
+		retVal = ws_xml_set_node_text(node, buf);
+	}
+	return retVal;
+}
 
-
+int ws_xml_set_node_real(WsXmlNodeH node, double Val)
+{
+	int retVal = -1;
+	if (node) {
+		char buf[12];
+		sprintf(buf, "%E", Val);
+		retVal = ws_xml_set_node_text(node, buf);
+	}
+	return retVal;
+}
 
 char *ws_xml_get_attr_name(WsXmlAttrH attr)
 {

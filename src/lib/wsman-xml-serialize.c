@@ -291,6 +291,157 @@ handle_attrs(struct __XmlSerializationData *data,
 	return ret;
 }
 
+static int do_serialize_int(XmlSerializationData * data, int valSize)
+{
+	WsXmlNodeH child = NULL;
+	XML_TYPE_INT64 tmp;
+	int retVal = DATA_ALL_SIZE(data);
+	char *end;
+	char *str;
+
+	TRACE_ENTER;
+	debug("handle %d INT%d %s;", DATA_COUNT(data),
+	      8 * valSize, data->elementInfo->name);
+	if (DATA_BUF(data) + retVal > data->stopper) {
+		error("size of %d structures %s exceeds stopper (%p > %p)",
+		      DATA_COUNT(data), DATA_ELNAME(data),
+		      DATA_BUF(data) + retVal, data->stopper);
+		return WS_ERR_INVALID_PARAMETER;
+	}
+	if (DATA_MUST_BE_SKIPPED(data)) {
+		DATA_BUF(data) = DATA_BUF(data) + retVal;
+		return retVal;
+	}
+	if (data->mode == XML_SMODE_FREE_MEM) {
+		goto DONE;
+	}
+	if ((data->mode != XML_SMODE_DESERIALIZE &&
+	     data->mode != XML_SMODE_SERIALIZE)) {
+		error("invalid mode %d", data->mode);
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
+	}
+
+	for (data->index = 0; data->index < DATA_COUNT(data);
+	     data->index++) {
+		debug("%s[%d] = %p", data->elementInfo->name, data->index,
+		      data->elementBuf);
+
+		if (data->mode == XML_SMODE_SERIALIZE) {
+			debug("value size: %d", valSize);
+			if (valSize == 1)
+				tmp =
+				    *((XML_TYPE_INT8 *) data->elementBuf);
+			else if (valSize == 2)
+				tmp = *((XML_TYPE_INT16 *) data->
+				      elementBuf);
+			else if (valSize == 4)
+				tmp = *((XML_TYPE_INT32 *) data->
+				      elementBuf);
+			else if (valSize == 8)
+				tmp = *((XML_TYPE_INT64 *) data->
+				      elementBuf);
+			else {
+				error("unsupported uint size + %d",
+						8 * valSize);
+				retVal = WS_ERR_INVALID_PARAMETER;
+				goto DONE;
+			}
+
+			if (((child = xml_serializer_add_child(data,
+						       NULL)) == NULL)
+			    || (ws_xml_set_node_long(child, tmp)) != 0) {
+				debug("could not add child %s[%d]",
+				      DATA_ELNAME(data), data->index);
+				retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+				goto DONE;
+			}
+		}
+		if (data->mode == XML_SMODE_DESERIALIZE) {
+			if ((child = xml_serializer_get_child(data)) == NULL) {
+				error ("not enough (%d < %d) instances of element %s",
+				     data->index, DATA_COUNT(data),
+				     DATA_ELNAME(data));
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			if ((str = ws_xml_get_node_text(child)) == NULL) {
+				error("No text of node %s[%d]",
+				      DATA_ELNAME(data), data->index);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			while (isspace(str[0]))
+				str++;
+			errno = 0;
+			if (str[0] == 0) {
+				if (ws_xml_find_attr_bool(child,
+						     XML_NS_SCHEMA_INSTANCE,
+						     XML_SCHEMA_NIL)) {
+					goto ATTR;
+				}
+				error("absent value = %s", str);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			tmp = strtoll(str, &end, 10);
+			if (errno) {
+				error("strtoul(%s) failed; errno = %d",
+				      str, errno);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			while (isspace(end[0]))
+				end++;
+			if (*end != 0) {
+				error("wrong token = %s.", str);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			if (valSize == 1) {
+				if (tmp > 127 || tmp < -128) {
+					error("not int8 = %ld", tmp);
+					retVal = WS_ERR_XML_PARSING;
+					goto DONE;
+				}
+				*((XML_TYPE_INT8 *) data->elementBuf) =
+				    (XML_TYPE_INT8) tmp;
+			} else if (valSize == 2) {
+				if (tmp > 32767 || tmp < -32768) {
+					error("not int16 = %ld", tmp);
+					retVal = WS_ERR_XML_PARSING;
+					goto DONE;
+				}
+				*((XML_TYPE_INT16 *) data->elementBuf) =
+				    (XML_TYPE_INT16) tmp;
+			} else if (valSize == 4) {
+				*((XML_TYPE_INT32 *) data->elementBuf) =
+				    (XML_TYPE_INT32) tmp;
+			} else if (valSize == 8) {
+				*((XML_TYPE_INT64 *) data->elementBuf) =
+				    (XML_TYPE_INT64) tmp;
+			} else {
+				error("unsupported int size + %d",
+				      8 * valSize);
+				retVal = WS_ERR_INVALID_PARAMETER;
+				goto DONE;
+			}
+		}
+ATTR:
+		handle_attrs(data, child, valSize);
+		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
+	}
+	if ((data->mode == XML_SMODE_DESERIALIZE) &&
+	    xml_serializer_get_child(data)) {
+		error("too many (%d > %d) instances of element %s",
+		      data->index, DATA_COUNT(data), DATA_ELNAME(data));
+		retVal = WS_ERR_XML_PARSING;
+		goto DONE;
+	}
+DONE:
+	TRACE_EXIT;
+	return retVal;
+}
 
 static int do_serialize_uint(XmlSerializationData * data, int valSize)
 {
@@ -374,16 +525,14 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 			}
 			while (isspace(str[0]))
 				str++;
-
 			errno = 0;
 			if (str[0] == '-' || str[0] == 0) {
 				if (ws_xml_find_attr_bool(child,
 						     XML_NS_SCHEMA_INSTANCE,
 						     XML_SCHEMA_NIL)) {
-					DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
-					goto DONE;
+					goto ATTR;
 				}
-				error("negative or absent value = %s", str);
+				error("absent value = %s", str);
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
 			}
@@ -430,6 +579,7 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 				goto DONE;
 			}
 		}
+ATTR:
 		handle_attrs(data, child, valSize);
 		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
 	}
@@ -538,6 +688,281 @@ int do_serialize_uint64(XmlSerializationData * data)
 
 	DATA_BUF(data) = DATA_BUF(data) + pad;
 	retVal = do_serialize_uint(data, sizeof(XML_TYPE_UINT64));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
+
+int do_serialize_int8(struct __XmlSerializationData* data)
+{
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		size_t al = get_struct_align();
+		size_t pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+		if (pad) {
+			pad = al - pad;
+		}
+		DATA_BUF(data) = DATA_BUF(data) + pad;
+	}
+
+	return do_serialize_int(data, sizeof(XML_TYPE_INT8));
+}
+int do_serialize_int16(struct __XmlSerializationData* data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_UINT16 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+
+	if (pad) {
+		pad = al - pad;
+	}
+
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_int(data, sizeof(XML_TYPE_INT16));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
+int do_serialize_int32(struct __XmlSerializationData* data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_UINT32 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+	if (pad) {
+		pad = al - pad;
+	}
+
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_int(data, sizeof(XML_TYPE_INT32));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
+int do_serialize_int64(struct __XmlSerializationData* data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_UINT64 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+        pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+	if (pad) {
+		pad = al - pad;
+	}
+
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_int(data, sizeof(XML_TYPE_INT64));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
+
+static int do_serialize_real(XmlSerializationData * data, int valSize)
+{
+	WsXmlNodeH child = NULL;
+	XML_TYPE_REAL64 tmp;
+	int retVal = DATA_ALL_SIZE(data);
+	char *end;
+	char *str;
+
+	TRACE_ENTER;
+	debug("handle %d REAL%d %s;", DATA_COUNT(data),
+	      8 * valSize, data->elementInfo->name);
+	if (DATA_BUF(data) + retVal > data->stopper) {
+		error("size of %d structures %s exceeds stopper (%p > %p)",
+		      DATA_COUNT(data), DATA_ELNAME(data),
+		      DATA_BUF(data) + retVal, data->stopper);
+		return WS_ERR_INVALID_PARAMETER;
+	}
+	if (DATA_MUST_BE_SKIPPED(data)) {
+		DATA_BUF(data) = DATA_BUF(data) + retVal;
+		return retVal;
+	}
+	if (data->mode == XML_SMODE_FREE_MEM) {
+		goto DONE;
+	}
+	if ((data->mode != XML_SMODE_DESERIALIZE &&
+	     data->mode != XML_SMODE_SERIALIZE)) {
+		error("invalid mode %d", data->mode);
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
+	}
+
+	for (data->index = 0; data->index < DATA_COUNT(data);
+	     data->index++) {
+		debug("%s[%d] = %p", data->elementInfo->name, data->index,
+		      data->elementBuf);
+
+		if (data->mode == XML_SMODE_SERIALIZE) {
+			debug("value size: %d", valSize);
+			if (valSize == 4)
+				tmp = *((XML_TYPE_REAL32 *) data->
+				      elementBuf);
+			else if (valSize == 8)
+				tmp = *((XML_TYPE_REAL64 *) data->
+				      elementBuf);
+			else {
+				error("unsupported real size + %d",
+						8 * valSize);
+				retVal = WS_ERR_INVALID_PARAMETER;
+				goto DONE;
+			}
+
+			if (((child = xml_serializer_add_child(data,
+						       NULL)) == NULL)
+			    || (ws_xml_set_node_real(child, tmp)) != 0) {
+				debug("could not add child %s[%d]",
+				      DATA_ELNAME(data), data->index);
+				retVal = WS_ERR_INSUFFICIENT_RESOURCES;
+				goto DONE;
+			}
+		}
+		if (data->mode == XML_SMODE_DESERIALIZE) {
+			if ((child = xml_serializer_get_child(data)) == NULL) {
+				error ("not enough (%d < %d) instances of element %s",
+				     data->index, DATA_COUNT(data),
+				     DATA_ELNAME(data));
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			if ((str = ws_xml_get_node_text(child)) == NULL) {
+				error("No text of node %s[%d]",
+				      DATA_ELNAME(data), data->index);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			while (isspace(str[0]))
+				str++;
+			errno = 0;
+			if (str[0] == 0) {
+				if (ws_xml_find_attr_bool(child,
+						     XML_NS_SCHEMA_INSTANCE,
+						     XML_SCHEMA_NIL)) {
+					goto ATTR;
+				}
+				error("absent value = %s", str);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			tmp = strtod(str, &end);
+			if (errno) {
+				error("strtod(%s) failed; errno = %d",
+				      str, errno);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			while (isspace(end[0]))
+				end++;
+			if (*end != 0) {
+				error("wrong token = %s.", str);
+				retVal = WS_ERR_XML_PARSING;
+				goto DONE;
+			}
+			if (valSize == 4) {
+				*((XML_TYPE_REAL32 *) data->elementBuf) =
+				    (XML_TYPE_REAL32) tmp;
+			} else if (valSize == 8) {
+				*((XML_TYPE_REAL64 *) data->elementBuf) =
+				    (XML_TYPE_REAL64) tmp;
+			} else {
+				error("unsupported REAL size + %d",
+				      8 * valSize);
+				retVal = WS_ERR_INVALID_PARAMETER;
+				goto DONE;
+			}
+		}
+ATTR:
+		handle_attrs(data, child, valSize);
+		DATA_BUF(data) = DATA_BUF(data) + DATA_SIZE(data);
+	}
+	if ((data->mode == XML_SMODE_DESERIALIZE) &&
+	    xml_serializer_get_child(data)) {
+		error("too many (%d > %d) instances of element %s",
+		      data->index, DATA_COUNT(data), DATA_ELNAME(data));
+		retVal = WS_ERR_XML_PARSING;
+		goto DONE;
+	}
+DONE:
+	TRACE_EXIT;
+	return retVal;
+}
+
+int do_serialize_real32(struct __XmlSerializationData* data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_REAL32 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+	pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+	if (pad) {
+		pad = al - pad;
+	}
+
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_real(data, sizeof(XML_TYPE_REAL32));
+	if (retVal >= 0) {
+		retVal += pad;
+	}
+	return retVal;
+}
+int do_serialize_real64(struct __XmlSerializationData* data)
+{
+	typedef struct {
+		XML_TYPE_UINT8 a;
+		XML_TYPE_REAL64 b;
+	} dummy;
+	size_t al;
+	size_t pad;
+	int retVal;
+	if (XML_IS_ATTRS(data->elementInfo)) {
+		al = get_struct_align();
+	} else {
+		al = (char *) &(((dummy *) NULL)->b) - (char *) NULL;
+	}
+        pad = (size_t) ((PTRTOINT) DATA_BUF(data) % al);
+	if (pad) {
+		pad = al - pad;
+	}
+	DATA_BUF(data) = DATA_BUF(data) + pad;
+	retVal = do_serialize_real(data, sizeof(XML_TYPE_REAL64));
 	if (retVal >= 0) {
 		retVal += pad;
 	}
@@ -1508,3 +1933,17 @@ void ws_serializer_free_all(WsSerializerContextH serctx)
 	do_serializer_free(serctx, NULL);
 	TRACE_EXIT;
 }
+
+int ws_havenilvalue(XML_NODE_ATTR *attrs) 
+{
+	while(attrs) { 
+		if(attrs->ns && attrs->name && attrs->value && 
+			strcmp(attrs->ns, XML_NS_SCHEMA_INSTANCE) == 0 && 
+			strcmp(attrs->name, XML_SCHEMA_NIL) == 0 && 
+			strcasecmp(attrs->value, "true") == 0) 
+			return 1; 
+		attrs = attrs->next; 
+	} 
+	return 0; 
+} 
+

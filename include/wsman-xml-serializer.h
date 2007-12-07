@@ -64,12 +64,18 @@ typedef struct __XmlSerialiseDynamicSizeData
 }  XmlSerialiseDynamicSizeData;
 
 #ifdef WIN32
+typedef char XML_TYPE_INT8;
 typedef unsigned char XML_TYPE_UINT8;
+typedef short XML_TYPE_INT16;
 typedef unsigned short XML_TYPE_UINT16;
+typedef long XML_TYPE_INT32;
 typedef unsigned long XML_TYPE_UINT32;
+typedef long long XML_TYPE_INT64;
 typedef unsigned long long XML_TYPE_UINT64;
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
+typedef float XML_TYPE_REAL32;
+typedef double XML_TYPE_REAL64;
 #define PTRTOINT unsigned long long
 #else
 #include <sys/types.h>
@@ -159,23 +165,46 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 // Serializer Info base defines
 
+#define SER_NS_INT8_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x),  sizeof (XML_TYPE_INT8), \
+        flags, do_serialize_int8, NULL \
+    }
 #define SER_NS_UINT8_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x),  sizeof (XML_TYPE_UINT8), \
         flags, do_serialize_uint8, NULL \
+    }
+#define SER_NS_INT16_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (XML_TYPE_INT16), \
+        flags, do_serialize_int16, NULL \
     }
 #define SER_NS_UINT16_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (XML_TYPE_UINT16), \
         flags, do_serialize_uint16, NULL \
     }
+#define SER_NS_INT32_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (XML_TYPE_INT32), \
+        flags, do_serialize_int32, NULL \
+    }
 #define SER_NS_UINT32_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (XML_TYPE_UINT32), \
         flags, do_serialize_uint32, NULL \
+    }
+#define SER_NS_INT64_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (XML_TYPE_INT64), \
+        flags, do_serialize_int64, NULL \
     }
 #define SER_NS_UINT64_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (XML_TYPE_UINT64), \
         flags, do_serialize_uint64, NULL \
     }
-
+#define SER_NS_REAL32_FLAGS(ns, n, x, flags)\
+     {(ns), (n), (x), (x), sizeof (XML_TYPE_REAL32), \
+        flags, do_serialize_real, NULL \
+     }
+#define SER_NS_REAL64_FLAGS(ns, n, x, flags)\
+     {(ns), (n), (x), (x), sizeof (XML_TYPE_REAL64), \
+        flags, do_serialize_real, NULL \
+     }
 #define SER_NS_BOOL_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (XML_TYPE_BOOL), \
         flags, do_serialize_bool, NULL \
@@ -194,23 +223,46 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
          do_serialize_dyn_size_array, t##_TypeInfo \
     }
 
-
             // nodes with attributes
+#define SER_ATTR_NS_INT8_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_INT8 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_int8, NULL \
+    }
 #define SER_ATTR_NS_UINT8_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT8 s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_uint8, NULL \
+    }
+#define SER_ATTR_NS_INT16_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_INT16 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_int16, NULL \
     }
 #define SER_ATTR_NS_UINT16_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT16 s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_uint16, NULL \
     }
+#define SER_ATTR_NS_INT32_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_INT32 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_int32, NULL \
+    }
 #define SER_ATTR_NS_UINT32_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT32 s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_uint32, NULL \
     }
+#define SER_ATTR_NS_INT64_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_INT64 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_int64, NULL \
+    }
 #define SER_ATTR_NS_UINT64_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT64 s; XML_NODE_ATTR *a;}), \
         flags | SER_ATTRS, do_serialize_uint64, NULL \
+    }
+#define SER_ATTR_NS_REAL32_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_UINT32 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_real32, NULL \
+    }
+#define SER_ATTR_NS_REAL64_FLAGS(ns, n, x, flags) \
+    {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_REAL64 s; XML_NODE_ATTR *a;}), \
+        flags | SER_ATTRS, do_serialize_real64, NULL \
     }
 #define SER_ATTR_NS_BOOL_FLAGS(ns, n, x, flags) \
     {(ns), (n), (x), (x), sizeof (struct {XML_TYPE_BOOL s; XML_NODE_ATTR *a;}), \
@@ -227,10 +279,16 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 
 // No namespace defines
+#define SER_INT8_FLAGS(n, x, flags)  SER_NS_INT8_FLAGS(NULL, n, x, flags)
 #define SER_UINT8_FLAGS(n, x, flags)  SER_NS_UINT8_FLAGS(NULL, n, x, flags)
+#define SER_INT16_FLAGS(n, x, flags) SER_NS_INT16_FLAGS(NULL, n, x, flags)
 #define SER_UINT16_FLAGS(n, x, flags) SER_NS_UINT16_FLAGS(NULL, n, x, flags)
+#define SER_INT32_FLAGS(n, x, flags) SER_NS_INT32_FLAGS(NULL, n, x, flags)
 #define SER_UINT32_FLAGS(n, x, flags) SER_NS_UINT32_FLAGS(NULL, n, x, flags)
+#define SER_INT64_FLAGS(n, x, flags) SER_NS_INT64_FLAGS(NULL, n, x, flags)
 #define SER_UINT64_FLAGS(n, x, flags) SER_NS_UINT64_FLAGS(NULL, n, x, flags)
+#define SER_REAL32_FLAGS(n, x, flags) SER_NS_REAL32_FLAGS(NULL, n, x, flags)
+#define SER_REAL64_FLAGS(n, x, flags) SER_NS_REAL64_FLAGS(NULL, n, x, flags)
 #define SER_BOOL_FLAGS(n, x, flags)   SER_NS_BOOL_FLAGS(NULL, n, x, flags)
 #define SER_STR_FLAGS(n, x, flags)    SER_NS_STR_FLAGS(NULL, n, x, flags)
 #define SER_STRUCT_FLAGS(n, x, flags, t) \
@@ -240,10 +298,16 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 
 // Serialization Info for different types
+#define SER_INT8(n, x)               SER_INT8_FLAGS(n, x, 0)
 #define SER_UINT8(n, x)               SER_UINT8_FLAGS(n, x, 0)
+#define SER_INT16(n, x)              SER_INT16_FLAGS(n, x, 0)
 #define SER_UINT16(n, x)              SER_UINT16_FLAGS(n, x, 0)
+#define SER_INT32(n, x)              SER_INT32_FLAGS(n, x, 0)
 #define SER_UINT32(n, x)              SER_UINT32_FLAGS(n, x, 0)
+#define SER_INT64(n, x)              SER_INT64_FLAGS(n, x, 0)
 #define SER_UINT64(n, x)              SER_UINT64_FLAGS(n, x, 0)
+#define SER_REAL32(n, x)              SER_REAL32_FLAGS(n, x, 0)
+#define SER_REAL64(n, x)              SER_REAL64_FLAGS(n, x, 0)
 #define SER_BOOL(n, x)                SER_BOOL_FLAGS(n, x, 0)
 #define SER_STR(n, x)                 SER_STR_FLAGS(n, x, 0)
 #define SER_STRUCT(n, x, t)           SER_STRUCT_FLAGS(n, x, 0, t)
@@ -252,6 +316,8 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 #define SER_NS_UINT16(ns, n, x)       SER_NS_UINT16_FLAGS(ns, n, x, 0)
 #define SER_NS_UINT32(ns, n, x)       SER_NS_UINT32_FLAGS(ns, n, x, 0)
 #define SER_NS_UINT64(ns, n, x)       SER_NS_UINT64_FLAGS(ns, n, x, 0)
+#define SER_NS_REAL32(ns, n, x)       SER_NS_REAL32_FLAGS(ns, n, x, 0)
+#define SER_NS_REAL64(ns, n, x)       SER_NS_REAL64_FLAGS(ns, n, x, 0)
 #define SER_NS_BOOL(ns, n, x)         SER_NS_BOOL_FLAGS(ns, n, x, 0)
 #define SER_NS_STR(ns, n, x)          SER_NS_STR_FLAGS(ns, n, x, 0)
 #define SER_NS_STRUCT(ns, n, x, t)    SER_NS_STRUCT_FLAGS(ns, n, x, 0, t)
@@ -260,20 +326,31 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 
         // Serialization Info to skip in
-
+#define SER_IN_INT8(n, x)            SER_INT8_FLAGS(n, x, SER_IN)
 #define SER_IN_UINT8(n, x)            SER_UINT8_FLAGS(n, x, SER_IN)
+#define SER_IN_INT16(n, x)           SER_INT16_FLAGS(n, x, SER_IN)
 #define SER_IN_UINT16(n, x)           SER_UINT16_FLAGS(n, x, SER_IN)
 #define SER_IN_UINT32(n, x)           SER_UINT32_FLAGS(n, x, SER_IN)
+#define SER_IN_UINT32(n, x)           SER_UINT32_FLAGS(n, x, SER_IN)
+#define SER_IN_INT64(n, x)           SER_INT64_FLAGS(n, x, SER_IN)
 #define SER_IN_UINT64(n, x)           SER_UINT64_FLAGS(n, x, SER_IN)
+#define SER_IN_REAL32(n, x)           SER_REAL32_FLAGS(n, x, SER_IN)
+#define SER_IN_REAL64(n, x)           SER_REAL64_FLAGS(n, x, SER_IN)
 #define SER_IN_BOOL(n, x)             SER_BOOL_FLAGS(n, x, SER_IN)
 #define SER_IN_STR(n, x)              SER_STR_FLAGS(n, x, SER_IN)
 #define SER_IN_STRUCT(n, x, t)        SER_STRUCT_FLAGS(n, x, SER_IN, t)
 #define SER_IN_DYN_ARRAY(n, mn, mx, t)  \
                                SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN, t)
+#define SER_NS_IN_INT8(ns, n, x)     SER_NS_INT8_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_IN)
+#define SER_NS_IN_INT16(ns, n, x)    SER_NS_INT16_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_IN)
+#define SER_NS_IN_INT32(ns, n, x)    SER_NS_INT32_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_IN)
+#define SER_NS_IN_INT64(ns, n, x)    SER_NS_INT64_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_UINT64(ns, n, x)    SER_NS_UINT64_FLAGS(ns, n, x, SER_IN)
+#define SER_NS_IN_REAL32(ns, n, x)    SER_NS_REAL32_FLAGS(ns, n, x, SER_IN)
+#define SER_NS_IN_REAL64(ns, n, x)    SER_NS_REAL64_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_IN)
 #define SER_NS_IN_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_IN, t)
@@ -281,19 +358,31 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
                                SER_NS_DYN_ARRAY_FLAGS(ns, n, mn, mx, SER_IN, t)
 
         // Serialization Info to skip out
+#define SER_OUT_INT8(n, x)           SER_INT8_FLAGS(n, x, SER_OUT)
 #define SER_OUT_UINT8(n, x)           SER_UINT8_FLAGS(n, x, SER_OUT)
+#define SER_OUT_INT16(n, x)          SER_INT16_FLAGS(n, x, SER_OUT)
 #define SER_OUT_UINT16(n, x)          SER_UINT16_FLAGS(n, x, SER_OUT)
+#define SER_OUT_INT32(n, x)          SER_INT32_FLAGS(n, x, SER_OUT)
 #define SER_OUT_UINT32(n, x)          SER_UINT32_FLAGS(n, x, SER_OUT)
+#define SER_OUT_INT64(n, x)          SER_INT64_FLAGS(n, x, SER_OUT)
 #define SER_OUT_UINT64(n, x)          SER_UINT64_FLAGS(n, x, SER_OUT)
+#define SER_OUT_REAL32(n, x)          SER_REAL32_FLAGS(n, x, SER_OUT)
+#define SER_OUT_REAL64(n, x)          SER_REAL64_FLAGS(n, x, SER_OUT)
 #define SER_OUT_BOOL(n, x)            SER_BOOL_FLAGS(n, x, SER_OUT)
 #define SER_OUT_STR(n, x)             SER_STR_FLAGS(n, x, SER_OUT)
 #define SER_OUT_STRUCT(n, x, t)       SER_STRUCT_FLAGS(n, x, SER_OUT, t)
 #define SER_OUT_DYN_ARRAY(n, mn, mx, t)   \
                                       SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_OUT, t)
+#define SER_NS_OUT_INT8(ns, n, x)     SER_NS_INT8_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_UINT8(ns, n, x)     SER_NS_UINT8_FLAGS(ns, n, x, SER_OUT)
+#define SER_NS_OUT_INT16(ns, n, x)    SER_NS_INT16_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_UINT16(ns, n, x)    SER_NS_UINT16_FLAGS(ns, n, x, SER_OUT)
+#define SER_NS_OUT_INT32(ns, n, x)    SER_NS_INT32_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_UINT32(ns, n, x)    SER_NS_UINT32_FLAGS(ns, n, x, SER_OUT)
+#define SER_NS_OUT_INT64(ns, n, x)    SER_NS_INT64_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_UINT64(ns, n, x)    SER_NS_UINT64_FLAGS(ns, n, x, SER_OUT)
+#define SER_NS_OUT_REAL32(ns, n, x)    SER_NS_REAL32_FLAGS(ns, n, x, SER_OUT)
+#define SER_NS_OUT_REAL64(ns, n, x)    SER_NS_REAL64_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_BOOL(ns, n, x)      SER_NS_BOOL_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_STR(ns, n, x)       SER_NS_STR_FLAGS(ns, n, x, SER_OUT)
 #define SER_NS_OUT_STRUCT(ns, n, x, t) SER_NS_STRUCT_FLAGS(ns, n, x, SER_OUT, t)
@@ -302,24 +391,42 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 
         // Serialization Info to skip inout
+#define SER_INOUT_INT8(n, x)      SER_INT8_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_UINT8(n, x)      SER_UINT8_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_INT16(n, x)     SER_INT16_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_UINT16(n, x)     SER_UINT16_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_INT32(n, x)     SER_INT32_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_UINT32(n, x)     SER_UINT32_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_INT64(n, x)     SER_INT64_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_UINT64(n, x)     SER_UINT64_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_REAL32(n, x)     SER_REAL32_FLAGS(n, x, SER_IN | SER_OUT)
+#define SER_INOUT_REAL64(n, x)     SER_REAL64_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_BOOL(n, x)       SER_BOOL_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_STR(n, x)        SER_STR_FLAGS(n, x, SER_IN | SER_OUT)
 #define SER_INOUT_STRUCT(n, x, t)          \
                             SER_STRUCT_FLAGS(n, x, SER_IN | SER_OUT, t)
 #define SER_INOUT_DYN_ARRAY(n, mn, mx, t)  \
                              SER_DYN_ARRAY_FLAGS(n, mn, mx, SER_IN | SER_OUT, t)
+#define SER_NS_INOUT_INT8(ns, n, x)            \
+                        SER_NS_INT8_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_UINT8(ns, n, x)            \
                         SER_NS_UINT8_FLAGS(ns, n, x, SER_IN | SER_OUT)
+#define SER_NS_INOUT_INT16(ns, n, x)           \
+                        SER_NS_INT16_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_UINT16(ns, n, x)           \
                         SER_NS_UINT16_FLAGS(ns, n, x, SER_IN | SER_OUT)
+#define SER_NS_INOUT_INT32(ns, n, x)           \
+                        SER_NS_INT32_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_UINT32(ns, n, x)           \
                         SER_NS_UINT32_FLAGS(ns, n, x, SER_IN | SER_OUT)
+#define SER_NS_INOUT_INT64(ns, n, x)           \
+                        SER_NS_INT64_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_UINT64(ns, n, x)           \
                         SER_NS_UINT64_FLAGS(ns, n, x, SER_IN | SER_OUT)
+#define SER_NS_INOUT_REAL32(ns, n, x)           \
+                        SER_NS_REAL32_FLAGS(ns, n, x, SER_IN | SER_OUT)
+#define SER_NS_INOUT_REAL64(ns, n, x)           \
+                        SER_NS_REAL64_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_BOOL(ns, n, x)             \
                         SER_NS_BOOL_FLAGS(ns, n, x, SER_IN | SER_OUT)
 #define SER_NS_INOUT_STR(ns, n, x)              \
@@ -338,15 +445,29 @@ XmlSerializerInfo uint8_TypeInfo[] = {\
     SER_UINT8("uint8", 1), \
     SER_NULL \
 }
+#define SER_TYPEINFO_INT8 \
+XmlSerializerInfo int8_TypeInfo[] = {\
+    SER_INT8("int8", 1), \
+    SER_NULL \
+}
 #define SER_TYPEINFO_UINT8_ATTR \
 XmlSerializerInfo uint8_TypeInfo[] = {\
     SER_ATTR_NS_UINT8_FLAGS(NULL, "uint8", 1, SER_ATTRS), \
     SER_NULL \
 }
-
+#define SER_TYPEINFO_INT8_ATTR \
+XmlSerializerInfo int8_TypeInfo[] = {\
+    SER_ATTR_NS_INT8_FLAGS(NULL, "int8", 1, SER_ATTRS), \
+    SER_NULL \
+}
 #define SER_TYPEINFO_UINT16 \
 XmlSerializerInfo uint16_TypeInfo[] = { \
     SER_UINT16("uint16", 1), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_INT16 \
+XmlSerializerInfo int16_TypeInfo[] = { \
+    SER_INT16("int16", 1), \
     SER_NULL \
 }
 #define SER_TYPEINFO_UINT16_ATTR \
@@ -354,10 +475,19 @@ XmlSerializerInfo uint16_TypeInfo[] = { \
     SER_ATTR_NS_UINT16_FLAGS(NULL, "uint16", 1, SER_ATTRS), \
     SER_NULL \
 }
-
+#define SER_TYPEINFO_INT16_ATTR \
+XmlSerializerInfo int16_TypeInfo[] = { \
+    SER_ATTR_NS_INT16_FLAGS(NULL, "int16", 1, SER_ATTRS), \
+    SER_NULL \
+}
 #define SER_TYPEINFO_UINT32 \
 XmlSerializerInfo uint32_TypeInfo[] = { \
     SER_UINT32("uint32", 1), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_INT32 \
+XmlSerializerInfo int32_TypeInfo[] = { \
+    SER_INT32("int32", 1), \
     SER_NULL \
 }
 #define SER_TYPEINFO_UINT32_ATTR \
@@ -365,10 +495,19 @@ XmlSerializerInfo uint32_TypeInfo[] = { \
     SER_ATTR_NS_UINT32_FLAGS(NULL, "uint32", 1, SER_ATTRS), \
     SER_NULL \
 }
-
+#define SER_TYPEINFO_INT32_ATTR \
+XmlSerializerInfo int32_TypeInfo[] = { \
+    SER_ATTR_NS_INT32_FLAGS(NULL, "int32", 1, SER_ATTRS), \
+    SER_NULL \
+}
 #define SER_TYPEINFO_UINT64 \
 XmlSerializerInfo uint64_TypeInfo[] = { \
     SER_UINT64("uint64", 1), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_INT64 \
+XmlSerializerInfo int64_TypeInfo[] = { \
+    SER_INT64("int64", 1), \
     SER_NULL \
 }
 #define SER_TYPEINFO_UINT64_ATTR \
@@ -376,7 +515,31 @@ XmlSerializerInfo uint64_TypeInfo[] = { \
     SER_ATTR_NS_UINT64_FLAGS(NULL, "uint64", 1, SER_ATTRS), \
     SER_NULL \
 }
-
+#define SER_TYPEINFO_INT64_ATTR \
+XmlSerializerInfo int64_TypeInfo[] = { \
+    SER_ATTR_NS_INT64_FLAGS(NULL, "int64", 1, SER_ATTRS), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_REAL32 \
+XmlSerializerInfo real32_TypeInfo[] = { \
+    SER_REAL32("real32", 1), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_REAL32_ATTR \
+XmlSerializerInfo real32_TypeInfo[] = { \
+    SER_ATTR_NS_REAL32_FLAGS(NULL, "real32", 1, SER_ATTRS), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_REAL64 \
+XmlSerializerInfo real64_TypeInfo[] = { \
+    SER_REAL32("real64", 1), \
+    SER_NULL \
+}
+#define SER_TYPEINFO_REAL64_ATTR \
+XmlSerializerInfo real64_TypeInfo[] = { \
+    SER_ATTR_NS_REAL64_FLAGS(NULL, "real64", 1, SER_ATTRS), \
+    SER_NULL \
+}
 #define SER_TYPEINFO_BOOL \
 XmlSerializerInfo bool_TypeInfo[] = {\
     SER_BOOL("bool", 1), \
@@ -430,13 +593,19 @@ int do_serialize_uint8(struct __XmlSerializationData* data);
 int do_serialize_uint16(struct __XmlSerializationData* data);
 int do_serialize_uint32(struct __XmlSerializationData* data);
 int do_serialize_uint64(struct __XmlSerializationData* data);
+int do_serialize_int8(struct __XmlSerializationData* data);
+int do_serialize_int16(struct __XmlSerializationData* data);
+int do_serialize_int32(struct __XmlSerializationData* data);
+int do_serialize_int64(struct __XmlSerializationData* data);
+int do_serialize_real32(struct __XmlSerializationData* data);
+int do_serialize_real64(struct __XmlSerializationData* data);
 int do_serialize_string(struct __XmlSerializationData* data);
 int do_serialize_bool(struct __XmlSerializationData* data);
 int do_serialize_dyn_size_array(struct __XmlSerializationData* data);
 int do_serialize_struct(struct __XmlSerializationData* data);
 int do_serialize_attrs(struct __XmlSerializationData* data);
 
-
+int ws_havenilvalue(XML_NODE_ATTR *attrs);
 
 
 // Serializer user interface

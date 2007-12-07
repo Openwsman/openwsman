@@ -55,7 +55,7 @@ struct __XmlSerializationData
 	int mode;
 	unsigned int index;
 	WsXmlNodeH xmlNode;
-    XML_NODE_ATTR *attrs;
+	XML_NODE_ATTR *attrs;
 	int skipFlag;
 };
 typedef struct __XmlSerializationData XmlSerializationData;

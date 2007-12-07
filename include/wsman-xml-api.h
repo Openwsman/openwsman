@@ -196,6 +196,10 @@ unsigned long ws_xml_get_node_ulong(WsXmlNodeH node);
 
 int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal);
 
+int ws_xml_set_node_long(WsXmlNodeH node, long Val);
+
+int ws_xml_set_node_real(WsXmlNodeH node, double Val);
+
 char *ws_xml_get_node_text(WsXmlNodeH node);
 
 int ws_xml_set_node_text(WsXmlNodeH node, const char *text);

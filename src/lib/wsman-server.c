@@ -189,7 +189,7 @@ void *wsman_notification_manager(void *arg)
 	while (continue_working) {
 		pthread_mutex_lock(&mutex);
 		gettimeofday(&tv, NULL);
-		timespec.tv_sec = tv.tv_sec + 1;
+		timespec.tv_sec = tv.tv_sec + 5;
 		timespec.tv_nsec = tv.tv_usec * 1000;
 		pthread_cond_timedwait(&cond, &mutex, &timespec);
 		pthread_mutex_unlock(&mutex);
