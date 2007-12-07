@@ -2053,6 +2053,7 @@ void wse_notification_manager(void * cntx)
 	WsXmlNodeH header = NULL;
 	WsXmlNodeH body = NULL;
 	WsXmlNodeH node = NULL;
+	WsXmlNodeH eventnode = NULL;
 	WsXmlNodeH temp = NULL;
 	lnode_t *subsnode = NULL;
 	WsEventThreadContextH threadcntx = NULL;
@@ -2121,9 +2122,9 @@ void wse_notification_manager(void * cntx)
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_ACTION, WSEVENT_DELIVERY_MODE_EVENTS);
 			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 			ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,uuidBuf);
-			node = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_EVENTS, NULL);
+			eventnode = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_EVENTS, NULL);
 			while(notificationInfo) {
-				temp = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_EVENT, NULL);
+				temp = ws_xml_add_child(eventnode, XML_NS_WS_MAN, WSM_EVENT, NULL);
 				if(notificationInfo->EventAction)  {
 					ws_xml_add_node_attr(temp, XML_NS_WS_MAN, WSM_ACTION, notificationInfo->EventAction);
 				}
