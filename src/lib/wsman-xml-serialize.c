@@ -1608,7 +1608,7 @@ void *ws_deserialize(WsSerializerContextH serctx,
 	if ((data.elementBuf = xml_serializer_alloc(&data, size, 1)) != NULL) {
 		retPtr = data.elementBuf;
 		data.stopper = (char *) retPtr + size;
-		if (myinfo.proc(&data) <= 0) {
+		if (myinfo.proc && myinfo.proc(&data) <= 0) {
 			data.elementBuf = retPtr;
 			retPtr = NULL;
 			ws_serializer_free_mem(serctx, data.elementBuf,

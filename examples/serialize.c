@@ -853,6 +853,26 @@ static void example106()
 
 static void example9(void)
 {
+	typedef struct {
+	}empty;
+	SER_START_ITEMS(empty)
+	SER_END_ITEMS(empty);
+	char xmlstring[] = "<example></example>";
+	WsXmlDocH doc = ws_xml_read_memory(xmlstring, strlen(xmlstring), "UTF-8", 0);
+	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+	WsSerializerContextH cntx = ws_serializer_init();
+	if (cntx == NULL) {
+                printf("Error ws_create_runtime\n");
+                return;
+        }
+	void *ptr = NULL;
+	ptr = ws_deserialize(cntx,
+                                        node,
+                                        empty_TypeItems,
+                                        NULL,
+                                        NULL, NULL, 0, 0);
+	printf("ptr = %p\n", ptr);
+	ws_serializer_cleanup(cntx); 
 
 }
 
@@ -996,6 +1016,77 @@ static void example12()
 	ws_xml_destroy_doc(doc);
 	ws_serializer_cleanup(cntx);
 }
+
+static void example13()
+{
+	XML_TYPE_UINT8 myshorts[] = { 5, 11, 14};
+	typedef struct {
+		XML_TYPE_UINT16 id;
+		XML_TYPE_DYN_ARRAY shorts;
+	}item;
+	XML_TYPE_DYN_ARRAY array_int8;
+	SER_TYPEINFO_UINT8;
+	SER_TYPEINFO_UINT16;
+	SER_START_ITEMS(item)
+	SER_INT16("id", 1),
+	SER_DYN_ARRAY("temp", 0, 100, uint8),
+	SER_END_ITEMS(item);
+//	item values = {{3, myshorts}};
+	char xmlstring[] = "<example><Sample><id>3</id></Sample></example>";
+	printf
+	    ("\n\n ****** example 13. de-serialize to int8 array (empty array de-serialization test)  ******\n");
+	WsXmlDocH doc = ws_xml_read_memory(xmlstring, strlen(xmlstring), "UTF-8", 0);
+	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+
+	WsSerializerContextH cntx = ws_serializer_init();
+	if (cntx == NULL) {
+                printf("Error ws_create_runtime\n");
+                return;
+        }
+//	WsXmlDocH doc = ws_xml_create_doc(NULL, "example");
+//	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+//	int ret = ws_serialize(cntx, node, &values, item_TypeInfo, CLASSNAME, NULL, NULL, 0);
+//	printf("serialize  %i bytes\n", ret);
+//	ws_xml_dump_node_tree(stdout, node);
+
+	item *desvalue = (item *)ws_deserialize(cntx, node, item_TypeInfo, CLASSNAME, NULL, NULL, 0, 0);
+	printf("desvlaue = %p\n", desvalue);
+	array_int8 = desvalue->shorts;
+	int i = 0;
+	printf("id = %d, array_int8->count = %d\n",desvalue->id,  array_int8.count);
+	while(i < array_int8.count) {
+		printf("%d ", ((char *)array_int8.data)[i]);
+		i++;
+	}
+	printf("\n");
+	ws_serializer_cleanup(cntx);
+}
+
+static void example14()
+{
+	typedef struct{
+	}empty;
+	SER_START_ITEMS(empty)
+	SER_END_ITEMS(empty);
+	printf
+	     ("\n\n ******* example 14. serialize/de-serialze with empty t_TypeItems *******\n");
+	WsSerializerContextH cntx = ws_serializer_init();
+        if (cntx == NULL) {
+                printf("Error ws_create_runtime\n");
+                return;
+        }
+	WsXmlDocH doc = ws_xml_create_doc(NULL, "example");
+	WsXmlNodeH node = ws_xml_get_doc_root(doc);
+	empty values = {};
+	int ret = ws_serialize(cntx, node, &values, empty_TypeInfo, CLASSNAME, NULL, NULL, 0);
+	printf("serialize  %i bytes\n", ret);
+	ws_xml_dump_node_tree(stdout, node);
+	
+	void *ptr = ws_deserialize(cntx, node, empty_TypeInfo, CLASSNAME, NULL, NULL, 0, 0);
+	printf("ptr = %p\n", ptr);
+	ws_serializer_cleanup(cntx);
+}
+
 static void initialize_logging(void)
 {
 	debug_add_handler(wsman_debug_message_handler, DEBUG_LEVEL_ALWAYS,
@@ -1048,6 +1139,8 @@ int main(int argc, char **argv)
 		example10();
 		example11();
 		example12();
+		example13();
+		example14();
 		return 0;
 	}
 
@@ -1089,6 +1182,12 @@ int main(int argc, char **argv)
 			break;
 		case 12:
 			example12();
+			break;
+		case 13:
+			example13();
+			break;
+		case 14:
+			example14();
 			break;
 		default:
 			printf("\n    No example%d()\n", num);
