@@ -1031,7 +1031,6 @@ static void example13()
 	SER_INT16("id", 1),
 	SER_DYN_ARRAY("temp", 0, 100, uint8),
 	SER_END_ITEMS(item);
-//	item values = {{3, myshorts}};
 	char xmlstring[] = "<example><Sample><id>3</id></Sample></example>";
 	printf
 	    ("\n\n ****** example 13. de-serialize to int8 array (empty array de-serialization test)  ******\n");
@@ -1043,12 +1042,6 @@ static void example13()
                 printf("Error ws_create_runtime\n");
                 return;
         }
-//	WsXmlDocH doc = ws_xml_create_doc(NULL, "example");
-//	WsXmlNodeH node = ws_xml_get_doc_root(doc);
-//	int ret = ws_serialize(cntx, node, &values, item_TypeInfo, CLASSNAME, NULL, NULL, 0);
-//	printf("serialize  %i bytes\n", ret);
-//	ws_xml_dump_node_tree(stdout, node);
-
 	item *desvalue = (item *)ws_deserialize(cntx, node, item_TypeInfo, CLASSNAME, NULL, NULL, 0, 0);
 	printf("desvlaue = %p\n", desvalue);
 	array_int8 = desvalue->shorts;
@@ -1068,6 +1061,16 @@ static void example14()
 	}empty;
 	SER_START_ITEMS(empty)
 	SER_END_ITEMS(empty);
+	typedef struct {
+		XML_TYPE_INT16 num;
+		empty empty1;
+	}A;
+	SER_TYPEINFO_INT16;
+	SER_START_ITEMS(A)
+	SER_INT16("id",1),
+	SER_NS_STRUCT(NULL, "empty", 1, empty),
+	SER_END_ITEMS(A);
+	A a1 = {-12, {}};
 	printf
 	     ("\n\n ******* example 14. serialize/de-serialze with empty t_TypeItems *******\n");
 	WsSerializerContextH cntx = ws_serializer_init();
@@ -1078,11 +1081,11 @@ static void example14()
 	WsXmlDocH doc = ws_xml_create_doc(NULL, "example");
 	WsXmlNodeH node = ws_xml_get_doc_root(doc);
 	empty values = {};
-	int ret = ws_serialize(cntx, node, &values, empty_TypeInfo, CLASSNAME, NULL, NULL, 0);
+	int ret = ws_serialize(cntx, node, &values, A_TypeInfo, CLASSNAME, NULL, NULL, 0);
 	printf("serialize  %i bytes\n", ret);
 	ws_xml_dump_node_tree(stdout, node);
 	
-	void *ptr = ws_deserialize(cntx, node, empty_TypeInfo, CLASSNAME, NULL, NULL, 0, 0);
+	void *ptr = ws_deserialize(cntx, node, A_TypeInfo, CLASSNAME, NULL, NULL, 0, 0);
 	printf("ptr = %p\n", ptr);
 	ws_serializer_cleanup(cntx);
 }
