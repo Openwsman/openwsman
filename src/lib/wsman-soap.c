@@ -168,8 +168,7 @@ static void wsman_expiretime2xmldatetime(unsigned long expire, char *str)
 	localtime_r(&t, &tm);
 	gmtoffset_hour = 0;
 	gmtoffset_minute = 0;
-	if(gmtoffset_hour > 0)
-		snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
+	snprintf(str, 30, "%u-%u%u-%u%uT%u%u:%u%u:%u%u+%u%u:%u%u",
 			tm.tm_year + 1900, (tm.tm_mon + 1)/10, (tm.tm_mon + 1)%10,
 			tm.tm_mday/10, tm.tm_mday%10, tm.tm_hour/10, tm.tm_hour%10,
 			tm.tm_min/10, tm.tm_min%10, tm.tm_sec/10, tm.tm_sec%10,
@@ -194,6 +193,7 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 	WsSubscribeInfo *subsInfo = NULL;
 	char *uuid = NULL;
 	lnode_t *lnode;
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
 
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_PULL);
@@ -203,11 +203,11 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 	}
 	if(uuid == NULL) return subsInfo;
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode = list_first(soap->subscriptionMemList);
+	lnode = list_first(soapCntx->subscriptionMemList);
 	while(lnode) {
 		subsInfo = (WsSubscribeInfo *)lnode->list_data;
 		if(!strcmp(subsInfo->subsId, uuid+5)) break;
-		lnode = list_next(soap->subscriptionMemList, lnode);
+		lnode = list_next(soapCntx->subscriptionMemList, lnode);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
 	if(lnode == NULL) return NULL;
@@ -489,6 +489,7 @@ ws_initialize_context(WsContextH cntx, SoapH soap)
 	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
 
 	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
+	cntx->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
 	cntx->owner = 1;
 	cntx->soap = soap;
@@ -519,12 +520,10 @@ ws_soap_initialize()
 	soap->inboundFilterList = NULL;
 	soap->outboundFilterList = NULL;
 	soap->dispatchList = NULL;
-
-	soap->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
 	soap->processedMsgIdList = NULL;
-//	soap->WsSerializerAllocList = list_create(LISTCOUNT_T_MAX);
 
 	u_init_lock(soap);
+	u_init_lock(&soap->lockSubs);
 	ws_xml_parser_initialize();
 
 	soap_add_filter(soap, outbound_addressing_filter, NULL, 0);
@@ -1628,6 +1627,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsmanStatus     status;
 	WsXmlNodeH      inNode, body, header, temp;
 	SoapH           soap = soap_get_op_soap(op);
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	int i;
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointSubscribe endPoint =
@@ -1673,7 +1673,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	lnode_t * sinfo = lnode_create(subsInfo);
 	pthread_mutex_lock(&soap->lockSubs);
-	list_append(soap->subscriptionMemList, sinfo);
+	list_append(soapCntx->subscriptionMemList, sinfo);
 	pthread_mutex_unlock(&soap->lockSubs);
 	debug("subscription uuid:%s kept in the memory", subsInfo->subsId);
 	header = ws_xml_get_soap_header(doc);
@@ -1737,7 +1737,7 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      body;
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
-
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointSubscribe endPoint =
 			(WsEndPointSubscribe)ep->serviceEndPoint;
@@ -1758,11 +1758,11 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	char *uuid = ws_xml_get_node_text(inNode);
 	lnode_t *t = NULL;
 	pthread_mutex_lock(&soap->lockSubs);
-	if(!list_isempty(soap->subscriptionMemList)) {
-		t = list_first(soap->subscriptionMemList);
+	if(!list_isempty(soapCntx->subscriptionMemList)) {
+		t = list_first(soapCntx->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
 		if(strcasecmp(subsInfo->subsId, uuid+5)) {
-			while((t == list_next(soap->subscriptionMemList, t))) {
+			while((t == list_next(soapCntx->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcasecmp(subsInfo->subsId, uuid+5)) break;
 			}
@@ -1816,6 +1816,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      body;
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	char * expirestr = NULL;
 
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
@@ -1838,11 +1839,11 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	pthread_mutex_lock(&soap->lockSubs);
 	lnode_t *t = NULL;
-	if(!list_isempty(soap->subscriptionMemList)) {
-		t = list_first(soap->subscriptionMemList);
+	if(!list_isempty(soapCntx->subscriptionMemList)) {
+		t = list_first(soapCntx->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
 		if(strcasecmp(subsInfo->subsId, uuid+5)) {
-			while((t == list_next(soap->subscriptionMemList, t))) {
+			while((t == list_next(soapCntx->subscriptionMemList, t))) {
 				subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcmp(subsInfo->subsId, uuid+5)) break;
 			}
@@ -1902,6 +1903,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 	SoapH soap = cntx->soap;
 	WsSubscribeInfo *subsInfo = NULL;
 	WsEventThreadContextH threadcntx = NULL;
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	pthread_t eventsender;
 	pthread_attr_t pattrs;
 	int r;
@@ -1915,7 +1917,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 		return;
 	}
 	pthread_mutex_lock(&soap->lockSubs);
-	lnode_t *node = list_first(soap->subscriptionMemList);
+	lnode_t *node = list_first(soapCntx->subscriptionMemList);
 	while(node) {
 		subsInfo = (WsSubscribeInfo *)node->list_data;
 		pthread_mutex_lock(&subsInfo->notificationlock);
@@ -1952,7 +1954,7 @@ wsman_heartbeat_generator(WsContextH cntx, void *opaqueData)
 		subsInfo->heartbeatCountdown = subsInfo->heartbeatInterval;
 LOOP:
 		pthread_mutex_unlock(&subsInfo->notificationlock);
-		node = list_next(soap->subscriptionMemList, node);
+		node = list_next(soapCntx->subscriptionMemList, node);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
 }
@@ -2059,6 +2061,7 @@ void wse_notification_manager(void * cntx)
 	WsEventThreadContextH threadcntx = NULL;
 	WsContextH contex = (WsContextH)cntx;
 	SoapH soap = contex->soap;
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	pthread_t eventsender;
 	pthread_attr_t pattrs;
 	char uuidBuf[50];
@@ -2073,7 +2076,7 @@ void wse_notification_manager(void * cntx)
 		return;
 	}
 	pthread_mutex_lock(&soap->lockSubs);
-	subsnode = list_first(soap->subscriptionMemList);
+	subsnode = list_first(soapCntx->subscriptionMemList);
 	while(subsnode) {
 		subsInfo = (WsSubscribeInfo *)subsnode->list_data;
 		pthread_mutex_lock(&subsInfo->notificationlock);
@@ -2082,7 +2085,7 @@ void wse_notification_manager(void * cntx)
 			subsInfo->flags & WSMAN_SUBSCRIPTION_CANCELLED ||
 			time_expired(subsInfo->expires)) &&
 			((subsInfo->flags & WSMAN_SUBSCRIPTION_NOTIFICAITON_PENDING ) == 0)) {
-			lnode_t *nodetemp = list_delete2(soap->subscriptionMemList, subsnode);
+			lnode_t *nodetemp = list_delete2(soapCntx->subscriptionMemList, subsnode);
 			soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, subsInfo->subsId);
 			soap->eventpoolOpSet->clear(subsInfo->subsId, delete_notification_info);
 			if(!(subsInfo->flags & WSMAN_SUBSCRIBEINFO_UNSUBSCRIBE) && subsInfo->cancel)
@@ -2166,7 +2169,7 @@ LOOP:
 		if(threadcntx)
 			u_free(threadcntx);
 		pthread_mutex_unlock(&subsInfo->notificationlock);
-		subsnode = list_next(soap->subscriptionMemList, subsnode);
+		subsnode = list_next(soapCntx->subscriptionMemList, subsnode);
 	}
 	pthread_mutex_unlock(&soap->lockSubs);
 }
@@ -2240,6 +2243,10 @@ ws_destroy_context(WsContextH cntx)
 		ws_clear_context_entries(cntx);
 		ws_clear_context_enuminfos(cntx);
 		ws_serializer_cleanup(cntx->serializercntx);
+		if(cntx->subscriptionMemList) {
+			list_destroy_nodes(cntx->subscriptionMemList);
+			list_destroy(cntx->subscriptionMemList);
+		}
 		u_free(cntx);
 		retVal = 0;
 	}

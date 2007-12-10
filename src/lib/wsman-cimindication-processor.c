@@ -217,6 +217,7 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	WsXmlDocH indicationResponse = NULL;
 	SoapH soap = cntx->soap;
 	char *uuid = cntx->uuid;
+	WsContextH soapCntx = ws_get_soap_context(soap);
 	debug("in CIM_Indication_call:: %s", u_buf_ptr(message->request));
 	indicationRequest = ws_xml_read_memory(u_buf_ptr(message->request), u_buf_len(message->request), 
 		"UTF-8", 0);
@@ -232,7 +233,7 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	}
 	//to do here: put indication in event pool
 	WsSubscribeInfo *subsInfo = NULL;
-	list_t *subslist = soap->subscriptionMemList;
+	list_t *subslist = soapCntx->subscriptionMemList;
 	lnode_t *node = list_first(subslist);
 	while(node) {
 		subsInfo = (WsSubscribeInfo *)node->list_data;

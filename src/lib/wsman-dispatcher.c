@@ -943,20 +943,20 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		char *uuid = ws_xml_get_node_text(temp);
 		debug("Request uuid: %s", uuid);
 		if(uuid) {
-			SoapH soap = cntx->soap;
-			lnode_t *t = list_first(soap->subscriptionMemList);
+			lnode_t *t = list_first(cntx->subscriptionMemList);
 			while(t != NULL) {
 				WsSubscribeInfo *subsInfo = (WsSubscribeInfo *)t->list_data;
 				if(!strcmp(uuid+5, subsInfo->subsId)) {
 					uri = subsInfo->uri;
 					break;
 				}
-				t = list_next(soap->subscriptionMemList, t);
+				t = list_next(cntx->subscriptionMemList, t);
 			}
 			if(t == NULL) {
 				unsigned char *buf = NULL;
 				int len;
-				if(soap->subscriptionOpSet->get_subscription(soap->uri_subsRepository, uuid+5, &buf, &len) == 0) {
+				if(cntx->soap->subscriptionOpSet->get_subscription(cntx->soap->uri_subsRepository, 
+					uuid+5, &buf, &len) == 0) {
 					notdoc = ws_xml_read_memory( (char *)buf, len, "UTF-8", 0);
 					if(notdoc) {
 						nodedoc = ws_xml_get_soap_header(notdoc);
