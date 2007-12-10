@@ -42,8 +42,8 @@
 #define FAULT_RECEIVER_CODE_NS "s:Receiver"
 #define FAULT_MUSTUNDERSTAND_CODE_NS "s:MustUnderstand"
 
-enum __WsmanFaultCodeType 
-{	
+enum __WsmanFaultCodeType
+{
     WSMAN_RC_OK = 0,
     WSMAN_ACCESS_DENIED,
 
@@ -71,7 +71,7 @@ enum __WsmanFaultCodeType
 
     /** wse:EventSourceUnableToProcess*/
     WSE_EVENT_SOURCE_UNABLE_TO_PROCESS,
-    
+
     /** wsen:FilterDialectRequestedUnavailable */
     WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,
 
@@ -84,7 +84,7 @@ enum __WsmanFaultCodeType
 
     WSMAN_FRAGMENT_DIALECT_NOT_SUPPORTED,
     WSMAN_INTERNAL_ERROR,
-    WSMAN_INVALID_BOOKMARK,    
+    WSMAN_INVALID_BOOKMARK,
 
     // WSEN
     WSEN_INVALID_ENUMERATION_CONTEXT,
@@ -99,7 +99,7 @@ enum __WsmanFaultCodeType
 
     /** wsa:InvalidMessageInformationHeader */
     WSA_INVALID_MESSAGE_INFORMATION_HEADER,
-    
+
 
     WSMAN_INVALID_OPTIONS,
     WSMAN_INVALID_PARAMETER,
@@ -111,37 +111,37 @@ enum __WsmanFaultCodeType
     WSA_MESSAGE_INFORMATION_HEADER_REQUIRED,
 
     WSMAN_NO_ACK,
-    WSMAN_QUOTA_LIMIT,    
+    WSMAN_QUOTA_LIMIT,
     WSMAN_SCHEMA_VALIDATION_ERROR,
-    
+
     /** wsen:TimedOut */
     WSEN_TIMED_OUT,
     WSMAN_TIMED_OUT,
-    
+
     /** wse:UnableToRenew */
     WSE_UNABLE_TO_RENEW,
-    
+
     /** wse:UnsupportedExpirationType */
     WSE_UNSUPPORTED_EXPIRATION_TYPE,
 
     /** wsen:UnsupportedExpirationType */
     WSEN_UNSUPPORTED_EXPIRATION_TYPE,
-    
+
     WSMAN_UNSUPPORTED_FEATURE,
 
-    // SOAP	
+    // SOAP
     SOAP_FAULT_VERSION_MISMATCH,
     // MustUnderstand
     SOAP_FAULT_MUSTUNDERSTAND,
 
-    // wsmb:PolymorphismModeNotSupported 
+    // wsmb:PolymorphismModeNotSupported
     WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
 
     WSMAN_UNKNOWN
 };
 typedef enum  __WsmanFaultCodeType WsmanFaultCodeType;
 
-enum __WsmanFaultDetailType 
+enum __WsmanFaultDetailType
 {
     WSMAN_DETAIL_OK = 0,
     WSMAN_DETAIL_ACK,
@@ -208,7 +208,7 @@ enum __WsmanFaultDetailType
     // SOAP
     SOAP_DETAIL_HEADER_NOT_UNDERSTOOD,
 
-    // OpenWSMAN 
+    // OpenWSMAN
     OWSMAN_DETAIL_ENDPOINT_ERROR,
     OWSMAN_NO_DETAILS,
     OWSMAN_SYSTEM_ERROR
@@ -294,7 +294,7 @@ struct __WsmanFaultCodeTable
 {
 	WsmanFaultCodeType  fault_code;
 	char*               fault_action;
-	char*               subCodeNs;	
+	char*               subCodeNs;
 	char*               code;
 	char*               subCode;
 	char*               reason;

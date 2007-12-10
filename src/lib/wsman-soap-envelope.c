@@ -479,9 +479,11 @@ wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 
 	char uuidBuf[50];
 	char *soapNs;
+
 	if (rqstDoc) {
 		doc = wsman_create_response_envelope(rqstDoc, fault_action);
 	} else {
+		/* FIXME */
 		doc = ws_xml_create_envelope();
 	}
 
@@ -545,7 +547,7 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 	WsXmlNodeH node, fnode;
 	epr_t *epr = NULL;
 	filter_t *f = NULL;
-	
+
 	if ((node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING,
 				WSMB_ASSOCIATION_INSTANCES) ) != NULL)
 		enumInfo->flags |= WSMAN_ENUMINFO_REF;
@@ -676,7 +678,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 }
 
 static int xpath2wql(WsXmlNodeH node, filter_t **f) {
-	
+
 	return -1;
 }
 
@@ -689,8 +691,8 @@ static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f) {
 	return 0;
 }
 
-int 
-wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, 
+int
+wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 		WsmanFaultCodeType *faultcode,
 		WsmanFaultDetailType *detailcode)
 {
@@ -751,7 +753,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 							subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
 						}
 					}
-						
+
 				}
 				else {
 					*faultcode = WSMAN_CANNOT_PROCESS_FILTER;
@@ -780,7 +782,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 			}
 		}
 	}
-	return 0;	
+	return 0;
 }
 
 char *
@@ -1120,7 +1122,7 @@ void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
 {
 	WsXmlNodeH selector = NULL;
 	WsXmlDocH epr = NULL;
-	WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN, 
+	WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN,
 			WSM_SELECTOR_SET);
 
 	if (val && strstr(val, WSA_EPR)) {

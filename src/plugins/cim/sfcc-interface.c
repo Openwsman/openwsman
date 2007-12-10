@@ -54,7 +54,6 @@
 #include "sfcc-interface.h"
 #include "cim-interface.h"
 #include "cim_data.h"
-#include "wsman-cimxmllistener-path.h"
 
 #define SYSTEMCREATIONCLASSNAME "CIM_ComputerSystem"
 #define SYSTEMNAME "localhost.localdomain"
@@ -290,7 +289,7 @@ property2xml(CimClientInfo * client, CMPIData data,
 	/* debug ("%s %d=%d %d=%d", name , data.type, CMPI_null,  data.state,CMPI_nullValue); */
 	if (CMIsArray(data)) {
 		WsXmlNodeH nilnode;
-		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT 
+		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
 				&& data.state == CMPI_nullValue) {
 			return;
 		} else if (data.type == CMPI_null && data.state == CMPI_nullValue) {
@@ -316,8 +315,8 @@ property2xml(CimClientInfo * client, CMPIData data,
 			}
 		}
 	} else {
-		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT 
-				&&  data.state == CMPI_nullValue) {	
+		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
+				&&  data.state == CMPI_nullValue) {
 			return;
 		} else if (data.type != CMPI_null && data.state != CMPI_nullValue) {
 			WsXmlNodeH refpoint = NULL;
@@ -511,7 +510,7 @@ DONE:
 }
 
 static int
-cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys, 
+cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 		WsmanStatus * statusP)
 {
 	CMPIStatus rc;
@@ -520,7 +519,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 	int count, opcount;
 	epr_t *epr = NULL;
 	char *cv;
-	
+
 	debug("verify selectors");
 
 	if (!keys) {
@@ -547,7 +546,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 	}
 
 	hash_scan_begin(&hs, keys);
-	
+
 	while ((hn = hash_scan_next(&hs))) {
 		CMPIData data = CMGetKey(objectpath, (char *) hnode_getkey(hn), &rc);
 		if (rc.rc != 0) {	// key not found
@@ -558,8 +557,8 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 		}
 
 		cv = value2Chars(data.type, &data.value);
-		epr =  (epr_t *)u_zalloc(sizeof (epr_t));	
-		
+		epr =  (epr_t *)u_zalloc(sizeof (epr_t));
+
 		if (cv != NULL && strcmp(cv, (char *) hnode_get(hn)) == 0) {
 			statusP->fault_code = WSMAN_RC_OK;
 			statusP->fault_detail_code = WSMAN_DETAIL_OK;
@@ -640,7 +639,7 @@ instance2xml(CimClientInfo * client,
 					 (char *) classname->hdl);
 
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
-	
+
 	d = ws_xml_create_doc( class_namespace, final_class);
 	xmlr = ws_xml_get_doc_root(d);
 	ws_xml_set_ns( xmlr, class_namespace, CIM_RESOURCE_NS_PREFIX);
@@ -664,7 +663,7 @@ instance2xml(CimClientInfo * client,
 		CMPIString *propertyname;
 		CMPIData data;
 		CMPIStatus is_key;
-		if (strcmp(client->requested_class, "*")  
+		if (strcmp(client->requested_class, "*")
 				&& enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
@@ -1082,7 +1081,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 	CMPIString *namespace, *classname;
 	CMPIObjectPath *objectpath = NULL;
 	WsXmlNodeH r;
-	
+
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	namespace = objectpath->ft->getNameSpace(objectpath, NULL);
 	classname =objectpath->ft->getClassName(objectpath, NULL);
@@ -1203,13 +1202,13 @@ CMCIClient *cim_connect_to_cimom(char *cim_host,
 {
 
 	CMPIStatus rc;
-	if (strcmp(frontend, "SfcbLocal") != 0) 
-		frontend = "http";			
-	
+	if (strcmp(frontend, "SfcbLocal") != 0)
+		frontend = "http";
+
 	CMCIClient *cimclient = cmciConnect(cim_host, frontend , cim_port,
 					    cim_host_userid,
 					    cim_host_passwd, &rc);
-	
+
 	if (cimclient == NULL) {
 		debug( "Connection to CIMOM failed");
 	} else {
@@ -1240,7 +1239,7 @@ cim_invoke_method(CimClientInfo * client,
 	WsXmlNodeH method_node = NULL;
 
 	wsman_status_init(&statusP);
-	if (client->resource_uri && 
+	if (client->resource_uri &&
 			strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
 		objectpath = cim_get_op_from_enum(client, &statusP);
 	} else {
@@ -1472,7 +1471,7 @@ cim_create_instance(CimClientInfo * client,
 		    WsXmlNodeH in_body,
 		    WsXmlNodeH body, WsmanStatus * status)
 {
-	
+
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath, *objectpath_r;
 	CMPIStatus rc;
@@ -1655,7 +1654,8 @@ cim_get_instance(CimClientInfo * client,
 	}
 }
 
-static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, WsSubscribeInfo *subsInfo, CMPIStatus *rc)
+static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client,
+				WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
 	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(subsInfo->cim_namespace,
 				       "CIM_IndicationFilter", rc);
@@ -1670,7 +1670,7 @@ static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client, W
 	return objectpath_filter;
 }
 
-static CMPIObjectPath 
+static CMPIObjectPath
 *cim_indication_handler_objectpath(CimClientInfo *client, WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
 	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(subsInfo->cim_namespace,
@@ -1726,6 +1726,13 @@ cleanup:
 		CMRelease(instance);
 	return objectpath;
 }
+static char * create_cimxml_listener_path(char *uuid)
+{
+    char path[128];
+    snprintf(path, 128, "/cimindicationlistener/%s", uuid);
+    return u_strdup(path);
+}
+
 
 CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
@@ -1737,9 +1744,9 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribe
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	objectpath = cim_indication_handler_objectpath(client, subsInfo, &rc);
-	if(rc.rc) 
+	if(rc.rc)
 		goto cleanup;
-	
+
 	char *servicepath = create_cimxml_listener_path(subsInfo->subsId);
 	char serverpath[128];
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
@@ -1823,7 +1830,6 @@ cleanup:
 	} else if (rc.rc != 11){ // an object already exists. We take this erros as success
 		cim_to_wsman_status(rc, status);
 	}
-	add_cimxml_listener_path(subsInfo->subsId);
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath)
@@ -1925,7 +1931,6 @@ cleanup:
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 	} else {
-		delete_cimxml_listener_path(subsInfo->subsId);
 		cim_to_wsman_status(rc, status);
 	}
 	debug("cim_delete_indication_subscription() rc=%d, msg=%s",

@@ -104,7 +104,6 @@ struct __Soap {
 	list_t         *processedMsgIdList;
 
 	pthread_mutex_t lockSubs; //lock for Subscription Repository
-	list_t         	*subscriptionMemList; //memory Repository of Subscriptions
 	char 			*uri_subsRepository; //URI of repository
 	SubsRepositoryOpSetH subscriptionOpSet; //Function talbe of Subscription Repository
 	EventPoolOpSetH eventpoolOpSet; //Function table of event source
@@ -136,6 +135,7 @@ struct _WS_CONTEXT {
 	hash_t *enuminfos;
 	hash_t *entries;
 	WsSerializerContextH serializercntx;
+	list_t         	*subscriptionMemList; //memory Repository of Subscriptions
 	/* to prevent user from destroying cntx he hasn't created */
 	int             owner;
 };

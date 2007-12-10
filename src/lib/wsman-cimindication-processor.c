@@ -121,7 +121,7 @@ char * get_cim_indication_namespace(WsSubscribeInfo *subsInfo, char *classname) 
 	return NULL;
 }
 
-static 
+static
 WsNotificationInfoH create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlNodeH node){
 	char *classname = NULL;
 	char *class_namespace = NULL;
@@ -163,7 +163,7 @@ WsNotificationInfoH create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlN
 }
 
 
-static 
+static
 void create_indication_event(WsXmlDocH indoc, WsSubscribeInfo *subsInfo, EventPoolOpSetH opset) {
 	int count, i;
 	int retval;
@@ -192,7 +192,7 @@ void create_indication_event(WsXmlDocH indoc, WsSubscribeInfo *subsInfo, EventPo
 			}
 			i++;
 		}
-		
+
 	}
 	else {
 		tmp = ws_xml_get_child(node, 0, NULL, CIMXML_SIMPLEEXPREQ);
@@ -207,10 +207,55 @@ void create_indication_event(WsXmlDocH indoc, WsSubscribeInfo *subsInfo, EventPo
 			u_free(notificationinfo);
 		}
 	}
-	
+
 }
 
-void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaqueData) {
+CimxmlMessage *cimxml_message_new() {
+	CimxmlMessage *cimxml_msg = u_zalloc(sizeof(CimxmlMessage));
+	u_buf_create(&cimxml_msg->request);
+	u_buf_create(&cimxml_msg->response);
+	cimxml_msg->status.code = CIMXML_STATUS_OK;
+	return cimxml_msg;
+}
+
+void cimxml_message_destroy(CimxmlMessage *msg) {
+	u_buf_free(msg->request);
+	u_buf_free(msg->response);
+	u_free(msg->charset);
+	u_free(msg);
+}
+
+static
+void cimxml_set_fault(CimxmlMessage *message, CIMXMLKnownStatusCode status) {
+	struct cimxml_code_map {
+		int code;
+		char *reason_phrase;
+	};
+	struct cimxml_code_map maps[] = {
+        {CIMXML_STATUS_UNSUPPORTED_PROTOCOL_VERSIOIN, "unsupported-protocol-version"},
+        {CIMXML_STATUS_MULTIPLE_REQUESTS_UNSUPPORTED, "multiple-requests-unsupported"},
+        {CIMXML_STATUS_UNSUPPORTED_CIM_VERSION, "unsupported-cim-version"},
+        {CIMXML_STATUS_UNSUPPORTED_DTD_VERSION, "unsupported-dtd-version"},
+        {CIMXML_STATUS_REQUEST_NOT_VALID, "request-not-valid"},
+        {CIMXML_STATUS_REQUEST_NOT_WELL_FORMED, "request-not-well-formed"},
+        {CIMXML_STATUS_REQUEST_NOT_LOOSELY_VALID, "request-not-loosely-valid"},
+        {CIMXML_STATUS_HEADER_MISMATCH, "header-mismatch"},
+        {CIMXML_STATUS_UNSUPPORTED_OPERATION, "unsupported-operatioin"},
+        {0, NULL}
+	};
+	int i = 0;
+	if(message == NULL) return;
+	while(maps[i].code) {
+		if(maps[i].code == status) {
+        	message->status.code = status;
+		message->status.fault_msg = maps[i].reason_phrase;
+		break;
+        }
+        i++;
+    }
+}
+
+void CIM_Indication_call(cimxml_context *cntx, CimxmlMessage *message, void *opaqueData) {
 	char *response = NULL;
 	int len;
 	WsXmlDocH indicationRequest = NULL;
@@ -218,17 +263,19 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	SoapH soap = cntx->soap;
 	char *uuid = cntx->uuid;
 	WsContextH soapCntx = ws_get_soap_context(soap);
-	debug("in CIM_Indication_call:: %s", u_buf_ptr(message->request));
-	indicationRequest = ws_xml_read_memory(u_buf_ptr(message->request), u_buf_len(message->request), 
-		"UTF-8", 0);
+	debug("**********in CIM_Indication_call:: %s", u_buf_ptr(message->request));
+	indicationRequest = ws_xml_read_memory(u_buf_ptr(message->request), u_buf_len(message->request),
+		message->charset, 0);
 	if(indicationRequest == NULL) {
 		debug("error, request cannot be parsed !");
-		wsman_set_fault(message, CIMXML_STATUS_REQUEST_NOT_VALID, 0, NULL);
+		message->http_code = WSMAN_STATUS_BAD_REQUEST;
+		cimxml_set_fault(message, CIMXML_STATUS_REQUEST_NOT_VALID);
 		goto DONE;
 	}
 	if(!isvalidCIMIndicationExport(indicationRequest)) {
 		debug("error, invalid cim indication");
-		wsman_set_fault(message, CIMXML_STATUS_UNSUPPORTED_OPERATION, 0, NULL);
+		message->http_code = WSMAN_STATUS_FORBIDDEN;
+		cimxml_set_fault(message, CIMXML_STATUS_UNSUPPORTED_OPERATION);
 		goto DONE;
 	}
 	//to do here: put indication in event pool
@@ -242,6 +289,8 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	}
 	if(node == NULL) {
 		message->http_code = WSMAN_STATUS_NOT_FOUND;
+		cimxml_set_fault(message, CIMXML_STATUS_REQUEST_NOT_VALID);
+		debug("error. uuid:%s not registered!", uuid);
 		goto DONE;
 	}
 	EventPoolOpSetH opset = soap->eventpoolOpSet;
@@ -249,7 +298,6 @@ void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaq
 	cimxml_build_response_msg(indicationRequest, &indicationResponse);
 	ws_xml_dump_memory_enc(indicationResponse, &response, &len, "utf-8");
 	u_buf_construct(message->response, response, len, len);
-	message->http_code = WSMAN_STATUS_OK;
 DONE:
 	u_free(cntx);
 	ws_xml_destroy_doc(indicationRequest);

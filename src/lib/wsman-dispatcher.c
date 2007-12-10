@@ -170,11 +170,11 @@ static int check_for_duplicate_selectors(op_t * op)
 
 	while ((selector = ws_xml_get_child(node, index++, XML_NS_WS_MAN,
 				 WSM_SELECTOR))) {
-		char *attrVal = ws_xml_find_attr_value(selector, NULL, 
+		char *attrVal = ws_xml_find_attr_value(selector, NULL,
 				WSM_NAME);
 		if (!attrVal)
 			continue;
-		
+
 		if (hash_lookup(h, attrVal)) {
 			generate_op_fault(op, WSMAN_INVALID_SELECTORS,
 						WSMAN_DETAIL_DUPLICATE_SELECTORS);
@@ -182,7 +182,7 @@ static int check_for_duplicate_selectors(op_t * op)
 			retval = 1;
 			break;
 		}
-		
+
 		if (!hash_alloc_insert(h, attrVal,
 				       ws_xml_get_node_text(selector))) {
 			generate_op_fault(op, WSMAN_INTERNAL_ERROR,
@@ -249,10 +249,10 @@ static int validate_control_headers(op_t * op)
 }
 
 
-static WsXmlNodeH 
+static WsXmlNodeH
 validate_mustunderstand_headers(op_t * op)
 {
-	WsXmlNodeH child = NULL, header = NULL; 
+	WsXmlNodeH child = NULL, header = NULL;
 	int i;
 	char *nsUri;
 
@@ -263,7 +263,7 @@ validate_mustunderstand_headers(op_t * op)
 		if (ws_xml_find_attr_bool(child, nsUri, SOAP_MUST_UNDERSTAND)) {
 			if (!is_mu_header(child)) {
 				break;
-			}	
+			}
 		}
 	}
 
@@ -304,7 +304,7 @@ check_unsupported_features(op_t * op)
 	WsXmlNodeH n, m, k;
 	char *resource_uri = NULL, *mu = NULL;
 	WsXmlAttrH attr = NULL;
-	
+
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
 	if (n != NULL) {
@@ -458,7 +458,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		}
 		debug("Checking Message ID: %s", msgId);
 		u_lock(soap);
-		
+
 		if (soap->processedMsgIdList == NULL) {
 			soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
 		}
@@ -473,7 +473,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 			}
 			node = list_next(soap->processedMsgIdList, node);
 		}
-		
+
 
 		if (!retVal) {
 			while (list_count(soap->processedMsgIdList) >= PROCESSED_MSG_ID_MAX_SIZE) {
@@ -512,13 +512,13 @@ soap_add_filter(SoapH soap,
 	if (soap) {
 		if (!inbound) {
 			if (!soap->outboundFilterList)
-				soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);			
+				soap->outboundFilterList = list_create(LISTCOUNT_T_MAX);
 			entry = make_callback_entry(callbackProc, callbackData, soap->outboundFilterList);
 		} else {
 			if (!soap->inboundFilterList)
-				soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);			
-			entry = make_callback_entry(callbackProc, callbackData, soap->inboundFilterList);			
-		}		
+				soap->inboundFilterList = list_create(LISTCOUNT_T_MAX);
+			entry = make_callback_entry(callbackProc, callbackData, soap->inboundFilterList);
+		}
 	}
 	if (entry == NULL)
 		return 0;
@@ -595,11 +595,11 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 
 
 
-static int 
+static int
 process_filter_chain(op_t *op, list_t *list, void *opaqueData)
 {
-	int retVal = 0;	
-	callback_t *filter = NULL;	
+	int retVal = 0;
+	callback_t *filter = NULL;
 	if (list != NULL) {
 		filter = (callback_t *) list_first(list);
 		while (!retVal && filter != NULL) {
@@ -631,11 +631,11 @@ static int process_filters(op_t * op, int inbound, void *opaqueData)
 	if (retVal) {
 		debug("process_filter_chain returned 1 for DEF FILTERS");
 		return 1;
-	}	
+	}
 	list = inbound ? op->dispatch->inboundFilterList :
 	    op->dispatch->outboundFilterList;
 	retVal = process_filter_chain(op, list, opaqueData);
-	
+
 	if (retVal) {
 		debug("process_filter_chain returned 1");
 		return 1;
@@ -676,9 +676,8 @@ dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 {
 	char *buf = NULL;
 	int len;
-	if (!soap) {
+	if (!soap)
 		return;
-	}
 
 	if (wsman_fault_occured(msg)) {
 		wsman_generate_fault_buffer(in_doc,
@@ -688,10 +687,11 @@ dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 					    &buf, &len);
 		u_buf_set(msg->response, buf, len);
 		u_free(buf);
-		msg->http_code =
-		    wsman_find_httpcode_for_fault_code(msg->status.
-						       fault_code);
+		msg->http_code = wsman_find_httpcode_for_fault_code(
+						msg->status.
+					    fault_code);
 	}
+	return;
 }
 
 
@@ -793,7 +793,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 	debug("Inbound call...");
 
 	if (wsman_fault_occured(msg)) {
-		debug("doc == NULL || wsman_fault_occured(msg)");
+		error("document is null");
 		goto DONE;
 	}
 	dispatch = get_dispatch_entry(soap, in_doc);
@@ -814,7 +814,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 	}
 	op->in_doc = in_doc;
 	process_inbound_operation(op, msg, opaqueData);
-      DONE:
+DONE:
 	dispatcher_create_fault(soap, msg, in_doc);
 	destroy_op_entry(op);
 	ws_xml_destroy_doc(in_doc);
@@ -823,7 +823,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 }
 
 
-static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r, 
+static char *wsman_dispatcher_match_ns(WsDispatchInterfaceInfo * r,
 		char *uri)
 {
 	char *ns = NULL;
@@ -854,12 +854,12 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 {
 	WsManDispatcherInfo *dispInfo =
 	    (WsManDispatcherInfo *) cntx->soap->dispatcherData;
-	lnode_t *node = NULL; 
+	lnode_t *node = NULL;
 	WsDispatchInterfaceInfo *r = NULL;
 	WsDispatchEndPointInfo *ep = NULL;
 	char *ptr = ENUM_ACTION_RELEASE, *ns = NULL, *uri = NULL;
 	int i;
-	
+
 	if (dispInfo->interfaces) {
 		node = list_first((list_t *) dispInfo->interfaces);
 	}
@@ -1093,7 +1093,7 @@ create_dispatch_entry(SoapH soap,
 		entry->outboundAction = u_str_clone(outboundAction);
 		entry->serviceCallback = proc;
 		entry->serviceData = data;
-		entry->usageCount = 1;	
+		entry->usageCount = 1;
 	}
 	return entry;
 }
@@ -1111,7 +1111,7 @@ create_dispatch_entry(SoapH soap,
  * @param flags Flags
  * @return Dispatch Handle
  */
-SoapDispatchH wsman_dispatch_create(SoapH soap, 
+SoapDispatchH wsman_dispatch_create(SoapH soap,
 		char *inboundAction, char *outboundAction,	//optional
 		char *role,	//reserved, must be NULL
 		SoapServiceCallback callbackProc,

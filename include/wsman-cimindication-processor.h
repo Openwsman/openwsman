@@ -61,6 +61,7 @@ typedef struct {
 }cimxml_context;
 
 typedef enum {
+	CIMXML_STATUS_OK,
 	CIMXML_STATUS_UNSUPPORTED_PROTOCOL_VERSIOIN,
 	CIMXML_STATUS_MULTIPLE_REQUESTS_UNSUPPORTED,
 	CIMXML_STATUS_UNSUPPORTED_CIM_VERSION,
@@ -72,7 +73,22 @@ typedef enum {
 	CIMXML_STATUS_UNSUPPORTED_OPERATION
 }CIMXMLKnownStatusCode;
 
-void CIM_Indication_call(cimxml_context *cntx, WsmanMessage *message, void *opaqueData);
+typedef struct {
+	CIMXMLKnownStatusCode code;
+	char *fault_msg;
+}CimxmlStatus;
+
+typedef struct {
+	char	*charset;
+	CimxmlStatus status;
+	u_buf_t     *request;
+	u_buf_t     *response;
+	WsmanKnownStatusCode http_code;
+}CimxmlMessage;
+
+CimxmlMessage *cimxml_message_new(void);
+void cimxml_message_destroy(CimxmlMessage *msg);
+void CIM_Indication_call(cimxml_context *cntx, CimxmlMessage *message, void *opaqueData);
 
 #endif
 

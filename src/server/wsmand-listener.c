@@ -62,18 +62,17 @@
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
 
-#define OPENWSMAN
+
 #include "shttpd.h"
+#include "adapter.h"
 
 #include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
-#include "wsmand-auth.h"
 #include "wsman-server.h"
 #include "wsman-plugins.h"
 #ifdef ENABLE_EVENTING_SUPPORT
 #include "wsman-event-pool.h"
-#include "wsman-cimxmllistener-path.h"
 #include "wsman-cimindication-processor.h"
 #endif
 
@@ -95,41 +94,9 @@ static int max_threads = 4;
 
 #endif
 
-
 int continue_working = 1;
-static int (*basic_auth_callback) (char *, char *) = NULL;
+static int (*basic_callback) (char *, char *) = NULL;
 
-static int
-digest_auth_callback(char *realm, char *method, struct digest *dig)
-{
-	WSmanAuthDigest wsdig;
-	char *filename = wsmand_options_get_digest_password_file();
-
-	if (filename == NULL) {
-		debug("Could not get digest password file name");
-		return 0;
-	}
-	wsdig.request_method = method;
-	wsdig.username = dig->user;
-	wsdig.realm = realm;
-	wsdig.digest_uri = dig->uri;
-	wsdig.nonce = dig->nonce;
-	wsdig.cnonce = dig->cnonce;
-	wsdig.qop = dig->qop;
-	strncpy(wsdig.nonce_count, dig->nc, sizeof(wsdig.nonce_count));
-	wsdig.digest_response = dig->resp;
-
-	return ws_authorize_digest(filename, &wsdig);
-}
-/*
-static char *shttp_reason_phrase(int status)
-{
-	if (status == WSMAN_STATUS_OK) {
-		return "OK";
-	}
-	return "Error";
-}
-*/
 
 typedef struct {
 	char *response;
@@ -138,349 +105,275 @@ typedef struct {
 } ShttpMessage;
 
 
-
-static int server_callback(struct shttpd_arg_t *arg)
-{
-	const char *method;
+/* Check HTTP headers */
+static
+int check_request_content_type(struct shttpd_arg *arg) {
 	const char *content_type;
-//    char *default_path;
-//    const char *path;
-	char *encoding = NULL;
 	int status = WSMAN_STATUS_OK;
-	char *fault_reason = NULL;
-
-	ShttpMessage *shttp_msg = (ShttpMessage *) arg->state;
-	int n = 0;
-	int k;
-
-	debug("Server callback started %s. len = %d, sent = %d",
-	      (shttp_msg == NULL) ? "initialy" : "continue",
-	      arg->buflen, (shttp_msg == NULL) ? 0 : shttp_msg->ind);
-	if (shttp_msg != NULL) {
-		// We already have the response, but server
-		// output buffer is smaller then it.
-		// Some part of resopnse have already sent.
-		// Just continue to send it to server
-		goto CONTINUE;
-	}
-	// Here we must handle the initial request
-	WsmanMessage *wsman_msg = wsman_soap_message_new();
-
-	// Check HTTP headers
-
-	method = shttpd_get_env(arg, "REQUEST_METHOD");
-	if (strncmp(method, "POST", 4)) {
-		debug("Unsupported method %s", method);
-		status = WSMAN_STATUS_METHOD_NOT_ALLOWED;
-		fault_reason = "POST method supported only";
-	}
-
 
 	content_type = shttpd_get_header(arg, "Content-Type");
 	if (content_type && strncmp(content_type,
 				    SOAP_CONTENT_TYPE,
 				    strlen(SOAP_CONTENT_TYPE)) != 0) {
 		status = WSMAN_STATUS_UNSUPPORTED_MEDIA_TYPE;
-		fault_reason = "Unsupported content type";
-		goto DONE;
 	}
-	if(content_type) {
-		char *p = strstr(content_type, "charset");
-		if(p) {
+	return status;
+}
+
+static
+char *get_request_encoding(struct shttpd_arg *arg) {
+	const char *content_type;
+	char *p;
+	char *encoding = NULL;
+
+	content_type = shttpd_get_header(arg, "Content-Type");
+	if(content_type ) {
+		if(( p = strstr(content_type, "charset")) != NULL ) {
 			p += strlen("charset");
 			p++;
-			wsman_msg->charset = u_strdup(p);
 			encoding = u_strdup(p);
 		}
 	}
-	SoapH soap = (SoapH) arg->user_data;
-	wsman_msg->status.fault_code = WSMAN_RC_OK;
-	wsman_msg->http_headers = shttpd_get_all_headers(arg);
 
-	// Get request from http server
-	size_t length = shttpd_get_post_query_len(arg);
-	char *body = shttpd_get_post_query(arg);
+	return encoding;
+}
+#if 0
+static
+int build_request(u_buf_t *buf, WsmanMessage *msg) {
+	/* Get request from http server */
+	char *body;
+	size_t length;
+	int status = WSMAN_STATUS_OK;
+
+	body = u_strdup((char *)u_buf_ptr(buf));
+	length = u_buf_len(buf);
 	if (body == NULL) {
 		status = WSMAN_STATUS_BAD_REQUEST;
-		fault_reason = "No request body";
-		error("NULL request body. len = %d", length);
+		error("No request body. len = %d", length);
+	} else {
+		u_buf_construct(msg->request, body, length, length);
 	}
-	u_buf_construct(wsman_msg->request, body, length, length);
-	debug("Posted request: %s, wsman_msg len = %d", u_buf_ptr(wsman_msg->request),
-			u_buf_len(wsman_msg->request));
+	return status;
+}
+#endif
 
-	// some plugins can use credentials for its
-	// own authentication
-	shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
+
+static
+void server_callback(struct shttpd_arg *arg)
+{
+	char *encoding = NULL;
+	const char  *s;
+	SoapH soap;
+	int status = WSMAN_STATUS_OK;
+	char *fault_reason = NULL;
+    struct state {
+        size_t  cl;     /* Content-Length   */
+        size_t  nread;      /* Number of bytes read */
+	 	u_buf_t     *request;
+    } *state;
+
+    /* If the connection was broken prematurely, cleanup */
+    if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
+        free(arg->state);
+		return;
+    } else if ((s = shttpd_get_header(arg, "Content-Length")) == NULL) {
+        shttpd_printf(arg, "HTTP/1.0 411 Length Required\n\n");
+        arg->flags |= SHTTPD_END_OF_OUTPUT;
+		return;
+    } else if (arg->state == NULL) {
+        /* New request. Allocate a state structure */
+        arg->state = state = calloc(1, sizeof(*state));
+        state->cl = strtoul(s, NULL, 10);
+		u_buf_create(&(state->request));
+    }
+
+	state = arg->state;
+	if (state->nread>0 )
+		u_buf_append(state->request, arg->in.buf, arg->in.len);
+	else
+		u_buf_set(state->request, arg->in.buf, arg->in.len);
+
+	state->nread += arg->in.len;
+	arg->in.num_bytes = arg->in.len;
+	if (state->nread >= state->cl) {
+		arg->flags |= SHTTPD_END_OF_OUTPUT;
+	} else {
+		return;
+	}
+
+
+	/* Here we must handle the initial request */
+	WsmanMessage *wsman_msg = wsman_soap_message_new();
+	if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
+		goto DONE;
+	}
+	if ( (encoding =  get_request_encoding(arg)) != NULL ) {
+		wsman_msg->charset = u_strdup(encoding);
+	}
+
+	soap = (SoapH) arg->user_data;
+	wsman_msg->status.fault_code = WSMAN_RC_OK;
+	u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
+
+	/*
+	 * some plugins can use credentials for their own authentication
+	 * works only with basic authentication
+	 */
+	 shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
 			       &wsman_msg->auth_data.password);
 
-
-	// Call dispatcher. Real request handling
+	/* Call dispatcher. Real request handling */
 	if (status == WSMAN_STATUS_OK) {
-		// dispatch if we didn't find out the error
+		/* dispatch if we didn't find out any error */
 		dispatch_inbound_call(soap, wsman_msg, NULL);
 		status = wsman_msg->http_code;
 	}
 
+DONE:
 
-	if (wsman_msg->request) {
-		// we don't need request any more
-		(void) u_buf_steal(wsman_msg->request);
-		u_buf_free(wsman_msg->request);
-		wsman_msg->request = NULL;
-	}
-	// here we start to handle the response
-
-	shttp_msg = (ShttpMessage *) malloc(sizeof(ShttpMessage));
-	if (shttp_msg == NULL) {
-		status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-		fault_reason = "No memory";
-		goto DONE;
-	}
-
-
-	shttp_msg->length = u_buf_len(wsman_msg->response);
-	debug("message len = %d", shttp_msg->length);
-	shttp_msg->response = u_buf_steal(wsman_msg->response);
-	shttp_msg->ind = 0;
-      DONE:
-	 wsman_soap_message_destroy(wsman_msg);
-#if 0
 	if (fault_reason == NULL) {
-		fault_reason = shttp_reason_phrase(status);
+		fault_reason = shttpd_reason_phrase(status);
 	}
-#endif
-	debug("Response (status) %d (%s)", status, fault_reason);
+	debug("Response status=%d (%s)", status, fault_reason);
 
-	// Here we begin to create the http response.
-	// Create the headers at first.
-	// We consider output buffer of server is large enough to hold all headers.
+	/*
+	 * Here we begin to create the http response.
+	 * Create the headers at first.
+	 */
 
-	n += snprintf(arg->buf + n, arg->buflen - n, "HTTP/1.1 %d %s\r\n",
-		      status, fault_reason);
-	n += snprintf(arg->buf + n, arg->buflen - n, "Server: %s/%s\r\n",
-		      PACKAGE, VERSION);
-	if (!shttp_msg || shttp_msg->length == 0) {
-		// can't send the body of response or nothing to send
-		n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");
-		arg->last = 1;
-		u_free(shttp_msg);
-		return n;
-	}
-
-	n += snprintf(arg->buf + n, arg->buflen - n,
-		      "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
-	n += snprintf(arg->buf + n, arg->buflen - n,
-		      "Content-Length: %d\r\n", shttp_msg->length);
-	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");
+	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
+	shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
+	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
+	shttpd_printf(arg, "Content-Length: %d\r\n", u_buf_len(wsman_msg->response));
+	shttpd_printf(arg, "\r\n");
 	u_free(encoding);
-	// add response body to output buffer
-      CONTINUE:
-	k = arg->buflen - n;
-	if (k <= shttp_msg->length - shttp_msg->ind) {
-		// not enogh room for all message. transfer only part
-		memcpy(arg->buf + n, shttp_msg->response + shttp_msg->ind,
-		       k);
-		shttp_msg->ind += k;
-		arg->state = shttp_msg;
-		return n + k;
-	}
-	// Enough room for all response body
-	memcpy(arg->buf + n, shttp_msg->response + shttp_msg->ind,
-	       shttp_msg->length - shttp_msg->ind);
-	n += shttp_msg->length - shttp_msg->ind;
-	if (n + 4 > arg->buflen) {
-		// not enough room for empty lines at the end of the message
-		arg->state = shttp_msg;
-		shttp_msg->ind = shttp_msg->length;
-		return n;
-	}
-	// here we can complete
-	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n\r\n");
-	debug("%s", arg->buf);
-	u_free(shttp_msg->response);
-	u_free(shttp_msg);
 
-	arg->last = 1;
-	arg->state = NULL;
-	return n;
+	/* add response body to output buffer */
+
+	if (wsman_msg->response) {
+		shttpd_printf(arg, (char *)u_buf_ptr(wsman_msg->response) );
+		shttpd_printf(arg, "\r\n\r\n");
+	}
+
+	wsman_soap_message_destroy(wsman_msg);
+	debug("-> %s", arg->out.buf);
+
+	u_buf_free(state->request);
+	u_free(state);
+	arg->flags |= SHTTPD_END_OF_OUTPUT;
+	return;
 }
 
 #ifdef ENABLE_EVENTING_SUPPORT
 
-static int cimxml_listener_callback(struct shttpd_arg_t *arg)
-{
-	debug("in cimxml_listener_callback");
-	const char *method;
-	const char *content_type;
+static int build_cimxml_request(struct shttpd_arg *arg, CimxmlMessage *msg) {
+	/* Get request from http server */
+	char *body;
+	size_t length;
 	int status = WSMAN_STATUS_OK;
+
+	body = u_strdup(arg->in.buf + arg->in.num_bytes);
+	length = arg->in.len - arg->in.num_bytes;
+	if (body == NULL) {
+		status = WSMAN_STATUS_BAD_REQUEST;
+		error("No request body. len = %d", length);
+	} else {
+		u_buf_construct(msg->request, body, length, length);
+	}
+	return status;
+}
+
+static void cimxml_listener_callback(struct shttpd_arg *arg)
+{
+	int status = CIMXML_STATUS_OK;
+	int cim_error_code = 0;
+	char *cim_error = NULL;
 	char *fault_reason = NULL;
-	char *uuid = NULL;
+	char *uuid = NULL, *tmp, *end;
 	cimxml_context *cntx = NULL;
 	SoapH soap = NULL;
-	ShttpMessage *shttp_msg = (ShttpMessage *) arg->state;
-	int n = 0;
-	int k;
-
-	debug("CIM Indication Listener callback started %s. len = %d, sent = %d",
-	      (shttp_msg == NULL) ? "initialy" : "continue",
-	      arg->buflen, (shttp_msg == NULL) ? 0 : shttp_msg->ind);
-	if (shttp_msg != NULL) {
-		// We already have the response, but server
-		// output buffer is smaller then it.
-		// Some part of resopnse have already sent.
-		// Just continue to send it to server
-		goto CONTINUE;
+	char *encoding = NULL;
+	if (arg->flags & SHTTPD_MORE_POST_DATA)
+			return;
+	CimxmlMessage *cimxml_msg = cimxml_message_new();
+	tmp = (char *)shttpd_get_env(arg, "REQUEST_URI");
+	if (tmp && ( end = strrchr(tmp, '/')) != NULL ) {
+		uuid = &end[1];
 	}
-	// Here we must handle the initial request
-	WsmanMessage *wsman_msg = wsman_soap_message_new();
-
-	// Check HTTP headers
-
-	method = shttpd_get_env(arg, "REQUEST_METHOD");
-	if (strncmp(method, "POST", 4)) {
-		debug("Unsupported method %s", method);
-		status = WSMAN_STATUS_METHOD_NOT_ALLOWED;
-		fault_reason = "POST method supported only";
-		goto DONE;
+	if ( (encoding =  get_request_encoding(arg)) != NULL ) {
+		cimxml_msg->charset = u_strdup(encoding);
 	}
-
-
-	content_type = shttpd_get_header(arg, "Content-Type");
-	if (content_type && strncmp(content_type,
-				    CIMXML_CONTENT_TYPE,
-				    strlen(CIMXML_CONTENT_TYPE)) != 0) {
-		status = WSMAN_STATUS_UNSUPPORTED_MEDIA_TYPE;
-		fault_reason = "Unsupported content type";
-		goto DONE;
-	}
-
-	if(strncmp(shttpd_get_header(arg, "CIMExport"), "MethodRequest", strlen("MethodRequest")) ||
-		strncmp(shttpd_get_header(arg, "CIMExportMethod"), "ExportIndication", strlen("ExportIndication"))) {
-		status = CIMXML_STATUS_UNSUPPORTED_OPERATION;
-		fault_reason = "Unsupported operation";
+	const char *cimexport = shttpd_get_header(arg, "CIMExport");
+	const char *cimexportmethod = shttpd_get_header(arg, "CIMExportMethod");
+	if ( cimexportmethod && cimexport ) {
+		if(strncmp(cimexport, "MethodRequest", strlen("MethodRequest")) ||
+						strncmp(cimexportmethod, "ExportIndication", strlen("ExportIndication"))) {
+		}
+	} else {
+		status = WSMAN_STATUS_FORBIDDEN;
+		cim_error_code = CIMXML_STATUS_UNSUPPORTED_OPERATION;
+		cim_error = "unsupported-operation";
 		goto DONE;
 	}
 	soap = (SoapH) arg->user_data;
-	uuid = arg->uuid;
-	wsman_msg->status.fault_code = WSMAN_RC_OK;
-	wsman_msg->http_headers = shttpd_get_all_headers(arg);
-
-	// Get request from http server
-	size_t length = shttpd_get_post_query_len(arg);
-	char *body = shttpd_get_post_query(arg);
-	if (body == NULL) {
-		status = CIMXML_STATUS_REQUEST_NOT_WELL_FORMED;
-		fault_reason = "No request body";
-		error("NULL request body. len = %d", length);
+	if ((status = build_cimxml_request(arg, cimxml_msg ) ) != WSMAN_STATUS_OK ) {
+			cim_error = "request-not-well-formed";
+			status = WSMAN_STATUS_BAD_REQUEST;
+			cim_error_code = CIMXML_STATUS_REQUEST_NOT_WELL_FORMED;
+			goto DONE;
 	}
-	else {
-		debug("Posted request: %s", body);
-	}
-	u_buf_construct(wsman_msg->request, body, length, length);
-
-	// some plugins can use credentials for its
-	// own authentication
-	shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
-			       &wsman_msg->auth_data.password);
-
-
-	// Call dispatcher. Real request handling
 	if (status == WSMAN_STATUS_OK) {
 		cntx = u_malloc(sizeof(cimxml_context));
 		cntx->soap = soap;
 		cntx->uuid = uuid;
-		CIM_Indication_call(cntx, wsman_msg, NULL);
-		status = wsman_msg->http_code;
+		CIM_Indication_call(cntx, cimxml_msg, NULL);
+		status = cimxml_msg->http_code;
+		cim_error_code = cimxml_msg->status.code;
+		cim_error = cimxml_msg->status.fault_msg;
 	}
 
-
-	if (wsman_msg->request) {
-		// we don't need request any more
-		(void) u_buf_steal(wsman_msg->request);
-		u_buf_free(wsman_msg->request);
-		wsman_msg->request = NULL;
-	}
-	// here we start to handle the response
-
-	shttp_msg = (ShttpMessage *) malloc(sizeof(ShttpMessage));
-	if (shttp_msg == NULL) {
-		status = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-		fault_reason = "No memory";
-		goto DONE;
-	}
-
-
-	shttp_msg->length = u_buf_len(wsman_msg->response);
-	debug("message len = %d", shttp_msg->length);
-	shttp_msg->response = u_buf_steal(wsman_msg->response);
-	shttp_msg->ind = 0;
-
-    DONE:
-	wsman_soap_message_destroy(wsman_msg);
+DONE:
 	if (fault_reason == NULL) {
-		fault_reason = shttp_reason_phrase(status);
+		fault_reason = shttpd_reason_phrase(status);
 	}
 	debug("Response (status) %d (%s)", status, fault_reason);
 
-	// Here we begin to create the http response.
-	// Create the headers at first.
-	// We consider output buffer of server is large enough to hold all headers.
+	/*
+	 * Here we begin to create the http response.
+	 * Create the headers at first.
+	 * We consider output buffer of server is large enough to hold all headers.
+	 */
+	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
+	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
 
-	n += snprintf(arg->buf + n, arg->buflen - n, "HTTP/1.1 %d %s\r\n",
-		      status, fault_reason);
-	n += snprintf(arg->buf + n, arg->buflen - n, "Server: %s/%s\r\n",
-		      PACKAGE, VERSION);
-	 if (status != WSMAN_STATUS_OK) {
-        	n += snprintf(arg->buf + n, arg->buflen -n, "\r\n%d %s\r\n",
-                status, fault_reason);
-        	arg->last = 1;
-        	u_free(shttp_msg);
-        	return n;
-    	}
-	if (!shttp_msg || shttp_msg->length == 0) {
-		// can't send the body of response or nothing to send
-		n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");
-		arg->last = 1;
-		u_free(shttp_msg);
-		return n;
+	if (status != WSMAN_STATUS_OK) {
+		if (cim_error) {
+			shttpd_printf(arg, "CIMError: %s\r\n", cim_error);
+		}
+		shttpd_printf(arg, "\r\n%d %s\r\n", status, fault_reason);
+		arg->flags |= SHTTPD_END_OF_OUTPUT;
+		cimxml_message_destroy(cimxml_msg);
+		debug("----> %s", arg->out.buf);
+		return;
 	}
-	n += snprintf(arg->buf + n, arg->buflen - n,
-		      "Content-Type: application/xml; charset=\"utf-8\"\r\n");
-	n += snprintf(arg->buf + n, arg->buflen - n,
-		      "Content-Length: %d\r\n", shttp_msg->length);
-	n += snprintf(arg->buf + n, arg->buflen - n,
-			"CIMExport: MethodResponse\r\n");
-	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n");
-	// add response body to output buffer
-      CONTINUE:
-	k = arg->buflen - n;
-	if (k <= shttp_msg->length - shttp_msg->ind) {
-		// not enogh room for all message. transfer only part
-		memcpy(arg->buf + n, shttp_msg->response + shttp_msg->ind,
-		       k);
-		shttp_msg->ind += k;
-		arg->state = shttp_msg;
-		return n + k;
+	if ( u_buf_len(cimxml_msg->response) == 0) {
+		/* can't send the body of response or nothing to send */
+		shttpd_printf(arg, "\r\n");
+		arg->flags |= SHTTPD_END_OF_OUTPUT;
+		cimxml_message_destroy(cimxml_msg);
+		return;
 	}
-	// Enough room for all response body
-	memcpy(arg->buf + n, shttp_msg->response + shttp_msg->ind,
-	       shttp_msg->length - shttp_msg->ind);
-	n += shttp_msg->length - shttp_msg->ind;
-	if (n + 4 > arg->buflen) {
-		// not enough room for empty lines at the end of the message
-		arg->state = shttp_msg;
-		shttp_msg->ind = shttp_msg->length;
-		return n;
-	}
-	// here we can complete
-	n += snprintf(arg->buf + n, arg->buflen - n, "\r\n\r\n");
-	u_free(shttp_msg->response);
-	u_free(shttp_msg);
+	shttpd_printf(arg, "Content-Type: application/xml; charset=\"utf-8\"\r\n");
+	shttpd_printf(arg, "Content-Length: %d\r\n", u_buf_len(cimxml_msg->response));
+	shttpd_printf(arg, "CIMExport: MethodResponse\r\n");
+	shttpd_printf(arg, "\r\n");
+	shttpd_printf(arg,  (char *)u_buf_ptr(cimxml_msg->response) );
+	shttpd_printf(arg, "\r\n\r\n");
+	debug("-> %s", arg->out.buf);
 
-	arg->last = 1;
-	arg->state = NULL;
-	return n;
+	cimxml_message_destroy(cimxml_msg);
+	arg->flags |= SHTTPD_END_OF_OUTPUT;
+	return;
 }
 
 
@@ -492,8 +385,8 @@ static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEnt
 	u_buf_construct(wsman_msg->request, strdoc, entry->len, entry->len);
 	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
 	wsman_soap_message_destroy(wsman_msg);
-	if(list_count(cntx->soap->subscriptionMemList) > subsNum) {
-		lnode_t *node = list_last(cntx->soap->subscriptionMemList);
+	if(list_count(cntx->subscriptionMemList) > subsNum) {
+		lnode_t *node = list_last(cntx->subscriptionMemList);
 		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
 		//Update UUID in the memory
 		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
@@ -541,6 +434,22 @@ static void listener_shutdown_handler(void *p)
 	*a = 0;
 }
 
+static void protect_uri(struct shttpd_ctx *ctx, char *uri)
+{
+	if (wsmand_options_get_digest_password_file()) {
+			shttpd_protect_uri(ctx, uri,
+                   wsmand_options_get_digest_password_file(),NULL, 1);
+		debug("Using Digest Authorization for %s:", uri);
+	}
+	if (basic_callback) {
+		shttpd_protect_uri(ctx, uri, NULL,
+						basic_callback, 0);
+		debug("Using Basic Authorization %s for %s:",
+		      wsmand_option_get_basic_authenticator()?
+		      wsmand_option_get_basic_authenticator() :
+		      wsmand_default_basic_authenticator(), uri);
+	}
+}
 
 static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 {
@@ -550,53 +459,28 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 		ctx = shttpd_init(NULL,
 				  "ssl_certificate",
 				  wsmand_options_get_ssl_cert_file(),
-				  "ssl_priv_key",
-				  wsmand_options_get_ssl_key_file(),
 				  "auth_realm",
 				  AUTHENTICATION_REALM,
-				  "debug",
-				  wsmand_options_get_debug_level() >
-				  0 ? "1" : "0", NULL);
+				  NULL);
 	} else {
 		ctx = shttpd_init(NULL,
 				  "auth_realm", AUTHENTICATION_REALM,
-				  "debug",
-				  wsmand_options_get_debug_level() >
-				  0 ? "1" : "0", NULL);
+				   NULL);
 	}
 	if (ctx == NULL) {
 		return NULL;
 	}
-	shttpd_register_url(ctx, wsmand_options_get_service_path(), NULL,
-			    server_callback, 0, (void *) soap);
+	shttpd_register_uri(ctx, wsmand_options_get_service_path(),
+			    server_callback, (void *) soap);
+
+
 #ifdef ENABLE_EVENTING_SUPPORT
-	char ** service_paths = NULL;
-	int number = 0;
-	int i = 0;
-	get_cimxml_listener_paths(&service_paths, &number);
-	 if(number) {
-               while(i < number) {
-			char *uuid = strrchr(service_paths[i], '/') + 1;
-			shttpd_register_url(ctx, service_paths[i], uuid, cimxml_listener_callback,
-                                       0, (void *)soap);
-			debug("********registered service path: %s*********", service_paths[i]);
-			u_free(service_paths[i]);
-			i++;
-               }
-		u_free(service_paths);
-       }
+	message("+++++++++Registered CIM Indication Listener:: %s", DEFAULT_CIMINDICATION_PATH "/*");
+	shttpd_register_uri(ctx, DEFAULT_CIMINDICATION_PATH "/*", cimxml_listener_callback,(void *)soap);
+	protect_uri( ctx, DEFAULT_CIMINDICATION_PATH );
 #endif
-	if (wsmand_options_get_digest_password_file()) {
-		shttpd_register_dauth_callback(ctx, digest_auth_callback);
-		debug("Using Digest Authorization");
-	}
-	if (basic_auth_callback) {
-		shttpd_register_bauth_callback(ctx, basic_auth_callback);
-		debug("Using Basic Authorization %s",
-		      wsmand_option_get_basic_authenticator()?
-		      wsmand_option_get_basic_authenticator() :
-		      wsmand_default_basic_authenticator());
-	}
+
+	protect_uri( ctx, wsmand_options_get_service_path());
 
 	return ctx;
 }
@@ -615,7 +499,11 @@ static void handle_socket(int sock, SoapH soap)
 		close(sock);
 		return;
 	}
-	shttpd_add_socket(ctx, sock);
+	if (wsmand_options_get_use_ssl()) {
+		shttpd_add_socket(ctx, sock, 1);
+	} else {
+		shttpd_add_socket(ctx, sock, 0);
+	}
 	while (shttpd_active(ctx) && continue_working) {
 		shttpd_poll(ctx, 100);
 	}
@@ -717,8 +605,8 @@ static int initialize_basic_authenticator(void)
 		res = 1;
 		goto DONE;
 	}
-	basic_auth_callback = dlsym(hnd, "authorize");
-	if (basic_auth_callback == NULL) {
+	basic_callback = dlsym(hnd, "authorize");
+	if (basic_callback == NULL) {
 		fprintf(stderr, "Could not resolve authorize() in %s\n",
 			name);
 		res = 1;
@@ -752,7 +640,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
 			if(wsmand_clean_subsrepository(cntx->soap, entry) == 0) {
 				debug("load subscription %s", entry->uuid);
-				wsmand_start_notification_manager(cntx, entry, list_count(cntx->soap->subscriptionMemList));
+				wsmand_start_notification_manager(cntx, entry, list_count(cntx->subscriptionMemList));
 			}
 			else
 				u_free(entry->strdoc);
@@ -818,7 +706,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	if (wsmand_options_get_digest_password_file()) {
 		message("Using Digest Authorization");
 	}
-	if (basic_auth_callback) {
+	if (basic_callback) {
 		message("Using Basic Authorization %s",
 			wsmand_option_get_basic_authenticator()?
 			wsmand_option_get_basic_authenticator() :
@@ -826,7 +714,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	}
 
 	if ((wsmand_options_get_digest_password_file() == NULL) &&
-	    (basic_auth_callback == NULL)) {
+	    (basic_callback == NULL)) {
 		error("Server does not work without authentication");
 		return listener;
 	}
@@ -834,7 +722,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	wsmand_shutdown_add_handler(listener_shutdown_handler,
 				    &continue_working);
 
-	if ((lsn = shttpd_open_port(port)) == -1) {
+	if ((lsn = open_listening_port(port)) == -1) {
 		error("cannot open port %d", port);
 		exit(EXIT_FAILURE);
 	}

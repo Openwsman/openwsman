@@ -1,4 +1,8 @@
-SUBDIRS = include src doc etc tests examples python
+SUBDIRS = include src doc etc tests examples 
+if BUILD_PYTHON
+SUBDIRS += python
+endif
+
 AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
 
 wsmanincludedir = $(includedir)/openwsman

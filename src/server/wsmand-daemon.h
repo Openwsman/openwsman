@@ -37,7 +37,8 @@
 #define __WSMAND_DAEMON_H__
 
 
-#define DEFAULT_SERVICE_PATH "wsman"
+#define DEFAULT_SERVICE_PATH "/wsman"
+#define DEFAULT_CIMINDICATION_PATH "/cimindicationlistener"
 #define DEFAULT_PID_PATH "/var/run/wsmand.pid"
 #ifdef PACKAGE_SUBSCRIPTION_DIR
 #define DEFAULT_SUBSCRIPTION_REPOSITORY PACKAGE_SUBSCRIPTION_DIR

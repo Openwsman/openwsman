@@ -523,18 +523,15 @@ wsman_generate_fault( WsXmlDocH in_doc,
 	char *reason, *detail;
 
 	int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
-	for (i = 0; i < nfaults; i++)
-	{
+	for (i = 0; i < nfaults; i++) {
 		if (fault_code_table[i].fault_code == faultCode ) {
 			if (fault_msg!= NULL ) {
 				reason = fault_msg;
 			} else {
 				reason = fault_code_table[i].reason;
 			}
-			//debug("faultDetail: %d", faultDetail);
 			if (faultDetail>0) {
 				detail = fault_detail_table[faultDetail].detail;
-				//debug("Fault detail: %s", fault_detail_table[faultDetail].detail);
 			}
 			else
 				detail = NULL;

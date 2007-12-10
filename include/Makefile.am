@@ -25,7 +25,6 @@ wsmaninclude_HEADERS = \
 	wsman-soap-envelope.h \
 	wsman-subscription-repository.h \
 	wsman-event-pool.h \
-	wsman-cimxmllistener-path.h \
 	wsman-cimindication-processor.h
 
 EXTRA_DIST = wsman-xml.h \

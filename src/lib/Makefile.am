@@ -34,7 +34,6 @@ if ENABLE_EVENTING_SUPPORT
 libwsman_la_SOURCES +=  \
 	wsman-subscription-repository.c \
 	wsman-event-pool.c \
-	wsman-cimxmllistener-path.c \
 	wsman-cimindication-processor.c
 endif
 
