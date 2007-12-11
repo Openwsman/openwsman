@@ -137,26 +137,6 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 
 	return encoding;
 }
-#if 0
-static
-int build_request(u_buf_t *buf, WsmanMessage *msg) {
-	/* Get request from http server */
-	char *body;
-	size_t length;
-	int status = WSMAN_STATUS_OK;
-
-	body = u_strdup((char *)u_buf_ptr(buf));
-	length = u_buf_len(buf);
-	if (body == NULL) {
-		status = WSMAN_STATUS_BAD_REQUEST;
-		error("No request body. len = %d", length);
-	} else {
-		u_buf_construct(msg->request, body, length, length);
-	}
-	return status;
-}
-#endif
-
 
 static
 void server_callback(struct shttpd_arg *arg)
@@ -471,10 +451,14 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	}
 	shttpd_register_uri(ctx, wsmand_options_get_service_path(),
 			    server_callback, (void *) soap);
+#if 0
+	shttpd_register_uri(ctx, ANON_IDENTIFY_PATH,
+			    server_callback, (void *) soap);
+#endif
 
 
 #ifdef ENABLE_EVENTING_SUPPORT
-	message("+++++++++Registered CIM Indication Listener:: %s", DEFAULT_CIMINDICATION_PATH "/*");
+	message("Registered CIM Indication Listener: %s", DEFAULT_CIMINDICATION_PATH "/*");
 	shttpd_register_uri(ctx, DEFAULT_CIMINDICATION_PATH "/*", cimxml_listener_callback,(void *)soap);
 	protect_uri( ctx, DEFAULT_CIMINDICATION_PATH );
 #endif

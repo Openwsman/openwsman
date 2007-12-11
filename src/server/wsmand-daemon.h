@@ -38,6 +38,7 @@
 
 
 #define DEFAULT_SERVICE_PATH "/wsman"
+#define ANON_IDENTIFY_PATH "/wsman-anon/identify"
 #define DEFAULT_CIMINDICATION_PATH "/cimindicationlistener"
 #define DEFAULT_PID_PATH "/var/run/wsmand.pid"
 #ifdef PACKAGE_SUBSCRIPTION_DIR
