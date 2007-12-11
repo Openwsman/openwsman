@@ -131,7 +131,7 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 		if(( p = strstr(content_type, "charset")) != NULL ) {
 			p += strlen("charset");
 			p++;
-			encoding = u_strdup(p);
+			encoding = p;
 		}
 	}
 
@@ -246,7 +246,6 @@ DONE:
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
 	shttpd_printf(arg, "Content-Length: %d\r\n", u_buf_len(wsman_msg->response));
 	shttpd_printf(arg, "\r\n");
-	u_free(encoding);
 
 	/* add response body to output buffer */
 
