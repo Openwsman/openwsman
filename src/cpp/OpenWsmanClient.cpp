@@ -25,7 +25,7 @@ static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
 static string XmlDocToString(WsXmlDocH& doc);
 static client_opt_t *SetOptions(WsManClient* cl);
-static string GetSubscribeIdentifier(WsXmlDocH& doc);
+static string GetSubscribeContext(WsXmlDocH& doc);
 static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
 
@@ -254,7 +254,7 @@ string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodNa
 	return xml;
 }
 
-string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const
+string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &subsContext) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
@@ -281,12 +281,12 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
-	identifier = GetSubscribeIdentifier(doc);
+	subsContext = GetSubscribeContext(doc);
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
 
-string OpenWsmanClient::Renew(const string &resourceUri, const string &identifier, float expire, const NameValuePairs *s) const
+string OpenWsmanClient::Renew(const string &resourceUri, const string &subsContext, float expire, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
@@ -299,7 +299,7 @@ string OpenWsmanClient::Renew(const string &resourceUri, const string &identifie
 						(char *)p->first.c_str(), (char *)p->second.c_str());
 		}
 	}
-	doc = wsmc_action_renew(cl, (char *)resourceUri.c_str(), options, identifier.c_str());
+	doc = wsmc_action_renew(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
@@ -307,7 +307,7 @@ string OpenWsmanClient::Renew(const string &resourceUri, const string &identifie
 	return xml;
 }
 			
-void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &identifier, const NameValuePairs *s) const
+void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &subsContext, const NameValuePairs *s) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
@@ -319,7 +319,7 @@ void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &ident
 						(char *)p->first.c_str(), (char *)p->second.c_str());
 		}
 	}
-	doc = wsmc_action_unsubscribe(cl, (char *)resourceUri.c_str(), options, identifier.c_str());
+	doc = wsmc_action_unsubscribe(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	ws_xml_destroy_doc(doc);
@@ -327,9 +327,10 @@ void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &ident
 }
 
 
-string GetSubscribeIdentifier(WsXmlDocH& doc)
+string GetSubscribeContext(WsXmlDocH& doc)
 {
 	string str;
+	char *buf = NULL;
 	WsXmlNodeH bodyNode = ws_xml_get_soap_body(doc);
 	WsXmlNodeH tmp = NULL;
 	if(bodyNode == NULL) return str;
@@ -342,10 +343,9 @@ string GetSubscribeIdentifier(WsXmlDocH& doc)
 		tmp = ws_xml_get_child(bodyNode, 0, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES);
 		if(tmp == NULL) return str;
 	}
-	bodyNode = ws_xml_get_child(tmp, 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
-	if(bodyNode == NULL) return str;
-	char *identifier = ws_xml_get_node_text(bodyNode);
-	str = string(identifier);
+	wsmc_node_to_buf(tmp, &buf);
+	str = string(buf);
+	u_free(buf);
 	return str;
 }
 

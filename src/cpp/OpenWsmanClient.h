@@ -78,13 +78,13 @@ namespace WsmanClientNamespace
 			string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const;
 
 			// Submit a subscription
-			string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const;
+			string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &subsContext) const;
 
 			// Renew a subscription
-			string Renew(const string &resourceUri, const string &identifier, float expire, const NameValuePairs *s = NULL) const;
+			string Renew(const string &resourceUri, const string &subsContext, float expire, const NameValuePairs *s = NULL) const;
 			
 			// Terminate a subscription
-			void Unsubscribe(const string &resourceUri, const string &identifier, const NameValuePairs *s = NULL) const;
+			void Unsubscribe(const string &resourceUri, const string &subsContext, const NameValuePairs *s = NULL) const;
 
 			// Set auth method
 			void SetAuth(const char *auth_method = "digest");

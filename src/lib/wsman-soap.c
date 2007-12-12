@@ -1664,7 +1664,9 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 			ws_xml_set_node_text(temp, str);
 		}
 		temp = ws_xml_get_soap_header(_doc);
-		ws_xml_add_child(temp, XML_NS_OPENWSMAN, "FormerUID", subsInfo->subsId);
+		inNode = ws_xml_get_child(temp, 0, XML_NS_OPENWSMAN, "FormerUID");
+		if(inNode == NULL)
+			ws_xml_add_child(temp, XML_NS_OPENWSMAN, "FormerUID", subsInfo->subsId);
 		ws_xml_dump_memory_enc(_doc, &buf, &len, "UTF-8");
 		if(buf) {
 			soap->subscriptionOpSet->save_subscritption(soap->uri_subsRepository, subsInfo->subsId, (unsigned char*)buf);

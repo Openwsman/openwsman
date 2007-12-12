@@ -118,13 +118,13 @@ namespace WsmanClientNamespace
 		virtual string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const = 0;
 
 		// Submit a subscription
-		virtual string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &identifier) const = 0;
+		virtual string Subscribe(const string &resourceUri, const SubscribeInfo &info, string &subsContext) const = 0;
 
 		// Renew a subscription
-		virtual string Renew(const string &resourceUri, const string &identifier, float expire, const NameValuePairs *s = NULL) const = 0;
+		virtual string Renew(const string &resourceUri, const string &subsContext, float expire, const NameValuePairs *s = NULL) const = 0;
 
 		// Terminate a subscription
-		virtual void Unsubscribe(const string &resourceUri, const string &identifier, const NameValuePairs *s = NULL) const = 0;
+		virtual void Unsubscribe(const string &resourceUri, const string &subsContext, const NameValuePairs *s = NULL) const = 0;
 	};
 } // namespace WsmanClientNamespace
 #endif

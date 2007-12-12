@@ -1228,7 +1228,6 @@ wsman_set_expiretime(WsXmlNodeH  node,
                     WsmanFaultCodeType *fault_code)
 {
 	struct timeval  tv;
-	struct timezone *tz = NULL;
 	time_t timeout;
 	char *text;
 	XML_DATETIME tmx;
@@ -1255,7 +1254,6 @@ wsman_set_expiretime(WsXmlNodeH  node,
 		goto DONE;
 	}
 	timeout = mktime(&(tmx.tm)) + 60*tmx.tz_min;
-	timeout += (time_t) tz;
 	*expire = timeout;
 DONE:
 	return;
