@@ -22,12 +22,12 @@ Openwsman 1.5 is an interim stable release toward 2.0 with all completed feature
     * WS-Eventing Phase 1
           o Subscribe, Unsubscribe, Renew commands supported
           o Heartbeat message supported. The granularity is 1 second.
-          o Four kinds of delivery modes supported: “Push”, “PushWithAck?”, “Pull”, “Events”
+          o Four kinds of delivery modes supported: Push, PushWithAck, Pull, Events
           o Extensible subscription storage mechanism and local subscription storage implemented
-          o If the delivery mode is “PushWithAck?” or “Events” and there is no acknowledgment response from the event sink, the subscription will be terminated.
+          o If the delivery mode is PushWithAck or Events and there is no acknowledgment response from the event sink, the subscription will be terminated.
           o Expired subscription will be deleted from the storage.
           o Subscription with no expiry time will be kept until the service restarts. When the service restarts, all expired and non-expiry subscriptions will be deleted.
-          o If the delivery mode is set to “Pull”, the number of events kept in the service is limited. Any events over that limit will be discarded.
+          o If the delivery mode is set to Pull, the number of events kept in the service is limited. Any events over that limit will be discarded.
           o Initial CIM indication support in the CIM plugin 
     * XML abstraction layer and parser improvements
     * Language Bindings:
