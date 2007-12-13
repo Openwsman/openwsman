@@ -63,7 +63,7 @@ max_threads = 1
 
 [client]
 port = 8889
-agent = openwsman 0.6.0
+agent = openwsman 1.5.9
 
 [cim]
 default_cim_namespace = root/cimv2
@@ -84,10 +84,6 @@ To start the server in the foreground, run:
 % /usr/local/sbin/openwsmand  -d
 
 You can also specify the configuration file to be used on the command line using the -c option.
-
-If all went ok, you should see all debug message on the screen and tha last message would be:
-
-..... Waiting for requests...
 
 
 On the client side, which has the following options
@@ -185,7 +181,7 @@ The above command should give the following result:
     <wsmid:IdentifyResponse>
       <wsmid:ProtocolVersion>http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd</wsmid:ProtocolVersion>
       <wsmid:ProductVendor>openwsman</wsmid:ProductVendor>
-      <wsmid:ProductVersion>0.7.1</wsmid:ProductVersion>
+      <wsmid:ProductVersion>1.6.0</wsmid:ProductVersion>
     </wsmid:IdentifyResponse>
   </s:Body>
 </s:Envelope>
