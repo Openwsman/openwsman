@@ -35,6 +35,10 @@
 #ifndef _WSMAN_DEBUG_H_
 #define _WSMAN_DEBUG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "u/libu.h"
 
 extern void           wsman_debug_set_level(debug_level_e level);
@@ -42,6 +46,10 @@ extern debug_level_e  wsman_debug_get_level(void);
 extern int            wsman_debug_level_debugged(debug_level_e level);
 extern void           wsman_debug_message_handler(const char *str,
                                          debug_level_e level, void *user_data);
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 
 
