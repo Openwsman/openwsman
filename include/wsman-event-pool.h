@@ -35,6 +35,10 @@
 #ifndef WSMAN_EVENT_SOURCE_H_
 #define WSMAN_EVENT_SOURCE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
 #define EUIDLEN		64
 
 struct _WsXmlDoc;
@@ -76,4 +80,8 @@ struct __EventPoolOpSet {
 };
 typedef struct __EventPoolOpSet *EventPoolOpSetH;
 
+#ifdef __cplusplus
+}
+#endif
+    
 #endif
