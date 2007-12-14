@@ -36,6 +36,10 @@
 #ifndef WSMAN_CLIENT_TRANSPORT_H_
 #define WSMAN_CLIENT_TRANSPORT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "u/libu.h"
 #include "wsman-client-api.h"
 
@@ -128,6 +132,9 @@ extern char *wsman_transport_get_key(WsManClient *cl);
 long long get_transfer_time(void);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* WSMAN_CLIENT_TRANSPORT_H_ */
 
