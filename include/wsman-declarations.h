@@ -37,6 +37,10 @@
 #ifndef WSMAN_DECLARATIONS_H_
 #define WSMAN_DECLARATIONS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "wsman-soap.h"
 
             // Server Plugin Interface Declarations
@@ -141,5 +145,9 @@
 extern WsDispatchEndPointInfo t##_EndPoints[]
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
