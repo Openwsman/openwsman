@@ -1,0 +1,53 @@
+<testcases repeat="1">
+
+<case
+    id="1"
+    description1="SAMPLE TEST CASE - load WebInject dev page"
+    description2="verify string 'Corey Goldberg' exists in response"
+    method="get"
+    url="http://localhost:8889/wsman"
+    verifypositive="Not Implemented"
+	verifyresponsecode="501"
+/>
+
+<case
+    id="2"
+    description1="SAMPLE [NEGATIVE] TEST CASE - load WebInject dev page"
+    description2="verify string 'bogus string' does not exist in response"
+    method="post"
+    url="http://localhost:8889/wsman"
+	verifyresponsecode="411"
+/>
+
+<case
+    id="3"
+    description1="SAMPLE TEST CASE THAT FAILS - valid page with bogus verification"
+    description2="case should pass"
+    method="post"
+	posttype="application/soap+xml"
+	postbody="file=>identify.xml"
+    url="http://localhost:8889/wsman"
+    verifypositive="IdentifyResponse"
+/>
+<case
+    id="4"
+    description1="SAMPLE TEST CASE THAT FAILS - valid page with bogus verification"
+    description2="case should pass"
+    method="post"
+	posttype="application/soap+xml"
+	postbody="file=>enum_big.xml"
+    url="http://localhost:8889/wsman"
+    verifypositive="EnumerateResponse"
+/>
+<case
+    id="5"
+    description1="SAMPLE TEST CASE THAT FAILS - valid page with bogus verification"
+    description2="case should pass"
+    method="post"
+	posttype="application/soap+xml"
+	postbody="file=>enum.xml"
+    url="http://localhost:8889/wsman"
+    verifypositive="EnumerateResponse"
+/>
+
+</testcases>

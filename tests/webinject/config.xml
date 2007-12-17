@@ -1,0 +1,3 @@
+<testcasefile>testcases.xml</testcasefile>
+<globalhttplog>onfail</globalhttplog>
+<httpauth>localhost:8889:OPENWSMAN:wsman:secret</httpauth>
