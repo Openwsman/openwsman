@@ -57,9 +57,9 @@
 #endif
 #include "wsman-soap.h"
 #include "wsman-server.h"
+#include "wsman-event-pool.h"
+#include "wsman-subscription-repository.h"
 
-extern struct __SubsRepositoryOpSet subscription_repository_op_set;
-extern struct __EventPoolOpSet event_pool_op_set;
 
 WsManListenerH *wsman_dispatch_list_new()
 {
@@ -148,13 +148,13 @@ wsman_init_subscription_repository(WsContextH cntx, char *uri)
 {
 	SoapH soap = ws_context_get_runtime(cntx);
 	if(soap) {
-		soap->subscriptionOpSet = &subscription_repository_op_set;
+		soap->subscriptionOpSet = wsman_get_subsrepos_opset();
 		if(uri) {
 			soap->uri_subsRepository = u_strdup(uri);
 			soap->subscriptionOpSet->init_subscription(uri, NULL);
 		}
 	}
-	return &subscription_repository_op_set;
+	return soap->subscriptionOpSet;
 }
 
 EventPoolOpSetH 
@@ -162,10 +162,10 @@ wsman_init_event_pool(WsContextH cntx, void*data)
 {
 	SoapH soap = ws_context_get_runtime(cntx);
 	if(soap) {
-		soap->eventpoolOpSet = &event_pool_op_set;
+		soap->eventpoolOpSet = wsman_get_eventpool_opset();
 		soap->eventpoolOpSet->init(NULL);
 	}
-	return &event_pool_op_set;
+	return soap->eventpoolOpSet;
 }
 
 void *wsman_notification_manager(void *arg)

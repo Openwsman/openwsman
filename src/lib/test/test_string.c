@@ -5,8 +5,8 @@
 
 #include <u/libu.h>
 
-int facility = LOG_DAEMON;
 
+//int facility = LOG_DAEMON;
 
 struct {
         char *uri_string, *result;

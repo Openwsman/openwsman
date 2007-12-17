@@ -61,6 +61,11 @@ struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscription
 
 static int LocalSubscriptionInitFlag = 0;
 
+SubsRepositoryOpSetH wsman_get_subsrepos_opset()
+{
+	return &subscription_repository_op_set;
+}
+
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData)
 {
 	LocalSubscriptionInitFlag = 1;

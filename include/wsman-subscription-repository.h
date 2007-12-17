@@ -65,4 +65,6 @@ struct __SubsRepositoryOpSet{
 };
 typedef struct __SubsRepositoryOpSet *SubsRepositoryOpSetH;
 
+SubsRepositoryOpSetH wsman_get_subsrepos_opset(void);
+
 #endif

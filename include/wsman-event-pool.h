@@ -80,6 +80,8 @@ struct __EventPoolOpSet {
 };
 typedef struct __EventPoolOpSet *EventPoolOpSetH;
 
+EventPoolOpSetH wsman_get_eventpool_opset(void);
+
 #ifdef __cplusplus
 }
 #endif

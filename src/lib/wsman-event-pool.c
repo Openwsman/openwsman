@@ -53,6 +53,11 @@ struct __EventPoolOpSet event_pool_op_set ={MemEventPoolInit, MemEventPoolFinali
 	MemEventPoolCount, MemEventPoolAddEvent, MemEventPoolAddPullEvent,
 	MemEventPoolGetAndDeleteEvent, MemEventPoolClearEvent};
 
+EventPoolOpSetH wsman_get_eventpool_opset()
+{
+	return &event_pool_op_set;
+}
+
 int MemEventPoolInit (void *opaqueData) {
 	global_event_list = list_create(-1);
 	if(opaqueData)
