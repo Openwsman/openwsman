@@ -219,6 +219,13 @@ CURL_LIBS=`curl-config --libs`
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
+
+examples_default=no
+AC_ARG_WITH(examples,
+		[  --with-examples=[no/yes] build examples [default=no]],,
+              with_examples=$examples_default)
+AM_CONDITIONAL(BUILD_EXAMPLES, test "x$with_examples" = "xyes")
+
 python_default=no
 AC_ARG_ENABLE(python,
 		[  --enable-python=[no/yes] build python bindings [default=no]],,

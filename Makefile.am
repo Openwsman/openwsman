@@ -1,6 +1,10 @@
-SUBDIRS = include src doc etc tests examples 
+SUBDIRS = include src doc etc tests 
 if BUILD_PYTHON
 SUBDIRS += python
+endif
+
+if BUILD_EXAMPLES
+SUBDIRS += examples
 endif
 
 AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
