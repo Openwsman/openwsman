@@ -50,7 +50,13 @@
 
 #include "u/libu.h"
 #include "wsmand-daemon.h"
+#include "wsman-server-api.h"
 
+#ifdef PACKAGE_SUBSCRIPTION_DIR
+#define DEFAULT_SUBSCRIPTION_REPOSITORY PACKAGE_SUBSCRIPTION_DIR
+#else
+#define DEFAULT_SUBSCRIPTION_REPOSITORY "/var/lib/openwsman/subscriptions"
+#endif
 #ifdef __APPLE__
 #define DEFAULT_BASIC_AUTH  "libwsman_file_auth.dylib"
 #else
@@ -169,6 +175,7 @@ int wsmand_read_config(dictionary * ini)
 	min_threads = iniparser_getint(ini, "server:min_threads", 1);
 	max_threads = iniparser_getint(ini, "server:max_threads", 4);
 	uri_subscription_repository = iniparser_getstring(ini, "server:subs_repository", DEFAULT_SUBSCRIPTION_REPOSITORY);
+	wsman_server_set_subscription_repos(uri_subscription_repository);
 	return 1;
 }
 
@@ -201,11 +208,6 @@ char *wsmand_options_get_basic_password_file(void)
 char *wsmand_options_get_service_path(void)
 {
 	return service_path;
-}
-
-char * wsmand_options_get_subscription_repository_uri(void)
-{
-	return uri_subscription_repository;
 }
 
 int wsmand_options_get_daemon_flag(void)

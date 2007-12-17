@@ -44,7 +44,10 @@ extern "C" {
 void *wsman_server_create_config(char *config_file);
 void wsman_server_get_response(void *arg, void *msg);
 void wsman_server_read_plugin_config(void *arg, char *config_file);
-
+void wsman_server_set_subscription_repos(char *repos);
+void *wsman_server_get_subscription_repos(void);
+void wsman_event_init(void *arg);
+void wsman_receive_cim_indication(void *arg, char *uuid, void *msg);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

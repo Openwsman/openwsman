@@ -70,9 +70,10 @@
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
 #include "wsman-server.h"
+#include "wsman-server-api.h"
 #include "wsman-plugins.h"
 #ifdef ENABLE_EVENTING_SUPPORT
-#include "wsman-event-pool.h"
+//#include "wsman-event-pool.h"
 #include "wsman-cimindication-processor.h"
 #endif
 
@@ -356,53 +357,6 @@ DONE:
 }
 
 
-static void wsmand_start_notification_manager(WsContextH cntx, SubsRepositoryEntryH entry, int subsNum)
-{
-	WsmanMessage *wsman_msg = wsman_soap_message_new();
-	if(wsman_msg == NULL) return;
-	unsigned char *strdoc = entry->strdoc;
-	u_buf_construct(wsman_msg->request, strdoc, entry->len, entry->len);
-	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
-	wsman_soap_message_destroy(wsman_msg);
-	if(list_count(cntx->subscriptionMemList) > subsNum) {
-		lnode_t *node = list_last(cntx->subscriptionMemList);
-		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
-		//Update UUID in the memory
-		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
-	}
-}
-
-static int wsmand_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
-{
-	int retVal = 0;
-	WsXmlDocH doc = ws_xml_read_memory( (char *)entry->strdoc, entry->len, "UTF-8", 0);
-	unsigned long expire;
-	WsmanFaultCodeType fault_code;
-	if(doc) {
-		WsXmlNodeH node = ws_xml_get_soap_body(doc);
-		if(node) {
-			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
-			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
-			if(node == NULL) { //No specified expiration, delete it
-				debug("subscription %s deleted from the repository", entry->uuid);
-				soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
-				retVal = 1;
-			}
-			else {
-				wsman_set_expiretime(node, &expire, &fault_code);
-				if(fault_code == WSMAN_DETAIL_OK) {
-					if(time_expired(expire)) {
-						debug("subscription %s deleted from the repository", entry->uuid);
-						soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
-						retVal = 1;
-					}
-				}
-			}
-		}
-		ws_xml_destroy_doc(doc);
-	}
-	return retVal;
-}
 #endif
 
 
@@ -614,28 +568,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	listener->config = ini;
 	WsContextH cntx = wsman_init_plugins(listener);
 #ifdef ENABLE_EVENTING_SUPPORT
-	SubsRepositoryOpSetH ops = wsman_init_subscription_repository(cntx, wsmand_options_get_subscription_repository_uri());
-	list_t *subs_list = list_create(-1);
-	debug("subscription_repository_uri = %s", wsmand_options_get_subscription_repository_uri());
-	if(ops->load_subscription(wsmand_options_get_subscription_repository_uri(), subs_list) == 0) {
-		lnode_t *node = list_first(subs_list);
-		while(node) {
-			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
-			if(wsmand_clean_subsrepository(cntx->soap, entry) == 0) {
-				debug("load subscription %s", entry->uuid);
-				wsmand_start_notification_manager(cntx, entry, list_count(cntx->subscriptionMemList));
-			}
-			else
-				u_free(entry->strdoc);
-			u_free(entry->uuid);
-			u_free(entry);
-			list_delete(subs_list, node);
-			lnode_destroy(node);
-			node = list_first(subs_list);
-		}
-	}
-	list_destroy(subs_list);
-	wsman_init_event_pool(cntx, NULL);
+	wsman_event_init(cntx->soap);
 #endif
 #ifdef MULTITHREADED_SERVER
 	int r;

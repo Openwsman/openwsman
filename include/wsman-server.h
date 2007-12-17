@@ -35,7 +35,7 @@
 
 #ifndef WSMAN_SERVER_H_
 #define WSMAN_SERVER_H_
-
+#include "wsman-soap.h"
 #include "wsman-plugins.h"
 #include "wsman-subscription-repository.h"
 #include "wsman-event-pool.h"
@@ -46,6 +46,8 @@ SubsRepositoryOpSetH wsman_init_subscription_repository(WsContextH cntx, char *u
 EventPoolOpSetH wsman_init_event_pool(WsContextH cntx, void*data);
 WsManListenerH *wsman_dispatch_list_new(void);
 void *wsman_server_auxiliary_loop_thread(void *arg);
+int wsman_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry);
+void wsman_repos_notification_dispatcher(WsContextH cntx, SubsRepositoryEntryH entry, int subsNum);
 void *wsman_notification_manager(void *arg);
 
 #endif

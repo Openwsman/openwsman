@@ -41,11 +41,6 @@
 #define ANON_IDENTIFY_PATH "/wsman-anon/identify"
 #define DEFAULT_CIMINDICATION_PATH "/cimindicationlistener"
 #define DEFAULT_PID_PATH "/var/run/wsmand.pid"
-#ifdef PACKAGE_SUBSCRIPTION_DIR
-#define DEFAULT_SUBSCRIPTION_REPOSITORY PACKAGE_SUBSCRIPTION_DIR
-#else
-#define DEFAULT_SUBSCRIPTION_REPOSITORY "/var/lib/openwsman/subscriptions"
-#endif
 
 typedef void (*WsmandShutdownFn) (void *);
 

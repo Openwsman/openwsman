@@ -46,7 +46,10 @@
 #include "wsman-dispatcher.h"
 #include "wsman-soap.h"
 #include "wsman-plugins.h"
-
+#ifdef ENABLE_EVENTING_SUPPORT
+#include "wsman-cimindication-processor.h"
+static char *uri_subsRepository;
+#endif
 #if 0
 static void
 debug_message_handler(const char *str,
@@ -121,3 +124,54 @@ void wsman_server_get_response(void *arg, void *msg)
 
 	dispatch_inbound_call(soap,(WsmanMessage *)msg, NULL);
 }
+#ifdef ENABLE_EVENTING_SUPPORT
+void wsman_server_set_subscription_repos(char *repos)
+{
+	uri_subsRepository = u_strdup(repos);
+}
+
+void *wsman_server_get_subscription_repos()
+{
+	return uri_subsRepository;
+}
+
+void wsman_event_init(void *arg)
+{
+	SoapH soap = (SoapH)arg;
+	WsContextH cntx = soap->cntx;
+	SubsRepositoryOpSetH ops = wsman_init_subscription_repository(cntx, (char *)wsman_server_get_subscription_repos());
+	list_t *subs_list = list_create(-1);
+	debug("subscription_repository_uri = %s", soap->uri_subsRepository);
+	if(ops->load_subscription(soap->uri_subsRepository, subs_list) == 0) {
+		lnode_t *node = list_first(subs_list);
+		while(node) {
+			SubsRepositoryEntryH entry = (SubsRepositoryEntryH)node->list_data;
+			if(wsman_clean_subsrepository(cntx->soap, entry) == 0) {
+				debug("load subscription %s", entry->uuid);
+				wsman_repos_notification_dispatcher(cntx, entry, list_count(cntx->subscriptionMemList));
+			}
+			else
+				u_free(entry->strdoc);
+			u_free(entry->uuid);
+			u_free(entry);
+			list_delete(subs_list, node);
+			lnode_destroy(node);
+			node = list_first(subs_list);
+		}
+	}
+	list_destroy(subs_list);
+	wsman_init_event_pool(cntx, NULL);
+}
+
+void wsman_receive_cim_indication(void *arg, char *uuid, void *msg)
+{
+	SoapH soap = (SoapH) arg;
+	CimxmlMessage *cimxml_msg = msg;
+	cimxml_context *cntx = NULL;
+	cntx = u_malloc(sizeof(cimxml_context));
+	cntx->soap = soap;
+	cntx->uuid = uuid;
+	CIM_Indication_call(cntx, cimxml_msg, NULL);
+}
+
+#endif

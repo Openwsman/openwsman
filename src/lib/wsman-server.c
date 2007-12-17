@@ -50,13 +50,16 @@
 #include "u/libu.h"
 #if 0
 #include "wsman-faults.h"
-#include "wsman-xml-api.h"
+#include "wsman-xml.h"
 #include "wsman-plugins.h"
 #include "wsman-server.h"
 #include "wsman-dispatcher.h"
 #endif
 #include "wsman-soap.h"
+#include "wsman-soap-envelope.h"
 #include "wsman-server.h"
+#include "wsman-xml.h"
+#include "wsman-dispatcher.h"
 #include "wsman-event-pool.h"
 #include "wsman-subscription-repository.h"
 
@@ -166,6 +169,54 @@ wsman_init_event_pool(WsContextH cntx, void*data)
 		soap->eventpoolOpSet->init(NULL);
 	}
 	return soap->eventpoolOpSet;
+}
+
+int wsman_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
+{
+	int retVal = 0;
+	WsXmlDocH doc = ws_xml_read_memory( (char *)entry->strdoc, entry->len, "UTF-8", 0);
+	unsigned long expire;
+	WsmanFaultCodeType fault_code;
+	if(doc) {
+		WsXmlNodeH node = ws_xml_get_soap_body(doc);
+		if(node) {
+			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
+			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
+			if(node == NULL) { //No specified expiration, delete it
+				debug("subscription %s deleted from the repository", entry->uuid);
+				soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
+				retVal = 1;
+			}
+			else {
+				wsman_set_expiretime(node, &expire, &fault_code);
+				if(fault_code == WSMAN_DETAIL_OK) {
+					if(time_expired(expire)) {
+						debug("subscription %s deleted from the repository", entry->uuid);
+						soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
+						retVal = 1;
+					}
+				}
+			}
+		}
+		ws_xml_destroy_doc(doc);
+	}
+	return retVal;
+}
+
+void wsman_repos_notification_dispatcher(WsContextH cntx, SubsRepositoryEntryH entry, int subsNum)
+{
+	WsmanMessage *wsman_msg = wsman_soap_message_new();
+	if(wsman_msg == NULL) return;
+	unsigned char *strdoc = entry->strdoc;
+	u_buf_construct(wsman_msg->request, strdoc, entry->len, entry->len);
+	dispatch_inbound_call(cntx->soap, wsman_msg, NULL);
+	wsman_soap_message_destroy(wsman_msg);
+	if(list_count(cntx->subscriptionMemList) > subsNum) {
+		lnode_t *node = list_last(cntx->subscriptionMemList);
+		WsSubscribeInfo *subs = (WsSubscribeInfo *)node->list_data;
+		//Update UUID in the memory
+		strncpy(subs->subsId, entry->uuid+5, EUIDLEN);
+	}
 }
 
 void *wsman_notification_manager(void *arg)
