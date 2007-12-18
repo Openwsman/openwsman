@@ -7,6 +7,7 @@
 INCLUDES =  \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
+	   -I$(top_srcdir)/bindings \
 	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\" \
 	   $(PYTHON_CFLAGS)
@@ -21,9 +22,9 @@ LIBS = \
 GENERATED = openwsman_wrap.c \
 	    pywsman.py
 
-SWIG_SOURCES = openwsman.i
+SWIG_SOURCES = ../openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
-			 openwsman.c \
+			 ../openwsman.c \
 			 $(SWIG_SOURCES)
 
 
@@ -39,5 +40,4 @@ $(GENERATED): $(SWIG_SOURCES)
 
 CLEANFILES= $(GENERATED)
 
-EXTRA_DIST = openwsman.h 
 

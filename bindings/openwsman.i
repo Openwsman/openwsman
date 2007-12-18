@@ -1,4 +1,9 @@
+#if defined(SWIGPYTHON)
 %module pywsman
+#endif
+#if defined(SWIGRUBY)
+%module rbwsman
+#endif
 %{
 #include "wsman-api.h"
 #include "wsman-names.h"

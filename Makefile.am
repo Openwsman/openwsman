@@ -1,7 +1,4 @@
-SUBDIRS = include src doc etc tests 
-if BUILD_PYTHON
-SUBDIRS += python
-endif
+SUBDIRS = include src doc etc tests bindings
 
 if BUILD_EXAMPLES
 SUBDIRS += examples
