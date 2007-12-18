@@ -302,7 +302,8 @@ check_authorization(struct conn *c, const char *path)
 
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
-		if (!strncmp(c->uri, auth->uri, auth->uri_len) && auth->type == BASIC_AUTH) {
+		if (!strncmp(c->uri, auth->uri, strlen(c->uri)) && auth->type == BASIC_AUTH) {
+				debug("%s == %s", c->uri , auth->uri);
 			cb = (int (*)(char *, char *)) auth->callback.v_func;
 			basic = 1;
 			break;

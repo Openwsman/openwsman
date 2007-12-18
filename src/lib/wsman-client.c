@@ -596,6 +596,7 @@ wsmc_create_action_str(WsmanAction action)
 		break;
 	case WSMAN_ACTION_NONE:
 	case WSMAN_ACTION_IDENTIFY:
+	case WSMAN_ACTION_ANON_IDENTIFY:
 	case WSMAN_ACTION_TEST:
 	case WSMAN_ACTION_CUSTOM:
 		break;
@@ -835,6 +836,7 @@ wsmc_create_request(WsManClient * cl,
 
 	switch (action) {
 	case WSMAN_ACTION_IDENTIFY:
+	case WSMAN_ACTION_ANON_IDENTIFY:
 		ws_xml_add_child(body,
 				XML_NS_WSMAN_ID, WSMID_IDENTIFY, NULL);
 		break;
@@ -870,7 +872,7 @@ wsmc_create_request(WsManClient * cl,
 		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
 		if(data) {
-			if(((char *)data)[0] != 0) 
+			if(((char *)data)[0] != 0)
 				add_subscription_context(ws_xml_get_soap_header(request), (char *)data);
 		}
 		break;
@@ -1538,7 +1540,7 @@ wsmc_get_event_enum_context(WsXmlDocH doc)
 				WSENUM_ENUMERATION_CONTEXT);
 		if (node && ws_xml_get_node_text(node)) {
 			enumContext = u_strdup(ws_xml_get_node_text(node));
-		} 
+		}
 	}
 	return enumContext;
 }

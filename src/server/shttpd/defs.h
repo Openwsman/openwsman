@@ -43,6 +43,7 @@
 
 #define	NELEMS(ar)	(sizeof(ar) / sizeof(ar[0]))
 
+#define GLOBAL_DEBUG
 #ifdef GLOBAL_DEBUG
 #ifdef _DEBUG
 #define	DBG(x)	do { printf x ; putchar('\n'); fflush(stdout); } while (0)

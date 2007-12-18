@@ -136,13 +136,12 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 
 	return encoding;
 }
-
+#if 0
 static
-void server_callback(struct shttpd_arg *arg)
+void identify_callback(struct shttpd_arg *arg)
 {
 	char *encoding = NULL;
 	const char  *s;
-	SoapH soap;
 	int k;
 	int status = WSMAN_STATUS_OK;
 	char *fault_reason = NULL;
@@ -190,43 +189,162 @@ void server_callback(struct shttpd_arg *arg)
 		return;
 	}
 
-
-	/* Here we must handle the initial request */
-	WsmanMessage *wsman_msg = wsman_soap_message_new();
-	if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
-		goto DONE;
-	}
-	if ( (encoding =  get_request_encoding(arg)) != NULL ) {
-		wsman_msg->charset = u_strdup(encoding);
-	}
-
-	soap = (SoapH) arg->user_data;
-	wsman_msg->status.fault_code = WSMAN_RC_OK;
-	u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
-
-	/*
-	 * some plugins can use credentials for their own authentication
-	 * works only with basic authentication
-	 */
-	 shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
-			       &wsman_msg->auth_data.password);
-
-	/* Call dispatcher. Real request handling */
-	if (status == WSMAN_STATUS_OK) {
-		/* dispatch if we didn't find out any error */
-		dispatch_inbound_call(soap, wsman_msg, NULL);
-		status = wsman_msg->http_code;
-	}
-    if (wsman_msg->request) {
-        u_buf_free(wsman_msg->request);
-        wsman_msg->request = NULL;
-    }
-
-	state->len =  u_buf_len(wsman_msg->response);;
-	state->response = u_buf_steal(wsman_msg->response);
+	u_buf_t *id;
+	u_buf_create(&id);
+	u_buf_load(id, "/etc/openwsman/identify.xml");
+	state->len =  u_buf_len(id);;
+	state->response = u_buf_steal(id);
 	state->index = 0;
 
-	wsman_soap_message_destroy(wsman_msg);
+	if (fault_reason == NULL) {
+		fault_reason = shttpd_reason_phrase(status);
+	}
+	debug("Response status=%d (%s)", status, fault_reason);
+
+	/*
+	 * Here we begin to create the http response.
+	 * Create the headers at first.
+	 */
+
+	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
+	shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
+	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
+	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
+	shttpd_printf(arg, "\r\n");
+
+	/* add response body to output buffer */
+CONTINUE:
+	k = arg->out.len - arg->out.num_bytes;
+	if (k <= state->len - state->index) {
+		 //int len = shttpd_printf(arg, "%s", state->response + state->index);
+		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, k );
+		 state->index += k ;
+		 arg->out.num_bytes += k;
+		 return;
+	}
+	shttpd_printf(arg, "%s", state->response + state->index);
+	shttpd_printf(arg, "\r\n\r\n");
+
+
+	u_buf_free(state->request);
+	u_free(state->response);
+	u_free(state);
+	arg->flags |= SHTTPD_END_OF_OUTPUT;
+	return;
+}
+#endif
+
+static
+void server_callback(struct shttpd_arg *arg)
+{
+	char *encoding = NULL;
+	const char  *s;
+	SoapH soap;
+	int k;
+	int status = WSMAN_STATUS_OK;
+	char *request_uri;
+
+	char *fault_reason = NULL;
+    struct state {
+        size_t  cl;     /* Content-Length   */
+        size_t  nread;      /* Number of bytes read */
+	 	u_buf_t     *request;
+	 	char  *response;
+		size_t len;
+		int index;
+    } *state;
+
+
+    /* If the connection was broken prematurely, cleanup */
+    if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
+        free(arg->state);
+		return;
+    } else if ((s = shttpd_get_header(arg, "Content-Length")) == NULL) {
+        shttpd_printf(arg, "HTTP/1.0 411 Length Required\n\n");
+        arg->flags |= SHTTPD_END_OF_OUTPUT;
+		return;
+    } else if (arg->state == NULL) {
+        /* New request. Allocate a state structure */
+        arg->state = state = calloc(1, sizeof(*state));
+        state->cl = strtoul(s, NULL, 10);
+		u_buf_create(&(state->request));
+    }
+
+	state = arg->state;
+	if ( state->response ) {
+		goto CONTINUE;
+	}
+
+	if (state->nread>0 )
+		u_buf_append(state->request, arg->in.buf, arg->in.len);
+	else
+		u_buf_set(state->request, arg->in.buf, arg->in.len);
+
+	state->nread += arg->in.len;
+	arg->in.num_bytes = arg->in.len;
+	if (state->nread >= state->cl) {
+		debug("Done reading request");
+	} else {
+		return;
+	}
+
+	request_uri = (char *)shttpd_get_env(arg, "REQUEST_URI");
+	if (strcmp(request_uri, "/wsman") == 0 ) {
+
+		/* Here we must handle the initial request */
+		WsmanMessage *wsman_msg = wsman_soap_message_new();
+		if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
+			goto DONE;
+		}
+		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
+			wsman_msg->charset = u_strdup(encoding);
+		}
+
+		soap = (SoapH) arg->user_data;
+		wsman_msg->status.fault_code = WSMAN_RC_OK;
+		u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
+
+		/*
+		 * some plugins can use credentials for their own authentication
+		 * works only with basic authentication
+		 */
+		shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
+				&wsman_msg->auth_data.password);
+
+		/* Call dispatcher. Real request handling */
+		if (status == WSMAN_STATUS_OK) {
+			/* dispatch if we didn't find out any error */
+			dispatch_inbound_call(soap, wsman_msg, NULL);
+			status = wsman_msg->http_code;
+		}
+		if (wsman_msg->request) {
+			u_buf_free(wsman_msg->request);
+			wsman_msg->request = NULL;
+		}
+
+		state->len =  u_buf_len(wsman_msg->response);;
+		state->response = u_buf_steal(wsman_msg->response);
+		state->index = 0;
+
+		wsman_soap_message_destroy(wsman_msg);
+	} else if (strcmp(request_uri, "/wsman-anon/identify") == 0 ) {
+		char *idfile = wsmand_options_get_anon_identify_file();
+		u_buf_t *id;
+		u_buf_create(&id);
+		if (idfile && u_buf_load(id, idfile) == 0 ) {
+			state->len =  u_buf_len(id);;
+			state->response = u_buf_steal(id);
+			state->index = 0;
+		} else {
+			shttpd_printf(arg, "HTTP/1.0 404 Not foundn\n");
+			arg->flags |= SHTTPD_END_OF_OUTPUT;
+			return;
+		}
+	} else {
+		shttpd_printf(arg, "HTTP/1.0 404 Not foundn\n");
+		arg->flags |= SHTTPD_END_OF_OUTPUT;
+		return;
+	}
 
 DONE:
 
@@ -400,7 +518,7 @@ static void protect_uri(struct shttpd_ctx *ctx, char *uri)
 	if (basic_callback) {
 		shttpd_protect_uri(ctx, uri, NULL,
 						basic_callback, 0);
-		debug("Using Basic Authorization %s for %s:",
+		debug("Using Basic Authorization %s for %s",
 		      wsmand_option_get_basic_authenticator()?
 		      wsmand_option_get_basic_authenticator() :
 		      wsmand_default_basic_authenticator(), uri);
@@ -411,6 +529,7 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 {
 	struct shttpd_ctx *ctx;
 	if (wsmand_options_get_use_ssl()) {
+		message("ssl certificate: %s", wsmand_options_get_ssl_cert_file());
 		message("Using SSL");
 		ctx = shttpd_init(NULL,
 				  "ssl_certificate",
@@ -426,11 +545,11 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	if (ctx == NULL) {
 		return NULL;
 	}
-	shttpd_register_uri(ctx, wsmand_options_get_service_path(),
+	shttpd_register_uri(ctx, "/*",
 			    server_callback, (void *) soap);
 #if 0
 	shttpd_register_uri(ctx, ANON_IDENTIFY_PATH,
-			    server_callback, (void *) soap);
+			    identify_callback, (void *) soap);
 #endif
 
 
@@ -629,15 +748,13 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 {
 	int lsn, port, sock;
 	struct thread       *thread;
-	struct shttpd_ctx   *httpd_ctx;
-	// lnode_t *node;
 	pthread_t tid;
 #ifdef ENABLE_EVENTING_SUPPORT
 	pthread_t notificationManager_id;
 #endif
 	pthread_attr_t pattrs;
 	int use_ssl = wsmand_options_get_use_ssl();
-	// struct timespec timespec;
+	struct shttpd_ctx   *httpd_ctx;
 
 	WsManListenerH *listener = wsman_dispatch_list_new();
 	listener->config = ini;
@@ -670,8 +787,12 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	wsmand_shutdown_add_handler(listener_shutdown_handler,
 				    &continue_working);
 
-	httpd_ctx = shttpd_init(NULL, NULL);
+	//httpd_ctx = shttpd_init(NULL, NULL);
+	httpd_ctx = create_shttpd_context(soap);
+	//httpd_ctx = init_shttpd_context(soap);
+
 	lsn = shttpd_listen(httpd_ctx, port, use_ssl);
+	//lsn = open_listening_port(port);
 
 	if (wsman_setup_thread(&pattrs) == 0 )
 		return listener;
@@ -689,7 +810,7 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
         if ((thread = find_not_busy_thread()) == NULL)
             thread = spawn_new_thread(pattrs, soap);
 
-        shttpd_add_socket(thread->ctx, sock, 0);
+        shttpd_add_socket(thread->ctx, sock, use_ssl);
 	}
 	return listener;
 }

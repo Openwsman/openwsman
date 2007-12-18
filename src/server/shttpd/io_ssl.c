@@ -78,7 +78,6 @@ close_ssl(struct stream *stream)
 	assert(stream->chan.ssl.sock != -1);
 	assert(stream->chan.ssl.ssl != NULL);
 	(void) closesocket(stream->chan.ssl.sock);
-	debug("++++++++++++++++++++ Free SSL");
 	SSL_free(stream->chan.ssl.ssl);
 }
 

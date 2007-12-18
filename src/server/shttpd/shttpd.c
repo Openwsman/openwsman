@@ -847,9 +847,11 @@ write_stream(struct stream *from, struct stream *to)
 	/* TODO: should be assert on CAN_WRITE flag */
 	n = to->io_class->write(to, io_data(&from->io), len);
 	to->conn->expire_time = current_time + EXPIRE_TIME;
+	/*
 	DBG(("write_stream (%d %s): written %d/%d bytes (errno %d)",
 	    to->conn->rem.chan.sock,
 	    to->io_class ? to->io_class->name : "(null)", n, len, ERRNO));
+		*/
 
 	if (n > 0)
 		io_inc_tail(&from->io, n);
@@ -970,7 +972,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		FD_SET(l->sock, &read_set);
 		if (l->sock > max_fd)
 			max_fd = l->sock;
-		DBG(("FD_SET(%d) (listening)", l->sock));
+		//DBG(("FD_SET(%d) (listening)", l->sock));
 	}
 
 	/* Multiplex streams */

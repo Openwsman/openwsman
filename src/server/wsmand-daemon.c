@@ -85,6 +85,8 @@ static int syslog_level = -1;
 static char *log_location = NULL;
 static char *digest_password_file = NULL;
 static char *basic_password_file = NULL;
+static char *custom_anon_identify_file = NULL;
+static char *custom_identify_file = NULL;
 static char *basic_authenticator_arg = NULL;
 static char *basic_authenticator = DEFAULT_BASIC_AUTH;
 static int max_threads = 1;
@@ -167,6 +169,10 @@ int wsmand_read_config(dictionary * ini)
 						"server:digest_password_file");
 	basic_password_file =
 	    iniparser_getstr(ini, "server:basic_password_file");
+	custom_identify_file =
+	    iniparser_getstr(ini, "server:identify_file");
+	custom_anon_identify_file =
+	    iniparser_getstr(ini, "server:anon_identify_file");
 	basic_authenticator =
 	    iniparser_getstr(ini, "server:basic_authenticator");
 	basic_authenticator_arg =
@@ -204,6 +210,14 @@ char *wsmand_options_get_basic_password_file(void)
 	return basic_password_file;
 }
 
+char *wsmand_options_get_identify_file(void)
+{
+	return custom_identify_file;
+}
+char *wsmand_options_get_anon_identify_file(void)
+{
+	return custom_anon_identify_file;
+}
 
 char *wsmand_options_get_service_path(void)
 {

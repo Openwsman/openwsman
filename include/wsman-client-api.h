@@ -117,6 +117,7 @@ typedef enum {
 		WSMAN_ACTION_TRANSFER_CREATE,
 		WSMAN_ACTION_TRANSFER_DELETE,
 		WSMAN_ACTION_IDENTIFY,
+		WSMAN_ACTION_ANON_IDENTIFY,
 		WSMAN_ACTION_SUBSCRIBE,
 		WSMAN_ACTION_UNSUBSCRIBE,
 		WSMAN_ACTION_RENEW,
@@ -749,24 +750,24 @@ typedef enum {
 	void wsmc_set_dumpfile(WsManClient *cl, FILE * f);
 
 	FILE *wsmc_get_dumpfile(WsManClient *cl);
-	
+
 	void
 	wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options);
-	
+
 
 	void
 	wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options);
-	
+
 
 	void
 	wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options);
-	
+
 
 	void
 	wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options);
-	
-	
-	
+
+
+
 /** @} */
 
 
