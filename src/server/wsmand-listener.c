@@ -137,6 +137,26 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 	return encoding;
 }
 
+#ifdef ENABLE_EVENTING_SUPPORT
+static int build_cimxml_request(struct shttpd_arg *arg, CimxmlMessage *msg) {
+	/* Get request from http server */
+	char *body;
+	size_t length;
+	int status = WSMAN_STATUS_OK;
+
+	body = u_strdup(arg->in.buf + arg->in.num_bytes);
+	length = arg->in.len - arg->in.num_bytes;
+	if (body == NULL) {
+		status = WSMAN_STATUS_BAD_REQUEST;
+		error("No request body. len = %d", length);
+	} else {
+		u_buf_construct(msg->request, body, length, length);
+	}
+	return status;
+}
+
+#endif
+
 static
 void server_callback(struct shttpd_arg *arg)
 {
@@ -155,6 +175,7 @@ void server_callback(struct shttpd_arg *arg)
 	 	char  *response;
 		size_t len;
 		int index;
+		int type;
     } *state;
 
 
@@ -197,6 +218,7 @@ void server_callback(struct shttpd_arg *arg)
 		/* Here we must handle the initial request */
 		WsmanMessage *wsman_msg = wsman_soap_message_new();
 		if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
+			wsman_soap_message_destroy(wsman_msg);
 			goto DONE;
 		}
 		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
@@ -217,8 +239,16 @@ void server_callback(struct shttpd_arg *arg)
 		/* Call dispatcher. Real request handling */
 		if (status == WSMAN_STATUS_OK) {
 			/* dispatch if we didn't find out any error */
-			dispatch_inbound_call(soap, wsman_msg, NULL);
-			status = wsman_msg->http_code;
+			char *idfile = wsmand_options_get_identify_file();
+			if (idfile && wsman_check_identify(wsman_msg) == 1) {
+				if (u_buf_load(wsman_msg->response, idfile)) {
+					dispatch_inbound_call(soap, wsman_msg, NULL);
+					status = wsman_msg->http_code;
+				}
+			} else {
+				dispatch_inbound_call(soap, wsman_msg, NULL);
+				status = wsman_msg->http_code;
+			}
 		}
 		if (wsman_msg->request) {
 			u_buf_free(wsman_msg->request);
@@ -228,9 +258,77 @@ void server_callback(struct shttpd_arg *arg)
 		state->len =  u_buf_len(wsman_msg->response);;
 		state->response = u_buf_steal(wsman_msg->response);
 		state->index = 0;
+		state->type = 0;
 
 		wsman_soap_message_destroy(wsman_msg);
-	} else if (strcmp(request_uri, "/wsman-anon/identify") == 0 ) {
+#ifdef ENABLE_EVENTING_SUPPORT
+	} else if (strncmp(request_uri, DEFAULT_CIMINDICATION_PATH, strlen(DEFAULT_CIMINDICATION_PATH)) == 0 ) {
+		status = CIMXML_STATUS_OK;
+		int cim_error_code = 0;
+		char *cim_error = NULL;
+		char *fault_reason = NULL;
+		char *uuid = NULL, *tmp, *end;
+		cimxml_context *cntx = NULL;
+		SoapH soap = NULL;
+		CimxmlMessage *cimxml_msg = cimxml_message_new();
+		tmp = (char *)shttpd_get_env(arg, "REQUEST_URI");
+		if (tmp && ( end = strrchr(tmp, '/')) != NULL ) {
+			uuid = &end[1];
+		}
+		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
+			cimxml_msg->charset = u_strdup(encoding);
+		}
+		const char *cimexport = shttpd_get_header(arg, "CIMExport");
+		const char *cimexportmethod = shttpd_get_header(arg, "CIMExportMethod");
+		if ( cimexportmethod && cimexport ) {
+			if(strncmp(cimexport, "MethodRequest", strlen("MethodRequest")) ||
+					strncmp(cimexportmethod, "ExportIndication", strlen("ExportIndication"))) {
+			}
+		} else {
+			status = WSMAN_STATUS_FORBIDDEN;
+			cim_error_code = CIMXML_STATUS_UNSUPPORTED_OPERATION;
+			cim_error = "unsupported-operation";
+			goto DONE;
+		}
+		soap = (SoapH) arg->user_data;
+		if ((status = build_cimxml_request(arg, cimxml_msg ) ) != WSMAN_STATUS_OK ) {
+			cim_error = "request-not-well-formed";
+			status = WSMAN_STATUS_BAD_REQUEST;
+			cim_error_code = CIMXML_STATUS_REQUEST_NOT_WELL_FORMED;
+			goto DONE;
+		}
+		if (status == WSMAN_STATUS_OK) {
+			cntx = u_malloc(sizeof(cimxml_context));
+			cntx->soap = soap;
+			cntx->uuid = uuid;
+			CIM_Indication_call(cntx, cimxml_msg, NULL);
+			status = cimxml_msg->http_code;
+			cim_error_code = cimxml_msg->status.code;
+			cim_error = cimxml_msg->status.fault_msg;
+		} else {
+			if (cim_error) {
+				shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
+				shttpd_printf(arg, "CIMError: %s\r\n", cim_error);
+			}
+			arg->flags |= SHTTPD_END_OF_OUTPUT;
+			cimxml_message_destroy(cimxml_msg);
+			return;
+		}
+		if ( u_buf_len(cimxml_msg->response) == 0) {
+			/* can't send the body of response or nothing to send */
+			shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
+			arg->flags |= SHTTPD_END_OF_OUTPUT;
+			cimxml_message_destroy(cimxml_msg);
+			return;
+		}
+		state->len =  u_buf_len(cimxml_msg->response);;
+		state->response = u_buf_steal(cimxml_msg->response);
+		state->index = 0;
+		state->type = 1;
+		cimxml_message_destroy(cimxml_msg);
+#endif
+
+	} else if (strcmp(request_uri, ANON_IDENTIFY_PATH) == 0 ) {
 		char *idfile = wsmand_options_get_anon_identify_file();
 		u_buf_t *id;
 		u_buf_create(&id);
@@ -262,9 +360,14 @@ DONE:
 	 */
 
 	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-	shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
 	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
+	if (state->type == 1) {
+		shttpd_printf(arg, "Content-Type: application/xml; charset=\"utf-8\"\r\n");
+		shttpd_printf(arg, "CIMExport: MethodResponse\r\n");
+	} else {
+		shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
+	}
 	shttpd_printf(arg, "\r\n");
 
 	/* add response body to output buffer */
@@ -289,23 +392,7 @@ CONTINUE:
 }
 
 #ifdef ENABLE_EVENTING_SUPPORT
-
-static int build_cimxml_request(struct shttpd_arg *arg, CimxmlMessage *msg) {
-	/* Get request from http server */
-	char *body;
-	size_t length;
-	int status = WSMAN_STATUS_OK;
-
-	body = u_strdup(arg->in.buf + arg->in.num_bytes);
-	length = arg->in.len - arg->in.num_bytes;
-	if (body == NULL) {
-		status = WSMAN_STATUS_BAD_REQUEST;
-		error("No request body. len = %d", length);
-	} else {
-		u_buf_construct(msg->request, body, length, length);
-	}
-	return status;
-}
+#if 0
 
 static void cimxml_listener_callback(struct shttpd_arg *arg)
 {
@@ -399,7 +486,7 @@ DONE:
 	arg->flags |= SHTTPD_END_OF_OUTPUT;
 	return;
 }
-
+#endif
 
 #endif
 
@@ -448,12 +535,14 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	if (ctx == NULL) {
 		return NULL;
 	}
-	shttpd_register_uri(ctx, "/*",
+	shttpd_register_uri(ctx, wsmand_options_get_service_path(),
+			    server_callback, (void *) soap);
+	shttpd_register_uri(ctx, ANON_IDENTIFY_PATH,
 			    server_callback, (void *) soap);
 
 #ifdef ENABLE_EVENTING_SUPPORT
 	message("Registered CIM Indication Listener: %s", DEFAULT_CIMINDICATION_PATH "/*");
-	shttpd_register_uri(ctx, DEFAULT_CIMINDICATION_PATH "/*", cimxml_listener_callback,(void *)soap);
+	shttpd_register_uri(ctx, DEFAULT_CIMINDICATION_PATH "/*", server_callback,(void *)soap);
 	protect_uri( ctx, DEFAULT_CIMINDICATION_PATH );
 #endif
 

@@ -108,6 +108,7 @@ void wsman_set_fault(WsmanMessage * msg,
 		     const char *details);
 
 int wsman_is_identify_request(WsXmlDocH doc);
+int wsman_check_identify(WsmanMessage * msg);
 
 int wsman_is_event_related_request(WsXmlDocH doc);
 

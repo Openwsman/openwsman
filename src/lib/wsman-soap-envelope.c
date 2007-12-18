@@ -142,10 +142,27 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 	return doc;
 }
 
+/**
+ * Check Identify Request
+ * @param buf Message buffer
+ * @return 1 if true, 0 if not
+ */
+int wsman_check_identify(WsmanMessage * msg)
+{
+	WsXmlDocH doc = ws_xml_read_memory( u_buf_ptr(msg->request),
+					   u_buf_len(msg->request), msg->charset,  0);
+
+	if (doc == NULL) {
+		return 0;
+	}
+	if (wsman_is_identify_request(doc)) {
+		return 1;
+	}
+	return 0;
+}
 
 /**
  * Buid Inbound Envelope
- * @param  fw SOAP Framework handle
  * @param buf Message buffer
  * @return XML document with Envelope
  */
