@@ -136,103 +136,6 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 
 	return encoding;
 }
-#if 0
-static
-void identify_callback(struct shttpd_arg *arg)
-{
-	char *encoding = NULL;
-	const char  *s;
-	int k;
-	int status = WSMAN_STATUS_OK;
-	char *fault_reason = NULL;
-    struct state {
-        size_t  cl;     /* Content-Length   */
-        size_t  nread;      /* Number of bytes read */
-	 	u_buf_t     *request;
-	 	char  *response;
-		size_t len;
-		int index;
-    } *state;
-
-
-    /* If the connection was broken prematurely, cleanup */
-    if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
-        free(arg->state);
-		return;
-    } else if ((s = shttpd_get_header(arg, "Content-Length")) == NULL) {
-        shttpd_printf(arg, "HTTP/1.0 411 Length Required\n\n");
-        arg->flags |= SHTTPD_END_OF_OUTPUT;
-		return;
-    } else if (arg->state == NULL) {
-        /* New request. Allocate a state structure */
-        arg->state = state = calloc(1, sizeof(*state));
-        state->cl = strtoul(s, NULL, 10);
-		u_buf_create(&(state->request));
-    }
-
-	state = arg->state;
-	if ( state->response ) {
-		goto CONTINUE;
-	}
-
-
-	if (state->nread>0 )
-		u_buf_append(state->request, arg->in.buf, arg->in.len);
-	else
-		u_buf_set(state->request, arg->in.buf, arg->in.len);
-
-	state->nread += arg->in.len;
-	arg->in.num_bytes = arg->in.len;
-	if (state->nread >= state->cl) {
-		debug("Done reading request");
-	} else {
-		return;
-	}
-
-	u_buf_t *id;
-	u_buf_create(&id);
-	u_buf_load(id, "/etc/openwsman/identify.xml");
-	state->len =  u_buf_len(id);;
-	state->response = u_buf_steal(id);
-	state->index = 0;
-
-	if (fault_reason == NULL) {
-		fault_reason = shttpd_reason_phrase(status);
-	}
-	debug("Response status=%d (%s)", status, fault_reason);
-
-	/*
-	 * Here we begin to create the http response.
-	 * Create the headers at first.
-	 */
-
-	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-	shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
-	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
-	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
-	shttpd_printf(arg, "\r\n");
-
-	/* add response body to output buffer */
-CONTINUE:
-	k = arg->out.len - arg->out.num_bytes;
-	if (k <= state->len - state->index) {
-		 //int len = shttpd_printf(arg, "%s", state->response + state->index);
-		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, k );
-		 state->index += k ;
-		 arg->out.num_bytes += k;
-		 return;
-	}
-	shttpd_printf(arg, "%s", state->response + state->index);
-	shttpd_printf(arg, "\r\n\r\n");
-
-
-	u_buf_free(state->request);
-	u_free(state->response);
-	u_free(state);
-	arg->flags |= SHTTPD_END_OF_OUTPUT;
-	return;
-}
-#endif
 
 static
 void server_callback(struct shttpd_arg *arg)
@@ -547,11 +450,6 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	}
 	shttpd_register_uri(ctx, "/*",
 			    server_callback, (void *) soap);
-#if 0
-	shttpd_register_uri(ctx, ANON_IDENTIFY_PATH,
-			    identify_callback, (void *) soap);
-#endif
-
 
 #ifdef ENABLE_EVENTING_SUPPORT
 	message("Registered CIM Indication Listener: %s", DEFAULT_CIMINDICATION_PATH "/*");
@@ -787,12 +685,9 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	wsmand_shutdown_add_handler(listener_shutdown_handler,
 				    &continue_working);
 
-	//httpd_ctx = shttpd_init(NULL, NULL);
 	httpd_ctx = create_shttpd_context(soap);
-	//httpd_ctx = init_shttpd_context(soap);
 
 	lsn = shttpd_listen(httpd_ctx, port, use_ssl);
-	//lsn = open_listening_port(port);
 
 	if (wsman_setup_thread(&pattrs) == 0 )
 		return listener;
