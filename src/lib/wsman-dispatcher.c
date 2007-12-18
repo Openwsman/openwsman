@@ -462,6 +462,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		if (soap->processedMsgIdList == NULL) {
 			soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
 		}
+#ifndef IGNORE_DUPLICATE_ID
 		node = list_first(soap->processedMsgIdList);
 		while (node != NULL) {
 			if (!strcmp(msgId, (char *) node->list_data)) {
@@ -473,6 +474,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 			}
 			node = list_next(soap->processedMsgIdList, node);
 		}
+#endif
 
 
 		if (!retVal) {
@@ -955,7 +957,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 			if(t == NULL) {
 				unsigned char *buf = NULL;
 				int len;
-				if(cntx->soap->subscriptionOpSet->get_subscription(cntx->soap->uri_subsRepository, 
+				if(cntx->soap->subscriptionOpSet->get_subscription(cntx->soap->uri_subsRepository,
 					uuid+5, &buf, &len) == 0) {
 					notdoc = ws_xml_read_memory( (char *)buf, len, "UTF-8", 0);
 					if(notdoc) {

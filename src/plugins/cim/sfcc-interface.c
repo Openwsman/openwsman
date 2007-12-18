@@ -85,7 +85,7 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 		target_class = classname;
 	}
 
-	debug("target class:%s", target_class);
+	//debug("target class:%s", target_class);
 	if (strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL &&
 	    (strcmp(client->method, TRANSFER_GET) == 0 ||
 	     strcmp(client->method, TRANSFER_DELETE) == 0 ||
@@ -96,10 +96,10 @@ static char *cim_find_namespace_for_class(CimClientInfo * client,
 	if (target_class && client->namespaces) {
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
-			debug("namespace=%s", (char *) hnode_get(hn));
+			//debug("namespace=%s", (char *) hnode_get(hn));
 			if ((sub =  strstr(target_class, (char *) hnode_getkey(hn)))) {
 				ns = u_strdup_printf("%s/%s",(char *) hnode_get(hn), target_class);
-				debug("vendor namespace match...");
+				//debug("vendor namespace match...");
 				break;
 			}
 		}
@@ -648,10 +648,10 @@ instance2xml(CimClientInfo * client,
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
-		debug("numproperties: %d", numproperties );
+		//debug("numproperties: %d", numproperties );
 	} else {
 		numproperties = instance->ft->getPropertyCount(instance, NULL);
-		debug("numproperties: %d", numproperties );
+		//debug("numproperties: %d", numproperties );
 	}
 
 
@@ -705,7 +705,7 @@ instance2xml(CimClientInfo * client,
 	t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
 	ttime += t1 -t0;
 
-	debug("Transofrmation time: %d", ttime );
+	//debug("Transofrmation time: %d", ttime );
 	if (enumInfo && (enumInfo->flags &  WSMAN_ENUMINFO_POLY_EXCLUDE ) ) {
 		if (_class) {
 			CMRelease(_class);

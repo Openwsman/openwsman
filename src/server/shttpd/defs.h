@@ -43,11 +43,15 @@
 
 #define	NELEMS(ar)	(sizeof(ar) / sizeof(ar[0]))
 
+#ifdef GLOBAL_DEBUG
 #ifdef _DEBUG
 #define	DBG(x)	do { printf x ; putchar('\n'); fflush(stdout); } while (0)
 #else
 #define	DBG(x) do { debug x; } while(0)
 #endif /* DEBUG */
+#else
+#define DBG(x)
+#endif
 
 #ifdef EMBEDDED
 #include "shttpd.h"

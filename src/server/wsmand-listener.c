@@ -44,6 +44,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -73,31 +74,28 @@
 #include "wsman-server-api.h"
 #include "wsman-plugins.h"
 #ifdef ENABLE_EVENTING_SUPPORT
-//#include "wsman-event-pool.h"
 #include "wsman-cimindication-processor.h"
 #endif
 
-#define MULTITHREADED_SERVER
 
-#ifdef MULTITHREADED_SERVER
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
 #include <sys/socket.h>
 
+#define MAX_CONNECTIONS_PER_THREAD 20
+
 static pthread_mutex_t shttpd_mutex;
 static pthread_cond_t shttpd_cond;
-static list_t *request_list;
-static int num_threads = 0;
-static int min_threads = 2;
-static int idle_threads = 0;
-static int max_threads = 4;
-
-#endif
-
 int continue_working = 1;
 static int (*basic_callback) (char *, char *) = NULL;
 
+struct thread {
+    struct thread       *next;
+    struct shttpd_ctx   *ctx;
+};
+
+static struct thread    *threads;   /* List of worker threads */
 
 typedef struct {
 	char *response;
@@ -145,13 +143,18 @@ void server_callback(struct shttpd_arg *arg)
 	char *encoding = NULL;
 	const char  *s;
 	SoapH soap;
+	int k;
 	int status = WSMAN_STATUS_OK;
 	char *fault_reason = NULL;
     struct state {
         size_t  cl;     /* Content-Length   */
         size_t  nread;      /* Number of bytes read */
 	 	u_buf_t     *request;
+	 	char  *response;
+		size_t len;
+		int index;
     } *state;
+
 
     /* If the connection was broken prematurely, cleanup */
     if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
@@ -169,6 +172,11 @@ void server_callback(struct shttpd_arg *arg)
     }
 
 	state = arg->state;
+	if ( state->response ) {
+		goto CONTINUE;
+	}
+
+
 	if (state->nread>0 )
 		u_buf_append(state->request, arg->in.buf, arg->in.len);
 	else
@@ -177,7 +185,7 @@ void server_callback(struct shttpd_arg *arg)
 	state->nread += arg->in.len;
 	arg->in.num_bytes = arg->in.len;
 	if (state->nread >= state->cl) {
-		arg->flags |= SHTTPD_END_OF_OUTPUT;
+		debug("Done reading request");
 	} else {
 		return;
 	}
@@ -209,6 +217,16 @@ void server_callback(struct shttpd_arg *arg)
 		dispatch_inbound_call(soap, wsman_msg, NULL);
 		status = wsman_msg->http_code;
 	}
+    if (wsman_msg->request) {
+        u_buf_free(wsman_msg->request);
+        wsman_msg->request = NULL;
+    }
+
+	state->len =  u_buf_len(wsman_msg->response);;
+	state->response = u_buf_steal(wsman_msg->response);
+	state->index = 0;
+
+	wsman_soap_message_destroy(wsman_msg);
 
 DONE:
 
@@ -225,20 +243,25 @@ DONE:
 	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
 	shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
-	shttpd_printf(arg, "Content-Length: %d\r\n", u_buf_len(wsman_msg->response));
+	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
 	shttpd_printf(arg, "\r\n");
 
 	/* add response body to output buffer */
-
-	if (wsman_msg->response) {
-		shttpd_printf(arg, (char *)u_buf_ptr(wsman_msg->response) );
-		shttpd_printf(arg, "\r\n\r\n");
+CONTINUE:
+	k = arg->out.len - arg->out.num_bytes;
+	if (k <= state->len - state->index) {
+		 //int len = shttpd_printf(arg, "%s", state->response + state->index);
+		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, k );
+		 state->index += k ;
+		 arg->out.num_bytes += k;
+		 return;
 	}
+	shttpd_printf(arg, "%s", state->response + state->index);
+	shttpd_printf(arg, "\r\n\r\n");
 
-	wsman_soap_message_destroy(wsman_msg);
-	debug("-> %s", arg->out.buf);
 
 	u_buf_free(state->request);
+	u_free(state->response);
 	u_free(state);
 	arg->flags |= SHTTPD_END_OF_OUTPUT;
 	return;
@@ -422,81 +445,6 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap)
 	return ctx;
 }
 
-#ifdef MULTITHREADED_SERVER
-
-static void handle_socket(int sock, SoapH soap)
-{
-	struct shttpd_ctx *ctx;
-
-	debug("Thread %d handles sock %d", pthread_self(), sock);
-
-	ctx = create_shttpd_context(soap);
-	if (ctx == NULL) {
-		(void) shutdown(sock, 2);
-		close(sock);
-		return;
-	}
-	if (wsmand_options_get_use_ssl()) {
-		shttpd_add_socket(ctx, sock, 1);
-	} else {
-		shttpd_add_socket(ctx, sock, 0);
-	}
-	while (shttpd_active(ctx) && continue_working) {
-		shttpd_poll(ctx, 100);
-	}
-	shttpd_fini(ctx);
-	debug("Thread %d processed sock %d", pthread_self(), sock);
-}
-
-
-static void *service_connection(void *arg)
-{
-	lnode_t *node;
-	int sock;
-	SoapH soap = (SoapH) arg;
-
-	debug("shttpd thread %d started. num_threads = %d",
-	      pthread_self(), num_threads);
-	pthread_mutex_lock(&shttpd_mutex);
-	while (continue_working) {
-		if (list_isempty(request_list)) {
-			// no sockets to serve
-			if (num_threads > min_threads) {
-				debug("we have too many threads %d > %d"
-				      " Thread %d is being completed",
-				      num_threads, min_threads,
-				      pthread_self());
-				break;
-			} else {
-				idle_threads++;
-				debug("Thread %d goes to idle state",
-				      pthread_self());
-				(void) pthread_cond_wait(&shttpd_cond,
-							 &shttpd_mutex);
-				idle_threads--;
-				continue;
-			}
-		}
-		node = list_del_first(request_list);
-		sock = (int) ((char *) lnode_get(node) - (char *) NULL);
-		pthread_mutex_unlock(&shttpd_mutex);
-		lnode_destroy(node);
-		handle_socket(sock, soap);
-		pthread_mutex_lock(&shttpd_mutex);
-	}
-	num_threads--;
-	debug("shttpd thread %d completed. num_threads = %d",
-	      pthread_self(), num_threads);
-	if (num_threads == 0 && continue_working == 0) {
-		debug("last thread completed");
-		pthread_cond_broadcast(&shttpd_cond);
-	}
-	pthread_mutex_unlock(&shttpd_mutex);
-	return NULL;
-}
-
-#endif
-
 
 static int initialize_basic_authenticator(void)
 {
@@ -525,7 +473,7 @@ static int initialize_basic_authenticator(void)
 	}
 
 	if (auth == NULL) {
-		// No basic authenticationame
+		/* No basic authenticationame */
 		return 0;
 	}
 
@@ -562,63 +510,11 @@ static int initialize_basic_authenticator(void)
 }
 
 
-WsManListenerH *wsmand_start_server(dictionary * ini)
-{
-	WsManListenerH *listener = wsman_dispatch_list_new();
-	listener->config = ini;
-	WsContextH cntx = wsman_init_plugins(listener);
-#ifdef ENABLE_EVENTING_SUPPORT
-	wsman_event_init(cntx->soap);
-#endif
-#ifdef MULTITHREADED_SERVER
-	int r;
-	int sock;
-	lnode_t *node;
-	pthread_t thr_id;
-#ifdef ENABLE_EVENTING_SUPPORT
-	pthread_t notificationManager_id;
-#endif
-	pthread_attr_t pattrs;
-	struct timespec timespec;
-#else
-	struct shttpd_ctx *ctx;
-
-#endif
-
-	if (cntx == NULL) {
-		return listener;
-	}
-#ifndef HAVE_SSL
-	if (wsmand_options_get_use_ssl()) {
-		error("Server configured without SSL support");
-		return listener;
-	}
-#endif
-	SoapH soap = ws_context_get_runtime(cntx);
-	ws_set_context_enumIdleTimeout(cntx,wsmand_options_get_enumIdleTimeout());
+static int get_server_auth(void) {
 	if (initialize_basic_authenticator()) {
-		return listener;
+		return 0;
 	}
 
-	int lsn;
-	int port;
-
-
-	if (wsmand_options_get_use_ssl()) {
-		message("Using SSL");
-		if (wsmand_options_get_ssl_cert_file() &&
-		    wsmand_options_get_ssl_key_file() &&
-		    (wsmand_options_get_server_ssl_port() > 0)) {
-			port = wsmand_options_get_server_ssl_port();
-		} else {
-			error("Not enough data to use SSL port");
-			return listener;
-		}
-	} else {
-		port = wsmand_options_get_server_port();
-	}
-
-	message("     Working on port %d", port);
 	if (wsmand_options_get_digest_password_file()) {
 		message("Using Digest Authorization");
 	}
@@ -630,140 +526,170 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	}
 
 	if ((wsmand_options_get_digest_password_file() == NULL) &&
-	    (basic_callback == NULL)) {
+		    (basic_callback == NULL)) {
 		error("Server does not work without authentication");
+		return 0;
+	}
+	return 1;
+}
+
+static int get_server_port(void) {
+	int port = 0;
+	int use_ssl = wsmand_options_get_use_ssl();
+	if (use_ssl) {
+		message("Using SSL");
+		if (wsmand_options_get_ssl_cert_file() &&
+		    wsmand_options_get_ssl_key_file() &&
+		    (wsmand_options_get_server_ssl_port() > 0)) {
+			port = wsmand_options_get_server_ssl_port();
+		} else {
+			error("Not enough data to use SSL port");
+			return 0;
+		}
+	} else {
+		port = wsmand_options_get_server_port();
+	}
+	return port;
+}
+
+
+static int wsman_setup_thread(pthread_attr_t *pattrs) {
+	int r;
+	int ret = 0;
+	if ((r = pthread_cond_init(&shttpd_cond, NULL)) != 0) {
+		debug("pthread_cond_init failed = %d", r);
+		return ret;
+	}
+	if ((r = pthread_mutex_init(&shttpd_mutex, NULL)) != 0) {
+		debug("pthread_mutex_init failed = %d", r);
+		return ret;
+	}
+
+	if ((r = pthread_attr_init(pattrs)) != 0) {
+		debug("pthread_attr_init failed = %d", r);
+		return ret;
+	}
+
+	if ((r = pthread_attr_setdetachstate(pattrs, PTHREAD_CREATE_DETACHED)) != 0) {
+		debug("pthread_attr_setdetachstate = %d", r);
+		return ret;
+	}
+	return 1;
+}
+
+static void *thread_function(void *param)
+{
+    struct thread *thread = param;
+
+    for (;;)
+        shttpd_poll(thread->ctx, 100);
+}
+
+
+static struct thread *
+spawn_new_thread(pthread_attr_t pattrs, SoapH soap)
+{
+    struct shttpd_ctx   *ctx;
+    struct thread       *thread;
+    pthread_t           tid;
+	debug("spawning new thread");
+
+    thread  = malloc(sizeof(*thread));
+    ctx = create_shttpd_context(soap);
+
+    assert(ctx != NULL);
+    assert(thread != NULL);
+
+    thread->ctx = ctx;
+    thread->next    = threads;
+    threads     = thread;
+
+	pthread_create(&tid, &pattrs, thread_function, thread);
+
+    return (thread);
+}
+
+
+static struct thread *
+find_not_busy_thread(void)
+{
+    struct thread   *thread;
+
+    for (thread = threads; thread != NULL; thread = thread->next) {
+		debug("Active sockets: %d", shttpd_active(thread->ctx) );
+        if (shttpd_active(thread->ctx) < MAX_CONNECTIONS_PER_THREAD)
+            return (thread);
+	}
+
+    return (NULL);
+}
+
+
+WsManListenerH *wsmand_start_server(dictionary * ini)
+{
+	int lsn, port, sock;
+	struct thread       *thread;
+	struct shttpd_ctx   *httpd_ctx;
+	// lnode_t *node;
+	pthread_t tid;
+#ifdef ENABLE_EVENTING_SUPPORT
+	pthread_t notificationManager_id;
+#endif
+	pthread_attr_t pattrs;
+	int use_ssl = wsmand_options_get_use_ssl();
+	// struct timespec timespec;
+
+	WsManListenerH *listener = wsman_dispatch_list_new();
+	listener->config = ini;
+	WsContextH cntx = wsman_init_plugins(listener);
+
+#ifdef ENABLE_EVENTING_SUPPORT
+	wsman_event_init(cntx->soap);
+#endif
+
+	if (cntx == NULL) {
 		return listener;
 	}
+#ifndef HAVE_SSL
+	if (use_ssl) {
+		error("Server configured without SSL support");
+		return listener;
+	}
+#endif
+	SoapH soap = ws_context_get_runtime(cntx);
+	ws_set_context_enumIdleTimeout(cntx,wsmand_options_get_enumIdleTimeout());
+
+
+	if ((port = get_server_port()) == 0  )
+		return listener;
+
+	message("     Working on port %d", port);
+	if (!get_server_auth())
+		return listener;
 
 	wsmand_shutdown_add_handler(listener_shutdown_handler,
 				    &continue_working);
 
-	if ((lsn = open_listening_port(port)) == -1) {
-		error("cannot open port %d", port);
-		exit(EXIT_FAILURE);
-	}
+	httpd_ctx = shttpd_init(NULL, NULL);
+	lsn = shttpd_listen(httpd_ctx, port, use_ssl);
 
-#ifdef MULTITHREADED_SERVER
-	if ((r = pthread_cond_init(&shttpd_cond, NULL)) != 0) {
-		debug("pthread_cond_init failed = %d", r);
+	if (wsman_setup_thread(&pattrs) == 0 )
 		return listener;
-	}
-	if ((r = pthread_mutex_init(&shttpd_mutex, NULL)) != 0) {
-		debug("pthread_mutex_init failed = %d", r);
-		return listener;
-	}
+	pthread_create(&tid, &pattrs, wsman_server_auxiliary_loop_thread, cntx);
 
-	if ((r = pthread_attr_init(&pattrs)) != 0) {
-		debug("pthread_attr_init failed = %d", r);
-		return listener;
-	}
-
-	if ((r = pthread_attr_setdetachstate(&pattrs,
-				     PTHREAD_CREATE_DETACHED)) != 0) {
-		debug("pthread_attr_setdetachstate = %d", r);
-		return listener;
-	}
-
-	request_list = list_create(LISTCOUNT_T_MAX);
-
-	min_threads = wsmand_options_get_min_threads();
-	max_threads = wsmand_options_get_max_threads();
-
-	pthread_create(&thr_id, &pattrs,
-		       wsman_server_auxiliary_loop_thread, cntx);
 #ifdef ENABLE_EVENTING_SUPPORT
 	pthread_create(&notificationManager_id, &pattrs, wsman_notification_manager, cntx);
 #endif
+
 	while (continue_working) {
 		if ((sock = shttpd_accept(lsn, 1000)) == -1) {
 			continue;
 		}
 		debug("Sock %d accepted", sock);
-		node = lnode_create((void *) ((char *) NULL + sock));
-		if (node == NULL) {
-			debug("lnode_create == NULL");
-			(void) shutdown(sock, 2);
-			close(sock);
-			continue;
-		}
+        if ((thread = find_not_busy_thread()) == NULL)
+            thread = spawn_new_thread(pattrs, soap);
 
-		pthread_mutex_lock(&shttpd_mutex);
-
-		list_append(request_list, node);
-		if (idle_threads > 0) {
-			// we have idle thread waiting for a request
-			debug("using idle thread. idle_threads = %d",
-			      idle_threads);
-			pthread_cond_signal(&shttpd_cond);
-			pthread_mutex_unlock(&shttpd_mutex);
-			continue;
-		}
-		if (num_threads >= max_threads) {
-			// we have enough threads to serve requests
-			debug("Using existing thread. %d > %d",
-			      num_threads, max_threads);
-			pthread_mutex_unlock(&shttpd_mutex);
-			continue;
-		}
-		debug("Creating new thread. Old num_threads = %d",
-		      num_threads);
-		r = pthread_create(&thr_id, &pattrs, service_connection,
-				   soap);
-		if (r == 0) {
-			num_threads++;
-			debug("Thread %d created", thr_id);
-			pthread_mutex_unlock(&shttpd_mutex);
-			continue;
-		}
-		debug("pthread_create failed = %d. num_threads = %d",
-		      r, num_threads);
-		if (num_threads > 0) {
-			// we have threads to serve request
-			debug
-			    ("we have threads to serve request. num_threads = %d",
-			     num_threads);
-			pthread_mutex_unlock(&shttpd_mutex);
-			continue;
-		}
-
-		// So we couldn't create even one thread. Serve the request here
-		debug("Serve on main thread");
-		node = list_delete(request_list, node);
-		if (node) {
-			lnode_destroy(node);
-		} else {
-			error("Coundn't find node in a list");
-		}
-
-		pthread_mutex_unlock(&shttpd_mutex);
-
-		handle_socket(sock, soap);
+        shttpd_add_socket(thread->ctx, sock, 0);
 	}
-
-	pthread_mutex_lock(&shttpd_mutex);
-	while (num_threads > 0) {
-		pthread_cond_broadcast(&shttpd_cond);
-		timespec.tv_sec = 1;
-		timespec.tv_nsec = 0;
-		pthread_cond_timedwait(&shttpd_cond, &shttpd_mutex,
-				       &timespec);
-	}
-	pthread_mutex_unlock(&shttpd_mutex);
-
-#else
-	ctx = create_shttpd_context(soap);
-	if (ctx == NULL) {
-		error("Could not create shttpd context");
-		return listener;
-	}
-	shttpd_listen(ctx, lsn);
-	while (continue_working) {
-		shttpd_poll(ctx, 1000);
-	}
-	shttpd_fini(ctx);
-
-#endif
-	debug("shttpd_poll loop canceled");
-
 	return listener;
 }

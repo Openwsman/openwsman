@@ -389,7 +389,6 @@ AC_OUTPUT([
         include/Makefile
         include/cim/Makefile
         include/u/Makefile
-        src/lib/test/Makefile
         doc/Makefile
         doc/specs/Makefile
         etc/Makefile
