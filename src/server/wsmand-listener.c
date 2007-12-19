@@ -374,13 +374,17 @@ DONE:
 CONTINUE:
 	k = arg->out.len - arg->out.num_bytes;
 	if (k <= state->len - state->index) {
-		 //int len = shttpd_printf(arg, "%s", state->response + state->index);
 		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, k );
 		 state->index += k ;
 		 arg->out.num_bytes += k;
 		 return;
 	}
-	shttpd_printf(arg, "%s", state->response + state->index);
+	else {
+		memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, 
+			state->len - state->index);
+		 state->index += k ;
+		 arg->out.num_bytes += k;
+	}
 	shttpd_printf(arg, "\r\n\r\n");
 
 
