@@ -1,7 +1,7 @@
 
 rubydir = $(shell ruby -r rbconfig -e "print Config::CONFIG['vendorarchdir']")
-rbincdir = $(shell ruby -r rbconfig -e "print Config::CONFIG['archdir']")
-rbldadd = $(shell ruby -r rbconfig -e "print Config::CONFIG['LIBRUBYARG']")
+#rbincdir = $(shell ruby -r rbconfig -e "print Config::CONFIG['archdir']")
+#rbldadd = $(shell ruby -r rbconfig -e "print Config::CONFIG['LIBRUBYARG']")
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -38,8 +38,8 @@ ruby_LTLIBRARIES = rbwsman.la
 openwsman_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) -ruby -o $@ $<
 
-install-data-local:
-	@INSTALL@ -m 0644 rbwsman.rb ${rbvendordir}
+install-data-hook:
+	rm -f $(DESTDIR)${rubydir}/$(ruby_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 

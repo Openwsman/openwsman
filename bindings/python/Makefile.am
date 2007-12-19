@@ -37,6 +37,8 @@ python_LTLIBRARIES = _pywsman.la
 $(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -python -o $@ $<
 
+install-data-hook:
+	rm -f $(DESTDIR)${pythondir}/$(python_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 
