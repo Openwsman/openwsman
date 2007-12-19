@@ -137,26 +137,6 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 	return encoding;
 }
 
-#ifdef ENABLE_EVENTING_SUPPORT
-static int build_cimxml_request(struct shttpd_arg *arg, CimxmlMessage *msg) {
-	/* Get request from http server */
-	char *body;
-	size_t length;
-	int status = WSMAN_STATUS_OK;
-
-	body = u_strdup(arg->in.buf + arg->in.num_bytes);
-	length = arg->in.len - arg->in.num_bytes;
-	if (body == NULL) {
-		status = WSMAN_STATUS_BAD_REQUEST;
-		error("No request body. len = %d", length);
-	} else {
-		u_buf_construct(msg->request, body, length, length);
-	}
-	return status;
-}
-
-#endif
-
 static
 void server_callback(struct shttpd_arg *arg)
 {
@@ -291,35 +271,19 @@ void server_callback(struct shttpd_arg *arg)
 			goto DONE;
 		}
 		soap = (SoapH) arg->user_data;
-		if ((status = build_cimxml_request(arg, cimxml_msg ) ) != WSMAN_STATUS_OK ) {
-			cim_error = "request-not-well-formed";
-			status = WSMAN_STATUS_BAD_REQUEST;
-			cim_error_code = CIMXML_STATUS_REQUEST_NOT_WELL_FORMED;
-			goto DONE;
-		}
-		if (status == WSMAN_STATUS_OK) {
-			cntx = u_malloc(sizeof(cimxml_context));
-			cntx->soap = soap;
-			cntx->uuid = uuid;
-			CIM_Indication_call(cntx, cimxml_msg, NULL);
-			status = cimxml_msg->http_code;
-			cim_error_code = cimxml_msg->status.code;
-			cim_error = cimxml_msg->status.fault_msg;
-		} else {
-			if (cim_error) {
-				shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-				shttpd_printf(arg, "CIMError: %s\r\n", cim_error);
-			}
-			arg->flags |= SHTTPD_END_OF_OUTPUT;
-			cimxml_message_destroy(cimxml_msg);
-			return;
-		}
-		if ( u_buf_len(cimxml_msg->response) == 0) {
-			/* can't send the body of response or nothing to send */
+		u_buf_set(cimxml_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
+		cntx = u_malloc(sizeof(cimxml_context));
+		cntx->soap = soap;
+		cntx->uuid = uuid;
+		CIM_Indication_call(cntx, cimxml_msg, NULL);
+		status = cimxml_msg->http_code;
+		cim_error_code = cimxml_msg->status.code;
+		cim_error = cimxml_msg->status.fault_msg;
+		if (cim_error) {
 			shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-			arg->flags |= SHTTPD_END_OF_OUTPUT;
+			shttpd_printf(arg, "CIMError: %s\r\n", cim_error);
 			cimxml_message_destroy(cimxml_msg);
-			return;
+			goto CONTINUE;
 		}
 		state->len =  u_buf_len(cimxml_msg->response);;
 		state->response = u_buf_steal(cimxml_msg->response);
