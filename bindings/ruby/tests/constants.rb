@@ -2,7 +2,7 @@
 require 'test/unit'
 require '../.libs/rbwsman'
 
-class LoadTest < Test::Unit::TestCase
+class ConstantTest < Test::Unit::TestCase
   def test_constants
     assert Rbwsman::FLAG_NONE == 0
     assert Rbwsman::FLAG_ENUMERATION_COUNT_ESTIMATION == 1

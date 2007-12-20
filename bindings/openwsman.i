@@ -100,25 +100,18 @@
 #include "wsman-xml-api.h"
 %}
 
-%extend __WsXmlNode {
-  /* dump node as string */
-  char *dump() {
-    int size;
-    char *buf;
-    ws_xml_dump_memory_node_tree( $self, &buf, &size );
-    return buf;
-  }
-  /* dump node to file */
-  void dump_file(FILE *fp) {
-    ws_xml_dump_node_tree( fp, $self );
-  }			      
-}
-
 %extend _WsXmlDoc {
+  /* constructor */
+  _WsXmlDoc() {
+    return ws_xml_create_soap_envelope();
+  }
   /* destructor */
   ~_WsXmlDoc() {
     ws_xml_destroy_doc( $self );
   }
+#if defined(SWIGRUBY)
+  %alias dump "to_s";
+#endif
   /* dump doc as string */
   char *dump(const char *encoding="utf-8") {
     int size;
@@ -152,7 +145,77 @@
   }
 }
 
-%rename(create_soap_envelope) ws_xml_create_soap_envelope;
+
+%extend __WsXmlNode {
+#if defined(SWIGRUBY)
+  %alias dump "to_s";
+#endif
+  /* dump node as string */
+  char *dump() {
+    int size;
+    char *buf;
+    ws_xml_dump_memory_node_tree( $self, &buf, &size );
+    return buf;
+  }
+  /* dump node to file */
+  void dump_file(FILE *fp) {
+    ws_xml_dump_node_tree( fp, $self );
+  }
+  /* get doc for node */
+  WsXmlDocH doc() {
+    ws_xml_get_node_doc( $self );
+  }
+  /* get parent for node */
+  WsXmlNodeH parent() {
+    return ws_xml_get_node_parent( $self );
+  }
+  /* get name for node */
+  char *name() {
+    return ws_xml_get_node_local_name( $self );
+  }
+  /* get namespace for node */
+  char *ns() {
+    return ws_xml_get_node_name_ns( $self );
+  }
+  int child_count() {
+    return ws_xml_get_child_count( $self );
+  }
+  WsXmlAttrH attr(int index = 0) {
+    return ws_xml_get_node_attr( $self, index );
+  }
+  int attr_count() {
+    return ws_xml_get_node_attr_count( $self );
+  }
+  WsXmlAttrH attr_find( const char *ns, const char *name ) {
+    return ws_xml_find_node_attr( $self, ns, name );
+  }
+  WsXmlAttrH attr_add( const char *ns, const char *name, const char *value ) {
+    return ws_xml_add_node_attr( $self, ns, name, value );
+  }
+}
+
+
+%extend __WsXmlAttr {
+#if defined(SWIGRUBY)
+  %alias value "to_s";
+#endif
+  /* get name for attr */
+  char *name() {
+    return ws_xml_get_attr_name( $self );
+  }
+  /* get namespace for attr */
+  char *ns() {
+    return ws_xml_get_attr_ns( $self );
+  }
+  /* get value for attr */
+  char *value() {
+    return ws_xml_get_attr_value( $self );
+  }
+  /* remove note attribute */
+  void remove() {
+    ws_xml_remove_node_attr( $self );
+  }
+}
 
 /*-----------------------------------------------------------------*/
 /* options */

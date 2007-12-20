@@ -2,7 +2,7 @@
 require 'test/unit'
 require '../.libs/rbwsman'
 
-class LoadTest < Test::Unit::TestCase
+class ClientTest < Test::Unit::TestCase
   def test_client_constructor_uri
     client = Rbwsman::Client.new( "http://wsman:secret@localhost:8889/wsman" )
     assert client
