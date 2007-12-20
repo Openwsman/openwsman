@@ -1682,7 +1682,7 @@ static CMPIObjectPath
 	CMAddKey(objectpath_handler, "CreationClassName",
 		"CIM_IndicationHandlerCIMXML", CMPI_chars);
 	CMAddKey(objectpath_handler, "Name",
-			 subsInfo->cim_namespace, CMPI_chars);
+			 subsInfo->subsId, CMPI_chars);
 	return objectpath_handler;
 }
 
