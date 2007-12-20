@@ -9,6 +9,17 @@ all:
 	# predefined stuff
 	ruby constants.rb
 
+        # Xml bindings
+	ruby xmldoc.rb
+	ruby xmlnode.rb
+	ruby xmlattr.rb
+	
+	# Client
+	ruby client.rb
+	
+	# ClientOptions
+	ruby clientoptions.rb
+	
 clean:
 	rm -f core*
 

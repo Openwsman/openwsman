@@ -1,7 +1,9 @@
 #if defined(SWIGPYTHON)
 %module pywsman
 #endif
+
 #if defined(SWIGRUBY)
+
 %module rbwsman
 
 %{
@@ -18,6 +20,7 @@
   $1 = GetReadFile(fptr);
 }
 
+/*SWIG 1.3.33: %feature("autodoc","1")*/
 #endif
 
 /* to be copied to the .c output file */
@@ -32,8 +35,6 @@
  * Openwsman handles some structures as 'anonymous', just declaring
  * them without exposing their definition.
  * However, SWIG need the definition in order to create bindings.
- * local-defs.h provides dummy definitions so the classes are available
- * in SWIG
  */
  
 %rename(Client) _WsManClient;
@@ -45,14 +46,14 @@
 %rename(ClientOptions) client_opt_t;
 %nodefault client_opt_t;
 
-%inline %{
 struct _WsXmlDoc {
 };
 
 struct _WsManClient {
 };
 
-%}
+typedef struct {
+} client_opt_t;
 
 
 /*-----------------------------------------------------------------*/
@@ -251,7 +252,7 @@ struct _WsManClient {
   %rename( "dialect=" ) set_dialect( const char *dialect );
 #endif
   void set_dialect( const char *dialect ) {
-    wsmc_set_dialect( filter, $self );
+    wsmc_set_dialect( dialect, $self );
   }
 }
 
