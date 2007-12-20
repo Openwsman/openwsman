@@ -474,7 +474,7 @@ static void protect_uri(struct shttpd_ctx *ctx, char *uri)
 		debug("Using Digest Authorization for %s:", uri);
 	}
 	if (basic_callback) {
-		shttpd_protect_uri(ctx, uri, NULL,
+		shttpd_protect_uri(ctx, uri, wsmand_options_get_basic_password_file(),
 						basic_callback, 0);
 		debug("Using Basic Authorization %s for %s",
 		      wsmand_option_get_basic_authenticator()?
