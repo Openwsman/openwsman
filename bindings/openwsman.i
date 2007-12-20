@@ -97,9 +97,9 @@ typedef struct {
 %rename(WsXmlAttr) __WsXmlAttr;
 %rename(WsXmlNs) __WsXmlNs;
 
-%ignore __WsXmlNode___undefined;
-%ignore __WsXmlAttr___undefined;
-%ignore __WsXmlNs___undefined;
+%ignore __WsXmlNode::__undefined;
+%ignore __WsXmlAttr::__undefined;
+%ignore __WsXmlNs::__undefined;
 
 %include "wsman-types.h"
 
@@ -178,7 +178,7 @@ typedef struct {
   }
   /* get doc for node */
   WsXmlDocH doc() {
-    ws_xml_get_node_doc( $self );
+    return ws_xml_get_node_doc( $self );
   }
   /* get parent for node */
   WsXmlNodeH parent() {
