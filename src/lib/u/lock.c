@@ -64,7 +64,7 @@ int u_try_lock(void* data)
     int try = 0;
     if ( data )
     {
-        pthread_mutex_lock( (pthread_mutex_t*)data );
+        try = pthread_mutex_trylock( (pthread_mutex_t*)data );
     }
     return try;
 }
