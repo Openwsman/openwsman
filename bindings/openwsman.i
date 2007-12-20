@@ -42,7 +42,17 @@
 %rename(WsXmlDoc) _WsXmlDoc;
 %nodefault _WsXmlDoc;
 
-%include "local-defs.h"
+%rename(ClientOptions) client_opt_t;
+%nodefault client_opt_t;
+
+%inline %{
+struct _WsXmlDoc {
+};
+
+struct _WsManClient {
+};
+
+%}
 
 
 /*-----------------------------------------------------------------*/
@@ -220,8 +230,6 @@
 /*-----------------------------------------------------------------*/
 /* options */
 
-%nodefault client_opt_t;
-%rename(ClientOptions) client_opt_t;
 %extend client_opt_t {
   client_opt_t() {
     return wsmc_options_init();
@@ -305,6 +313,12 @@ void wsmc_add_selector(client_opt_t * options, const char *key, const char *valu
 
 /*-----------------------------------------------------------------*/
 /* actions */
+
+%extend _WsManClient {
+  WsXmlDocH identify( client_opt_t *options ) {
+    return wsmc_action_identify( $self, options );
+  }
+}
 
 char *_identify(WsManClient * cl, client_opt_t * options, char *encoding);
 
