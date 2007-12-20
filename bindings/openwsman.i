@@ -3,6 +3,21 @@
 #endif
 #if defined(SWIGRUBY)
 %module rbwsman
+
+%{
+#include <rubyio.h>
+#include <ruby.h>
+%}
+
+%typemap(in) FILE* {
+  struct OpenFile *fptr;
+
+  Check_Type($input, T_FILE);
+  GetOpenFile($input, fptr);
+  /*rb_io_check_writable(fptr);*/
+  $1 = GetReadFile(fptr);
+}
+
 #endif
 
 /* to be copied to the .c output file */
@@ -10,6 +25,24 @@
 #include "wsman-api.h"
 #include "openwsman.h"
 %}
+
+/*-----------------------------------------------------------------*/
+/* local definitions
+ *
+ * Openwsman handles some structures as 'anonymous', just declaring
+ * them without exposing their definition.
+ * However, SWIG need the definition in order to create bindings.
+ * local-defs.h provides dummy definitions so the classes are available
+ * in SWIG
+ */
+ 
+%rename(Client) _WsManClient;
+%nodefault _WsManClient;
+
+%rename(WsXmlDoc) _WsXmlDoc;
+%nodefault _WsXmlDoc;
+
+%include "local-defs.h"
 
 
 /*-----------------------------------------------------------------*/
@@ -45,13 +78,18 @@
 /*-----------------------------------------------------------------*/
 /* type definitions */
 
-%ignore WsXmlNode___undefined;
-%ignore __WsXmlAttr___undefined;
-%ignore __WsXmlNs___undefined;
+%nodefault __WsXmlNode; /* part of WsXmlDoc */
+%nodefault __WsXmlAttr; /* part of WsXmlNode */
+%nodefault __WsXmlNs;   /* part of WsXmlAttr */
 
 %rename(WsXmlNode) __WsXmlNode;
 %rename(WsXmlAttr) __WsXmlAttr;
 %rename(WsXmlNs) __WsXmlNs;
+
+%ignore __WsXmlNode___undefined;
+%ignore __WsXmlAttr___undefined;
+%ignore __WsXmlNs___undefined;
+
 %include "wsman-types.h"
 
 
@@ -63,52 +101,143 @@
 %}
 
 %extend __WsXmlNode {
+  /* dump node as string */
   char *dump() {
     int size;
     char *buf;
     ws_xml_dump_memory_node_tree( $self, &buf, &size );
     return buf;
   }
-  char *dump_enc(const char *encoding) {
+  /* dump node to file */
+  void dump_file(FILE *fp) {
+    ws_xml_dump_node_tree( fp, $self );
+  }			      
+}
+
+%extend _WsXmlDoc {
+  /* destructor */
+  ~_WsXmlDoc() {
+    ws_xml_destroy_doc( $self );
+  }
+  /* dump doc as string */
+  char *dump(const char *encoding="utf-8") {
     int size;
     char *buf;
     ws_xml_dump_memory_enc( $self, &buf, &size, encoding );
     return buf;
+  }
+  /* dump doc to file */
+  void dump_file(FILE *fp) {
+    ws_xml_dump_doc( fp, $self );
   }			      
+  /* get root node of doc */
+  WsXmlNodeH root() {
+    return ws_xml_get_doc_root( $self );
+  }
+  /* get soap envelope */
+  WsXmlNodeH envelope() {
+    return ws_xml_get_soap_envelope( $self );
+  }
+  /* get soap header */
+  WsXmlNodeH header() {
+    return ws_xml_get_soap_header( $self );
+  }
+  /* get soap body */
+  WsXmlNodeH body() {
+    return ws_xml_get_soap_body( $self );
+  }
+  /* get soap element by name */
+  WsXmlNodeH element(const char *name) {
+    return ws_xml_get_soap_element( $self, name );
+  }
 }
+
+%rename(create_soap_envelope) ws_xml_create_soap_envelope;
 
 /*-----------------------------------------------------------------*/
 /* options */
 
-client_opt_t *wsmc_options_init(void);
-void wsmc_options_destroy(client_opt_t * op);
+%nodefault client_opt_t;
+%rename(ClientOptions) client_opt_t;
+%extend client_opt_t {
+  client_opt_t() {
+    return wsmc_options_init();
+  }
+  ~client_opt_t() {
+    wsmc_options_destroy( $self );
+  }
 
-void wsmc_set_filter(const char *filter, client_opt_t * options);
+  /* set filter */
+#if defined(SWIGRUBY)
+  %rename( "filter=" ) set_filter( const char *filter );
+#endif
+  void set_filter( const char *filter ) {
+    wsmc_set_filter( filter, $self );
+  }
+  
+  /* set dialect  */
+#if defined(SWIGRUBY)
+  %rename( "dialect=" ) set_dialect( const char *dialect );
+#endif
+  void set_dialect( const char *dialect ) {
+    wsmc_set_dialect( filter, $self );
+  }
+}
 
-void wsmc_set_dialect(const char *dialect, client_opt_t * options);
- 
 void _set_assoc_filter(client_opt_t *options);
-
+void wsmc_set_action_option(client_opt_t * options, unsigned int);
 
 /*-----------------------------------------------------------------*/
 /* client */
-WsManClient *wsmc_create_from_uri(const char *endpoint);
 
-WsManClient *wsmc_create(const char *hostname,
-                                         const int port, const char *path,
-                                         const char *scheme,
-                                         const char *username,
-                                         const char *password);
-
-void wsmc_release(WsManClient * cl);
-
-void wsmc_set_dumpfile( WsManClient *cl, FILE *f );
+%extend _WsManClient {
+  /* constructor */
+  _WsManClient( const char *uri ) {
+    return wsmc_create_from_uri( uri );
+  }
+  _WsManClient(const char *hostname,
+              const int port, const char *path,
+              const char *scheme,
+              const char *username,
+              const char *password) {
+    return wsmc_create( hostname, port, path, scheme, username, password );
+  }
+  /* destructor */
+  ~_WsManClient() {
+    wsmc_release( $self );
+  }
+  /* set dumpfile */
+#if defined(SWIGRUBY)
+  %rename( "dumpfile=" ) set_dumpfile( FILE *f );
+#endif
+  void set_dumpfile( FILE *f ) {
+    wsmc_set_dumpfile( $self, f );
+  }
+  long response_code() {
+    return wsmc_get_response_code( $self );
+  }
+  char *scheme() {
+    return wsmc_get_scheme( $self );
+  }
+  char *host() {
+    return wsmc_get_hostname( $self );
+  }
+  int port() {
+    return wsmc_get_port( $self );
+  }
+  char *path() {
+    return wsmc_get_path( $self );
+  }
+  char *user() {
+    return wsmc_get_user( $self );
+  }
+  char *password() {
+    return wsmc_get_password( $self );
+  }
+}
 
 void wsmc_add_selector(client_opt_t * options, const char *key, const char *value);
 
-long wsmc_get_response_code(WsManClient * cl);
-
-void wsmc_set_action_option(client_opt_t * options, unsigned int);
 
 
 /*-----------------------------------------------------------------*/
