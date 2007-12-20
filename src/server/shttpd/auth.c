@@ -232,7 +232,7 @@ parse_htpasswd_line(const char *s, struct vec *user,
  * Authorize against the opened passwords file. Return 1 if authorized.
  */
 static int
-authorize(struct conn *c, FILE *fp)
+authorize_digest(struct conn *c, FILE *fp)
 {
 	struct vec 	*auth_vec = &c->ch.auth.v_vec;
 	struct vec	*user_vec = &c->ch.user.v_vec;
@@ -241,25 +241,21 @@ authorize(struct conn *c, FILE *fp)
 	int		ok = 0;
 	char		line[256];
 
-	if (auth_vec->len > 20 &&
-	    !my_strncasecmp(auth_vec->ptr, "Digest ", 7)) {
+	parse_authorization_header(auth_vec, &digest);
+	*user_vec = digest.user;
 
-		parse_authorization_header(auth_vec, &digest);
-		*user_vec = digest.user;
+	while (fgets(line, sizeof(line), fp) != NULL) {
 
-		while (fgets(line, sizeof(line), fp) != NULL) {
+		if (!parse_htpasswd_line(line, &user, &domain, &ha1))
+			continue;
 
-			if (!parse_htpasswd_line(line, &user, &domain, &ha1))
-				continue;
+		DBG(("[%.*s] [%.*s] [%.*s]", user.len, user.ptr,
+		    domain.len, domain.ptr, ha1.len, ha1.ptr));
 
-			DBG(("[%.*s] [%.*s] [%.*s]", user.len, user.ptr,
-			    domain.len, domain.ptr, ha1.len, ha1.ptr));
-
-			if (vcmp(user_vec, &user) && !memcmp(c->ctx->auth_realm,
-			    domain.ptr, domain.len)) {
-				ok = check_password(c->method, &ha1, &digest);
-				break;
-			}
+		if (vcmp(user_vec, &user) && !memcmp(c->ctx->auth_realm,
+		    domain.ptr, domain.len)) {
+			ok = check_password(c->method, &ha1, &digest);
+			break;
 		}
 	}
 
@@ -270,7 +266,7 @@ int
 check_authorization(struct conn *c, const char *path)
 {
 	FILE			*fp = NULL;
-	int			authorized = 1;
+	int			authorized = 0;
 	struct vec 	*auth_vec = &c->ch.auth.v_vec;
 
 #ifdef EMBEDDED
@@ -283,74 +279,72 @@ check_authorization(struct conn *c, const char *path)
 
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
-		if (!strncmp(c->uri, auth->uri, auth->uri_len) && auth->type == DIGEST_AUTH) {
-			fp = fopen(auth->file_name, "r");
-			digest = 1;
-			break;
+		if (!strncmp(c->uri, auth->uri, auth->uri_len)) {
+			if (auth->type == DIGEST_AUTH &&
+			    auth_vec->len > 20 &&
+			    !my_strncasecmp(auth_vec->ptr, "Digest ", 7)) {
+				fp = fopen(auth->file_name, "r");
+				digest = 1;
+				break;
+			}
+			if (auth->type == BASIC_AUTH &&
+			    auth_vec->len > 10 &&
+			    !my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
+				cb = (int (*)(char *, char *)) auth->callback.v_func;
+				basic = 1;
+				break;
+			}
 		}
 	}
+
 	if (digest == 1) {
 		if (fp != NULL) {
-				authorized = authorize(c, fp);
+				authorized = authorize_digest(c, fp);
 				(void) fclose(fp);
 				return (authorized);
 		} else
 			return (0);
 	}
 
-
-
-	LL_FOREACH(&c->ctx->uri_auths, lp) {
-		auth = LL_ENTRY(lp, struct uri_auth, link);
-		if (!strncmp(c->uri, auth->uri, strlen(c->uri)) && auth->type == BASIC_AUTH) {
-				debug("%s == %s", c->uri , auth->uri);
-			cb = (int (*)(char *, char *)) auth->callback.v_func;
-			basic = 1;
-			break;
-		}
-	}
 	if (basic == 1) {
-		if (auth_vec->len > 10 &&
-			!my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
-			char buf[4096];
-			int l;
+		char buf[4096];
+		int l;
 
-			p = (char *) auth_vec->ptr + 5;
-			while ((*p == ' ') || (*p == '\t')) {
-					p++;
-			}
-			pp = p;
-			while ((*p != ' ') && (*p != '\t') && (*p != '\r')
-							&& (*p != '\n') && (*p != 0)) {
-					p++;
-			}
+		p = (char *) auth_vec->ptr + 5;
+		while ((*p == ' ') || (*p == '\t')) {
+			p++;
+		}
+		pp = p;
+		while ((*p != ' ') && (*p != '\t') && (*p != '\r')
+				&& (*p != '\n') && (*p != 0)) {
+			p++;
+		}
 
-			if (pp == p) {
-					return 0;
-			}
-			*p = 0;
-
-			l = ws_base64_decode(pp, p - pp, buf);
-			if (l <= 0) {
-				return 0;
-			}
-
-			buf[l] = 0;
-			p = buf;
-			pp = p;
-			p = strchr(p, ':');
-			if (p == NULL) {
-					return 0;
-			}
-			*p++ = 0;
-			authorized = cb(pp, p);
-			if (authorized) {
-					c->username = u_strdup(pp);
-					c->password = u_strdup(p);
-			}
-		} else {
+		if (pp == p) {
 			return 0;
 		}
+		*p = 0;
+
+		l = ws_base64_decode(pp, p - pp, buf);
+		if (l <= 0) {
+			return 0;
+		}
+
+		buf[l] = 0;
+		p = buf;
+		pp = p;
+		p = strchr(p, ':');
+		if (p == NULL) {
+			return 0;
+		}
+		*p++ = 0;
+		authorized = cb(pp, p);
+		if (authorized) {
+			c->username = u_strdup(pp);
+			c->password = u_strdup(p);
+		}
+	} else {
+		return 0;
 	}
 
 #endif /* EMBEDDED */
@@ -365,7 +359,7 @@ is_authorized_for_put(struct conn *c)
 	int	ret = 0;
 
 	if ((fp = fopen(c->ctx->put_auth_file, "r")) != NULL) {
-		ret = authorize(c, fp);
+		ret = authorize_digest(c, fp);
 		(void) fclose(fp);
 	}
 
