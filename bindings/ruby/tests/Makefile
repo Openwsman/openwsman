@@ -19,7 +19,10 @@ all:
 	
 	# ClientOptions
 	ruby clientoptions.rb
-	
+
+        # Identify
+	ruby identify.rb
+
 clean:
 	rm -f core*
 

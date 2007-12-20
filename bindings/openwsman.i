@@ -159,7 +159,7 @@ typedef struct {
 
 %extend __WsXmlNode {
 #if defined(SWIGRUBY)
-  %alias dump "to_s";
+  %alias text "to_s";
 #endif
   /* dump node as string */
   char *dump() {
@@ -171,6 +171,10 @@ typedef struct {
   /* dump node to file */
   void dump_file(FILE *fp) {
     ws_xml_dump_node_tree( fp, $self );
+  }
+  /* get text of node */
+  char *text() {
+    return ws_xml_get_node_text( $self );
   }
   /* get doc for node */
   WsXmlDocH doc() {
@@ -188,18 +192,28 @@ typedef struct {
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
   }
+  /* find node within tree */
+  WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
+    return ws_xml_find_in_tree( $self, ns, name, recursive );
+  }
+				 
+  /* count node children */
   int child_count() {
     return ws_xml_get_child_count( $self );
   }
+  /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
     return ws_xml_get_node_attr( $self, index );
   }
+  /* count node attribute */
   int attr_count() {
     return ws_xml_get_node_attr_count( $self );
   }
+  /* find node attribute by name */
   WsXmlAttrH attr_find( const char *ns, const char *name ) {
     return ws_xml_find_node_attr( $self, ns, name );
   }
+  /* add attribute to node */
   WsXmlAttrH attr_add( const char *ns, const char *name, const char *value ) {
     return ws_xml_add_node_attr( $self, ns, name, value );
   }
