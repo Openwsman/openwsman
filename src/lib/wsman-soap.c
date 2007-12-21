@@ -1763,11 +1763,9 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soapCntx->subscriptionMemList)) {
 		t = list_first(soapCntx->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcasecmp(subsInfo->subsId, uuid+5)) {
-			while((t == list_next(soapCntx->subscriptionMemList, t))) {
-				subsInfo = (WsSubscribeInfo *)t->list_data;
-				if(!strcasecmp(subsInfo->subsId, uuid+5)) break;
-			}
+		while(t && strcasecmp(subsInfo->subsId, uuid+5)) {
+			t = list_next(soapCntx->subscriptionMemList, t);
+			subsInfo = (WsSubscribeInfo *)t->list_data;
 		}
 	}
 	if(t == NULL) {
@@ -1844,11 +1842,9 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	if(!list_isempty(soapCntx->subscriptionMemList)) {
 		t = list_first(soapCntx->subscriptionMemList);
 		subsInfo = (WsSubscribeInfo *)t->list_data;
-		if(strcasecmp(subsInfo->subsId, uuid+5)) {
-			while((t == list_next(soapCntx->subscriptionMemList, t))) {
-				subsInfo = (WsSubscribeInfo *)t->list_data;
-				if(!strcmp(subsInfo->subsId, uuid+5)) break;
-			}
+		while(t && strcasecmp(subsInfo->subsId, uuid+5)) {
+			t = list_next(soapCntx->subscriptionMemList, t);
+			subsInfo = (WsSubscribeInfo *)t->list_data;
 		}
 	}
 	if(t == NULL) {

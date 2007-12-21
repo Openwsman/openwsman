@@ -941,7 +941,8 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	action = wsman_get_action(cntx, doc);
 #ifdef ENABLE_EVENTING_SUPPORT
 	if(wsman_is_event_related_request(doc)) {
-		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0, XML_NS_EVENTING, WSEVENT_IDENTIFIER);
+		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0, 
+			XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 		char *uuid = ws_xml_get_node_text(temp);
 		debug("Request uuid: %s", uuid);
 		if(uuid) {
@@ -952,7 +953,8 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 					uri = subsInfo->uri;
 					break;
 				}
-				t = list_next(cntx->subscriptionMemList, t);
+				else
+					t = list_next(cntx->subscriptionMemList, t);
 			}
 			if(t == NULL) {
 				unsigned char *buf = NULL;
