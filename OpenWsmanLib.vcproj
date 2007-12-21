@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;.\libiconv\include;.\libxml2\include;.\include;.\src\cpp"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;&quot;$(libxml2)/include&quot;;&quot;$(libiconv)/include&quot;;.\include;.\src\cpp"
 				PreprocessorDefinitions="WIN32;_DEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -85,7 +85,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="..\lib"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			UseOfMFC="0"
@@ -109,9 +109,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;.\libiconv\include;.\libxml2\include;.\include;.\src\cpp"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;&quot;$(libiconv)/include&quot;;&quot;$(libxml2)/include&quot;;.\include;.\src\cpp"
 				PreprocessorDefinitions="WIN32;NDEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
