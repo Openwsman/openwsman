@@ -1765,7 +1765,8 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 		subsInfo = (WsSubscribeInfo *)t->list_data;
 		while(t && strcasecmp(subsInfo->subsId, uuid+5)) {
 			t = list_next(soapCntx->subscriptionMemList, t);
-			subsInfo = (WsSubscribeInfo *)t->list_data;
+			if(t)
+				subsInfo = (WsSubscribeInfo *)t->list_data;
 		}
 	}
 	if(t == NULL) {
@@ -1844,7 +1845,8 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 		subsInfo = (WsSubscribeInfo *)t->list_data;
 		while(t && strcasecmp(subsInfo->subsId, uuid+5)) {
 			t = list_next(soapCntx->subscriptionMemList, t);
-			subsInfo = (WsSubscribeInfo *)t->list_data;
+			if(t)
+				subsInfo = (WsSubscribeInfo *)t->list_data;
 		}
 	}
 	if(t == NULL) {
