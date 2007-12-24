@@ -87,7 +87,7 @@ int pthread_mutex_init(pthread_mutex_t *mp,
 int
 pthread_mutex_trylock(pthread_mutex_t *m)
 {
-	if (TryEnterCriticalSection(&m->csMutex) == TRUE)
+	if (TryEnterCriticalSection(m) == TRUE)
 		return 0;
 	return -1;
 }
