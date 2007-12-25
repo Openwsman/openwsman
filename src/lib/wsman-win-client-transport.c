@@ -220,6 +220,26 @@ static DWORD ChooseAuthScheme(DWORD dwSupportedSchemes, int ws_auth)
 	return 0;
 }
 
+static DWORD Auth2Scheme(int ws_auth)
+{
+	if (ws_auth == WS_GSSNEGOTIATE_AUTH) {
+			return WINHTTP_AUTH_SCHEME_NEGOTIATE;
+	}
+	if (ws_auth == WS_NTLM_AUTH) {
+			return WINHTTP_AUTH_SCHEME_NTLM;
+	}
+	if (ws_auth == WS_PASS_AUTH) {
+			return WINHTTP_AUTH_SCHEME_PASSPORT;
+	}
+	if (ws_auth == WS_DIGEST_AUTH) {
+			return WINHTTP_AUTH_SCHEME_DIGEST;
+	}
+	if (ws_auth == WS_BASIC_AUTH) {
+			return WINHTTP_AUTH_SCHEME_BASIC;
+	}
+	return 0;
+}
+
 static int cleanup_request_data(HINTERNET request)
 {
 
@@ -349,6 +369,20 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 		}
 		bResults = FALSE;
+	}
+	if(ws_auth != WS_NO_AUTH && ws_auth != WS_MAX_AUTH) {
+	 	dwSelectedScheme = Auth2Scheme(ws_auth);
+		if(dwSelectedScheme) {
+	 		pwd = convert_to_unicode(cl->data.pwd);
+	 		usr = convert_to_unicode(cl->data.user);
+			bResults = WinHttpSetCredentials(request,
+							 WINHTTP_AUTH_TARGET_SERVER,
+							 dwSelectedScheme,
+							 usr, pwd,
+							 NULL);
+			u_free(pwd);
+			u_free(usr);
+		}
 	}
 	if(cl->proxy_data.proxy_username)
         {
