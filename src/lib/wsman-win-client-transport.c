@@ -375,7 +375,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		if(dwSelectedScheme) {
 	 		pwd = convert_to_unicode(cl->data.pwd);
 	 		usr = convert_to_unicode(cl->data.user);
-			bResults = WinHttpSetCredentials(request,
+			bResult = WinHttpSetCredentials(request,
 							 WINHTTP_AUTH_TARGET_SERVER,
 							 dwSelectedScheme,
 							 usr, pwd,
