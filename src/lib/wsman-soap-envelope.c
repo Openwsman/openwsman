@@ -1250,6 +1250,7 @@ wsman_set_expiretime(WsXmlNodeH  node,
 	XML_DATETIME tmx;
 	gettimeofday(&tv, NULL);
 	text = ws_xml_get_node_text(node);
+	*fault_code = WSMAN_DETAIL_OK;
 	if (text == NULL) {
 		*fault_code = WSEN_INVALID_EXPIRATION_TIME;
 		return;

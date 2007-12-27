@@ -98,9 +98,12 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 			elog(E_FATAL, NULL,"set_ssl: cannot find %s", fp->name);
 
 	/* Initialize SSL crap */
-	debug("Initialize SSL");
-	SSL_library_init();
-
+	static int ssl_library_initialized = 0;
+	if(!ssl_library_initialized) {
+		debug("Initialize SSL");
+		SSL_library_init();
+		ssl_library_initialized = 1;
+	}
 	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
 		elog(E_FATAL, NULL, "SSL_CTX_new error");
 	else if (SSL_CTX_use_certificate_file(CTX, pem, SSL_FILETYPE_PEM) == 0)
