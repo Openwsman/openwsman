@@ -20,6 +20,7 @@ typedef struct ssl_ctx_st SSL_CTX;
 
 #define	SSL_ERROR_WANT_READ	2
 #define	SSL_ERROR_WANT_WRITE	3
+#define SSL_ERROR_SYSCALL               5
 #define SSL_FILETYPE_PEM	1
 
 /*

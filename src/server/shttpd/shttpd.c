@@ -795,7 +795,7 @@ static void
 read_stream(struct stream *stream)
 {
 	int	n, len;
-
+	int sslerr;
 	len = io_space_len(&stream->io);
 	assert(len > 0);
 
@@ -810,8 +810,19 @@ read_stream(struct stream *stream)
 
 	if (n > 0)
 		io_inc_head(&stream->io, n);
-	else if (n == -1 && (ERRNO == EINTR || ERRNO == EWOULDBLOCK))
-		n = n;	/* Ignore EINTR and EAGAIN */
+	else if (n == -1) {
+		sslerr = SSL_get_error(stream->chan.ssl.ssl, n);
+		/* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
+		if(sslerr == SSL_ERROR_SYSCALL && (ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
+				n = n; /* Ignore EINTR and EAGAIN */
+		}
+		else if(sslerr == SSL_ERROR_WANT_READ|| sslerr == SSL_ERROR_WANT_WRITE) {
+			n = n; 
+		}
+		else if (!(stream->flags & FLAG_DONT_CLOSE))
+			stop_stream(stream);
+			
+	}
 	else if (!(stream->flags & FLAG_DONT_CLOSE))
 		stop_stream(stream);
 #if 0
@@ -840,7 +851,7 @@ static void
 write_stream(struct stream *from, struct stream *to)
 {
 	int	n, len;
-
+	int sslerr;
 	len = io_data_len(&from->io);
 	assert(len > 0);
 
@@ -855,11 +866,22 @@ write_stream(struct stream *from, struct stream *to)
 
 	if (n > 0)
 		io_inc_tail(&from->io, n);
-	else if (n == -1 && (ERRNO == EINTR || ERRNO == EWOULDBLOCK))
-		n = n;	/* Ignore EINTR and EAGAIN */
+	else if (n == -1) {
+		sslerr = SSL_get_error(to->chan.ssl.ssl, n);
+		/* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
+		if(sslerr == SSL_ERROR_SYSCALL && (ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
+				n = n; /* Ignore EINTR and EAGAIN */
+		}
+		else if(sslerr == SSL_ERROR_WANT_READ|| sslerr == SSL_ERROR_WANT_WRITE) {
+			n = n; 
+		}
+		else if (!(to->flags & FLAG_DONT_CLOSE))
+			stop_stream(to);
+	}
 	else if (!(to->flags & FLAG_DONT_CLOSE))
 		stop_stream(to);
 }
+
 
 
 static void
