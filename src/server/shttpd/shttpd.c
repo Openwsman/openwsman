@@ -1089,10 +1089,14 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 	/* Process all connections */
 	LL_FOREACH_SAFE(&ctx->connections, lp, tmp) {
 		c = LL_ENTRY(lp, struct conn, link);
-
+#ifndef NO_SSL
+		if ((FD_ISSET(c->rem.chan.fd, &read_set) ||
+			SSL_pending(c->rem.chan.ssl.ssl)) && io_space_len(&c->rem.io))
+#else
 		/* Read from remote end if it is ready */
 		if (FD_ISSET(c->rem.chan.fd, &read_set) &&
 		    io_space_len(&c->rem.io))
+#endif
 			read_stream(&c->rem);
 
 		/* If the request is not parsed yet, do so */

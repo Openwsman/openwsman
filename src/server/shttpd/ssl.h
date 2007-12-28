@@ -52,3 +52,4 @@ extern struct ssl_func	ssl_sw[];
 #define	SSL_CTX_use_certificate_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(12))((x), (y), (z))
 #define	SSL_CTX_free(x)	(*(void (*)(SSL_CTX *)) FUNC(13))(x)
+#define	SSL_pending(x) (*(int (*)(SSL *)) FUNC(14))(x)

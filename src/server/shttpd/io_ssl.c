@@ -26,6 +26,7 @@ struct ssl_func	ssl_sw[] = {
 	{"SSL_CTX_use_PrivateKey_file",	{0}},
 	{"SSL_CTX_use_certificate_file",{0}},
 	{"SSL_CTX_free", {0}},
+	{"SSL_pending", {0}},
 	{NULL,				{0}}
 };
 
