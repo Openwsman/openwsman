@@ -243,6 +243,8 @@ struct stream {
 #define	FLAG_CLOSED		16
 #define	FLAG_DONT_CLOSE		32
 #define	FLAG_ALWAYS_READY	64		/* File, dir, user_func	*/
+#define	FLAG_SSL_SHOULD_SELECT_ON_WRITE	128	/* ssl should select on write next time  */
+#define	FLAG_SSL_SHOULD_SELECT_ON_READ	256	/*  ssl should select on read next time */
 };
 
 struct conn {
