@@ -795,7 +795,7 @@ static void
 read_stream(struct stream *stream)
 {
         int     n, len;
-        int sslerr;
+        int sslerr = 0;
         len = io_space_len(&stream->io);
         assert(len > 0);
         /* Do not read more that needed */
@@ -812,19 +812,20 @@ read_stream(struct stream *stream)
                 stream->flags &= ~FLAG_SSL_SHOULD_SELECT_ON_WRITE;
         }
         else if (n == -1) {
-                sslerr = SSL_get_error(stream->chan.ssl.ssl, n);
+		  if(stream->chan.ssl.ssl) {
+                	sslerr = SSL_get_error(stream->chan.ssl.ssl, n);
+		  }
                 /* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
-                if(sslerr == SSL_ERROR_SYSCALL && (ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
+                if((stream->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL && 
+					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) ||
+					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
                                 n = n; /* Ignore EINTR and EAGAIN */
-                                DBG(("EWOULDBLOCK in read_stream"));
                 }
                 else if(sslerr == SSL_ERROR_WANT_READ) {
                         n = n;
-                        DBG(("SSL_ERROR_WANT_READ in read_stream"));
                 }
                 else if(sslerr == SSL_ERROR_WANT_WRITE) {
                         stream->flags |= FLAG_SSL_SHOULD_SELECT_ON_WRITE;
-                        DBG(("SSL_ERROR_WANT_WRITE in read_stream"));
                 }
                 else if (!(stream->flags & FLAG_DONT_CLOSE))
                         stop_stream(stream);
@@ -859,7 +860,7 @@ static void
 write_stream(struct stream *from, struct stream *to)
 {
         int     n, len;
-        int sslerr;
+        int sslerr = 0;
         len = io_data_len(&from->io);
         assert(len > 0);
 
@@ -877,9 +878,13 @@ write_stream(struct stream *from, struct stream *to)
                 to->flags &= ~FLAG_SSL_SHOULD_SELECT_ON_READ;
         }
         else if (n == -1) {
-                sslerr = SSL_get_error(to->chan.ssl.ssl, n);
+		  if(to->chan.ssl.ssl) {
+                	sslerr = SSL_get_error(to->chan.ssl.ssl, n);
+		  }
                 /* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
-                if(sslerr == SSL_ERROR_SYSCALL && (ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
+                if((to->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL && 
+					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) ||
+					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
                                 n = n; /* Ignore EINTR and EAGAIN */
                 }
                 else if(sslerr == SSL_ERROR_WANT_WRITE) {
@@ -888,6 +893,7 @@ write_stream(struct stream *from, struct stream *to)
                 else if(sslerr == SSL_ERROR_WANT_READ) {
                         to->flags |= FLAG_SSL_SHOULD_SELECT_ON_READ;
                 }
+				
                 else if (!(to->flags & FLAG_DONT_CLOSE))
                         stop_stream(to);
         }
@@ -1105,7 +1111,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 #ifndef NO_SSL
 		 if (((FD_ISSET(c->rem.chan.fd, &read_set) &&
                         !(c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_READ)) ||
-                        SSL_pending(c->rem.chan.ssl.ssl) ||
+                        (c->rem.chan.ssl.ssl && SSL_pending(c->rem.chan.ssl.ssl)) ||
                         (FD_ISSET(c->rem.chan.fd, &write_set) &&
                         (c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_WRITE)))
                         && io_space_len(&c->rem.io))
