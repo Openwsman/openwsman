@@ -109,7 +109,7 @@ ServerData sd[] = {
 TestData tests[] = {
     {
         "Subscribe to the server (push mode)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	0,
 	"http://localhost:80/eventsink",
@@ -127,7 +127,7 @@ TestData tests[] = {
     },
     {
     	"Subscribe to the server (pushwithack mode)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	1,
 	"http://localhost:80/eventsink",
@@ -145,7 +145,7 @@ TestData tests[] = {
     },
     {
     	"Subscribe to the server (events mode)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	2,
 	"http://localhost:80/eventsink",
@@ -163,7 +163,7 @@ TestData tests[] = {
     },
     {
     	"Subscribe to the server (pull mode)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	3,
 	"http://localhost:80/eventsink",
@@ -181,7 +181,7 @@ TestData tests[] = {
     },
     {
     	"Subscribe to the server (with invalid NotifyTo URL)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	0,
 	"localhost:80/eventsink",
@@ -199,7 +199,7 @@ TestData tests[] = {
     },
     {
     "Subscribe to the server (with unsupported Dialect)", 
-        "http://schemas.dmtf.org/wbem/wscim/1/*", 
+        "http://schema.openwsman.org/2006/openwsman/test", 
         NULL,
 	0,
 	"http://localhost:80/eventsink",

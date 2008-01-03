@@ -1364,11 +1364,13 @@ static int destination_reachable(char *url)
 {
 	int valid = 0;
 	u_uri_t *uri = NULL;
-	if (u_uri_parse((const char *)url, &uri)) {
+	if(strstr(url, "http") == NULL)
+		return valid;
+	if (u_uri_parse((const char *)url, &uri) == 0) {
 		valid = 1;
 	}
 	u_uri_free(uri);
-	return 0;
+	return valid;
 }
 
 WsEventThreadContextH
@@ -1568,7 +1570,7 @@ create_subs_info(SoapOpH op,
 		debug("event sink: %s", str);
 		if(str && strcmp(str, "")) {
 			subsInfo->epr_notifyto = u_strdup(str);
-			if(destination_reachable(str)) {
+			if(destination_reachable(str) == 0) {
 				fault_code = WSMAN_EVENT_DELIVER_TO_UNUSABLE;
 				goto DONE;
 			}

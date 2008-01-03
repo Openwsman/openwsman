@@ -370,7 +370,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		}
 		bResults = FALSE;
 	}
-	if(ws_auth != WS_NO_AUTH && ws_auth != WS_MAX_AUTH) {
+/*	if(ws_auth != WS_NO_AUTH && ws_auth != WS_MAX_AUTH) {
 	 	dwSelectedScheme = Auth2Scheme(ws_auth);
 		if(dwSelectedScheme) {
 	 		pwd = convert_to_unicode(cl->data.pwd);
@@ -383,7 +383,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 			u_free(pwd);
 			u_free(usr);
 		}
-	}
+	} */
 	if(cl->proxy_data.proxy_username)
         {
                 proxy_username = convert_to_unicode(cl->proxy_data.proxy_username);
