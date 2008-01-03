@@ -273,30 +273,30 @@ check_authorization(struct conn *c, const char *path)
 	struct llhead	*lp;
 	struct uri_auth	*auth;
 	int digest = 0, basic = 0;
-	basic_auth_callback cb;
+	basic_auth_callback cb = NULL;
 	char *p, *pp;
 	/* Check, is this URL protected by shttpd_protect_url() */
 
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
-		if (!strncmp(c->uri, auth->uri, auth->uri_len)) {
+		if (!strncmp(c->uri, auth->uri, strlen(c->uri))) {
 			if (auth->type == DIGEST_AUTH &&
 			    auth_vec->len > 20 &&
 			    !my_strncasecmp(auth_vec->ptr, "Digest ", 7)) {
 				fp = fopen(auth->file_name, "r");
 				digest = 1;
-				break;
 			}
 			if (auth->type == BASIC_AUTH &&
 			    auth_vec->len > 10 &&
 			    !my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
 				cb = (int (*)(char *, char *)) auth->callback.v_func;
 				basic = 1;
-				break;
 			}
+			break;
 		}
 	}
-
+	if (lp == &c->ctx->uri_auths) //not a protected uri
+		return 1;
 	if (digest == 1) {
 		if (fp != NULL) {
 				authorized = authorize_digest(c, fp);
