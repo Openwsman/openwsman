@@ -149,6 +149,7 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
  */
 int wsman_check_identify(WsmanMessage * msg)
 {
+	int ret = 0;
 	WsXmlDocH doc = ws_xml_read_memory( u_buf_ptr(msg->request),
 					   u_buf_len(msg->request), msg->charset,  0);
 
@@ -156,9 +157,10 @@ int wsman_check_identify(WsmanMessage * msg)
 		return 0;
 	}
 	if (wsman_is_identify_request(doc)) {
-		return 1;
+		ret = 1;
 	}
-	return 0;
+	ws_xml_destroy_doc(doc);
+	return ret;
 }
 
 /**

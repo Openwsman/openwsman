@@ -300,9 +300,11 @@ void server_callback(struct shttpd_arg *arg)
 			state->len =  u_buf_len(id);;
 			state->response = u_buf_steal(id);
 			state->index = 0;
+			u_buf_free(id);
 		} else {
 			shttpd_printf(arg, "HTTP/1.0 404 Not foundn\n");
 			arg->flags |= SHTTPD_END_OF_OUTPUT;
+			u_buf_free(id);
 			return;
 		}
 	} else {
