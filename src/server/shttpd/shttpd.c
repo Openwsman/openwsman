@@ -10,7 +10,7 @@
 
 /*
  * Small and portable HTTP server, http://shttpd.sourceforge.net
- * $Id: shttpd.c,v 1.17 2008/01/05 13:04:44 drozd Exp $
+ * $Id: shttpd.c,v 1.18 2008/01/10 11:01:21 drozd Exp $
  */
 
 #include "defs.h"
@@ -1208,19 +1208,20 @@ registered_uri_destructor(struct llhead *lp)
 }
 
 static void
-uri_auths_destrutor(struct llhead *lp)
-{
-	struct uri_auth *uriauth = LL_ENTRY(lp, struct uri_auth, link);
-	free((void *)uriauth->file_name);
-	free((void *)uriauth->uri);
-	free(uriauth);
-}
-
-static void
 acl_destructor(struct llhead *lp)
 {
 	struct acl	*acl = LL_ENTRY(lp, struct acl, link);
 	free(acl);
+}
+
+static void
+protected_uri_destructor(struct llhead *lp)
+{
+	struct uri_auth *auth = LL_ENTRY(lp, struct uri_auth, link);
+
+	free((void *) auth->file_name);
+	free((void *) auth->uri);
+	free(auth);
 }
 
 /*
@@ -1232,7 +1233,7 @@ shttpd_fini(struct shttpd_ctx *ctx)
 	free_list(&ctx->mime_types, mime_type_destructor);
 	free_list(&ctx->connections, disconnect);
 	free_list(&ctx->registered_uris, registered_uri_destructor);
-	free_list(&ctx->uri_auths, uri_auths_destrutor);
+ 	free_list(&ctx->uri_auths, protected_uri_destructor);
 	free_list(&ctx->acl, acl_destructor);
 	free_list(&listeners, listener_desctructor);
 
