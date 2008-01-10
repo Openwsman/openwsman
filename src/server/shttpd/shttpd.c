@@ -10,7 +10,7 @@
 
 /*
  * Small and portable HTTP server, http://shttpd.sourceforge.net
- * $Id: shttpd.c,v 1.14 2007/07/27 11:15:53 drozd Exp $
+ * $Id: shttpd.c,v 1.17 2008/01/05 13:04:44 drozd Exp $
  */
 
 #include "defs.h"
@@ -59,6 +59,7 @@ static const struct http_header http_headers[] = {
 };
 
 struct shttpd_ctx *init_ctx(const char *config_file, int argc, char *argv[]);
+static void process_connection(struct conn *, int, int);
 
 int
 url_decode(const char *src, int src_len, char *dst, int dst_len)
@@ -78,9 +79,6 @@ url_decode(const char *src, int src_len, char *dst, int dst_len)
 			} else {
 				dst[j] = '%';
 			}
-			break;
-		case '+':
-			dst[j] = ' ';
 			break;
 		default:
 			dst[j] = src[i];
@@ -203,7 +201,8 @@ get_headers_len(const char *buf, size_t buflen)
 
 	for (s = buf, e = s + buflen - 1; len == 0 && s < e; s++)
 		/* Control characters are not allowed but >=128 is. */
-		if (!isprint(*(unsigned char *)s) && *s != '\r' && *s != '\n' && *(unsigned char *)s < 128)
+		if (!isprint(* (unsigned char *) s) && *s != '\r' &&
+		    *s != '\n' && * (unsigned char *) s < 128)
 			len = -1;
 		else if (s[0] == '\n' && s[1] == '\n')
 			len = s - buf + 2;
@@ -314,8 +313,8 @@ remove_double_dots(char *s)
 
 	while (*s != '\0') {
 		*p++ = *s++;
-		if (s[-1] == '/')
-			while (*s == '.' || *s == '/')
+		if (s[-1] == '/' || s[-1] == '\\')
+			while (*s == '.' || *s == '/' || *s == '\\')
 				s++;
 	}
 	*p = '\0';
@@ -573,8 +572,9 @@ parse_http_request(struct conn *c)
 	char	*end_number;
 	int	uri_len, req_len;
 
-	s = c->rem.io.buf;
-	req_len = c->rem.headers_len = get_headers_len(s, c->rem.io.head);
+	s = io_data(&c->rem.io);;
+	req_len = c->rem.headers_len =
+	    get_headers_len(s, io_data_len(&c->rem.io));
 
 	if (req_len == 0 && io_space_len(&c->rem.io) == 0)
 		send_server_error(c, 400, "Request is too big");
@@ -816,7 +816,7 @@ read_stream(struct stream *stream)
                 	sslerr = SSL_get_error(stream->chan.ssl.ssl, n);
 		  }
                 /* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
-                if((stream->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL && 
+                if((stream->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL &&
 					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) ||
 					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
                                 n = n; /* Ignore EINTR and EAGAIN */
@@ -882,7 +882,7 @@ write_stream(struct stream *from, struct stream *to)
                 	sslerr = SSL_get_error(to->chan.ssl.ssl, n);
 		  }
                 /* Ignore SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE*/
-                if((to->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL && 
+                if((to->chan.ssl.ssl && sslerr == SSL_ERROR_SYSCALL &&
 					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) ||
 					(ERRNO == EINTR || ERRNO == EWOULDBLOCK)) {
                                 n = n; /* Ignore EINTR and EAGAIN */
@@ -893,7 +893,7 @@ write_stream(struct stream *from, struct stream *to)
                 else if(sslerr == SSL_ERROR_WANT_READ) {
                         to->flags |= FLAG_SSL_SHOULD_SELECT_ON_READ;
                 }
-				
+
                 else if (!(to->flags & FLAG_DONT_CLOSE))
                         stop_stream(to);
         }
@@ -938,16 +938,16 @@ disconnect(struct llhead *lp)
 		free(c->uri);
 
 	/* Handle Keep-Alive */
-	dont_close = 0;
 	if (dont_close) {
 		c->loc.io_class = NULL;
-		c->loc.flags = c->rem.flags = 0;
+		c->loc.flags = 0;
+		c->rem.flags = FLAG_W | FLAG_R;
 		c->query = c->request = c->uri = c->path_info = NULL;
 		c->mime_type = NULL;
 		(void) memset(&c->ch, 0, sizeof(c->ch));
-		io_clear(&c->rem.io);
 		io_clear(&c->loc.io);
-		c->rem.io.total = c->loc.io.total = 0;
+		if (io_data_len(&c->rem.io) > 0)
+			process_connection(c, 0, 0);
 	} else {
 		if (c->rem.io_class != NULL)
 			c->rem.io_class->close(&c->rem);
@@ -987,6 +987,45 @@ add_to_set(int fd, fd_set *set, int *max_fd)
 	FD_SET(fd, set);
 	if (fd > *max_fd)
 		*max_fd = fd;
+}
+
+static void
+process_connection(struct conn *c, int remote_ready, int local_ready)
+{
+	/* Read from remote end if it is ready */
+	if (remote_ready && io_space_len(&c->rem.io))
+		read_stream(&c->rem);
+
+	/* If the request is not parsed yet, do so */
+	if (!(c->rem.flags & FLAG_HEADERS_PARSED))
+		parse_http_request(c);
+
+	DBG(("loc: %u [%.*s]", io_data_len(&c->loc.io),
+	    io_data_len(&c->loc.io), io_data(&c->loc.io)));
+	DBG(("rem: %u [%.*s]", io_data_len(&c->rem.io),
+	    io_data_len(&c->rem.io), io_data(&c->rem.io)));
+
+	/* Read from the local end if it is ready */
+	if (local_ready && io_space_len(&c->loc.io))
+		read_stream(&c->loc);
+
+	if (io_data_len(&c->rem.io) > 0 && (c->loc.flags & FLAG_W) &&
+	    c->loc.io_class != NULL && c->loc.io_class->write != NULL)
+		write_stream(&c->rem, &c->loc);
+
+	if (io_data_len(&c->loc.io) > 0 && c->rem.io_class != NULL)
+		write_stream(&c->loc, &c->rem);
+
+	if (c->rem.nread_last > 0)
+		c->ctx->in += c->rem.nread_last;
+	if (c->loc.nread_last > 0)
+		c->ctx->out += c->loc.nread_last;
+
+	/* Check whether we should close this connection */
+	if ((current_time > c->expire_time) ||
+	    (c->rem.flags & FLAG_CLOSED) ||
+	    ((c->loc.flags & FLAG_CLOSED) && !io_data_len(&c->loc.io)))
+		disconnect(&c->link);
 }
 
 /*
@@ -1085,7 +1124,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 			sa.len = sizeof(sa.u.sin);
 			if ((sock = accept(l->sock, &sa.u.sa, &sa.len)) != -1) {
 #if defined(_WIN32)
-				shttpd_add_socket(ctx, sock);
+				shttpd_add_socket(ctx, sock, l->is_ssl);
 #else
 				if (sock >= (int) FD_SETSIZE) {
 					elog(E_LOG, NULL,
@@ -1109,57 +1148,23 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 	LL_FOREACH_SAFE(&ctx->connections, lp, tmp) {
 		c = LL_ENTRY(lp, struct conn, link);
 #ifndef NO_SSL
-		 if (((FD_ISSET(c->rem.chan.fd, &read_set) &&
-                        !(c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_READ)) ||
-                        (c->rem.chan.ssl.ssl && SSL_pending(c->rem.chan.ssl.ssl)) ||
-                        (FD_ISSET(c->rem.chan.fd, &write_set) &&
-                        (c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_WRITE)))
-                        && io_space_len(&c->rem.io))
+		process_connection(c, ((FD_ISSET(c->rem.chan.fd, &read_set) &&
+				!(c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_READ)) ||
+				(c->rem.chan.ssl.ssl && SSL_pending(c->rem.chan.ssl.ssl)) ||
+				(FD_ISSET(c->rem.chan.fd, &write_set) &&
+				 (c->rem.flags & FLAG_SSL_SHOULD_SELECT_ON_WRITE))),
+			((c->loc.flags & FLAG_ALWAYS_READY)
 
 #else
-		/* Read from remote end if it is ready */
-		if (FD_ISSET(c->rem.chan.fd, &read_set) &&
-		    io_space_len(&c->rem.io))
-#endif
-			read_stream(&c->rem);
 
-		/* If the request is not parsed yet, do so */
-		if (!(c->rem.flags & FLAG_HEADERS_PARSED))
-			parse_http_request(c);
-#if 0
-		DBG(("loc: %u [%.*s]", io_data_len(&c->loc.io),
-		    io_data_len(&c->loc.io), io_data(&c->loc.io)));
-		DBG(("rem: %u [%.*s]", io_data_len(&c->rem.io),
-		    io_data_len(&c->rem.io), io_data(&c->rem.io)));
+		process_connection(c, FD_ISSET(c->rem.chan.fd, &read_set),
+				((c->loc.flags & FLAG_ALWAYS_READY)
 #endif
-		/* Read from the local end if it is ready */
-		if (io_space_len(&c->loc.io) &&
-		    ((c->loc.flags & FLAG_ALWAYS_READY)
-
 #if !defined(NO_CGI)
-		    ||(c->loc.io_class == &io_cgi &&
+			|| (c->loc.io_class == &io_cgi &&
 		     FD_ISSET(c->loc.chan.fd, &read_set))
 #endif /* NO_CGI */
-		    ))
-			read_stream(&c->loc);
-
-		if (io_data_len(&c->rem.io) > 0 && (c->loc.flags & FLAG_W) &&
-		    c->loc.io_class != NULL && c->loc.io_class->write != NULL)
-			write_stream(&c->rem, &c->loc);
-
-		if (io_data_len(&c->loc.io) > 0 && c->rem.io_class != NULL)
-			write_stream(&c->loc, &c->rem);
-
-		if (c->rem.nread_last > 0)
-			c->ctx->in += c->rem.nread_last;
-		if (c->loc.nread_last > 0)
-			c->ctx->out += c->loc.nread_last;
-
-		/* Check whether we should close this connection */
-		if ((current_time > c->expire_time) ||
-		    (c->rem.flags & FLAG_CLOSED) ||
-		    ((c->loc.flags & FLAG_CLOSED) && !io_data_len(&c->loc.io)))
-			disconnect(&c->link);
+			));
 	}
 }
 
