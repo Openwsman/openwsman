@@ -50,6 +50,9 @@
 #define XML_NS_TRANSFER             "http://schemas.xmlsoap.org/ws/2004/09/transfer"
 #define XML_NS_XML_SCHEMA           "http://www.w3.org/2001/XMLSchema"
 #define XML_NS_SCHEMA_INSTANCE      "http://www.w3.org/2001/XMLSchema-instance"
+#define XML_NS_POLICY			"http://schemas.xmlsoap.org/ws/2004/09/policy"
+#define XML_NS_TRUST			"http://schemas.xmlsoap.org/ws/2005/02/trust"
+#define XML_NS_SE				"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
 #define XML_NS_SCHEMA_INSTANCE_PREFIX      "xsi"
 #define XML_NS_SCHEMA_INSTANCE_NIL      "nil"
 
@@ -328,6 +331,9 @@
 #define WSM_SENDBOOKMARKS	"SendBookmarks"
 #define WSM_BOOKMARK			"Bookmark"
 #define WSM_DROPPEDEVENTS		"DroppedEvents"
+#define WSM_AUTH				"Auth"
+#define WSM_PROFILE			"Profile"
+#define WSM_CERTIFICATETHUMBPRINT		"CertificateThumbprint"
 #define WSM_DEFAULTBOOKMARK	"http://schemas.dmtf.org/wbem/wsman/1/wsman/bookmark/earliest"
 
 #define WXF_RESOURCE_CREATED                      "ResourceCreated"
@@ -391,6 +397,42 @@
 #define CIM_ALL_AVAILABLE_CLASSES	"http://schemas.dmtf.org/wbem/wscim/1/*"
 #define XML_NS_CIM_ALL_CLASS		"http://schemas.dmtf.org/wbem/wscim/1"
 
+
+#define WST_ISSUEDTOKENS		"IssuedTokens"
+#define WST_REQUESTSECURITYTOKENRESPONSE			"RequestSecurityTokenResponse"
+#define WST_TOKENTYPE		"TokenType"
+#define WST_REQUESTEDSECURITYTOKEN		"RequestedSecurityToken"
+#define WSSE_USERNAMETOKEN			"UsernameToken"
+#define WSSE_USERNAME			"Username"
+#define WSSE_PASSWORD			"Password"
+#define WSP_APPLIESTO		"AppliesTo"
+
+#define WST_USERNAMETOKEN \
+	"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#UsernameToken"
+#define WST_CERTIFICATETHUMBPRINT \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/token/certificateThumbprint"
+
+//HTTP(S) Security profiles
+#define WSMAN_SECURITY_PROFILE_HTTP_BASIC     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/http/basic"
+#define WSMAN_SECURITY_PROFILE_HTTP_DIGEST     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/http/digest"
+#define WSMAN_SECURITY_PROFILE_HTTPS_BASIC     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/basic"
+#define WSMAN_SECURITY_PROFILE_HTTPS_DIGEST     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/digest"
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual"
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual/basic"
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual/digest"
+#define WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/httpsspnego-kerberos"
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual/spnego-kerberos"
+#define WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS     \
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/http/spnego-kerberos"
 
 #endif
 

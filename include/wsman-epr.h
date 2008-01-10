@@ -57,9 +57,9 @@ typedef struct {
 
 
 typedef struct {
-	XML_TYPE_STR type;
 	XML_TYPE_STR address;
 	ReferenceParameters refparams;
+	XML_TYPE_STR type;
 } epr_t;
 
 

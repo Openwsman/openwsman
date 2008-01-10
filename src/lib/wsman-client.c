@@ -456,7 +456,6 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
 				WSMB_ASSOCIATED_INSTANCES, NULL);
 	else
 		return;
-
 	/* Build Object */
 	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
 
@@ -662,6 +661,10 @@ wsman_set_enumeration_options(WsManClient * cl,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
 	if (options->filter) {
+		if(strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0)
+			options->flags |= FLAG_CIM_ASSOCIATORS;
+		else if(strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
+			options->flags |= FLAG_CIM_REFERENCES;
 		if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
 			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
 			filter = ws_xml_add_child(node,
@@ -710,7 +713,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			node3 = ws_xml_get_doc_root(doc);
 			temp = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_REFERENCE_PROPERTIES, NULL);
 			if(temp)
-				ws_xml_duplicate_tree(node2, node3);
+				ws_xml_duplicate_tree(temp, node3);
 		}
 	}
 	if(options->expires) {
@@ -1776,6 +1779,14 @@ wsmc_create(const char *hostname,
 	return wsc;
 }
 
+int wsmc_set_account(WsManClient *cl, const char *username, const char *password)
+{
+	if(username)
+		cl->data.user = u_strdup(username);
+	if(password)
+		cl->data.pwd = u_strdup(password);
+	return 0;
+}
 
 
 void

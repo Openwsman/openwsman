@@ -122,6 +122,9 @@ WsmanFaultDetailTable fault_detail_table[] =
 	// SOAP
 	{ SOAP_DETAIL_HEADER_NOT_UNDERSTOOD, "HeaderNotUnderstood" },
 
+	// WS-Trust
+	{WST_DETAIL_UNSUPPORTED_TOKENTYPE, "UnsupportedTokenType"},
+
 	// OpenWSMAN
 	{ OWSMAN_DETAIL_ENDPOINT_ERROR, "Unknown" },
 	{ OWSMAN_NO_DETAILS, "Unknown" }

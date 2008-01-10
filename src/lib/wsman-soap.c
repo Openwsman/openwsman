@@ -1450,6 +1450,7 @@ create_subs_info(SoapOpH op,
 	WsXmlNodeH	temp;
 	WsXmlDocH outdoc = NULL;
 	WsSubscribeInfo *subsInfo;
+	WsXmlAttrH attr = NULL;
 	op_t *_op = (op_t *) op;
 	WsmanMessage   *msg = (WsmanMessage *) _op->data;
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
@@ -1513,7 +1514,7 @@ create_subs_info(SoapOpH op,
 		}
 	}
 	node = ws_xml_get_child(subNode, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
-	WsXmlAttrH attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
+	attr = ws_xml_find_node_attr(node, NULL,WSEVENT_DELIVERY_MODE);
 	if(attr) {
 		str = ws_xml_get_attr_value(attr);
 		if (!strcasecmp(str, WSEVENT_DELIVERY_MODE_PUSH)) {
@@ -1560,13 +1561,13 @@ create_subs_info(SoapOpH op,
 		}
 	}
 	if(subsInfo->deliveryMode != WS_EVENT_DELIVERY_MODE_PULL) {
-		node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_NOTIFY_TO);
-		if(node == NULL) {
+		temp = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_NOTIFY_TO);
+		if(temp == NULL) {
 			message("No notification destination");
 			fault_code = WSE_INVALID_MESSAGE;
 			goto DONE;
 		}
-		str = ws_xml_get_node_text(ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS));
+		str = ws_xml_get_node_text(ws_xml_get_child(temp, 0, XML_NS_ADDRESSING, WSA_ADDRESS));
 		debug("event sink: %s", str);
 		if(str && strcmp(str, "")) {
 			subsInfo->epr_notifyto = u_strdup(str);
@@ -1579,6 +1580,43 @@ create_subs_info(SoapOpH op,
 			fault_code = WSE_INVALID_MESSAGE;
 			goto DONE;
 		}
+		temp = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_AUTH);
+		if(temp) {
+			attr = ws_xml_find_node_attr(temp, NULL, WSM_PROFILE);
+			if(attr) {
+				str = ws_xml_get_attr_value(attr);
+				if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTP_BASIC))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTP_BASIC_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTP_DIGEST))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTP_DIGEST_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_BASIC))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_BASIC_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_DIGEST))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_DIGEST_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS_TYPE;
+				else if(!strcasecmp(str, WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS))
+					subsInfo->deliveryAuthType = WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS_TYPE;
+				else {
+					fault_code = WSMAN_INVALID_OPTIONS;
+					fault_detail_code = WSMAN_DETAIL_AUTHERIZATION_MODE;
+					goto DONE;
+				}
+				debug("auth profile type = %d", subsInfo->deliveryAuthType);
+					
+			}
+		}
+	}
+	if(wsman_parse_credentials(indoc, subsInfo, &fault_code, &fault_detail_code)) {
+		goto DONE;
 	}
 	if(wsman_parse_event_request(indoc, subsInfo, &fault_code, &fault_detail_code)) {
 		goto DONE;
@@ -1967,6 +2005,39 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	WsManClient *notificationSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
 	if(subsInfo->contentEncoding)
 		wsmc_set_encoding(notificationSender, subsInfo->contentEncoding);
+	if(subsInfo->username || subsInfo->password)
+		wsmc_set_account(notificationSender, subsInfo->username, subsInfo->password);
+	if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTP_BASIC_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTP_DIGEST_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_BASIC_TYPE) {
+		wsman_transport_set_verify_peer(notificationSender, 0);
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_DIGEST_TYPE) {
+		wsman_transport_set_verify_peer(notificationSender, 0);
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType == 
+		WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS_TYPE) {
+	}
+	else if(subsInfo->deliveryAuthType ==
+		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS_TYPE) {
+	}
+	else { //WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS_TYPE
+	}
 	wsmc_transport_init(notificationSender, NULL);
 	wsman_send_request(notificationSender, outdoc);
 	if(acked) {

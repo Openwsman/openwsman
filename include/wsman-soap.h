@@ -294,6 +294,17 @@ struct __WsEnumerateInfo {
 #define WS_EVENT_DELIVERY_MODE_EVENTS 3 /* "	http://schemas.dmtf.org/wbem/wsman/1/wsman/Events */
 #define WS_EVENT_DELIVERY_MODE_PULL 4 /* http://schemas.dmtf.org/wbem/wsman/1/wsman/Pull */
 
+#define WSMAN_SECURITY_PROFILE_HTTP_BASIC_TYPE 1
+#define WSMAN_SECURITY_PROFILE_HTTP_DIGEST_TYPE 2
+#define WSMAN_SECURITY_PROFILE_HTTPS_BASIC_TYPE 3
+#define WSMAN_SECURITY_PROFILE_HTTPS_DIGEST_TYPE 4
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE 5
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE 6
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE 7
+#define WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS_TYPE 8
+#define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS_TYPE 9
+#define WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS_TYPE 10
+
 struct __WsSubscribeInfo {
 	pthread_mutex_t notificationlock;
 	unsigned long flags;
@@ -304,12 +315,16 @@ struct __WsSubscribeInfo {
 	char *	cim_namespace; //CIM namespace
 	hash_t *	vendor_namespaces; //CIM vendor namespaces;
 	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
+	char *	username; // username for event sink
+	char *	password; // password for event sink
+	char *	certificate_thumbprint; //certificate thumbprint of event sink
 	char * locale; // language code
 	char * contentEncoding; //"UTF-8" or "UTF-16" or something else
 	unsigned long expires;
 	int	deliveryMode; /*The delivery mode to be used for notification messages sent in relation to this subscription.
 	                                         Implied value is WS_EVENT_DELIVERY_MODE_PUSH,
 	                                         which indicates that Push Mode delivery should be used. */
+	int	deliveryAuthType; // security profile to use when making the connection to delivery events
 	unsigned int	connectionRetryCount; // count of connection retry
 	unsigned long connectionRetryinterval; //how long to wait between retries while trying to connect
 	unsigned long heartbeatInterval; //Interval to send a heartbeart

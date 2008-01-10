@@ -207,6 +207,8 @@ typedef enum {
 					 const char *username,
 					 const char *password);
 
+	int wsmc_set_account(WsManClient *cl, const char *username, const char *password);
+
 	/**
 	* Set request/response content encoding type. Default encoding type is "UTF-8"
 	* @param cl Client handle
