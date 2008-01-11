@@ -623,6 +623,46 @@ wsmc_create_delivery_mode_str(WsmanDeliveryMode mode)
 	return str;
 }
 
+static char *
+wsmc_create_delivery_sec_mode_str(WsManDeliverySecurityMode mode)
+{
+	char * str = NULL;
+	switch(mode) {
+		case WSMAN_DELIVERY_SEC_HTTP_BASIC:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTP_BASIC);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTP_DIGEST:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTP_DIGEST);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_BASIC:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_BASIC);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_DIGEST:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_DIGEST);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_MUTUAL:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_BASIC:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_DIGEST:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_SPNEGO_KERBEROS:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_SPNEGO_KERBEROS:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS);
+			break;
+		case WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS:
+			str = u_strdup(WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS);
+			break;
+		default:
+			break;
+	}
+	return str;
+}
 
 static void
 wsman_set_enumeration_options(WsManClient * cl,
@@ -688,21 +728,53 @@ wsman_set_enumeration_options(WsManClient * cl,
 
 static void
 wsman_set_subscribe_options(WsManClient * cl,
-			WsXmlNodeH body,
+			WsXmlDocH request,
 			const char* resource_uri,
 			client_opt_t *options)
 {
 	WsXmlNodeH filter = NULL;
-	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
-	WsXmlNodeH temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
-	WsXmlNodeH node2 = NULL;
-	WsXmlNodeH node3 = NULL;
+	WsXmlNodeH body = ws_xml_get_soap_body(request);
+	WsXmlNodeH header = ws_xml_get_soap_header(request);
+	WsXmlNodeH node = NULL, temp = NULL, node2 = NULL, node3 = NULL;
+	if(options->delivery_certificatethumbprint ||options->delivery_password ||
+		options->delivery_password) {
+		node = ws_xml_add_child(header, XML_NS_TRUST, WST_ISSUEDTOKENS, NULL);
+		ws_xml_add_node_attr(node, XML_NS_SOAP_1_2, SOAP_MUST_UNDERSTAND, "true");
+		node = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
+		if(options->delivery_certificatethumbprint)
+			ws_xml_add_child(node, XML_NS_TRUST, WST_TOKENTYPE,WST_CERTIFICATETHUMBPRINT );
+		if(options->delivery_password || options->delivery_password)
+			ws_xml_add_child(node, XML_NS_TRUST, WST_TOKENTYPE, WST_USERNAMETOKEN);
+		node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
+		if(options->delivery_certificatethumbprint) 
+			ws_xml_add_child(node2, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT, 
+				options->delivery_certificatethumbprint);
+		if(options->delivery_username || options->delivery_password) {
+			node3 = ws_xml_add_child(node2, XML_NS_SE, WSSE_USERNAMETOKEN, NULL);
+			if(options->delivery_username)
+				ws_xml_add_child(node3, XML_NS_SE, WSSE_USERNAME, options->delivery_username);
+			if(options->delivery_password)
+				ws_xml_add_child(node3, XML_NS_SE, WSSE_PASSWORD, options->delivery_password);
+		}
+		node2 = ws_xml_add_child(node, XML_NS_POLICY, WSP_APPLIESTO, NULL);
+		node2 = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_EPR, NULL);
+		ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
+	}
+	node = ws_xml_add_child(body,
+				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
+	temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
 	char buf[32];
 	if(temp) {
-		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, wsmc_create_delivery_mode_str(options->delivery_mode));
+		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, 
+			wsmc_create_delivery_mode_str(options->delivery_mode));
 		if(options->delivery_uri) {
 			node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
 			ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
+		}
+		if(options->delivery_sec_mode) {
+			temp = ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_AUTH, NULL);
+			ws_xml_add_node_attr(temp, NULL, WSM_PROFILE,
+				wsmc_create_delivery_sec_mode_str(options->delivery_sec_mode));
 		}
 		if(options->heartbeat_interval) {
 			snprintf(buf, 32, "PT%fS", options->heartbeat_interval);
@@ -867,9 +939,7 @@ wsmc_create_request(WsManClient * cl,
 		}
 		break;
 	case WSMAN_ACTION_SUBSCRIBE:
-		node = ws_xml_add_child(body,
-				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
-		wsman_set_subscribe_options(cl, body, resource_uri, options);
+		wsman_set_subscribe_options(cl, request, resource_uri, options);
 		break;
 	case WSMAN_ACTION_UNSUBSCRIBE:
 		node = ws_xml_add_child(body,
@@ -1779,14 +1849,6 @@ wsmc_create(const char *hostname,
 	return wsc;
 }
 
-int wsmc_set_account(WsManClient *cl, const char *username, const char *password)
-{
-	if(username)
-		cl->data.user = u_strdup(username);
-	if(password)
-		cl->data.pwd = u_strdup(password);
-	return 0;
-}
 
 
 void

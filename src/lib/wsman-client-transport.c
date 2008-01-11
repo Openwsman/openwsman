@@ -264,6 +264,15 @@ char *wsman_transport_get_cainfo(WsManClient *cl)
 	return cl->authentication.cainfo ? u_strdup( cl->authentication.cainfo ) : NULL;
 }
 
+void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg)
+{
+	cl->authentication.certificatethumbprint = arg ? u_strdup( arg ) : NULL;
+}
+
+char *wsman_transport_get_certhumbprint(WsManClient *cl)
+{
+	return cl->authentication.certificatethumbprint ? u_strdup(cl->authentication.certificatethumbprint) : NULL;
+}
 
 void wsman_transport_set_capath(WsManClient *cl, const char *arg)
 {

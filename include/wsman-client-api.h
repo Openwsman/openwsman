@@ -131,6 +131,19 @@ typedef enum {
 	WSMAN_DELIVERY_PULL
 }WsmanDeliveryMode;
 
+typedef enum {
+	WSMAN_DELIVERY_SEC_AUTO = 0,
+	WSMAN_DELIVERY_SEC_HTTP_BASIC,
+	WSMAN_DELIVERY_SEC_HTTP_DIGEST,
+	WSMAN_DELIVERY_SEC_HTTPS_BASIC,
+	WSMAN_DELIVERY_SEC_HTTPS_DIGEST,
+	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL,
+	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_BASIC,
+	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_DIGEST,
+	WSMAN_DELIVERY_SEC_HTTPS_SPNEGO_KERBEROS,
+	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_SPNEGO_KERBEROS,
+	WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS
+}WsManDeliverySecurityMode;
 
 // options flags values
 #define FLAG_NONE                            0x0000
@@ -160,7 +173,11 @@ typedef enum {
 		char *cim_ns;
 		char * delivery_uri;
 		char * reference;
-		WsmanDeliveryMode delivery_mode;
+		WsmanDeliveryMode delivery_mode; //eventing delivery mode
+		WsManDeliverySecurityMode delivery_sec_mode; //security mode of eventing delivery 
+		char *delivery_username; // username for delivery, if it is necessary
+		char *delivery_password; // password for delivery, if it is necessary
+		char *delivery_certificatethumbprint; // certificate thumbprint of event sink, if it is necessary
 		float heartbeat_interval;
 		float expires;
 		hash_t *selectors;
@@ -206,8 +223,6 @@ typedef enum {
 					 const char *scheme,
 					 const char *username,
 					 const char *password);
-
-	int wsmc_set_account(WsManClient *cl, const char *username, const char *password);
 
 	/**
 	* Set request/response content encoding type. Default encoding type is "UTF-8"

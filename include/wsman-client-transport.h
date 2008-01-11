@@ -111,6 +111,9 @@ extern char *wsman_transport_get_proxyauth(WsManClient *cl);
 extern void  wsman_transport_set_cainfo(WsManClient *cl, const char *cainfo);
 extern char *wsman_transport_get_cainfo(WsManClient *cl);
 
+extern void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg);
+extern char *wsman_transport_get_certhumbprint(WsManClient *cl);
+
 extern void  wsman_transport_set_capath(WsManClient *cl, const char *capath);
 extern char *wsman_transport_get_capath(WsManClient *cl);
 

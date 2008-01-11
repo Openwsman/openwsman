@@ -1395,6 +1395,9 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	u_free(subsInfo->soapNs);
 	u_free(subsInfo->contentEncoding);
 	u_free(subsInfo->cim_namespace);
+	u_free(subsInfo->username);
+	u_free(subsInfo->password);
+	u_free(subsInfo->certificate_thumbprint);
 	if (subsInfo->filter) {
 		if(subsInfo->filter->query)
 			u_free(subsInfo->filter->query);
@@ -2005,8 +2008,10 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	WsManClient *notificationSender = wsmc_create_from_uri(subsInfo->epr_notifyto);
 	if(subsInfo->contentEncoding)
 		wsmc_set_encoding(notificationSender, subsInfo->contentEncoding);
-	if(subsInfo->username || subsInfo->password)
-		wsmc_set_account(notificationSender, subsInfo->username, subsInfo->password);
+	if(subsInfo->username)
+		wsman_transport_set_userName(notificationSender, subsInfo->username);
+	if(subsInfo->password)
+		wsman_transport_set_password(notificationSender, subsInfo->password);
 	if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTP_BASIC_TYPE) {
 	}
@@ -2023,12 +2028,15 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE) {
+		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE) {
+		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE) {
+		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS_TYPE) {

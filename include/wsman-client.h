@@ -72,6 +72,7 @@ extern "C" {
 	struct _WsManAuthData {
 		char *cainfo;
 		char *caoid;
+		char *certificatethumbprint;
 #ifdef _WIN32
 		BOOL calocal;
 #endif
