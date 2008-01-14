@@ -1060,9 +1060,12 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		c = LL_ENTRY(lp, struct conn, link);
 
 		/* If there is a space in remote IO, check remote socket */
-		if (io_space_len(&c->rem.io))
+		if (io_space_len(&c->rem.io) && !(c->rem.flags & 
+			FLAG_SSL_SHOULD_SELECT_ON_READ))
 			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
-
+		if (io_space_len(&c->rem.io) && c->rem.flags & 
+			FLAG_SSL_SHOULD_SELECT_ON_WRITE)
+			add_to_set(c->rem.chan.fd, &write_set, &max_fd);
 #if !defined(NO_CGI)
 		/*
 		 * If there is a space in local IO, and local endpoint is
