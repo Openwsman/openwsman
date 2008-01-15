@@ -736,6 +736,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 	WsXmlNodeH body = ws_xml_get_soap_body(request);
 	WsXmlNodeH header = ws_xml_get_soap_header(request);
 	WsXmlNodeH node = NULL, temp = NULL, node2 = NULL, node3 = NULL;
+	char buf[32];
 	if(options->delivery_certificatethumbprint ||options->delivery_password ||
 		options->delivery_password) {
 		node = ws_xml_add_child(header, XML_NS_TRUST, WST_ISSUEDTOKENS, NULL);
@@ -763,7 +764,6 @@ wsman_set_subscribe_options(WsManClient * cl,
 	node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
 	temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
-	char buf[32];
 	if(temp) {
 		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, 
 			wsmc_create_delivery_mode_str(options->delivery_mode));

@@ -329,12 +329,12 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	   WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 
 	   flags); */
 
-
+	pwsz = convert_to_unicode(cl->data.path);
 	request =
-	    WinHttpOpenRequest(connect, L"POST", L"wsman", L"HTTP/1.1",
+	    WinHttpOpenRequest(connect, L"POST", pwsz, L"HTTP/1.1",
 			       WINHTTP_NO_REFERER,
 			       WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
-
+	u_free(pwsz);
 	if (request == NULL) {
 		dwStatusCode = 400;
 		goto DONE;
