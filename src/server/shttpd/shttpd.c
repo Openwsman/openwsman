@@ -1036,7 +1036,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 {
 	struct llhead	*lp, *tmp;
 	struct listener	*l;
-	struct conn	*c;
+	struct conn	*c = NULL;
 	struct timeval	tv;			/* Timeout for select() */
 	fd_set		read_set, write_set;
 	int		sock, max_fd = -1, msec = milliseconds;
@@ -1060,12 +1060,14 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		c = LL_ENTRY(lp, struct conn, link);
 
 		/* If there is a space in remote IO, check remote socket */
-		if (io_space_len(&c->rem.io) && !(c->rem.flags & 
-			FLAG_SSL_SHOULD_SELECT_ON_READ))
+		if (c->rem.flags & 	FLAG_SSL_SHOULD_SELECT_ON_READ)
 			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
-		if (io_space_len(&c->rem.io) && c->rem.flags & 
+		else if (io_space_len(&c->rem.io) && c->rem.flags & 
 			FLAG_SSL_SHOULD_SELECT_ON_WRITE)
 			add_to_set(c->rem.chan.fd, &write_set, &max_fd);
+		else if (io_space_len(&c->rem.io))
+			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
+		
 #if !defined(NO_CGI)
 		/*
 		 * If there is a space in local IO, and local endpoint is
@@ -1088,7 +1090,10 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		 * If there is some data read from local endpoint, check the
 		 * remote socket for write availability
 		 */
-		if (io_data_len(&c->loc.io))
+		if (io_data_len(&c->loc.io) && (c->rem.flags & 
+			FLAG_SSL_SHOULD_SELECT_ON_READ))
+			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
+		else if (io_data_len(&c->loc.io))
 			add_to_set(c->rem.chan.fd, &write_set, &max_fd);
 
 		if (io_space_len(&c->loc.io) && (c->loc.flags & FLAG_R) &&
@@ -1115,7 +1120,8 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		Sleep(milliseconds);
 #endif /* _WIN32 */
 		DBG(("select: %d", ERRNO));
-		return;
+		if(c->rem.chan.ssl.ssl && !SSL_pending(c->rem.chan.ssl.ssl))
+			return;
 	}
 
 	/* Check for incoming connections on listener sockets */
