@@ -11,7 +11,14 @@ class WsXmlDocTest < Test::Unit::TestCase
     doc = Rbwsman::WsXmlDoc.new
     assert doc
     assert doc.dump
-    puts doc.dump
+  end
+  def test_doc_accessors
+    doc = Rbwsman::WsXmlDoc.new
+    assert doc.root
+    assert doc.envelope
+    assert doc.header
+    assert doc.body
+    assert doc.element( "Body" )
   end
 end
 

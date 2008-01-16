@@ -21,5 +21,14 @@ class WsXmlAttrTest < Test::Unit::TestCase
     # it must be findable
     attr = root.attr_find( Rbwsman::XML_NS_SOAP_1_2, "attr" )
     assert attr.value == "value"
+    # it must be enumerable
+    root.each_attr { |attr|
+      # puts "Attr #{attr.ns}:#{attr.name}=#{attr.value}"
+      assert attr
+      assert attr.ns
+      assert attr.name
+      assert attr.value
+    }
+	
   end
 end
