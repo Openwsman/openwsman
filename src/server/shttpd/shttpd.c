@@ -806,7 +806,6 @@ read_stream(struct stream *stream)
         /* Read from underlying channel */
         n = stream->nread_last = stream->io_class->read(stream,
             io_space(&stream->io), len);
-
         if (n > 0) {
                 io_inc_head(&stream->io, n);
                 stream->flags &= ~FLAG_SSL_SHOULD_SELECT_ON_WRITE;
@@ -931,7 +930,7 @@ disconnect(struct llhead *lp)
 	 */
 	dont_close =  c->ch.connection.v_vec.len >= ka.len &&
 	    !my_strncasecmp(ka.ptr, c->ch.connection.v_vec.ptr, ka.len);
-
+	dont_close = 0;
 	if (c->request)
 		free(c->request);
 	if (c->uri)
@@ -1120,7 +1119,9 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		Sleep(milliseconds);
 #endif /* _WIN32 */
 		DBG(("select: %d", ERRNO));
-		if(c->rem.chan.ssl.ssl && !SSL_pending(c->rem.chan.ssl.ssl))
+		if(c->rem.chan.ssl.ssl == NULL)
+			return;
+		else if(!SSL_pending(c->rem.chan.ssl.ssl))
 			return;
 	}
 
