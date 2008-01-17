@@ -19,7 +19,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * $Id: shttpd.h,v 1.5 2007/07/27 11:15:53 drozd Exp $
+ * $Id: shttpd.h,v 1.6 2008/01/11 11:20:31 drozd Exp $
  */
 
 #ifndef SHTTPD_HEADER_INCLUDED
@@ -44,7 +44,6 @@ struct shttpd_arg {
 	void		*user_data;	/* User-defined data		*/
 	struct ubuf	in;		/* Input is here, POST data	*/
 	struct ubuf	out;		/* Output goes here		*/
-	char *uuid;
 	unsigned int	flags;
 #define	SHTTPD_END_OF_OUTPUT	1
 #define	SHTTPD_CONNECTION_ERROR	2
@@ -64,6 +63,8 @@ struct shttpd_arg {
  * 4. for POST requests, it must process the incoming data (in.buf) of length
  *	'in.len', and set 'in.num_bytes', which is how many bytes of POST
  *	data is read and can be discarded by SHTTPD.
+ * 5. If callback allocates arg->state, to keep state, it must deallocate it
+ *    at the end of coonection SHTTPD_CONNECTION_ERROR or SHTTPD_END_OF_OUTPUT
  */
 typedef void (*shttpd_callback_t)(struct shttpd_arg *);
 
@@ -87,9 +88,7 @@ typedef void (*shttpd_callback_t)(struct shttpd_arg *);
  *			"REMOTE_USER" and "REMOTE_ADDR".
  */
 
-
 typedef int (*basic_auth_callback)(char *user, char *passwd);
-
 struct shttpd_ctx;
 
 struct shttpd_ctx *shttpd_init(const char *config_file, ...);
@@ -97,26 +96,25 @@ struct shttpd_ctx *shttpd_init2(const char *config_file,
 		char *names[], char *values[], size_t num_options);
 void shttpd_fini(struct shttpd_ctx *);
 void shttpd_add_mime_type(struct shttpd_ctx *,
-		const char *ext, const char *mime);
+		const char *extension, const char *mime_type);
 int shttpd_listen(struct shttpd_ctx *ctx, int port, int is_ssl);
-void shttpd_register_uri(struct shttpd_ctx *ctx,
-		const char *uri, shttpd_callback_t callback, void *user_data);
+void shttpd_register_uri(struct shttpd_ctx *ctx, const char *uri,
+		shttpd_callback_t callback, void *const user_data);
 void shttpd_protect_uri(struct shttpd_ctx *ctx,
-		const char *uri, const char *file, basic_auth_callback cb,
-		int type);
+		const char *uri, const char *password_file,  basic_auth_callback cb, int type);
 void shttpd_poll(struct shttpd_ctx *, int milliseconds);
 const char *shttpd_version(void);
 int shttpd_get_var(const char *var, const char *buf, int buf_len,
 		char *value, int value_len);
-const char *shttpd_get_header(struct shttpd_arg *, const char *);
-const char *shttpd_get_env(struct shttpd_arg *, const char *);
+const char *shttpd_get_header(struct shttpd_arg *, const char *header_name);
+const char *shttpd_get_env(struct shttpd_arg *, const char *name);
 void shttpd_get_http_version(struct shttpd_arg *,
 		unsigned long *major, unsigned long *minor);
 size_t shttpd_printf(struct shttpd_arg *, const char *fmt, ...);
 void shttpd_handle_error(struct shttpd_ctx *ctx, int status,
-		shttpd_callback_t func, void *data);
+		shttpd_callback_t func, void *const data);
 void shttpd_register_ssi_func(struct shttpd_ctx *ctx, const char *name,
-		shttpd_callback_t func, void *user_data);
+		shttpd_callback_t func, void *const user_data);
 
 /*
  * The following three functions are for applications that need to
