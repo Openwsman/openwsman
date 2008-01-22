@@ -46,6 +46,9 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#include <openssl/opensslv.h>
+#include <openssl/ssl.h>
+
 #include "u/libu.h"
 #include "wsman-types.h"
 #include "wsman-client.h"
@@ -199,6 +202,30 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 	return len;
 }
 
+static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void *arg)
+{
+	unsigned char *thumbprint = (unsigned char *)arg;
+	X509 *cert = ctx->cert;
+	EVP_MD                                  *tempDigest;
+
+	unsigned char   tempFingerprint[EVP_MAX_MD_SIZE];
+	unsigned int      tempFingerprintLen;
+	tempDigest = (EVP_MD*)EVP_sha1( );
+	if ( X509_digest(cert, tempDigest, tempFingerprint, &tempFingerprintLen ) <= 0)
+		return 0;
+	if(!memcmp(tempFingerprint, thumbprint, tempFingerprintLen))
+		return 1;
+	return 0;
+}
+
+static CURLcode 
+sslctxfun(CURL *curl, void *sslctx, void *parm)
+{
+	CURLcode r = CURLE_OK;
+	SSL_CTX * ctx = (SSL_CTX *) sslctx ;
+	SSL_CTX_set_cert_verify_callback(ctx, ssl_certificate_thumbprint_verify_callback, parm);
+	return r;
+}
 
 static void *
 init_curl_transport(WsManClient *cl)
@@ -247,19 +274,32 @@ init_curl_transport(WsManClient *cl)
 	}
 
 	if (cl->authentication.capath) {
-	r = curl_easy_setopt(curl, CURLOPT_CAPATH, cl->authentication.capath);
-	if (r != 0) {
-		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAPATH, ..)");
-		goto DONE;
-	}
+		r = curl_easy_setopt(curl, CURLOPT_CAPATH, cl->authentication.capath);
+		if (r != 0) {
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAPATH, ..)");
+			goto DONE;
+		}
 	}
 	// cainfo
 	if (cl->authentication.cainfo) {
-	r = curl_easy_setopt(curl, CURLOPT_CAINFO, cl->authentication.cainfo);
-	if (r != 0) {
-		curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
-		goto DONE;
+		r = curl_easy_setopt(curl, CURLOPT_CAINFO, cl->authentication.cainfo);
+		if (r != 0) {
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CAINFO, ..)");
+			goto DONE;
+		}
 	}
+	// ceritificate thumbprint
+	else if (cl->authentication.certificatethumbprint) {
+		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
+		if(r != 0) {
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CTX_FUNCTION)");
+			goto DONE;
+		}
+		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, cl->authentication.certificatethumbprint);
+		if(r != 0) {
+			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA)");
+			goto DONE;
+		}
 	}
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
@@ -352,7 +392,7 @@ wsmc_handler( WsManClient *cl,
 
 	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent(cl));
 	headers = curl_slist_append(headers, usag);
-
+	
 #if 0
 	soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
 	if (soapaction) {

@@ -264,14 +264,66 @@ char *wsman_transport_get_cainfo(WsManClient *cl)
 	return cl->authentication.cainfo ? u_strdup( cl->authentication.cainfo ) : NULL;
 }
 
+static int hexadecimal2raw(const char *str, unsigned char *dest, int len) {
+        int i = 0;
+        unsigned char v1 =0 , v2 = 0;
+        while(*str != 0 && *(str+1) != 0 && i < len) {
+                if(*str <= '9' && *str >= '0')
+                        v1 = *str - '0';
+                else if(*str <= 'f' && *str >= 'a')
+                        v1 = *str - 'a' + 10;
+                else if(*str <= 'F' && *str >= 'A')
+                        v1 = *str - 'A' + 10;
+                v1 <<= 4;
+                str++;
+                if(*str <= '9' && *str >= '0')
+                        v2 = *str - '0';
+                else if(*str <= 'f' && *str >= 'a')
+                        v2 = *str - 'a' + 10;
+                else if(*str <= 'F' && *str >= 'A')
+                        v2 = *str - 'A' + 10;
+                str++;
+                dest[i] = v1 + v2;
+                i++;
+        }
+        return i;
+}
+
+static char * raw2hexadecimal(unsigned char *dest, int len)
+{
+        int i = 0;
+        char v;
+        char * str = calloc(1, len*2+1);
+        char * p = str;
+        if(str == NULL) return str;
+        while(i < len) {
+                v = (dest[i] & 0xf0) >> 4;
+                if(v <= 9)
+                        *str = '0' + v;
+                else
+                        *str = 'a' + v - 10;
+                str++;
+                v = dest[i] & 0x0f;
+                if(v <= 9)
+                        *str = '0' + v;
+                else
+                        *str = 'a' + v - 10;
+                str++;
+                i++;
+        }
+        return p;
+}
+
+
 void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg)
 {
-	cl->authentication.certificatethumbprint = arg ? u_strdup( arg ) : NULL;
+	hexadecimal2raw(arg, cl->authentication.certificatethumbprint, 20);
 }
 
 char *wsman_transport_get_certhumbprint(WsManClient *cl)
 {
-	return cl->authentication.certificatethumbprint ? u_strdup(cl->authentication.certificatethumbprint) : NULL;
+	
+	return raw2hexadecimal(cl->authentication.certificatethumbprint, 20);
 }
 
 void wsman_transport_set_capath(WsManClient *cl, const char *arg)

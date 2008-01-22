@@ -2028,14 +2028,17 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE) {
+		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE) {
+		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE) {
+		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
 	else if(subsInfo->deliveryAuthType == 
