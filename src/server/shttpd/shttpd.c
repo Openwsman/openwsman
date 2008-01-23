@@ -231,7 +231,7 @@ send_server_error(struct conn *c, int status, const char *reason)
 			    c->loc.io_class->close != NULL)
 				c->loc.io_class->close(&c->loc);
 			io_clear(&c->loc.io);
-			setup_embedded_stream(c, e->callback, NULL);
+			setup_embedded_stream(c, e->callback, e->callback_data);
 			return;
 		}
 	}
@@ -998,12 +998,12 @@ process_connection(struct conn *c, int remote_ready, int local_ready)
 	/* If the request is not parsed yet, do so */
 	if (!(c->rem.flags & FLAG_HEADERS_PARSED))
 		parse_http_request(c);
-
+#if 0
 	DBG(("loc: %u [%.*s]", io_data_len(&c->loc.io),
 	    io_data_len(&c->loc.io), io_data(&c->loc.io)));
 	DBG(("rem: %u [%.*s]", io_data_len(&c->rem.io),
 	    io_data_len(&c->rem.io), io_data(&c->rem.io)));
-
+#endif
 	/* Read from the local end if it is ready */
 	if (local_ready && io_space_len(&c->loc.io))
 		read_stream(&c->loc);
@@ -1061,12 +1061,12 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		/* If there is a space in remote IO, check remote socket */
 		if (c->rem.flags & 	FLAG_SSL_SHOULD_SELECT_ON_READ)
 			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
-		else if (io_space_len(&c->rem.io) && c->rem.flags & 
+		else if (io_space_len(&c->rem.io) && c->rem.flags &
 			FLAG_SSL_SHOULD_SELECT_ON_WRITE)
 			add_to_set(c->rem.chan.fd, &write_set, &max_fd);
 		else if (io_space_len(&c->rem.io))
 			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
-		
+
 #if !defined(NO_CGI)
 		/*
 		 * If there is a space in local IO, and local endpoint is
@@ -1089,7 +1089,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 		 * If there is some data read from local endpoint, check the
 		 * remote socket for write availability
 		 */
-		if (io_data_len(&c->loc.io) && (c->rem.flags & 
+		if (io_data_len(&c->loc.io) && (c->rem.flags &
 			FLAG_SSL_SHOULD_SELECT_ON_READ))
 			add_to_set(c->rem.chan.fd, &read_set, &max_fd);
 		else if (io_data_len(&c->loc.io))
