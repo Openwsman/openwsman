@@ -65,7 +65,7 @@ typedef struct {
   const char *password;
 } ServerData;
 
-typedef struct {						
+typedef struct {
   /* Explanation of what you should see */
   const char *explanation;
 
@@ -79,7 +79,7 @@ typedef struct {
   const char* expected_value;
 
   /* What the final status code should be. */
-  unsigned int final_status;		
+  unsigned int final_status;
 
   unsigned char       flags;
 
@@ -94,9 +94,9 @@ ServerData sd[] = {
 
 TestData tests[] = {
   {
-    "Enumeration with non existent Resource URI, Checking Fault Subcode", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
-    NULL, 
+    "Enumeration with non existent Resource URI, Checking Fault Subcode",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
+    NULL,
     "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
     "wsa:DestinationUnreachable",
     500,
@@ -104,31 +104,31 @@ TestData tests[] = {
     0
   },
   {
-    "Enumeration with non existent Resource URI, Checking FaultDetail", 
-    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx", 
-    NULL, 
+    "Enumeration with non existent Resource URI, Checking FaultDetail",
+    "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystemxx",
+    NULL,
     "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
     "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",
     500,
     FLAG_NONE,
     0
-  },	
+  },
   {
     "Enumeration with valid Resource URI and Items Count Estimation.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-    NULL, 
+    NULL,
     "/s:Envelope/s:Header/wsman:TotalItemsCountEstimate",
-    "2",
+    "1",
     200,
     FLAG_ENUMERATION_COUNT_ESTIMATION,
     0
-  },    
+  },
   {
     "Enumeration with valid Resource URI.",
     "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-    NULL, 
+    NULL,
     "/s:Envelope/s:Body/wsen:EnumerateResponse/wsen:EnumerationContext",
-    "any",	    		
+    "any",
     200,
     FLAG_NONE,
     0
@@ -136,15 +136,15 @@ TestData tests[] = {
      {
      "Enumeration with valid Resource URI and additional invalid selectors.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_NONE,
      1
-     },	
+     },
      {
      "Enumeration with valid Resource URI/Count Estimation.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_ENUMERATION_COUNT_ESTIMATION,
      0
@@ -152,15 +152,15 @@ TestData tests[] = {
      {
      "Enumeration with valid Resource URI/Optimization.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_ENUMERATION_OPTIMIZATION,
      0
-     },	
+     },
      {
      "Enumeration with Count Estimation/Optimzation and get all elements.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION,
      10
@@ -169,16 +169,16 @@ TestData tests[] = {
      {
      "Enumeration with Count Estimation/Optimzation/Epr and get all elements.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION | FLAG_ENUMERATION_ENUM_EPR,
      10
 
-     },	
+     },
      {
      "Enumeration with Count Estimation/Optimzation/ObjAndEpr and get all elements.",
      "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-     NULL, 
+     NULL,
      200,
      FLAG_ENUMERATION_OPTIMIZATION | FLAG_ENUMERATION_COUNT_ESTIMATION | FLAG_ENUMERATION_ENUM_OBJ_AND_EPR,
      10
@@ -194,7 +194,7 @@ int ntests = sizeof (tests) / sizeof (tests[0]);
 static void
 debug_message_handler (const char *str, debug_level_e level, void  *user_data)
 {
-  if (wsman_debug_level_debugged(level)) 
+  if (wsman_debug_level_debugged(level))
   {
     struct tm *tm;
     time_t now;
@@ -211,7 +211,7 @@ static void
 initialize_logging (void)
 {
   debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-} 
+}
 
 static void wsman_output(WsXmlDocH doc)
 {
@@ -234,11 +234,11 @@ int main(int argc, char** argv)
   initialize_logging();
 
   printf("Number of tests: %d\n", ntests);
-  for (i = 0; i < ntests; i++) 
+  for (i = 0; i < ntests; i++)
   {
-    printf ("Test %d: %70s:", i + 1, tests[i].explanation);	
-    
-    cl = wsmc_create( 
+    printf ("Test %d: %70s:", i + 1, tests[i].explanation);
+
+    cl = wsmc_create(
                         sd[0].server,
                         sd[0].port,
                         sd[0].path,
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
     options->flags = tests[i].flags;
     options->max_elements = tests[i].max_elements;
     if (tests[i].selectors != NULL)
-      wsmc_add_selectors_from_str (options, tests[i].selectors);	
+      wsmc_add_selectors_from_str (options, tests[i].selectors);
 
 
     WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)tests[i].resource_uri ,
@@ -264,25 +264,25 @@ int main(int argc, char** argv)
     enumContext = wsmc_get_enum_context(enum_response);
 
     wsman_output(enum_response);
-    if ((char *)tests[i].expected_value != NULL) 
-    {			  
+    if ((char *)tests[i].expected_value != NULL)
+    {
       char *xp = ws_xml_get_xpath_value(enum_response, (char *)tests[i].xpath_expression);
       if (xp)
       {
-        if (strcmp((char *)tests[i].expected_value, "any" ) == 0 
+        if (strcmp((char *)tests[i].expected_value, "any" ) == 0
             && strlen(xp) > 0 ) {
           printf(PASSED);
         }
         else if (strcmp(xp,(char *)tests[i].expected_value ) == 0)
           printf(PASSED);
         else
-          printf(FAILED);	
-        u_free(xp);		            
+          printf(FAILED);
+        u_free(xp);
       } else {
         printf(FAILED);
-      }            
-    }		
-    ws_xml_destroy_doc(enum_response);	
+      }
+    }
+    ws_xml_destroy_doc(enum_response);
     if (enumContext) {
       printf ("Test %d: %70s:", i + 1, "Check Release Response:");
       WsXmlDocH release_response = wsmc_action_release(cl,
@@ -299,15 +299,15 @@ int main(int argc, char** argv)
         if (strcmp(xp, ENUM_ACTION_RELEASE_REPS ) == 0)
           printf(PASSED);
         else
-          printf(FAILED);	
-        u_free(xp);		            
+          printf(FAILED);
+        u_free(xp);
       } else {
         printf(FAILED);
-      }    
-      ws_xml_destroy_doc(release_response);         
+      }
+      ws_xml_destroy_doc(release_response);
     }
-CONTINUE:	
-    wsmc_options_destroy(options);		
+CONTINUE:
+    wsmc_options_destroy(options);
     wsmc_release(cl);
 
   }

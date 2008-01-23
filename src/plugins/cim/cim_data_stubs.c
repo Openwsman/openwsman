@@ -67,16 +67,16 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	char *show_extensions;
 	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 	WsmanStatus status;
-	
+
 	wsman_status_init(&status);
 	r = wsman_get_resource_uri(cntx, NULL);
 	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
-		
+
 	debug("Connecting using sfcc %s frontend", get_cim_client_frontend());
-	
+
 	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
 			get_cim_port(), username, password , get_cim_client_frontend(), &status);
-	
+
 	if (!cimclient->cc)
 		return NULL;
 
@@ -111,7 +111,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	if (get_omit_schema_optional() == 1) {
 		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
 	}
-	
+
 	u_free(show_extensions);
 	return cimclient;
 }
@@ -318,7 +318,7 @@ CimResource_Custom_EP( SoapOpH op,
 	WsmanMessage *msg = NULL;
 	char *action;
 	WsContextH cntx;
-	
+
 	wsman_status_init(&status);
 	in_doc = soap_get_op_doc(op, 1);
 	cntx = ws_create_ep_context(soap_get_op_soap(op), in_doc);
@@ -334,7 +334,7 @@ CimResource_Custom_EP( SoapOpH op,
 			goto cleanup;
 		}
 	}
-	if (action && cimclient->resource_uri && 
+	if (action && cimclient->resource_uri &&
 			!strstr(action, cimclient->resource_uri)) {
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
 		status.fault_detail_code = OWSMAN_NO_DETAILS;
@@ -386,7 +386,7 @@ CimResource_Enumerate_EP( WsContextH cntx,
 	debug("CIM Enumeration");
 	WsXmlDocH doc;
 	int retval = 0;
-	
+
 	CimClientInfo *cimclient = NULL;
 
 	if ( enumInfo ) {
@@ -465,13 +465,13 @@ CimResource_Pull_EP( WsContextH cntx,
 		WsmanStatus *status,
 		void *opaqueData)
 {
-	
+
 	WsXmlDocH doc = NULL;
-	CimClientInfo *cimclient = NULL;	
+	CimClientInfo *cimclient = NULL;
 	WsXmlNodeH body, pullnode;
 	int max;
 	debug( "Pull Endpoint Called");
-	
+
 	if ( enumInfo) {
 		cimclient = cim_getclient_from_enum_context(enumInfo);
 		if (!cimclient) {
@@ -524,17 +524,17 @@ CimResource_Create_EP( SoapOpH op,
 		void* appData,
 		void *opaqueData )
 {
-	
+
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
-	
+
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	debug( "Create Endpoint Called");
 	wsman_status_init(&status);
-	
+
 	if (msg) {
 		cimclient = CimResource_Init(cntx,
 				msg->auth_data.username, msg->auth_data.password );
@@ -603,7 +603,7 @@ CimResource_Put_EP( SoapOpH op,
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 	WsXmlDocH indoc = soap_get_op_doc(op, 1);
-	
+
 	wsman_status_init(&status);
 	msg = wsman_get_msg_from_op(op);
 
