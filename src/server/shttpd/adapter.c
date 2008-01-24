@@ -8,9 +8,45 @@ void
 shttpd_get_credentials(struct shttpd_arg *arg,
                 char **user, char **pwd)
 {
-        struct conn *c = (struct conn *)arg->priv;
-        *user = c->username;
-        *pwd =  c->password;
+	char *p, *pp;
+	struct conn *c = (struct conn *)arg->priv;
+	struct vec 	*auth_vec = &c->ch.auth.v_vec;
+	if (auth_vec->len > 10 && !my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
+		char buf[4096];
+		int l;
+
+		p = (char *) auth_vec->ptr + 5;
+		while ((*p == ' ') || (*p == '\t')) {
+			p++;
+		}
+		pp = p;
+		while ((*p != ' ') && (*p != '\t') && (*p != '\r')
+				&& (*p != '\n') && (*p != 0)) {
+			p++;
+		}
+
+		if (pp == p) {
+			return ;
+		}
+		*p = 0;
+
+		l = ws_base64_decode(pp, p - pp, buf);
+		if (l <= 0) {
+			return ;
+		}
+
+		buf[l] = 0;
+		p = buf;
+		pp = p;
+		p = strchr(p, ':');
+		if (p == NULL) {
+			return ;
+		}
+		*p++ = 0;
+		
+		*user = u_strdup(pp);
+		*pwd = u_strdup(p);		
+	}
 }
 
 char *shttpd_reason_phrase(int code)

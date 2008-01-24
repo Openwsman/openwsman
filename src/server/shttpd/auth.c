@@ -339,10 +339,6 @@ check_authorization(struct conn *c, const char *path)
 		}
 		*p++ = 0;
 		authorized = cb(pp, p);
-		if (authorized) {
-			c->username = u_strdup(pp);
-			c->password = u_strdup(p);
-		}
 	} else {
 		return 0;
 	}

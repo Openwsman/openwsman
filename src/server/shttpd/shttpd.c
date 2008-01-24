@@ -14,7 +14,6 @@
  */
 
 #include "defs.h"
-#include "adapter.h"
 
 time_t		current_time;	/* Current UTC time		*/
 int		tz_offset;	/* Time zone offset from UTC	*/
@@ -151,7 +150,7 @@ stop_stream(struct stream *stream)
 /*
  * Setup listening socket on given port, return socket
  */
-int
+static int
 open_listening_port(int port)
 {
 	int		sock, on = 1;
@@ -956,8 +955,7 @@ disconnect(struct llhead *lp)
 		c->ctx->nactive--;
 		assert(c->ctx->nactive >= 0);
 		LeaveCriticalSection(&c->ctx->mutex);
-		free(c->username);
-		free(c->password);
+		
 		free(c);
 	}
 }

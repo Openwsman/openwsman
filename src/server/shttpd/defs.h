@@ -263,8 +263,6 @@ struct conn {
 	char		*request;	/* Request line			*/
 	char		*headers;	/* Request headers		*/
 	char		*query;		/* QUERY_STRING part of the URI	*/
-	char		*username; 	/* username from basic authentication */
-	char		*password; 	/* password from basic authentication */
 	char		*path_info;	/* PATH_INFO thing		*/
 	const char	*mime_type;	/* Mime type			*/
 
