@@ -741,25 +741,29 @@ wsman_set_subscribe_options(WsManClient * cl,
 		options->delivery_password) {
 		node = ws_xml_add_child(header, XML_NS_TRUST, WST_ISSUEDTOKENS, NULL);
 		ws_xml_add_node_attr(node, XML_NS_SOAP_1_2, SOAP_MUST_UNDERSTAND, "true");
-		node = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
-		if(options->delivery_certificatethumbprint)
-			ws_xml_add_child(node, XML_NS_TRUST, WST_TOKENTYPE,WST_CERTIFICATETHUMBPRINT );
-		if(options->delivery_password || options->delivery_password)
-			ws_xml_add_child(node, XML_NS_TRUST, WST_TOKENTYPE, WST_USERNAMETOKEN);
-		node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
-		if(options->delivery_certificatethumbprint) 
-			ws_xml_add_child(node2, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT, 
+		if(options->delivery_certificatethumbprint) {
+			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
+			ws_xml_add_child(node2, XML_NS_TRUST, WST_TOKENTYPE,WST_CERTIFICATETHUMBPRINT );
+			node3 = ws_xml_add_child(node2, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
+			ws_xml_add_child(node3, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT, 
 				options->delivery_certificatethumbprint);
+			node3 = ws_xml_add_child(node2, XML_NS_POLICY, WSP_APPLIESTO, NULL);
+			node3 = ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_EPR, NULL);
+			ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
+		}
 		if(options->delivery_username || options->delivery_password) {
-			node3 = ws_xml_add_child(node2, XML_NS_SE, WSSE_USERNAMETOKEN, NULL);
+			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
+			ws_xml_add_child(node2, XML_NS_TRUST, WST_TOKENTYPE,WST_USERNAMETOKEN);
+			node3 = ws_xml_add_child(node2, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
+			node3 = ws_xml_add_child(node3, XML_NS_SE, WSSE_USERNAMETOKEN, NULL);
 			if(options->delivery_username)
 				ws_xml_add_child(node3, XML_NS_SE, WSSE_USERNAME, options->delivery_username);
 			if(options->delivery_password)
 				ws_xml_add_child(node3, XML_NS_SE, WSSE_PASSWORD, options->delivery_password);
+			node3 = ws_xml_add_child(node2, XML_NS_POLICY, WSP_APPLIESTO, NULL);
+			node3 = ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_EPR, NULL);
+			ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		}
-		node2 = ws_xml_add_child(node, XML_NS_POLICY, WSP_APPLIESTO, NULL);
-		node2 = ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_EPR, NULL);
-		ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 	}
 	node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);

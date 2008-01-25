@@ -714,54 +714,61 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 		WsmanFaultCodeType *faultcode,
 		WsmanFaultDetailType *detailcode)
 {
-	WsXmlNodeH tnode = NULL, node = NULL, temp = NULL;
+	int i = 0;
+	WsXmlNodeH tnode = NULL, snode = NULL, node = NULL, temp = NULL;
 	char *value = NULL;
-	tnode = ws_xml_get_soap_header(doc);
-	tnode = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_ISSUEDTOKENS);
-	if(tnode == NULL) return 0;
-	tnode = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE);
-	if(tnode == NULL) return 0;
-	node = ws_xml_get_child(tnode, 0, XML_NS_POLICY, WSP_APPLIESTO);
-	if(node) {
-		node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_EPR);
+	snode = ws_xml_get_soap_header(doc);
+	snode = ws_xml_get_child(snode, 0, XML_NS_TRUST, WST_ISSUEDTOKENS);
+	if(snode == NULL) return 0;
+	tnode = ws_xml_get_child(snode, i, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE);
+	while(tnode)
+	{
+		i++;
+		node = ws_xml_get_child(tnode, 0, XML_NS_POLICY, WSP_APPLIESTO);
 		if(node) {
-			node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
-			if(node)
-				if(strcmp(ws_xml_get_node_text(node), subsInfo->epr_notifyto)) {
-					*faultcode = WSMAN_INVALID_PARAMETER;
-					*detailcode = WSMAN_DETAIL_INVALID_ADDRESS;
-					return -1;
-				}
-		}
-	}
-	node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_TOKENTYPE);
-	value = ws_xml_get_node_text(node);
-	if(strcasecmp(value, WST_USERNAMETOKEN) == 0) {
-		node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
-		if(node) {
-			node = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAMETOKEN);
+			node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_EPR);
 			if(node) {
-				temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAME);
-				if(temp)
-					subsInfo->username = u_strdup(ws_xml_get_node_text(temp));
-				temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_PASSWORD);
-				if(temp)
-					subsInfo->password = u_strdup(ws_xml_get_node_text(temp));
+				node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
+				if(node)
+					if(strcmp(ws_xml_get_node_text(node), subsInfo->epr_notifyto)) {
+						*faultcode = WSMAN_INVALID_PARAMETER;
+						*detailcode = WSMAN_DETAIL_INVALID_ADDRESS;
+						return -1;
+					}
 			}
 		}
-	}
-	else if(strcasecmp(value, WST_CERTIFICATETHUMBPRINT) == 0) {
-		node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
-		if(node) {
-			node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT);
-			if(node)
-				subsInfo->certificate_thumbprint = u_strdup(ws_xml_get_node_text(node));
+		node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_TOKENTYPE);
+		value = ws_xml_get_node_text(node);
+		if(strcmp(value, WST_USERNAMETOKEN) == 0) {
+			node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
+			if(node) {
+				node = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAMETOKEN);
+				if(node) {
+					temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAME);
+					if(temp)
+						subsInfo->username = u_strdup(ws_xml_get_node_text(temp));
+					temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_PASSWORD);
+					if(temp)
+						subsInfo->password = u_strdup(ws_xml_get_node_text(temp));
+				}
+			}
+			debug("subsInfo->username = %s, subsInfo->password = %s", subsInfo->username, \
+				subsInfo->password);
 		}
-	}
-	else {
-		*faultcode = WSMAN_INVALID_OPTIONS;
-		*detailcode = WST_DETAIL_UNSUPPORTED_TOKENTYPE;
-		return -1;
+		else if(strcmp(value, WST_CERTIFICATETHUMBPRINT) == 0) {
+			node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
+			if(node) {
+				node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT);
+				if(node)
+					subsInfo->certificate_thumbprint = u_strdup(ws_xml_get_node_text(node));
+			}
+		}
+		else {
+			*faultcode = WSMAN_INVALID_OPTIONS;
+			*detailcode = WST_DETAIL_UNSUPPORTED_TOKENTYPE;
+			return -1;
+		}
+		tnode = ws_xml_get_child(snode, i, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE);
 	}
 	return 0;
 }
