@@ -15,7 +15,7 @@ WSM_ASSOCIATION_FILTER_DIALECT  =  "http://schemas.dmtf.org/wbem/wsman/1/cimbind
 ALL_CLASS_URI =  "http://schemas.dmtf.org/wbem/wscim/1/*"
 
 namespaces =  { "s": NS_SOAP_12 ,"wsa": NS_WS_ADDRESSING , "wsen": NS_WS_ENUMERATION,
-		"wxf": NS_WS_TRANSFER,"wsman": NS_WS_MANAGEMENT , "wse": NS_WS_EVENTNG, 
+		"wxf": NS_WS_TRANSFER,"wsman": NS_WS_MANAGEMENT , "wse": NS_WS_EVENTNG,
 		"fabrikam": FABRIKAM}
 
 
@@ -72,12 +72,10 @@ class WsmanClient:
 		self.scheme = scheme
 		self.username = username
 		self.password = password
-		self.hdl = OpenWSMan.wsmc_create(hostname, port , path, scheme, username, password)
+		self.hdl = OpenWSMan.Client(hostname, port , path, scheme, username, password)
 
 	def create_from_uri(self, uri):
-		self.hdl = OpenWSMan.wsmc_create_from_uri(uri)
-	def release(self):
-		OpenWSMan.wsmc_release(self.hdl)
+		self.hdl = OpenWSMan.Client(uri)
 
 class WsmanException(Exception):
 	def __init__(self, value):
@@ -88,7 +86,7 @@ class WsmanException(Exception):
 class Wsman:
 	debug = 0
 	namespaces =  { "s": NS_SOAP_12 ,"wsa": NS_WS_ADDRESSING , "wsen": NS_WS_ENUMERATION,
-		"wxf": NS_WS_TRANSFER,"wsman": NS_WS_MANAGEMENT , "wse": NS_WS_EVENTNG, 
+		"wxf": NS_WS_TRANSFER,"wsman": NS_WS_MANAGEMENT , "wse": NS_WS_EVENTNG,
 		"fabrikam": FABRIKAM}
 	encoding = 'UTF-8';
 	def __init__(self, arg):
@@ -247,14 +245,14 @@ class Wsman:
 
 
 	def Identify(self):
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)
 		resp = OpenWSMan._identify(self.cl.hdl, op , self.encoding)
 		xmlresp = ElementTree.parse(StringIO(resp))
 		return xmlresp
 	def Subscribe(self, ruri, **param):
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			print "Request: > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >"
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)
@@ -266,40 +264,40 @@ class Wsman:
 			elif x == "notification_uri" and param[x]:
 				OpenWSMan.wsmc_set_delivery_uri(param[x], op)
 			elif x == "expiry_time" and param[x]:
-				OpenWSMan.wsmc_set_sub_expiry(param[x], op)	
+				OpenWSMan.wsmc_set_sub_expiry(param[x], op)
 			elif x == "heartbeat" and param[x]:
 				OpenWSMan.wsmc_set_heartbeat_interval(param[x], op)
 			elif x == "mode" and param[x]:
 				if param[x] == 'push':
 					OpenWSMan.wsmc_set_delivery_mode(OpenWSMan.WSMAN_DELIVERY_PUSH, op)
-				elif param[x] == 'pushwithack':								
+				elif param[x] == 'pushwithack':
 					OpenWSMan.wsmc_set_delivery_mode(OpenWSMan.WSMAN_DELIVERY_PUSHWITHACK, op)
 				elif param[x] == 'events':
 					OpenWSMan.wsmc_set_delivery_mode(OpenWSMan.WSMAN_DELIVERY_EVENTS, op)
 				elif param[x] == 'pull':
-					OpenWSMan.wsmc_set_delivery_mode(OpenWSMan.WSMAN_DELIVERY_PULL, op)	
+					OpenWSMan.wsmc_set_delivery_mode(OpenWSMan.WSMAN_DELIVERY_PULL, op)
 		resp = None;
-		try:											
+		try:
 			resp = OpenWSMan._subscribe(self.cl.hdl,  ruri, op,  self.encoding)
 			code = OpenWSMan.wsmc_get_response_code(self.cl.hdl)
 			if (code != 200): raise WsmanException(code)
 		except  WsmanException, e:
 			self.WsmanFault(resp, e)
-		else:			
+		else:
 			xmlresp = ElementTree.parse(StringIO(resp))
 			if self.debug:
-				print "< < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < <"			
+				print "< < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < <"
 				print ElementTree.tostring(xmlresp, pretty_print=True)
-		
-			identifier = xmlresp.xpath("/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier", self.namespaces )			
+
+			identifier = xmlresp.xpath("/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier", self.namespaces )
 			if identifier != None:
 				return identifier[0].text
 			else:
 				return None
-		
+
 
 	def Enumerate(self, ruri, **param):
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			print "Request: > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >"
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)
@@ -322,8 +320,8 @@ class Wsman:
 			resp = OpenWSMan._pull(self.cl.hdl,  ruri, op, context[0].text , self.encoding)
 			xmlresp = ElementTree.parse(StringIO(resp))
 			if self.debug:
-				print "< < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < <"				
-				print ElementTree.tostring(xmlresp, pretty_print=True)			
+				print "< < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < <"
+				print ElementTree.tostring(xmlresp, pretty_print=True)
 			items.append(self.GetItems(xmlresp))
 			context = self.GetPullContext(xmlresp)
 
@@ -331,7 +329,7 @@ class Wsman:
 
 	def Invoke(self, ruri, method, selectors, input):
 		resp = None
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			print "Request: > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >"
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)
@@ -354,7 +352,7 @@ class Wsman:
 
 	def Put(self, input , ResourceURI=None, Selectors={}):
 		resp = None
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			print "Request: > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >"
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)
@@ -383,7 +381,7 @@ class Wsman:
 		return items
 
 	def Get(self, ResourceURI=None, Selectors={}):
-		op = OpenWSMan.wsmc_options_init()
+		op = OpenWSMan.ClientOptions()
 		if self.debug == 1:
 			print "Request: > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >"
 			OpenWSMan.wsmc_set_action_option(op, OpenWSMan.FLAG_DUMP_REQUEST)

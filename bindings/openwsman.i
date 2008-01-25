@@ -333,6 +333,24 @@ void wsmc_add_selector(client_opt_t * options, const char *key, const char *valu
   WsXmlDocH identify( client_opt_t *options ) {
     return wsmc_action_identify( $self, options );
   }
+  WsXmlDocH enumerate( client_opt_t *options , char *resource_uri) {
+    return wsmc_action_enumerate( $self, resource_uri, options);
+  }
+  WsXmlDocH pull( client_opt_t *options , char *resource_uri, char *enum_ctx) {
+    return wsmc_action_pull( $self, resource_uri, options, enum_ctx);
+  }
+  WsXmlDocH release( client_opt_t *options , char *resource_uri, char *enum_ctx) {
+    return wsmc_action_release( $self, resource_uri, options, enum_ctx);
+  }
+  WsXmlDocH get( client_opt_t *options , char *resource_uri) {
+    return wsmc_action_get( $self, resource_uri, options);
+  }
+  WsXmlDocH delete( client_opt_t *options , char *resource_uri) {
+    return wsmc_action_delete( $self, resource_uri, options);
+  }
+  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, char *data, size_t size, char *encoding) {
+    return wsmc_action_invoke_fromtext( $self, resource_uri, options, method, data, size, encoding);
+  }
 }
 
 char *_identify(WsManClient * cl, client_opt_t * options, char *encoding);
