@@ -62,7 +62,13 @@ typedef struct {
 	XML_TYPE_STR type;
 } epr_t;
 
-
+typedef struct {
+	int type; 
+	union{
+		char *text;
+		epr_t *eprp;
+	}entry;
+}selector_entry;
 
 typedef int (*selector_callback ) (void *, const char*, const char*);
 

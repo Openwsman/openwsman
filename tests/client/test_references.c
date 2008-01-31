@@ -54,9 +54,9 @@ typedef struct {
 
 TestData test = {
 	"Test References.", 
-	"root/mock",
-	"http://mock.dell.com/wbem/wscim/1/cim-schema/2/Mock_ComputerSystem",
-	"Name=MComp2&CreationClassName=Mock_ComputerSystem",
+	"root/cimv2",
+	"http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_ComputerSystem",
+	"Name=vamt-build.sh.intel.com&CreationClassName=Linux_ComputerSystem",
 	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
 	NULL,    
 	500, 
@@ -85,8 +85,10 @@ int main(int argc, char** argv)
 	wsmc_transport_init(cl, NULL);
 
 	options = wsmc_options_init();
-	options->cim_ns = u_strdup(test.namespace);
+	if(test.namespace)
+		options->cim_ns = u_strdup(test.namespace);
 	wsmc_add_selectors_from_str (options, test.selectors);
+	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
 	ref_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options); 
 	wsman_output(ref_resp);
 

@@ -371,9 +371,12 @@ static void cim_add_args(CMPIArgs * argsin, hash_t * args)
 char *cim_get_namespace_selector(hash_t * keys)
 {
 	char *cim_namespace = NULL;
+	selector_entry *sentry = NULL;
 	hnode_t *hn = hash_lookup(keys, (char *) CIM_NAMESPACE_SELECTOR);
 	if (hn) {
-		cim_namespace = (char *) hnode_get(hn);
+		sentry = (selector_entry *) hnode_get(hn);
+		if(sentry->type == 1) return NULL;
+		cim_namespace = sentry->entry.text;
 		hash_delete(keys, hn);
 		hnode_destroy(hn);
 		debug("CIM Namespace: %s", cim_namespace);
@@ -381,17 +384,57 @@ char *cim_get_namespace_selector(hash_t * keys)
 	return cim_namespace;
 }
 
+static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
+		const char *value)
+{
+	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
+	debug("adding selector %s=%s", key, value );
+	CMAddKey(op, key, value, CMPI_chars);
+	return 0;
+}
+
+static CMPIObjectPath *
+cim_epr_to_objectpath(epr_t *epr) {
+	CMPIObjectPath * objectpath;
+	char *class = NULL;
+	if (epr && epr->refparams.uri) {
+		debug("uri: %s", epr->refparams.uri);
+		class = strrchr(epr->refparams.uri, '/') + 1;
+	}
+    // FIXME
+    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
+    wsman_epr_selector_cb(epr,
+                     cim_add_keys_from_filter_cb, objectpath);
+
+    debug( "ObjectPath: %s",
+                     CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
+
+    return objectpath;
+
+}
+
 static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 {
 	hscan_t hs;
 	hnode_t *hn;
+	selector_entry *sentry;
 	if (keys == NULL) {
 		return;
 	}
 	hash_scan_begin(&hs, keys);
 	while ((hn = hash_scan_next(&hs))) {
-		CMAddKey(objectpath, (char *) hnode_getkey(hn),
-			 (char *) hnode_get(hn), CMPI_chars);
+		sentry = (selector_entry *)hnode_get(hn);
+		debug("in cim_add_keys:: text: %s", sentry->entry.text);
+		if(sentry->type == 0)
+			CMAddKey(objectpath, (char *) hnode_getkey(hn),
+			 	sentry->entry.text, CMPI_chars);
+		else {
+			CMPIValue value;
+			value.ref = cim_epr_to_objectpath(sentry->entry.eprp);;
+			CMAddKey(objectpath, (char *) hnode_getkey(hn),
+			 	&value, CMPI_ref);
+		}
+			
 	}
 }
 
@@ -442,36 +485,6 @@ cim_verify_class_keys(CMPIConstClass * class,
 	return statusP->fault_code;
 }
 
-static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
-		const char *value)
-{
-	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
-	debug("adding selector %s=%s", key, value );
-	CMAddKey(op, key, value, CMPI_chars);
-	return 0;
-}
-
-static CMPIObjectPath *
-cim_epr_to_objectpath(epr_t *epr) {
-	CMPIObjectPath * objectpath;
-	char *class = NULL;
-	if (epr && epr->refparams.uri) {
-		debug("uri: %s", epr->refparams.uri);
-		class = strrchr(epr->refparams.uri, '/') + 1;
-	}
-    // FIXME
-    objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
-    wsman_epr_selector_cb(epr,
-                     cim_add_keys_from_filter_cb, objectpath);
-
-    debug( "ObjectPath: %s",
-                     CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
-
-    return objectpath;
-
-}
-
-
 static int
 cim_opcmp(CMPIObjectPath * op1, CMPIObjectPath * op2) {
 	CMPIStatus rc;
@@ -517,8 +530,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 	hscan_t hs;
 	hnode_t *hn;
 	int count, opcount;
-	epr_t *epr = NULL;
-	char *cv;
+	char *cv = NULL;
 
 	debug("verify selectors");
 
@@ -555,16 +567,24 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 			debug("unexpcted selectors");
 			break;
 		}
-
-		cv = value2Chars(data.type, &data.value);
-		epr =  (epr_t *)u_zalloc(sizeof (epr_t));
-
-		if (cv != NULL && strcmp(cv, (char *) hnode_get(hn)) == 0) {
-			statusP->fault_code = WSMAN_RC_OK;
-			statusP->fault_detail_code = WSMAN_DETAIL_OK;
-			u_free(cv);
-		} else if ( ( epr = (epr_t *) hnode_get(hn) ) && epr->address && epr->type == NULL) {
-			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(epr);
+		selector_entry *sentry = (selector_entry*)hnode_get(hn);
+		if(sentry->type == 0) {
+			cv = value2Chars(data.type, &data.value);
+			if(cv != NULL && strcmp(cv, sentry->entry.text) == 0) {
+				statusP->fault_code = WSMAN_RC_OK;
+				statusP->fault_detail_code = WSMAN_DETAIL_OK;
+				u_free(cv);
+			}
+			else {
+				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
+				statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+				debug("selector value: [ %s ] not matched", sentry->entry.text);
+				u_free(cv);
+				break;
+			}
+		}
+		else {
+			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(sentry->entry.eprp);
 			CMPIObjectPath *objectpath_epr2 = CMClone(data.value.ref, NULL);
 			if (cim_opcmp(objectpath_epr2, objectpath_epr) == 0) {
 				statusP->fault_code = WSMAN_RC_OK;
@@ -579,14 +599,6 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 				u_free(cv);
 				break;
 			}
-		} else {
-			statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
-			statusP->fault_detail_code =
-			    WSMAN_DETAIL_INVALID_RESOURCEURI;
-			debug("invalid resource_uri %s != %s", cv,
-			      (char *) hnode_get(hn));
-			u_free(cv);
-			break;
 		}
 	}
 cleanup:

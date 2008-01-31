@@ -54,9 +54,9 @@ typedef struct {
 
 TestData test = {
 	"Test Associators.", 
-	"root/mock",
-	"http://mock.dell.com/wbem/wscim/1/cim-schema/2/Mock_ComputerSystem",
-	"Name=MComp2&CreationClassName=Mock_ComputerSystem",
+	"root/cimv2",
+	"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
+	"Name=vamt-build.sh.intel.com&CreationClassName=Linux_ComputerSystem",
 	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
 	NULL,    
 	500, 
@@ -80,37 +80,43 @@ int main(int argc, char** argv)
 	client_opt_t *options;
 	char *enumContext = NULL;
 
-	wsmc_transport_init(NULL);
-
-	cl = wsman_create_client(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);		
+	cl = wsmc_create(sd[0].server, sd[0].port, sd[0].path, sd[0].scheme, sd[0].username, sd[0].password);
+	wsmc_transport_init(cl, NULL);
 
 	options = wsmc_options_init();
-	options->cim_ns = u_strdup(test.namespace);
+	if(test.namespace)
+		options->cim_ns = u_strdup(test.namespace);
 	options->flags |= FLAG_CIM_ASSOCIATORS;
-	wsman_add_selectors_from_query_string (options, test.selectors);
-	assoc_resp = wsenum_enumerate(cl, (char *)test.resource_uri, options); 
+	wsmc_add_selectors_from_str (options, test.selectors);
+	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
+	assoc_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options); 
+	
+	if(!assoc_resp) {
+		printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+		exit(0);
+	}
 	wsman_output(assoc_resp);
 
 
 	/* Pull for the response */
-	enumContext = wsenum_get_enum_context(assoc_resp);
+	enumContext = wsmc_get_enum_context(assoc_resp);
 	ws_xml_destroy_doc(assoc_resp);
 
 	while(enumContext != NULL) { 			
-		doc = wsenum_pull(cl, (char *)test.resource_uri, options, enumContext);
+		doc = wsmc_action_pull(cl, (char *)test.resource_uri, options, enumContext);
 		if (!doc) {
 			printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
 			wsmc_options_destroy(options);
-			wsman_release_client(cl);
+			wsmc_release(cl);
 			return -1;
 		}
 		wsman_output(doc);	
-		enumContext = wsenum_get_enum_context(doc);
+		enumContext = wsmc_get_enum_context(doc);
 	}
 	if (doc)
 		ws_xml_destroy_doc(doc);
 	wsmc_options_destroy(options);
-	wsman_release_client(cl);
+	wsmc_release(cl);
 	return 0;
 }
 

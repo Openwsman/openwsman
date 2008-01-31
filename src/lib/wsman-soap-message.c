@@ -80,6 +80,8 @@ wsman_soap_message_destroy(WsmanMessage* wsman_msg)
     u_buf_free(wsman_msg->response);
     u_buf_free(wsman_msg->request);
     u_free(wsman_msg->charset);
+    u_free(wsman_msg->auth_data.password);
+    u_free(wsman_msg->auth_data.username);
     if (wsman_msg->status.fault_msg) {
         u_free(wsman_msg->status.fault_msg);
     }

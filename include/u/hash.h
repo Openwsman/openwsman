@@ -187,6 +187,7 @@ typedef struct hscan_t {
 } hscan_t;
 
 extern hash_t *hash_create(hashcount_t, hash_comp_t, hash_fun_t);
+extern hash_t *hash_create2(hashcount_t, hash_comp_t, hash_fun_t);
 extern void hash_set_allocator(hash_t *, hnode_alloc_t, hnode_free_t, void *);
 extern void hash_destroy(hash_t *);
 extern void hash_free_nodes(hash_t *);

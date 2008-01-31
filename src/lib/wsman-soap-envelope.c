@@ -1029,9 +1029,9 @@ hash_t *
 wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node, epr;
-	epr_t *eprp = NULL;
+	selector_entry *sentry;
 	int index = 0;
-	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	hash_t *h = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 
 	node = ws_xml_get_child(epr_node, 0, XML_NS_WS_MAN,
 			WSM_SELECTOR_SET);
@@ -1052,18 +1052,22 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 
 		if (attrVal) {
 			if (!hash_lookup(h, attrVal)) {
+				sentry = u_malloc(sizeof(*sentry));
 				epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
 						WSA_EPR);
 				if (epr) {
 					debug("epr: %s", attrVal);
-					eprp = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
-					if (!hash_alloc_insert(h, attrVal, eprp)) {
+					sentry->type = 1;
+					sentry->entry.eprp = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
+					if (!hash_alloc_insert(h, attrVal, sentry)) {
 						error("hash_alloc_insert failed");
 					}
 				} else {
 					debug("text: %s", attrVal);
+					sentry->type = 0;
+					sentry->entry.text = ws_xml_get_node_text(selector);
 					if (!hash_alloc_insert(h, attrVal,
-							ws_xml_get_node_text(selector))) {
+							sentry)) {
 						error("hash_alloc_insert failed");
 					}
 				}

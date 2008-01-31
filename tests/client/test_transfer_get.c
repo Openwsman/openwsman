@@ -93,7 +93,7 @@ TestData tests[] = {
         NULL,
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
         "wsman:InvalidSelectors",	    
-        500, 
+        400, 
         0
     },
     {
@@ -102,7 +102,7 @@ TestData tests[] = {
         NULL,
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
         "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",	    
-        500, 
+        400, 
         0
     },
     {
@@ -111,7 +111,7 @@ TestData tests[] = {
         NULL, 
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
         "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InvalidResourceURI",	    
-        500, 
+        400, 
         0
     },    
     {
@@ -120,7 +120,7 @@ TestData tests[] = {
         NULL, 
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
         "wsa:DestinationUnreachable",  
-        500, 
+        400, 
         0
     },	
     {
@@ -129,7 +129,7 @@ TestData tests[] = {
         "Name=%s",
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
         "wsman:InvalidSelectors",
-        500,
+        400,
         0
     },
     {
@@ -138,7 +138,7 @@ TestData tests[] = {
         "Name=%s",
         "/s:Envelope/s:Body/s:Fault/s:Detail/wsman:FaultDetail",
         "http://schemas.dmtf.org/wbem/wsman/1/wsman/faultDetail/InsufficientSelectors",
-        500,
+        400,
         0
     },
     // The commented tests don't create request with duplicated selectors
@@ -177,13 +177,13 @@ TestData tests[] = {
         "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%sx",
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
         "wsa:DestinationUnreachable",		
-        500,
+        400,
         0
     },
        {
        "Transfer Get with correct selectors, Checking response code.", 
        "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", 
-       "CreationClassName=OpenWBEM_UnitaryComputerSystem&Name=%s",
+       "CreationClassName=Linux_ComputerSystem&Name=%s",
        "/s:Envelope/s:Body/p:CIM_ComputerSystem/p:Name",
 //      "%s",
        NULL,
@@ -194,7 +194,7 @@ TestData tests[] = {
 
 int ntests = sizeof (tests) / sizeof (tests[0]);
 
-#if 0
+#if 1
 static void wsman_output(WsXmlDocH doc)
 {
     ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
@@ -206,6 +206,7 @@ static void wsman_output(WsXmlDocH doc)
 int main(int argc, char** argv)
 {
     int i;
+    int choice = 0;
     WsManClient *cl;
     WsXmlDocH doc;
     client_opt_t *options = NULL;
@@ -214,9 +215,13 @@ int main(int argc, char** argv)
         host = getenv("OPENWSMAN_TEST_HOST");
     }
 
+    if(argc > 1) 
+	choice = atoi(argv[1]);
 
     for (i = 0; i < ntests; i++) 
     {
+	if(choice && i != choice -1)
+		continue;
         if (tests[i].selectors) {
             tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
         }
@@ -238,12 +243,18 @@ int main(int argc, char** argv)
         if (tests[i].selectors != NULL)
             wsmc_add_selectors_from_str (options, tests[i].selectors);
 
+	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
 
         doc = wsmc_action_get(cl, (char *)tests[i].resource_uri, options);
-        if (!doc) {
+	
+        
+	if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
+	
+	wsman_output(doc);	
+
         if (tests[i].final_status != wsmc_get_response_code(cl)) {
             printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n",
                                     wsmc_get_response_code(cl));
