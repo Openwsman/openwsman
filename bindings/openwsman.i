@@ -268,6 +268,14 @@ typedef struct {
   void set_dialect( const char *dialect ) {
     wsmc_set_dialect( dialect, $self );
   }
+
+  void set_dump_request(void) {
+    wsmc_set_action_option($self, FLAG_DUMP_REQUEST );
+  }
+
+  void add_selector(char *key, char*value) {
+    wsmc_add_selector($self, key, value);
+  }
 }
 
 void _set_assoc_filter(client_opt_t *options);

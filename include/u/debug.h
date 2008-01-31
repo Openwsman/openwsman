@@ -113,7 +113,7 @@ static __inline void message(char* format, ...) {
 
 #else // WIN32
 
-#ifdef DEBUG_VERBOSE
+#ifdef WSMAN_DEBUG_VERBOSE
 
 #define debug(format...) \
         debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
@@ -122,7 +122,7 @@ static __inline void message(char* format, ...) {
 #define message(format...) \
         debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
 
-#else // DEBUG_VERBOSE
+#else // WSMAN_DEBUG_VERBOSE
 
 #define warnings(format...) \
         debug_full(DEBUG_LEVEL_WARNING, format)
@@ -136,7 +136,7 @@ static __inline void message(char* format, ...) {
 #define message(format...) \
         debug_full(DEBUG_LEVEL_MESSAGE, format)
 
-#endif // DEBUG_VERBOSE
+#endif // WSMAN_DEBUG_VERBOSE
 
 #endif // WIN32
 

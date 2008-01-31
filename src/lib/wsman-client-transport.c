@@ -64,13 +64,13 @@ static char *auth_methods[] = {
 extern void wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc,
 				 void *user_data);
 
-#ifdef DEBUG_VERBOSE
+#ifdef BENCHMARK
 static long long transfer_time = 0;
 #endif
 
 int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 {
-#ifdef DEBUG_VERBOSE
+#ifdef BENCHMARK
 	struct timeval tv0, tv1;
 	long long t0, t1;
 #endif
@@ -81,13 +81,13 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	}
 	wsmc_reinit_conn(cl);
 
-#ifdef DEBUG_VERBOSE
+#ifdef BENCHMARK
 	gettimeofday(&tv0, NULL);
 #endif
 
 	wsmc_handler(cl, request, NULL);
 
-#ifdef DEBUG_VERBOSE
+#ifdef BENCHMARK
 	gettimeofday(&tv1, NULL);
 	t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
 	t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
@@ -97,7 +97,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	return 0;
 }
 
-#ifdef DEBUG_VERBOSE
+#ifdef BENCHMARK
 long long get_transfer_time()
 {
 	long long l = transfer_time;
@@ -323,7 +323,7 @@ void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg)
 
 char *wsman_transport_get_certhumbprint(WsManClient *cl)
 {
-	
+
 	return raw2hexadecimal(cl->authentication.certificatethumbprint, 20);
 }
 
