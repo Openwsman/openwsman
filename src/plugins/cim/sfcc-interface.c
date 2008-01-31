@@ -379,6 +379,7 @@ char *cim_get_namespace_selector(hash_t * keys)
 		cim_namespace = sentry->entry.text;
 		hash_delete(keys, hn);
 		hnode_destroy(hn);
+		u_free(sentry);
 		debug("CIM Namespace: %s", cim_namespace);
 	}
 	return cim_namespace;
