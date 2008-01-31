@@ -126,7 +126,7 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 		a = s->attrs;
 		while (a) {
 			if (strcmp(a->name, WSM_NAME) == 0 ) {
-				cb(cb_data, a->name, s->value );
+				cb(cb_data, a->value, s->value );
 				break;
 			}
 			a = a->next;

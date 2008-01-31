@@ -390,7 +390,10 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 {
 	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
 	debug("adding selector %s=%s", key, value );
-	CMAddKey(op, key, value, CMPI_chars);
+	if(strcmp(key, CIM_NAMESPACE_SELECTOR) == 0) //it is __cimnamespace
+		CMSetNameSpace(op, value);
+	else
+		CMAddKey(op, key, value, CMPI_chars);
 	return 0;
 }
 
@@ -844,7 +847,7 @@ cim_enum_instances(CimClientInfo * client,
 		epr_t *epr;
 		if (filter) {
 			epr = (epr_t *)filter->epr;
-			class = u_strdup(strrchr(epr->refparams.uri, '/') + 1);
+			class = strrchr(epr->refparams.uri, '/') + 1;
 			objectpath = newCMPIObjectPath(client->cim_namespace,
 					class, NULL);
 			wsman_epr_selector_cb(filter->epr,
