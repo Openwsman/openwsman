@@ -1,3 +1,26 @@
+2.0.0b1
+
+ * Use latest shttpd code base
+ * Fixed SSL related issues with shttpd.
+ * Ruby bindings using swish now and part of openwsman
+ * Python bindings update
+ * serialize/de-serialize APIs updated. 
+   Make serialize/de-serialize APIs independent of server related structure; 
+   New APIs of 
+	do_serialize_real32, 
+	do_serialize_real64, 
+	do_serialize_int8 , 
+	do_serialize_int16, 
+	do_serialize_int32 and 
+	do_serialize_int64 added.
+ * secure eventing delivery support in WS-Eventing server code and related
+   options added in client code. 
+ * WS-Eventing client interfaces updated to make it more general.
+ * Source indication namespace configuration supported so that the 
+   namespace of subscription related classes can be different from that of indication class.
+ * Anonymous identify and custom identify file supported. 
+ * Many other bug fixings. 
+
 1.5.1
 
     * Fixed compilation client library on windows
