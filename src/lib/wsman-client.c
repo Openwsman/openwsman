@@ -671,7 +671,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 			client_opt_t *options)
 {
 	WsXmlNodeH filter = NULL;
-	WsXmlNodeH      node = ws_xml_get_child(body, 0, NULL, NULL);
+	WsXmlNodeH node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
@@ -721,7 +721,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 
 	// References and Associations
 	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
-			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
+			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS) && filter != NULL) {
 		wsman_build_assocRef_body(cl, filter, resource_uri, options, 0);
 	}
 }
@@ -745,7 +745,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
 			ws_xml_add_child(node2, XML_NS_TRUST, WST_TOKENTYPE,WST_CERTIFICATETHUMBPRINT );
 			node3 = ws_xml_add_child(node2, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
-			ws_xml_add_child(node3, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT, 
+			ws_xml_add_child(node3, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT,
 				options->delivery_certificatethumbprint);
 			node3 = ws_xml_add_child(node2, XML_NS_POLICY, WSP_APPLIESTO, NULL);
 			node3 = ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_EPR, NULL);
@@ -769,7 +769,7 @@ wsman_set_subscribe_options(WsManClient * cl,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
 	temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
 	if(temp) {
-		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, 
+		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE,
 			wsmc_create_delivery_mode_str(options->delivery_mode));
 		if(options->delivery_uri) {
 			node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
