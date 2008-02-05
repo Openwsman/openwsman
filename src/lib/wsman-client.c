@@ -441,10 +441,9 @@ void wsmc_create_epr(WsSerializerContextH serctx, WsXmlNodeH epr_node,
 
 
 static void
-wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
+wsman_build_assoc_ref_body(WsManClient *cl, WsXmlNodeH node,
 		const char *resource_uri,
-		client_opt_t *options,
-		int assocRef)
+		client_opt_t *options)
 {
 	WsXmlNodeH  object, assInst;
 
@@ -460,23 +459,19 @@ wsman_build_assocRef_body(WsManClient *cl, WsXmlNodeH node,
 	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
 
 	wsmc_create_epr(cl->serctx, object, resource_uri, options );
+
 	/* Add AssociationClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-			WSMB_ASSOCIATION_CLASS_NAME, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME, options->wsmb_cls_name);
 	/* Add ResultClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-			WSMB_RESULT_CLASS_NAME, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME, options->wsmb_result_cls_name);
 	/* Add Role */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-			WSMB_ROLE, NULL);
+	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_ROLE, options->wsmb_role);
 	if((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS) {
 		/* Add Role */
-		node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-				WSMB_RESULT_ROLE, NULL);
+		node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE, options->wsmb_result_role);
 	}
 	/* Add IncludeResultProperty */
-	ws_xml_add_child(assInst, XML_NS_CIM_BINDING,
-		       	WSMB_INCLUDE_RESULT_PROPERTY, NULL);
+	ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY, options->wsmb_result_prop);
 
 }
 
@@ -726,7 +721,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
 			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
 		if (filter != NULL)
-			wsman_build_assocRef_body(cl, filter, resource_uri, options, 0);
+			wsman_build_assoc_ref_body(cl, filter, resource_uri, options);
 	}
 }
 

@@ -174,10 +174,15 @@ typedef enum {
 		char * delivery_uri;
 		char * reference;
 		WsmanDeliveryMode delivery_mode; //eventing delivery mode
-		WsManDeliverySecurityMode delivery_sec_mode; //security mode of eventing delivery 
+		WsManDeliverySecurityMode delivery_sec_mode; //security mode of eventing delivery
 		char *delivery_username; // username for delivery, if it is necessary
 		char *delivery_password; // password for delivery, if it is necessary
 		char *delivery_certificatethumbprint; // certificate thumbprint of event sink, if it is necessary
+		char *wsmb_result_role;
+		char *wsmb_role;
+		char *wsmb_result_cls_name;
+		char *wsmb_cls_name;
+		char *wsmb_result_prop;
 		float heartbeat_interval;
 		float expires;
 		hash_t *selectors;
@@ -185,7 +190,6 @@ typedef enum {
 		unsigned int timeout;
 		unsigned int max_envelope_size;
 		unsigned int max_elements;
-
 	} client_opt_t;
 
 
