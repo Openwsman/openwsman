@@ -495,7 +495,10 @@ wsmc_set_filter(const char *filter, client_opt_t * options)
 void
 wsmc_set_dialect(const char *dialect, client_opt_t * options)
 {
-	options->dialect = u_strdup(dialect);
+	if (dialect != NULL)
+		options->dialect = u_strdup(dialect);
+	else
+		options->dialect = NULL;
 }
 
 void
@@ -701,28 +704,29 @@ wsman_set_enumeration_options(WsManClient * cl,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
 	if (options->filter) {
-		if(strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0)
+		if(options->dialect && strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0)
 			options->flags |= FLAG_CIM_ASSOCIATORS;
-		else if(strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
+		else if(options->dialect && strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
 			options->flags |= FLAG_CIM_REFERENCES;
 		if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
 			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
-			filter = ws_xml_add_child(node,
-				XML_NS_WS_MAN, WSENUM_FILTER, NULL);
+			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, NULL);
 		} else {
-			filter = ws_xml_add_child(node,
-				XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
+			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
 		}
 		if (options->dialect)
 			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
-		else
+		else {
+			options->dialect = NULL;
 			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, WSM_XPATH_FILTER_DIALECT );
+		}
 	}
 
 	// References and Associations
 	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
-			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS) && filter != NULL) {
-		wsman_build_assocRef_body(cl, filter, resource_uri, options, 0);
+			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
+		if (filter != NULL)
+			wsman_build_assocRef_body(cl, filter, resource_uri, options, 0);
 	}
 }
 

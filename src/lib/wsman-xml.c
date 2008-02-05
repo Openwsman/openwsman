@@ -980,8 +980,6 @@ ws_xml_add_child(WsXmlNodeH node,
 {
 	WsXmlNodeH newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri,
 			localName, val);
-
-	debug("adding node: %s", localName );
 	return newNode;
 }
 
