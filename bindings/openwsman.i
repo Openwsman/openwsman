@@ -269,6 +269,10 @@ typedef struct {
     wsmc_set_dialect( dialect, $self );
   }
 
+  void set_assoc_filter(void) {
+   wsmc_set_action_option($self, FLAG_CIM_ASSOCIATORS);
+  }
+
   void set_dump_request(void) {
     wsmc_set_action_option($self, FLAG_DUMP_REQUEST );
   }
@@ -278,7 +282,6 @@ typedef struct {
   }
 }
 
-void _set_assoc_filter(client_opt_t *options);
 void wsmc_set_action_option(client_opt_t * options, unsigned int);
 
 /*-----------------------------------------------------------------*/

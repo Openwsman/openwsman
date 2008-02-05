@@ -286,18 +286,15 @@ property2xml(CimClientInfo * client, CMPIData data,
 
 	char *valuestr = NULL;
 
-	/* debug ("%s %d=%d %d=%d", name , data.type, CMPI_null,  data.state,CMPI_nullValue); */
 	if (CMIsArray(data)) {
 		WsXmlNodeH nilnode;
 		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
 				&& data.state == CMPI_nullValue) {
 			return;
 		} else if (data.type == CMPI_null && data.state == CMPI_nullValue) {
-			nilnode = ws_xml_add_child(node, resource_uri, name,
-					     NULL);
-			ws_xml_add_node_attr(nilnode,
-					     XML_NS_SCHEMA_INSTANCE, "nil",
-					     "true");
+			debug("x");
+			nilnode = ws_xml_add_child_sort(node, resource_uri, name, NULL);
+			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 			return;
 		}
 		CMPIArray *arr = data.value.array;
@@ -306,11 +303,10 @@ property2xml(CimClientInfo * client, CMPIData data,
 		if (arr != NULL) {
 			n = CMGetArrayCount(arr, NULL);
 			for (j = 0; j < n; ++j) {
-				CMPIData ele =
-				    CMGetArrayElementAt(arr, j, NULL);
+				CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
 				valuestr = value2Chars(eletyp, &ele.value);
-				ws_xml_add_child(node, resource_uri, name,
-						 valuestr);
+				debug("x");
+				ws_xml_add_child_sort(node, resource_uri, name, valuestr);
 				free(valuestr);
 			}
 		}
@@ -323,33 +319,25 @@ property2xml(CimClientInfo * client, CMPIData data,
 			WsXmlNodeH propnode;
 
 			if (data.type == CMPI_ref) {
-				refpoint =
-				    ws_xml_add_child(node, resource_uri,
-						     name, NULL);
-				path2xml(client, refpoint, resource_uri,
-					 &data.value);
+				debug("x");
+				refpoint = ws_xml_add_child_sort(node, resource_uri, name, NULL);
+				path2xml(client, refpoint, resource_uri, &data.value);
 			} else {
-				valuestr =
-				    value2Chars(data.type, &data.value);
-				propnode =
-				    ws_xml_add_child(node, resource_uri,
-						     name, valuestr);
+				valuestr = value2Chars(data.type, &data.value);
+				propnode = ws_xml_add_child_sort(node, resource_uri, name, valuestr);
 				if (is_key == 0 &&
 					(client->flags & WSMAN_ENUMINFO_EXT )) {
-					ws_xml_add_node_attr(propnode,
-							XML_NS_CIM_SCHEMA, "Key",
+					ws_xml_add_node_attr(propnode, XML_NS_CIM_SCHEMA, "Key",
 							"true");
 				}
 				if (valuestr)
 					u_free(valuestr);
 			}
 		} else {
-			WsXmlNodeH nilnode =
-			    ws_xml_add_child(node, resource_uri, name,
+			debug("x");
+			WsXmlNodeH nilnode = ws_xml_add_child_sort(node, resource_uri, name,
 					     NULL);
-			ws_xml_add_node_attr(nilnode,
-					     XML_NS_SCHEMA_INSTANCE, "nil",
-					     "true");
+			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 		}
 	}
 }
@@ -438,7 +426,7 @@ static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 			CMAddKey(objectpath, (char *) hnode_getkey(hn),
 			 	&value, CMPI_ref);
 		}
-			
+
 	}
 }
 
@@ -664,10 +652,8 @@ instance2xml(CimClientInfo * client,
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
-		//debug("numproperties: %d", numproperties );
 	} else {
 		numproperties = instance->ft->getPropertyCount(instance, NULL);
-		//debug("numproperties: %d", numproperties );
 	}
 
 
@@ -683,9 +669,7 @@ instance2xml(CimClientInfo * client,
 				&& enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 						  NULL);
-			data = instance->ft->getProperty(instance,
-						      (char *)
-						      propertyname->hdl,
+			data = instance->ft->getProperty(instance, (char *) propertyname->hdl,
 						      NULL);
 		} else {
 			data = instance->ft->getPropertyAt(instance, i,

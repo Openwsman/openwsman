@@ -98,7 +98,3 @@ char *_unsubscribe(WsManClient *cl, const char *resource_uri, client_opt_t *opti
         return buf;
 }
 
-void _set_assoc_filter(client_opt_t *options) {
-	wsmc_set_action_option(options, FLAG_CIM_ASSOCIATORS);
-	return;
-}

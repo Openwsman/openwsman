@@ -441,8 +441,7 @@ ws_xml_enum_children(WsXmlNodeH parent,
 	WsXmlNodeH child;
 
 	for (i = 0;
-	     (child = ws_xml_get_child(parent, i, NULL, NULL)) != NULL;
-	     i++) {
+	     (child = ws_xml_get_child(parent, i, NULL, NULL)) != NULL; i++) {
 		if ((retVal =
 		     ws_xml_enum_tree(child, callback, data,
 				      bRecursive))) {
@@ -480,9 +479,7 @@ int ws_xml_enum_tree(WsXmlNodeH top, WsXmlEnumCallback callback,
 	int retVal = 0;
 	if (top) {
 		if (!(retVal = callback(top, data)) && bRecursive) {
-			retVal =
-			    ws_xml_enum_children(top, callback, data,
-						 bRecursive);
+			retVal = ws_xml_enum_children(top, callback, data, bRecursive);
 		}
 	}
 	return retVal;
@@ -762,8 +759,7 @@ ws_xml_get_child(WsXmlNodeH parent,
 			int count = 0;
 			node = xml_parser_get_first_child(parent);
 			while (node != NULL) {
-				if (ws_xml_is_node_qname
-				    (node, nsUri, localName)) {
+				if (ws_xml_is_node_qname (node, nsUri, localName)) {
 					if (count == index)
 						break;
 					count++;
@@ -970,9 +966,6 @@ WsXmlNsH ws_xml_get_ns(WsXmlNodeH node, int index)
 	return NULL;
 }
 
-
-
-
 /**
  * Add child to an XML node
  * @param node XML node
@@ -985,10 +978,39 @@ WsXmlNodeH
 ws_xml_add_child(WsXmlNodeH node,
 		 const char *nsUri, const char *localName, const char *val)
 {
-	WsXmlNodeH newNode =
-	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName,
-				val);
+	WsXmlNodeH newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri,
+			localName, val);
 
+	debug("adding node: %s", localName );
+	return newNode;
+}
+
+WsXmlNodeH
+ws_xml_add_child_sort(WsXmlNodeH node,
+		 const char *nsUri, const char *localName, const char *val)
+{
+	int i;
+	WsXmlNodeH child, newNode = NULL;
+	int count = ws_xml_get_child_count(node) ;
+	if ( count == 0 ) {
+		newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
+		debug("adding first: %s", localName);
+	} else {
+		for (i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++) {
+				char *name = ws_xml_get_node_local_name(child);
+				debug("Current Node(%d): %s,   New node: %s", i, name , localName);
+				if (strcmp(localName, name) < 0 ) {
+					debug("adding %s before: %s", localName, name);
+					newNode = xml_parser_node_add(child, XML_ELEMENT_PREV, nsUri, localName, val);
+					debug("Current Count: %d", ws_xml_get_child_count(node) );
+					break;
+				}
+		}
+		if (newNode == NULL) {
+			debug("adding last");
+			newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
+		}
+	}
 	return newNode;
 }
 
@@ -1118,7 +1140,6 @@ ws_xml_add_qname_child(WsXmlNodeH parent,
 int ws_xml_get_node_attr_count(WsXmlNodeH node)
 {
 	int count = 0;
-
 	if (node)
 		count = xml_parser_get_count(node, XML_COUNT_ATTR, 0);
 

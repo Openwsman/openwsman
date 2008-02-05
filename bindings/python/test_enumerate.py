@@ -28,7 +28,5 @@ class TestSequenceFunctions(unittest.TestCase):
 		pullresp = root.find(XML_NS_ENUMERATION, "PullResponse" )
 		assert pullresp is not None
 
-
-
 if __name__ == '__main__':
     unittest.main()

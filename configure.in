@@ -1,4 +1,4 @@
-dnl *******************************************
+ *******************************************
 dnl *** Initialize automake and set version ***
 dnl *******************************************
 
@@ -39,11 +39,9 @@ dnl ***************************
 # Declare --enable-* args and collect ac_help strings
 AC_ARG_ENABLE(debug, --enable-debug turn on debugging)
 
-
 # Set the debug flags
 if test "x$enable_debug" = "xyes"; then
-	echo "debug enabled"
-    test "$cflags_set" = set || CFLAGS="$CFLAGS "
+    test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
 fi
 
 # Set the debug flags
