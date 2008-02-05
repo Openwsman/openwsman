@@ -625,7 +625,6 @@ xml_parser_node_add(WsXmlNodeH base,
 		const char *nsUri,
 		const char *localName, const char *value)
 {
-	fprintf(stderr, "Call for %s\n",  localName);
 	xmlNodePtr xmlBase = (xmlNodePtr) base;
 	xmlNodePtr newNode = make_new_xml_node((where != XML_ELEMENT_NEXT &&
 					where != XML_ELEMENT_PREV) ? xmlBase : xmlBase->parent, nsUri,
