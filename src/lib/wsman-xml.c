@@ -994,20 +994,15 @@ ws_xml_add_child_sort(WsXmlNodeH node,
 	int count = ws_xml_get_child_count(node) ;
 	if ( count == 0 ) {
 		newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
-		debug("adding first: %s", localName);
 	} else {
 		for (i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++) {
 				char *name = ws_xml_get_node_local_name(child);
-				debug("Current Node(%d): %s,   New node: %s", i, name , localName);
 				if (strcmp(localName, name) < 0 ) {
-					debug("adding %s before: %s", localName, name);
 					newNode = xml_parser_node_add(child, XML_ELEMENT_PREV, nsUri, localName, val);
-					debug("Current Count: %d", ws_xml_get_child_count(node) );
 					break;
 				}
 		}
 		if (newNode == NULL) {
-			debug("adding last");
 			newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
 		}
 	}
