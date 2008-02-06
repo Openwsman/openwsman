@@ -842,7 +842,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 					return -1;
 				}
 			 }
-			 else { //to subscribe to an Indication class
+			 else { /* to subscribe to an Indication class */
 				if(xpath2wql(filter, &f)) {
 					*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 					return -1;
@@ -853,7 +853,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				}
 			}
 
-		} else { //to check whether it subscribes to an existing filter
+		} else { /* to check whether it subscribes to an existing filter */
 			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 				return -1;
