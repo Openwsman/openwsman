@@ -23,37 +23,51 @@
 /*SWIG 1.3.33: %feature("autodoc","1")*/
 #endif
 
-/* to be copied to the .c output file */
 %{
-#include "wsman-api.h"
-#include "openwsman.h"
+#include <wsman-types.h>
+#include <wsman-client.h>
+#include <wsman-api.h>
+#include <wsman-xml-api.h>
 %}
 
 /*-----------------------------------------------------------------*/
+/* type definitions */
+
 /* local definitions
  *
  * Openwsman handles some structures as 'anonymous', just declaring
  * them without exposing their definition.
  * However, SWIG need the definition in order to create bindings.
  */
- 
+
+
 %rename(Client) _WsManClient;
 %nodefault _WsManClient;
-
-%rename(WsXmlDoc) _WsXmlDoc;
-%nodefault _WsXmlDoc;
+typedef struct _WsManClient {
+} WsManClient;
 
 %rename(ClientOptions) client_opt_t;
 %nodefault client_opt_t;
-
-struct _WsXmlDoc {
-};
-
-struct _WsManClient {
-};
-
 typedef struct {
 } client_opt_t;
+
+%nodefault __WsXmlNode; /* part of WsXmlDoc */
+%rename(WsXmlNode) __WsXmlNode;
+%ignore __WsXmlNode::__undefined;
+
+%nodefault __WsXmlAttr; /* part of WsXmlNode */
+%rename(WsXmlAttr) __WsXmlAttr;
+%ignore __WsXmlAttr::__undefined;
+
+%nodefault __WsXmlNs;   /* part of WsXmlAttr */
+%rename(WsXmlNs) __WsXmlNs;
+%ignore __WsXmlNs::__undefined;
+
+%nodefault _WsXmlDoc;
+%rename(WsXmlDoc) _WsXmlDoc;
+struct _WsXmlDoc {};
+
+%include "wsman-types.h"
 
 
 /*-----------------------------------------------------------------*/
@@ -77,39 +91,17 @@ typedef struct {
 #define FLAG_CIM_EXTENSIONS                  0x1000
 #define FLAG_CIM_REFERENCES                  0x2000
 #define FLAG_CIM_ASSOCIATORS                 0x4000
-#define FLAG_EVENT_SENDBOOKMARK		0X8000
+#define FLAG_EVENT_SENDBOOKMARK		     0X8000
 
 
-#define	WSMAN_DELIVERY_PUSH  0
+#define	WSMAN_DELIVERY_PUSH         0
 #define WSMAN_DELIVERY_PUSHWITHACK  1
-#define WSMAN_DELIVERY_EVENTS 2
-#define WSMAN_DELIVERY_PULL 3
-
-
-/*-----------------------------------------------------------------*/
-/* type definitions */
-
-%nodefault __WsXmlNode; /* part of WsXmlDoc */
-%nodefault __WsXmlAttr; /* part of WsXmlNode */
-%nodefault __WsXmlNs;   /* part of WsXmlAttr */
-
-%rename(WsXmlNode) __WsXmlNode;
-%rename(WsXmlAttr) __WsXmlAttr;
-%rename(WsXmlNs) __WsXmlNs;
-
-%ignore __WsXmlNode::__undefined;
-%ignore __WsXmlAttr::__undefined;
-%ignore __WsXmlNs::__undefined;
-
-%include "wsman-types.h"
+#define WSMAN_DELIVERY_EVENTS       2
+#define WSMAN_DELIVERY_PULL         3
 
 
 /*-----------------------------------------------------------------*/
 /* xml structure accessors */
-
-%{
-#include "wsman-xml-api.h"
-%}
 
 %extend _WsXmlDoc {
   /* constructor */
@@ -176,6 +168,12 @@ typedef struct {
   char *text() {
     return ws_xml_get_node_text( $self );
   }
+#if defined(SWIGRUBY)
+  %rename( "text=" ) set_text( const char *text );
+#endif
+  void set_text( const char *text ) {
+    ws_xml_set_node_text( $self, text );
+  }
   /* get doc for node */
   WsXmlDocH doc() {
     return ws_xml_get_node_doc( $self );
@@ -188,10 +186,19 @@ typedef struct {
   char *name() {
     return ws_xml_get_node_local_name( $self );
   }
+  /* set name of node */
+  void set_name( const char *nsuri, const char *name ) {
+    ws_xml_set_node_name( $self, nsuri, name );
+  }
   /* get namespace for node */
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
   }
+  /* set namespace of node */
+  void set_ns( const char *ns, const char *prefix ) {
+    ws_xml_set_ns( $self, ns, prefix );
+  }
+  
   /* find node within tree */
   WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
     return ws_xml_find_in_tree( $self, ns, name, recursive );
@@ -201,6 +208,21 @@ typedef struct {
   int child_count() {
     return ws_xml_get_child_count( $self );
   }
+  /* add child to node */
+  WsXmlNodeH child_add( const char *ns, const char *name, const char *value = NULL ) {
+    return ws_xml_add_child( $self, ns, name, value );
+  }
+#if defined(SWIGRUBY)
+  /* enumerate children */
+  void each_child() {
+    int i = 0;
+    while ( i < ws_xml_get_child_count( $self ) ) {
+      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child($self, i, NULL, NULL), SWIGTYPE_p___WsXmlNode, 0));
+      ++i;
+    }
+  }
+#endif
+  
   /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
     return ws_xml_get_node_attr( $self, index );
@@ -217,6 +239,16 @@ typedef struct {
   WsXmlAttrH attr_add( const char *ns, const char *name, const char *value ) {
     return ws_xml_add_node_attr( $self, ns, name, value );
   }
+#if defined(SWIGRUBY)
+  /* enumerate attributes */
+  void each_attr() {
+    int i = 0;
+    while ( i < ws_xml_get_node_attr_count( $self ) ) {
+      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_node_attr($self, i), SWIGTYPE_p___WsXmlAttr, 0));
+      ++i;
+    }
+  }
+#endif
 }
 
 
@@ -287,12 +319,12 @@ void wsmc_set_action_option(client_opt_t * options, unsigned int);
 /*-----------------------------------------------------------------*/
 /* client */
 
-%extend _WsManClient {
+%extend WsManClient {
   /* constructor */
-  _WsManClient( const char *uri ) {
+  WsManClient( const char *uri ) {
     return wsmc_create_from_uri( uri );
   }
-  _WsManClient(const char *hostname,
+  WsManClient(const char *hostname,
               const int port, const char *path,
               const char *scheme,
               const char *username,
@@ -300,7 +332,7 @@ void wsmc_set_action_option(client_opt_t * options, unsigned int);
     return wsmc_create( hostname, port, path, scheme, username, password );
   }
   /* destructor */
-  ~_WsManClient() {
+  ~WsManClient() {
     wsmc_release( $self );
   }
   /* set dumpfile */
@@ -340,7 +372,7 @@ void wsmc_add_selector(client_opt_t * options, const char *key, const char *valu
 /*-----------------------------------------------------------------*/
 /* actions */
 
-%extend _WsManClient {
+%extend WsManClient {
   WsXmlDocH identify( client_opt_t *options ) {
     return wsmc_action_identify( $self, options );
   }
