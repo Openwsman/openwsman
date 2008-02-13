@@ -110,6 +110,10 @@ CMPIInstance *
 cim_get_instance_from_selectors(CimClientInfo * client,
 		 WsContextH cntx, WsmanStatus * status);
 
+CMPIObjectPath *
+cim_get_objectpath_from_selectors(CimClientInfo * client,
+		 WsContextH cntx, WsmanStatus * status);
+
 void cim_get_instance_from_enum(CimClientInfo * cc, WsContextH cntx,
 				WsXmlNodeH body, WsmanStatus * status);
 
@@ -117,8 +121,7 @@ char *cim_get_namespace_selector(hash_t * keys);
 
 void cim_delete_instance_from_enum(CimClientInfo * client,
 				   WsmanStatus * status);
-CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, 
-	char *querylanguage, WsmanStatus *status);
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
 CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
 void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, 
 	CMPIObjectPath *handler, WsmanStatus *status);

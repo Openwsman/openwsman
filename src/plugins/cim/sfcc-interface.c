@@ -456,6 +456,7 @@ cim_verify_class_keys(CMPIConstClass * class,
 						    hdl, "Key", &rc);
 		if (rc.rc == 0)
 			ccount++;
+		CMRelease(propertyname);
 	}
 
 	debug("selector count from user: %d, in class definition: %d",
@@ -1643,6 +1644,33 @@ cleanup:
 
 }
 
+CMPIObjectPath *
+cim_get_objectpath_from_selectors(CimClientInfo * client,
+		 WsContextH cntx, WsmanStatus * status)
+{
+	CMPIObjectPath *objectpath = NULL;
+	CMPIConstClass *class =
+	    cim_get_class(client, client->requested_class,
+			  CMPI_FLAG_IncludeQualifiers,
+			  status);
+	if (!class)
+		goto cleanup;
+
+	cim_verify_class_keys(class, client->selectors, status);
+	if (status->fault_code != 0)
+		goto cleanup;
+
+	objectpath = newCMPIObjectPath(client->cim_namespace,
+				       client->requested_class, NULL);
+
+	cim_add_keys(objectpath, client->selectors);	
+cleanup:
+	if (class)
+		CMRelease(class);
+	return objectpath;
+
+}
+
 void
 cim_get_instance(CimClientInfo * client,
 		 WsContextH cntx, WsXmlNodeH body, WsmanStatus * status)
@@ -1686,12 +1714,12 @@ static CMPIObjectPath
 	return objectpath_handler;
 }
 
-CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo,
-	char *querylanguage, WsmanStatus *status)
+CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
 	CMPIObjectPath *objectpath_r = NULL;
+	CMPIObjectPath *filter_op = NULL;
 	CMPIStatus rc;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
@@ -1699,10 +1727,15 @@ CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeI
 	objectpath = cim_indication_filter_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
+	filter_op = CMClone(objectpath, &rc);
 	CMAddKey(objectpath, "Query",
 			subsInfo->filter->query, CMPI_chars);
-	CMAddKey(objectpath, "QueryLanguage",
-			querylanguage, CMPI_chars);
+	if(subsInfo->flags & WSMAN_SUBSCRIPTION_WQL)
+		CMAddKey(objectpath, "QueryLanguage",
+			"WQL",CMPI_chars);
+	else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CQL)
+		CMAddKey(objectpath, "QueryLanguage",
+			"CQL",CMPI_chars);
 	char *indicationns = get_cim_indication_SourceNamespace();
 	if(indicationns)
 		CMAddKey(objectpath, "SourceNamespace",
@@ -1722,9 +1755,11 @@ cleanup:
 		CMRelease(rc.msg);
 	if (objectpath_r)
 		CMRelease(objectpath_r);
+	if (objectpath)
+		CMRelease(objectpath);
 	if (instance)
 		CMRelease(instance);
-	return objectpath;
+	return filter_op;
 }
 static char * create_cimxml_listener_path(char *uuid)
 {
@@ -1739,6 +1774,7 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribe
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
 	CMPIObjectPath *objectpath_r = NULL;
+	CMPIObjectPath *handler_op = NULL;
 	CMPIStatus rc;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
@@ -1746,7 +1782,7 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribe
 	objectpath = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-
+	handler_op = CMClone(objectpath, &rc);
 	char *servicepath = create_cimxml_listener_path(subsInfo->subsId);
 	char serverpath[128];
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
@@ -1773,9 +1809,11 @@ cleanup:
 		CMRelease(rc.msg);
 	if (objectpath_r)
 		CMRelease(objectpath_r);
+	if (objectpath)
+		CMRelease(objectpath);
 	if (instance)
 		CMRelease(instance);
-	return objectpath;
+	return handler_op;
 }
 
 void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
@@ -1785,19 +1823,19 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	CMPIObjectPath *objectpath = NULL;
 	CMPIStatus rc;
 
-	CMCIClient *cc = (CMCIClient *) client->cc;
-	CMPIObjectPath *objectpath_handler = NULL;
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
-	if(rc.rc) goto cleanup;
-	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
-	if(rc.rc) goto cleanup;
+	CMCIClient *cc = (CMCIClient *) client->cc; 
+//	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
+//	if(rc.rc) goto cleanup;
+//	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
+//	if(rc.rc) goto cleanup;
+	
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 				       "CIM_IndicationSubscription", NULL);
 	CMPIValue value;
-	value.ref = objectpath_filter;
+	value.ref = filter;
 	CMAddKey(objectpath, "Filter",
 		&value, CMPI_ref);
-	value.ref = objectpath_handler;
+	value.ref = handler;
 	CMAddKey(objectpath, "Handler",
 		&value, CMPI_ref);
 	//set OnFatalErrorPolicy to "Ignore"
@@ -1821,7 +1859,7 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 		&value, CMPI_uint16);
 	instance = newCMPIInstance(objectpath, NULL);
 	instance_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
-cleanup:
+
 	/* Print the results */
 	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
@@ -1837,11 +1875,7 @@ cleanup:
 	if (instance)
 		CMRelease(instance);
 	if (instance_r)
-		CMRelease(instance_r);
-	if (objectpath_handler)
-		CMRelease(objectpath_handler);
-	if (objectpath_filter)
-		CMRelease(objectpath_filter);
+		CMRelease(instance_r); 
 	return;
 }
 
@@ -1853,9 +1887,14 @@ void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMPIObjectPath *objectpath_handler = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
-	if(rc.rc)
-		goto cleanup;
+	CMPIObjectPath *objectpath_filter = NULL;
+	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET)
+		objectpath_filter = subsInfo->existingfilterOP;
+	else {
+		objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
+		if(rc.rc)
+			goto cleanup;
+	}
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
@@ -1885,7 +1924,7 @@ cleanup:
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	if (rc.msg)
 		CMRelease(rc.msg);
-	if (objectpath_filter)
+	if (!(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) && objectpath_filter)
 		CMRelease(objectpath_filter);
 	if (objectpath_handler)
 		CMRelease(objectpath_handler);
@@ -1902,9 +1941,15 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	CMPIObjectPath *objectpath_subscription = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	CMPIObjectPath *objectpath_handler = NULL;
-	CMPIObjectPath *objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
-	if(rc.rc)
-		goto cleanup;
+	CMPIObjectPath *objectpath_filter = NULL;
+	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) {
+		objectpath_filter = subsInfo->existingfilterOP;
+	}
+	else{
+		objectpath_filter = cim_indication_filter_objectpath(client, subsInfo, &rc);
+		if(rc.rc)
+			goto cleanup;
+	}
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
@@ -1922,9 +1967,11 @@ void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *
 	rc = cc->ft->deleteInstance(cc, objectpath_subscription);
 	if(rc.rc)
 		goto cleanup;
-	rc = cc->ft->deleteInstance(cc, objectpath_filter);
-	if(rc.rc)
-		goto cleanup;
+	if(!(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET)) {
+		rc = cc->ft->deleteInstance(cc, objectpath_filter);
+		if(rc.rc)
+			goto cleanup;
+	}
 	rc = cc->ft->deleteInstance(cc, objectpath_handler);
 
 cleanup:

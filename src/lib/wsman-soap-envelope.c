@@ -792,13 +792,6 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 		if(filter == NULL) {
 			filter = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_FILTER);
 		}
-		else {
-			node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_FILTER);
-			if(node) {
-				*faultcode = WSE_INVALID_MESSAGE;
-				return -1;
-			}
-		}
 		// Filter
 		if (filter) {
 			char *attrVal = NULL;

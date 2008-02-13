@@ -703,13 +703,12 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	subsInfo->vendor_namespaces = cimclient->namespaces;
 	subsInfo->cim_namespace = u_strdup(cimclient->cim_namespace);
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
-		instance= cim_get_instance_from_selectors(cimclient, cntx, status);
-		if(instance) {
-			indicationfilter = CMGetObjectPath(instance, NULL);
-		}
+		indicationfilter= cim_get_objectpath_from_selectors(cimclient, cntx, status);
+		subsInfo->existingfilterOP = CMClone(indicationfilter, NULL);
+		debug("subscribe to an existing filter");
 	}
 	else {
-		indicationfilter = cim_create_indication_filter(cimclient, subsInfo, "WQL", status);
+		indicationfilter = cim_create_indication_filter(cimclient, subsInfo, status);
 	}
 	if(status->fault_code ) {
 		retval = 1;

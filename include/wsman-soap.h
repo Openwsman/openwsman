@@ -313,6 +313,7 @@ struct __WsSubscribeInfo {
 	char *	soapNs;
 	char *	uri;
 	char *	cim_namespace; //CIM namespace
+	void *	existingfilterOP; //Object path of existing filter class
 	hash_t *	vendor_namespaces; //CIM vendor namespaces;
 	char *	epr_notifyto; //A delivery destination for notification messages, using some delivery mode
 	char *	username; // username for event sink
