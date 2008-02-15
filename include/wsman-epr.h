@@ -30,41 +30,37 @@
 
 /**
  * @author Anas Nashif, Intel Corp.
+ * @author Liang Hou, Intel Corp.
  */
 
 #ifndef WSMAN_EPR_H_
 #define WSMAN_EPR_H_
 
-#include <wsman-xml-serializer.h>
+#include "wsman-soap.h"
 
 typedef struct {
-	XML_TYPE_STR value;
-	XML_NODE_ATTR *attrs;
-} Selector;
-
-typedef struct {
-	XML_TYPE_STR value;
-	XML_NODE_ATTR *attrs;
+	char * value; //string or nestes epr_t
+	char *name;
 	int type; // type = 0, value is text; Or else, value is a nested epr_t
-}SelectorPlus;
+}Selector;
 
 typedef struct {
-	XML_TYPE_DYN_ARRAY selectors;
+	unsigned int count;
+	Selector *selectors;
 } SelectorSet;
 
 
 
 typedef struct {
-	XML_TYPE_STR uri;
+	char * uri;
 	SelectorSet selectorset;
 } ReferenceParameters;
 
 
 typedef struct {
-	XML_TYPE_STR address;
+	char * address;
 	ReferenceParameters refparams;
-	XML_TYPE_STR additionalParams;
-//	XML_TYPE_STR type;
+	void * additionalParams;
 } epr_t;
 
 typedef struct {
@@ -76,9 +72,6 @@ typedef struct {
 }selector_entry;
 
 typedef int (*selector_callback ) (void *, const char*, const char*);
-
-epr_t *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
-	const char *epr_node_name, const char *ns);
 
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data);
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
@@ -96,8 +89,8 @@ epr_t *epr_copy(epr_t *epr);
 Turn an epr_t structure to an XML snippet. It means a complete epr snippet if embedded is 1. Or else, it is 
 a snippet used in a soap header.
 */
-int epr_serialize(WsXmlNodeH node, epr_t *epr, int embedded);
+int epr_serialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, epr_t *epr, int embedded);
 
-epr_t *epr_deserialize(WsXmlNodeH node, int embedded);
+epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded);
 
 #endif

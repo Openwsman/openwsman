@@ -48,63 +48,27 @@
 #include "wsman-client-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-xml-serializer.h"
 
 #include "wsman-faults.h"
 #include "wsman-soap-envelope.h"
 
 #include "wsman-epr.h"
 
-SER_TYPEINFO_STRING_ATTR;
-SER_START_ITEMS(SelectorSet)
-SER_NS_DYN_ARRAY(XML_NS_WS_MAN, WSM_SELECTOR, 0, 10,
-		string_attr), SER_END_ITEMS(SelectorSet);
-
-
-SER_START_ITEMS(ReferenceParameters)
-SER_NS_STR(XML_NS_WS_MAN, WSM_RESOURCE_URI, 1),
-	SER_NS_STRUCT(XML_NS_WS_MAN, WSM_SELECTOR_SET, 1, SelectorSet),
-	SER_END_ITEMS(ReferenceParameters);
-
-
-SER_START_ITEMS(epr_t)
-SER_NS_STR(XML_NS_ADDRESSING, WSA_ADDRESS, 1),
-SER_NS_STRUCT(XML_NS_ADDRESSING, WSA_REFERENCE_PARAMETERS, 1,
-			ReferenceParameters), SER_END_ITEMS(epr_t);
-
-
-
-epr_t  *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
-		const char *epr_node_name, const char *ns)
-{
-	epr_t *epr;
-    	epr = (epr_t *) ws_deserialize(cntx->serializercntx, node, epr_t_TypeInfo,
-                                        epr_node_name,
-                                        ns, NULL, 0, 0);
-	return epr;
-}
-
-
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
 {
 	int i;
 	char *value = NULL;
-	XML_NODE_ATTR *a;
-	Selector *ss = (Selector *) epr->refparams.selectorset.selectors.data;
+	Selector *ss = (Selector *) epr->refparams.selectorset.selectors;
 	if (ss == NULL) {
 			debug("epr->refparams.selectors.data == NULL\n");
 		return NULL;
 	}
-	for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+	for (i = 0; i < epr->refparams.selectorset.count; i++) {
 		Selector *s;
 		s = ss + i;
-		a = s->attrs;
-		while (a) {
-			if (strcmp(a->name, WSM_NAME) == 0 && strcmp(a->value, name) == 0 ) {
+		if (strcmp(s->name, name) == 0 && s->type == 0) {
 				value =  u_strdup(s->value);
 				break;
-			}
-			a = a->next;
 		}
 	}
 	return value;
@@ -114,23 +78,15 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 {
 	int i;
-	XML_NODE_ATTR *a;
-	Selector *ss = (Selector *) epr->refparams.selectorset.selectors.data;
+	Selector *ss = (Selector *) epr->refparams.selectorset.selectors;
 	if (ss == NULL) {
-			debug("epr->refparams.selectors.data == NULL\n");
+			debug("epr->refparams.selectors == NULL\n");
 		return;
 	}
-	for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+	for (i = 0; i < epr->refparams.selectorset.count; i++) {
 		Selector *s;
 		s = ss + i;
-		a = s->attrs;
-		while (a) {
-			if (strcmp(a->name, WSM_NAME) == 0 ) {
-				cb(cb_data, a->value, s->value );
-				break;
-			}
-			a = a->next;
-		}
+		cb(cb_data, s->name, s->value);
 	}
 }
 
@@ -149,18 +105,14 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 		hnode_t        *hn;
 		hscan_t         hs;
 		
-		epr->refparams.selectorset.selectors.count = hash_count(selectors);
-		epr->refparams.selectorset.selectors.data = u_malloc(sizeof(SelectorPlus)*
-			epr->refparams.selectorset.selectors.count);
+		epr->refparams.selectorset.count = hash_count(selectors);
+		epr->refparams.selectorset.selectors = u_malloc(sizeof(Selector)*
+			epr->refparams.selectorset.count);
 		
-		SelectorPlus *p = epr->refparams.selectorset.selectors.data;
+		Selector *p = epr->refparams.selectorset.selectors;
 		hash_scan_begin(&hs, selectors);
 		while ((hn = hash_scan_next(&hs))) {
-			p->attrs = u_malloc(sizeof(XML_NODE_ATTR));
-			p->attrs->next = NULL;
-			p->attrs->ns = NULL;
-			p->attrs->name = u_strdup("Name");
-			p->attrs->value = u_strdup((char *)hnode_getkey(hn));
+			p->name = u_strdup((char *)hnode_getkey(hn));
 			selector_entry *entry = (selector_entry *)hnode_get(hn);
 			if(entry->type == 0) {
 				p->type = 0;
@@ -170,7 +122,7 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 			}
 			else {
 				p->type = 1;
-				p->value = (XML_TYPE_STR)epr_copy(entry->entry.eprp);
+				p->value = (char *)epr_copy(entry->entry.eprp);
 				debug("key = %s value=%p(nested epr)",
 					(char *) hnode_getkey(hn), p->value);
 			}			
@@ -187,11 +139,9 @@ void epr_destroy(epr_t *epr)
 	u_free(epr->address);
 	u_free(epr->refparams.uri);
 	
-	SelectorPlus *p = epr->refparams.selectorset.selectors.data;
-	for(i = 0; i< epr->refparams.selectorset.selectors.count; i++) {
-		u_free(p->attrs->name);
-		u_free(p->attrs->value);
-		u_free(p->attrs);
+	Selector *p = epr->refparams.selectorset.selectors;
+	for(i = 0; i< epr->refparams.selectorset.count; i++) {
+		u_free(p->name);
 		if(p->type == 0)
 			u_free(p->value);
 		else
@@ -199,7 +149,7 @@ void epr_destroy(epr_t *epr)
 		p++;
 	}
 	
-	u_free(epr->refparams.selectorset.selectors.data);
+	u_free(epr->refparams.selectorset.selectors);
 	u_free(epr);
 	
 }
@@ -213,30 +163,26 @@ epr_t *epr_copy(epr_t *epr)
 	cpy_epr = u_malloc(sizeof(epr_t));
 	cpy_epr->address = u_strdup(epr->address);
 	cpy_epr->refparams.uri = u_strdup(epr->refparams.uri);
-	cpy_epr->refparams.selectorset.selectors.count = epr->refparams.selectorset.selectors.count;
-	cpy_epr->refparams.selectorset.selectors.data = u_malloc(sizeof(SelectorPlus)*
-			epr->refparams.selectorset.selectors.count);
+	cpy_epr->refparams.selectorset.count = epr->refparams.selectorset.count;
+	cpy_epr->refparams.selectorset.selectors = u_malloc(sizeof(Selector)*
+			epr->refparams.selectorset.count);
 
-	SelectorPlus *p1 = epr->refparams.selectorset.selectors.data;
-	SelectorPlus *p2 = cpy_epr->refparams.selectorset.selectors.data;
-	for(i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
-		p2->attrs = u_malloc(sizeof(XML_NODE_ATTR));
-		p2->attrs->name = u_strdup(p1->attrs->name);
-		p2->attrs->next = NULL;
-		p2->attrs->ns = NULL;
-		p2->attrs->value = u_strdup(p1->attrs->value);
+	Selector *p1 = epr->refparams.selectorset.selectors;
+	Selector *p2 = cpy_epr->refparams.selectorset.selectors;
+	for(i = 0; i < epr->refparams.selectorset.count; i++) {
+		p2->name = u_strdup(p1->name);
 		p2->type = p1->type;
 		if(p1->type == 0)
 			p2->value = u_strdup(p1->value);
 		else
-			p2->value = (XML_TYPE_STR)epr_copy((epr_t*)p1->value);
+			p2->value = (char *)epr_copy((epr_t*)p1->value);
 		p1++;
 		p2++;
 	}
 	return cpy_epr;
 }
 
-int epr_serialize(WsXmlNodeH node, epr_t *epr, int embedded)
+int epr_serialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, epr_t *epr, int embedded)
 {
 	if(epr == NULL) return 0;
 	int i;
@@ -244,8 +190,8 @@ int epr_serialize(WsXmlNodeH node, epr_t *epr, int embedded)
 	WsXmlNodeH eprnode = NULL;
 	WsXmlNodeH refparamnode = NULL;
 
-	if(embedded) {
-		eprnode = ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_EPR, NULL);
+	if(epr_node_name) {
+		eprnode = ws_xml_add_child(node, ns, epr_node_name, NULL);
 	}
 	else
 		eprnode = node;
@@ -261,22 +207,22 @@ int epr_serialize(WsXmlNodeH node, epr_t *epr, int embedded)
 	ws_xml_add_child(refparamnode, XML_NS_WS_MAN, WSM_RESOURCE_URI, epr->refparams.uri);
 	WsXmlNodeH selectorsetnode = ws_xml_add_child(refparamnode, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
 
-	SelectorPlus *p = epr->refparams.selectorset.selectors.data;
-	for(i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+	Selector *p = epr->refparams.selectorset.selectors;
+	for(i = 0; i < epr->refparams.selectorset.count; i++) {
 		WsXmlNodeH temp = NULL;
 		if(p->type == 0)
 			temp = ws_xml_add_child(selectorsetnode, XML_NS_WS_MAN, WSM_SELECTOR, p->value);
 		else {
 			temp = ws_xml_add_child(selectorsetnode, XML_NS_WS_MAN, WSM_SELECTOR, NULL);
-			epr_serialize(temp, (epr_t *)p->value, 1);
+			epr_serialize(temp, XML_NS_ADDRESSING, WSA_EPR, (epr_t *)p->value, 1);
 		}
-		ws_xml_add_node_attr(temp, p->attrs->ns, p->attrs->name, p->attrs->value);
+		ws_xml_add_node_attr(temp, NULL, WSM_NAME, p->name);
 		p++;
 	}
 	return 0;
 }
 
-epr_t *epr_deserialize(WsXmlNodeH node, int embedded)
+epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded)
 {
 	int i;
 	epr_t *epr = u_malloc(sizeof(epr_t));
@@ -285,8 +231,8 @@ epr_t *epr_deserialize(WsXmlNodeH node, int embedded)
 	WsXmlNodeH refparamnode = NULL;
 	WsXmlNodeH temp = NULL;
 
-	if(embedded) {
-		eprnode = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_EPR);
+	if(epr_node_name) {
+		eprnode = ws_xml_get_child(node, 0, ns, epr_node_name);
 		if(eprnode == NULL) 
 			goto CLEANUP;
 	}
@@ -315,24 +261,20 @@ epr_t *epr_deserialize(WsXmlNodeH node, int embedded)
 	epr->refparams.uri = u_strdup(ws_xml_get_node_text(temp));
 
 	WsXmlNodeH selectorsetnode = ws_xml_get_child(refparamnode, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-	epr->refparams.selectorset.selectors.count = ws_xml_get_child_count(selectorsetnode);
-	epr->refparams.selectorset.selectors.data = u_malloc(epr->refparams.selectorset.selectors.count *
-		 sizeof(SelectorPlus));
+	epr->refparams.selectorset.count = ws_xml_get_child_count(selectorsetnode);
+	epr->refparams.selectorset.selectors = u_malloc(epr->refparams.selectorset.count *
+		 sizeof(Selector));
 	
-	SelectorPlus *p = epr->refparams.selectorset.selectors.data;
-	for(i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+	Selector *p = epr->refparams.selectorset.selectors;
+	for(i = 0; i < epr->refparams.selectorset.count; i++) {
 		temp = ws_xml_get_child(selectorsetnode, i, XML_NS_WS_MAN, WSM_SELECTOR);
 		WsXmlAttrH attr = ws_xml_find_node_attr(temp, NULL, "Name");
 		if(attr) {
-			p->attrs = (XML_NODE_ATTR *)u_malloc(sizeof(XML_NODE_ATTR));
-			p->attrs->name = u_strdup("Name");
-			p->attrs->next = NULL;
-			p->attrs->ns = NULL;
-			p->attrs->value = u_strdup(ws_xml_get_attr_value(attr));
+			p->name = u_strdup(ws_xml_get_attr_value(attr));
 		}
 		if(ws_xml_get_child(temp, 0, XML_NS_ADDRESSING, WSA_EPR)) {
 			p->type = 1;
-			p->value = (XML_TYPE_STR)epr_deserialize(temp, 1);
+			p->value = (char *)epr_deserialize(temp, XML_NS_ADDRESSING, WSA_EPR, 1);
 		}
 		else {
 			p->type = 0;

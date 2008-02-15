@@ -32,8 +32,6 @@ int main(void)
 		initialize_logging();
 		wsman_debug_set_level(debug_level);
 	}
-	WsContextH cntx = ws_create_runtime(NULL);
-//	SoapH soap = ws_context_get_runtime(cntx);
 
     WsXmlDocH doc = ws_xml_read_file( "filter.xml", "UTF-8", 0 ); 
     WsXmlNodeH node = ws_xml_get_soap_body(doc);
@@ -46,28 +44,21 @@ int main(void)
 		    node = ws_xml_get_child(filter, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES);
 		    //node = ws_xml_get_child(node, 0, XML_NS_CIM_BINDING, WSMB_OBJECT);
 
-		    epr_t *epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
+		    epr_t *epr = epr_deserialize(node, WSMB_OBJECT, XML_NS_CIM_BINDING, 1);
 		    if (!epr)
 			    return 1;
 		    printf("Resource uri: %s\n", epr->refparams.uri );
 		    int i;
 		    Selector *ss =
-			    (Selector *) epr->refparams.selectorset.selectors.data;
+			    (Selector *) epr->refparams.selectorset.selectors;
 		    if (ss == NULL) {
 			    debug("epr->refparams.selectors.data == NULL\n");
 			    return 1;
 		    }
-		    for (i = 0; i < epr->refparams.selectorset.selectors.count; i++) {
+		    for (i = 0; i < epr->refparams.selectorset.count; i++) {
 			    Selector *s;
 			    s = ss + i;
-			    XML_NODE_ATTR *a = s->attrs;
-			    while (a) {
-				    if (strcmp(a->name, WSM_NAME) == 0 ) {
-					    printf("%s", a->value );
-					    break;
-				    }
-				    a = a->next;
-			    }
+			    printf("%s", s->name );
 			    printf("  =  %s\n", s->value);
 		    }
 	    }

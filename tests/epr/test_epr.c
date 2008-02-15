@@ -65,7 +65,7 @@ static void test_serialize(void)
 	epr_t *epr_cpy = epr_copy(epr_subscription); //test epr_copy
 	WsXmlDocH doc = ws_xml_create_envelope();
 	WsXmlNodeH header = ws_xml_get_soap_header(doc);
-	epr_serialize(header,epr_cpy,0);
+	epr_serialize(header,NULL,NULL,epr_cpy,0);
 	ws_xml_dump_doc(stdout, doc);
 
 	epr_destroy(epr_filter);
@@ -87,7 +87,7 @@ static void test_deserialize(void)
 	WsXmlDocH doc = ws_xml_read_file("./sample.xml", "utf-8", 0);
 	if(doc == NULL) return;
 	WsXmlNodeH node = ws_xml_get_soap_header(doc);
-	epr_t *epr = epr_deserialize(node, 0);
+	epr_t *epr = epr_deserialize(node, NULL, NULL, 0);
 	if(epr == NULL) {
 		printf("epr deserialize failed!\n");
 		return;
@@ -97,7 +97,7 @@ static void test_deserialize(void)
 
 	doc = ws_xml_create_envelope();
 	node = ws_xml_get_soap_header(doc);
-	epr_serialize(node, epr, 0);
+	epr_serialize(node, NULL, NULL,epr, 0);
 	ws_xml_dump_doc(stdout, doc);
 	
 	epr_destroy(epr);

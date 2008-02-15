@@ -578,7 +578,7 @@ static void wsman_parse_assoc_filter( WsContextH cntx,
 		return;
 	}
 
-	epr = wsman_get_epr(cntx, node, WSMB_OBJECT, XML_NS_CIM_BINDING );
+	epr = epr_deserialize(node, XML_NS_CIM_BINDING, WSMB_OBJECT, 1);
 	if (epr == NULL) {
 		enumInfo->filter = NULL;
 		return;
@@ -1051,7 +1051,8 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 				if (epr) {
 					debug("epr: %s", attrVal);
 					sentry->type = 1;
-					sentry->entry.eprp = wsman_get_epr(cntx, selector, WSA_EPR, XML_NS_ADDRESSING);
+					sentry->entry.eprp = epr_deserialize(selector, XML_NS_ADDRESSING, 
+						WSA_EPR, 1);
 					if (!hash_alloc_insert(h, attrVal, sentry)) {
 						error("hash_alloc_insert failed");
 					}
