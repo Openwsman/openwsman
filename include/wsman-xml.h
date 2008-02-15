@@ -86,7 +86,7 @@ WsXmlDocH ws_xml_duplicate_doc(WsXmlDocH srcDoc);
 
 WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node);
 
-SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
+//SoapH ws_xml_get_doc_soap_handle(WsXmlDocH doc);
 
 int ws_xml_parser_initialize(void);
 

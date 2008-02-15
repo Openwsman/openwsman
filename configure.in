@@ -417,6 +417,7 @@ AC_OUTPUT([
         etc/init/openwsmand.sh
         tests/Makefile
         tests/client/Makefile
+	tests/epr/Makefile
         tests/xml/Makefile
         examples/Makefile
 	bindings/Makefile

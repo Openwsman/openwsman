@@ -42,7 +42,11 @@ typedef struct {
 	XML_NODE_ATTR *attrs;
 } Selector;
 
-
+typedef struct {
+	XML_TYPE_STR value;
+	XML_NODE_ATTR *attrs;
+	int type; // type = 0, value is text; Or else, value is a nested epr_t
+}SelectorPlus;
 
 typedef struct {
 	XML_TYPE_DYN_ARRAY selectors;
@@ -59,7 +63,8 @@ typedef struct {
 typedef struct {
 	XML_TYPE_STR address;
 	ReferenceParameters refparams;
-	XML_TYPE_STR type;
+	XML_TYPE_STR additionalParams;
+//	XML_TYPE_STR type;
 } epr_t;
 
 typedef struct {
@@ -78,5 +83,21 @@ epr_t *wsman_get_epr(WsContextH cntx, WsXmlNodeH node,
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data);
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
+/**
+selectors is a hash which contains pairs of name:selector_entry
+*/
+epr_t *epr_create(const char *uri, hash_t * selectors, const char *address);
+
+void epr_destroy(epr_t *epr);
+
+epr_t *epr_copy(epr_t *epr);
+
+/**
+Turn an epr_t structure to an XML snippet. It means a complete epr snippet if embedded is 1. Or else, it is 
+a snippet used in a soap header.
+*/
+int epr_serialize(WsXmlNodeH node, epr_t *epr, int embedded);
+
+epr_t *epr_deserialize(WsXmlNodeH node, int embedded);
 
 #endif
