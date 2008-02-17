@@ -39,10 +39,10 @@
 #include "wsman-soap.h"
 
 typedef struct {
-	char * value; //string or nestes epr_t
+	char *value; //string or nestes epr_t
 	char *name;
 	int type; // type = 0, value is text; Or else, value is a nested epr_t
-}Selector;
+} Selector;
 
 typedef struct {
 	unsigned int count;
@@ -64,33 +64,38 @@ typedef struct {
 } epr_t;
 
 typedef struct {
-	int type; 
+	int type;
 	union{
 		char *text;
 		epr_t *eprp;
-	}entry;
-}selector_entry;
+	} entry;
+} selector_entry;
 
 typedef int (*selector_callback ) (void *, const char*, const char*);
 
-void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data);
+void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, 
+		void *cb_data);
+
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
 /**
-selectors is a hash which contains pairs of name:selector_entry
-*/
-epr_t *epr_create(const char *uri, hash_t * selectors, const char *address);
+ * selectors is a hash which contains pairs of name:selector_entry
+ */
+epr_t *epr_create(const char *uri, hash_t * selectors, 
+		const char *address);
 
 void epr_destroy(epr_t *epr);
 
 epr_t *epr_copy(epr_t *epr);
 
 /**
-Turn an epr_t structure to an XML snippet. It means a complete epr snippet if embedded is 1. Or else, it is 
-a snippet used in a soap header.
-*/
-int epr_serialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, epr_t *epr, int embedded);
+ * Turn an epr_t structure to an XML snippet. It means a complete epr snippet if embedded is 1. Or else, it is
+ * a snippet used in a soap header.
+ */
+int epr_serialize(WsXmlNodeH node, const char *ns, 
+		const char *epr_node_name, epr_t *epr, int embedded);
 
-epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded);
+epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, 
+		const char *epr_node_name, int embedded);
 
 #endif

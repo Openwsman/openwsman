@@ -133,7 +133,6 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 			encoding = p;
 		}
 	}
-
 	return encoding;
 }
 

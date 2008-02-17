@@ -22,7 +22,6 @@ GENERATED = openwsman_wrap.c \
 
 SWIG_SOURCES = ../openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
-			 ../openwsman.c \
 			 $(SWIG_SOURCES)
 all-local:	pywsman.py
 
@@ -37,7 +36,7 @@ _pywsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 python_LTLIBRARIES = _pywsman.la
 
 $(GENERATED): $(SWIG_SOURCES)
-	$(SWIG)  -python -I$(top_srcdir)/include -o $@ $<
+	$(SWIG) -python -debug-classes -debug-module 1,2,3,4 -I$(top_srcdir)/include -o $@ $<
 
 install-data-hook:
 	rm -f $(DESTDIR)${pythondir}/$(python_LTLIBRARIES)

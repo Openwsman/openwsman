@@ -574,25 +574,27 @@ outbound_addressing_filter(SoapOpH opHandle, void *data, void *opaqueData)
 
 	WsXmlNodeH outHeaders = wsman_get_soap_header_element(out_doc, NULL, NULL);
 
-	if (outHeaders) {
-		if (ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,  WSA_MESSAGE_ID) == NULL &&
-		    !wsman_is_identify_request(in_doc)) {
-			char uuidBuf[100];
-			generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
-			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,	 WSA_MESSAGE_ID, uuidBuf);
-			debug("Adding message id: %s", uuidBuf);
-		}
-		if (in_doc != NULL) {
-			WsXmlNodeH inMsgIdNode;
-			inMsgIdNode = wsman_get_soap_header_element(in_doc,XML_NS_ADDRESSING,
-								    WSA_MESSAGE_ID);
-			if (inMsgIdNode != NULL &&
-			    !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO)) {
-				ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO,
-						 ws_xml_get_node_text(inMsgIdNode));
-			}
+	if (!outHeaders) {
+		return 0;
+	}
+	if (ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING,  WSA_MESSAGE_ID) == NULL &&
+	    !wsman_is_identify_request(in_doc)) {
+		char uuidBuf[100];
+		generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
+		ws_xml_add_child(outHeaders, XML_NS_ADDRESSING,	 WSA_MESSAGE_ID, uuidBuf);
+		debug("Adding message id: %s", uuidBuf);
+	}
+	if (in_doc != NULL) {
+		WsXmlNodeH inMsgIdNode;
+		inMsgIdNode = wsman_get_soap_header_element(in_doc,XML_NS_ADDRESSING,
+							    WSA_MESSAGE_ID);
+		if (inMsgIdNode != NULL &&
+		    !ws_xml_get_child(outHeaders, 0, XML_NS_ADDRESSING, WSA_RELATES_TO)) {
+			ws_xml_add_child(outHeaders, XML_NS_ADDRESSING, WSA_RELATES_TO,
+					 ws_xml_get_node_text(inMsgIdNode));
 		}
 	}
+
 	return 0;
 }
 
@@ -942,7 +944,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	action = wsman_get_action(cntx, doc);
 #ifdef ENABLE_EVENTING_SUPPORT
 	if(wsman_is_event_related_request(doc)) {
-		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0, 
+		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0,
 			XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 		char *uuid = ws_xml_get_node_text(temp);
 		debug("Request uuid: %s", uuid);

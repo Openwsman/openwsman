@@ -1177,7 +1177,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 			goto cleanup;
 		}
 	}
-	if(enumInfo) { //pull things from "enumerate" results
+	if (enumInfo) { //pull things from "enumerate" results
 		locked = 1;
 
 		if ((retVal = endPoint(ws_create_ep_context(soap, _doc),
@@ -2357,9 +2357,6 @@ ws_context_get_runtime(WsContextH cntx)
 		soap = cntx->soap;
 	return soap;
 }
-
-
-
 
 
 void *

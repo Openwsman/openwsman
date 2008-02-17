@@ -70,7 +70,7 @@ void
 wsmc_set_dumpfile( WsManClient *cl, FILE *f )
 {
     if (f)
-	cl->dumpfile = f;
+		cl->dumpfile = f;
     return;
 }
 
@@ -108,8 +108,10 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 	char            uuidBuf[100];
 	WsXmlNodeH      header;
 	WsXmlDocH       doc = ws_xml_create_envelope();
-	if (!doc)
+	if (!doc) {
+		error("Error while creating envelope");
 		return NULL;
+	}
 
 	header = ws_xml_get_soap_header(doc);
 	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
@@ -348,7 +350,6 @@ wsmc_add_selector(client_opt_t * options,
 	}
 }
 
-
 void
 wsmc_add_selectors_from_str(client_opt_t * options,
 		const char *query_string)
@@ -394,7 +395,6 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 }
 
 
-
 static
 void wsmc_create_epr(WsSerializerContextH serctx, WsXmlNodeH epr_node,
 		const char* resource_uri,
@@ -437,6 +437,7 @@ void wsmc_create_epr(WsSerializerContextH serctx, WsXmlNodeH epr_node,
 	}
 	return;
 }
+
 
 
 
@@ -703,12 +704,14 @@ wsman_set_enumeration_options(WsManClient * cl,
 			options->flags |= FLAG_CIM_ASSOCIATORS;
 		else if(options->dialect && strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
 			options->flags |= FLAG_CIM_REFERENCES;
+
 		if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
 			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
 			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, NULL);
 		} else {
 			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
 		}
+
 		if (options->dialect)
 			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
 		else {

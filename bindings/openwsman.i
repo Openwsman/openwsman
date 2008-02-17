@@ -289,6 +289,10 @@ struct _WsXmlDoc {};
 #if defined(SWIGRUBY)
   %rename( "filter=" ) set_filter( const char *filter );
 #endif
+#if defined(SWIGPYTHON)
+  %rename( "filter" )  set_filter( const char *filter );
+#endif
+
   void set_filter( const char *filter ) {
     wsmc_set_filter( filter, $self );
   }
@@ -297,12 +301,12 @@ struct _WsXmlDoc {};
 #if defined(SWIGRUBY)
   %rename( "dialect=" ) set_dialect( const char *dialect );
 #endif
+#if defined(SWIGPYTHON)
+  %rename( "dialect" )   set_dialect( const char *dialect );
+#endif
+
   void set_dialect( const char *dialect ) {
     wsmc_set_dialect( dialect, $self );
-  }
-
-  void set_assoc_filter(void) {
-   wsmc_set_action_option($self, FLAG_CIM_ASSOCIATORS);
   }
 
   void set_dump_request(void) {
@@ -311,6 +315,22 @@ struct _WsXmlDoc {};
 
   void add_selector(char *key, char*value) {
     wsmc_add_selector($self, key, value);
+  }
+
+  void set_delivery_uri( const char *delivery_uri ) {
+    wsmc_set_delivery_uri(delivery_uri, $self);
+  }
+	
+  void set_sub_expiry(int event_subscription_expire) {
+	wsmc_set_sub_expiry(event_subscription_expire, $self);
+  }
+	
+  void set_heartbeat_interval(int heartbeat_interval) {
+	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
+  }
+
+  void set_delivery_mode(WsmanDeliveryMode delivery_mode) {
+	wsmc_set_delivery_mode(delivery_mode, $self);
   }
 }
 
@@ -394,45 +414,20 @@ void wsmc_add_selector(client_opt_t * options, const char *key, const char *valu
   WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, char *data, size_t size, char *encoding) {
     return wsmc_action_invoke_fromtext( $self, resource_uri, options, method, data, size, encoding);
   }
+
+  WsXmlDocH subscribe(client_opt_t *options , char *resource_uri) {
+    return wsmc_action_subscribe($self,  resource_uri, options);
+  }
+
+  WsXmlDocH unsubscribe(client_opt_t *options , char *resource_uri, char *identifier) {
+    return wsmc_action_unsubscribe($self, resource_uri, options, identifier);
+  }
+
+  WsXmlDocH renew(client_opt_t *options , char *resource_uri, char *identifier) {
+    return wsmc_action_renew($self, resource_uri, options, identifier);
+  }
+
 }
 
-char *_identify(WsManClient * cl, client_opt_t * options, char *encoding);
-
-char *_pull(WsManClient * cl, const char *resource_uri, 
-	client_opt_t * options, const char *enumContext, char *encoding);
-	
-char *_release(WsManClient * cl, const char *resource_uri, client_opt_t * options, 
-	const char *enumContext, char *encoding);
-
-char *_enumerate(WsManClient * cl, const char *resource_uri, client_opt_t * options,  char *encoding);
-
-char *_get(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
-
-char *_delete(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
-
-char *_invoke(WsManClient * cl, const char *resource_uri, client_opt_t * options, 
-	const char *method, const char *data, size_t size, char *encoding);
-
-char *_put(WsManClient * cl, const char *resource_uri, client_opt_t * options, const char *data, size_t size, char *encoding);
-
-char *_subscribe(WsManClient * cl, const char *resource_uri, client_opt_t * options, char *encoding);
-
-char *_renew(WsManClient *cl, const char *resource_uri, client_opt_t *options, char *uuid, char *encoding);
-
-char *_unsubscribe(WsManClient *cl, const char *resource_uri, client_opt_t *op, char *uuid, char *encoding);
 
 
-	void
-	wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options);
-	
-
-	void
-	wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options);
-	
-
-	void
-	wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options);
-	
-
-	void
-	wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options);
