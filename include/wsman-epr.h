@@ -36,7 +36,8 @@
 #ifndef WSMAN_EPR_H_
 #define WSMAN_EPR_H_
 
-#include "wsman-soap.h"
+#include "wsman-types.h"
+#include "u/libu.h"
 
 typedef struct {
 	char *value; //string or nestes epr_t
@@ -78,23 +79,53 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb,
 
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
-/**
- * selectors is a hash which contains pairs of name:selector_entry
+ /**
+ * Create an epr_t structure
+ * @param uri Resource URI string
+ * @param selectors A hash which contains pairs of name:selector_entry
+ * @param address If it is NULL, "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous"
+                             will be set
+ * @return created epr_t address
  */
 epr_t *epr_create(const char *uri, hash_t * selectors, 
 		const char *address);
 
+ /**
+ * Destroy an epr_t structure
+ * @param epr An epr point
+ * @return void
+ */
 void epr_destroy(epr_t *epr);
 
+ /**
+ * Create a new epr_t from an original epr_t
+ * @param epr An epr point
+ * @return created epr_t address
+ */
 epr_t *epr_copy(epr_t *epr);
 
 /**
- * Turn an epr_t structure to an XML snippet. It means a complete epr snippet if embedded is 1. Or else, it is
- * a snippet used in a soap header.
+ * Turn an epr_t structure to an XML snippet. 
+ * @param node XML node which will contain epr XML snippet
+ * @param ns Namespace of EPR wrapper name
+ * @param epr_node_name EPR wrapper name
+ * @param epr A point of epr_t
+ * @param embedded It means a complete epr snippet if embedded is 1. Or else, it is
+                                 a snippet used in a soap header.
+ * @return 0 for sucess, others for failure
  */
 int epr_serialize(WsXmlNodeH node, const char *ns, 
 		const char *epr_node_name, epr_t *epr, int embedded);
 
+/**
+ * Form an epr_t structure from an XML snippet. 
+ * @param node XML node which contains epr XML snippet
+ * @param ns Namespace of EPR wrapper name
+ * @param epr_node_name EPR wrapper name
+ * @param embedded It means a complete epr snippet if embedded is 1. Or else, it is
+                                 a snippet used in a soap header.
+ * @return New created epr_t point
+ */
 epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, 
 		const char *epr_node_name, int embedded);
 

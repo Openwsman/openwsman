@@ -418,6 +418,7 @@ AC_OUTPUT([
         tests/Makefile
         tests/client/Makefile
 	tests/epr/Makefile
+	tests/filter/Makefile
         tests/xml/Makefile
         examples/Makefile
 	bindings/Makefile

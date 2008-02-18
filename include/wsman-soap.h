@@ -42,6 +42,7 @@
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
 #include "wsman-xml-api.h"
+#include "wsman-filter.h"
 #include "wsman-event-pool.h"
 #include "wsman-subscription-repository.h"
 #include "wsman-xml-serializer.h"
@@ -247,7 +248,7 @@ typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 #define WSMAN_ENUMINFO_WQL          	  0x100000
 
 
-
+/*
 struct __filter_t {
 	void *epr;
 	char *assocClass;
@@ -258,7 +259,7 @@ struct __filter_t {
 };
 
 typedef struct __filter_t filter_t;
-
+*/
 struct __WsEnumerateInfo {
 	unsigned long flags;
 	char            enumId[EUIDLEN];

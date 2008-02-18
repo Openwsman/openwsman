@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:wsmb="http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+  <s:Header/>
+  <s:Body>
+    <wsen:Enumerate>
+      <wsman:Filter Dialect="http://schemas.dmtf.org/wbem/wsman/1/cimbinding/associationFilter">
+        <wsmb:AssociatedInstances>
+          <wsmb:Object>
+            <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+            <wsa:ReferenceParameters>
+              <wsman:ResourceURI>http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationFilter</wsman:ResourceURI>
+              <wsman:SelectorSet>
+                <wsman:Selector Name="__cimnamespace">root/interop</wsman:Selector>
+                <wsman:Selector Name="Name">OperatingSystemFilter0</wsman:Selector>
+                <wsman:Selector Name="SystemName">localhost.localdomain</wsman:Selector>
+                <wsman:Selector Name="SystemCreationClassName">CIM_ComputerSystem</wsman:Selector>
+                <wsman:Selector Name="CreationClassName">CIM_IndicationFilter</wsman:Selector>
+              </wsman:SelectorSet>
+            </wsa:ReferenceParameters>
+          </wsmb:Object>
+          <wsmb:AssociationClassName>CIM_IndicationSubscription</wsmb:AssociationClassName>
+        </wsmb:AssociatedInstances>
+      </wsman:Filter>
+    </wsen:Enumerate>
+  </s:Body>
+</s:Envelope>
+

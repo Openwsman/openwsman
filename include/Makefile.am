@@ -22,6 +22,7 @@ wsmaninclude_HEADERS = \
 	wsman-declarations.h \
 	wsman-soap.h \
 	wsman-epr.h \
+	wsman-filter.h \
 	wsman-soap-envelope.h \
 	wsman-subscription-repository.h \
 	wsman-event-pool.h \

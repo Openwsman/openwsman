@@ -22,6 +22,7 @@ libwsman_la_SOURCES = \
 	wsman-libxml2-binding.c \
 	wsman-xml.c \
 	wsman-epr.c \
+	wsman-filter.c \
 	wsman-dispatcher.c \
 	wsman-soap.c \
 	wsman-faults.c \
