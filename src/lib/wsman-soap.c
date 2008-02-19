@@ -278,27 +278,6 @@ DONE:
 	return outdoc;
 }
 
-static void destroy_filter(filter_t *filter)
-{
-
-	if(filter->assocClass) {
-		u_free(filter->assocClass);
-	}
-	if(filter->query) {
-		u_free(filter->query);
-	}
-	if(filter->resultClass) {
-		u_free(filter->resultClass);
-	}
-	if(filter->resultRole) {
-		u_free(filter->resultRole);
-	}
-	if(filter->role) {
-		u_free(filter->role);
-	}
-	u_free(filter);
-}
-
 static void
 destroy_enuminfo(WsEnumerateInfo * enumInfo)
 {
@@ -307,7 +286,7 @@ destroy_enuminfo(WsEnumerateInfo * enumInfo)
 	u_free(enumInfo->epr_to);
 	u_free(enumInfo->epr_uri);
 	if (enumInfo->filter)
-		destroy_filter(enumInfo->filter);
+		filter_destroy(enumInfo->filter);
 	u_free(enumInfo);
 }
 
@@ -1399,9 +1378,7 @@ destroy_subsinfo(WsSubscribeInfo * subsInfo)
 	u_free(subsInfo->password);
 	u_free(subsInfo->certificate_thumbprint);
 	if (subsInfo->filter) {
-		if(subsInfo->filter->query)
-			u_free(subsInfo->filter->query);
-		u_free(subsInfo->filter);
+		filter_destroy(subsInfo->filter);
 	}
 	ws_xml_destroy_doc(subsInfo->bookmarkDoc);
 	ws_xml_destroy_doc(subsInfo->templateDoc);

@@ -263,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\lib\wsman-filter.c"
+				>
+			</File>
+			<File
 				RelativePath=".\src\lib\wsman-libxml2-binding.c"
 				>
 			</File>
@@ -401,7 +405,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\wsman-epr.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\wsman-faults.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\wsman-filter.h"
 				>
 			</File>
 			<File

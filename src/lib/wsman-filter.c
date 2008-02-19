@@ -42,6 +42,7 @@ filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, con
 	const char *assocClass, const char *resultClass, const char *role, const char *resultRole, 
 	const char **resultProp, const int propNum)
 {
+	int i = 0;
 	filter_t *filter = u_zalloc(sizeof(filter_t));
 	if(filter == NULL) return filter;
 
@@ -68,7 +69,6 @@ filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, con
 		if(resultProp && propNum) {
 			filter->resultProp = u_malloc(propNum*sizeof(char *));
 			filter->PropNum = propNum;
-			int i = 0;
 			while(i < propNum) {
 				filter->resultProp[i] = u_strdup(resultProp[i]);
 				i++;
@@ -189,16 +189,28 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 
 filter_t * filter_deserialize(WsXmlNodeH node)
 {
+	char *dialect = NULL;
+	int properNum = 0;
+	int i = 0;
+	WsXmlAttrH attr = NULL;
 	filter_t *filter = NULL;
+	WsXmlNodeH instance_node = NULL;
+	WsXmlNodeH entry_node = NULL;
 	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_FILTER);
 	if(filter_node == NULL) return NULL;
 	filter = u_zalloc(sizeof(filter_t));
-	char *dialect = ws_xml_find_attr_value(filter_node, NULL, WSM_DIALECT);
+	dialect = ws_xml_find_attr_value(filter_node, NULL, WSM_DIALECT);
 	if(dialect)
 		filter->dialect = u_strdup(dialect);
-	else
-		filter->dialect = u_strdup(WSM_XPATH_FILTER_DIALECT);
-	WsXmlNodeH instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES);
+	else{
+		attr = ws_xml_get_node_attr(filter_node, 0);
+		if(attr) {
+			filter->dialect = u_strdup(ws_xml_get_attr_value(attr));
+		}
+		else
+			filter->dialect = u_strdup(WSM_XPATH_FILTER_DIALECT);
+	}		
+	instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES);
 	if(instance_node) {
 		filter->assocType = 0;		
 	}
@@ -213,7 +225,7 @@ filter_t * filter_deserialize(WsXmlNodeH node)
 	if(filter->query)
 		return filter;
 	filter->epr = epr_deserialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, 1);
-	WsXmlNodeH entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
+	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
 	if(entry_node)
 		filter->assocClass = u_strdup(ws_xml_get_node_text(entry_node));
 	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
@@ -225,8 +237,7 @@ filter_t * filter_deserialize(WsXmlNodeH node)
 	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
 	if(entry_node)
 		filter->resultRole = u_strdup(ws_xml_get_node_text(entry_node));
-	int properNum = ws_xml_get_child_count(instance_node) - 4;
-	int i = 0;
+	properNum = ws_xml_get_child_count(instance_node) - 4;
 	filter->resultProp = u_zalloc(properNum * sizeof(char*));
 	while(i < properNum) {
 		filter_node = ws_xml_get_child(instance_node, i, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY);
