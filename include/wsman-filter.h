@@ -42,7 +42,8 @@
 struct __filter_t{
 	char *dialect;
 	char *query;
-	epr_t * epr;
+	epr_t * epr; //for "http://schemas.dmtf.org/wsman/cimbinding/associationFilter"
+	SelectorSet selectorset; //for "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter" dialect
 	int assocType; // 0 for associated instance query, 1 for association instance query
 	char *assocClass;
 	char *resultClass;
@@ -60,6 +61,8 @@ typedef struct __filter_t filter_t;
  * @param filter Filter string, valid for some dialects
  * @param epr EPR structure, Identifies the source object for the association query and is required 
                  for "http://schemas.dmtf.org/wsman/cimbinding/associationFilter" dialect
+ * @param selectors A hash which contains pairs of name:selector_entry, required for
+                 "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter"
  * @param assocType Association query type: 0 for associated instances, 1 for association instances
  * @param assocClass Represents the name of a CIM association class.  Optional
  * @param resultClass Represents the name of a CIM class.  Optional. 
@@ -69,9 +72,9 @@ typedef struct __filter_t filter_t;
  * @param propNum Number of resultProp
  * @return created filter_t strucrture point
  */
-filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, const int assocType, 
-	const char *assocClass, const char *resultClass, const char *role, const char *resultRole, 
-	const char **resultProp, const int propNum);
+filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
+	const int assocType, const char *assocClass, const char *resultClass, const char *role, 
+	const char *resultRole, const char **resultProp, const int propNum);
 
 /**
  * Create a new filter_t from an original filter_t

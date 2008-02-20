@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">
+  <s:Header/>
+  <s:Body>
+    <wsen:Enumerate>
+      <wsman:Filter Dialect="http://schemas.microsoft.com/wbem/wsman/1/WQL">select * from CIM_ComputerSystem</wsman:Filter>
+    </wsen:Enumerate>
+  </s:Body>
+</s:Envelope>

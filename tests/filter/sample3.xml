@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">
+  <s:Header/>
+  <s:Body>
+    <wsen:Enumerate>
+      <wsman:Filter Dialect="http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter">
+        <wsman:SelectorSet>
+          <wsman:Selector Name="__cimnamespace">root/interop</wsman:Selector>
+          <wsman:Selector Name="Name">OperatingSystemFilter0</wsman:Selector>
+          <wsman:Selector Name="SystemName">localhost.localdomain</wsman:Selector>
+          <wsman:Selector Name="SystemCreationClassName">CIM_ComputerSystem</wsman:Selector>
+          <wsman:Selector Name="CreationClassName">CIM_IndicationFilter</wsman:Selector>
+        </wsman:SelectorSet>
+      </wsman:Filter>
+    </wsen:Enumerate>
+  </s:Body>
+</s:Envelope>

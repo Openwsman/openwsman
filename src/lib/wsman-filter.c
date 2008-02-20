@@ -38,9 +38,9 @@
 #include "wsman-filter.h"
 
 
-filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, const int assocType,
-	const char *assocClass, const char *resultClass, const char *role, const char *resultRole, 
-	const char **resultProp, const int propNum)
+filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
+	const int assocType, const char *assocClass, const char *resultClass, const char *role, 
+	const char *resultRole, const char **resultProp, const int propNum)
 {
 	int i = 0;
 	filter_t *filter = u_zalloc(sizeof(filter_t));
@@ -53,9 +53,7 @@ filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, con
 
 	if(query)
 		filter->query = u_strdup(query);
-	else {
-		if(epr == NULL) goto cleanup;
-		
+	else if(epr){
 		filter->epr = epr_copy(epr);
 		filter->assocType = assocType;
 		if(assocClass)
@@ -75,6 +73,37 @@ filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, con
 			}
 		}
 	}
+	else if(selectors) {
+		hnode_t        *hn;
+		hscan_t         hs;
+		Selector *p;
+		selector_entry *entry;
+		filter->selectorset.count = hash_count(selectors);
+		filter->selectorset.selectors = u_malloc(sizeof(Selector)*
+			filter->selectorset.count);
+		
+		p = filter->selectorset.selectors;
+		hash_scan_begin(&hs, selectors);
+		while ((hn = hash_scan_next(&hs))) {
+			p->name = u_strdup((char *)hnode_getkey(hn));
+			entry = (selector_entry *)hnode_get(hn);
+			if(entry->type == 0) {
+				p->type = 0;
+				p->value = u_strdup(entry->entry.text);
+				debug("key = %s value=%s",
+					(char *) hnode_getkey(hn), p->value);
+			}
+			else {
+				p->type = 1;
+				p->value = (char *)epr_copy(entry->entry.eprp);
+				debug("key = %s value=%p(nested epr)",
+					(char *) hnode_getkey(hn), p->value);
+			}			
+			p++;
+		}
+	}
+	else
+		goto cleanup;
 	return filter;
 cleanup:
 	filter_destroy(filter);
@@ -84,6 +113,9 @@ cleanup:
 filter_t * filter_copy(filter_t *filter)
 {
 	filter_t *filter_cpy = NULL;
+	Selector *p1;
+	Selector *p2;
+	int i = 0;
 	if(filter == NULL)
 		return NULL;
 	filter_cpy = u_zalloc(sizeof(filter_t));
@@ -97,6 +129,23 @@ filter_t * filter_copy(filter_t *filter)
 		filter_cpy->epr = epr_copy(filter->epr);
 	if(filter->query)
 		filter_cpy->query = u_strdup(filter->query);
+	
+	filter_cpy->selectorset.count = filter->selectorset.count;
+	filter_cpy->selectorset.selectors = u_malloc(sizeof(Selector) * 
+		filter->selectorset.count);
+	p1 = filter->selectorset.selectors;
+	p2 = filter_cpy->selectorset.selectors;
+	for(i = 0; i < filter_cpy->selectorset.count; i++) {
+		p2->name = u_strdup(p1->name);
+		p2->type = p1->type;
+		if(p1->type == 0)
+			p2->value = u_strdup(p1->value);
+		else
+			p2->value = (char *)epr_copy((epr_t*)p1->value);
+		p1++;
+		p2++;
+	}
+	
 	if(filter->assocClass)
 		filter_cpy->assocClass = u_strdup(filter->assocClass);
 	if(filter->resultClass)
@@ -117,6 +166,8 @@ filter_t * filter_copy(filter_t *filter)
 
 void filter_destroy(filter_t *filter)
 {
+	Selector *p;
+	int i;
 	if(filter == NULL)
 		return;
 	if(filter->assocClass)
@@ -127,6 +178,18 @@ void filter_destroy(filter_t *filter)
 		u_free(filter->query);
 	if(filter->epr)
 		epr_destroy(filter->epr);
+	
+	p = filter->selectorset.selectors;
+	for(i = 0; i< filter->selectorset.count; i++) {
+		u_free(p->name);
+		if(p->type == 0)
+			u_free(p->value);
+		else
+			epr_destroy((epr_t*)p->value);
+		p++;
+	}
+	u_free(filter->selectorset.selectors);
+		
 	if(filter->resultClass)
 		u_free(filter->resultClass);
 	if(filter->resultProp) {
@@ -151,10 +214,8 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 	WsXmlNodeH instance_node = NULL;
 	if(filter->query)
 		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, filter->query);
-	else {
+	else if(filter->epr){
 		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
-		if(filter->epr == NULL)
-			return -1;
 		if(filter->assocType == 0)
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES, NULL);
 		else
@@ -181,6 +242,25 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 		}
 		
 	}
+	else if(filter->selectorset.count) {
+		int i = 0;	
+		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
+		node = ws_xml_add_child(filter_node, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
+				
+		while (i < filter->selectorset.count) {
+			if(filter->selectorset.selectors[i].type == 0) {
+				instance_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SELECTOR, 
+					filter->selectorset.selectors[i].value);
+				ws_xml_add_node_attr(instance_node, NULL, WSM_NAME, filter->selectorset.selectors[i].name);
+			}
+			else {
+				epr_serialize(node, NULL, NULL, (epr_t *)filter->selectorset.selectors[i].value, 1);
+			}
+			i++;
+		}
+	}
+	else
+		return -1;
 	if(filter->dialect)
 		ws_xml_add_node_attr(filter_node, NULL, WSM_DIALECT, filter->dialect);
 	return r;
@@ -209,43 +289,75 @@ filter_t * filter_deserialize(WsXmlNodeH node)
 		}
 		else
 			filter->dialect = u_strdup(WSM_XPATH_FILTER_DIALECT);
-	}		
-	instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES);
-	if(instance_node) {
-		filter->assocType = 0;		
 	}
-	else {
-		instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES);
+	if(strcmp(filter->dialect , WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
+		instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES);
 		if(instance_node) {
-			filter->assocType = 1;
+			filter->assocType = 0;		
 		}
-		else
-			filter->query = u_strdup(ws_xml_get_node_text(filter_node));
+		else {
+			instance_node = ws_xml_get_child(filter_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES);
+			if(instance_node) {
+				filter->assocType = 1;
+			}
+			else
+				goto CLEANUP;
+		}
+		filter->epr = epr_deserialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, 1);
+		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
+		if(entry_node)
+			filter->assocClass = u_strdup(ws_xml_get_node_text(entry_node));
+		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
+		if(entry_node)
+			filter->role = u_strdup(ws_xml_get_node_text(entry_node));
+		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
+		if(entry_node)
+			filter->resultClass = u_strdup(ws_xml_get_node_text(entry_node));
+		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
+		if(entry_node)
+			filter->resultRole = u_strdup(ws_xml_get_node_text(entry_node));
+		properNum = ws_xml_get_child_count(instance_node) - 4;
+		filter->resultProp = u_zalloc(properNum * sizeof(char*));
+		while(i < properNum) {
+			filter_node = ws_xml_get_child(instance_node, i, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY);
+			if(filter_node == NULL)
+				break;
+			filter->resultProp[i] = u_strdup(ws_xml_get_node_text(filter_node));
+			i++;
+		}
+		filter->PropNum = i;
 	}
-	if(filter->query)
-		return filter;
-	filter->epr = epr_deserialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, 1);
-	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
-	if(entry_node)
-		filter->assocClass = u_strdup(ws_xml_get_node_text(entry_node));
-	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
-	if(entry_node)
-		filter->role = u_strdup(ws_xml_get_node_text(entry_node));
-	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
-	if(entry_node)
-		filter->resultClass = u_strdup(ws_xml_get_node_text(entry_node));
-	entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
-	if(entry_node)
-		filter->resultRole = u_strdup(ws_xml_get_node_text(entry_node));
-	properNum = ws_xml_get_child_count(instance_node) - 4;
-	filter->resultProp = u_zalloc(properNum * sizeof(char*));
-	while(i < properNum) {
-		filter_node = ws_xml_get_child(instance_node, i, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY);
+	else if(strcmp(filter->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
+		filter_node = ws_xml_get_child(filter_node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
 		if(filter_node == NULL)
-			break;
-		filter->resultProp[i] = u_strdup(ws_xml_get_node_text(filter_node));
-		i++;
+			goto CLEANUP;
+		filter->selectorset.count = ws_xml_get_child_count(filter_node);
+		filter->selectorset.selectors = u_malloc(sizeof(Selector) * filter->selectorset.count );
+		while(i < filter->selectorset.count) {
+			entry_node = ws_xml_get_child(filter_node, i, XML_NS_WS_MAN, WSM_SELECTOR);
+			if(entry_node == NULL) break;
+			attr = ws_xml_find_node_attr(entry_node, NULL, WSM_NAME);
+			if(attr) {
+				filter->selectorset.selectors[i].name = u_strdup(ws_xml_get_attr_value(attr));
+			}
+			instance_node = ws_xml_get_child(entry_node, 0, XML_NS_ADDRESSING, WSA_EPR);
+			if(instance_node) {
+				filter->selectorset.selectors[i].type = 1;
+				filter->selectorset.selectors[i].value = (char *)epr_deserialize(instance_node, NULL, NULL, 1);
+			}
+			else {
+				filter->selectorset.selectors[i].type = 0;
+				filter->selectorset.selectors[i].value = u_strdup(ws_xml_get_node_text(entry_node));
+			}
+			i++;
+		}
 	}
-	filter->PropNum = i;
+	else
+		filter->query = u_strdup(ws_xml_get_node_text(filter_node));
+	
 	return filter;
+	
+CLEANUP:
+	filter_destroy(filter);
+	return NULL;
 }
