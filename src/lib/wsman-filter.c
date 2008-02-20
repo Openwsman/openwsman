@@ -38,7 +38,7 @@
 #include "wsman-filter.h"
 
 
-filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
+static filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
 	const int assocType, const char *assocClass, const char *resultClass, const char *role, 
 	const char *resultRole, const char **resultProp, const int propNum)
 {
@@ -108,6 +108,25 @@ filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, has
 cleanup:
 	filter_destroy(filter);
 	return NULL;
+}
+
+filter_t * filter_create_simple(const char *dialect, const char *query)
+{
+	return filter_create(dialect, query, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0);
+}
+
+filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass, 
+	const char *resultClass, const char *role, const char *resultRole, const char **resultProp, 
+	const int propNum)
+{
+	return filter_create(WSM_ASSOCIATION_FILTER_DIALECT, NULL, epr, NULL, assocType,
+		assocClass, resultClass, role, resultRole, resultProp, propNum);
+}
+
+filter_t * filter_create_selector(hash_t *selectors)
+{
+	return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
+		NULL, NULL, NULL, NULL, NULL, 0);
 }
 
 filter_t * filter_copy(filter_t *filter)

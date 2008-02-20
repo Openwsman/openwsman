@@ -4,7 +4,7 @@
 #include "wsman-xml.h"
 #include "u/libu.h"
 
-static void test_serialize(void)
+static void test_serialize1(void)
 {
 	hash_t *selectors_filter = hash_create(HASHCOUNT_T_MAX, 0, 0);
 	selector_entry *entry1 = NULL;
@@ -79,7 +79,25 @@ static void test_serialize(void)
 	u_free(entry2);
 	u_free(entry3);
 	ws_xml_destroy_doc(doc);
-	printf("test serialize epr successfully!\n");
+	printf("\033[22;32mtest serialize epr successfully!\033[m\n\n");
+}
+
+static void test_serialize2(void)
+{
+	epr_t *epr = epr_from_string("http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationFilter?Name=OperatingSystemFilter0&CreationClassName=CIM_IndicationFilter&SystemName=localhost.localdomain&SystemCreationClassName=CIM_ComputerSystem");
+	if(epr == NULL) {
+		printf("test serialize from string failed!\n");
+		return;
+	}
+	WsXmlDocH doc = ws_xml_create_envelope();
+        WsXmlNodeH header = ws_xml_get_soap_header(doc);
+        epr_serialize(header,NULL,NULL,epr,0);
+        ws_xml_dump_doc(stdout, doc);
+	
+	ws_xml_destroy_doc(doc);
+	epr_destroy(epr);
+        printf("\033[22;32mtest create epr from string successfully!\033[m\n\n");
+	
 }
 
 static void test_deserialize(void)
@@ -102,12 +120,13 @@ static void test_deserialize(void)
 	
 	epr_destroy(epr);
 	ws_xml_destroy_doc(doc);
-	printf("test deserialize epr successfully!\n");
+	printf("\033[22;32mtest deserialize epr successfully!\033[m\n\n");
 }
 
 int main(int argc, char *argv[])
 {
-	test_serialize();
+	test_serialize1();
+	test_serialize2();
 	test_deserialize();
 	return 0;
 }

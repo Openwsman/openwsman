@@ -59,6 +59,7 @@ static const char rcsid[] = "$Id: hash.c,v 1.36.2.11 2000/11/13 01:36:45 kaz Exp
 static hnode_t *hnode_alloc(void *context);
 static void hnode_free(hnode_t *node, void *context);
 static void hnode_free2(hnode_t *node, void *context);
+static void hnode_free3(hnode_t *node, void *context);
 static hash_val_t hash_fun_default(const void *key);
 static int hash_comp_default(const void *key1, const void *key2);
 
@@ -347,6 +348,41 @@ hash_t *hash_create2(hashcount_t maxcount, hash_comp_t compfun,
 		    hash->function = hashfun ? hashfun : hash_fun_default;
 		    hash->allocnode = hnode_alloc;
 		    hash->freenode = hnode_free2;
+		    hash->context = NULL;
+		    hash->mask = INIT_MASK;
+		    hash->dynamic = 1;			/* 7 */
+		    clear_table(hash);			/* 8 */
+		    assert (hash_verify(hash));
+		    return hash;
+		}
+		free(hash);
+    }
+
+    return NULL;
+}
+
+hash_t *hash_create3(hashcount_t maxcount, hash_comp_t compfun,
+	hash_fun_t hashfun)
+{
+    hash_t *hash;
+
+    if (hash_val_t_bit == 0)	/* 1 */
+	compute_bits();
+
+    hash = malloc(sizeof *hash);	/* 2 */
+
+    if (hash) {		/* 3 */
+		hash->table = malloc(sizeof *hash->table * INIT_SIZE);	/* 4 */
+		if (hash->table) {	/* 5 */
+		    hash->nchains = INIT_SIZE;		/* 6 */
+		    hash->highmark = INIT_SIZE * 2;
+		    hash->lowmark = INIT_SIZE / 2;
+		    hash->nodecount = 0;
+		    hash->maxcount = maxcount;
+		    hash->compare = compfun ? compfun : hash_comp_default;
+		    hash->function = hashfun ? hashfun : hash_fun_default;
+		    hash->allocnode = hnode_alloc;
+		    hash->freenode = hnode_free3;
 		    hash->context = NULL;
 		    hash->mask = INIT_MASK;
 		    hash->dynamic = 1;			/* 7 */
@@ -789,6 +825,13 @@ static void hnode_free(hnode_t *node, void *context)
 static void hnode_free2(hnode_t *node, void *context)
 {
    free(node->data);
+   free(node);
+}
+
+static void hnode_free3(hnode_t *node, void *context)
+{
+   free(node->data);
+   free(node->key);
    free(node);
 }
 

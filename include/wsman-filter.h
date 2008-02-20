@@ -56,13 +56,16 @@ struct __filter_t{
 typedef struct __filter_t filter_t;
 
 /**
- * Create a new filter_t
- * @param dialect Filter dialect string, for example, "http://schemas.dmtf.org/wsman/cimbinding/associationFilter"
- * @param filter Filter string, valid for some dialects
+ * Create a new filter_t with a simple query string
+ * @param dialect Filter dialect string
+ * @param query Query sting
+ * @ return created filter_t strucrture point
+ */
+filter_t * filter_create_simple(const char *dialect, const char *query);
+
+/**
+ * Create a new filter_t with assciation query
  * @param epr EPR structure, Identifies the source object for the association query and is required 
-                 for "http://schemas.dmtf.org/wsman/cimbinding/associationFilter" dialect
- * @param selectors A hash which contains pairs of name:selector_entry, required for
-                 "http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter"
  * @param assocType Association query type: 0 for associated instances, 1 for association instances
  * @param assocClass Represents the name of a CIM association class.  Optional
  * @param resultClass Represents the name of a CIM class.  Optional. 
@@ -72,9 +75,16 @@ typedef struct __filter_t filter_t;
  * @param propNum Number of resultProp
  * @return created filter_t strucrture point
  */
-filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
-	const int assocType, const char *assocClass, const char *resultClass, const char *role, 
-	const char *resultRole, const char **resultProp, const int propNum);
+filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass, 
+	const char *resultClass, const char *role, const char *resultRole, const char **resultProp, 
+	const int propNum);
+
+/**
+ * Create a new filter_t with SelectorSet query
+ * @param selectors A hash which contains pairs of name:selector_entry
+ * @return created filter_t strucrture point
+ */
+filter_t * filter_create_selector(hash_t *selectors);
 
 /**
  * Create a new filter_t from an original filter_t

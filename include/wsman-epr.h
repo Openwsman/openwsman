@@ -89,6 +89,12 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
  */
 epr_t *epr_create(const char *uri, hash_t * selectors, 
 		const char *address);
+/**
+ * Create an epr_t from a string
+ * @param str A string in a format of "Resource_uri?name1=value1&name2=value2"
+ * @return created epr_t address
+ */
+ epr_t *epr_from_string(const char* str);
 
  /**
  * Destroy an epr_t structure

@@ -30,6 +30,7 @@
 
 /**
  * @author Anas Nashif, Intel Corp.
+ * @author Liang Hou, Intel Corp.
  */
 
 
@@ -132,6 +133,37 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 	}
 	return epr;
 }
+
+ epr_t *epr_from_string(const char* str)
+ {
+ 	char *p;
+	char *uri;
+	hash_t *selectors;
+	hash_t *selectors_new;
+	hnode_t        *hn;
+	hscan_t         hs;
+	selector_entry *entry;
+	epr_t *epr;
+	
+	p = strchr(str, '?');
+	uri = u_strndup(str, p - str);
+	selectors = u_parse_query(p + 1);
+	selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
+	
+	hash_scan_begin(&hs, selectors);
+	while ((hn = hash_scan_next(&hs))) {
+		entry = u_malloc(sizeof(selector_entry));
+		entry->type = 0;
+		entry->entry.text = (char *)hnode_get(hn);
+		hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
+	}
+
+	epr = epr_create(uri, selectors_new, NULL);
+	hash_free(selectors_new);
+	hash_free(selectors);
+	u_free(uri);
+	return epr;	
+ }
 
 void epr_destroy(epr_t *epr)
 {

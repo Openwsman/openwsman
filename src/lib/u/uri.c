@@ -207,7 +207,7 @@ hash_t *u_parse_query(const char *query)
 
 	dbg_err_if(query == NULL);
 	q = u_strdup(query);
-	h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	h = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 
 	/* foreach name=value pair... */
 	for (src = q; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL) {
@@ -220,6 +220,8 @@ hash_t *u_parse_query(const char *query)
 
 		/* zero-term the name part and set the value pointer */
 		*val++ = 0;
+		val = u_strdup(val);
+		
 		u_trim(key);
 		u_trim(val);
 		u_trim_quotes(val);

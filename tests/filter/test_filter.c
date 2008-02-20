@@ -24,7 +24,7 @@ static void serialize_filter1(void)
 	hash_alloc_insert(selectors, "SystemCreationClassName", &entry1[3]);
 	hash_alloc_insert(selectors, "__cimnamespace", &entry1[4]);
 	epr_t *epr = epr_create("http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationFilter",selectors,NULL);
-	filter_t *filter = filter_create(WSM_ASSOCIATION_FILTER_DIALECT, NULL, epr, NULL, 0, "CIM_IndicationSubscription", NULL, NULL, NULL, NULL, 0);
+	filter_t *filter = filter_create_assoc(epr, 0, "CIM_IndicationSubscription", NULL, NULL, NULL, NULL, 0);
 	WsXmlDocH doc = ws_xml_create_envelope();
 	WsXmlNodeH body = ws_xml_get_soap_body(doc);
 	WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
@@ -48,7 +48,7 @@ static void serialize_filter1(void)
 
 static void serialize_filter2(void)
 {
-	filter_t *filter = filter_create(WSM_WQL_FILTER_DIALECT, "select * from CIM_ComputerSystem", NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0);
+	filter_t *filter = filter_create_simple(WSM_WQL_FILTER_DIALECT, "select * from CIM_ComputerSystem");
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
@@ -88,7 +88,7 @@ static void serialize_filter3(void)
         hash_alloc_insert(selectors, "SystemCreationClassName", &entry1[3]);
         hash_alloc_insert(selectors, "__cimnamespace", &entry1[4]);
 	
-	filter_t *filter = filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0, NULL, NULL, NULL, NULL, NULL, 0);
+	filter_t *filter = filter_create_selector(selectors);
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
