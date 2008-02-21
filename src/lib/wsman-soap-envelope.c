@@ -618,9 +618,9 @@ int wsman_parse_enum_request(WsContextH cntx,
 		if(filter) {
 			if(strcmp(filter->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
 				if(filter->assocType == 0)
-					enumInfo->flags |= WSMAN_ENUMINFO_REF;
-				else
 					enumInfo->flags |= WSMAN_ENUMINFO_ASSOC;
+				else
+					enumInfo->flags |= WSMAN_ENUMINFO_REF;
 			}
 			else if(strcmp(filter->dialect, WSM_CQL_FILTER_DIALECT) ==0)
 				enumInfo->flags |= WSMAN_ENUMINFO_CQL;
