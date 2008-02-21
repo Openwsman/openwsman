@@ -127,13 +127,13 @@ filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
 {
 	hnode_t        *hn;
 	filter_t *filter;
-	
+	selector_entry *entry;
+
 	if(hash_lookup(selectors, CIM_NAMESPACE_SELECTOR)) {
 			return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
 		NULL, NULL, NULL, NULL, NULL, 0);
 	}
 
-	selector_entry *entry;
 	entry = u_malloc(sizeof(selector_entry));
 	entry->type = 0;
 	entry->entry.text = (char *)cimnamespace;
