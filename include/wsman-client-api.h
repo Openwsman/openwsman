@@ -182,7 +182,8 @@ typedef enum {
 		char *wsmb_role;
 		char *wsmb_result_cls_name;
 		char *wsmb_cls_name;
-		char *wsmb_result_prop;
+		char **wsmb_result_prop;
+		int wsmb_result_prop_num;
 		float heartbeat_interval;
 		float expires;
 		hash_t *selectors;

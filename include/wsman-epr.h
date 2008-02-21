@@ -96,6 +96,24 @@ epr_t *epr_create(const char *uri, hash_t * selectors,
  */
  epr_t *epr_from_string(const char* str);
 
+/**
+ * Add a new text selector to an exsiting epr
+ * @param epr Point of epr_t
+ * @param name Name of selector
+ * @param selector Point of seletor_entry
+ * @return 0 for sucess, others for fail
+ */
+int epr_add_selector_text(epr_t *epr, const char *name, const char *text);
+
+/**
+ * Add a new epr selector to an exsiting epr
+ * @param epr Point of epr_t
+ * @param name Name of selector
+ * @param selector Point of seletor_entry
+ * @return 0 for sucess, others for fail
+ */
+int epr_add_selector_epr(epr_t *epr, const char *name, epr_t *added_epr);
+
  /**
  * Destroy an epr_t structure
  * @param epr An epr point

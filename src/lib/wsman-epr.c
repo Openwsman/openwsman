@@ -165,6 +165,56 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 	return epr;	
  }
 
+static int epr_add_selector(epr_t *epr, const char *name, selector_entry *selector)
+ {
+ 	int i;
+ 	Selector *p;
+	if(epr == NULL) return 0;
+ 	p = epr->refparams.selectorset.selectors;
+	for(i = 0; i< epr->refparams.selectorset.count; i++) {
+		if(strcmp(name, p->name) == 0) {
+			return -1;
+		}
+		p++;
+	}
+	p = epr->refparams.selectorset.selectors;
+	p = u_realloc(p, (epr->refparams.selectorset.count+1) * sizeof(Selector));
+	if(p == NULL) return -1;
+	p[epr->refparams.selectorset.count].name = u_strdup(name);
+	p[epr->refparams.selectorset.count].type = selector->type;
+	if(selector->type == 0)
+		p[epr->refparams.selectorset.count].value = u_strdup(selector->entry.text);
+	else
+		p[epr->refparams.selectorset.count].value = (char *)epr_copy(selector->entry.eprp);
+	epr->refparams.selectorset.selectors = p;
+	epr->refparams.selectorset.count++;
+	return 0;
+ }
+
+int epr_add_selector_text(epr_t *epr, const char *name, const char *text)
+{
+	int r;
+	selector_entry *entry;
+	entry = u_malloc(sizeof(selector_entry));
+	entry->type = 0;
+	entry->entry.text = (char *)text;
+	r = epr_add_selector(epr, name, entry);
+	u_free(entry);
+	return r;
+}
+
+int epr_add_selector_epr(epr_t *epr, const char *name, epr_t *added_epr)
+{
+	int r;
+	selector_entry *entry;
+	entry = u_malloc(sizeof(selector_entry));
+	entry->type = 1;
+	entry->entry.eprp = added_epr;
+	r = epr_add_selector(epr, name, entry);
+	u_free(entry);
+	return r;
+}
+
 void epr_destroy(epr_t *epr)
 {
 	int i;

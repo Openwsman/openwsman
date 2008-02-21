@@ -2,6 +2,7 @@
 #include "wsman-epr.h"
 #include "wsman-xml-api.h"
 #include "wsman-xml.h"
+#include "wsman-names.h"
 #include "u/libu.h"
 
 static void test_serialize1(void)
@@ -89,6 +90,9 @@ static void test_serialize2(void)
 		printf("test serialize from string failed!\n");
 		return;
 	}
+	
+	epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, "root/interop"); //test epr_add_selector_text
+
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         epr_serialize(header,NULL,NULL,epr,0);
@@ -122,6 +126,7 @@ static void test_deserialize(void)
 	ws_xml_destroy_doc(doc);
 	printf("\033[22;32mtest deserialize epr successfully!\033[m\n\n");
 }
+
 
 int main(int argc, char *argv[])
 {

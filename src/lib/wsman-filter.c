@@ -40,7 +40,7 @@
 
 static filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors, 
 	const int assocType, const char *assocClass, const char *resultClass, const char *role, 
-	const char *resultRole, const char **resultProp, const int propNum)
+	const char *resultRole, char **resultProp, const int propNum)
 {
 	int i = 0;
 	filter_t *filter = u_zalloc(sizeof(filter_t));
@@ -116,17 +116,39 @@ filter_t * filter_create_simple(const char *dialect, const char *query)
 }
 
 filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass, 
-	const char *resultClass, const char *role, const char *resultRole, const char **resultProp, 
+	const char *resultClass, const char *role, const char *resultRole, char **resultProp, 
 	const int propNum)
 {
 	return filter_create(WSM_ASSOCIATION_FILTER_DIALECT, NULL, epr, NULL, assocType,
 		assocClass, resultClass, role, resultRole, resultProp, propNum);
 }
 
-filter_t * filter_create_selector(hash_t *selectors)
+filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
 {
-	return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
+	hnode_t        *hn;
+	filter_t *filter;
+	
+	if(hash_lookup(selectors, CIM_NAMESPACE_SELECTOR)) {
+			return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
 		NULL, NULL, NULL, NULL, NULL, 0);
+	}
+
+	selector_entry *entry;
+	entry = u_malloc(sizeof(selector_entry));
+	entry->type = 0;
+	entry->entry.text = (char *)cimnamespace;
+
+	hash_alloc_insert(selectors, CIM_NAMESPACE_SELECTOR, entry);
+
+	filter = filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
+		NULL, NULL, NULL, NULL, NULL, 0);
+	
+	hn = hash_lookup(selectors, CIM_NAMESPACE_SELECTOR);
+	hash_delete(selectors, hn);
+	hnode_destroy(hn);
+
+	u_free(entry);
+	return filter;
 }
 
 filter_t * filter_copy(filter_t *filter)

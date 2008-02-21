@@ -71,7 +71,7 @@ static void serialize_filter3(void)
 {
 	hash_t *selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
         selector_entry *entry1 = NULL;
-        entry1 = u_malloc(sizeof(selector_entry)*5);
+        entry1 = u_malloc(sizeof(selector_entry)*4);
         entry1[0].type = 0;
         entry1[0].entry.text = "OperatingSystemFilter0";
         entry1[1].type = 0;
@@ -80,15 +80,12 @@ static void serialize_filter3(void)
         entry1[2].entry.text = "CIM_IndicationFilter";
         entry1[3].type = 0;
         entry1[3].entry.text = "CIM_ComputerSystem";
-        entry1[4].type = 0;
-        entry1[4].entry.text = "root/interop";
         hash_alloc_insert(selectors, "Name", &entry1[0]);
         hash_alloc_insert(selectors, "SystemName", &entry1[1]);
         hash_alloc_insert(selectors, "CreationClassName", &entry1[2]);
         hash_alloc_insert(selectors, "SystemCreationClassName", &entry1[3]);
-        hash_alloc_insert(selectors, "__cimnamespace", &entry1[4]);
 	
-	filter_t *filter = filter_create_selector(selectors);
+	filter_t *filter = filter_create_selector(selectors,"root/interop");
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);

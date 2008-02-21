@@ -248,18 +248,6 @@ typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 #define WSMAN_ENUMINFO_WQL          	  0x100000
 
 
-/*
-struct __filter_t {
-	void *epr;
-	char *assocClass;
-	char *resultClass;
-	char *role;
-	char *resultRole;
-	char *query;
-};
-
-typedef struct __filter_t filter_t;
-*/
 struct __WsEnumerateInfo {
 	unsigned long flags;
 	char            enumId[EUIDLEN];

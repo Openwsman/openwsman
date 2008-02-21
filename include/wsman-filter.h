@@ -76,15 +76,16 @@ filter_t * filter_create_simple(const char *dialect, const char *query);
  * @return created filter_t strucrture point
  */
 filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass, 
-	const char *resultClass, const char *role, const char *resultRole, const char **resultProp, 
+	const char *resultClass, const char *role, const char *resultRole, char **resultProp, 
 	const int propNum);
 
 /**
  * Create a new filter_t with SelectorSet query
  * @param selectors A hash which contains pairs of name:selector_entry
+ * @param cimnamespace Specify cim namespace if it is needed
  * @return created filter_t strucrture point
  */
-filter_t * filter_create_selector(hash_t *selectors);
+filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace);
 
 /**
  * Create a new filter_t from an original filter_t

@@ -43,6 +43,7 @@
 
 #include "wsman-xml.h"
 #include "wsman-xml-serialize.h"
+#include "wsman-filter.h"
 #include "wsman-client-transport.h"
 #include "wsman-faults.h"
 #include "wsman-client.h"
@@ -165,8 +166,7 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);
 
   	/* Do not add the selectors to the header for reference instances */
-	if (((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) &&
-			((options->flags & FLAG_CIM_ASSOCIATORS) != FLAG_CIM_ASSOCIATORS)) {
+	if ((options->flags & FLAG_CIM_REFERENCES) != FLAG_CIM_REFERENCES) {
 		wsmc_add_selector_from_options(doc, options);
 
 		if (options->cim_ns) {
@@ -394,88 +394,6 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 	}
 }
 
-
-static
-void wsmc_create_epr(WsSerializerContextH serctx, WsXmlNodeH epr_node,
-		const char* resource_uri,
-		client_opt_t *options)
-{
-	WsXmlNodeH node;
-	hash_t *selectors = NULL;
-	char *uri = NULL;
-
-	ws_xml_add_child(epr_node, XML_NS_ADDRESSING, WSA_ADDRESS,
-			WSA_TO_ANONYMOUS);
-	node = ws_xml_add_child(epr_node, XML_NS_ADDRESSING,
-			WSA_REFERENCE_PARAMETERS, NULL);
-	if (options->selectors != NULL &&
-			hash_count(options->selectors) > 0) {
-		selectors = options->selectors;
-		ws_serialize_str(serctx, node, resource_uri, XML_NS_WS_MAN,
-			WSM_RESOURCE_URI, 0);
-	} else if (options->filter &&
-		       	strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
-		selectors =  get_selectors_from_uri(options->filter);
-		wsmc_remove_query_string(options->filter, &uri);
-		ws_serialize_str(serctx, node, uri, XML_NS_WS_MAN,
-			WSM_RESOURCE_URI, 0);
-	}
-
-	if (selectors) {
-		hnode_t        *hn;
-		hscan_t         hs;
-		hash_scan_begin(&hs, selectors);
-		while ((hn = hash_scan_next(&hs))) {
-			wsman_add_selector(node,
-					(char *) hnode_getkey(hn), (char *) hnode_get(hn));
-			debug("key = %s value=%s",
-					(char *) hnode_getkey(hn), (char *) hnode_get(hn));
-		}
-	}
-	if (options->cim_ns) {
-		wsman_add_selector(node, CIM_NAMESPACE_SELECTOR, options->cim_ns);
-	}
-	return;
-}
-
-
-
-
-static void
-wsman_build_assoc_ref_body(WsManClient *cl, WsXmlNodeH node,
-		const char *resource_uri,
-		client_opt_t *options)
-{
-	WsXmlNodeH  object, assInst;
-
-	if((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES)
-		assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
-				WSMB_ASSOCIATION_INSTANCES, NULL);
-	else if((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)
-		assInst = ws_xml_add_child(node, XML_NS_CIM_BINDING,
-				WSMB_ASSOCIATED_INSTANCES, NULL);
-	else
-		return;
-	/* Build Object */
-	object = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_OBJECT, NULL);
-
-	wsmc_create_epr(cl->serctx, object, resource_uri, options );
-
-	/* Add AssociationClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME, options->wsmb_cls_name);
-	/* Add ResultClassName */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME, options->wsmb_result_cls_name);
-	/* Add Role */
-	node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_ROLE, options->wsmb_role);
-	if((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS) {
-		/* Add Role */
-		node = ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE, options->wsmb_result_role);
-	}
-	/* Add IncludeResultProperty */
-	ws_xml_add_child(assInst, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY, options->wsmb_result_prop);
-
-}
-
 void
 wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 {
@@ -669,7 +587,8 @@ wsman_set_enumeration_options(WsManClient * cl,
 			const char* resource_uri,
 			client_opt_t *options)
 {
-	WsXmlNodeH filter = NULL;
+	filter_t *filter = NULL;
+	epr_t *epr = NULL;
 	WsXmlNodeH node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {
@@ -700,32 +619,43 @@ wsman_set_enumeration_options(WsManClient * cl,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
 	if (options->filter) {
-		if(options->dialect && strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0)
-			options->flags |= FLAG_CIM_ASSOCIATORS;
-		else if(options->dialect && strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
-			options->flags |= FLAG_CIM_REFERENCES;
-
-		if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
-			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
-			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, NULL);
-		} else {
-			filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSENUM_FILTER, options->filter);
+		if(options->dialect && strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
+//			options->flags |= FLAG_CIM_ASSOCIATORS;
+			epr = epr_from_string(options->filter);
+			if(options->cim_ns) {
+				epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, options->cim_ns);
+			}
+			if(epr) {
+				filter = filter_create_assoc(epr, options->flags & FLAG_CIM_REFERENCES, 
+					options->wsmb_cls_name, 	options->wsmb_result_cls_name, options->wsmb_role, 
+					options->wsmb_result_role, options->wsmb_result_prop, options->wsmb_result_prop_num);
+			}
 		}
+		else
+			filter = filter_create_simple(options->dialect, options->filter);
+	}
+	if(options->dialect && strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
+		hash_t *selectors;
+		hnode_t *hn;
+		hscan_t hs;
+		selector_entry *entry;
+		
+		selectors = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 
-		if (options->dialect)
-			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, options->dialect);
-		else {
-			options->dialect = NULL;
-			ws_xml_add_node_attr(filter, NULL, WSENUM_DIALECT, WSM_XPATH_FILTER_DIALECT );
+		hash_scan_begin(&hs, options->selectors);
+		while ((hn = hash_scan_next(&hs))) {
+			entry = u_malloc(sizeof(selector_entry));
+			entry->type = 0;
+			entry->entry.text = (char *)hnode_get(hn);
+			hash_alloc_insert(selectors, hnode_getkey(hn), entry);
 		}
+		
+		filter = filter_create_selector(selectors, options->cim_ns);
+		
+		hash_free(selectors);
 	}
-
-	// References and Associations
-	if (((options->flags & FLAG_CIM_REFERENCES) == FLAG_CIM_REFERENCES) ||
-			((options->flags & FLAG_CIM_ASSOCIATORS) == FLAG_CIM_ASSOCIATORS)) {
-		if (filter != NULL)
-			wsman_build_assoc_ref_body(cl, filter, resource_uri, options);
-	}
+	if(filter)
+		filter_serialize(node, filter);
 }
 
 static void
