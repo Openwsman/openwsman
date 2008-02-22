@@ -719,6 +719,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 					XML_NS_EVENTING,
 					WSEVENT_SUBSCRIBE))) {
 		f = filter_deserialize(node);
+		subsInfo->filter = f;	
 		if(f) {
 			if(strcmp(f->dialect,WSM_CQL_FILTER_DIALECT) == 0)
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_CQL;
@@ -727,8 +728,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 			else {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 					return -1;
-			}
-			
+			}		
 		}
 		else {
 			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
@@ -736,7 +736,6 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				return -1;
 			}
 			else {
-				subsInfo->filter = f;
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
 			}
 		}

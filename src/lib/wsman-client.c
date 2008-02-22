@@ -619,8 +619,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
 	if (options->filter) {
-		if(options->dialect && strcasecmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
-//			options->flags |= FLAG_CIM_ASSOCIATORS;
+		if(options->dialect && strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
 			epr = epr_from_string(options->filter);
 			if(options->cim_ns) {
 				epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, options->cim_ns);
@@ -634,7 +633,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 		else
 			filter = filter_create_simple(options->dialect, options->filter);
 	}
-	if(options->dialect && strcasecmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
+	if(options->dialect && strcmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
 		hash_t *selectors;
 		hnode_t *hn;
 		hscan_t hs;
