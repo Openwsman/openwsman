@@ -91,6 +91,21 @@ void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
 	}
 }
 
+void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb, void *cb_data)
+{
+	int i;
+	Selector *ss = selectorset->selectors;
+	if (ss == NULL) {
+		debug("epr->refparams.selectors == NULL\n");
+		return;
+	}
+	for (i = 0; i < selectorset->count; i++) {
+		Selector *s;
+		s = ss + i;
+		cb(cb_data, s->name, s->value);
+	}
+}
+
 epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 {
 	epr_t *epr = NULL;
@@ -382,5 +397,15 @@ CLEANUP:
 	u_free(epr);
 	return NULL;
 		
+}
+
+char *get_cimnamespace_from_selectorset(SelectorSet *selectorset)
+{
+	int i = 0;
+	while(i < selectorset->count) {
+		if(strcmp(selectorset->selectors[i].name, CIM_NAMESPACE_SELECTOR) == 0)
+			return selectorset->selectors[i].value;
+	}
+	return NULL;
 }
 

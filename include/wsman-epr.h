@@ -77,6 +77,9 @@ typedef int (*selector_callback ) (void *, const char*, const char*);
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, 
 		void *cb_data);
 
+void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb, 
+		void *cb_data);
+
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
  /**
@@ -152,5 +155,12 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
  */
 epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, 
 		const char *epr_node_name, int embedded);
+
+/**
+ * Get cim namespace selector from a SelectorSet
+ * @param selectorset 
+ * @return CIM namespace if there is
+ */
+char *get_cimnamespace_from_selectorset(SelectorSet *selectorset);
 
 #endif

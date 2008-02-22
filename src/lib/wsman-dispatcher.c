@@ -285,6 +285,8 @@ check_supported_dialect(const char *dialect)
 		return 0;
 	else if (strcmp(dialect, WSM_CQL_FILTER_DIALECT) == 0)
 		return 0;
+	else if (strcmp(dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
+		return 0;
 	return 1;
 }
 

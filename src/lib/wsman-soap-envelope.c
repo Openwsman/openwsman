@@ -626,6 +626,11 @@ int wsman_parse_enum_request(WsContextH cntx,
 				enumInfo->flags |= WSMAN_ENUMINFO_CQL;
 			else if(strcmp(filter->dialect, WSM_WQL_FILTER_DIALECT) == 0)
 				enumInfo->flags |= WSMAN_ENUMINFO_WQL;
+			else if(strcmp(filter->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
+				enumInfo->flags |= WSMAN_ENUMINFO_SELECTOR;
+			else {
+				
+			}
 		}
 	}
 

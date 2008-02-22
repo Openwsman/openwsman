@@ -818,8 +818,8 @@ cim_enum_instances(CimClientInfo * client,
 		   WsEnumerateInfo * enumInfo,
 		   WsmanStatus * status)
 {
-	CMPIObjectPath *objectpath;
-	CMPIEnumeration *enumeration;
+	CMPIObjectPath *objectpath = NULL;
+	CMPIEnumeration *enumeration = NULL;
 	CMPIStatus rc;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	sfcc_enumcontext *enumcontext;
@@ -844,9 +844,16 @@ cim_enum_instances(CimClientInfo * client,
 			status->fault_detail_code = WSMAN_DETAIL_OK;
 			goto cleanup;
 		}
-	} else {
-		objectpath = newCMPIObjectPath(client->cim_namespace,
-			client->requested_class, NULL);
+	} else if(enumInfo->flags & WSMAN_ENUMINFO_SELECTOR) {
+		char *cim_namespace;
+		cim_namespace = get_cimnamespace_from_selectorset(&filter->selectorset);
+		if(cim_namespace == NULL)
+			cim_namespace = client->cim_namespace;
+		objectpath = newCMPIObjectPath(cim_namespace, client->requested_class, NULL);
+		wsman_selectorset_cb(&filter->selectorset,
+			cim_add_keys_from_filter_cb, objectpath);
+		debug( "ObjectPath: %s",
+					CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
 	}
 
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
@@ -863,7 +870,7 @@ cim_enum_instances(CimClientInfo * client,
 	}
 	else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
-	} else {
+	} else if(enumInfo->flags & WSMAN_ENUMINFO_SELECTOR){
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 			CMPI_FLAG_DeepInheritance,
 		    	NULL, &rc);
