@@ -873,7 +873,7 @@ cim_enum_instances(CimClientInfo * client,
 	}
 	else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
-	} else if(enumInfo->flags & WSMAN_ENUMINFO_SELECTOR){
+	} else{
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 			CMPI_FLAG_DeepInheritance,
 		    	NULL, &rc);
