@@ -855,7 +855,10 @@ cim_enum_instances(CimClientInfo * client,
 		debug( "ObjectPath: %s",
 					CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
 	}
-
+	else {
+		 objectpath = newCMPIObjectPath(client->cim_namespace, 
+		 	client->requested_class, NULL); 
+	}
 	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
 		enumeration = cc->ft->references(cc, objectpath, filter->resultClass,
 				filter->role, 0, NULL, &rc);

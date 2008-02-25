@@ -551,6 +551,11 @@ wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 	return doc;
 }
 
+static int interpretxpath(char **xpath)
+{
+	return 1;
+}
+
 int wsman_parse_enum_request(WsContextH cntx,
 		WsEnumerateInfo * enumInfo)
 {
@@ -629,6 +634,10 @@ int wsman_parse_enum_request(WsContextH cntx,
 			else if(strcmp(filter->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0)
 				enumInfo->flags |= WSMAN_ENUMINFO_SELECTOR;
 			else {
+				if(interpretxpath(&filter->query))
+					enumInfo->flags |= WSMAN_ENUMINFO_WQL;
+				else
+					return 0;
 				
 			}
 		}
