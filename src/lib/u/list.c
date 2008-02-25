@@ -52,7 +52,7 @@
  * is not permitted.
  */
 
-list_t *list_init(list_t *list, listcount_t maxcount)
+static list_t *list_init(list_t *list, listcount_t maxcount)
 {
     assert (maxcount != 0);
     list->nilnode.next = &list->nilnode;

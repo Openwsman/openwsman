@@ -91,7 +91,7 @@ void lnode_return(lnodepool_t *, lnode_t *);
 int lnode_pool_isempty(lnodepool_t *);
 int lnode_pool_isfrom(lnodepool_t *, lnode_t *);
 
-list_t *list_init(list_t *, listcount_t);
+
 list_t *list_create(listcount_t);
 void list_destroy(list_t *);
 void list_destroy_nodes(list_t *);
