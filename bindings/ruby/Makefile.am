@@ -25,7 +25,6 @@ GENERATED = openwsman_wrap.c \
 	    rbwsman.rb
 SWIG_SOURCES = ../openwsman.i
 rbwsman_la_SOURCES = openwsman_wrap.c \
-			 ../openwsman.c \
 			 $(SWIG_SOURCES)
 
 
