@@ -796,7 +796,7 @@ int hash_verify(hash_t *hash)
  */
 
 #undef hash_isfull
-int hash_isfull(hash_t *hash)
+int ow_hash_isfull(hash_t *hash)
 {
     return hash->nodecount == hash->maxcount;
 }
@@ -807,7 +807,7 @@ int hash_isfull(hash_t *hash)
  */
 
 #undef hash_isempty
-int hash_isempty(hash_t *hash)
+int ow_hash_isempty(hash_t *hash)
 {
     return hash->nodecount == 0;
 }
@@ -870,31 +870,31 @@ void hnode_destroy(hnode_t *hnode)
 }
 
 #undef hnode_put
-void hnode_put(hnode_t *node, void *data)
+void ow_hnode_put(hnode_t *node, void *data)
 {
     node->data = data;
 }
 
 #undef hnode_get
-void *hnode_get(hnode_t *node)
+void *ow_hnode_get(hnode_t *node)
 {
     return node->data;
 }
 
 #undef hnode_getkey
-const void *hnode_getkey(hnode_t *node)
+const void *ow_hnode_getkey(hnode_t *node)
 {
     return node->key;
 }
 
 #undef hash_count
-hashcount_t hash_count(hash_t *hash)
+hashcount_t ow_hash_count(hash_t *hash)
 {
     return hash->nodecount;
 }
 
 #undef hash_size
-hashcount_t hash_size(hash_t *hash)
+hashcount_t ow_hash_size(hash_t *hash)
 {
     return hash->nchains;
 }

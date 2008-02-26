@@ -52,7 +52,7 @@
  * is not permitted.
  */
 
-static list_t *list_init(list_t *list, listcount_t maxcount)
+list_t *list_init(list_t *list, listcount_t maxcount)
 {
     assert (maxcount != 0);
     list->nilnode.next = &list->nilnode;
@@ -338,7 +338,7 @@ int list_is_sorted(list_t *list, int compare(const void *, const void *))
  * Return 1 if the list is empty, 0 otherwise
  */
 
-int list_isempty(list_t *list)
+int ow_list_isempty(list_t *list)
 {
     if (list == NULL) {
         return 1;
@@ -351,7 +351,7 @@ int list_isempty(list_t *list)
  * Permitted only on bounded lists.
  */
 
-int list_isfull(list_t *list)
+int ow_list_isfull(list_t *list)
 {
     if (list == NULL) {
         return 0;
@@ -364,7 +364,7 @@ int list_isfull(list_t *list)
  * Add the given node at the end of the list
  */
 
-void list_append(list_t *list, lnode_t *node)
+void ow_list_append(list_t *list, lnode_t *node)
 {
     list_ins_before(list, node, &list->nilnode);
 }
@@ -373,7 +373,7 @@ void list_append(list_t *list, lnode_t *node)
  * Add the given node at the beginning of the list.
  */
 
-void list_prepend(list_t *list, lnode_t *node)
+void ow_list_prepend(list_t *list, lnode_t *node)
 {
     list_ins_after(list, node, &list->nilnode);
 }
@@ -382,7 +382,7 @@ void list_prepend(list_t *list, lnode_t *node)
  * Retrieve the first node of the list
  */
 
-lnode_t *list_first(list_t *list)
+lnode_t *ow_list_first(list_t *list)
 {
     if (list == NULL) {
         return NULL;
@@ -397,7 +397,7 @@ lnode_t *list_first(list_t *list)
  * Retrieve the last node of the list
  */
 
-lnode_t *list_last(list_t *list)
+lnode_t *ow_list_last(list_t *list)
 {
     if (list->nilnode.prev == &list->nilnode)
 	return NULL;
@@ -408,7 +408,7 @@ lnode_t *list_last(list_t *list)
  * Retrieve the count of nodes in the list
  */
 
-listcount_t list_count(list_t *list)
+listcount_t ow_list_count(list_t *list)
 {
     return list->nodecount;
 }
@@ -417,7 +417,7 @@ listcount_t list_count(list_t *list)
  * Remove the first node from the list and return it.
  */
 
-lnode_t *list_del_first(list_t *list)
+lnode_t *ow_list_del_first(list_t *list)
 {
     return list_delete(list, list->nilnode.next);
 }
@@ -426,7 +426,7 @@ lnode_t *list_del_first(list_t *list)
  * Remove the last node from the list and return it.
  */
 
-lnode_t *list_del_last(list_t *list)
+lnode_t *ow_list_del_last(list_t *list)
 {
     return list_delete(list, list->nilnode.prev);
 }
@@ -436,7 +436,7 @@ lnode_t *list_del_last(list_t *list)
  * Associate a data item with the given node.
  */
 
-void lnode_put(lnode_t *lnode, void *data)
+void ow_lnode_put(lnode_t *lnode, void *data)
 {
     lnode->data = data;
 }
@@ -445,7 +445,7 @@ void lnode_put(lnode_t *lnode, void *data)
  * Retrieve the data item associated with the node.
  */
 
-void *lnode_get(lnode_t *lnode)
+void *ow_lnode_get(lnode_t *lnode)
 {
     return lnode->data;
 }
@@ -455,7 +455,7 @@ void *lnode_get(lnode_t *lnode)
  * NULL is returned.
  */
 
-lnode_t *list_next(list_t *list, lnode_t *lnode)
+lnode_t *ow_list_next(list_t *list, lnode_t *lnode)
 {
     assert (list_contains(list, lnode));
 
@@ -468,7 +468,7 @@ lnode_t *list_next(list_t *list, lnode_t *lnode)
  * Retrieve the node's predecessor. See comment for lnode_next().
  */
 
-lnode_t *list_prev(list_t *list, lnode_t *lnode)
+lnode_t *ow_list_prev(list_t *list, lnode_t *lnode)
 {
     assert (list_contains(list, lnode));
 
@@ -490,7 +490,7 @@ int lnode_is_in_a_list(lnode_t *lnode)
 int list_verify(list_t *list)
 {
     lnode_t *node = list_first_priv(list), *nil = list_nil(list);
-    listcount_t count = list_count(list);
+    listcount_t count = ow_list_count(list);
 
     if (node->prev != nil)
 	return 0;

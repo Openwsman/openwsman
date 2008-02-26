@@ -186,40 +186,40 @@ typedef struct hscan_t {
     #endif
 } hscan_t;
 
-extern hash_t *hash_create(hashcount_t, hash_comp_t, hash_fun_t);
-extern hash_t *hash_create2(hashcount_t, hash_comp_t, hash_fun_t);
-extern hash_t *hash_create3(hashcount_t, hash_comp_t, hash_fun_t);
-extern void hash_set_allocator(hash_t *, hnode_alloc_t, hnode_free_t, void *);
-extern void hash_destroy(hash_t *);
-extern void hash_free_nodes(hash_t *);
-extern void hash_free(hash_t *);
-extern hash_t *hash_init(hash_t *, hashcount_t, hash_comp_t,
+extern hash_t *ow_hash_create(hashcount_t, hash_comp_t, hash_fun_t);
+extern hash_t *ow_hash_create2(hashcount_t, hash_comp_t, hash_fun_t);
+extern hash_t *ow_hash_create3(hashcount_t, hash_comp_t, hash_fun_t);
+extern void ow_hash_set_allocator(hash_t *, hnode_alloc_t, hnode_free_t, void *);
+extern void ow_hash_destroy(hash_t *);
+extern void ow_hash_free_nodes(hash_t *);
+extern void ow_hash_free(hash_t *);
+extern hash_t *ow_hash_init(hash_t *, hashcount_t, hash_comp_t,
 	hash_fun_t, hnode_t **, hashcount_t);
-extern void hash_insert(hash_t *, hnode_t *, void *);
-extern hnode_t *hash_lookup(hash_t *, const void *);
-extern hnode_t *hash_delete(hash_t *, hnode_t *);
-extern int hash_alloc_insert(hash_t *, void *, void *);
-extern void hash_delete_free(hash_t *, hnode_t *);
+extern void ow_hash_insert(hash_t *, hnode_t *, void *);
+extern hnode_t *ow_hash_lookup(hash_t *, const void *);
+extern hnode_t *ow_hash_delete(hash_t *, hnode_t *);
+extern int ow_hash_alloc_insert(hash_t *, void *, void *);
+extern void ow_hash_delete_free(hash_t *, hnode_t *);
 
-extern void hnode_put(hnode_t *, void *);
-extern void *hnode_get(hnode_t *);
-extern const void *hnode_getkey(hnode_t *);
-extern hashcount_t hash_count(hash_t *);
-extern hashcount_t hash_size(hash_t *);
+extern void ow_hnode_put(hnode_t *, void *);
+extern void *ow_hnode_get(hnode_t *);
+extern const void *ow_hnode_getkey(hnode_t *);
+extern hashcount_t ow_hash_count(hash_t *);
+extern hashcount_t ow_hash_size(hash_t *);
 
-extern int hash_isfull(hash_t *);
-extern int hash_isempty(hash_t *);
+extern int ow_hash_isfull(hash_t *);
+extern int ow_hash_isempty(hash_t *);
 
-extern void hash_scan_begin(hscan_t *, hash_t *);
-extern hnode_t *hash_scan_next(hscan_t *);
-extern hnode_t *hash_scan_delete(hash_t *, hnode_t *);
-extern void hash_scan_delfree(hash_t *, hnode_t *);
+extern void ow_hash_scan_begin(hscan_t *, hash_t *);
+extern hnode_t *ow_hash_scan_next(hscan_t *);
+extern hnode_t *ow_hash_scan_delete(hash_t *, hnode_t *);
+extern void ow_hash_scan_delfree(hash_t *, hnode_t *);
 
-extern int hash_verify(hash_t *);
+extern int ow_hash_verify(hash_t *);
 
-extern hnode_t *hnode_create(void *);
-extern hnode_t *hnode_init(hnode_t *, void *);
-extern void hnode_destroy(hnode_t *);
+extern hnode_t *ow_hnode_create(void *);
+extern hnode_t *ow_hnode_init(hnode_t *, void *);
+extern void ow_hnode_destroy(hnode_t *);
 
 #if defined(HASH_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
 #ifdef KAZLIB_SIDEEFFECT_DEBUG
@@ -233,7 +233,34 @@ extern void hnode_destroy(hnode_t *);
 #define hnode_get(N) ((N)->hash_data)
 #define hnode_getkey(N) ((N)->hash_key)
 #define hnode_put(N, V) ((N)->hash_data = (V))
+
+#define hash_create ow_hash_create
+#define hash_create2 ow_hash_create2
+#define hash_create3 ow_hash_create3
+#define hash_set_allocator ow_hash_set_allocator
+#define hash_destroy ow_hash_destroy
+#define hash_free_nodes ow_hash_free_nodes
+#define hash_free ow_hash_free
+#define hash_init ow_hash_init
+#define hash_insert ow_hash_insert
+#define hash_lookup ow_hash_lookup
+#define hash_delete ow_hash_delete
+#define hash_alloc_insert ow_hash_alloc_insert
+#define hash_delete_free ow_hash_delete_free
+#define hash_scan_begin ow_hash_scan_begin
+#define hash_scan_next ow_hash_scan_next
+#define hash_scan_delete ow_hash_scan_delete
+#define hash_scan_delfree ow_hash_scan_delfree
+#define hash_verify ow_hash_verify
+
+#define hnode_gekey ow_hnode_getkey
+#define hnode_create ow_hnode_create
+#define hnode_init ow_hnode_init
+#define hnode_destroy ow_hnode_destroy
+
 #endif
+
+
 
 #ifdef __cplusplus
 }
