@@ -1,7 +1,5 @@
 
-rubydir = $(shell ruby -r rbconfig -e "print Config::CONFIG['vendorarchdir']")
-#rbincdir = $(shell ruby -r rbconfig -e "print Config::CONFIG['archdir']")
-#rbldadd = $(shell ruby -r rbconfig -e "print Config::CONFIG['LIBRUBYARG']")
+rubydir = $(shell ruby -r rbconfig -e "print Config::CONFIG['sitearchdir']")
 
 INCLUDES =  \
            -I$(top_srcdir) \
