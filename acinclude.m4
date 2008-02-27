@@ -208,6 +208,9 @@ AC_DEFUN([AC_PROG_SWIG],[
                                 AC_MSG_NOTICE([SWIG executable is '$SWIG'])
                                 SWIG_LIB=`$SWIG -swiglib`
                                 AC_MSG_NOTICE([SWIG library directory is '$SWIG_LIB'])
+				SWIG_VERSION=`echo $(( $available_major * 100 * 100 + $available_minor * 100 + $available_patch ))`
+                                AC_MSG_NOTICE([SWIG version is '$SWIG_VERSION'])
+				AM_CONDITIONAL(SWIG_NEW_OPTIONS, test "$SWIG_VERSION" \> 10331)
                         fi
                 else
                         AC_MSG_WARN([cannot determine SWIG version])
