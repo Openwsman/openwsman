@@ -74,10 +74,10 @@ typedef struct {
 
 typedef int (*selector_callback ) (void *, const char*, const char*);
 
-void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, 
+void wsman_epr_selector_cb(epr_t *epr, selector_callback cb,
 		void *cb_data);
 
-void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb, 
+void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb,
 		void *cb_data);
 
 char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
@@ -90,7 +90,7 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
                              will be set
  * @return created epr_t address
  */
-epr_t *epr_create(const char *uri, hash_t * selectors, 
+epr_t *epr_create(const char *uri, hash_t * selectors,
 		const char *address);
 /**
  * Create an epr_t from a string
@@ -140,20 +140,20 @@ epr_t *epr_copy(epr_t *epr);
  int epr_cmp(epr_t *epr1, epr_t *epr2);
 
 /**
- * Turn an epr_t structure to an XML snippet. 
+ * Turn an epr_t structure to an XML snippet.
  * @param node XML node which will contain epr XML snippet
  * @param ns Namespace of EPR wrapper name
  * @param epr_node_name EPR wrapper name
  * @param epr A point of epr_t
  * @param embedded It means a complete epr snippet if embedded is 1. Or else, it is
                                  a snippet used in a soap header.
- * @return 0 for sucess, others for failure
+ * @return 0 for success, others for failure
  */
-int epr_serialize(WsXmlNodeH node, const char *ns, 
+int epr_serialize(WsXmlNodeH node, const char *ns,
 		const char *epr_node_name, epr_t *epr, int embedded);
 
 /**
- * Form an epr_t structure from an XML snippet. 
+ * Form an epr_t structure from an XML snippet.
  * @param node XML node which contains epr XML snippet
  * @param ns Namespace of EPR wrapper name
  * @param epr_node_name EPR wrapper name
@@ -161,12 +161,12 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
                                  a snippet used in a soap header.
  * @return New created epr_t point
  */
-epr_t *epr_deserialize(WsXmlNodeH node, const char *ns, 
+epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 		const char *epr_node_name, int embedded);
 
 /**
  * Get cim namespace selector from a SelectorSet
- * @param selectorset 
+ * @param selectorset
  * @return CIM namespace if there is
  */
 char *get_cimnamespace_from_selectorset(SelectorSet *selectorset);
