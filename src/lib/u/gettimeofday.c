@@ -49,5 +49,5 @@ int gettimeofday(struct timeval *tv, struct timezone *tzp)
 
 #else
 #include <sys/time.h>
-int gettimeofday(struct timeval *tp, struct timezone *tzp);
-#endif 
+/* int gettimeofday(struct timeval *tp, struct timezone *tzp); */
+#endif

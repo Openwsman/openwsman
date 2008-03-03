@@ -87,7 +87,7 @@
 
 static pthread_mutex_t shttpd_mutex;
 static pthread_cond_t shttpd_cond;
-int continue_working = 1;
+continue_working = 1;
 static int (*basic_callback) (char *, char *) = NULL;
 
 struct thread {
@@ -345,7 +345,7 @@ CONTINUE:
 		 return;
 	}
 	else {
-		memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, 
+		memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index,
 			state->len - state->index);
 		 state->index += k ;
 		 arg->out.num_bytes += k;

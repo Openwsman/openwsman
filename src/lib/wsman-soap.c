@@ -938,14 +938,14 @@ wsenum_enumerate_stub(SoapOpH op,
 	wsman_status_init(&status);
 	doc = create_enum_info(op, epcntx, _doc, &enumInfo);
 	if (doc != NULL) {
-		// wrong enum elements met. Fault message generated
+		/* wrong enum elements met. Fault message generated */
 		goto DONE;
 	}
 
 	if (endPoint && (retVal = endPoint(epcntx, enumInfo, &status, opaqueData))) {
                 debug("enumeration fault");
-		doc = wsman_generate_fault( _doc,
-			 status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code,
+				status.fault_detail_code, NULL);
 		destroy_enuminfo(enumInfo);
 		goto DONE;
 	}
@@ -1175,22 +1175,22 @@ wsenum_pull_direct_stub(SoapOpH op,
 
 			body = ws_xml_get_soap_body(doc);
 			response = ws_xml_get_child(body, 0,
-				XML_NS_ENUMERATION, WSENUM_PULL_RESP);
+					XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 
 			if (enumInfo->index == enumInfo->totalItems) {
 				/*
-				ws_serialize_str(soapCntx, response, NULL,
-			    	XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
-			   	 */
+				   ws_serialize_str(soapCntx, response, NULL,
+				   XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+				   */
 				ws_serialize_str(soapCntx->serializercntx, response, NULL,
-				XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
+						XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 0);
 				remove_locked_enuminfo(soapCntx, enumInfo);
 				locked = 0;
 				destroy_enuminfo(enumInfo);
-				} else  {
-					ws_serialize_str(soapCntx->serializercntx, response, enumInfo->enumId,
-			    		XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
-				}
+			} else  {
+				ws_serialize_str(soapCntx->serializercntx, response, enumInfo->enumId,
+						XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+			}
 		}
 	}
 #ifdef ENABLE_EVENTING_SUPPORT
@@ -1591,7 +1591,7 @@ create_subs_info(SoapOpH op,
 					goto DONE;
 				}
 				debug("auth profile type = %d", subsInfo->deliveryAuthType);
-					
+
 			}
 		}
 	}
@@ -1989,36 +1989,36 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 		wsman_transport_set_userName(notificationSender, subsInfo->username);
 	if(subsInfo->password)
 		wsman_transport_set_password(notificationSender, subsInfo->password);
-	if(subsInfo->deliveryAuthType == 
+	if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTP_BASIC_TYPE) {
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTP_DIGEST_TYPE) {
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_BASIC_TYPE) {
 		wsman_transport_set_verify_peer(notificationSender, 0);
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_DIGEST_TYPE) {
 		wsman_transport_set_verify_peer(notificationSender, 0);
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_TYPE) {
 		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_BASIC_TYPE) {
 		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST_TYPE) {
 		wsman_transport_set_verify_peer(notificationSender, 1);
 		wsman_transport_set_certhumbprint(notificationSender, subsInfo->certificate_thumbprint);
 	}
-	else if(subsInfo->deliveryAuthType == 
+	else if(subsInfo->deliveryAuthType ==
 		WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS_TYPE) {
 	}
 	else if(subsInfo->deliveryAuthType ==

@@ -96,7 +96,7 @@ int ow_lnode_pool_isfrom(lnodepool_t *, lnode_t *);
 
 
 list_t *ow_list_create(listcount_t);
-list_t *ow_list_init(list_t *list, listcount_t maxcount);
+/* list_t *ow_list_init(list_t *list, listcount_t maxcount); */
 void ow_list_destroy(list_t *);
 void ow_list_destroy_nodes(list_t *);
 void ow_list_return_nodes(list_t *, lnodepool_t *);
