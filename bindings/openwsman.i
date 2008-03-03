@@ -49,13 +49,12 @@ typedef struct _WsManClient {
 } WsManClient;
 
 %rename(EndPointReference) epr_t;
-/*
 %nodefault epr_t;
 typedef struct {
     char * address;
-    ReferenceParameters refparm;
 } epr_t;
-*/
+
+
 %rename(Filter) filter_t;
 %nodefault filter_t;
 typedef struct {
@@ -254,6 +253,11 @@ struct _WsXmlDoc {};
   WsXmlAttrH attr_add( const char *ns, const char *name, const char *value ) {
     return ws_xml_add_node_attr( $self, ns, name, value );
   }
+
+  epr_t *epr( const char *ns, const char *epr_node_name, int embedded) {
+    return epr_deserialize($self, ns, epr_node_name, embedded);
+  }  
+
 #if defined(SWIGRUBY)
   /* enumerate attributes */
   void each_attr() {
@@ -303,7 +307,15 @@ struct _WsXmlDoc {};
     epr_add_selector_text($self, key, value);
   }
 
-  
+  int serialize( WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded) {
+    return epr_serialize(node, ns, epr_node_name, $self, embedded);
+  }
+
+  int cmp(epr_t *epr2) {
+    return epr_cmp($self, epr2);
+  }
+
+
 }
 
 /*-----------------------------------------------------------------*/
