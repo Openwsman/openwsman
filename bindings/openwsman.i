@@ -28,6 +28,8 @@
 #include <wsman-client.h>
 #include <wsman-api.h>
 #include <wsman-xml-api.h>
+#include <wsman-epr.h>
+#include <wsman-filter.h>
 %}
 
 /*-----------------------------------------------------------------*/
@@ -45,6 +47,16 @@
 %nodefault _WsManClient;
 typedef struct _WsManClient {
 } WsManClient;
+
+%rename(EndPointReference) epr_t;
+%nodefault epr_t;
+typedef struct {
+} epr_t;
+
+%rename(Filter) filter_t;
+%nodefault filter_t;
+typedef struct {
+} filter_t;
 
 %rename(ClientOptions) client_opt_t;
 %nodefault client_opt_t;
@@ -274,6 +286,43 @@ struct _WsXmlDoc {};
   }
 }
 
+
+/*-----------------------------------------------------------------*/
+/* epr */
+%extend epr_t {
+  epr_t( const char *uri, const char *address) {
+    return epr_create( uri, NULL, address);
+  }
+  ~epr_t() {
+    epr_destroy( $self );
+  }
+  void add_selector(char *key, char*value) {
+    epr_add_selector_text($self, key, value);
+  }
+
+  
+}
+
+/*-----------------------------------------------------------------*/
+/* filter */
+%extend filter_t {
+    filter_t() {
+        return filter_initialize();
+    }
+  ~filter_t() {
+    filter_destroy( $self );
+  }
+
+  int SetAssoc( epr_t *epr, const int assocType, const char *assocClass,
+    const char *resultClass, const char *role, const char *resultRole, char **resultProp,
+    const int propNum) {
+    return filter_set_assoc($self, epr, assocType, assocClass, resultClass, role, resultRole, resultProp, propNum);
+  }
+
+  
+
+}
+
 /*-----------------------------------------------------------------*/
 /* options */
 
@@ -334,7 +383,6 @@ struct _WsXmlDoc {};
   }
 }
 
-void wsmc_set_action_option(client_opt_t * options, unsigned int);
 
 /*-----------------------------------------------------------------*/
 /* client */
@@ -384,9 +432,6 @@ void wsmc_set_action_option(client_opt_t * options, unsigned int);
     return wsmc_get_password( $self );
   }
 }
-
-void wsmc_add_selector(client_opt_t * options, const char *key, const char *value);
-
 
 
 /*-----------------------------------------------------------------*/

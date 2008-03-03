@@ -32,7 +32,7 @@
  * @author Anas Nashif, Intel Corp.
  * @author Liang Hou, Intel Corp.
  */
- 
+
 #ifndef _WSMAN_FILTER_H_
 #define _WSMAN_FILTER_H_
 
@@ -49,11 +49,27 @@ struct __filter_t{
 	char *resultClass;
 	char *role;
 	char *resultRole;
-	char **resultProp;	
+	char **resultProp;
 	int PropNum;
 };
 
 typedef struct __filter_t filter_t;
+
+
+filter_t * filter_initialize(void);
+
+filter_t * filter_create(const char *dialect, const char *query, epr_t *epr, hash_t *selectors,
+	const int assocType, const char *assocClass, const char *resultClass, const char *role,
+	const char *resultRole, char **resultProp, const int propNum);
+
+int filter_set_simple(filter_t *filter, const char *dialect, const char *query);
+
+int filter_set_assoc(filter_t *filter, epr_t *epr, const int assocType, const char *assocClass,
+    const char *resultClass, const char *role, const char *resultRole, char **resultProp,
+    const int propNum);
+
+/* void filter_set_selector(filter_t *filter, hash_t *selectors, const char *cimnamespace); */
+
 
 /**
  * Create a new filter_t with a simple query string
@@ -65,18 +81,18 @@ filter_t * filter_create_simple(const char *dialect, const char *query);
 
 /**
  * Create a new filter_t with assciation query
- * @param epr EPR structure, Identifies the source object for the association query and is required 
+ * @param epr EPR structure, Identifies the source object for the association query and is required
  * @param assocType Association query type: 0 for associated instances, 1 for association instances
  * @param assocClass Represents the name of a CIM association class.  Optional
- * @param resultClass Represents the name of a CIM class.  Optional. 
+ * @param resultClass Represents the name of a CIM class.  Optional.
  * @param role Represents the name of a key reference property of a CIM association class.  Optional
  * @param resultRole Represents the name of a key reference property of a CIM association class.  Optional
  * @param resultProp Represents the name of one or more properties of a CIM class. Optional
  * @param propNum Number of resultProp
  * @return created filter_t strucrture point
  */
-filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass, 
-	const char *resultClass, const char *role, const char *resultRole, char **resultProp, 
+filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass,
+	const char *resultClass, const char *role, const char *resultRole, char **resultProp,
 	const int propNum);
 
 /**
@@ -89,14 +105,14 @@ filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace);
 
 /**
  * Create a new filter_t from an original filter_t
- * @param filter 
+ * @param filter
  * @return new created filter_t structure point
  */
 filter_t * filter_copy(filter_t *filter);
 
 /**
  * Destroy a filter_t
- * @param filter 
+ * @param filter
  * @return void
  */
 void filter_destroy(filter_t *filter);
