@@ -80,6 +80,8 @@ hash_t *wsman_get_method_args(WsContextH cntx, const char *resource_uri);
 
 int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
+unsigned long wsman_get_max_envelope_size(WsContextH cntx, WsXmlDocH doc);
+
 void wsman_set_estimated_total(WsXmlDocH in_doc,
 			       WsXmlDocH out_doc,
 			       WsEnumerateInfo * enumInfo);

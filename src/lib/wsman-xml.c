@@ -1421,5 +1421,15 @@ void ws_xml_set_ns(WsXmlNodeH r, const char* namespace, const char* prefix)
 	xml_parser_set_ns(r, ns, prefix);
 }
 
+int check_envelope_size(WsXmlDocH doc, unsigned int size, const char *charset)
+{
+	char *buf;
+	int len;
+	if(size == 0) return 0; 
+	ws_xml_dump_memory_enc(doc, &buf, &len, charset);
+	ws_xml_free_memory(buf);
+	if(len > size) return 1;
+	return 0;
+}
 
 /** @} */

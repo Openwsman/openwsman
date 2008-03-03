@@ -236,6 +236,8 @@ create_enum_info(SoapOpH op,
 		fault_code = WSMAN_INTERNAL_ERROR;
 		goto DONE;
 	}
+	enumInfo->encoding = u_strdup(msg->charset);
+	enumInfo->maxsize = wsman_get_maxsize_from_op(op);
 	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
 	to = ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
@@ -285,6 +287,7 @@ destroy_enuminfo(WsEnumerateInfo * enumInfo)
 	u_free(enumInfo->auth_data.password);
 	u_free(enumInfo->epr_to);
 	u_free(enumInfo->epr_uri);
+	u_free(enumInfo->encoding);
 	if (enumInfo->filter)
 		filter_destroy(enumInfo->filter);
 	u_free(enumInfo);
@@ -906,7 +909,11 @@ WsmanMessage *wsman_get_msg_from_op(SoapOpH op)
 	return msg;
 }
 
-
+unsigned long wsman_get_maxsize_from_op(SoapOpH op)
+{
+	op_t *_op = (op_t *)op;
+	return _op->maxsize;
+}
 
 /**
  * Enumeration Stub for processing enumeration requests
@@ -1177,7 +1184,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 			response = ws_xml_get_child(body, 0,
 					XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 
-			if (enumInfo->index == enumInfo->totalItems) {
+			if (enumInfo->totalItems == 0 || enumInfo->index == enumInfo->totalItems) {
 				/*
 				   ws_serialize_str(soapCntx, response, NULL,
 				   XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);

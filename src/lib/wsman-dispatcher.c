@@ -219,6 +219,7 @@ static int validate_control_headers(op_t * op)
 						WSMAN_DETAIL_MINIMUM_ENVELOPE_LIMIT);
 			return 0;
 		}
+		op->maxsize = size;
 	}
 	child = ws_xml_get_child(header, 0,
 				 XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT);
@@ -536,34 +537,12 @@ int
 outbound_control_header_filter(SoapOpH opHandle,
 			       void *data, void *opaqueData)
 {
-	unsigned long size = 0, envelope_size = 0;
-	char *buf = NULL, *mu = NULL;
-	int len;
-	WsXmlDocH in_doc = soap_get_op_doc(opHandle, 1);
-	WsXmlDocH out_doc = soap_get_op_doc(opHandle, 0);
-	WsXmlNodeH inHeaders =
-	    wsman_get_soap_header_element(in_doc, NULL, NULL);
-	WsXmlNodeH maxsize;
-
-	if (!inHeaders)
-		return 0;
-
-	maxsize = ws_xml_get_child(inHeaders, 0, XML_NS_WS_MAN,
-			     WSM_MAX_ENVELOPE_SIZE);
-	mu = ws_xml_find_attr_value(maxsize, XML_NS_SOAP_1_2,
-				    SOAP_MUST_UNDERSTAND);
-	if (mu != NULL && strcmp(mu, "true") == 0) {
-		size = ws_deserialize_uint32(NULL, inHeaders, 0,
-					     XML_NS_WS_MAN,
-					     WSM_MAX_ENVELOPE_SIZE);
-		ws_xml_dump_memory_enc(out_doc, &buf, &len, "UTF-8");
-		envelope_size = ws_xml_utf8_strlen(buf);
-		if (envelope_size > size) {
-			generate_op_fault((op_t *) opHandle,
-						WSMAN_ENCODING_LIMIT,
-						WSMAN_DETAIL_MAX_ENVELOPE_SIZE);
-		}
-		u_free(buf);
+	op_t *op = (op_t *)opHandle;
+	WsmanMessage *msg = wsman_get_msg_from_op(opHandle);
+	if(check_envelope_size(op->out_doc, op->maxsize, msg->charset)) {
+		debug("****should not go here");
+		generate_op_fault(op, WSMAN_ENCODING_LIMIT,
+						WSMAN_DETAIL_SERVICE_ENVELOPE_LIMIT);
 	}
 	return 0;
 }
@@ -763,7 +742,6 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 		msg->http_code =
 		    wsman_find_httpcode_for_value(op->out_doc);
 	}
-
 	ws_xml_dump_memory_enc(op->out_doc, &buf, &len, msg->charset);
 	u_buf_set(msg->response, buf, len);
 	ws_xml_destroy_doc(op->out_doc);

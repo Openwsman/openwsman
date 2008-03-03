@@ -62,6 +62,7 @@ struct __dispatch_t {
 struct __op_t {
 	SoapDispatchH dispatch;
 	time_t expires;
+	unsigned long maxsize; //max envelope size
 	//unsigned long submittedTicks;
 	WsContextH cntx;
 	WsXmlDocH in_doc;

@@ -89,7 +89,7 @@ void cim_to_wsman_status(CMPIStatus sfcc_status, WsmanStatus * status);
 
 void cim_get_enum_items(CimClientInfo * client, WsContextH cntx,
 			WsXmlNodeH node, WsEnumerateInfo * enumInfo,
-			char *namespace, int max);
+			char *namespace, int maxelements, unsigned long maxsize);
 
 void cim_add_epr(CimClientInfo * client, WsXmlNodeH resource,
 		 char *resourceUri, CMPIObjectPath * objectpath);

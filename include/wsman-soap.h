@@ -247,6 +247,7 @@ typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 #define WSMAN_ENUMINFO_CQL          	  0x080000
 #define WSMAN_ENUMINFO_WQL          	  0x100000
 #define WSMAN_ENUMINFO_SELECTOR		0x200000
+#define WSMAN_ENUMINFO_CIM_CONTEXT_CLEANUP	0x400000
 
 
 struct __WsEnumerateInfo {
@@ -256,6 +257,7 @@ struct __WsEnumerateInfo {
 	unsigned long   expires; // expiration time in msecs  since  the epoch
 	unsigned int    totalItems;
 	unsigned int    maxItems;
+	unsigned int	maxsize; //max envelope size
 	unsigned int             index;
 	void           *enumResults;
 	void           *pullResultPtr;
@@ -264,6 +266,7 @@ struct __WsEnumerateInfo {
 	WsEndPointRelease releaseproc;
 	char *		epr_to;
 	char *		epr_uri;
+	char *		encoding;
 	void *		aux;
 	void		*epr;
 	filter_t	*filter;
@@ -508,5 +511,7 @@ int soap_add_filter(SoapH soap, SoapServiceCallback callbackProc,
 		    void *callbackData, int inbound);
 
 WsmanMessage *wsman_get_msg_from_op(SoapOpH op) ;
+
+unsigned long wsman_get_maxsize_from_op(SoapOpH op);
 
 #endif				/* SOAP_API_H_ */

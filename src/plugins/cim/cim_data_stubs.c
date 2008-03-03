@@ -416,23 +416,18 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		retval = 1;
 		goto cleanup;
 	}
-
-	if (enumInfo->maxItems > 0) {
+	if (enumInfo->flags & WSMAN_ENUMINFO_OPT) {
 		doc = wsman_create_response_envelope( cntx->indoc , NULL);
 		WsXmlNodeH node = ws_xml_add_child(ws_xml_get_soap_body(doc),
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP , NULL);
 		cim_get_enum_items(cimclient, cntx, node,
-				enumInfo, XML_NS_WS_MAN, enumInfo->maxItems);
-		if (doc != NULL) {
-			enumInfo->pullResultPtr = doc;
-			int index2 = enumInfo->index + 1;
-			if (index2 == enumInfo->totalItems)  {
-				cim_release_enum_context(enumInfo);
-				CimResource_destroy(cimclient);
-			}
-		}
-		else {
-			enumInfo->pullResultPtr = NULL;
+				enumInfo, XML_NS_WS_MAN, enumInfo->maxItems,
+				enumInfo->maxsize);
+		int index2 = enumInfo->index + 1;
+		if (enumInfo->totalItems == 0 ||index2 == enumInfo->totalItems)  {
+			cim_release_enum_context(enumInfo);
+			CimResource_destroy(cimclient);
+			return retval;
 		}
 	}
 cleanup:
@@ -455,6 +450,8 @@ CimResource_Release_EP( WsContextH cntx,
 		void *opaqueData)
 {
 	debug( "Release Endpoint Called");
+	if(enumInfo->flags & WSMAN_ENUMINFO_CIM_CONTEXT_CLEANUP)
+		return 0;
 	CimClientInfo * cimclient = cim_getclient_from_enum_context(enumInfo);
 	cim_release_enum_context(enumInfo);
 	if (cimclient) {
@@ -474,7 +471,8 @@ CimResource_Pull_EP( WsContextH cntx,
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsXmlNodeH body, pullnode;
-	int max;
+	int maxelements;
+	unsigned long maxsize;
 	debug( "Pull Endpoint Called");
 
 	if ( enumInfo) {
@@ -502,22 +500,19 @@ CimResource_Pull_EP( WsContextH cntx,
 	pullnode = ws_xml_add_child(body, XML_NS_ENUMERATION,
 			WSENUM_PULL_RESP, NULL);
 
-	// FIXME
-	max = wsman_get_max_elements(cntx, NULL);
+	maxelements= wsman_get_max_elements(cntx, NULL);
+	maxsize = wsman_get_max_envelope_size(cntx, NULL);
 	cim_get_enum_items(cimclient, cntx, pullnode,
-			enumInfo, XML_NS_ENUMERATION,  max);
+			enumInfo, XML_NS_ENUMERATION,  maxelements, maxsize);
 
 cleanup:
-	if (doc != NULL )
-		enumInfo->pullResultPtr = doc;
-	else
-		enumInfo->pullResultPtr = NULL;
-
-	if ( ( enumInfo->index + 1 ) == enumInfo->totalItems) {
+	if ( enumInfo->totalItems == 0 ||
+		( enumInfo->index + 1 ) == enumInfo->totalItems) {
 		cim_release_enum_context(enumInfo);
 		if (cimclient) {
 			CimResource_destroy(cimclient);
 		}
+		enumInfo->flags |= WSMAN_ENUMINFO_CIM_CONTEXT_CLEANUP;
 	}
 
 	ws_destroy_context(cntx);

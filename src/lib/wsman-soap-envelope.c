@@ -794,7 +794,7 @@ wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 
 int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 {
-	int max_elements = 0;
+	int max_elements = 1;
 	if (doc == NULL)
 		doc = cntx->indoc;
 
@@ -803,7 +803,7 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 
 		if (node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
 					 WSENUM_PULL))) {
-			node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
+			node = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 					     WSENUM_MAX_ELEMENTS);
 			if (node) {
 				char *text = ws_xml_get_node_text(node);
@@ -816,6 +816,26 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 	}
 	return max_elements;
 
+}
+
+unsigned long wsman_get_max_envelope_size(WsContextH cntx, WsXmlDocH doc)
+{
+	unsigned long size = 0;
+	WsXmlNodeH header, maxsize;
+	char *mu = NULL;
+	if (doc == NULL)
+		doc = cntx->indoc;
+	header = ws_xml_get_soap_header(doc);
+	maxsize = ws_xml_get_child(header, 0, XML_NS_WS_MAN,
+			     WSM_MAX_ENVELOPE_SIZE);
+	mu = ws_xml_find_attr_value(maxsize, XML_NS_SOAP_1_2,
+				    SOAP_MUST_UNDERSTAND);
+	if (mu != NULL && strcmp(mu, "true") == 0) {
+		size = ws_deserialize_uint32(NULL, header,
+					     0, XML_NS_WS_MAN,
+					     WSM_MAX_ENVELOPE_SIZE);
+	}
+	return size;
 }
 
 
