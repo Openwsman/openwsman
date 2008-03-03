@@ -234,6 +234,7 @@ int main(int argc, char** argv)
     WsManClient *cl;
     WsXmlDocH doc;
     client_opt_t *options = NULL;
+	filter_t *filter;
 
     if (getenv("OPENWSMAN_TEST_HOST")) {
         host = getenv("OPENWSMAN_TEST_HOST");
@@ -274,8 +275,8 @@ int main(int argc, char** argv)
        if(tests[i].referenceXML)
 	   	options->reference = u_strdup(tests[i].referenceXML);
 	if(tests[i].filter)
-		options->filter = filter_create_simple(tests[i].dialect, tests[i].filter);
-    doc = wsmc_action_subscribe(cl, tests[i].resource_uri, options);
+		filter = filter_create_simple(tests[i].dialect, tests[i].filter);
+    doc = wsmc_action_subscribe(cl, tests[i].resource_uri, options, filter);
 	if(!doc) {
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE;

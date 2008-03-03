@@ -152,8 +152,8 @@ int main(int argc, char** argv)
 	options->delivery_mode = 0;
    	//options->dialect = u_strdup("http://schemas.microsoft.com/wbem/wsman/1/WQL");
 	//options->filter = u_strdup("select * from CIM_ProcessIndication");
-	options->filter = filter_create_simple("http://schemas.microsoft.com/wbem/wsman/1/WQL", "select * from CIM_ProcessIndication" );
-        doc = wsmc_action_subscribe(cl, "http://schema.openwsman.org/2006/openwsman/test", options);
+	filter_t *filter = filter_create_simple("http://schemas.microsoft.com/wbem/wsman/1/WQL", "select * from CIM_ProcessIndication" );
+        doc = wsmc_action_subscribe(cl, "http://schema.openwsman.org/2006/openwsman/test", options, filter);
 	if(!doc) {
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE2;

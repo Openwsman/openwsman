@@ -136,7 +136,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 
 	WsXmlDocH doc;
 	char *enumContext;
-	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options);
+	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, NULL);
 
 	try
 	{
@@ -166,7 +166,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 	ws_xml_destroy_doc(enum_response);
 
 	while (enumContext != NULL && enumContext[0] != 0 ) {
-		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, enumContext);
+		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, NULL, enumContext);
 		try
 		{
 			CheckWsmanResponse(cl, doc);
@@ -277,7 +277,7 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	}
 	options->expires = info.expires;
 	options->heartbeat_interval = info.heartbeat_interval;
-	doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options);
+	doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options, NULL);
 	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);

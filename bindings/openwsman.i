@@ -58,6 +58,8 @@ typedef struct {
 %rename(Filter) filter_t;
 %nodefault filter_t;
 typedef struct {
+    char *resultClass;
+    char *assocClass;
 } filter_t;
 
 %rename(ClientOptions) client_opt_t;
@@ -303,8 +305,8 @@ struct _WsXmlDoc {};
   ~epr_t() {
     epr_destroy( $self );
   }
-  void add_selector(char *key, char*value) {
-    epr_add_selector_text($self, key, value);
+  void add_selector(const char *name, const char *text) {
+    epr_add_selector_text($self, name, text);
   }
 
   int serialize( WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded) {
@@ -328,13 +330,27 @@ struct _WsXmlDoc {};
     filter_destroy( $self );
   }
 
-  int SetAssoc( epr_t *epr, const int assocType, const char *assocClass,
-    const char *resultClass, const char *role, const char *resultRole, char **resultProp,
-    const int propNum) {
-    return filter_set_assoc($self, epr, assocType, assocClass, resultClass, role, resultRole, resultProp, propNum);
+  int associators( epr_t *epr, const char *assocClass,
+    const char *resultClass, const char *role, const char *resultRole, char **resultProp, const int propNum) {
+    return filter_set_assoc($self, epr, 0, assocClass, resultClass, role, resultRole, resultProp, propNum);
+  }
+  int references( epr_t *epr, const char *assocClass,
+    const char *resultClass, const char *role, const char *resultRole, char **resultProp, const int propNum) {
+    return filter_set_assoc($self, epr, 1, assocClass, resultClass, role, resultRole, resultProp, propNum);
   }
 
-  
+  int simple(const char *dialect, const char *query) {
+    return filter_set_simple($self, dialect, query );
+  }
+  int xpath(const char *query) {
+    return filter_set_simple($self, WSM_XPATH_FILTER_DIALECT, query );
+  }
+  int cql(const char *query) {
+    return filter_set_simple($self, WSM_CQL_FILTER_DIALECT, query );
+  }
+  int wql(const char *query) {
+    return filter_set_simple($self, WSM_WQL_FILTER_DIALECT, query );
+  }
 
 }
 
@@ -349,18 +365,6 @@ struct _WsXmlDoc {};
     wsmc_options_destroy( $self );
   }
 
-  /* set filter */
-#if defined(SWIGRUBY)
-  %rename( "filter=" ) set_filter( filter_t *filter );
-#endif
-#if defined(SWIGPYTHON)
-  %rename( "filter" )  set_filter( filter_t *filter );
-#endif
-
-  void set_filter( filter_t *filter ) {
-    wsmc_set_filter( filter, $self );
-  }
-  
 
   void set_dump_request(void) {
     wsmc_set_action_option($self, FLAG_DUMP_REQUEST );
@@ -445,11 +449,11 @@ struct _WsXmlDoc {};
   WsXmlDocH identify( client_opt_t *options ) {
     return wsmc_action_identify( $self, options );
   }
-  WsXmlDocH enumerate( client_opt_t *options , char *resource_uri) {
-    return wsmc_action_enumerate( $self, resource_uri, options);
+  WsXmlDocH enumerate( client_opt_t *options , filter_t *filter, char *resource_uri) {
+    return wsmc_action_enumerate( $self, resource_uri, options, filter);
   }
-  WsXmlDocH pull( client_opt_t *options , char *resource_uri, char *enum_ctx) {
-    return wsmc_action_pull( $self, resource_uri, options, enum_ctx);
+  WsXmlDocH pull( client_opt_t *options , filter_t *filter, char *resource_uri, char *enum_ctx) {
+    return wsmc_action_pull( $self, resource_uri, options, filter, enum_ctx);
   }
   WsXmlDocH release( client_opt_t *options , char *resource_uri, char *enum_ctx) {
     return wsmc_action_release( $self, resource_uri, options, enum_ctx);
@@ -464,11 +468,11 @@ struct _WsXmlDoc {};
     return wsmc_action_invoke_fromtext( $self, resource_uri, options, method, data, size, encoding);
   }
 
-  WsXmlDocH subscribe(client_opt_t *options , char *resource_uri) {
-    return wsmc_action_subscribe($self,  resource_uri, options);
+  WsXmlDocH subscribe(client_opt_t *options , filter_t *filter, char *resource_uri) {
+    return wsmc_action_subscribe($self,  resource_uri, options, filter);
   }
 
-  WsXmlDocH unsubscribe(client_opt_t *options , char *resource_uri, char *identifier) {
+  WsXmlDocH unsubscribe(client_opt_t *options , filter_t *filter, char *resource_uri, char *identifier) {
     return wsmc_action_unsubscribe($self, resource_uri, options, identifier);
   }
 

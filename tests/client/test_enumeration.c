@@ -255,7 +255,7 @@ int main(int argc, char** argv)
 
 
     WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)tests[i].resource_uri ,
-                                               options);
+                                               options, NULL);
     if (!enum_response) {
          printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
          goto CONTINUE;

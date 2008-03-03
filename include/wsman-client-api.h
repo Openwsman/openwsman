@@ -172,7 +172,6 @@ typedef enum {
 
 	typedef struct {
 		unsigned long flags;
-		filter_t *filter;
 		char *fragment;
 		char *cim_ns;
 		char * delivery_uri;
@@ -532,7 +531,9 @@ typedef enum {
 	 */
 	WsXmlDocH wsmc_action_enumerate(WsManClient * cl,
 				   const char *resource_uri,
-				   client_opt_t * options);
+				   client_opt_t * options,
+				   filter_t *filter
+				   );
 
 	/**
 	 * Send a Pull request
@@ -544,6 +545,7 @@ typedef enum {
 	 */
 	WsXmlDocH wsmc_action_pull(WsManClient * cl, const char *resource_uri,
 			      client_opt_t * options,
+				   filter_t *filter,
 			      const char *enumContext);
 
 	/**
@@ -566,7 +568,7 @@ typedef enum {
 	 * @return response document
 	 */
 	WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
-				 client_opt_t * options);
+				 client_opt_t * options, filter_t *filter);
 
 
 	/**
@@ -658,6 +660,7 @@ typedef enum {
 	int wsmc_action_enumerate_and_pull(WsManClient * cl,
 				      const char *resource_uri,
 				      client_opt_t * options,
+					  filter_t *filter,
 				      SoapResponseCallback callback,
 				      void *callback_data);
 
@@ -674,6 +677,7 @@ typedef enum {
 	WsXmlDocH wsmc_create_request(WsManClient * cl,
 					      const char *resource_uri,
 					      client_opt_t * options,
+					      filter_t *filter,
 					      WsmanAction action,
 					      char *method, void *data);
 

@@ -288,16 +288,18 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 	int r = 0;
 	WsXmlNodeH filter_node = NULL;
 	WsXmlNodeH instance_node = NULL;
-	if(filter->query)
+	if(filter->query) {
 		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, filter->query);
-	else if(filter->epr){
+	} else if(filter->epr) {
 		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
 		if(filter->assocType == 0)
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES, NULL);
 		else
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES, NULL);
 		r = epr_serialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, filter->epr, 1);
-		if(r) return r;
+
+		if(r)
+			return r;
 		if(filter->assocClass)
 			ws_xml_add_child(instance_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME,
 			filter->assocClass);
@@ -317,8 +319,7 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 			}
 		}
 
-	}
-	else if(filter->selectorset.count) {
+	} else if(filter->selectorset.count) {
 		int i = 0;
 		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
 		node = ws_xml_add_child(filter_node, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
@@ -335,8 +336,9 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 			i++;
 		}
 	}
-	else
+	else {
 		return -1;
+	}
 	if(filter->dialect)
 		ws_xml_add_node_attr(filter_node, NULL, WSM_DIALECT, filter->dialect);
 	return r;
