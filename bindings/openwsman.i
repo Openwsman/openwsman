@@ -49,10 +49,13 @@ typedef struct _WsManClient {
 } WsManClient;
 
 %rename(EndPointReference) epr_t;
+/*
 %nodefault epr_t;
 typedef struct {
+    char * address;
+    ReferenceParameters refparm;
 } epr_t;
-
+*/
 %rename(Filter) filter_t;
 %nodefault filter_t;
 typedef struct {
@@ -336,27 +339,16 @@ struct _WsXmlDoc {};
 
   /* set filter */
 #if defined(SWIGRUBY)
-  %rename( "filter=" ) set_filter( const char *filter );
+  %rename( "filter=" ) set_filter( filter_t *filter );
 #endif
 #if defined(SWIGPYTHON)
-  %rename( "filter" )  set_filter( const char *filter );
+  %rename( "filter" )  set_filter( filter_t *filter );
 #endif
 
-  void set_filter( const char *filter ) {
+  void set_filter( filter_t *filter ) {
     wsmc_set_filter( filter, $self );
   }
   
-  /* set dialect  */
-#if defined(SWIGRUBY)
-  %rename( "dialect=" ) set_dialect( const char *dialect );
-#endif
-#if defined(SWIGPYTHON)
-  %rename( "dialect" )   set_dialect( const char *dialect );
-#endif
-
-  void set_dialect( const char *dialect ) {
-    wsmc_set_dialect( dialect, $self );
-  }
 
   void set_dump_request(void) {
     wsmc_set_action_option($self, FLAG_DUMP_REQUEST );

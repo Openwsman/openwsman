@@ -298,8 +298,9 @@ wsmc_options_destroy(client_opt_t * op)
 	if (op->properties) {
 		hash_free(op->properties);
 	}
-	u_free(op->filter);
-	u_free(op->dialect);
+	if (op->filter)
+		filter_destroy(op->filter);
+		
 	u_free(op->fragment);
 	u_free(op->cim_ns);
 	u_free(op->delivery_uri);
@@ -401,19 +402,11 @@ wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 }
 
 void
-wsmc_set_filter(const char *filter, client_opt_t * options)
+wsmc_set_filter(filter_t *filter, client_opt_t * options)
 {
-	options->filter = u_strdup(filter);
+	options->filter = filter;
 }
 
-void
-wsmc_set_dialect(const char *dialect, client_opt_t * options)
-{
-	if (dialect != NULL)
-		options->dialect = u_strdup(dialect);
-	else
-		options->dialect = NULL;
-}
 
 void
 wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options)
@@ -586,8 +579,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 			WsXmlNodeH body,
 			const char* resource_uri,
 			client_opt_t *options)
-{
-	filter_t *filter = NULL;
+{	
 	epr_t *epr = NULL;
 	WsXmlNodeH node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
@@ -618,6 +610,7 @@ wsman_set_enumeration_options(WsManClient * cl,
 		ws_xml_add_child(node, XML_NS_CIM_BINDING,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
+	/*
 	if (options->filter) {
 		if(options->dialect && strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
 			epr = epr_from_string(options->filter);
@@ -633,7 +626,8 @@ wsman_set_enumeration_options(WsManClient * cl,
 		else
 			filter = filter_create_simple(options->dialect, options->filter);
 	}
-	if(options->dialect && strcmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
+	
+	if (options->dialect && strcmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
 		hash_t *selectors;
 		hnode_t *hn;
 		hscan_t hs;
@@ -653,8 +647,11 @@ wsman_set_enumeration_options(WsManClient * cl,
 		
 		hash_free(selectors);
 	}
-	if(filter)
-		filter_serialize(node, filter);
+	*/
+	if(options->filter) {
+		filter_serialize(node, options->filter);
+	}
+	return;
 }
 
 static void
@@ -728,10 +725,16 @@ wsman_set_subscribe_options(WsManClient * cl,
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	}
 	if(options->filter) {
+		filter_serialize(node, options->filter);
+	}	
+	/*
+	if(options->filter) {
 		filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSEVENT_FILTER, options->filter);
-		if(options->dialect)
+		if(options->dialect) {
 			ws_xml_add_node_attr(filter, NULL, WSEVENT_DIALECT, options->dialect);
+		}
 	}
+	*/
 	if (options->flags & FLAG_EVENT_SENDBOOKMARK) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SENDBOOKMARKS, NULL);
 	}

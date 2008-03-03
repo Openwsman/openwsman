@@ -62,7 +62,7 @@ typedef struct {
     const char *password;
 } ServerData;
 
-typedef struct {						
+typedef struct {
     /* Explanation of what you should see */
     const char *explanation;
 
@@ -89,13 +89,13 @@ typedef struct {
     int sendbookmark;
 
     char *referenceXML;
-	
+
     const char* xpath_expression;
-    
+
     char* expected_value;
 
     /* What the final status code should be. */
-    unsigned int final_status;		
+    unsigned int final_status;
 
     unsigned int auth_data;
 
@@ -108,8 +108,8 @@ ServerData sd[] = {
 
 TestData tests[] = {
     {
-        "Subscribe to the server (push mode)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+        "Subscribe to the server (push mode)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	0,
 	"http://localhost:80/eventsink",
@@ -121,13 +121,13 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier",
-        "uuid:",	    
-        200, 
+        "uuid:",
+        200,
         0
     },
     {
-    	"Subscribe to the server (pushwithack mode)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+    	"Subscribe to the server (pushwithack mode)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	1,
 	"http://localhost:80/eventsink",
@@ -139,13 +139,13 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier",
-        "uuid:",	    
-        200, 
+        "uuid:",
+        200,
         0
     },
     {
-    	"Subscribe to the server (events mode)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+    	"Subscribe to the server (events mode)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	2,
 	"http://localhost:80/eventsink",
@@ -157,13 +157,13 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/wse:SubscribeResponse/wse:SubscriptionManager/wsa:ReferenceParameters/wse:Identifier",
-        "uuid:",	    
-        200, 
+        "uuid:",
+        200,
         0
     },
     {
-    	"Subscribe to the server (pull mode)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+    	"Subscribe to the server (pull mode)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	3,
 	"http://localhost:80/eventsink",
@@ -175,13 +175,13 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/wse:SubscribeResponse/wsen:EnumerationContext",
-        "uuid:",	    
-        200, 
+        "uuid:",
+        200,
         0
     },
     {
-    	"Subscribe to the server (with invalid NotifyTo URL)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+    	"Subscribe to the server (with invalid NotifyTo URL)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	0,
 	"localhost:80/eventsink",
@@ -193,13 +193,13 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-        "wsmb:DevliveryToUnusable",	    
-        500, 
+        "wsmb:DevliveryToUnusable",
+        500,
         0
     },
     {
-    "Subscribe to the server (with unsupported Dialect)", 
-        "http://schema.openwsman.org/2006/openwsman/test", 
+    "Subscribe to the server (with unsupported Dialect)",
+        "http://schema.openwsman.org/2006/openwsman/test",
         NULL,
 	0,
 	"http://localhost:80/eventsink",
@@ -211,8 +211,8 @@ TestData tests[] = {
 	0,
 	NULL,
         "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
-        "wse:FilteringNotSupported",	    
-        400, 
+        "wse:FilteringNotSupported",
+        400,
         0
     }
 };
@@ -240,7 +240,7 @@ int main(int argc, char** argv)
     }
 
 
-    for (i = 0; i < ntests; i++) 
+    for (i = 0; i < ntests; i++)
     {
         if (tests[i].selectors) {
             tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
                 sd[0].path,
                 sd[0].scheme,
                 sd[0].username,
-                sd[0].password);		
+                sd[0].password);
         wsmc_transport_init(cl, NULL);
         options = wsmc_options_init();
 
@@ -271,13 +271,11 @@ int main(int argc, char** argv)
                options->heartbeat_interval = tests[i].heartbeat;
        if(tests[i].expiration)
 	   	options->expires = tests[i].expiration;
-       if(tests[i].dialect)
-	   	options->dialect = u_strdup(tests[i].dialect);
        if(tests[i].referenceXML)
 	   	options->reference = u_strdup(tests[i].referenceXML);
 	if(tests[i].filter)
-		options->filter = u_strdup(tests[i].filter);
-        doc = wsmc_action_subscribe(cl, tests[i].resource_uri, options);
+		options->filter = filter_create_simple(tests[i].dialect, tests[i].filter);
+    doc = wsmc_action_subscribe(cl, tests[i].resource_uri, options);
 	if(!doc) {
 		printf("\t\t\033[22;32msend request error!\033[m\n");
 		goto CONTINUE;
@@ -287,7 +285,7 @@ int main(int argc, char** argv)
                                     wsmc_get_response_code(cl));
             goto CONTINUE;
         }
-        if ((char *)tests[i].expected_value != NULL) 
+        if ((char *)tests[i].expected_value != NULL)
         {
 		char *xp = ws_xml_get_xpath_value(doc, (char *)tests[i].xpath_expression);
             if (xp)
@@ -295,12 +293,12 @@ int main(int argc, char** argv)
                 if (strncmp(xp,(char *)tests[i].expected_value, strlen((char *)tests[i].expected_value)) == 0)
                     printf("\t\t\033[22;32mPASSED\033[m\n");
                 else
-                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",(char *)tests[i].xpath_expression, xp);	
+                    printf("%s = %s\t\033[22;31mFAILED\033[m\n",(char *)tests[i].xpath_expression, xp);
                 u_free(xp);
             } else {
             	 ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
                 printf(" No %s\t\033[22;31mFAILED\033[m\n", (char *)tests[i].xpath_expression);
-                
+
             }
         } else {
            printf("\t\t\033[22;32mPASSED\033[m\n");
@@ -312,7 +310,7 @@ CONTINUE:
         u_free(tests[i].expected_value);
         wsmc_options_destroy(options);
         wsmc_release(cl);
-    }		
+    }
     return 0;
 }
 

@@ -50,12 +50,13 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 {
 	int i = 0;
 
-	if(dialect == NULL)
+	if(dialect == NULL) {
 		filter->dialect = u_strdup(WSM_XPATH_FILTER_DIALECT);
-	else
+	} else {
 		filter->dialect = u_strdup(dialect);
+	}
 
-	if(query) {
+	if (query) {
 		filter->query = u_strdup(query);
 	} else if(epr) {
 		filter->epr = epr_copy(epr);

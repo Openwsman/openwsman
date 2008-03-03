@@ -45,6 +45,9 @@ extern "C" {
 #include "wsman-names.h"
 #include "wsman-types.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-epr.h"
+#include "wsman-filter.h"
+
 /**
  * @defgroup Client Client
  * @brief WS-Management Client
@@ -121,6 +124,8 @@ typedef enum {
 		WSMAN_ACTION_SUBSCRIBE,
 		WSMAN_ACTION_UNSUBSCRIBE,
 		WSMAN_ACTION_RENEW,
+		WSMAN_ACTION_ASSOCIATORS,
+		WSMAN_ACTION_REFERENCES,
 		WSMAN_ACTION_TEST
 	} WsmanAction;
 
@@ -167,8 +172,7 @@ typedef enum {
 
 	typedef struct {
 		unsigned long flags;
-		char *filter;
-		char *dialect;
+		filter_t *filter;
 		char *fragment;
 		char *cim_ns;
 		char * delivery_uri;
@@ -178,12 +182,6 @@ typedef enum {
 		char *delivery_username; // username for delivery, if it is necessary
 		char *delivery_password; // password for delivery, if it is necessary
 		char *delivery_certificatethumbprint; // certificate thumbprint of event sink, if it is necessary
-		char *wsmb_result_role;
-		char *wsmb_role;
-		char *wsmb_result_cls_name;
-		char *wsmb_cls_name;
-		char **wsmb_result_prop;
-		int wsmb_result_prop_num;
 		float heartbeat_interval;
 		float expires;
 		hash_t *selectors;
@@ -740,9 +738,7 @@ typedef enum {
 	void wsmc_set_options_from_uri(const char *resource_uri,
 					client_opt_t * options);
 
-	void wsmc_set_filter(const char *filter, client_opt_t * options);
-
-	void wsmc_set_dialect(const char *dialect, client_opt_t * options);
+	void wsmc_set_filter(filter_t *filter, client_opt_t * options);
 
 	void wsmc_add_selector(client_opt_t * options,
 				       const char *key, const char *value);

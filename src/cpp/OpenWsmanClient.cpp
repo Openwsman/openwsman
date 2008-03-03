@@ -261,10 +261,10 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 	WsXmlDocH doc;
 	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
 	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
-	if(info.dialect !=  "")
-		options->dialect = u_strdup(info.dialect.c_str());
-	if(info.filter != "")
-		options->filter = u_strdup(info.filter.c_str());
+	if(info.dialect !=  "" && info.filter != "") {		
+		filter_create_simple(info.dialect.c_str(), info.filter.c_str());
+	}
+	
 	if(info.refenceParam != "")
 		options->reference = u_strdup(info.refenceParam.c_str());
 		// Add selectors.
