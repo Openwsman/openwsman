@@ -132,6 +132,14 @@ void epr_destroy(epr_t *epr);
 epr_t *epr_copy(epr_t *epr);
 
 /**
+ * Compare two epr_ts
+ * @param epr1
+ * @param epr2
+ * @return 0 for equality, others mean inequality
+ */
+ int epr_cmp(epr_t *epr1, epr_t *epr2);
+
+/**
  * Turn an epr_t structure to an XML snippet. 
  * @param node XML node which will contain epr XML snippet
  * @param ns Namespace of EPR wrapper name

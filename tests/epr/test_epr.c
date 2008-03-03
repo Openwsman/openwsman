@@ -127,11 +127,54 @@ static void test_deserialize(void)
 	printf("\033[22;32mtest deserialize epr successfully!\033[m\n\n");
 }
 
+static void test_epr_cmp(void)
+{
+	WsXmlDocH doc1 = ws_xml_read_file("./epr1.xml", "utf-8", 0);
+	WsXmlDocH doc2 = ws_xml_read_file("./epr2.xml", "utf-8", 0);
+        WsXmlDocH doc3 = ws_xml_read_file("./epr3.xml", "utf-8", 0);
+	if(doc1 == NULL || doc2 == NULL || doc3 == NULL) return;
+        WsXmlNodeH node = ws_xml_get_soap_header(doc1);
+        epr_t *epr1 = epr_deserialize(node, NULL, NULL, 0);
+        if(epr1 == NULL) {
+                printf("epr deserialize failed!\n");
+                return;
+        }
+	node = ws_xml_get_soap_header(doc2);
+        epr_t *epr2 = epr_deserialize(node, NULL, NULL, 0);
+        if(epr2 == NULL) {
+                printf("epr deserialize failed!\n");
+                return;
+        }
+	node = ws_xml_get_soap_header(doc3);
+        epr_t *epr3 = epr_deserialize(node, NULL, NULL, 0);
+        if(epr3 == NULL) {
+                printf("epr deserialize failed!\n");
+                return;
+        }
+        ws_xml_destroy_doc(doc1);
+	ws_xml_destroy_doc(doc2);
+	ws_xml_destroy_doc(doc3);
+
+	if(epr_cmp(epr1, epr2) == 0)
+		printf("\033[22;32mepr1 == epr2\033[m\n\n");			
+	else
+		printf("\033[22;32mepr1 != epr2\033[m\n\n");
+	if(epr_cmp(epr1, epr3) == 0)
+                printf("\033[22;32mepr1 == epr3\033[m\n\n");
+        else
+                printf("\033[22;32mepr1 != epr3\033[m\n\n");
+	
+	epr_destroy(epr1);
+	epr_destroy(epr2);
+	epr_destroy(epr3);
+}
+
 
 int main(int argc, char *argv[])
 {
 	test_serialize1();
 	test_serialize2();
 	test_deserialize();
+	test_epr_cmp();
 	return 0;
 }

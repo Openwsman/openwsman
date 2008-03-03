@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
@@ -280,6 +281,37 @@ epr_t *epr_copy(epr_t *epr)
 		p2++;
 	}
 	return cpy_epr;
+}
+
+ int epr_cmp(epr_t *epr1, epr_t *epr2)
+ {
+ 	int i;
+	Selector *p1;
+	Selector *p2;
+	assert(epr1 != NULL && epr2 != NULL);
+	if(strcmp(epr1->address, epr2->address)) return 1;
+	if(strcmp(epr1->refparams.uri, epr2->refparams.uri)) return 1;
+	if(epr1->refparams.selectorset.count != epr2->refparams.selectorset.count)
+		return 1;
+	p1 = epr1->refparams.selectorset.selectors;
+	p2 = epr2->refparams.selectorset.selectors;
+	for(i = 0; i < epr1->refparams.selectorset.count; i++) {
+		if(strcmp(p1->name, p2->name))
+			return 1;
+		if(p1->type != p2->type)
+			return 1;
+		if(p1->type == 0) {
+			if(strcmp(p1->value, p2->value))
+				return 1;
+			else
+				return 0;
+		}
+		else
+			return epr_cmp((epr_t*)p1->value, (epr_t*)p2->value);
+		p1++;
+		p2++;
+	}
+	return 0;
 }
 
 int epr_serialize(WsXmlNodeH node, const char *ns, 
