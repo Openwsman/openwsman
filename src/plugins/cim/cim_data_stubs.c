@@ -699,7 +699,13 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	subsInfo->cim_namespace = u_strdup(cimclient->cim_namespace);
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
 		indicationfilter= cim_get_objectpath_from_selectors(cimclient, cntx, status);
-		subsInfo->existingfilterOP = CMClone(indicationfilter, NULL);
+		if(indicationfilter)
+			subsInfo->existingfilterOP = CMClone(indicationfilter, NULL);
+		else {
+			status->fault_code = WSA_DESTINATION_UNREACHABLE;
+			status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+		}
+			
 		debug("subscribe to an existing filter");
 	}
 	else {

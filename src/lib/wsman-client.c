@@ -1448,7 +1448,7 @@ WsXmlDocH wsmc_action_subscribe(WsManClient * cl, const char *resource_uri,
 				 client_opt_t * options, filter_t *filter)
 {
 	WsXmlDocH response;
-	WsXmlDocH request = wsmc_create_request(cl, resource_uri, options, NULL,
+	WsXmlDocH request = wsmc_create_request(cl, resource_uri, options, filter,
 			WSMAN_ACTION_SUBSCRIBE, NULL, NULL);
 	if (!request)
 		return NULL;
