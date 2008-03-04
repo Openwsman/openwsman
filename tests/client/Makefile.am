@@ -23,6 +23,7 @@ test_subscribe_SOURCES = test_subscribe.c
 test_unsubscribe_SOURCES = test_unsubscribe.c
 test_renew_SOURCES = test_renew.c
 test_associators_SOURCES = test_associators.c
+test_selectorfilter_SOURCES = test_selectorfilter.c
 
 noinst_PROGRAMS = \
 		  test_references \
@@ -32,6 +33,7 @@ noinst_PROGRAMS = \
 		  test_invoke \
 		  test_enumeration \
 		  test_associators \
+		  test_selectorfilter \
 		  test_pull \
 		  test_subscribe \
 		  test_unsubscribe \

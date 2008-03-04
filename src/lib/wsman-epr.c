@@ -440,6 +440,7 @@ char *get_cimnamespace_from_selectorset(SelectorSet *selectorset)
 	while(i < selectorset->count) {
 		if(strcmp(selectorset->selectors[i].name, CIM_NAMESPACE_SELECTOR) == 0)
 			return selectorset->selectors[i].value;
+		i++;
 	}
 	return NULL;
 }
