@@ -104,6 +104,15 @@ filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *asso
 filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace);
 
 /**
+ * Add more text selectors to an existing SelectorSet filter
+ * @param filter
+ * @param key
+ * @param value
+ *@ return 0 for success, others mean failure
+ */
+int filter_add_selector(filter_t *filter, const char* key, const char *value);
+
+/**
  * Create a new filter_t from an original filter_t
  * @param filter
  * @return new created filter_t structure point

@@ -85,7 +85,7 @@ static void serialize_filter3(void)
         hash_alloc_insert(selectors, "CreationClassName", &entry1[2]);
         hash_alloc_insert(selectors, "SystemCreationClassName", &entry1[3]);
 	
-	filter_t *filter = filter_create_selector(selectors,"root/interop");
+	filter_t *filter = filter_create_selector(selectors,NULL);
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
@@ -166,6 +166,7 @@ static void deserialize_filter3(void)
                 printf("\033[22;31mfilter deserialize failed!\033[m\n");
                 return;
         }
+	filter_add_selector(filter, "__cimnamespace", "root/interop");
         ws_xml_destroy_doc(doc);
         doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);

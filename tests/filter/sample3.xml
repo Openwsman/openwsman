@@ -5,7 +5,6 @@
     <wsen:Enumerate>
       <wsman:Filter Dialect="http://schemas.dmtf.org/wbem/wsman/1/wsman/SelectorFilter">
         <wsman:SelectorSet>
-          <wsman:Selector Name="__cimnamespace">root/interop</wsman:Selector>
           <wsman:Selector Name="Name">OperatingSystemFilter0</wsman:Selector>
           <wsman:Selector Name="SystemName">localhost.localdomain</wsman:Selector>
           <wsman:Selector Name="SystemCreationClassName">CIM_ComputerSystem</wsman:Selector>

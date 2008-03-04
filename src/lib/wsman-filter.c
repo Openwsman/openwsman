@@ -164,7 +164,7 @@ filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
 	filter_t *filter;
 	selector_entry *entry;
 
-	if(hash_lookup(selectors, CIM_NAMESPACE_SELECTOR)) {
+	if(!cimnamespace || hash_lookup(selectors, CIM_NAMESPACE_SELECTOR)) {
 			return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
 		NULL, NULL, NULL, NULL, NULL, 0);
 	}
@@ -184,6 +184,30 @@ filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
 
 	u_free(entry);
 	return filter;
+}
+
+int filter_add_selector(filter_t *filter, const char* key, const char *value)
+{
+	int i;
+	if(filter == NULL || key == NULL || value == NULL)
+		return 0;
+	Selector *entry;
+	entry = filter->selectorset.selectors;
+	for(i = 0; i < filter->selectorset.count; i++) {
+		if(strcmp(key, entry[i].name) == 0)
+			return -1;
+	}
+	entry = u_realloc(entry, (filter->selectorset.count+1) * sizeof(Selector));
+	if(entry == NULL) return -1;
+
+	entry[filter->selectorset.count].type = 0;
+	entry[filter->selectorset.count].name = u_strdup(key);
+	entry[filter->selectorset.count].value = u_strdup(value);
+	filter->selectorset.selectors = entry;
+	filter->selectorset.count++;
+
+	return 0;
+	
 }
 
 filter_t * filter_copy(filter_t *filter)
