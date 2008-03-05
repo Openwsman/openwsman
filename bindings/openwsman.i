@@ -330,8 +330,8 @@ struct _WsXmlDoc {};
     filter_destroy( $self );
   }
 
-  int associators( epr_t *epr, const char *assocClass,
-    const char *resultClass, const char *role, const char *resultRole, char **resultProp, const int propNum) {
+  int associators( epr_t *epr, const char *assocClass, const char *resultClass,
+        const char *role, const char *resultRole, char **resultProp, const int propNum) {
     return filter_set_assoc($self, epr, 0, assocClass, resultClass, role, resultRole, resultProp, propNum);
   }
   int references( epr_t *epr, const char *assocClass,

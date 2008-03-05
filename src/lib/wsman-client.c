@@ -716,14 +716,6 @@ wsman_set_subscribe_options(WsManClient * cl,
 	if(filter) {
 		filter_serialize(node, filter);
 	}
-	/* FIXME, this should be done somewhere else, maybe in wsman-filter as a new function
-	if(options->filter) {
-		filter = ws_xml_add_child(node, XML_NS_WS_MAN, WSEVENT_FILTER, options->filter);
-		if(options->dialect) {
-			ws_xml_add_node_attr(filter, NULL, WSEVENT_DIALECT, options->dialect);
-		}
-	}
-	*/
 	if (options->flags & FLAG_EVENT_SENDBOOKMARK) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SENDBOOKMARKS, NULL);
 	}
