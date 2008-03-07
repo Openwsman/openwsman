@@ -189,9 +189,9 @@ filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
 int filter_add_selector(filter_t *filter, const char* key, const char *value)
 {
 	int i;
+	Selector *entry;
 	if(filter == NULL || key == NULL || value == NULL)
 		return 0;
-	Selector *entry;
 	entry = filter->selectorset.selectors;
 	for(i = 0; i < filter->selectorset.count; i++) {
 		if(strcmp(key, entry[i].name) == 0)
