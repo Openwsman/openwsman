@@ -1,9 +1,7 @@
-
-
-How to run openwsman from CVS? (Valid for version 0.7.1)
+How to compile and run openwsman from Subversion? 
 ===============================
 
-After checking out the project from CVS run ./autoconfiscate in the TOP directory and 
+After checking out the project from subversion run ./autoconfiscate in the TOP directory and 
 follow that by running ./configure <options>.
 If you download a packaged version, then there is no need to run ./autoconfiscate and you will
 be able to run ./configure directly.
@@ -181,7 +179,7 @@ The above command should give the following result:
     <wsmid:IdentifyResponse>
       <wsmid:ProtocolVersion>http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd</wsmid:ProtocolVersion>
       <wsmid:ProductVendor>openwsman</wsmid:ProductVendor>
-      <wsmid:ProductVersion>1.6.0</wsmid:ProductVersion>
+      <wsmid:ProductVersion>2.0.0</wsmid:ProductVersion>
     </wsmid:IdentifyResponse>
   </s:Body>
 </s:Envelope>
