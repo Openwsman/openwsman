@@ -464,6 +464,8 @@ wsmc_create_action_str(WsmanAction action)
 	char           *action_str = NULL;
 
 	switch (action) {
+	case WSMAN_ACTION_ASSOCIATORS:
+	case WSMAN_ACTION_REFERENCES:
 	case WSMAN_ACTION_ENUMERATION:
 		action_str = wsman_make_action(XML_NS_ENUMERATION, WSENUM_ENUMERATE);
 		break;
@@ -569,7 +571,6 @@ static void
 wsman_set_enumeration_options(WsManClient * cl, WsXmlNodeH body, const char* resource_uri,
 			client_opt_t *options, filter_t *filter)
 {
-	epr_t *epr = NULL;
 	WsXmlNodeH node = ws_xml_get_child(body, 0, NULL, NULL);
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {
@@ -831,9 +832,11 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 		ws_xml_add_child(body,
 				XML_NS_WSMAN_ID, WSMID_IDENTIFY, NULL);
 		break;
-        case WSMAN_ACTION_CUSTOM:
-                break;
-        case WSMAN_ACTION_ENUMERATION:
+	case WSMAN_ACTION_CUSTOM:
+		break;
+	case WSMAN_ACTION_ENUMERATION:
+	case WSMAN_ACTION_ASSOCIATORS:
+	case WSMAN_ACTION_REFERENCES:
 		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
 		wsman_set_enumeration_options(cl, body, resource_uri, options, filter);

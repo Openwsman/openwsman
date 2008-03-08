@@ -4,11 +4,11 @@
 #pythondir = $(pylibdir)/site-packages
 
 # SWIG got new options a 1.3.32
-if SWIG_NEW_OPTIONS
-swigoptions = -debug-classes -debug-module 1,2,3,4
-else
-swigoptions = -dump_classes -dump_module -dump_parse_module
-endif
+# if SWIG_NEW_OPTIONS
+# swigoptions = -debug-classes -debug-module 1,2,3,4
+# else
+# swigoptions = -dump_classes -dump_module -dump_parse_module
+# endif
 
 INCLUDES =  -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \

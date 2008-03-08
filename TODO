@@ -1,2 +1,3 @@
  - move uoption to wsmancli and use getopt on server to reduce binary size
+ - 
 

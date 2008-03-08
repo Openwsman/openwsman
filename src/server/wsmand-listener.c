@@ -87,7 +87,7 @@
 
 static pthread_mutex_t shttpd_mutex;
 static pthread_cond_t shttpd_cond;
-continue_working = 1;
+int continue_working = 1;
 static int (*basic_callback) (char *, char *) = NULL;
 
 struct thread {
