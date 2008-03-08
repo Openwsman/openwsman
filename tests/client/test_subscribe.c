@@ -234,7 +234,7 @@ int main(int argc, char** argv)
     WsManClient *cl;
     WsXmlDocH doc;
     client_opt_t *options = NULL;
-	filter_t *filter;
+    filter_t *filter = NULL;
 
     if (getenv("OPENWSMAN_TEST_HOST")) {
         host = getenv("OPENWSMAN_TEST_HOST");
