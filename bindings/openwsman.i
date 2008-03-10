@@ -405,6 +405,95 @@ struct _WsXmlDoc {};
   }
 }
 
+/*-----------------------------------------------------------------*/
+/* Rbwsman */
+/* debug (mostly stolen from src/server/wsmand.c) */
+
+static void
+debug_message_handler (const char *str, 
+                       debug_level_e level, 
+                       void *user_data)
+{
+  static int log_pid = 0;
+  
+  if (log_pid == 0)
+    log_pid = getpid ();
+#if 0
+  if (level <= wsmand_options_get_debug_level () 
+      || wsmand_options_get_foreground_debug() > 0 ) 
+#endif
+  {
+    struct tm *tm;
+    time_t now;
+    char timestr[128];
+    char *log_msg;
+    int p;
+
+    time (&now);
+    tm = localtime (&now);
+    strftime (timestr, 128, "%b %e %T", tm);
+
+    log_msg = u_strdup_printf ("%s [%d] %s\n",
+                               timestr, log_pid, str);
+    if ( (p = write (STDERR_FILENO, log_msg, strlen (log_msg)) ) < 0  )
+      fprintf(stderr, "Failed writing to log file\n");
+    fsync (STDERR_FILENO);
+
+    u_free (log_msg);
+  }
+#if 0
+  if ( level <= wsmand_options_get_syslog_level ()) 
+  {
+    char *log_name = u_strdup_printf( "wsmand[%d]", log_pid );
+
+    openlog( log_name, 0, LOG_DAEMON );
+    syslog( LOG_INFO, "%s", str );
+    closelog();
+    u_free( log_name );
+  }
+#endif
+}
+
+
+#if defined(SWIGRUBY)
+/*
+ * call-seq:
+ *   WsMan::debug
+ *
+ * Return openwsman debug level.
+ */
+
+static VALUE
+rwsman_debug_get( VALUE module )
+{
+    debug_level_e d = wsman_debug_get_level();
+    return INT2FIX( d );
+}
+
+
+/*
+ * call-seq:
+ *   WsMan::debug = 1
+ *   WsMan::debug = 0
+ *
+ * Set openwsman debug level.
+ */
+
+static VALUE
+rwsman_debug_set( VALUE module, VALUE dbg )
+{
+    static int init = 0;
+    int d = FIX2INT( dbg );
+
+    if (!init && d != 0) {
+	init = 1;
+	debug_add_handler( debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL );
+    }
+    wsman_debug_set_level( d );
+
+    return Qnil;
+}
+#endif
 
 /*-----------------------------------------------------------------*/
 /* client */
