@@ -17,7 +17,7 @@ static void test_serialize1(void)
 	entry1[2].type = 0;
         entry1[2].entry.text = "CIM_IndicationFilter";
 	entry1[3].type = 0;
-        entry1[3].entry.text = "CIM_ComputerSystem";	
+        entry1[3].entry.text = "CIM_ComputerSystem";
 	hash_alloc_insert(selectors_filter, "Name", &entry1[0]);
 	hash_alloc_insert(selectors_filter, "SystemName", &entry1[1]);
 	hash_alloc_insert(selectors_filter, "CreationClassName", &entry1[2]);
@@ -47,7 +47,7 @@ static void test_serialize1(void)
 		printf("epr_create handler failed!\n");
 		return;
 	}
-	
+
 	hash_t *selectors_subscription =  hash_create(HASHCOUNT_T_MAX, 0, 0);
         selector_entry *entry3 = NULL;
         entry3 = u_malloc(sizeof(selector_entry)*2);
@@ -90,18 +90,18 @@ static void test_serialize2(void)
 		printf("test serialize from string failed!\n");
 		return;
 	}
-	
+
 	epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, "root/interop"); //test epr_add_selector_text
 
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH header = ws_xml_get_soap_header(doc);
         epr_serialize(header,NULL,NULL,epr,0);
         ws_xml_dump_doc(stdout, doc);
-	
+
 	ws_xml_destroy_doc(doc);
 	epr_destroy(epr);
         printf("\033[22;32mtest create epr from string successfully!\033[m\n\n");
-	
+
 }
 
 static void test_deserialize(void)
@@ -121,7 +121,7 @@ static void test_deserialize(void)
 	node = ws_xml_get_soap_header(doc);
 	epr_serialize(node, NULL, NULL,epr, 0);
 	ws_xml_dump_doc(stdout, doc);
-	
+
 	epr_destroy(epr);
 	ws_xml_destroy_doc(doc);
 	printf("\033[22;32mtest deserialize epr successfully!\033[m\n\n");
@@ -156,14 +156,14 @@ static void test_epr_cmp(void)
 	ws_xml_destroy_doc(doc3);
 
 	if(epr_cmp(epr1, epr2) == 0)
-		printf("\033[22;32mepr1 == epr2\033[m\n\n");			
+		printf("\033[22;32mepr1 == epr2\033[m\n\n");
 	else
 		printf("\033[22;32mepr1 != epr2\033[m\n\n");
 	if(epr_cmp(epr1, epr3) == 0)
                 printf("\033[22;32mepr1 == epr3\033[m\n\n");
         else
                 printf("\033[22;32mepr1 != epr3\033[m\n\n");
-	
+
 	epr_destroy(epr1);
 	epr_destroy(epr2);
 	epr_destroy(epr3);

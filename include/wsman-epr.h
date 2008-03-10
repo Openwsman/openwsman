@@ -171,4 +171,5 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
  */
 char *get_cimnamespace_from_selectorset(SelectorSet *selectorset);
 
+char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name);
 #endif

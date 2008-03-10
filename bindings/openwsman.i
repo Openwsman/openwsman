@@ -316,6 +316,9 @@ struct _WsXmlDoc {};
   int cmp(epr_t *epr2) {
     return epr_cmp($self, epr2);
   }
+  char *toxml( const char *ns, const char *epr_node_name) {
+    return epr_to_txt($self, ns, epr_node_name);
+  }
 
 
 }

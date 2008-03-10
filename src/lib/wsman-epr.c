@@ -317,6 +317,21 @@ epr_t *epr_copy(epr_t *epr)
 	return 0;
 }
 
+char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
+{
+	char *buf = NULL;
+	int len;
+	WsXmlDocH doc2;
+	WsXmlDocH doc = ws_xml_create_doc(ns, epr_node_name);
+	WsXmlNodeH rootNode = ws_xml_get_doc_root(doc);
+	epr_serialize(rootNode, NULL, NULL, epr, 0);
+	doc2 = ws_xml_create_doc_by_import( rootNode);
+	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
+	ws_xml_destroy_doc(doc);
+	ws_xml_destroy_doc(doc2);
+	return buf;
+}
+
 int epr_serialize(WsXmlNodeH node, const char *ns,
 		const char *epr_node_name, epr_t *epr, int embedded)
 {

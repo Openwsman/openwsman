@@ -158,7 +158,6 @@ int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node)
 	}
 }
 
-
 int xml_parser_create_doc(WsXmlDocH wsDoc, const char *rootName)
 {
 	int retVal = 0;
