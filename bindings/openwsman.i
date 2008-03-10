@@ -23,6 +23,17 @@
 /*SWIG 1.3.33: %feature("autodoc","1")*/
 #endif
 
+#if defined(SWIGPERL)
+%module openwsman
+
+//==================================
+// Typemap: Allow FILE* as PerlIO
+//----------------------------------
+%typemap(in) FILE* {
+    $1 = PerlIO_findFILE(IoIFP(sv_2io($input)));
+}
+#endif
+
 %{
 #include <wsman-types.h>
 #include <wsman-client.h>
