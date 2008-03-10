@@ -2183,7 +2183,7 @@ cim_get_enum_items(CimClientInfo * client,
 		   unsigned long maxsize)
 {
 	WsXmlNodeH itemsNode;
-	WsXmlDocH outdoc;
+	WsXmlDocH outdoc = NULL;
 	WsXmlDocH clonedoc = NULL;
 	int c = 0;
 	if (node == NULL)
