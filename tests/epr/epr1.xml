@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">
+  <s:Header>
+    <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+    <wsman:ResourceURI>http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationSubscription</wsman:ResourceURI>
+    <wsman:SelectorSet>
+      <wsman:Selector Name="Filter">
+        <wsa:EndpointReference>
+          <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+          <wsa:ReferenceParameters>
+            <wsman:ResourceURI>http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationHandlerCIMXML</wsman:ResourceURI>
+            <wsman:SelectorSet>
+              <wsman:Selector Name="Name">OperatingSystemHandler1</wsman:Selector>
+              <wsman:Selector Name="SystemName">localhost.localdomain</wsman:Selector>
+              <wsman:Selector Name="SystemCreationClassName">CIM_ComputerSystem</wsman:Selector>
+              <wsman:Selector Name="CreationClassName">CIM_IndicationHandlerCIMXML</wsman:Selector>
+            </wsman:SelectorSet>
+          </wsa:ReferenceParameters>
+        </wsa:EndpointReference>
+      </wsman:Selector>
+      <wsman:Selector Name="Handler">
+        <wsa:EndpointReference>
+          <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+          <wsa:ReferenceParameters>
+            <wsman:ResourceURI>http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationHandlerCIMXML</wsman:ResourceURI>
+            <wsman:SelectorSet>
+              <wsman:Selector Name="Name">OperatingSystemHandler0</wsman:Selector>
+              <wsman:Selector Name="SystemName">localhost.localdomain</wsman:Selector>
+              <wsman:Selector Name="SystemCreationClassName">CIM_ComputerSystem</wsman:Selector>
+              <wsman:Selector Name="CreationClassName">CIM_IndicationHandlerCIMXML</wsman:Selector>
+            </wsman:SelectorSet>
+          </wsa:ReferenceParameters>
+        </wsa:EndpointReference>
+      </wsman:Selector>
+    </wsman:SelectorSet>
+  </s:Header>
+  <s:Body/>
+</s:Envelope>
+
