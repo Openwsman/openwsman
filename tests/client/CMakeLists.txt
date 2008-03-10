@@ -1,0 +1,47 @@
+#
+# CMakeLists.txt for openwsman/tests/client
+#
+
+include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
+
+SET( TEST_LIBS wsman wsman_client ${LIBXML2_LIBRARIES} ${CURL_LIBRARIES} "pthread")
+
+SET( test_references_SOURCES test_references.c )
+SET( test_transfer_get_SOURCES test_transfer_get.c )
+SET( test_transfer_put_SOURCES test_transfer_put.c )
+SET( test_invoke_SOURCES test_invoke.c )
+SET( test_identify_SOURCES test_identify.c )
+SET( test_enumeration_SOURCES test_enumeration.c )
+SET( test_pull_SOURCES test_pull.c )
+SET( test_subscribe_SOURCES test_subscribe.c )
+SET( test_unsubscribe_SOURCES test_unsubscribe.c )
+SET( test_renew_SOURCES test_renew.c )
+SET( test_associators_SOURCES test_associators.c )
+SET( test_selectorfilter_SOURCES test_selectorfilter.c )
+
+ADD_EXECUTABLE( test_references ${test_references_SOURCES} )
+ADD_EXECUTABLE( test_transfer_get ${test_transfer_get_SOURCES} )
+ADD_EXECUTABLE( test_transfer_put ${test_transfer_put_SOURCES} )
+ADD_EXECUTABLE( test_identify ${test_identify_SOURCES} )
+ADD_EXECUTABLE( test_invoke ${test_invoke_SOURCES} )
+ADD_EXECUTABLE( test_enumeration ${test_enumeration_SOURCES} )
+ADD_EXECUTABLE( test_associators ${test_associators_SOURCES} )
+ADD_EXECUTABLE( test_selectorfilter ${test_selectorfilter_SOURCES} )
+ADD_EXECUTABLE( test_pull ${test_pull_SOURCES} )
+ADD_EXECUTABLE( test_subscribe ${test_subscribe_SOURCES} )
+ADD_EXECUTABLE( test_unsubscribe ${test_unsubscribe_SOURCES} )
+ADD_EXECUTABLE( test_renew ${test_renew_SOURCES} )
+
+TARGET_LINK_LIBRARIES( test_references ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_transfer_get ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_transfer_put ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_identify ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_invoke ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_enumeration ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_associators ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_selectorfilter ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_pull ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_subscribe ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_unsubscribe ${TEST_LIBS} )
+TARGET_LINK_LIBRARIES( test_renew ${TEST_LIBS} )
+

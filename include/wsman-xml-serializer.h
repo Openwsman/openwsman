@@ -163,6 +163,38 @@ typedef struct __WsSerializerContext *WsSerializerContextH;
 
 #define SER_NULL {NULL, NULL, 0, 0, 0, 0, NULL, NULL}
 
+/* Serializer Info base defines with min/max */
+
+#define SER_NS_CNT_UINT8_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max),  sizeof (XML_TYPE_UINT8), \
+        flags, do_serialize_uint8, NULL \
+    }
+#define SER_NS_CNT_UINT16_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max), sizeof (XML_TYPE_UINT16), \
+        flags, do_serialize_uint16, NULL \
+    }
+#define SER_NS_CNT_UINT32_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max), sizeof (XML_TYPE_UINT32), \
+        flags, do_serialize_uint32, NULL \
+    }
+#define SER_NS_CNT_UINT64_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max), sizeof (XML_TYPE_UINT64), \
+        flags, do_serialize_uint64, NULL \
+    }
+
+#define SER_NS_CNT_BOOL_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max), sizeof (XML_TYPE_BOOL), \
+        flags, do_serialize_bool, NULL \
+    }
+#define SER_NS_CNT_STR_FLAGS(ns, n, min, max, flags) \
+    {(ns), (n), (min), (max), sizeof (XML_TYPE_STR), \
+        flags, do_serialize_string, NULL \
+    }
+#define SER_NS_CNT_STRUCT_FLAGS(ns, n, min, max, flags, t) \
+    {(ns), (n), (min), (max), sizeof (t), flags, \
+        do_serialize_struct, t##_TypeItems \
+    }
+
 // Serializer Info base defines
 
 #define SER_NS_INT8_FLAGS(ns, n, x, flags) \
