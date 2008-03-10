@@ -1,0 +1,63 @@
+localhost:
+  scheme: http
+  host: localhost
+  port: 8889
+  path: /wsman
+  username: wsman
+  password: secret
+
+rock:
+  scheme: http
+  host: rock.suse.cz
+  port: 8889
+  path: /wsman
+  username: wsman
+  password: secret
+
+zenworks:
+  scheme: http
+  host: zenworks.suse.de
+  port: 8889
+  path: /wsman
+  username: wsman
+  password: secret
+
+heron:
+  scheme: http
+  host: heron.suse.de
+  port: 8889
+  path: /wsman
+  username: wsman
+  password: secret
+
+pegasus:
+  scheme: http
+  host: localhost
+  port: 8889
+  path: /wsman
+  username: pegasus
+  password: secret
+
+vista:
+  scheme: http
+  host: 10.10.4.171
+  port: 80
+  path: /wsman
+  username: wsman
+  password: secret
+
+opensuse:
+  scheme: http
+  host: k5.suse.de
+  port: 8889
+  path: /wsman
+  username: wsman
+  password: secret
+
+xphome:
+  scheme: http
+  host: 192.168.0.3
+  port: 80
+  path: /wsman
+  username: wsman
+  password: secret

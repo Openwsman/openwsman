@@ -16,12 +16,40 @@ all:
 	
 	# Client
 	ruby client.rb
+	ruby client_bad.rb
 	
 	# ClientOptions
 	ruby clientoptions.rb
-
+	ruby debug.rb
         # Identify
 	ruby identify.rb
+
+	ruby cim_computer_system.rb
+	ruby cim_operating_system.rb
+	ruby cim_process.rb
+	ruby cim_system_configuration.rb
+	ruby create.rb
+	ruby each_child.rb
+	ruby enumerate.rb
+	ruby get.rb
+	ruby identify.rb
+	ruby invoke.rb
+	ruby loading.rb
+	ruby notepad.rb
+	ruby nsconsts.rb
+	ruby processes.rb
+	ruby pull.rb
+	ruby put.rb
+	ruby release.rb
+	ruby transport.rb
+
+	# needs WinRM system
+	ruby win32_operatingsystem.rb
+	ruby win32_process.rb
+	ruby win32_services.rb
+
+	# needs Windows XP
+	ruby xp.rb
 
 clean:
 	rm -f core*

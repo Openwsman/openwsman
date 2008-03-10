@@ -1,0 +1,79 @@
+Ruby bindings for OpenWsMan
+
+The bindings are defined as a module named 'WsMan'
+
+1. Helper classes
+ - attr_accessor debug
+    DEBUG_LEVEL_ALWAYS   = -1,
+    DEBUG_LEVEL_NONE     = 0,
+    DEBUG_LEVEL_ERROR    = 1,
+    DEBUG_LEVEL_CRITICAL = 2,
+    DEBUG_LEVEL_WARNING  = 3,
+    DEBUG_LEVEL_MESSAGE  = 4,
+    DEBUG_LEVEL_INFO     = 5,
+    DEBUG_LEVEL_DEBUG    = 6,
+
+
+ - class WsMan::XmlNode
+  new()
+  rawxml()
+  to_s()
+
+ - class WsMan::Action
+    None
+    TransferGet
+    TransferPut
+    Enumeration
+    Pull
+    Release
+    Custom
+    TransferCreate
+    Identify
+    Test
+   to_s()
+
+ - class WsMan::ClientOption
+  attr_accessor flags, filter, dialect, fragment, cim_ns,
+  attr_accessor selectors, properties, timeout, max_envelope_size, max_elements
+
+  flags<<
+  selectors<<
+  properties<<
+
+2. SOAP related
+  WsMan::XmlDoc << WsMan::XmlNode
+   header
+   body
+   element
+   rawxml
+   to_s()
+
+3. WsMan::Identify << WsMan::XmlDoc
+  attr_read product_vendor, product_version, protocol_version
+
+4. WsMan::TransferCreate << WsMan::XmlDoc
+
+5. WsMan::TransferPut << WsMan::XmlDoc
+
+6. WsMan::TransferGet << WsMan::XmlDoc
+
+7. WsMan::Enumerate << WsMan::XmlDoc
+
+8. WsMan::Pull << WsMan::XmlDoc
+
+9. WsMan::Release << WsMan::XmlDoc
+
+10. WsMan::Invoke << WsMan::XmlDoc
+
+11. Client connection
+ - class WsMan::Client
+   new( scheme, host, port, path, username, password )
+   attr_read scheme, host, port, path, username, password
+   identify()
+   transfer_create()
+   transfer_get()
+   transfer_put()
+   enumerate()
+   pull()
+   release()
+   invoke()
