@@ -7,7 +7,7 @@ add_subdirectory(epr)
 add_subdirectory(filter)
 add_subdirectory(xml)
 
-IF( DEFINED ${BUILD_CUNIT_TESTS})
+IF( BUILD_CUNIT_TESTS )
 add_subdirectory(serialization)
-ENDIF( DEFINED ${BUILD_CUNIT_TESTS})
+ENDIF( BUILD_CUNIT_TESTS )
 
