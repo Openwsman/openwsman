@@ -5,11 +5,11 @@
 add_subdirectory(lib)
 add_subdirectory(cpp)
 
-IF ( NOT DEFINED DISABLE_PLUGINS )
+IF ( NOT DISABLE_PLUGINS )
 add_subdirectory(plugins)
-ENDIF ( NOT DEFINED DISABLE_PLUGINS )
+ENDIF ( NOT DISABLE_PLUGINS )
 
-IF ( NOT DEFINED DISABLE_SERVER )
+IF ( NOT DISABLE_SERVER )
 add_subdirectory(server)
 add_subdirectory(authenticators)
-ENDIF ( NOT DEFINED DISABLE_SERVER )
+ENDIF ( NOT DISABLE_SERVER )
