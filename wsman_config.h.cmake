@@ -339,64 +339,34 @@
 #endif
 
 /* Name of package */
-#if @PACKAGE@
-#define PACKAGE 1
-#endif
+#define PACKAGE @PACKAGE@
 
 /* Define to the address where bug reports for this package should be sent. */
-#if @PACKAGE_BUGREPORT@
-#define PACKAGE_BUGREPORT 1
-#endif
+#define PACKAGE_BUGREPORT @PACKAGE_BUGREPORT@
 
 /* Define to the full name of this package. */
-#if @PACKAGE_NAME@
-#define PACKAGE_NAME 1
-#endif
+#define PACKAGE_NAME @PACKAGE_NAME@
 
 /* Define to the full name and version of this package. */
-#if @PACKAGE_STRING@
-#define PACKAGE_STRING 1
-#endif
+#define PACKAGE_STRING @PACKAGE_STRING@
 
 /* Define to the one symbol short name of this package. */
-#if @PACKAGE_TARNAME@
-#define PACKAGE_TARNAME 1
-#endif
+#define PACKAGE_TARNAME @PACKAGE_TARNAME@
 
 /* Define to the version of this package. */
-#if @PACKAGE_VERSION@
-#define PACKAGE_VERSION 1
-#endif
+#define PACKAGE_VERSION @PACKAGE_VERSION@
 
 /* The size of `int', as computed by sizeof. */
-#if @SIZEOF_INT@
-#define SIZEOF_INT 1
-#endif
+#define SIZEOF_INT @SIZEOF_INT@
 
 /* The size of `long', as computed by sizeof. */
-#if @SIZEOF_LONG@
-#define SIZEOF_LONG 1
-#endif
+#define SIZEOF_LONG @SIZEOF_LONG@
 
 /* The size of `long long', as computed by sizeof. */
-#if @SIZEOF_LONG_LONG@
-#define SIZEOF_LONG_LONG 1
-#endif
+#define SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
 
 /* The size of `short', as computed by sizeof. */
-#if @SIZEOF_SHORT@
-#define SIZEOF_SHORT 1
-#endif
-
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at runtime.
-	STACK_DIRECTION > 0 => grows toward higher addresses
-	STACK_DIRECTION < 0 => grows toward lower addresses
-	STACK_DIRECTION = 0 => direction of growth unknown */
-#if @STACK_DIRECTION@
-#define STACK_DIRECTION 1
-#endif
+#define SIZEOF_SHORT @SIZEOF_SHORT@
 
 /* Define to 1 if you have the ANSI C header files. */
 #if @STDC_HEADERS@
@@ -409,9 +379,7 @@
 #endif
 
 /* Version number of package */
-#if @VERSION@
-#define VERSION 1
-#endif
+#define VERSION @VERSION@
 
 /* Defined if verbose debug logging is requested */
 #if @WSMAN_DEBUG_VERBOSE@
@@ -419,6 +387,4 @@
 #endif
 
 /* Define to `int' if <sys/types.h> does not define. */
-#if @ssize_t@
-#define ssize_t 1
-#endif
+#define ssize_t @ssize_t@

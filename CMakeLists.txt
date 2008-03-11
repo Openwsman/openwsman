@@ -17,6 +17,8 @@ ENDIF ( DEFINED  LIB )
 MESSAGE(STATUS "Libraries will be installed in ${LIB_INSTALL_DIR}" )
 SET( BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" )
 SET( INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include" )
+SET( SYSCONF_DIR "/etc" )
+SET( PACKAGE_SUBSCRIPTION_DIR "/var/lib/openwsman/subscriptions" )
 
 # options
 
@@ -30,10 +32,18 @@ OPTION( DISABLE_PLUGINS "Do not build plugins" NO )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
+IF( ${WSMAN_DEBUG_VERBOSE})
+ SET(WSMAN_DEBUG_VERBOSE 1)
+ELSE( ${WSMAN_DEBUG_VERBOSE})
+ SET(WSMAN_DEBUG_VERBOSE 0)
+ENDIF( ${WSMAN_DEBUG_VERBOSE})
+
 OPTION( PACKAGE_PLUGIN_DIR "Where plugins are installed" "${LIB_INSTALL_DIR}/openwsman/plugins" )
 OPTION( USE_PAM "Use PAM authentication" YES )
 IF( ${USE_PAM} )
-SET( HAVE_PAM 1 )
+ SET( HAVE_PAM 1 )
+ELSE( ${USE_PAM} )
+ SET( HAVE_PAM 0 )
 ENDIF( ${USE_PAM} )
 
 INCLUDE(FindOpenSSL)
@@ -88,46 +98,59 @@ ENDIF( NOT CMAKE_USE_PTHREADS_INIT )
 
 
 FIND_LIBRARY( HAVE_LIBCRYPT "crypt" )
+IF(HAVE_LIBCRYPT)
+ SET(HAVE_LIBCRYPT 1)
+ELSE(HAVE_LIBCRYPT)
+ SET(HAVE_LIBCRYPT 0)
+ENDIF(HAVE_LIBCRYPT)
+
 FIND_LIBRARY( HAVE_LIBNSL "nsl" )
+IF(HAVE_LIBNSL)
+ SET(HAVE_LIBNSL 1)
+ELSE(HAVE_LIBNSL)
+ SET(HAVE_LIBNSL 0)
+ENDIF(HAVE_LIBNSL)
+
 FIND_LIBRARY( HAVE_LIBSOCKET "socket" )
+IF(HAVE_LIBSOCKET)
+ SET(HAVE_LIBSOCKET 1)
+ELSE(HAVE_LIBSOCKET)
+ SET(HAVE_LIBSOCKET 0)
+ENDIF(HAVE_LIBSOCKET)
 
 # Various include files
 
 INCLUDE(CheckIncludeFile)
-CHECK_INCLUDE_FILE( "sys/time.h" TIME_WITH_SYS_TIME )
 
-CHECK_INCLUDE_FILE( "crypt.h" HAVE_CRYPT_H )
-CHECK_INCLUDE_FILE( "ctype.h" HAVE_CTYPE_H )
-CHECK_INCLUDE_FILE( "CUnit/Basic.h" HAVE_CUNIT_BASIC_H )
-CHECK_INCLUDE_FILE( "dirent.h" HAVE_DIRENT_H )
-CHECK_INCLUDE_FILE( "dlfcn.h" HAVE_DLFCN_H )
-CHECK_INCLUDE_FILE( "ifaddrs.h" HAVE_IFADDRS_H )
-CHECK_INCLUDE_FILE( "inttypes.h" HAVE_INTTYPES_H )
-CHECK_INCLUDE_FILE( "memory.h" HAVE_MEMORY_H )
-CHECK_INCLUDE_FILE( "netinet/in.h" HAVE_NETINET_IN_H )
-CHECK_INCLUDE_FILE( "net/if_dl.h" HAVE_NET_IF_DL_H )
-CHECK_INCLUDE_FILE( "net/if.h" HAVE_NET_IF_H )
-CHECK_INCLUDE_FILE( "pam/pam_appl.h" HAVE_PAM_PAM_APPL_H )
-CHECK_INCLUDE_FILE( "pam/pam_misc.h" HAVE_PAM_PAM_MISC_H )
-CHECK_INCLUDE_FILE( "pthread.h" HAVE_PTHREAD_H )
-CHECK_INCLUDE_FILE( "security/pam_appl.h" HAVE_SECURITY_PAM_APPL_H )
-CHECK_INCLUDE_FILE( "security/pam_misc.h" HAVE_SECURITY_PAM_MISC_H )
-CHECK_INCLUDE_FILE( "stdarg.h" HAVE_STDARG_H )
-CHECK_INCLUDE_FILE( "stdint.h" HAVE_STDINT_H )
-CHECK_INCLUDE_FILE( "stdlib.h" HAVE_STDLIB_H )
-CHECK_INCLUDE_FILE( "strings.h" HAVE_STRINGS_H )
-CHECK_INCLUDE_FILE( "string.h" HAVE_STRING_H )
-CHECK_INCLUDE_FILE( "sys/ioctl.h" HAVE_SYS_IOCTL_H )
-CHECK_INCLUDE_FILE( "sys/resource.h" HAVE_SYS_RESOURCE_H )
-CHECK_INCLUDE_FILE( "sys/select.h" HAVE_SYS_SELECT_H )
-CHECK_INCLUDE_FILE( "sys/sendfile.h" HAVE_SYS_SENDFILE_H )
-CHECK_INCLUDE_FILE( "sys/signal.h" HAVE_SYS_SIGNAL_H )
-CHECK_INCLUDE_FILE( "sys/socket.h" HAVE_SYS_SOCKET_H )
-CHECK_INCLUDE_FILE( "sys/sockio.h" HAVE_SYS_SOCKIO_H )
-CHECK_INCLUDE_FILE( "sys/stat.h" HAVE_SYS_STAT_H )
-CHECK_INCLUDE_FILE( "sys/types.h" HAVE_SYS_TYPES_H )
-CHECK_INCLUDE_FILE( "unistd.h" HAVE_UNISTD_H )
-CHECK_INCLUDE_FILE( "vararg.h" HAVE_VARARG_H )
+#
+# The wsman_config file checks include file existance via "#if",
+# requiring a 0/1 argument
+# HoweverHECK_INCLUDE_FILE , returns ""/"1" resulting in
+# an empty argument to "#if" in the 'false' case
+# The code below ensures that "HAVE_xxx" is set to "0" or "1"
+#
+
+SET (FILES_TO_TEST "crypt.h" "ctype.h" "CUnit/Basic.h" "dirent.h" "dlfcn.h" "ifaddrs.h" "inttypes.h" "memory.h" "netinet/in.h" "net/if_dl.h" "net/if.h" "pam/pam_appl.h" "pam/pam_misc.h" "pthread.h" "security/pam_appl.h" "security/pam_misc.h" "stdarg.h" "stdint.h" "stdlib.h" "strings.h" "string.h" "sys/ioctl.h" "sys/resource.h" "sys/select.h" "sys/sendfile.h" "sys/signal.h" "sys/socket.h" "sys/sockio.h" "sys/stat.h" "sys/types.h" "unistd.h" "vararg.h" )
+#SET(FILES_TO_TEST "crypt.h")
+FOREACH( FILE ${FILES_TO_TEST})
+  STRING(REGEX REPLACE "\\." "_" FILEDOT ${FILE})
+  STRING(REGEX REPLACE "/" "_" FILESLASH ${FILEDOT})
+  STRING(TOUPPER ${FILESLASH} UPNAME)
+#  MESSAGE(STATUS "Looking for ${FILE} as ${UPNAME}")
+  SET(HAVENAME "HAVE_${UPNAME}")
+  CHECK_INCLUDE_FILE( "${FILE}" HAVE_FILE )
+  IF(HAVE_FILE)
+    SET(${HAVENAME} 1)
+  ELSE(HAVE_FILE)
+    SET(${HAVENAME} 0)
+  ENDIF(HAVE_FILE)
+ENDFOREACH( FILE ${FILES_TO_TEST})
+
+#/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+CHECK_INCLUDE_FILE( "sys/time.h" TIME_WITH_SYS_TIME )
+IF(NOT TIME_WITH_SYS_TIME)
+ SET(TIME_WITH_SYS_TIME 0)
+ENDIF(NOT TIME_WITH_SYS_TIME)
 
 # library functions
 
@@ -137,64 +160,79 @@ CHECK_FUNCTION_EXISTS("getifaddrs" HAVE_GETIFADDRS)
 #SIOCGARP
 
 SET( DEFAULT_CONFIG_FILE 1 )
+SET( CRAY_STACKSEG_END 0 )
 
 CHECK_FUNCTION_EXISTS( "alloca" HAVE_ALLOCA )
 IF (NOT HAVE_ALLOCA)
+  SET(HAVE_ALLOCA 0)
+  SET(C_ALLOCA 0)
   CHECK_INCLUDE_FILE( "alloca.h" HAVE_ALLOCA_H )
 ENDIF (NOT HAVE_ALLOCA)
-CHECK_FUNCTION_EXISTS( "bcopy" HAVE_BCOPY )
-CHECK_FUNCTION_EXISTS( "crypt" HAVE_CRYPT )
-CHECK_FUNCTION_EXISTS( "daemon" HAVE_DAEMON )
-CHECK_FUNCTION_EXISTS( "fnmatch" HAVE_FNMATCH )
-CHECK_FUNCTION_EXISTS( "getaddrinfo" HAVE_GETADDRINFO )
-CHECK_FUNCTION_EXISTS( "getnameinfo" HAVE_GETNAMEINFO )
-CHECK_FUNCTION_EXISTS( "getpid" HAVE_GETPID )
-CHECK_FUNCTION_EXISTS( "gettimeofday" HAVE_GETTIMEOFDAY )
-CHECK_FUNCTION_EXISTS( "gmtime_r" HAVE_GMTIME_R )
-CHECK_FUNCTION_EXISTS( "inet_aton" HAVE_INET_ATON )
-CHECK_FUNCTION_EXISTS( "inet_ntop" HAVE_INET_NTOP )
-CHECK_FUNCTION_EXISTS( "inet_pton" HAVE_INET_PTON )
-CHECK_FUNCTION_EXISTS( "sleep" HAVE_SLEEP )
-CHECK_FUNCTION_EXISTS( "srandom" HAVE_SRANDOM )
-CHECK_FUNCTION_EXISTS( "strsep" HAVE_STRSEP )
-CHECK_FUNCTION_EXISTS( "strtok_r" HAVE_STRTOK_R )
-CHECK_FUNCTION_EXISTS( "syslog" HAVE_SYSLOG )
-CHECK_FUNCTION_EXISTS( "timegm" HAVE_TIMEGM )
-CHECK_FUNCTION_EXISTS( "memmove" HAVE_MEMMOVE )
-CHECK_FUNCTION_EXISTS( "unlink" HAVE_UNLINK )
-CHECK_FUNCTION_EXISTS( "va_copy" HAVE_VA_COPY )
+
+#
+# The wsman_config file checks functions existance via "#if",
+# requiring a 0/1 argument
+# CHECK_FUNCTION_EXISTS however, returns ""/"1" resulting in
+# an empty argument to "#if" in the 'false' case
+# The code below ensures that "HAVE_xxx" is set to "0" or "1"
+#
+
+SET (FUNCS_TO_TEST "bcopy" "crypt" "daemon" "fnmatch" "getaddrinfo" "getnameinfo" "getpid" "gettimeofday" "gmtime_r" "inet_aton" "inet_ntop" "inet_pton" "sleep" "srandom" "strsep" "strtok_r" "syslog" "timegm" "memmove" "unlink" "va_copy" )
+FOREACH( FUNC ${FUNCS_TO_TEST})
+  STRING(TOUPPER ${FUNC} UPNAME)
+  SET(HAVENAME "HAVE_${UPNAME}")
+  CHECK_FUNCTION_EXISTS( "${FUNC}" HAVE_FUNC )
+  IF(HAVE_FUNC)
+    SET(${HAVENAME} 1)
+  ELSE(HAVE_FUNC)
+    SET(${HAVENAME} 0)
+  ENDIF(HAVE_FUNC)
+ENDFOREACH( FUNC ${FUNCS_TO_TEST})
 
 
 # types
 
 INCLUDE(CheckTypeSize)
-SET( CMAKE_REQUIRED_IUNCLUDE /usr/include/netinet )
-CHECK_TYPE_SIZE( "in_addr_t" HAVE_IN_ADDR_T )
-CHECK_TYPE_SIZE( "in_port_t" HAVE_IN_PORT_T )
-CHECK_TYPE_SIZE( "sa_family_t" HAVE_SA_FAMILY_T )
-CHECK_TYPE_SIZE("int" SIZEOF_INT )
-CHECK_TYPE_SIZE("long" SIZEOF_LONG )
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG )
-CHECK_TYPE_SIZE("short" SIZEOF_SHORT )
+SET( CMAKE_REQUIRED_IUNCLUDE "/usr/include/netinet" )
+
+#
+# The wsman_config file checks type existance via "#if",
+# requiring a 0/1 argument
+# CHECK_TYPE_SIZE however, returns ""/"1" resulting in
+# an empty argument to "#if" in the 'false' case
+# The code below ensures that "HAVE_xxx" is set to "0" or "1"
+#
+
+SET (TYPES_TO_TEST "in_addr_t" "in_port_t" "sa_family_t" "int" "long" "long long" "short")
+FOREACH( TYPE ${TYPES_TO_TEST})
+  STRING(TOUPPER ${TYPE} UPNAME)
+  STRING(REGEX REPLACE " " "_" UPNAME ${UPNAME})
+  SET(HAVENAME "HAVE_${UPNAME}")
+  CHECK_TYPE_SIZE( "${TYPE}" HAVE_TYPE )
+  MESSAGE(STATUS "Check type ${TYPE} as ${HAVENAME}")
+  IF(HAVE_TYPE)
+    SET(${HAVENAME} 1)
+  ELSE(HAVE_TYPE)
+    SET(${HAVENAME} 0)
+  ENDIF(HAVE_TYPE)
+ENDFOREACH( TYPE ${TYPES_TO_TEST})
+
 
 #
 #/* Define if struct sockaddr contains sa_len */
 # HAVE_SA_LEN
+SET(HAVE_SA_LEN 0)
 #
 #
 #/* Define to 1 if you have the ANSI C header files. */
 # STDC_HEADERS
+SET(STDC_HEADERS 1)
 #
-#/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 # TIME_WITH_SYS_TIME
 #
 #
 #/* Define to `int' if <sys/types.h> does not define. */
 # ssize_t
-
-SET(CRAY_STACKSEG_END NO)
-SET(C_ALLOCA NO)
-
 
 ####################################################################
 # CONFIGURATION                                                    #
@@ -204,10 +242,19 @@ SET(C_ALLOCA NO)
 SET( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
 
 INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
+SET(VERSION "${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}")
 
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
+
+SET(PACKAGE "\"openwsman\"")
+SET(PACKAGE_BUGREPORT "\"www.openwsman.org\"")
+SET(PACKAGE_NAME "\"openwsman\"")
+SET(PACKAGE_STRING "\"WS-Management for all\"")
+SET(PACKAGE_TARNAME "\"openwsman-${VERSION}.tar.bz2\"")
+SET(PACKAGE_VERSION "\"${VERSION}\"")
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/wsman_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/wsman_config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc)
