@@ -20,13 +20,18 @@ SET( INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include" )
 
 # options
 
+OPTION( BUILD_LIBCIM "Build CIM plugin" YES )
 OPTION( BUILD_EXAMPLES "Build examples" YES )
 OPTION( BUILD_PYTHON "Build Python bindings" YES )
 OPTION( BUILD_RUBY "Build Ruby bindings" YES )
 OPTION( BUILD_PERL "Build Perl bindings" NO )
+OPTION( BUILD_CUNIT_TESTS "Build serialization tests" NO )
+OPTION( DISABLE_PLUGINS "Do not build plugins" NO )
+OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
 OPTION( PACKAGE_PLUGIN_DIR "Where plugins are installed" "${LIB_INSTALL_DIR}/openwsman/plugins" )
+OPTION( USE_OPENSSL "Use OpenSSL" YES )
 OPTION( USE_PAM "Use PAM authentication" YES )
 IF( ${USE_PAM} )
 SET( HAVE_PAM 1 )
