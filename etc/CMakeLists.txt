@@ -1,7 +1,10 @@
+#
+# CMakeLists.txt for openwsman/etc
+#
+
 add_subdirectory(init)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
-
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/owsmangencert.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/owsmangencert.sh)
 
 ########### install files ###############
 

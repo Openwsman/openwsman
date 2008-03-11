@@ -1,14 +1,9 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${KDE3_INCLUDE_DIR} ${QT_INCLUDE_DIR} )
+#
+# CMakeLists.txt for openwsman/etc/init
+#
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsmand.sh.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsmand.sh)
 
-########### install files ###############
-
-
-
-
-#original Makefile.am contents follow:
-
-#SUBDIRS = 
 #
 #EXTRA_DIST = openwsmand.sh.in
 #
