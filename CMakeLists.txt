@@ -200,6 +200,11 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/wsman_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/wsman_config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman++.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman-server.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.spec.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman.spec)
 
 add_subdirectory(include)
 add_subdirectory(src)
