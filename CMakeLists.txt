@@ -31,11 +31,16 @@ OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
 OPTION( PACKAGE_PLUGIN_DIR "Where plugins are installed" "${LIB_INSTALL_DIR}/openwsman/plugins" )
-OPTION( USE_OPENSSL "Use OpenSSL" YES )
 OPTION( USE_PAM "Use PAM authentication" YES )
 IF( ${USE_PAM} )
 SET( HAVE_PAM 1 )
 ENDIF( ${USE_PAM} )
+
+INCLUDE(FindOpenSSL)
+IF(OPENSSL_FOUND)
+SET(HAVE_SSL TRUE)
+SET(USE_OPENSSL TRUE)
+ENDIF(OPENSSL_FOUND)
 
 IF( BUILD_RUBY )
 INCLUDE(FindRuby)
@@ -173,9 +178,6 @@ CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG )
 CHECK_TYPE_SIZE("short" SIZEOF_SHORT )
 
 #
-#/* Defined if you have SSL support */
-# HAVE_SSL
-#
 #/* Define if struct sockaddr contains sa_len */
 # HAVE_SA_LEN
 #
@@ -190,7 +192,8 @@ CHECK_TYPE_SIZE("short" SIZEOF_SHORT )
 #/* Define to `int' if <sys/types.h> does not define. */
 # ssize_t
 
-
+SET(CRAY_STACKSEG_END NO)
+SET(C_ALLOCA NO)
 
 
 ####################################################################
