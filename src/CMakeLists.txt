@@ -10,6 +10,6 @@ add_subdirectory(plugins)
 ENDIF ( NOT DEFINED DISABLE_PLUGINS )
 
 IF ( NOT DEFINED DISABLE_SERVER )
-#add_subdirectory(server)
+add_subdirectory(server)
 add_subdirectory(authenticators)
 ENDIF ( NOT DEFINED DISABLE_SERVER )
