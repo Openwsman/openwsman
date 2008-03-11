@@ -1,31 +1,12 @@
-include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${KDE3_INCLUDE_DIR} ${QT_INCLUDE_DIR} )
+#
+# CMakeLists.txt for openwsman/src/plugins/identify
+#
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
 
-########### install files ###############
+SET(wsman_identify_plugin_SOURCES identify.c identify_stubs.c identify.h)
 
+ADD_LIBRARY( wsman_identify_plugin SHARED ${wsman_identify_plugin_SOURCES} )
 
-
-
-#original Makefile.am contents follow:
-
-#
-#plugindir = @PACKAGE_PLUGIN_DIR@
-#
-#libwsman_identify_plugin_la_SOURCES = \
-#	identify.c \
-#	identify_stubs.c \
-#	identify.h
-#
-#INCLUDES = -I$(top_srcdir)/include
-#
-#LIBS = \
-#    $(XML_LIBS) 
-#
-#plugin_LTLIBRARIES= libwsman_identify_plugin.la
-#
-#libwsman_identify_plugin_la_LIBADD =       \
-#        $(XML_LIBS)   \
-#	-lpthread
-#
-#libwsman_identify_plugin_la_LDFLAGS= -version-info 1:0
-#
+SET_TARGET_PROPERTIES(wsman_identify_plugin PROPERTIES VERSION 1.0.0 SOVERSION 1)
+INSTALL(TARGETS wsman_identify_plugin DESTINATION plugins)
