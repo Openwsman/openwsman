@@ -95,7 +95,9 @@ ENDIF( NOT LIBXML2_FOUND)
 
 INCLUDE(FindThreads)
 IF( NOT CMAKE_USE_PTHREADS_INIT )
-MESSAGE( FATAL_ERROR " openwsman needs pthread" )
+ maMESSAGE( FATAL_ERROR " openwsman needs pthread" )
+ELSE( NOT CMAKE_USE_PTHREADS_INIT )
+ SET(USE_PTHREAD TRUE)
 ENDIF( NOT CMAKE_USE_PTHREADS_INIT )
 
 
@@ -154,6 +156,9 @@ IF(NOT TIME_WITH_SYS_TIME)
  SET(TIME_WITH_SYS_TIME 0)
 ENDIF(NOT TIME_WITH_SYS_TIME)
 
+#/* Define ssize_t to int' if <sys/types.h> does not define. */
+SET(SSIZE_T_MISSING 0)
+
 # library functions
 
 INCLUDE(CheckFunctionExists)
@@ -205,7 +210,7 @@ SET( CMAKE_REQUIRED_IUNCLUDE "/usr/include/netinet" )
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
 
-SET (TYPES_TO_TEST "in_addr_t" "in_port_t" "sa_family_t" "int" "long" "long long" "short")
+SET (TYPES_TO_TEST "in_addr_t" "in_port_t" "sa_family_t" "int" "long" "long long" "short" )
 FOREACH( TYPE ${TYPES_TO_TEST})
   STRING(TOUPPER ${TYPE} UPNAME)
   STRING(REGEX REPLACE " " "_" UPNAME ${UPNAME})
@@ -229,12 +234,6 @@ SET(HAVE_SA_LEN 0)
 #/* Define to 1 if you have the ANSI C header files. */
 # STDC_HEADERS
 SET(STDC_HEADERS 1)
-#
-# TIME_WITH_SYS_TIME
-#
-#
-#/* Define to `int' if <sys/types.h> does not define. */
-# ssize_t
 
 ####################################################################
 # CONFIGURATION                                                    #

@@ -387,4 +387,6 @@
 #endif
 
 /* Define to `int' if <sys/types.h> does not define. */
-#define ssize_t @ssize_t@
+#if @SSIZE_T_MISSING@
+#define ssize_t int
+#endif
