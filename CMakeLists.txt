@@ -19,6 +19,8 @@ SET( BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" )
 SET( INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include" )
 SET( SYSCONF_DIR "/etc" )
 SET( PACKAGE_SUBSCRIPTION_DIR "/var/lib/openwsman/subscriptions" )
+SET( PACKAGE_PLUGIN_DIR "${LIB_INSTALL_DIR}/openwsman/plugins" )
+SET( PACKAGE_AUTH_DIR "${LIB_INSTALL_DIR}/openwsman/authenticators" )
 
 # options
 
