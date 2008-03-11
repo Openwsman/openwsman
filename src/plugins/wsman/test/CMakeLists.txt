@@ -1,31 +1,11 @@
-include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${KDE3_INCLUDE_DIR} ${QT_INCLUDE_DIR} )
+#
+# CMakeLists.txt for openwsman/src/plugins/wsman/test
+#
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
+SET(wsman_test_SOURCES wsman_test.c wsman_test_stubs.c wsman_test.h)
 
-########### install files ###############
+ADD_LIBRARY( wsman_test SHARED ${wsman_test_SOURCES} )
 
-
-
-
-#original Makefile.am contents follow:
-
-#
-#plugindir = @PACKAGE_PLUGIN_DIR@
-#
-#libwsman_test_la_SOURCES = \
-#	wsman_test.c \
-#	wsman_test_stubs.c \
-#	wsman_test.h
-#
-#INCLUDES = -I$(top_srcdir)/include 
-#
-#LIBS = \
-#    $(XML_LIBS)
-#
-#plugin_LTLIBRARIES= libwsman_test.la
-#
-#libwsman_test_la_LIBADD =       \
-#        $(XML_LIBS)   \
-#	-lpthread
-#
-#libwsman_test_la_LDFLAGS= -version-info 1:0
-#
+SET_TARGET_PROPERTIES(wsman_test PROPERTIES VERSION 1.0.0 SOVERSION 1)
+INSTALL(TARGETS wsman_test DESTINATION plugins)
