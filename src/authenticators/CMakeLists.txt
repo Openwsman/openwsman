@@ -4,6 +4,6 @@
 
 add_subdirectory(file)
 
-IF( DEFINED ${USE_PAM})
+IF( USE_PAM )
 add_subdirectory(pam)
-ENDIF( DEFINED ${USE_PAM})
+ENDIF( USE_PAM )
