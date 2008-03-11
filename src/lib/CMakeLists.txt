@@ -18,29 +18,30 @@ SET( UTIL_SOURCES u/buf.c u/log.c u/memory.c u/misc.c  u/uri.c  u/uuid.c u/lock.
 
 SET( wsman_SOURCES ${UTIL_SOURCES} wsman-libxml2-binding.c wsman-xml.c wsman-epr.c wsman-filter.c wsman-dispatcher.c wsman-soap.c wsman-faults.c wsman-xml-serialize.c wsman-soap-envelope.c wsman-debug.c wsman-soap-message.c )
 
-IF( DEFINED ENABLE_EVENTING_SUPPORT )
+IF( ENABLE_EVENTING_SUPPORT )
 SET( wsman_SOURCES ${wsman_SOURCES} wsman-subscription-repository.c wsman-event-pool.c wsman-cimindication-processor.c )
-ENDIF( DEFINED ENABLE_EVENTING_SUPPORT )
+ENDIF( ENABLE_EVENTING_SUPPORT )
 
 ADD_LIBRARY( wsman SHARED ${wsman_SOURCES} )
 TARGET_LINK_LIBRARIES( wsman ${XML_LIBS} )
 TARGET_LINK_LIBRARIES( wsman ${PTHREAD} )
 
-IF( DEFINED ENABLE_EVENTING_SUPPORT )
+IF( ENABLE_EVENTING_SUPPORT )
 TARGET_LINK_LIBRARIES( wsman wsman_client )
-ENDIF( DEFINED ENABLE_EVENTING_SUPPORT )
+ENDIF( ENABLE_EVENTING_SUPPORT )
 
 SET_TARGET_PROPERTIES(wsman PROPERTIES VERSION 1.0.0 SOVERSION 1)
 INSTALL(TARGETS wsman DESTINATION lib)
 
 ########### wsman_server ###############
 
-IF ( NOT DEFINED DISABLE_SERVER )
+IF ( NOT DISABLE_SERVER )
  SET( wsman_server_SOURCES wsman-server.c wsman-plugins.c wsman-server-api.c )
  ADD_LIBRARY( wsman_server SHARED ${wsman_server_SOURCES} )
+ TARGET_LINK_LIBRARIES( wsman_server wsman )
  SET_TARGET_PROPERTIES(wsman_server PROPERTIES VERSION 1.0.0 SOVERSION 1)
  INSTALL(TARGETS wsman_server DESTINATION lib)
-ENDIF ( NOT DEFINED DISABLE_SERVER )
+ENDIF ( NOT DISABLE_SERVER )
 
 ########## wsman_curl_client_transport ###############
 
