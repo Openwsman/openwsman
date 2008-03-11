@@ -23,8 +23,8 @@ SET( wsman_SOURCES ${wsman_SOURCES} wsman-subscription-repository.c wsman-event-
 ENDIF( ENABLE_EVENTING_SUPPORT )
 
 ADD_LIBRARY( wsman SHARED ${wsman_SOURCES} )
-TARGET_LINK_LIBRARIES( wsman ${XML_LIBS} )
-TARGET_LINK_LIBRARIES( wsman ${PTHREAD} )
+TARGET_LINK_LIBRARIES( wsman ${LIBXML2_LIBRARIES} )
+TARGET_LINK_LIBRARIES( wsman ${CMAKE_THREAD_LIBS_INIT} )
 
 IF( ENABLE_EVENTING_SUPPORT )
 TARGET_LINK_LIBRARIES( wsman wsman_client )
@@ -47,7 +47,7 @@ ENDIF ( NOT DISABLE_SERVER )
 
 SET( wsman_curl_client_transport_SOURCES wsman-client-transport.c wsman-curl-client-transport.c )
 ADD_LIBRARY( wsman_curl_client_transport SHARED ${wsman_curl_client_transport_SOURCES} )
-TARGET_LINK_LIBRARIES( wsman_curl_client_transport ${CURL_LIBS} )
+TARGET_LINK_LIBRARIES( wsman_curl_client_transport ${CURL_LIBRARIES} )
 SET_TARGET_PROPERTIES(wsman_curl_client_transport PROPERTIES VERSION 1.0.0 SOVERSION 1)
 INSTALL(TARGETS wsman_curl_client_transport DESTINATION lib)
 
