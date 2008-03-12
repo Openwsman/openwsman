@@ -8,4 +8,4 @@ SET(wsman_test_SOURCES wsman_test.c wsman_test_stubs.c wsman_test.h)
 ADD_LIBRARY( wsman_test SHARED ${wsman_test_SOURCES} )
 
 SET_TARGET_PROPERTIES(wsman_test PROPERTIES VERSION 1.0.0 SOVERSION 1)
-INSTALL(TARGETS wsman_test DESTINATION plugins)
+INSTALL(TARGETS wsman_test DESTINATION ${PACKAGE_PLUGIN_DIR})

@@ -8,4 +8,4 @@ SET(cim_plugin_SOURCES sfcc-interface.c sfcc-interface.h cim_data.c cim_data_stu
 ADD_LIBRARY( wsman_cim_plugin SHARED ${cim_plugin_SOURCES} )
 
 SET_TARGET_PROPERTIES(wsman_cim_plugin PROPERTIES VERSION 1.0.0 SOVERSION 1)
-INSTALL(TARGETS wsman_cim_plugin DESTINATION plugins)
+INSTALL(TARGETS wsman_cim_plugin DESTINATION ${PACKAGE_PLUGIN_DIR})

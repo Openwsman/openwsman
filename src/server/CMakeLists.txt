@@ -3,6 +3,8 @@
 #
 include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src/server/shttpd ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
 
+SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g" )
+
 SET(openwsmand_SOURCES shttpd/string.c shttpd/shttpd.c shttpd/auth.c shttpd/md5.c shttpd/adapter.c shttpd/cgi.c shttpd/mime_type.c shttpd/config.c shttpd/io_socket.c shttpd/io_ssl.c shttpd/io_emb.c shttpd/compat_unix.c shttpd/io_dir.c shttpd/io_file.c shttpd/defs.h shttpd/llist.h shttpd/shttpd.h shttpd/std_includes.h shttpd/io.h shttpd/md5.h shttpd/ssl.h shttpd/compat_unix.h shttpd/compat_win32.h shttpd/compat_rtems.h shttpd/adapter.h wsmand-listener.h wsmand-daemon.c wsmand-daemon.h wsmand-listener.c wsmand.c)
 
 ADD_DEFINITIONS(-DSYSCONFDIR="\\\"${SYSCONF_DIR}/openwsman\\\"" -DEMBEDDED -DNO_CGI -DNO_SSI )
@@ -27,8 +29,7 @@ if( USE_PTHREAD )
 TARGET_LINK_LIBRARIES(openwsmand ${CMAKE_THREAD_LIBS_INIT})
 endif( USE_PTHREAD )
 
-
-INSTALL(FILES openwsmand DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
+INSTALL(TARGETS openwsmand DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
 
 #		
 #

@@ -13,9 +13,7 @@
 #endif
 
 /* Default config file */
-#if @DEFAULT_CONFIG_FILE@
-#define DEFAULT_CONFIG_FILE 1
-#endif
+#define DEFAULT_CONFIG_FILE @DEFAULT_CONFIG_FILE@
 
 /* Defined if WS-Eventing wanted */
 #if @ENABLE_EVENTING_SUPPORT@
