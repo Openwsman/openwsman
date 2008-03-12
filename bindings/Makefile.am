@@ -7,4 +7,4 @@ if BUILD_RUBY
 SUBDIRS += ruby
 endif
 
-EXTRA_DIST = openwsman.h 
+EXTRA_DIST = openwsman.i openwsman.h

@@ -41,6 +41,7 @@
 #include <wsman-xml-api.h>
 #include <wsman-epr.h>
 #include <wsman-filter.h>
+#include "openwsman.h"
 %}
 
 /*-----------------------------------------------------------------*/
