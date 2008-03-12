@@ -1,3 +1,11 @@
+2.0.0b2
+ * Support SelectorSet Dialect
+ * Improved Filter API
+ * Improved EPR API
+ * Enahnced bindings to support filters
+ * Initial cmake support (Thanks to Klaus Kaempf)
+ * Many other bug fixes
+
 2.0.0b1
 
  * Use latest shttpd code base
