@@ -41,7 +41,6 @@ ELSE( ${WSMAN_DEBUG_VERBOSE})
  SET(WSMAN_DEBUG_VERBOSE 0)
 ENDIF( ${WSMAN_DEBUG_VERBOSE})
 
-OPTION( PACKAGE_PLUGIN_DIR "Where plugins are installed" "${LIB_INSTALL_DIR}/openwsman/plugins" )
 OPTION( USE_PAM "Use PAM authentication" YES )
 IF( ${USE_PAM} )
  SET( HAVE_PAM 1 )
