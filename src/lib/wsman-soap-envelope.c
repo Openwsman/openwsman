@@ -841,6 +841,56 @@ unsigned long wsman_get_max_envelope_size(WsContextH cntx, WsXmlDocH doc)
 	return size;
 }
 
+char * wsman_get_fragment_string(WsContextH cntx, WsXmlDocH doc)
+{
+	WsXmlNodeH header, n;
+	char *mu = NULL;
+	if(doc == NULL)
+		doc = cntx->indoc;
+	header = ws_xml_get_soap_header(doc);
+	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN,
+			     WSM_FRAGMENT_TRANSFER);
+	if (n != NULL) {
+		mu = ws_xml_find_attr_value(n, XML_NS_SOAP_1_2,
+					    SOAP_MUST_UNDERSTAND);
+		if (mu != NULL && strcmp(mu, "true") == 0) {
+			return ws_xml_get_node_text(n);
+		}
+	}
+	return NULL;
+}
+
+
+void wsman_get_fragment_type(char *fragstr, int *fragment_flag, char **element, 
+	int *index)
+{
+	char *p, *p1, *p2, *dupstr;
+	*fragment_flag = 0;
+	*element = NULL;
+	*index = 0;
+	if(fragstr == NULL) return;
+	dupstr = u_strdup(fragstr);
+	p = strstr(dupstr, "/text()");
+	if(p) {
+		*p = '\0';
+		*fragment_flag = 2;
+		*element = u_strdup(dupstr);
+	}
+	else {
+		if((p1 = strstr(dupstr, "[")) && (p2 = strstr(dupstr, "]"))) {
+			*element = u_strndup(dupstr, p1 - dupstr);
+			*p2 = '\0';
+			*index = atoi(p1+1);
+			*fragment_flag = 3;
+		}
+		else {
+			*element = u_strdup(dupstr);
+			*fragment_flag = 1;
+		}
+	}
+	u_free(dupstr);
+}
+
 
 char *wsman_get_method_name(WsContextH cntx)
 {
@@ -1184,6 +1234,18 @@ void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace)
 	return;
 }
 
+
+void wsman_add_fragement_for_header(WsXmlDocH indoc, WsXmlDocH outdoc)
+{
+	WsXmlNodeH inheader, outheader;
+	WsXmlNodeH fragmentnode;
+	inheader = ws_xml_get_soap_header(indoc);
+	fragmentnode = ws_xml_get_child(inheader, 0, XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER);
+	if(fragmentnode == NULL)
+		return;
+	outheader = ws_xml_get_soap_header(outdoc);
+	ws_xml_duplicate_tree(outheader, fragmentnode);
+}
 
 
 int wsman_is_identify_request(WsXmlDocH doc)

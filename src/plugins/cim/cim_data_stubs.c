@@ -256,6 +256,7 @@ CimResource_Get_EP( SoapOpH op,
 	WsXmlDocH doc = NULL;
 	WsmanStatus status;
 	CimClientInfo *cimclient = NULL;
+	char *fragstr = NULL;
 	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	SoapH soap = soap_get_op_soap(op);
 
@@ -280,12 +281,16 @@ CimResource_Get_EP( SoapOpH op,
 				status.fault_detail_code, NULL);
 	} else {
 		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
-			WsXmlNodeH body = ws_xml_get_soap_body(doc);
+			WsXmlNodeH body = ws_xml_get_soap_body(doc); 
+			fragstr = wsman_get_fragment_string(cntx, in_doc);
+			if(fragstr)
+				body = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_XML_FRAGMENT,
+				NULL);
 			if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
-				cim_get_instance_from_enum(cimclient, cntx, body, &status);
+				cim_get_instance_from_enum(cimclient, cntx, body, fragstr, &status);
 			} else {
 				debug("no base class, getting instance directly with getInstance");
-				cim_get_instance(cimclient, cntx, body, &status);
+				cim_get_instance(cimclient, cntx, body, fragstr, &status);
 			}
 		}
 	}
@@ -484,6 +489,7 @@ CimResource_Pull_EP( WsContextH cntx,
 				status->fault_detail_code, NULL);
 			goto cleanup;
 		}
+		cimclient->cntx = cntx;
 	}
 	if (!cimclient)
 		goto cleanup;
@@ -528,6 +534,7 @@ CimResource_Create_EP( SoapOpH op,
 	WsXmlDocH doc = NULL;
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
+	char *fragstr = NULL;
 
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
@@ -558,14 +565,22 @@ CimResource_Create_EP( SoapOpH op,
 			status.fault_detail_code = 0;
 		} else {
 			char *xsd = u_strdup_printf("%s.xsd", cimclient->resource_uri);
-			if (ws_xml_get_child(in_body, 0, cimclient->resource_uri, cimclient->requested_class)) {
-				cim_create_instance(cimclient, cntx , in_body, body, &status);
-			} else if (ws_xml_get_child(in_body, 0, xsd, cimclient->requested_class)) {
-				cim_create_instance(cimclient, cntx , in_body, body, &status);
-			} else {
-				status.fault_code = WXF_INVALID_REPRESENTATION;
-				status.fault_detail_code = WSMAN_DETAIL_INVALID_NAMESPACE;
+			fragstr = wsman_get_fragment_string(cntx, cntx->indoc);
+			if(fragstr) {
+				if(ws_xml_get_child(in_body, 0, XML_NS_WS_MAN, WSM_XML_FRAGMENT))
+					cim_create_instance(cimclient, cntx, in_body, body, fragstr, &status);
 			}
+			else {
+				if (ws_xml_get_child(in_body, 0, cimclient->resource_uri, cimclient->requested_class)) {
+					cim_create_instance(cimclient, cntx , in_body, body, NULL, &status);
+				} else if (ws_xml_get_child(in_body, 0, xsd, cimclient->requested_class)) {
+					cim_create_instance(cimclient, cntx , in_body, body, NULL, &status);
+				} else {
+					status.fault_code = WXF_INVALID_REPRESENTATION;
+					status.fault_detail_code = WSMAN_DETAIL_INVALID_NAMESPACE;
+				}
+			}
+			u_free(xsd);
 		}
 	}
 
@@ -599,6 +614,7 @@ CimResource_Put_EP( SoapOpH op,
 	CimClientInfo *cimclient = NULL;
 	WsmanStatus status;
 	WsmanMessage *msg;
+	char *fragstr;
 
 	SoapH soap = soap_get_op_soap(op);
 	WsContextH cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
@@ -627,8 +643,12 @@ CimResource_Put_EP( SoapOpH op,
 	if ((doc = wsman_create_response_envelope( indoc, NULL))) {
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
 		WsXmlNodeH in_body = ws_xml_get_soap_body(indoc);
+		fragstr = wsman_get_fragment_string(cntx, indoc);
+		if(fragstr)
+			body = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_XML_FRAGMENT,
+			NULL);
 		if (ws_xml_get_child(in_body, 0, NULL, NULL)) {
-			cim_put_instance(cimclient, cntx , in_body, body, &status);
+			cim_put_instance(cimclient, cntx , in_body, body, fragstr, &status);
 		} else {
 			status.fault_code = WXF_INVALID_REPRESENTATION;
 			status.fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;

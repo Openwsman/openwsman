@@ -330,6 +330,7 @@ check_unsupported_features(op_t * op)
 			goto DONE;
 		}
 	}
+#if 0
 	n = ws_xml_get_child(header, 0, XML_NS_WS_MAN,
 			     WSM_FRAGMENT_TRANSFER);
 	if (n != NULL) {
@@ -344,7 +345,7 @@ check_unsupported_features(op_t * op)
 			goto DONE;
 		}
 	}
-
+#endif
 	enumurate = ws_xml_get_child(body, 0, XML_NS_ENUMERATION,
 			     WSENUM_ENUMERATE);
 	if (enumurate) {
@@ -741,6 +742,9 @@ process_inbound_operation(op_t * op, WsmanMessage * msg, void *opaqueData)
 	if (wsman_is_fault_envelope(op->out_doc)) {
 		msg->http_code =
 		    wsman_find_httpcode_for_value(op->out_doc);
+	}
+	else {
+		wsman_add_fragement_for_header(op->in_doc, op->out_doc);
 	}
 	ws_xml_dump_memory_enc(op->out_doc, &buf, &len, msg->charset);
 	u_buf_set(msg->response, buf, len);

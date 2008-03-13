@@ -82,6 +82,11 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc);
 
 unsigned long wsman_get_max_envelope_size(WsContextH cntx, WsXmlDocH doc);
 
+char *wsman_get_fragment_string(WsContextH cntx, WsXmlDocH doc);
+
+void wsman_get_fragment_type(char *fragstr, int *fragment_flag, char **element,
+	int *index);
+
 void wsman_set_estimated_total(WsXmlDocH in_doc,
 			       WsXmlDocH out_doc,
 			       WsEnumerateInfo * enumInfo);
@@ -117,6 +122,8 @@ int wsman_is_event_related_request(WsXmlDocH doc);
 int wsman_is_valid_xml_envelope(WsXmlDocH doc);
 
 void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace);
+
+void wsman_add_fragement_for_header(WsXmlDocH indoc, WsXmlDocH outdoc);
 
 char *wsman_get_option_set(WsContextH cntx, WsXmlDocH doc, const char *op);
 
