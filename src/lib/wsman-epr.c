@@ -191,7 +191,7 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	if(epr == NULL) return 0;
  	p = epr->refparams.selectorset.selectors;
 	for(i = 0; i< epr->refparams.selectorset.count; i++) {
-		if(p->name || ( strcmp(name, p->name) == 0 ) ) {
+		if(p->name && ( strcmp(name, p->name) == 0 ) ) {			
 			return -1;
 		}
 		p++;
@@ -209,6 +209,11 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	epr->refparams.selectorset.count++;
 	return 0;
  }
+
+int epr_selector_count(epr_t *epr) {
+	if(epr == NULL) return 0;
+	return epr->refparams.selectorset.count;
+}
 
 int epr_add_selector_text(epr_t *epr, const char *name, const char *text)
 {
@@ -324,7 +329,7 @@ char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
 	WsXmlDocH doc2;
 	WsXmlDocH doc = ws_xml_create_doc(ns, epr_node_name);
 	WsXmlNodeH rootNode = ws_xml_get_doc_root(doc);
-	epr_serialize(rootNode, NULL, NULL, epr, 0);
+	epr_serialize(rootNode, NULL, NULL, epr, 1);
 	doc2 = ws_xml_create_doc_by_import( rootNode);
 	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
 	ws_xml_destroy_doc(doc);

@@ -420,9 +420,7 @@ typedef enum {
 	 * @param source_doc A document with the new resource, for example the result of a Get request with modified properties.
 	 * @return response document
 	 */
-	WsXmlDocH wsmc_action_put(WsManClient * cl,
-				  const char *resource_uri,
-				  client_opt_t * options,
+	WsXmlDocH wsmc_action_put(WsManClient * cl, const char *resource_uri, client_opt_t * options,
 				  WsXmlDocH source_doc);
 
 	/**
@@ -471,12 +469,11 @@ typedef enum {
 	 * @param cl Client handle
 	 * @param resource_uri Resource URI
 	 * @param client_opt_t Request options and flags
-	 * @param source_doc A document with the new resource, for example the result of a Get request with modified properties.
+	 * @param source_doc A document with the new resource, for example the result of a
+     *        Get request with modified properties.
 	 * @return response document
 	 */
-	WsXmlDocH wsmc_action_create(WsManClient * cl,
-				     const char *resource_uri,
-				     client_opt_t * options,
+	WsXmlDocH wsmc_action_create(WsManClient * cl, const char *resource_uri, client_opt_t * options,
 				     WsXmlDocH source_doc);
 
 	/**
@@ -489,12 +486,8 @@ typedef enum {
 	 * @param encoding XML encoding
 	 * @return response document
 	 */
-	WsXmlDocH wsmc_action_create_fromtext(WsManClient * cl,
-					      const char *resource_uri,
-					      client_opt_t * options,
-					      const char *data,
-					      size_t size,
-					      const char *encoding);
+	WsXmlDocH wsmc_action_create_fromtext(WsManClient * cl, const char *resource_uri, client_opt_t * options,
+					      const char *data, size_t size, const char *encoding);
 
 	/**
 	 * Send a Transfer Create request using serialized data

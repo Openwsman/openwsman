@@ -1,4 +1,4 @@
-SUBDIRS = 
+SUBDIRS =  
 if BUILD_PYTHON
 SUBDIRS += python
 endif

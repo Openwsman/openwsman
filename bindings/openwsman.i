@@ -2,6 +2,10 @@
 %module pywsman
 #endif
 
+#if defined(SWIGCSHARP)
+%module cswsman
+#endif
+
 #if defined(SWIGRUBY)
 
 %module rbwsman
@@ -314,9 +318,11 @@ struct _WsXmlDoc {};
   epr_t( const char *uri, const char *address) {
     return epr_create( uri, NULL, address);
   }
+
   ~epr_t() {
     epr_destroy( $self );
   }
+
   void add_selector(const char *name, const char *text) {
     epr_add_selector_text($self, name, text);
   }
@@ -330,6 +336,10 @@ struct _WsXmlDoc {};
   }
   char *toxml( const char *ns, const char *epr_node_name) {
     return epr_to_txt($self, ns, epr_node_name);
+  }
+
+  int selector_count(void) {
+    return epr_selector_count($self);
   }
 
 
@@ -376,6 +386,7 @@ struct _WsXmlDoc {};
   client_opt_t() {
     return wsmc_options_init();
   }
+
   ~client_opt_t() {
     wsmc_options_destroy( $self );
   }
@@ -404,55 +415,6 @@ struct _WsXmlDoc {};
   void set_delivery_mode(WsmanDeliveryMode delivery_mode) {
 	wsmc_set_delivery_mode(delivery_mode, $self);
   }
-}
-
-/*-----------------------------------------------------------------*/
-/* Rbwsman */
-/* debug (mostly stolen from src/server/wsmand.c) */
-
-static void
-debug_message_handler (const char *str, 
-                       debug_level_e level, 
-                       void *user_data)
-{
-  static int log_pid = 0;
-  
-  if (log_pid == 0)
-    log_pid = getpid ();
-#if 0
-  if (level <= wsmand_options_get_debug_level () 
-      || wsmand_options_get_foreground_debug() > 0 ) 
-#endif
-  {
-    struct tm *tm;
-    time_t now;
-    char timestr[128];
-    char *log_msg;
-    int p;
-
-    time (&now);
-    tm = localtime (&now);
-    strftime (timestr, 128, "%b %e %T", tm);
-
-    log_msg = u_strdup_printf ("%s [%d] %s\n",
-                               timestr, log_pid, str);
-    if ( (p = write (STDERR_FILENO, log_msg, strlen (log_msg)) ) < 0  )
-      fprintf(stderr, "Failed writing to log file\n");
-    fsync (STDERR_FILENO);
-
-    u_free (log_msg);
-  }
-#if 0
-  if ( level <= wsmand_options_get_syslog_level ()) 
-  {
-    char *log_name = u_strdup_printf( "wsmand[%d]", log_pid );
-
-    openlog( log_name, 0, LOG_DAEMON );
-    syslog( LOG_INFO, "%s", str );
-    closelog();
-    u_free( log_name );
-  }
-#endif
 }
 
 
@@ -558,6 +520,12 @@ rwsman_debug_set( VALUE module, VALUE dbg )
   }
   WsXmlDocH pull( client_opt_t *options , filter_t *filter, char *resource_uri, char *enum_ctx) {
     return wsmc_action_pull( $self, resource_uri, options, filter, enum_ctx);
+  }
+  WsXmlDocH create( client_opt_t *options, char *resource_uri, char *data, size_t size, char *encoding) {
+    return wsmc_action_create_fromtext( $self, resource_uri, options, data, size, encoding);
+  }
+  WsXmlDocH put( client_opt_t *options , char *resource_uri,  char *data, size_t size, char *encoding) {
+    return wsmc_action_put_fromtext( $self, resource_uri, options, data, size, encoding);
   }
   WsXmlDocH release( client_opt_t *options , char *resource_uri, char *enum_ctx) {
     return wsmc_action_release( $self, resource_uri, options, enum_ctx);

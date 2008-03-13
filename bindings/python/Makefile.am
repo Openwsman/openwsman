@@ -14,7 +14,7 @@ LIBS = $(OPENSSL_LIBS) \
 GENERATED = openwsman_wrap.c \
 	    pywsman.py
 
-SWIG_SOURCES = ../openwsman.i
+SWIG_SOURCES = ../openwsman.i ../openwsman.c
 _pywsman_la_SOURCES = openwsman_wrap.c \
 			 $(SWIG_SOURCES)
 all-local:	pywsman.py
@@ -35,6 +35,6 @@ $(GENERATED): $(SWIG_SOURCES)
 install-data-hook:
 	rm -f $(DESTDIR)${pythondir}/$(python_LTLIBRARIES)
 
-CLEANFILES= $(GENERATED)
+CLEANFILES= $(GENERATED) *.pyc
 
 

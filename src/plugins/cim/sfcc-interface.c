@@ -669,7 +669,8 @@ instance2xml(CimClientInfo * client,
 
 	wsman_get_fragment_type(fragstr, &frag_type, &propertystr, &index);
 
-	if (strcmp(client->requested_class, "*")  && enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
+	if (strcmp(client->requested_class, "*")  && enumInfo && 
+		(enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE )) {
 		_class = cim_get_class(client, client->requested_class, 0, NULL);
 		if (_class)
 			numproperties = _class->ft->getPropertyCount(_class, NULL);
