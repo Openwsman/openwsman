@@ -1099,6 +1099,31 @@ wsmc_action_delete(WsManClient * cl,
 	return response;
 }
 
+static int add_selectors_from_epr(void *options, const char* key,
+		const char *value)
+{
+	client_opt_t *op = (client_opt_t *)options;
+	wsmc_add_selector(op, key, value);
+	return 0;
+}
+
+WsXmlDocH
+wsmc_action_delete_from_epr(WsManClient *cl, epr_t *epr,
+		client_opt_t *options)
+{
+	char *resource_uri = epr_get_resource_uri(epr);
+	wsman_epr_selector_cb(epr, add_selectors_from_epr, options);
+	return wsmc_action_delete(cl, resource_uri, options);
+}
+
+WsXmlDocH
+wsmc_action_get_from_epr(WsManClient *cl, epr_t *epr,
+		client_opt_t *options)
+{
+	char *resource_uri = epr_get_resource_uri(epr);
+	wsman_epr_selector_cb(epr, add_selectors_from_epr, options);
+	return wsmc_action_get(cl, resource_uri, options);
+}
 
 WsXmlDocH
 wsmc_action_get(WsManClient * cl,

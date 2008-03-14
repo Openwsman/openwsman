@@ -191,7 +191,7 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	if(epr == NULL) return 0;
  	p = epr->refparams.selectorset.selectors;
 	for(i = 0; i< epr->refparams.selectorset.count; i++) {
-		if(p->name && ( strcmp(name, p->name) == 0 ) ) {			
+		if(p->name && ( strcmp(name, p->name) == 0 ) ) {
 			return -1;
 		}
 		p++;
@@ -202,9 +202,11 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	p[epr->refparams.selectorset.count].name = u_strdup(name);
 	p[epr->refparams.selectorset.count].type = selector->type;
 	if(selector->type == 0)
-		p[epr->refparams.selectorset.count].value = u_strdup(selector->entry.text);
+		if (selector->entry.text)
+			p[epr->refparams.selectorset.count].value = u_strdup(selector->entry.text);
 	else
 		p[epr->refparams.selectorset.count].value = (char *)epr_copy(selector->entry.eprp);
+
 	epr->refparams.selectorset.selectors = p;
 	epr->refparams.selectorset.count++;
 	return 0;
@@ -293,33 +295,41 @@ epr_t *epr_copy(epr_t *epr)
 
  int epr_cmp(epr_t *epr1, epr_t *epr2)
  {
- 	int i;
+ 	int i, j;
+ 	int matches = 0;
 	Selector *p1;
 	Selector *p2;
 	assert(epr1 != NULL && epr2 != NULL);
-	if(strcmp(epr1->address, epr2->address)) return 1;
+	//if(strcmp(epr1->address, epr2->address)) return 1;
+
 	if(strcmp(epr1->refparams.uri, epr2->refparams.uri)) return 1;
 	if(epr1->refparams.selectorset.count != epr2->refparams.selectorset.count)
 		return 1;
 	p1 = epr1->refparams.selectorset.selectors;
-	p2 = epr2->refparams.selectorset.selectors;
 	for(i = 0; i < epr1->refparams.selectorset.count; i++) {
-		if(strcmp(p1->name, p2->name))
-			return 1;
-		if(p1->type != p2->type)
-			return 1;
-		if(p1->type == 0) {
-			if(strcmp(p1->value, p2->value))
-				return 1;
-			else
-				return 0;
+		p2 = epr1->refparams.selectorset.selectors;
+		for(j = 0; j < epr2->refparams.selectorset.count; j++, p2++) {
+			if(strcmp(p1->name, p2->name))
+				continue;
+			if(p1->type != p2->type)
+				continue;
+			if(p1->type == 0) {
+				if(strcmp(p1->value, p2->value))
+					continue;
+			} else {
+				if (epr_cmp((epr_t*)p1->value, (epr_t*)p2->value) == 1) {
+					continue;
+				}
+			}
+			matches++;
 		}
-		else
-			return epr_cmp((epr_t*)p1->value, (epr_t*)p2->value);
 		p1++;
-		p2++;
 	}
-	return 0;
+
+	if (matches == epr1->refparams.selectorset.count)
+		return 0;
+	else
+		return 1;
 }
 
 char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
@@ -332,9 +342,17 @@ char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
 	epr_serialize(rootNode, NULL, NULL, epr, 1);
 	doc2 = ws_xml_create_doc_by_import( rootNode);
 	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
-	ws_xml_destroy_doc(doc);
+	ws_xml_destroy_doc(doc);;
 	ws_xml_destroy_doc(doc2);
 	return buf;
+}
+
+
+char *epr_get_resource_uri(epr_t *epr) {
+	if (epr)
+		return epr->refparams.uri;
+	else
+		return NULL;
 }
 
 int epr_serialize(WsXmlNodeH node, const char *ns,

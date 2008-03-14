@@ -412,6 +412,12 @@ typedef enum {
 				  const char *resource_uri,
 				  client_opt_t * options);
 
+
+	WsXmlDocH wsmc_action_get_from_epr(WsManClient *cl, epr_t *epr,
+			        client_opt_t *options);
+
+
+
 	/**
 	 * Send a Transfer Put request
 	 * @param cl Client handle
@@ -514,6 +520,9 @@ typedef enum {
 	WsXmlDocH wsmc_action_delete(WsManClient * cl,
 				     const char *resource_uri,
 				     client_opt_t * options);
+
+	WsXmlDocH wsmc_action_delete_from_epr(WsManClient *cl, epr_t *epr,
+			        client_opt_t *options);
 
 	/**
 	 * Send a Enumerate request

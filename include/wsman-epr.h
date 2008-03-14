@@ -84,6 +84,8 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name);
 
 int epr_selector_count(epr_t *epr);
 
+char *epr_get_resource_uri(epr_t *epr);
+
  /**
  * Create an epr_t structure
  * @param uri Resource URI string

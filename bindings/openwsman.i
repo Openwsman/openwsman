@@ -276,6 +276,7 @@ struct _WsXmlDoc {};
     return epr_deserialize($self, ns, epr_node_name, embedded);
   }  
 
+
 #if defined(SWIGRUBY)
   /* enumerate attributes */
   void each_attr() {
@@ -340,6 +341,10 @@ struct _WsXmlDoc {};
 
   int selector_count(void) {
     return epr_selector_count($self);
+  }
+
+  char *get_resource_uri(void) {
+    return epr_get_resource_uri($self);
   }
 
 
@@ -515,6 +520,14 @@ rwsman_debug_set( VALUE module, VALUE dbg )
   WsXmlDocH identify( client_opt_t *options ) {
     return wsmc_action_identify( $self, options );
   }
+  
+  WsXmlDocH get_from_epr( client_opt_t *options , epr_t *epr) {
+    return wsmc_action_get_from_epr( $self, epr, options);
+  }
+  WsXmlDocH delete_from_epr( client_opt_t *options , epr_t *epr) {
+    return wsmc_action_delete_from_epr( $self, epr, options);
+  }
+
   WsXmlDocH enumerate( client_opt_t *options , filter_t *filter, char *resource_uri) {
     return wsmc_action_enumerate( $self, resource_uri, options, filter);
   }
