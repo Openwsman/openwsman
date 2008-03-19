@@ -1366,7 +1366,7 @@ cim_invoke_method(CimClientInfo * client,
 				    CMGetArgAt(argsout, i, &argname, NULL);
 				property2xml(client, data,
 					     (char *) argname->hdl,
-					     method_node, NULL, 0, 0);
+					     method_node, client->resource_uri, 0, 0);
 				CMRelease(argname);
 			}
 		}
