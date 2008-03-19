@@ -201,7 +201,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 	debug("write_handler: recieved %d bytes, all = %d\n", len, u_buf_len(buf));
 	return len;
 }
-
+#ifdef ENABLE_EVENTING_SUPPORT
 static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void *arg)
 {
 	unsigned char *thumbprint = (unsigned char *)arg;
@@ -226,6 +226,7 @@ sslctxfun(CURL *curl, void *sslctx, void *parm)
 	SSL_CTX_set_cert_verify_callback(ctx, ssl_certificate_thumbprint_verify_callback, parm);
 	return r;
 }
+#endif
 
 static void *
 init_curl_transport(WsManClient *cl)
@@ -289,6 +290,7 @@ init_curl_transport(WsManClient *cl)
 		}
 	}
 	// ceritificate thumbprint
+#ifdef ENABLE_EVENTING_SUPPORT	
 	else if (cl->authentication.certificatethumbprint) {
 		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
 		if(r != 0) {
@@ -301,6 +303,7 @@ init_curl_transport(WsManClient *cl)
 			goto DONE;
 		}
 	}
+#endif	
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
 	if (r != 0) {
