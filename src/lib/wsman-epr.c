@@ -201,11 +201,13 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	if(p == NULL) return -1;
 	p[epr->refparams.selectorset.count].name = u_strdup(name);
 	p[epr->refparams.selectorset.count].type = selector->type;
-	if(selector->type == 0)
-		if (selector->entry.text)
+	if(selector->type == 0) {
+		if (selector->entry.text) {
 			p[epr->refparams.selectorset.count].value = u_strdup(selector->entry.text);
-	else
+		}
+	} else {
 		p[epr->refparams.selectorset.count].value = (char *)epr_copy(selector->entry.eprp);
+	}
 
 	epr->refparams.selectorset.selectors = p;
 	epr->refparams.selectorset.count++;

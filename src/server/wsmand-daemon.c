@@ -181,7 +181,9 @@ int wsmand_read_config(dictionary * ini)
 	min_threads = iniparser_getint(ini, "server:min_threads", 1);
 	max_threads = iniparser_getint(ini, "server:max_threads", 4);
 	uri_subscription_repository = iniparser_getstring(ini, "server:subs_repository", DEFAULT_SUBSCRIPTION_REPOSITORY);
+#ifdef ENABLE_EVENTING_SUPPORT
 	wsman_server_set_subscription_repos(uri_subscription_repository);
+#endif
 	return 1;
 }
 
