@@ -508,6 +508,13 @@ CimResource_Pull_EP( WsContextH cntx,
 
 	maxelements= wsman_get_max_elements(cntx, NULL);
 	maxsize = wsman_get_max_envelope_size(cntx, NULL);
+	if(maxsize == 0) {
+		body = ws_xml_get_soap_body(cntx->indoc);
+		body = ws_xml_get_child(body, 0, XML_NS_ENUMERATION, WSENUM_PULL);
+		maxsize = ws_deserialize_uint32(NULL, body,
+					     0, XML_NS_ENUMERATION,
+					     WSENUM_MAX_CHARACTERS);
+	}
 	cim_get_enum_items(cimclient, cntx, pullnode,
 			enumInfo, XML_NS_ENUMERATION,  maxelements, maxsize);
 

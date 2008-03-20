@@ -224,6 +224,7 @@ create_enum_info(SoapOpH op,
 	WsXmlNodeH node = ws_xml_get_soap_body(indoc);
 	WsXmlNodeH header = ws_xml_get_soap_header(indoc);
 	WsXmlDocH outdoc = NULL;
+	WsXmlNodeH enumnode = NULL;
 	WsEnumerateInfo *enumInfo;
 	WsmanMessage *msg = wsman_get_msg_from_op(op);
 	WsmanFaultCodeType fault_code = WSMAN_RC_OK;
@@ -238,6 +239,12 @@ create_enum_info(SoapOpH op,
 	}
 	enumInfo->encoding = u_strdup(msg->charset);
 	enumInfo->maxsize = wsman_get_maxsize_from_op(op);
+	if(enumInfo->maxsize == 0) {
+		enumnode = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
+		enumInfo->maxsize = ws_deserialize_uint32(NULL, enumnode,
+					     0, XML_NS_ENUMERATION,
+					     WSENUM_MAX_CHARACTERS);
+	}
 	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
 	to = ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));

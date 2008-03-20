@@ -2356,9 +2356,7 @@ cim_get_enum_items(CimClientInfo * client,
 			}
 			enumInfo->index++;
 		}
-		if (c == 0) {
 			enumInfo->index--;
-		}
 		if(clonedoc) {
 			enumInfo->pullResultPtr = outdoc;
 		}
