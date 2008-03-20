@@ -985,8 +985,8 @@ wsenum_enumerate_stub(SoapOpH op,
 	}
 
 	soapCntx = ws_get_soap_context(soap);
-	if (enumInfo->index == enumInfo->totalItems &&
-			( enumInfo->flags & WSMAN_ENUMINFO_OPT ) == WSMAN_ENUMINFO_OPT ) {
+	if (( enumInfo->flags & WSMAN_ENUMINFO_OPT ) == WSMAN_ENUMINFO_OPT  && 
+		(enumInfo->totalItems == 0 || enumInfo->index == enumInfo->totalItems)) {
 		ws_serialize_str(epcntx->serializercntx, resp_node, NULL,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		ws_serialize_str(epcntx->serializercntx, resp_node,
