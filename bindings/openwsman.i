@@ -346,6 +346,10 @@ struct _WsXmlDoc {};
   char *get_resource_uri(void) {
     return epr_get_resource_uri($self);
   }
+  
+  char *get_selector(const char* name) {
+  	return wsman_epr_selector_by_name($self, name);
+  }
 
 
 }
