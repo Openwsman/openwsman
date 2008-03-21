@@ -108,7 +108,7 @@ epr_t *epr_create(const char *uri, hash_t * selectors,
  * @param epr Point of epr_t
  * @param name Name of selector
  * @param selector Point of seletor_entry
- * @return 0 for sucess, others for fail
+ * @return 0 for sucess, others for failure
  */
 int epr_add_selector_text(epr_t *epr, const char *name, const char *text);
 
@@ -117,9 +117,17 @@ int epr_add_selector_text(epr_t *epr, const char *name, const char *text);
  * @param epr Point of epr_t
  * @param name Name of selector
  * @param selector Point of seletor_entry
- * @return 0 for sucess, others for fail
+ * @return 0 for sucess, others for failure
  */
 int epr_add_selector_epr(epr_t *epr, const char *name, epr_t *added_epr);
+
+/**
+ * Delete an selector from an epr by name
+ * @param epr Point of epr_t
+ * @param name Name of selector name
+ * @return 0 for sucess, others for failure
+ */
+int epr_delete_selector(epr_t *epr, const char *name);
 
  /**
  * Destroy an epr_t structure

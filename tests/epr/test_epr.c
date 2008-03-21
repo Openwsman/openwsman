@@ -169,6 +169,29 @@ static void test_epr_cmp(void)
 	epr_destroy(epr3);
 }
 
+static void test_epr_delete_selector(void)
+{
+	WsXmlDocH doc1 = ws_xml_read_file("./epr3.xml", "utf-8", 0);
+	if(doc1 == NULL) return;
+
+	WsXmlNodeH node = ws_xml_get_soap_header(doc1);
+	epr_t *epr = epr_deserialize(node, NULL, NULL, 0);
+	
+	epr_delete_selector(epr, "Handler");
+
+	WsXmlDocH doc = ws_xml_create_envelope();
+        WsXmlNodeH header = ws_xml_get_soap_header(doc);
+        epr_serialize(header,NULL,NULL,epr,0);
+        ws_xml_dump_doc(stdout, doc);
+	
+	ws_xml_destroy_doc(doc1);
+	ws_xml_destroy_doc(doc);
+	epr_destroy(epr);
+	
+	printf("\033[22;32mdelete selector \"Handler\" from EPR\033[m\n\n");
+	
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -176,5 +199,6 @@ int main(int argc, char *argv[])
 	test_serialize2();
 	test_deserialize();
 	test_epr_cmp();
+	test_epr_delete_selector();
 	return 0;
 }

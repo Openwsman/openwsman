@@ -243,6 +243,38 @@ int epr_add_selector_epr(epr_t *epr, const char *name, epr_t *added_epr)
 	return r;
 }
 
+int epr_delete_selector(epr_t *epr, const char *name)
+{
+	int i,k;
+	int count;
+	Selector *selectors;
+	if(epr == NULL || name == NULL) return 0;
+	count = epr->refparams.selectorset.count;
+	selectors = epr->refparams.selectorset.selectors;
+	for(i =0; i < count; i++) {
+		if(strcmp(name, selectors[i].name) == 0)
+			break;
+	}
+	if(i == count) return -1;
+
+	u_free(selectors[i].name);
+	if(selectors[i].type == 0) {
+		u_free(selectors[i].value);
+	}
+	else {
+		epr_destroy((epr_t *)selectors[i].value);
+	}
+	
+	for(k = i; k < count-1; k++) {
+		memcpy(&selectors[k], &selectors[k+1], sizeof(Selector));
+	}
+	
+	epr->refparams.selectorset.selectors = u_realloc(selectors, (count-1)*sizeof(Selector));
+	epr->refparams.selectorset.count--;
+	
+	return 0;
+}
+
 void epr_destroy(epr_t *epr)
 {
 	int i;
