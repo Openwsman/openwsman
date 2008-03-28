@@ -14,7 +14,8 @@
 #include "u/libu.h"
 #include "wsman-client-api.h"
 #include "wsman-client-transport.h"
-
+#include "wsman-epr.h"
+#include "wsman-filter.h"
 
 
 int facility = LOG_DAEMON;
@@ -39,8 +40,7 @@ typedef struct {
 	/* Resource UR to test against */
 	const char *resource_uri;
 
-	/* Selectors in the form of a URI query   key=value&key2=value2 */
-	char *selectors;
+	char *filter;
 
 	const char* xpath_expression;
 	char* expected_value;
@@ -55,8 +55,8 @@ typedef struct {
 TestData test = {
 	"Test Associators.",
 	"root/cimv2",
-	"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem",
-	"Name=vamt-build.sh.intel.com&CreationClassName=Linux_ComputerSystem",
+	"http://schemas.dmtf.org/wbem/wscim/1/*",
+	"http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_OperatingSystem?Name=\"vamt-build.sh.intel.com\"&CreationClassName=\"Linux_OperatingSystem\"&CSName=\"vamt-build.sh.intel.com\"&CSCreationClassName=\"Linux_ComputerSystem\"",
 	"/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value",
 	NULL,
 	500,
@@ -84,12 +84,13 @@ int main(int argc, char** argv)
 	wsmc_transport_init(cl, NULL);
 
 	options = wsmc_options_init();
+	epr_t *epr = epr_from_string(test.filter);
 	if(test.namespace)
-		options->cim_ns = u_strdup(test.namespace);
-	options->flags |= FLAG_CIM_ASSOCIATORS;
-	wsmc_add_selectors_from_str (options, test.selectors);
+		epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, test.namespace);
+	filter_t *filter = filter_create_assoc(epr, 1, NULL, NULL, NULL, NULL, NULL, 0 );
+
 	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
-	assoc_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options, NULL);
+	assoc_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options, filter);
 
 	if(!assoc_resp) {
 		printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
@@ -117,6 +118,8 @@ int main(int argc, char** argv)
 		ws_xml_destroy_doc(doc);
 	wsmc_options_destroy(options);
 	wsmc_release(cl);
+	epr_destroy(epr);
+	filter_destroy(filter);
 	return 0;
 }
 
