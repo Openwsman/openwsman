@@ -2,7 +2,7 @@
 //
 //  Copyright (C) Intel Corporation, 2007.
 //
-//  File:       Exception.h 
+//  File:       Exception.h
 //
 //  Contents:   General Wsman Exception definition
 //
@@ -63,9 +63,9 @@ namespace WsmanExceptionNamespace
 		{
 			return _what;
 		}
-		virtual const char *what() const throw() 
-		{ 
-		  return _what.c_str(); 
+		virtual const char *what() const throw()
+		{
+		  return _what.c_str();
 		};
 		virtual unsigned int getErr() const throw()
 		{
@@ -80,25 +80,25 @@ namespace WsmanExceptionNamespace
 					res = "Operation succeeded";
 					break;
 				case WSMAN_GENERAL_ERROR:
-					res = "General error occured";
+					res = "General error occurred";
 					break;
 				case WSMAN_TRANSPORT_ERROR:
-					res = "Transport error occured";
+					res = "Transport error occurred";
 					break;
 				case WSMAN_HTTP_ERROR:
-					res = "HTTP error occured";
+					res = "HTTP error occurred";
 					break;
 				case WSMAN_SOAP_FAULT:
-					res = "SOAP error occured";
+					res = "SOAP error occurred";
 					break;
 				case WSMAN_TYPE_CONVERSION_ERROR:
-					res = "Conversion type error occured";
+					res = "Conversion type error occurred";
 					break;
 				case WSMAN_XML_ERROR:
-					res = "XML error occured";
+					res = "XML error occurred";
 					break;
 				case WSMAN_MISSING_INPUT:
-					res = "Missing input error occured";
+					res = "Missing input error occurred";
 					break;
 				case WSMAN_RESPONSE_UNKNOWN:
 					res = "Response unknown";
@@ -113,13 +113,13 @@ namespace WsmanExceptionNamespace
 					res = "Overflow soap header";
 					break;
 				case WSMAN_UDP_ERROR:
-					res = "UDP error occured";
+					res = "UDP error occurred";
 					break;
 				case WSMAN_TCP_ERROR:
-					res = "TCP error occured";
+					res = "TCP error occurred";
 					break;
 				case WSMAN_CONNECT_ERROR:
-					res = "Connection error occured";
+					res = "Connection error occurred";
 					break;
                         }
                         return res;
