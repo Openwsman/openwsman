@@ -23,6 +23,36 @@ SET( PACKAGE_SUBSCRIPTION_DIR "/var/lib/openwsman/subscriptions" )
 SET( PACKAGE_PLUGIN_DIR "${LIB_INSTALL_DIR}/openwsman/plugins" )
 SET( PACKAGE_AUTH_DIR "${LIB_INSTALL_DIR}/openwsman/authenticators" )
 
+
+# Macro for error message when header files not present, but build option
+# explicitly declared
+MACRO(NO_HEADERS_WARNING_EXPL optionName pkgName)
+   MESSAGE(STATUS "************  WARNING  *************")
+   MESSAGE(STATUS "Didn't Find ${pkgName} Headers... ")
+   MESSAGE(STATUS "${optionName} explicitly requested.")
+   MESSAGE(STATUS "Make sure ${pkgName} header files are available and run cmake again.")
+   MESSAGE(STATUS "************************************")
+   SET(HAVE_WARNINGS YES)
+ENDMACRO(NO_HEADERS_WARNING_EXPL)
+    
+# Macro for error message when header files not present, but build option
+# not explicitly declared
+MACRO(NO_HEADERS_WARNING optionName pkgName)
+   SET(${optionName} NO)
+   SET(HAVE_WARNINGS YES)
+   MESSAGE(STATUS "************  WARNING  *************")
+   MESSAGE(STATUS "Didn't Find ${pkgName} Headers... Not Building ${pkgName} Bindings")
+   MESSAGE(STATUS "************************************")
+ENDMACRO(NO_HEADERS_WARNING)
+
+# For binding options, see if it is explicitly set on the command line,
+# before defining the option with a default.  Then if we don't find
+# the headers: if it was explicitly set then fail, otherwise
+# just give a warning message
+SET( BUILD_PYTHON_EXPLICIT ${BUILD_PYTHON})
+SET( BUILD_RUBY_EXPLICIT ${BUILD_RUBY})
+SET( BUILD_PERL_EXPLICIT ${BUILD_PERL})
+
 # options
 
 OPTION( BUILD_LIBCIM "Build CIM plugin" YES )
@@ -59,18 +89,39 @@ INCLUDE(FindRuby)
 EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print Config::CONFIG['sitearchdir']"
   OUTPUT_VARIABLE RUBY_SITEARCH_DIR)
 MESSAGE(STATUS "Building Ruby bindings" )
+ IF(NOT RUBY_INCLUDE_PATH)
+  IF(BUILD_RUBY_EXPLICIT)
+   NO_HEADERS_WARNING_EXPL(BUILD_RUBY Ruby)
+  ELSE(BUILD_RUBY_EXPLICIT)
+   NO_HEADERS_WARNING(BUILD_RUBY Ruby)
+  ENDIF(BUILD_RUBY_EXPLICIT)
+ ENDIF(NOT RUBY_INCLUDE_PATH )
 ENDIF( BUILD_RUBY )
 
 IF( BUILD_PYTHON )
 INCLUDE(FindPythonInterp)
 INCLUDE(FindPythonLibs)
 MESSAGE(STATUS "Building Python bindings" )
+ IF(NOT PYTHON_INCLUDE_PATH )
+  IF(BUILD_PYTHON_EXPLICIT)
+   NO_HEADERS_WARNING_EXPL(BUILD_PYTHON Python)
+  ELSE(BUILD_PYTHON_EXPLICIT)
+   NO_HEADERS_WARNING(BUILD_PYTHON Python)
+  ENDIF(BUILD_PYTHON_EXPLICIT)
+ ENDIF(NOT PYTHON_INCLUDE_PATH )
 ENDIF( BUILD_PYTHON )
 
 IF( BUILD_PERL )
 INCLUDE(FindPerl)
 INCLUDE(FindPerlLibs)
 MESSAGE(STATUS "Building Perl bindings" )
+ IF(NOT PERL_INCLUDE_PATH )
+  IF(BUILD_PERL_EXPLICIT)
+   NO_HEADERS_WARNING_EXPL(BUILD_PERL Perl)
+  ELSE(BUILD_PERL_EXPLICIT)
+   NO_HEADERS_WARNING(BUILD_PERL Perl)
+  ENDIF(BUILD_PERL_EXPLICIT)
+ ENDIF(NOT PERL_INCLUDE_PATH )
 ENDIF( BUILD_PERL )
 
 # curl
@@ -153,12 +204,12 @@ FOREACH( FILE ${FILES_TO_TEST})
   STRING(TOUPPER ${FILESLASH} UPNAME)
 #  MESSAGE(STATUS "Looking for ${FILE} as ${UPNAME}")
   SET(HAVENAME "HAVE_${UPNAME}")
-  CHECK_INCLUDE_FILE( "${FILE}" HAVE_FILE )
-  IF(HAVE_FILE)
+  CHECK_INCLUDE_FILE( "${FILE}" HAVE_${FILE}_FILE )
+  IF(HAVE_${FILE}_FILE)
     SET(${HAVENAME} 1)
-  ELSE(HAVE_FILE)
+  ELSE(HAVE_${FILE}_FILE)
     SET(${HAVENAME} 0)
-  ENDIF(HAVE_FILE)
+  ENDIF(HAVE_${FILE}_FILE)
 ENDFOREACH( FILE ${FILES_TO_TEST})
 
 #/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
@@ -304,6 +355,13 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3" )
 
 install(FILES  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/openwsman )
 
+
+IF(HAVE_WARNINGS)
+ MESSAGE(STATUS "   ************ NOTE: ************")
+ MESSAGE(STATUS "   Warnings occurred during cmake configuration... Please see output")
+ MESSAGE(STATUS "   *******************************")
+ENDIF(HAVE_WARNINGS) 
+    
 #AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
 #
 #package: dist
