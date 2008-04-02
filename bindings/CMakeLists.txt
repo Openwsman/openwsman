@@ -1,6 +1,7 @@
 #
 # CMakeLists.txt for openwsman/bindings
 #
+include_directories(${CMAKE_BINARY_DIR})
 
 IF( BUILD_PYTHON )
 add_subdirectory(python)
