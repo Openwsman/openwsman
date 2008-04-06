@@ -196,6 +196,11 @@ AC_ARG_WITH(examples,
 		[  --with-examples=[no/yes] build examples [default=no]],,
               with_examples=$examples_default)
 AM_CONDITIONAL(BUILD_EXAMPLES, test "x$with_examples" = "xyes")
+tests_default=no
+AC_ARG_WITH(tests,
+		[  --with-tests=[no/yes] build tests [default=no]],,
+              with_tests=$tests_default)
+AM_CONDITIONAL(BUILD_TESTS, test "x$with_tests" = "xyes")
 
 python_default=no
 AC_ARG_ENABLE(python,

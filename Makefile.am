@@ -1,7 +1,10 @@
-SUBDIRS = include src doc etc tests bindings
+SUBDIRS = include src doc etc bindings
 
 if BUILD_EXAMPLES
 SUBDIRS += examples
+endif
+if BUILD_TESTS
+SUBDIRS += tests
 endif
 
 AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
