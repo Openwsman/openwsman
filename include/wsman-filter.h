@@ -36,6 +36,10 @@
 #ifndef _WSMAN_FILTER_H_
 #define _WSMAN_FILTER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif				/* __cplusplus */
+
 #include "wsman-types.h"
 #include "wsman-epr.h"
 
@@ -141,4 +145,7 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter);
  */
 filter_t * filter_deserialize(WsXmlNodeH node);
 
+#ifdef __cplusplus
+}
+#endif				/* __cplusplus */
 #endif

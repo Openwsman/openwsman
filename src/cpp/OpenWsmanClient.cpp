@@ -16,6 +16,7 @@ extern "C" {
 }
 
 #include "wsman-client-transport.h"
+#include "wsman-filter.h"
 
 #define WSMAN_ENCODING		"UTF-8"
 
@@ -137,6 +138,64 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 	WsXmlDocH doc;
 	char *enumContext;
 	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, NULL);
+
+	try
+	{
+		if(ResourceNotFound(cl, enum_response))
+		{
+			wsmc_options_destroy(options);
+			return;
+		}
+	}
+	catch(WsmanSoapFault& e)
+	{
+		wsmc_options_destroy(options);
+		throw e;
+	}
+	catch(WsmanClientException& e)
+	{
+		wsmc_options_destroy(options);
+		throw e;
+	}
+	catch(exception& e)
+	{
+		wsmc_options_destroy(options);
+		throw e;
+	}
+
+	enumContext = wsmc_get_enum_context(enum_response);
+	ws_xml_destroy_doc(enum_response);
+
+	while (enumContext != NULL && enumContext[0] != 0 ) {
+		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, NULL, enumContext);
+		try
+		{
+			CheckWsmanResponse(cl, doc);
+		}
+		catch(exception& e)
+		{
+			wsmc_options_destroy(options);
+			throw e;
+		}
+		string payload = ExtractItems(doc);
+		if (payload.length() > 0)
+			enumRes.push_back(payload);
+		u_free(enumContext);
+		enumContext = wsmc_get_enum_context(doc);    
+		ws_xml_destroy_doc(doc);
+	}
+	u_free(enumContext);
+	wsmc_options_destroy(options);
+}
+
+void OpenWsmanClient::Enumerate2(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const
+{
+	client_opt_t *options = NULL;
+	options = SetOptions(cl);
+	
+	WsXmlDocH doc;
+	char *enumContext;
+	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, filter.getfilter());
 
 	try
 	{

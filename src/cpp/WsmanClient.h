@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 #include "Exception.h"
+#include "WsmanFilter.h"
 
 using namespace std;
 using namespace WsmanExceptionNamespace;
@@ -107,6 +108,9 @@ namespace WsmanClientNamespace
 
 		// Enumerate a resource. 
 		virtual void Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s = NULL) const = 0;
+
+		//Enumerate2
+		virtual void Enumerate2(const string &resourceUri, WsmanFilter &filter, vector<string> &enumRes) const = 0;
 
 		// Retrieve a resource.
 		virtual string Get(const string &resourceUri, const NameValuePairs *s = NULL) const = 0;

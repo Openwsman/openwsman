@@ -428,6 +428,14 @@
 				RelativePath=".\src\cpp\WsmanClient.h"
 				>
 			</File>
+			<File
+				RelativePath=".\src\cpp\WsmanEPR.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cpp\WsmanFilter.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

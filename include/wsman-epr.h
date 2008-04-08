@@ -36,6 +36,10 @@
 #ifndef WSMAN_EPR_H_
 #define WSMAN_EPR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif				/* __cplusplus */
+
 #include "wsman-types.h"
 #include "u/libu.h"
 
@@ -184,4 +188,8 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 char *get_cimnamespace_from_selectorset(SelectorSet *selectorset);
 
 char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name);
+
+#ifdef __cplusplus
+}
+#endif				/* __cplusplus */
 #endif

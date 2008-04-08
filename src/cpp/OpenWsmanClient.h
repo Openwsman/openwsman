@@ -68,6 +68,8 @@ namespace WsmanClientNamespace
 			// Enumerate resource.
 			void Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s = NULL) const;
 
+			void Enumerate2(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const;
+
 			// Retrieve a resource.
 			string Get(const string &resourceUri, const NameValuePairs *s = NULL) const;
 
