@@ -110,7 +110,7 @@ namespace WsmanClientNamespace
 		virtual void Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s = NULL) const = 0;
 
 		//Enumerate2
-		virtual void Enumerate2(const string &resourceUri, WsmanFilter &filter, vector<string> &enumRes) const = 0;
+		virtual void Enumerate(const string &resourceUri, WsmanFilter &filter, vector<string> &enumRes) const = 0;
 
 		// Retrieve a resource.
 		virtual string Get(const string &resourceUri, const NameValuePairs *s = NULL) const = 0;

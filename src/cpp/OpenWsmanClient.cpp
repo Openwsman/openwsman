@@ -188,7 +188,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 	wsmc_options_destroy(options);
 }
 
-void OpenWsmanClient::Enumerate2(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const
+void OpenWsmanClient::Enumerate(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const
 {
 	client_opt_t *options = NULL;
 	options = SetOptions(cl);
