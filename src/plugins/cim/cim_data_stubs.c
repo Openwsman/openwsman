@@ -439,7 +439,7 @@ cleanup:
 	if (retval && cimclient) {
 		CimResource_destroy(cimclient);
 	}
-	else if(cimclient->selectors) {
+	else if(cimclient && cimclient->selectors) {
 		hash_free(cimclient->selectors);
 		cimclient->selectors = NULL;
 		debug("selectors destroyed");
