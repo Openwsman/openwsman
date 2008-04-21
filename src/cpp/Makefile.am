@@ -25,9 +25,7 @@ libwsman_clientpp_la_SOURCES = \
 	OpenWsmanClient.cpp  \
 	OpenWsmanClient.h \
 	WsmanEPR.h \
-	WsmanEPR.cpp \
 	WsmanFilter.h \
-	WsmanFilter.cpp \
 	Exception.h \
 	WsmanClient.h
 
