@@ -70,7 +70,7 @@
 static BOOL find_cert(const _TCHAR * oid,
 					  const _TCHAR * certName,
 					  BOOL localMachine,
-					  PCCERT_CONTEXT  *pCertContext, 
+					  PCCERT_CONTEXT  *pCertContext,
 					  int* errorLast);
 void wsman_client_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
@@ -184,7 +184,7 @@ static void *init_win_transport(WsManClient * cl)
 
 static DWORD ChooseAuthScheme(DWORD dwSupportedSchemes, int ws_auth)
 {
-	//  It is the server's responsibility only to accept 
+	//  It is the server's responsibility only to accept
 	//  authentication schemes that provide a sufficient
 	//  level of security to protect the servers resources.
 	//
@@ -325,8 +325,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 
 
 	/* request = WinHttpOpenRequest(connect, L"POST",
-	   cl->data.path, NULL, 
-	   WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 
+	   cl->data.path, NULL,
+	   WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
 	   flags); */
 
 	pwsz = convert_to_unicode(cl->data.path);
@@ -362,8 +362,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				      WINHTTP_OPTION_SPN,
 									(LPVOID) (&d),
 									sizeof(DWORD));
-	    if (!bResults) 
-		{ 
+	    if (!bResults)
+		{
 			lastErr = GetLastError();
 			bDone = TRUE;
 
@@ -398,6 +398,18 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
                 }
                 bResults = FALSE;
         }
+	 if(0==cl->authentication.verify_host || 0==cl->authentication.verify_peer)
+	 {
+		if(0==cl->authentication.verify_host)
+			flags = flags | SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
+		if(0==cl->authentication.verify_peer)
+			flags = flags | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+		bResult = WinHttpSetOption(request,WINHTTP_OPTION_SECURITY_FLAGS,(LPVOID) (&flags),sizeof(DWORD));
+        if (!bResult) {
+			  //log the error and proceed
+              error("cannot ignore server certificate");
+        }
+	 }
 	while (!bDone) {
 		bResult = WinHttpSendRequest(request,
 					     WINHTTP_NO_ADDITIONAL_HEADERS,
@@ -408,7 +420,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		if (bResult) {
 			bResults = WinHttpReceiveResponse(request, NULL);
 		}
-		// Resend the request in case of 
+		// Resend the request in case of
 		// ERROR_WINHTTP_RESEND_REQUEST error.
 		if (!bResults) {
 			lastErr = GetLastError();
@@ -435,8 +447,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 			    lastErr) {
 				lastErr = 0;
 
-			if (!find_cert(	(const _TCHAR *)  cl->authentication.caoid, 
-				(const _TCHAR *)  cl->authentication.cainfo, 
+			if (!find_cert(	(const _TCHAR *)  cl->authentication.caoid,
+				(const _TCHAR *)  cl->authentication.cainfo,
 				cl->authentication.calocal, &certificate, &lastErr)) {
 					debug("No certificate");
 
@@ -460,7 +472,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					continue;
 				}
 			} else {
-				
+
 				bResults = WinHttpQueryAuthSchemes(request,
 								   &dwSupportedSchemes,
 								   &dwFirstScheme,
@@ -513,7 +525,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		switch (dwStatusCode) {
 		case 200:
 			// The resource was successfully retrieved.
-			// You can use WinHttpReadData to read the 
+			// You can use WinHttpReadData to read the
 			// contents of the server's response.
 			bDone = TRUE;
 			break;
@@ -547,10 +559,10 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					WINHTTP_OPTION_AUTOLOGON_POLICY,
 					&data,
 					dataSize);
-				if (!bResults) 
-				{ 
+				if (!bResults)
+				{
 					lastErr = GetLastError();
-					bDone = TRUE;					
+					bDone = TRUE;
 
 				}
 				if (cleanup_request_data(request)) {
@@ -559,7 +571,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				}
 				break;
 			}
-			
+
 			bResults = WinHttpQueryAuthSchemes(request,
 							   &dwSupportedSchemes,
 							   &dwFirstScheme,
@@ -608,9 +620,9 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
           // The proxy requires authentication.
 
           // Obtain the supported and preferred schemes.
-          bResults = WinHttpQueryAuthSchemes( hRequest, 
-                                              &dwSupportedSchemes, 
-                                              &dwFirstScheme, 
+          bResults = WinHttpQueryAuthSchemes( hRequest,
+                                              &dwSupportedSchemes,
+                                              &dwFirstScheme,
                                               &dwTarget );
 
           // Set the credentials before resending the request.
@@ -618,7 +630,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
             dwProxyAuthScheme = ChooseAuthScheme(dwSupportedSchemes);
 
           // If the same credentials are requested twice, abort the
-          // request.  For simplicity, this sample does not check 
+          // request.  For simplicity, this sample does not check
           // for a repeated sequence of status codes.
           if( dwLastStatus == 407 )
             bDone = TRUE;
@@ -639,7 +651,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		if (!bResults) {
 			bDone = TRUE;
 		}
-	}			// while 
+	}			// while
 
 	// Read data
 	if (!bResults) {
@@ -689,7 +701,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 BOOL find_cert(const _TCHAR * oid,
 					  const _TCHAR * certName,
 					  BOOL localMachine,
-					  PCCERT_CONTEXT  *pCertContext, 
+					  PCCERT_CONTEXT  *pCertContext,
 					  int* errorLast)
 {
 
@@ -702,11 +714,11 @@ BOOL find_cert(const _TCHAR * oid,
 
 	/* Choose which personal store to use : Current User or Local Machine*/
 	DWORD flags;
-	if (localMachine) 
+	if (localMachine)
 	{
 		flags = CERT_SYSTEM_STORE_LOCAL_MACHINE;
 	}
-	else 
+	else
 	{
 		flags = CERT_SYSTEM_STORE_CURRENT_USER;
 	}
@@ -737,7 +749,7 @@ BOOL find_cert(const _TCHAR * oid,
         NULL);
 
 	/*
-	   If certificate was found - determinate its name. Keep search 
+	   If certificate was found - determinate its name. Keep search
 	   while the certificate's Common Name doesn't match the name
 	   defined by the user
 	 */

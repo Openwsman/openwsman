@@ -1783,6 +1783,8 @@ wsmc_create(const char *hostname,
 	wsc->data.endpoint = u_strdup_printf("%s://%s:%d%s",
 			scheme, hostname, port, path);
 	debug("Endpoint: %s", wsc->data.endpoint);
+	wsc->authentication.verify_host = 1; //verify CN in server certicates by default
+	wsc->authentication.verify_peer = 1; //validate server certificates by default
 
 	init_client_connection(wsc);
 
