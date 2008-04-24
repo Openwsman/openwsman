@@ -600,44 +600,7 @@ wsman_set_enumeration_options(WsManClient * cl, WsXmlNodeH body, const char* res
 		ws_xml_add_child(node, XML_NS_CIM_BINDING,
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
-	/*
-	if (options->filter) {
-		if(options->dialect && strcmp(options->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
-			epr = epr_from_string(options->filter);
-			if(options->cim_ns) {
-				epr_add_selector_text(epr, CIM_NAMESPACE_SELECTOR, options->cim_ns);
-			}
-			if(epr) {
-				filter = filter_create_assoc(epr, options->flags & FLAG_CIM_REFERENCES,
-					options->wsmb_cls_name, 	options->wsmb_result_cls_name, options->wsmb_role,
-					options->wsmb_result_role, options->wsmb_result_prop, options->wsmb_result_prop_num);
-			}
-		}
-		else
-			filter = filter_create_simple(options->dialect, options->filter);
-	}
 
-	if (options->dialect && strcmp(options->dialect, WSM_SELECTOR_FILTER_DIALECT) == 0) {
-		hash_t *selectors;
-		hnode_t *hn;
-		hscan_t hs;
-		selector_entry *entry;
-
-		selectors = hash_create2(HASHCOUNT_T_MAX, 0, 0);
-
-		hash_scan_begin(&hs, options->selectors);
-		while ((hn = hash_scan_next(&hs))) {
-			entry = u_malloc(sizeof(selector_entry));
-			entry->type = 0;
-			entry->entry.text = (char *)hnode_get(hn);
-			hash_alloc_insert(selectors, hnode_getkey(hn), entry);
-		}
-
-		filter = filter_create_selector(selectors, options->cim_ns);
-
-		hash_free(selectors);
-	}
-	*/
 	if(filter != NULL) {
 		filter_serialize(node, filter);
 	}

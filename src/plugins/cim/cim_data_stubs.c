@@ -63,13 +63,13 @@ static CimClientInfo*
 CimResource_Init(WsContextH cntx, char *username, char *password)
 {
 	char *_tmp = NULL;
-	char *r = NULL;
+	char *resource_uri = NULL;
 	char *show_extensions;
 	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 	WsmanStatus status;
 
 	wsman_status_init(&status);
-	r = wsman_get_resource_uri(cntx, NULL);
+	resource_uri = wsman_get_resource_uri(cntx, NULL);
 	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
 
 	debug("Connecting using sfcc %s frontend", get_cim_client_frontend());
@@ -77,8 +77,9 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
 			get_cim_port(), username, password , get_cim_client_frontend(), &status);
 
-	if (!cimclient->cc)
+	if (!cimclient->cc) {
 		return NULL;
+	}
 
 	cimclient->cntx = cntx;
 	cimclient->namespaces = get_vendor_namespaces();
@@ -87,10 +88,13 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	cimclient->requested_class = wsman_get_class_name(cntx);
 
 	cimclient->method = wsman_get_method_name(cntx);
-	if(username)
+	if(username) {
 		cimclient->username = u_strdup(username);
-	if(password)
-	cimclient->password = u_strdup(password);
+	}
+	if(password) {
+		cimclient->password = u_strdup(password);
+	}
+
 	if (cimclient->selectors) {
 		_tmp = cim_get_namespace_selector(cimclient->selectors);
 	}
@@ -99,9 +103,9 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	} else {
 		cimclient->cim_namespace = get_cim_namespace();
 	}
-	if(r) {
-		cimclient->resource_uri = u_strdup(r);
-		cimclient->method_args = wsman_get_method_args(cntx, r );
+	if(resource_uri) {
+		cimclient->resource_uri = u_strdup(resource_uri);
+		cimclient->method_args = wsman_get_method_args(cntx, resource_uri );
 	}
 	show_extensions = wsman_get_option_set(cntx, NULL, WSMB_SHOW_EXTENSION );
 
@@ -215,22 +219,20 @@ CimResource_Delete_EP( SoapOpH op,
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-	} else {
-		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
-			if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
-				cim_delete_instance_from_enum(cimclient, &status);
-			} else {
-				debug("no base class, getting instance directly with getInstance");
-				cim_delete_instance(cimclient, &status);
-			}
-		}
-
-		if (status.fault_code != 0) {
-			ws_xml_destroy_doc(doc);
-			doc = wsman_generate_fault(in_doc, status.fault_code,
-					status.fault_detail_code, NULL);
+	} else if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
+		if (strstr(cimclient->resource_uri , XML_NS_CIM_CLASS ) != NULL) {
+			cim_delete_instance_from_enum(cimclient, &status);
+		} else {
+			debug("no base class, getting instance directly with getInstance");
+			cim_delete_instance(cimclient, &status);
 		}
 	}
+	else if (status.fault_code != 0) {
+		ws_xml_destroy_doc(doc);
+		doc = wsman_generate_fault(in_doc, status.fault_code,
+				status.fault_detail_code, NULL);
+	}
+debug("here");
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
@@ -281,7 +283,7 @@ CimResource_Get_EP( SoapOpH op,
 				status.fault_detail_code, NULL);
 	} else {
 		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
-			WsXmlNodeH body = ws_xml_get_soap_body(doc); 
+			WsXmlNodeH body = ws_xml_get_soap_body(doc);
 			fragstr = wsman_get_fragment_string(cntx, in_doc);
 			if(fragstr)
 				body = ws_xml_add_child(body, XML_NS_WS_MAN, WSM_XML_FRAGMENT,
@@ -732,7 +734,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 			status->fault_code = WSA_DESTINATION_UNREACHABLE;
 			status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
 		}
-			
+
 		debug("subscribe to an existing filter");
 	}
 	else {

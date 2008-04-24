@@ -294,7 +294,6 @@ property2xml(CimClientInfo * client, CMPIData data,
 				&& data.state == CMPI_nullValue) {
 			return;
 		} else if (data.type == CMPI_null && data.state == CMPI_nullValue) {
-			debug("x");
 			nilnode = ws_xml_add_child_sort(node, resource_uri, name, NULL);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 			return;
@@ -321,7 +320,6 @@ property2xml(CimClientInfo * client, CMPIData data,
 			WsXmlNodeH propnode;
 
 			if (data.type == CMPI_ref) {
-				debug("x");
 				refpoint = ws_xml_add_child_sort(node, resource_uri, name, NULL);
 				path2xml(client, refpoint, resource_uri, &data.value);
 			} else {
@@ -343,7 +341,6 @@ property2xml(CimClientInfo * client, CMPIData data,
 					u_free(valuestr);
 			}
 		} else {
-			debug("x");
 			WsXmlNodeH nilnode = ws_xml_add_child_sort(node, resource_uri, name,
 					     NULL);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
@@ -352,12 +349,24 @@ property2xml(CimClientInfo * client, CMPIData data,
 }
 
 
-static void cim_add_args(CMPIArgs * argsin, hash_t * args)
+static void cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
+		CMPIArgs * argsin)
 {
+	CMCIClient *cc = (CMCIClient *) client->cc;
 	hscan_t hs;
 	hnode_t *hn;
+	hash_t * args = client->method_args;
+	CMPIStatus rc;
 	hash_scan_begin(&hs, args);
+
+#if 0
+	op->ft->getMethodQualifier(op, client->method, NULL, &rc);
+	debug("getMethodQualifier() rc=%d, msg=%s",
+	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+
+#endif
 	while ((hn = hash_scan_next(&hs))) {
+
 		CMAddArg(argsin, (char *) hnode_getkey(hn),
 			 (char *) hnode_get(hn), CMPI_chars);
 	}
@@ -458,8 +467,7 @@ cim_verify_class_keys(CMPIConstClass * class,
 		CMPIString *propertyname;
 		CMPIData data;
 		class->ft->getPropertyAt(class, i, &propertyname, NULL);
-		data =
-		    class->ft->getPropertyQualifier(class,
+		data = class->ft->getPropertyQualifier(class,
 						    (char *) propertyname->
 						    hdl, "Key", &rc);
 		if (rc.rc == 0)
@@ -622,7 +630,6 @@ static CMPIConstClass *cim_get_class(CimClientInfo * client,
 	op = newCMPIObjectPath(client->cim_namespace, class, NULL);
 	_class = cc->ft->getClass(cc, op, flags, NULL, &rc);
 
-	/* Print the results */
 	debug("getClass() rc=%d, msg=%s",
 	      rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 	cim_to_wsman_status(rc, status);
@@ -655,10 +662,6 @@ instance2xml(CimClientInfo * client,
 
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
 
-//	d = ws_xml_create_doc( class_namespace, final_class);
-//	xmlr = ws_xml_get_doc_root(d);
-//	ws_xml_set_ns( xmlr, class_namespace, CIM_RESOURCE_NS_PREFIX);
-
   	if(fragstr) {
   		xmlr = body;
   	}
@@ -677,11 +680,7 @@ instance2xml(CimClientInfo * client,
 		numproperties = instance->ft->getPropertyCount(instance, NULL);
 	}
 
-/*
-	if (!ws_xml_ns_add(xmlr, XML_NS_SCHEMA_INSTANCE, XML_NS_SCHEMA_INSTANCE_PREFIX)) {
-		debug("namespace failed: %s", client->resource_uri);
-	}
-*/
+
 	for (i = 0; i < numproperties; i++) {
 		CMPIString *propertyname;
 		CMPIData data;
@@ -712,24 +711,11 @@ instance2xml(CimClientInfo * client,
 	long long ttime = 0;
   	gettimeofday(&tv0, NULL);
 
-#if 0
-	if (enumInfo->filter->query) {
-		debug("xpath filter: %s", enumInfo->filter->query );
-		if (d && ws_xml_check_xpath(d, enumInfo->filter->query)) {
-			ws_xml_copy_node(r , body);
-		}
-	} else {
-		ws_xml_copy_node(r , body);
-	}
-#endif
-//	ws_xml_copy_node(xmlr , body);
-
 	gettimeofday(&tv1, NULL);
 	t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
 	t1 = tv1.tv_sec * 10000000 + tv1.tv_usec;
 	ttime += t1 -t0;
 
-	//debug("Transofrmation time: %d", ttime );
 	if (enumInfo && (enumInfo->flags &  WSMAN_ENUMINFO_POLY_EXCLUDE ) ) {
 		if (_class) {
 			CMRelease(_class);
@@ -896,7 +882,7 @@ cim_enum_instances(CimClientInfo * client,
 	}
 	else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
-	} else{
+	} else {
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 			CMPI_FLAG_DeepInheritance,
 		    	NULL, &rc);
@@ -1274,14 +1260,14 @@ cim_add_epr(CimClientInfo * client,
 	return;
 }
 
-CMCIClient *cim_connect_to_cimom(char *cim_host,
-				 char *cim_port,
-				 char *cim_host_userid,
-				 char *cim_host_passwd,
-				 char *frontend,
-				 WsmanStatus * status)
+CMCIClient *
+cim_connect_to_cimom(char *cim_host,
+		char *cim_port,
+		char *cim_host_userid,
+		char *cim_host_passwd,
+		char *frontend,
+		WsmanStatus * status)
 {
-
 	CMPIStatus rc;
 	if (strcmp(frontend, "SfcbLocal") != 0)
 		frontend = "http";
@@ -1302,8 +1288,9 @@ CMCIClient *cim_connect_to_cimom(char *cim_host,
 
 void cim_release_client(CimClientInfo * cimclient)
 {
-	if (cimclient->cc)
+	if (cimclient->cc) {
 		CMRelease((CMCIClient *) cimclient->cc);
+	}
 }
 
 
@@ -1335,9 +1322,9 @@ cim_invoke_method(CimClientInfo * client,
 		CMPIArgs *argsin = NULL, *argsout = NULL;
 		argsin = newCMPIArgs(NULL);
 
-		if (client->method_args
-		    && hash_count(client->method_args) > 0) {
-			cim_add_args(argsin, client->method_args);
+		if (client->method_args && hash_count(client->method_args) > 0) {
+			debug("adding method arguments");
+			cim_add_args(client, objectpath, argsin);
 		}
 		argsout = newCMPIArgs(NULL);
 		CMPIData data = cc->ft->invokeMethod(cc, objectpath,
@@ -1726,10 +1713,10 @@ cim_get_instance_from_selectors(CimClientInfo * client,
 
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
-	CMPIConstClass *class =
-	    cim_get_class(client, client->requested_class,
-			  CMPI_FLAG_IncludeQualifiers,
-			  status);
+	CMPIConstClass *class = cim_get_class(client,
+			client->requested_class,
+			CMPI_FLAG_IncludeQualifiers,
+			status);
 	if (!class)
 		goto cleanup;
 
@@ -1764,10 +1751,10 @@ cim_get_objectpath_from_selectors(CimClientInfo * client,
 		 WsContextH cntx, WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath = NULL;
-	CMPIConstClass *class =
-	    cim_get_class(client, client->requested_class,
-			  CMPI_FLAG_IncludeQualifiers,
-			  status);
+	CMPIConstClass *class = cim_get_class(client,
+			client->requested_class,
+			CMPI_FLAG_IncludeQualifiers,
+			status);
 	if (!class)
 		goto cleanup;
 
@@ -2128,6 +2115,7 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 		else
 			status->fault_code = WSMAN_INTERNAL_ERROR;
 		break;
+	case CMPI_RC_ERR_METHOD_NOT_AVAILABLE:
 	case CMPI_RC_ERR_METHOD_NOT_FOUND:
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 		break;
@@ -2157,7 +2145,6 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 	case CMPI_RC_ERR_NO_SUCH_PROPERTY:
 	case CMPI_RC_ERR_TYPE_MISMATCH:
 	case CMPI_RC_ERR_QUERY_LANGUAGE_NOT_SUPPORTED:
-	case CMPI_RC_ERR_METHOD_NOT_AVAILABLE:
 	case CMPI_RC_DO_NOT_UNLOAD:
 	case CMPI_RC_NEVER_UNLOAD:
 	case CMPI_RC_ERROR_SYSTEM:

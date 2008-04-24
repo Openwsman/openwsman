@@ -296,56 +296,6 @@ wsman_build_soap_fault(const char *soapNsUri, const char *faultNsUri,
 
 
 /**
- * Buid SOAP Version Mismtach Fault
- * @param  fw SOAP Framework handle
- * @todo Send fault back
- */
-#if 0
-void wsman_build_soap_version_fault(SoapH soap)
-{
-	WsXmlDocH fault =
-	    wsman_build_soap_fault(soap, NULL, XML_NS_SOAP_1_2,
-				   "VersionMismatch", NULL,
-				   "Version Mismatch", NULL);
-	if (fault != NULL) {
-		WsXmlNodeH upgrade;
-		WsXmlNodeH h = ws_xml_get_soap_header(fault);
-
-		ws_xml_define_ns(ws_xml_get_doc_root(fault),
-				 XML_NS_SOAP_1_1, NULL, 0);
-
-		upgrade =
-		    ws_xml_add_child(h, XML_NS_SOAP_1_2, SOAP_UPGRADE,
-				     NULL);
-		if (upgrade) {
-			WsXmlNodeH node;
-
-			if ((node = ws_xml_add_child(upgrade,
-						     XML_NS_SOAP_1_2,
-						     SOAP_SUPPORTED_ENVELOPE,
-						     NULL))) {
-				ws_xml_add_qname_attr(node, NULL, "qname",
-						      XML_NS_SOAP_1_2,
-						      SOAP_ENVELOPE);
-			}
-			node = ws_xml_add_child(upgrade, XML_NS_SOAP_1_2,
-						SOAP_SUPPORTED_ENVELOPE,
-						NULL);
-			if (node) {
-				ws_xml_add_qname_attr(node, NULL, "qname",
-						      XML_NS_SOAP_1_1,
-						      SOAP_ENVELOPE);
-			}
-		}
-		// FIXME:       Send fault
-		ws_xml_destroy_doc(fault);
-	}
-}
-
-#endif
-
-
-/**
  * Check if Envelope is valid
  * @param  msg Message data
  * @param doc XML document
@@ -638,7 +588,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 					enumInfo->flags |= WSMAN_ENUMINFO_WQL;
 				else
 					return 0;
-				
+
 			}
 		}
 	}
@@ -736,7 +686,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 					XML_NS_EVENTING,
 					WSEVENT_SUBSCRIBE))) {
 		f = filter_deserialize(node);
-		subsInfo->filter = f;	
+		subsInfo->filter = f;
 		if(f) {
 			if(strcmp(f->dialect,WSM_CQL_FILTER_DIALECT) == 0)
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_CQL;
@@ -745,7 +695,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 			else {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 					return -1;
-			}		
+			}
 		}
 		else {
 			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
@@ -861,7 +811,7 @@ char * wsman_get_fragment_string(WsContextH cntx, WsXmlDocH doc)
 }
 
 
-void wsman_get_fragment_type(char *fragstr, int *fragment_flag, char **element, 
+void wsman_get_fragment_type(char *fragstr, int *fragment_flag, char **element,
 	int *index)
 {
 	char *p, *p1, *p2, *dupstr;
@@ -950,39 +900,60 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 	char *input = NULL;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 	WsXmlDocH doc = cntx->indoc;
-	if (doc) {
-		WsXmlNodeH in_node;
-		WsXmlNodeH body = ws_xml_get_soap_body(doc);
-		char *mn = wsman_get_method_name(cntx);
-		input = u_strdup_printf("%s_INPUT", mn);
-		in_node = ws_xml_get_child(body, 0, resource_uri, input);
-		if (!in_node) {
-			char *xsd = u_strdup_printf("%s.xsd", resource_uri);
-			in_node = ws_xml_get_child(body, 0, xsd, input);
-			u_free(xsd);
-		}
-		if (in_node) {
-			WsXmlNodeH arg;
-			int index = 0;
-			while ((arg =
-				ws_xml_get_child(in_node, index++, NULL,
-						 NULL))) {
-				char *key =
-				    ws_xml_get_node_local_name(arg);
-				if (!hash_alloc_insert
-				    (h, key, ws_xml_get_node_text(arg))) {
+	WsXmlNodeH in_node, epr;
+	WsXmlNodeH body = ws_xml_get_soap_body(doc);
+	char *mn = NULL;
+	selector_entry *sentry;
+	debug("wsman_get_method_args");
+
+	if (!doc) {
+		error("xml document is null");
+		goto cleanup;
+	}
+
+	mn = wsman_get_method_name(cntx);
+	input = u_strdup_printf("%s_INPUT", mn);
+	in_node = ws_xml_get_child(body, 0, resource_uri, input);
+	if (!in_node) {
+		debug("x");
+		char *xsd = u_strdup_printf("%s.xsd", resource_uri);
+		in_node = ws_xml_get_child(body, 0, xsd, input);
+		u_free(xsd);
+	}
+	if (in_node) {
+		debug("xx");
+		WsXmlNodeH arg;
+		int index = 0;
+		while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
+			char *key = ws_xml_get_node_local_name(arg);
+
+			sentry = u_malloc(sizeof(*sentry));
+			epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
+					WSA_REFERENCE_PARAMETERS);
+			if (epr) {
+				debug("found epr");
+				sentry->type = 1;
+				sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 0);
+				if (!hash_alloc_insert(h, key, sentry)) {
+					error("hash_alloc_insert failed");
+				}
+			} else {
+				debug("text: %s", key);
+				sentry->type = 0;
+				sentry->entry.text = ws_xml_get_node_text(arg);
+				if (!hash_alloc_insert(h, key, sentry)) {
 					error("hash_alloc_insert failed");
 				}
 			}
 		}
-		u_free(mn);
-		u_free(input);
-	} else {
-		error("xml document is null");
 	}
+	u_free(mn);
+	u_free(input);
+
+
 	if (!hash_isempty(h))
 		return h;
-
+cleanup:
 	hash_destroy(h);
 	return NULL;
 }
@@ -1010,34 +981,29 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 		    ws_xml_find_attr_value(selector, XML_NS_WS_MAN,
 					   WSM_NAME);
 		if (attrVal == NULL)
-			attrVal =
-			    ws_xml_find_attr_value(selector, NULL,
+			attrVal = ws_xml_find_attr_value(selector, NULL,
 						   WSM_NAME);
 
-		if (attrVal) {
-			if (!hash_lookup(h, attrVal)) {
-				sentry = u_malloc(sizeof(*sentry));
-				epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
-						WSA_EPR);
-				if (epr) {
-					debug("epr: %s", attrVal);
-					sentry->type = 1;
-					sentry->entry.eprp = epr_deserialize(selector, XML_NS_ADDRESSING, 
-						WSA_EPR, 1);
-					if (!hash_alloc_insert(h, attrVal, sentry)) {
-						error("hash_alloc_insert failed");
-					}
-				} else {
-					debug("text: %s", attrVal);
-					sentry->type = 0;
-					sentry->entry.text = ws_xml_get_node_text(selector);
-					if (!hash_alloc_insert(h, attrVal,
-							sentry)) {
-						error("hash_alloc_insert failed");
-					}
+		if (attrVal && !hash_lookup(h, attrVal)) {
+			sentry = u_malloc(sizeof(*sentry));
+			epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
+					WSA_EPR);
+			if (epr) {
+				debug("epr: %s", attrVal);
+				sentry->type = 1;
+				sentry->entry.eprp = epr_deserialize(selector, XML_NS_ADDRESSING,
+					WSA_EPR, 1);
+				if (!hash_alloc_insert(h, attrVal, sentry)) {
+					error("hash_alloc_insert failed");
 				}
 			} else {
-				error("duplicate selector");
+				debug("text: %s", attrVal);
+				sentry->type = 0;
+				sentry->entry.text = ws_xml_get_node_text(selector);
+				if (!hash_alloc_insert(h, attrVal,
+						sentry)) {
+					error("hash_alloc_insert failed");
+				}
 			}
 		}
 	}
