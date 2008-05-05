@@ -34,8 +34,8 @@ ADD_CUSTOM_TARGET( glue
 
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 
-SET(rbwsman_SRCS ${SWIG_OUTPUT} )
-ADD_LIBRARY( pywsman SHARED ${rbwsman_SRCS} )
+SET(pywsman_SRCS ${SWIG_OUTPUT} )
+ADD_LIBRARY( pywsman SHARED ${pywsman_SRCS} )
 SET_TARGET_PROPERTIES( pywsman PROPERTIES PREFIX "" )
 ADD_DEPENDENCIES( pywsman glue )
 

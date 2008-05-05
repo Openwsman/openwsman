@@ -1,0 +1,46 @@
+#
+# CMakeLists.txt for openwsman/bindings/python
+#
+#
+# !!Attn!!: This creates two files
+#  1. _jwsman.so
+#
+
+
+EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; print sys.path[2]" OUTPUT_VARIABLE PYTHON_LIB_DIR)
+STRING(REPLACE "\n" "" PYTHON_LIB_DIR "${PYTHON_LIB_DIR}")
+
+MESSAGE(STATUS "Python executable: ${PYTHON_EXECUTABLE}")
+MESSAGE(STATUS "Python lib dir: ${PYTHON_LIB_DIR}")
+MESSAGE(STATUS "Python site dir: ${PYTHON_LIB_DIR}/site-packages")
+
+SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
+SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
+
+ADD_CUSTOM_COMMAND (
+   OUTPUT  ${SWIG_OUTPUT}
+   COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Java ..."
+   COMMAND ${SWIG_EXECUTABLE} -java -features autodoc -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
+   COMMAND ${CMAKE_COMMAND} -E echo "Done."
+   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+   DEPENDS ${SWIG_INPUT}
+)
+
+ADD_CUSTOM_TARGET( glue
+   DEPENDS ${SWIG_OUTPUT}
+)
+
+SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
+
+SET(jwsman_SRCS ${SWIG_OUTPUT} )
+ADD_LIBRARY( jwsman SHARED ${jwsman_SRCS} )
+SET_TARGET_PROPERTIES( jwsman PROPERTIES PREFIX "" )
+ADD_DEPENDENCIES( jwsman glue )
+
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include )
+
+TARGET_LINK_LIBRARIES( jwsman wsman )
+TARGET_LINK_LIBRARIES( jwsman wsman_client )
+
+#INSTALL(TARGETS jwsman LIBRARY DESTINATION ${PYTHON_LIB_DIR}/site-packages)
+#INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pywsman.py DESTINATION ${PYTHON_LIB_DIR}/site-packages )

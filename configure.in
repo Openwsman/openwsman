@@ -285,6 +285,7 @@ if test "x$enable_ruby" = "xyes"; then
   fi
 fi
 AM_CONDITIONAL(BUILD_RUBY, test "x$enable_ruby" = "xyes")
+AM_CONDITIONAL(BUILD_JAVA, test "x$enable_java" = "xyes")
 
 AC_ARG_ENABLE(ssl, [  --enable-ssl             Turn on Secure Sockets Layer support [default=yes]],,
               enable_ssl=auto)
@@ -434,4 +435,5 @@ AC_OUTPUT([
 	bindings/Makefile
 	bindings/python/Makefile
 	bindings/ruby/Makefile
+	bindings/java/Makefile
 	])
