@@ -97,7 +97,7 @@ void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb, void *
 	int i;
 	Selector *ss = selectorset->selectors;
 	if (ss == NULL) {
-		debug("epr->refparams.selectors == NULL\n");
+		debug("epr->refparams.selectors == NULL");
 		return;
 	}
 	for (i = 0; i < selectorset->count; i++) {
@@ -264,14 +264,14 @@ int epr_delete_selector(epr_t *epr, const char *name)
 	else {
 		epr_destroy((epr_t *)selectors[i].value);
 	}
-	
+
 	for(k = i; k < count-1; k++) {
 		memcpy(&selectors[k], &selectors[k+1], sizeof(Selector));
 	}
-	
+
 	epr->refparams.selectorset.selectors = u_realloc(selectors, (count-1)*sizeof(Selector));
 	epr->refparams.selectorset.count--;
-	
+
 	return 0;
 }
 
@@ -303,10 +303,13 @@ epr_t *epr_copy(epr_t *epr)
 	Selector *p1;
 	Selector *p2;
 	epr_t *cpy_epr = NULL;
-	if(epr == NULL) return cpy_epr;
+	if(epr == NULL)
+		return cpy_epr;
 
 	cpy_epr = u_malloc(sizeof(epr_t));
-	cpy_epr->address = u_strdup(epr->address);
+	if (epr && epr->address)
+		cpy_epr->address = u_strdup(epr->address);
+
 	cpy_epr->refparams.uri = u_strdup(epr->refparams.uri);
 	cpy_epr->refparams.selectorset.count = epr->refparams.selectorset.count;
 	cpy_epr->refparams.selectorset.selectors = u_malloc(sizeof(Selector)*

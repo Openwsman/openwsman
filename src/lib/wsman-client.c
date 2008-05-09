@@ -1306,9 +1306,10 @@ wsmc_action_enumerate_and_pull(WsManClient * cl,
 		SoapResponseCallback callback,
 		void *callback_data)
 {
-	WsXmlDocH       doc;
-	char           *enumContext;
-	WsXmlDocH       enum_response = wsmc_action_enumerate(cl, resource_uri, options, filter);
+	WsXmlDocH doc;
+	char *enumContext;
+	WsXmlDocH enum_response = wsmc_action_enumerate(cl,
+			resource_uri, options, filter);
 
 	if (enum_response) {
 		long rc = wsmc_get_response_code(cl);

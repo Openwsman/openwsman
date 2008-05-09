@@ -58,7 +58,7 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 
 	if (query) {
 		filter->query = u_strdup(query);
-	} else if(epr) {
+	} else if(epr != 0) {
 		filter->epr = epr_copy(epr);
 		filter->assocType = assocType;
 		if(assocClass)
@@ -91,16 +91,15 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 		while ((hn = hash_scan_next(&hs))) {
 			p->name = u_strdup((char *)hnode_getkey(hn));
 			entry = (selector_entry *)hnode_get(hn);
-			if(entry->type == 0) {
-				p->type = 0;
-				p->value = u_strdup(entry->entry.text);
-				debug("key = %s value=%s",
-					(char *) hnode_getkey(hn), p->value);
-			}
-			else {
+			if(entry->type == 1) {
 				p->type = 1;
 				p->value = (char *)epr_copy(entry->entry.eprp);
 				debug("key = %s value=%p(nested epr)",
+					(char *) hnode_getkey(hn), p->value);
+			} else {
+				p->type = 0;
+				p->value = u_strdup(entry->entry.text);
+				debug("key = %s value=%s",
 					(char *) hnode_getkey(hn), p->value);
 			}
 			p++;
@@ -207,7 +206,7 @@ int filter_add_selector(filter_t *filter, const char* key, const char *value)
 	filter->selectorset.count++;
 
 	return 0;
-	
+
 }
 
 filter_t * filter_copy(filter_t *filter)

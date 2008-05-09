@@ -596,14 +596,18 @@ int wsman_parse_enum_request(WsContextH cntx,
 	return 1;
 }
 
-static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f) {
+static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f)
+{
 	char *uri;
 	WsXmlNodeH xmlnode = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI);
-	if(xmlnode == NULL) return -1;
+	if(xmlnode == NULL)
+		return -1;
 	uri = ws_xml_get_node_text(xmlnode);
-	if(strcmp(uri, CIM_ALL_AVAILABLE_CLASSES) == 0) return -1;
+	if(strcmp(uri, CIM_ALL_AVAILABLE_CLASSES) == 0)
+		return -1;
 	xmlnode = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
-	if(xmlnode == NULL) return -1;
+	if(xmlnode == NULL)
+		return -1;
 	*f = u_zalloc(sizeof(filter_t));
 	return 0;
 }
@@ -696,13 +700,11 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 					return -1;
 			}
-		}
-		else {
+		} else {
 			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 				return -1;
-			}
-			else {
+			} else {
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
 			}
 		}

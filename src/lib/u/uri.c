@@ -221,7 +221,7 @@ hash_t *u_parse_query(const char *query)
 		/* zero-term the name part and set the value pointer */
 		*val++ = 0;
 		val = u_strdup(val);
-		
+
 		u_trim(key);
 		u_trim(val);
 		u_trim_quotes(val);
@@ -240,7 +240,7 @@ hash_t *u_parse_query(const char *query)
 	}
 	u_free(q);
 	return h;
-      err:
+err:
 	u_free(q);
 	return NULL;
 }
