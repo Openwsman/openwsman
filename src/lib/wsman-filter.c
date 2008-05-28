@@ -157,32 +157,10 @@ filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *asso
 		assocClass, resultClass, role, resultRole, resultProp, propNum);
 }
 
-filter_t * filter_create_selector(hash_t *selectors, const char *cimnamespace)
+filter_t * filter_create_selector(hash_t *selectors)
 {
-	hnode_t        *hn;
-	filter_t *filter;
-	selector_entry *entry;
-
-	if(!cimnamespace || hash_lookup(selectors, CIM_NAMESPACE_SELECTOR)) {
-			return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
+	return filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
 		NULL, NULL, NULL, NULL, NULL, 0);
-	}
-
-	entry = u_malloc(sizeof(selector_entry));
-	entry->type = 0;
-	entry->entry.text = (char *)cimnamespace;
-
-	hash_alloc_insert(selectors, CIM_NAMESPACE_SELECTOR, entry);
-
-	filter = filter_create(WSM_SELECTOR_FILTER_DIALECT, NULL, NULL, selectors, 0,
-		NULL, NULL, NULL, NULL, NULL, 0);
-
-	hn = hash_lookup(selectors, CIM_NAMESPACE_SELECTOR);
-	hash_delete(selectors, hn);
-	hnode_destroy(hn);
-
-	u_free(entry);
-	return filter;
 }
 
 int filter_add_selector(filter_t *filter, const char* key, const char *value)

@@ -655,6 +655,7 @@ static int filter_instance(CMPIInstance * instance, WsEnumerateInfo * enumInfo)
 		if (valuestr && strcmp(s->value, valuestr) == 0 ) {
 			matches++;
 		}
+		u_free(valuestr);
 	}
 	if (matches == filter->selectorset.count)
 		return 1;
@@ -892,7 +893,8 @@ cim_enum_instances(CimClientInfo * client,
 		objectpath = newCMPIObjectPath(client->cim_namespace,
 				client->requested_class, NULL);
 	}
-	if(enumInfo->flags & WSMAN_ENUMINFO_REF) {
+
+	if (enumInfo->flags & WSMAN_ENUMINFO_REF) {
 		enumeration = cc->ft->references(cc, objectpath, filter->resultClass,
 				filter->role, 0, NULL, &rc);
 	} else if (enumInfo->flags & WSMAN_ENUMINFO_ASSOC) {
@@ -900,19 +902,15 @@ cim_enum_instances(CimClientInfo * client,
 				filter->resultClass,
 				filter->role,
 				filter->resultRole, 0, NULL, &rc);
-	}
-	else if (( enumInfo->flags & WSMAN_ENUMINFO_WQL )) {
+	} else if (( enumInfo->flags & WSMAN_ENUMINFO_WQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "WQL", &rc);
-	}
-	else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
+	} else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
 	} else {
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 				CMPI_FLAG_DeepInheritance,
 				NULL, &rc);
 	}
-
-	//cim_filter_instances(client, client->cntx , enumeration, enumInfo );
 
 	debug("enumInstances() rc=%d, msg=%s",
 			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
@@ -940,7 +938,7 @@ cim_enum_instances(CimClientInfo * client,
 			}
 		}
 	} else {
-		fenumArr = enumArr->ft->clone(enumArr, NULL);
+		fenumArr = enumArr;
 	}
 
 	cim_to_wsman_status(rc, status);
@@ -2215,6 +2213,7 @@ void cim_release_enum_context(WsEnumerateInfo * enumInfo)
 	client = enumcontext->ecClient;
 
 	if (enumeration) {
+		debug("released enumeration");
 		CMRelease(enumeration);
 	}
 	u_free(enumcontext);
