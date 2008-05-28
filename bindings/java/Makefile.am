@@ -1,3 +1,5 @@
+javadir = @libdir@/java
+
 INCLUDES =  -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/bindings \
@@ -13,14 +15,14 @@ LIBS = $(OPENSSL_LIBS) \
 GENERATED = openwsman_wrap.c 
 
 SWIG_SOURCES = ../openwsman.i ../openwsman.c
-_jwsman_la_SOURCES = openwsman_wrap.c \
+libjwsman_la_SOURCES = openwsman_wrap.c \
 			 $(SWIG_SOURCES)
 
-_jwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
+libjwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
-_jwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
+libjwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
-python_LTLIBRARIES = _jwsman.la
+java_LTLIBRARIES = libjwsman.la
 
 $(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -java -I$(top_srcdir)/include -o $@ $<

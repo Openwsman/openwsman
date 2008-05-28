@@ -1,0 +1,19 @@
+
+Java Bindings 
+================
+
+
+Running test program
+---------------------
+
+You have to run configure with the --enable-java option. This will generate the java
+files for the openwsman client. After installation with 'make install' compile the java
+files with a java compiler, for example:
+
+# javac *.java
+
+This will generate the class files. To run the sample program, run
+
+# java test_identify
+
+Make sure to modify the code to reflect your wsman service settings and authentication data.
