@@ -1,3 +1,11 @@
+
+2.0.1
+- Added Java bindings
+- Set proxy in C++ bindings
+- Fixed SelectorSet Filter 
+- SelecorFilter does not need __cimnamespace
+
+
 2.0.0
 - minor bug fixes
 

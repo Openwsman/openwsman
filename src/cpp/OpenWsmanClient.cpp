@@ -38,7 +38,13 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		const char *scheme,
 		const char *auth_method ,
 		const char *username,
-		const char *password
+		const char *password,
+		 // proxy address include proxy port
+		const char *proxy,
+		//proxy user name 
+		const char *proxy_username,
+		//proxy password
+		const char *proxy_password
 #ifdef _WIN32
 		// determines which cert store to search
 		,const bool local,
@@ -46,12 +52,6 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		const char *cert,
 		// search for a cient cert with this oid
 		const char *oid,
-		 // proxy address include proxy port
-		const char *proxy,
-		//proxy user name 
-		const char *proxy_username,
-		//proxy password
-		const char *proxy_password
 #endif
 		)
 {
@@ -59,8 +59,8 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 	SetAuth(auth_method);	
 #ifdef _WIN32
 	SetClientCert(oid, cert, local);
-	SetProxy(proxy,proxy_username,proxy_password);
 #endif
+	SetProxy(proxy,proxy_username,proxy_password);
 	wsmc_transport_init(cl, (void*)NULL);
 }
 
@@ -574,6 +574,21 @@ void OpenWsmanClient::SetNamespace(const char *ns)
 	}
 }
 
+void OpenWsmanClient::SetProxy(const char *proxy, const char *proxy_username, const char *proxy_password)
+{
+        if (proxy) {
+                wsman_transport_set_proxy(cl, (char*)proxy);
+        }
+
+        if (proxy_username) {
+                wsman_transport_set_proxy_username(cl, (char*)proxy_username);
+        }
+
+        if (proxy_password) {
+                wsman_transport_set_proxy_password(cl, (char*)proxy_password);
+        }
+}
+
 #ifdef _WIN32
 void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const bool local)
 {
@@ -588,21 +603,6 @@ void OpenWsmanClient::SetClientCert(const char *oid, const char *cert, const boo
 	wsman_transport_set_calocal(cl, local);
 }
 
-void OpenWsmanClient::SetProxy(const char *proxy, const char *proxy_username, const char *proxy_password)
-{
-        if (proxy) {
-                wsman_transport_set_proxy(cl, (char*)proxy);
-        }
-
-
-        if (proxy_username) {
-                wsman_transport_set_proxy_username(cl, (char*)proxy_username);
-        }
-
-        if (proxy_password) {
-                wsman_transport_set_proxy_password(cl, (char*)proxy_password);
-        }
-}
 
 #else
 // Set server certificate params

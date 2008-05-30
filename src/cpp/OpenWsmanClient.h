@@ -35,20 +35,20 @@ namespace WsmanClientNamespace
 					const char *scheme = "http",
 					const char *auth_method = "digest",
 					const char *username = NULL,
-					const char *password = NULL
-#ifdef _WIN32
-					// determines which cert store to search
-					,const bool local = false,
-					// search for a client cert with this name
-					const char *cert = NULL,
-					// search for a client cert with this oid
-					const char *oid = NULL,
+					const char *password = NULL,
 					// search for a client proxy address include proxy port
 					const char *proxy = NULL,
 					// search for a client proxy user name
 					const char *proxy_username = NULL,
 					// search for a client proxy password
 					const char *proxy_password = NULL
+#ifdef _WIN32
+					// determines which cert store to search
+					,const bool local = false,
+					// search for a client cert with this name
+					const char *cert = NULL,
+					// search for a client cert with this oid
+					const char *oid = NULL
 #endif
 				       );
 
@@ -58,9 +58,9 @@ namespace WsmanClientNamespace
 
 			// Creates a new instance of a resource.
 			string Create(const string &resourceUri, const string &data) const;
-			
+
 			// Identify.
-			string Identify() const;			
+			string Identify() const;
 
 			// Delete a resource.
 			void Delete(const string &resourceUri, const NameValuePairs *s = NULL) const;
@@ -84,7 +84,7 @@ namespace WsmanClientNamespace
 
 			// Renew a subscription
 			string Renew(const string &resourceUri, const string &subsContext, float expire, const NameValuePairs *s = NULL) const;
-			
+
 			// Terminate a subscription
 			void Unsubscribe(const string &resourceUri, const string &subsContext, const NameValuePairs *s = NULL) const;
 
@@ -101,10 +101,11 @@ namespace WsmanClientNamespace
 			void SetEncoding(const char *encoding);
 			// Set CIM namespace
 			void SetNamespace(const char *ns);
+
+			void SetProxy(const char *proxy=NULL, const char *proxy_username=NULL, const char *proxy_password=NULL);
 #ifdef _WIN32
 			// Set client certificate params
 			void SetClientCert(const char *caOid=NULL, const char *caName=NULL, const bool localCert=false);
-			void SetProxy(const char *proxy=NULL, const char *proxy_username=NULL, const char *proxy_password=NULL);
 #else
 			// Set server certificate params
 			void SetServerCert(const char *cainfo=NULL, const char *capath=NULL);
