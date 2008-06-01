@@ -917,13 +917,11 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 	input = u_strdup_printf("%s_INPUT", mn);
 	in_node = ws_xml_get_child(body, 0, resource_uri, input);
 	if (!in_node) {
-		debug("x");
 		char *xsd = u_strdup_printf("%s.xsd", resource_uri);
 		in_node = ws_xml_get_child(body, 0, xsd, input);
 		u_free(xsd);
 	}
 	if (in_node) {
-		debug("xx");
 		WsXmlNodeH arg;
 		int index = 0;
 		while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
@@ -933,7 +931,6 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 			epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
 					WSA_REFERENCE_PARAMETERS);
 			if (epr) {
-				debug("found epr");
 				sentry->type = 1;
 				sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 0);
 				if (!hash_alloc_insert(h, key, sentry)) {

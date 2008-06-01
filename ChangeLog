@@ -3,6 +3,7 @@
 - Added Java bindings
 - Set proxy in C++ bindings
 - Fixed SelectorSet Filter 
+- Added SelectorSet filter support to C++ interface
 - SelecorFilter does not need __cimnamespace
 
 
