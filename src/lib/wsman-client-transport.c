@@ -359,6 +359,7 @@ BOOL wsman_transport_get_calocal(WsManClient *cl)
 {
 	return cl->authentication.calocal;
 }
+#endif
 
 void wsman_transport_set_proxy_username(WsManClient *cl, char *proxy_username )
 {
@@ -369,7 +370,6 @@ void wsman_transport_set_proxy_password(WsManClient *cl, char *proxy_password )
         cl->proxy_data.proxy_password = proxy_password;
 }
 
-#endif
 
 
 void wsman_transport_set_cert(WsManClient * cl, const char *arg)

@@ -89,10 +89,8 @@ extern "C" {
 	struct _WsManProxyData {
 		char *proxy;
 		char *proxy_auth;
-#ifdef _WIN32
 		char *proxy_username;
 		char *proxy_password;
-#endif
 	};
 	typedef struct _WsManProxyData WsManProxyData;
 
@@ -105,12 +103,12 @@ extern "C" {
 		WsManConnection *connection;
 		WsManAuthData authentication;
 		WsManProxyData proxy_data;
-        
+
 #ifdef _WIN32
 		void* session_handle;
 		long lock_session_handle;
 #endif
-		
+
 		long response_code;
 		char *fault_string;
 		WS_LASTERR_Code last_error;
