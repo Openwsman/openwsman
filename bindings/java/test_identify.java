@@ -13,7 +13,7 @@ public class test_identify {
 
 	  ClientOptions op = new ClientOptions();
 	  WsXmlDoc doc = c.identify(op);
-	  System.out.println(doc.dump("UTF8"));
+	  System.out.println(doc.dump("UTF-8"));
   }
 }
 
