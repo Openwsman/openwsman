@@ -469,8 +469,9 @@ cim_verify_class_keys(CMPIConstClass * class,
 		data = class->ft->getPropertyQualifier(class,
 				(char *) propertyname->
 				hdl, "Key", &rc);
-		if (rc.rc == 0)
+		if ((data.state != CMPI_nullValue) && (data.value.boolean)) {
 			ccount++;
+		}
 		CMRelease(propertyname);
 	}
 
