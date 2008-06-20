@@ -120,7 +120,7 @@ void
 get_endpoints( void *self, 
                void **data)
 {
-  debug("Registering inteface");
+  debug("Registering interface");
   WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *)data;
   ifc->flags = 0;
   ifc->actionUriBase = NULL;
