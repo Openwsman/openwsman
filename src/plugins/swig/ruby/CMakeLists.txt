@@ -1,0 +1,52 @@
+#
+# CMakeLists.txt for openwsman/src/plugins/swig/ruby
+#
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
+
+EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print Config::CONFIG['vendorarchdir']" OUTPUT_VARIABLE RUBY_VENDOR_ARCH_DIR)
+EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print Config::CONFIG['vendorlibdir']" OUTPUT_VARIABLE RUBY_VENDOR_LIB_DIR)
+
+MESSAGE(STATUS "Ruby executable: ${RUBY_EXECUTABLE}")
+MESSAGE(STATUS "Ruby vendor arch dir: ${RUBY_VENDOR_ARCH_DIR}")
+MESSAGE(STATUS "Ruby vendor lib dir: ${RUBY_VENDOR_LIB_DIR}")
+MESSAGE(STATUS "Ruby include path: ${RUBY_INCLUDE_PATH}")
+
+SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/swig_wrap.c" )
+SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../plugin.i" )
+
+ADD_CUSTOM_COMMAND (
+   OUTPUT  ${SWIG_OUTPUT}
+   COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for ruby..."
+   COMMAND ${SWIG_EXECUTABLE} -ruby -autorename -o ${SWIG_OUTPUT} -I${CMPI_INCLUDE_DIR} ${SWIG_INPUT}
+   COMMAND ${CMAKE_COMMAND} -E echo "Done."
+   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.c
+)
+
+
+SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -g" )
+
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/../src )
+# wsman_config.h is generated
+INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
+# all other wsman includes
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/include )
+INCLUDE_DIRECTORIES( ${RUBY_INCLUDE_PATH} )
+
+ADD_DEFINITIONS(-DTARGET_RUBY)
+
+#
+# cmpi_instance: provider .so
+#
+
+SET( NAME wsman_swig_plugin )
+ADD_LIBRARY( ${NAME} SHARED ${SWIG_OUTPUT})
+TARGET_LINK_LIBRARIES( ${NAME} ${RUBY_LIBRARY} )
+
+INSTALL(TARGETS ${NAME} LIBRARY DESTINATION ${PACKAGE_PLUGIN_DIR})
+
+#
+# rbwsmanplugin.rb: plugin implementation
+#
+INSTALL(FILES rbwsmanplugin.rb DESTINATION ${RUBY_VENDOR_LIB_DIR})
