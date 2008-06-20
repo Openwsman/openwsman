@@ -4,7 +4,7 @@
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
 
-SET( wsmaninclude_HEADERS OpenWsmanClient.h Exception.h WsmanClient.h )
+SET( wsmaninclude_HEADERS OpenWsmanClient.h Exception.h WsmanClient.h WsmanFilter.h )
 SET(wsman_clientpp_LIB_SRCS OpenWsmanClient.cpp )
 add_library(wsman_clientpp SHARED ${wsman_clientpp_LIB_SRCS})
 
