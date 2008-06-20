@@ -4,6 +4,20 @@
 
 PROJECT(openwsman)
 
+cmake_minimum_required(VERSION 2.4)
+
+#
+# cmake2.6: backward compatibility to cmake 2.4
+#
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 OLD)
+endif(COMMAND cmake_policy)
+
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0005 OLD)
+endif(COMMAND cmake_policy)
+	      
+
 # Library path (lib / lib64 )
 
 IF ( DEFINED LIB )
@@ -63,6 +77,7 @@ OPTION( BUILD_RUBY "Build Ruby bindings" YES )
 OPTION( BUILD_PERL "Build Perl bindings" NO )
 OPTION( BUILD_CUNIT_TESTS "Build serialization tests" NO )
 OPTION( DISABLE_PLUGINS "Do not build plugins" NO )
+OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" YES )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
@@ -356,6 +371,59 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3" )
 
 install(FILES  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/openwsman )
 
+####################################################################
+# PACKAGING                                                        #
+####################################################################
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web Services for Management")
+SET(CPACK_PACKAGE_VENDOR "openwsman.org")
+SET(CPACK_PACKAGE_VERSION_MAJOR ${OPENWSMAN_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${OPENWSMAN_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${OPENWSMAN_PATCH})
+SET( CPACK_GENERATOR "TBZ2")
+SET( CPACK_SOURCE_GENERATOR "TBZ2")
+SET( CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE}-${VERSION}" )
+
+# The following components are regex's to match anywhere (unless anchored)
+# in absolute path + filename to find files or directories to be excluded
+# from source tarball.
+SET (CPACK_SOURCE_IGNORE_FILES
+#svn files
+"\\\\.svn/"
+"\\\\.cvsignore$"
+# temporary files
+"\\\\.swp$"
+# backup files
+"~$"
+# eclipse files
+"\\\\.cdtproject$"
+"\\\\.cproject$"
+"\\\\.project$"
+"\\\\.settings/"
+# others
+"\\\\.#"
+"/#"
+"/build/"
+"/_build/"
+"/\\\\.git/"
+# used before
+"/CVS/"
+"/\\\\.libs/"
+"/\\\\.deps/"
+"\\\\.o$"
+"\\\\.lo$"
+"\\\\.la$"
+"Makefile\\\\.in$"
+)
+
+INCLUDE(CPack)
+
+####################################################################
+
+SET( DOC_INSTALL_DIR
+   "${CMAKE_INSTALL_PREFIX}/share/doc/packages/${PACKAGE}"
+   CACHE PATH "The install dir for documentation (default prefix/share/doc/packages/${PACKAGE})"
+   FORCE
+)
 
 IF(HAVE_WARNINGS)
  MESSAGE(STATUS "   ************ NOTE: ************")
