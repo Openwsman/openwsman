@@ -1924,6 +1924,9 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribe
 	if(rc.rc)
 		goto cleanup;
 	handler_op = CMClone(objectpath, &rc);
+
+	instance = newCMPIInstance(objectpath, NULL);
+
 	char *servicepath = create_cimxml_listener_path(subsInfo->subsId);
 	char serverpath[128];
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
@@ -1931,11 +1934,12 @@ CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribe
 	u_free(servicepath);
 	CMPIValue value;
 	value.uint16 = 2;
-	CMAddKey(objectpath, "Destination",
+	CMSetProperty(instance, "Destination",
 			serverpath, CMPI_chars);
-	CMAddKey(objectpath, "PersistenceType",
+	CMSetProperty(instance, "PersistenceType",
 			&value, CMPI_uint16);
-	instance = newCMPIInstance(objectpath, NULL);
+
+
 	objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 cleanup:
 	/* Print the results */
