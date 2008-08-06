@@ -103,6 +103,10 @@ typedef struct {
 	int ind;
 } ShttpMessage;
 
+#ifdef SHTTPD_GSS
+char * gss_decrypt(struct shttpd_arg *arg, char *data, int len);
+int gss_encrypt(struct shttpd_arg *arg, char *input, int inlen, char **output, int *outlen);
+#endif
 
 /* Check HTTP headers */
 static
@@ -190,12 +194,24 @@ void server_callback(struct shttpd_arg *arg)
 	} else {
 		return;
 	}
-
+ #ifdef SHTTPD_GSS
+    const char *ct = shttpd_get_header(arg, "Content-Type");
+    char *payload = 0; // used for gss encrypt
+    if(ct && !memcmp(ct, "multipart/encrypted", 19))
+    {
+        // we have a encrypted payload. decrypt it 
+        payload = gss_decrypt(arg, u_buf_ptr(state->request), u_buf_len(state->request));
+    }
+ #endif
 	request_uri = (char *)shttpd_get_env(arg, "REQUEST_URI");
 	if (strcmp(request_uri, "/wsman") == 0 ) {
 
 		/* Here we must handle the initial request */
 		WsmanMessage *wsman_msg = wsman_soap_message_new();
+#ifdef SHTTPD_GSS
+        if(payload == 0)
+        {
+#endif
 		if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
 			wsman_soap_message_destroy(wsman_msg);
 			goto DONE;
@@ -203,10 +219,17 @@ void server_callback(struct shttpd_arg *arg)
 		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
 			wsman_msg->charset = u_strdup(encoding);
 		}
-
+            u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
+#ifdef SHTTPD_GSS
+        }
+        else
+        {
+            wsman_msg->charset = u_strdup("UTF-8");
+            u_buf_set(wsman_msg->request, payload, strlen(payload));
+        }
+#endif
 		soap = (SoapH) arg->user_data;
 		wsman_msg->status.fault_code = WSMAN_RC_OK;
-		u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
 
 		/*
 		 * some plugins can use credentials for their own authentication
@@ -230,7 +253,19 @@ void server_callback(struct shttpd_arg *arg)
 			}
 		}
 		if (wsman_msg->request) {
+#ifdef SHTTPD_GSS
+            if(payload)
+            {
+                free(payload);
+                /* note that payload is stiil set - this is used as a flag later */
+            }
+            else
+            {
+#endif
 			u_buf_free(wsman_msg->request);
+#ifdef SHTTPD_GSS
+            }
+#endif
 			wsman_msg->request = NULL;
 		}
 
@@ -326,17 +361,39 @@ DONE:
 
 	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, VERSION);
+#ifdef SHTTPD_GSS
+    if(payload)
+    {
+        // we had an encrypted message so now we have to encypt the reply
+        char *enc;
+        int enclen;
+        gss_encrypt(arg, state->response, state->len, &enc, &enclen);
+        u_free(state->response);
+        state->response = enc;
+        state->len = enclen;
+        payload = 0; // and reset the indicator so that if we send in packates we dont do this again
+        shttpd_printf(arg, "Content-Type: multipart/encrypted;protocol=\"application/HTTP-Kerberos-session-encrypted\";boundary=\"Encrypted Boundary\"\r\n");
 	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
+    }
+    else
+    {
+#endif
 	if (state->type == 1) {
 		shttpd_printf(arg, "Content-Type: application/xml; charset=\"utf-8\"\r\n");
 		shttpd_printf(arg, "CIMExport: MethodResponse\r\n");
 	} else {
 		shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
 	}
+    	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
+#ifdef SHTTPD_GSS
+    }
+#endif
 	shttpd_printf(arg, "\r\n");
 
 	/* add response body to output buffer */
 CONTINUE:
+
+
 	k = arg->out.len - arg->out.num_bytes;
 	if (k <= state->len - state->index) {
 		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, k );
@@ -345,10 +402,11 @@ CONTINUE:
 		 return;
 	}
 	else {
+        int l = state->len - state->index;
 		memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index,
 			state->len - state->index);
-		 state->index += k ;
-		 arg->out.num_bytes += k;
+		 state->index += l ;
+		 arg->out.num_bytes += l;
 	}
 	shttpd_printf(arg, "\r\n\r\n");
 
@@ -557,7 +615,7 @@ static void *thread_function(void *param)
     struct thread *thread = param;
 
     for (;;)
-        shttpd_poll(thread->ctx, 100);
+        shttpd_poll(thread->ctx, 1000);
 }
 
 

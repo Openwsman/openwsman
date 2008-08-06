@@ -9,6 +9,9 @@
  */
 
 #include "defs.h"
+#ifdef SHTTPD_GSS
+void do_gss(struct conn *c);
+#endif
 
 #if !defined(NO_AUTH)
 /*
@@ -273,13 +276,28 @@ check_authorization(struct conn *c, const char *path)
 	struct llhead	*lp;
 	struct uri_auth	*auth;
 	int digest = 0, basic = 0;
+#ifdef SHTTPD_GSS
+    int kerberos = 0;
+#endif
+
 	basic_auth_callback cb = NULL;
 	char *p, *pp;
 	/* Check, is this URL protected by shttpd_protect_url() */
+#ifdef SHTTPD_GSS
+    /* already authenticated */
+	if(c->gss_ctx != GSS_C_NO_CONTEXT)
+		return 1;
+#endif
 
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
 		if (!strncmp(c->uri, auth->uri, strlen(c->uri))) {
+#ifdef SHTTPD_GSS
+			if (!my_strncasecmp(auth_vec->ptr, "Kerberos ", 9))
+			{
+				kerberos = 1;
+            }
+#endif
 			if (auth->type == DIGEST_AUTH &&
 			    auth_vec->len > 20 &&
 			    !strncasecmp(auth_vec->ptr, "Digest ", 7)) {
@@ -297,6 +315,13 @@ check_authorization(struct conn *c, const char *path)
 	}
 	if (lp == &c->ctx->uri_auths) //not a protected uri
 		return 1;
+#ifdef SHTTPD_GSS
+    if(kerberos == 1)
+    {
+        do_gss(c);
+        return 2;
+    }
+#endif
 	if (digest == 1) {
 		if (fp != NULL) {
 				authorized = authorize_digest(c, fp);

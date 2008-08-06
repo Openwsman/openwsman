@@ -11,6 +11,10 @@
 #ifndef DEFS_HEADER_DEFINED
 #define	DEFS_HEADER_DEFINED
 
+#ifdef SHTTPD_GSS
+#include <gssapi/gssapi_generic.h>
+#endif
+
 #include "std_includes.h"
 #include "llist.h"
 #include "io.h"
@@ -245,6 +249,7 @@ struct stream {
 #define	FLAG_ALWAYS_READY	64		/* File, dir, user_func	*/
 #define	FLAG_SSL_SHOULD_SELECT_ON_WRITE	128	/* ssl should select on write next time  */
 #define	FLAG_SSL_SHOULD_SELECT_ON_READ	256	/*  ssl should select on read next time */
+#define FLAG_RESPONSE_COMPLETE 512
 };
 
 struct conn {
@@ -270,6 +275,9 @@ struct conn {
 
 	struct stream	loc;		/* Local stream			*/
 	struct stream	rem;		/* Remote stream		*/
+#ifdef SHTTPD_GSS
+	gss_ctx_id_t gss_ctx;    /* GSS context */
+#endif
 
 #if !defined(NO_SSI)
 	void			*ssi;	/* SSI descriptor		*/

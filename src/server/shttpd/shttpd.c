@@ -457,7 +457,10 @@ decide_what_to_do(struct conn *c)
 	}
 
 #if !defined(NO_AUTH)
-	if (check_authorization(c, path) != 1) {
+		rc = check_authorization(c, path);
+		if(rc != 1)
+		{
+				if(rc != 2) /* 2 = multipass auth (GSS)*/
 		send_authorization_request(c);
 	} else
 #endif /* NO_AUTH */
@@ -714,7 +717,9 @@ shttpd_add_socket(struct shttpd_ctx *ctx, int sock, int is_ssl)
 		c->loc.io.buf	= (char *) (c + 1);
 		c->rem.io.buf	= c->loc.io.buf + ctx->io_buf_size;
 		c->loc.io.size	= c->rem.io.size = ctx->io_buf_size;
-
+#ifdef SHTTPD_GSS
+                c->gss_ctx = GSS_C_NO_CONTEXT;
+#endif
 #if !defined(NO_SSL)
 		if (is_ssl) {
 			c->rem.io_class	= &io_ssl;
@@ -955,6 +960,12 @@ disconnect(struct llhead *lp)
 		c->ctx->nactive--;
 		assert(c->ctx->nactive >= 0);
 		LeaveCriticalSection(&c->ctx->mutex);
+ #ifdef SHTTPD_GSS
+                 {
+                     OM_uint32 majStat, minStat;
+                     majStat = gss_delete_sec_context(&minStat, c->gss_ctx, 0);
+                 }
+ #endif
 
 		free(c);
 	}
@@ -989,19 +1000,23 @@ add_to_set(int fd, fd_set *set, int *max_fd)
 static void
 process_connection(struct conn *c, int remote_ready, int local_ready)
 {
+#if 0
+		DBG(("loc: %u [%.*s]", io_data_len(&c->loc.io),
+			io_data_len(&c->loc.io), io_data(&c->loc.io)));
+		DBG(("rem: %u [%.*s]", io_data_len(&c->rem.io),
+			io_data_len(&c->rem.io), io_data(&c->rem.io)));
+		DBG(("locf=%x,remf=%x", c->loc.flags,c->rem.flags));
+#endif
+
 	/* Read from remote end if it is ready */
+		if(c->loc.flags & FLAG_RESPONSE_COMPLETE)
+				c->rem.flags &= ~ FLAG_HEADERS_PARSED;
 	if (remote_ready && io_space_len(&c->rem.io))
 		read_stream(&c->rem);
 
 	/* If the request is not parsed yet, do so */
 	if (!(c->rem.flags & FLAG_HEADERS_PARSED))
 		parse_http_request(c);
-#if 0
-	DBG(("loc: %u [%.*s]", io_data_len(&c->loc.io),
-	    io_data_len(&c->loc.io), io_data(&c->loc.io)));
-	DBG(("rem: %u [%.*s]", io_data_len(&c->rem.io),
-	    io_data_len(&c->rem.io), io_data(&c->rem.io)));
-#endif
 	/* Read from the local end if it is ready */
 	if (local_ready && io_space_len(&c->loc.io))
 		read_stream(&c->loc);

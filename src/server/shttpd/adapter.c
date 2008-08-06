@@ -2,8 +2,9 @@
 
 #include "defs.h"
 #include "adapter.h"
-
-
+#ifdef SHTTPD_GSS
+void getGssName(struct conn *c, char **user);
+#endif
 void
 shttpd_get_credentials(struct shttpd_arg *arg,
                 char **user, char **pwd)
@@ -47,6 +48,13 @@ shttpd_get_credentials(struct shttpd_arg *arg,
 		*user = u_strdup(pp);
 		*pwd = u_strdup(p);		
 	}
+#ifdef SHHTPD_GSS
+    else if(!my_strncasecmp(auth_vec->ptr, "Kerberos ", 9))
+    {
+        getGssName(c, user);
+        *pwd = 0;
+    }
+#endif
 }
 
 char *shttpd_reason_phrase(int code)

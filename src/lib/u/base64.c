@@ -93,16 +93,17 @@ ws_base64_encode(const char *from, int len, char *to)
 	const char *s = from;
 
 	while (1) {
-		n = (s - from + len >= 3) ? 3 : s - from + len;
+	//	n = (s - from + len >= 3) ? 3 : s - from + len;
+		n = (len >= 3) ? 3 : len;
 		if (n == 0) {
 			break;
 		}
 		in[0] = *s;
-		if (n > 1) in[1] = *s + 1;
-		if (n > 2) in[2] = *s + 2;
-		out[0] = ETable[in[0] >> 2];
-		out[1] = ETable[((in[0] & 3) << 4) | (in[1] >> 4)];
-		out[2] = ETable[((in[1] & 0xF) << 2) | (in[2] >> 6)];
+		if (n > 1) in[1] = *(s + 1);
+		if (n > 2) in[2] = *(s + 2);
+		out[0] = ETable[(in[0] >> 2) & 0x3f];
+		out[1] = ETable[((in[0] & 3) << 4) | ((in[1] >> 4) & 0x0f )];
+		out[2] = ETable[((in[1] & 0xF) << 2) | ((in[2] >> 6 ) & 0x03) ];
 		out[3] = ETable[in[2] & 0x3F];
 		if (n < 3) {
 			out[3] = '=';
@@ -114,6 +115,7 @@ ws_base64_encode(const char *from, int len, char *to)
 			*to++ = out[i];
 		}
 		s += n;
+		len -= n;
 	}
 	*to = 0;
 }

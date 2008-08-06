@@ -52,9 +52,15 @@ call_user(struct conn *c, struct shttpd_arg *arg, shttpd_callback_t func)
 	 */
 
 	if (arg->flags & SHTTPD_END_OF_OUTPUT)
+	{
+		c->loc.flags |= FLAG_RESPONSE_COMPLETE;
 		c->loc.flags &= ~FLAG_DONT_CLOSE;
+}
 	else
+{
+c->loc.flags &= ~FLAG_RESPONSE_COMPLETE;
 		c->loc.flags |= FLAG_DONT_CLOSE;
+}
 }
 
 static int
