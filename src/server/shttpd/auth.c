@@ -178,7 +178,7 @@ open_auth_file(struct shttpd_ctx *ctx, const char *path)
 
 	if (ctx->global_passwd_file) {
 		/* Use global passwords file */
-		my_snprintf(name, sizeof(name), "%s", ctx->global_passwd_file);
+		snprintf(name, sizeof(name), "%s", ctx->global_passwd_file);
 	} else {
 		/* Try to find .htpasswd in requested directory */
 		for (p = path, e = p + strlen(p) - 1; e > p; e--)
@@ -186,7 +186,7 @@ open_auth_file(struct shttpd_ctx *ctx, const char *path)
 				break;
 
 		assert(IS_DIRSEP_CHAR(*e));
-		(void) my_snprintf(name, sizeof(name), "%.*s/%s",
+		(void) snprintf(name, sizeof(name), "%.*s/%s",
 		    (int) (e - p), p, HTPASSWD);
 	}
 
@@ -282,13 +282,13 @@ check_authorization(struct conn *c, const char *path)
 		if (!strncmp(c->uri, auth->uri, strlen(c->uri))) {
 			if (auth->type == DIGEST_AUTH &&
 			    auth_vec->len > 20 &&
-			    !my_strncasecmp(auth_vec->ptr, "Digest ", 7)) {
+			    !strncasecmp(auth_vec->ptr, "Digest ", 7)) {
 				fp = fopen(auth->file_name, "r");
 				digest = 1;
 			}
 			if (auth->type == BASIC_AUTH &&
 			    auth_vec->len > 10 &&
-			    !my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
+			    !strncasecmp(auth_vec->ptr, "Basic ", 6)) {
 				cb = (int (*)(char *, char *)) auth->callback.v_func;
 				basic = 1;
 			}
@@ -372,23 +372,23 @@ send_authorization_request(struct conn *c)
 	struct llhead	*lp;
 	struct uri_auth	*auth;
 
-	n = my_snprintf(buf, sizeof(buf), "Unauthorized\r\n");
+	n = snprintf(buf, sizeof(buf), "Unauthorized\r\n");
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
 		if (auth->type == DIGEST_AUTH && d == 0) {
 				if (b ) {
-						n += my_snprintf(buf +n, sizeof(buf) - n, "\r\n");
+						n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
 				}
-				n += my_snprintf(buf +n, sizeof(buf) - n,
+				n += snprintf(buf +n, sizeof(buf) - n,
 	    		"WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
 	    		"nonce=\"%lu\"", c->ctx->auth_realm, (unsigned long) current_time);
 				d = 1;
 		}
 		if (auth->type == BASIC_AUTH && b == 0) {
 				if (d) {
-						n += my_snprintf(buf +n, sizeof(buf) - n, "\r\n");
+						n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
 				}
-				n +=  my_snprintf(buf +n, sizeof(buf) - n,
+				n +=  snprintf(buf +n, sizeof(buf) - n,
 	    		"WWW-Authenticate: Basic realm=\"%s\"", c->ctx->auth_realm);
 				b = 1;
 		}
@@ -409,7 +409,7 @@ edit_passwords(const char *fname, const char *domain,
 	char		line[512], tmp[FILENAME_MAX], ha1[32];
 	FILE		*fp = NULL, *fp2 = NULL;
 
-	(void) my_snprintf(tmp, sizeof(tmp), "%s.tmp", fname);
+	(void) snprintf(tmp, sizeof(tmp), "%s.tmp", fname);
 
 	/* Create the file if does not exist */
 	if ((fp = fopen(fname, "a+")))

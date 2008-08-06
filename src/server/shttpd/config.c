@@ -24,7 +24,7 @@ static void
 set_str(struct shttpd_ctx *ctx, void *ptr, const char *string)
 {
 	ctx = NULL;	/* Unused */
-	* (char **) ptr = my_strdup(string);
+	* (char **) ptr = strdup(string);
 }
 
 static void
@@ -198,7 +198,7 @@ set_option(const struct opt *opt, const char *val, char **tmpvars)
 	if (*tmpvars != NULL)
 		free(*tmpvars);
 
-	*tmpvars = my_strdup(val);
+	*tmpvars = strdup(val);
 }
 
 /*
@@ -242,7 +242,7 @@ initialize_context(struct shttpd_ctx *ctx, const char *config_file,
 	/* First pass: set the defaults */
 	for (opt = options; opt->sw != 0; opt++)
 		if (tmpvars[opt - options] == NULL && opt->def != NULL)
-			tmpvars[opt - options] = my_strdup(opt->def);
+			tmpvars[opt - options] = strdup(opt->def);
 
 	/* Second pass: load config file  */
 	if (config_file != NULL && (fp = fopen(config_file, "r")) != NULL) {
@@ -293,7 +293,7 @@ initialize_context(struct shttpd_ctx *ctx, const char *config_file,
 	/* If document_root is not set, set it to current directory */
 	if (ctx->document_root == NULL) {
 		(void) my_getcwd(root, sizeof(root));
-		ctx->document_root = my_strdup(root);
+		ctx->document_root = strdup(root);
 	}
 
 #ifdef _WIN32

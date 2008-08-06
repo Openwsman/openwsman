@@ -11,7 +11,7 @@ shttpd_get_credentials(struct shttpd_arg *arg,
 	char *p, *pp;
 	struct conn *c = (struct conn *)arg->priv;
 	struct vec 	*auth_vec = &c->ch.auth.v_vec;
-	if (auth_vec->len > 10 && !my_strncasecmp(auth_vec->ptr, "Basic ", 6)) {
+	if (auth_vec->len > 10 && !strncasecmp(auth_vec->ptr, "Basic ", 6)) {
 		char buf[4096];
 		int l;
 

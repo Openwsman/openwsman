@@ -25,7 +25,7 @@ write_file(struct stream *stream, const void *buf, size_t len)
 	if (n <= 0 || (rem->io.total >= (big_int_t) rem->headers_len)) {
 		(void) fstat(fd, &st);
 		stream->io.head = stream->headers_len =
-		    my_snprintf(stream->io.buf,
+		    snprintf(stream->io.buf,
 		    stream->io.size, "HTTP/1.1 %d OK\r\n"
 		    "Content-Length: %lu\r\nConnection: close\r\n\r\n",
 		    stream->conn->status, st.st_size);
@@ -108,7 +108,7 @@ get_file(struct conn *c, struct stat *stp)
 		status = 206;
 		(void) lseek(c->loc.chan.fd, r1, SEEK_SET);
 		cl = n == 2 ? r2 - r1 + 1: cl - r1;
-		(void) my_snprintf(range, sizeof(range),
+		(void) snprintf(range, sizeof(range),
 		    "Content-Range: bytes %lu-%lu/%lu\r\n",
 		    r1, r1 + cl - 1, (unsigned long) stp->st_size);
 		msg = "Partial Content";
@@ -117,7 +117,7 @@ get_file(struct conn *c, struct stat *stp)
 	/* Prepare Etag, Date, Last-Modified headers */
 	(void) strftime(date, sizeof(date), fmt, localtime(&current_time));
 	(void) strftime(lm, sizeof(lm), fmt, localtime(&stp->st_mtime));
-	(void) my_snprintf(etag, sizeof(etag), "%lx.%lx",
+	(void) snprintf(etag, sizeof(etag), "%lx.%lx",
 	    (unsigned long) stp->st_mtime, (unsigned long) stp->st_size);
 
 	/*
@@ -125,7 +125,7 @@ get_file(struct conn *c, struct stat *stp)
 	 * member in io. We want 'total' to be equal to the content size,
 	 * and exclude the headers length from it.
 	 */
-	c->loc.io.head = c->loc.headers_len = my_snprintf(c->loc.io.buf,
+	c->loc.io.head = c->loc.headers_len = snprintf(c->loc.io.buf,
 	    c->loc.io.size,
 	    "HTTP/1.1 %d %s\r\n"
 	    "Date: %s\r\n"

@@ -32,7 +32,7 @@ elog(int flags, struct conn *c, const char *fmt, ...)
 	strftime(date, sizeof(date), "%a %b %d %H:%M:%S %Y",
 	    localtime(&current_time));
 
-	len = my_snprintf(buf, sizeof(buf),
+	len = snprintf(buf, sizeof(buf),
 	    "[%s] [error] [client %s] \"%s\" ",
 	    date, c ? inet_ntoa(c->sa.u.sin.sin_addr) : "-",
 	    c && c->request ? c->request : "-");
@@ -60,7 +60,7 @@ elog(int flags, struct conn *c, const char *fmt, ...)
 	if (flags & E_FATAL)
 		exit(EXIT_FAILURE);
 }
-
+#if 0
 void
 log_access(FILE *fp, const struct conn *c)
 {
@@ -87,7 +87,7 @@ log_access(FILE *fp, const struct conn *c)
 	(void) strftime(date, sizeof(date), "%d/%b/%Y:%H:%M:%S",
 			localtime(&current_time));
 
-	(void) my_snprintf(buf, sizeof(buf),
+	(void) snprintf(buf, sizeof(buf),
 	    "%s - %.*s [%s %+05d] \"%s\" %d %lu %s%.*s%s %s%.*s%s",
 	    inet_ntoa(c->sa.u.sin.sin_addr), user->len, user->ptr,
 	    date, tz_offset, c->request ? c->request : "-",
@@ -109,3 +109,4 @@ log_access(FILE *fp, const struct conn *c)
 	}
 #endif /* _WIN32 */
 }
+#endif

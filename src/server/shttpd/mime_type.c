@@ -61,7 +61,7 @@ get_mime_type(struct shttpd_ctx *ctx, const char *uri, int len)
 		mtl = LL_ENTRY(lp, struct mime_type_link, link);
 		s = uri + len - mtl->ext_len;
 		if (s > uri && s[-1] == '.' &&
-		    !my_strncasecmp(mtl->ext, s, mtl->ext_len))
+		    !strncasecmp(mtl->ext, s, mtl->ext_len))
 			return (mtl->mime);
 	}
 
@@ -69,7 +69,7 @@ get_mime_type(struct shttpd_ctx *ctx, const char *uri, int len)
 	for (mt = default_mime_types; mt->ext != NULL; mt++) {
 		s = uri + len - mt->ext_len;
 		if (s > uri && s[-1] == '.' &&
-		    !my_strncasecmp(mt->ext, s, mt->ext_len))
+		    !strncasecmp(mt->ext, s, mt->ext_len))
 			return (mt->mime);
 	}
 

@@ -128,7 +128,7 @@ shttpd_get_header(struct shttpd_arg *arg, const char *header_name)
 	while (p < e) {
 		if ((s = strchr(p, '\n')) != NULL)
 			s[s[-1] == '\r' ? -1 : 0] = '\0';
-		if (my_strncasecmp(header_name, p, len) == 0)
+		if (strncasecmp(header_name, p, len) == 0)
 			return (p + len + 2);
 
 		p += strlen(p) + 1;
@@ -178,7 +178,7 @@ shttpd_register_uri(struct shttpd_ctx *ctx,
 	struct registered_uri	*e;
 
 	if ((e = malloc(sizeof(*e))) != NULL) {
-		e->uri			= my_strdup(uri);
+		e->uri			= strdup(uri);
 		e->callback.v_func	= (void (*)(void)) callback;
 		e->callback_data	= data;
 		LL_TAIL(&ctx->registered_uris, &e->link);
@@ -205,9 +205,9 @@ shttpd_protect_uri(struct shttpd_ctx *ctx, const char *uri, const char *file,
 	struct uri_auth	*auth;
 
 	if ((auth = malloc(sizeof(*auth))) != NULL) {
-		auth->uri	= my_strdup(uri);
+		auth->uri	= strdup(uri);
 		if (file)
-			auth->file_name	= my_strdup(file);
+			auth->file_name	= strdup(file);
 		else
 			auth->file_name	= NULL;
 		if (cb)
@@ -235,7 +235,7 @@ shttpd_get_var(const char *var, const char *buf, int buf_len,
 	for (p = buf; p + var_len < e; p++)
 		if ((p == buf || p[-1] == '&') &&
 		    p[var_len] == '=' &&
-		    !my_strncasecmp(var, p, var_len)) {
+		    !strncasecmp(var, p, var_len)) {
 
 			/* Point 'p' to var value, 's' to the end of value */
 			p += var_len + 1;

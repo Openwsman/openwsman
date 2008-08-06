@@ -97,9 +97,9 @@ shttpd_add_mime_type(struct shttpd_ctx *ctx, const char *ext, const char *mime)
 
 	if ((e = malloc(sizeof(*e))) == NULL) {
 		elog(E_FATAL, 0, error_msg);
-	} else if ((e->ext= my_strdup(ext)) == NULL) {
+	} else if ((e->ext= strdup(ext)) == NULL) {
 		elog(E_FATAL, 0, error_msg);
-	} else if ((e->mime = my_strdup(mime)) == NULL) {
+	} else if ((e->mime = strdup(mime)) == NULL) {
 		elog(E_FATAL, 0, error_msg);
 	} else {
 		e->ext_len = strlen(ext);
@@ -237,7 +237,7 @@ send_server_error(struct conn *c, int status, const char *reason)
 #endif /* EMBEDDED */
 
 	io_clear(&c->loc.io);
-	c->loc.headers_len = c->loc.io.head = my_snprintf(c->loc.io.buf,
+	c->loc.headers_len = c->loc.io.head = snprintf(c->loc.io.buf,
 	    c->loc.io.size, "HTTP/1.1 %d %s\r\n\r\n%d %s",
 	    status, reason, status, reason);
 	c->status = status;
@@ -337,7 +337,7 @@ parse_headers(const char *s, int len, struct headers *parsed)
 		/* Is this header known to us ? */
 		for (h = http_headers; h->len != 0; h++)
 			if (e - s > h->len &&
-			    !my_strncasecmp(s, h->name, h->len))
+			    !strncasecmp(s, h->name, h->len))
 				break;
 
 		/* If the header is known to us, store its value */
@@ -378,7 +378,7 @@ find_index_file(struct conn *c, char *path, size_t maxpath, struct stat *stp)
 	size_t		len;
 
 	FOR_EACH_WORD_IN_LIST(s, len) {
-		my_snprintf(buf, sizeof(buf), "%s%c%.*s",path, DIRSEP, len, s);
+		snprintf(buf, sizeof(buf), "%s%c%.*s",path, DIRSEP, len, s);
 		if (my_stat(buf, stp) == 0) {
 			my_strlcpy(path, buf, maxpath);
 			c->mime_type = get_mime_type(c->ctx, s, len);
@@ -445,12 +445,12 @@ decide_what_to_do(struct conn *c)
 		return;
 	}
 
-	(void) my_snprintf(path, sizeof(path), "%s%s",
+	(void) snprintf(path, sizeof(path), "%s%s",
 	    c->ctx->document_root, c->uri);
 
 	/* User may use the aliases - check URI for mount point */
 	if (is_alias(c->ctx, c->uri, &alias_uri, &alias_path) != NULL) {
-		(void) my_snprintf(path, sizeof(path), "%.*s%s",
+		(void) snprintf(path, sizeof(path), "%.*s%s",
 		    alias_path.len, alias_path.ptr, c->uri + alias_uri.len);
 		DBG(("using alias %.*s -> %.*s", alias_uri.len, alias_uri.ptr,
 		    alias_path.len, alias_path.ptr));
@@ -504,7 +504,7 @@ decide_what_to_do(struct conn *c)
 	} else if (get_path_info(c, path, &st) != 0) {
 		send_server_error(c, 404, "Not Found");
 	} else if (S_ISDIR(st.st_mode) && path[strlen(path) - 1] != '/') {
-		(void) my_snprintf(buf, sizeof(buf),
+		(void) snprintf(buf, sizeof(buf),
 			"Moved Permanently\r\nLocation: %s/", c->uri);
 		send_server_error(c, 301, buf);
 	} else if (S_ISDIR(st.st_mode) &&
@@ -512,7 +512,7 @@ decide_what_to_do(struct conn *c)
 	    c->ctx->dirlist == 0) {
 		send_server_error(c, 403, "Directory Listing Denied");
 	} else if (S_ISDIR(st.st_mode) && c->ctx->dirlist) {
-		if ((c->loc.chan.dir.path = my_strdup(path)) != NULL)
+		if ((c->loc.chan.dir.path = strdup(path)) != NULL)
 			get_dir(c);
 		else
 			send_server_error(c, 500, "GET Directory Error");
@@ -584,7 +584,7 @@ parse_http_request(struct conn *c)
 		send_server_error(c, 400, "Bad request");
 	else if (set_request_method(c))
 		send_server_error(c, 501, "Method Not Implemented");
-	else if ((c->request = my_strndup(s, req_len)) == NULL)
+	else if ((c->request = strndup(s, req_len)) == NULL)
 		send_server_error(c, 500, "Cannot allocate request");
 
 	if (c->loc.flags & FLAG_CLOSED)
@@ -914,7 +914,7 @@ disconnect(struct llhead *lp)
 #if !defined(_WIN32) || defined(NO_GUI)
 	if (c->ctx->access_log != NULL)
 #endif /* _WIN32 */
-			// log_access(c->ctx->access_log, c);
+	// log_access(c->ctx->access_log, c);
 
 	/* In inetd mode, exit if request is finished. */
 	if (c->ctx->inetd_mode)
@@ -928,7 +928,7 @@ disconnect(struct llhead *lp)
 	 * If it its 'keep-alive', then do not close the connection
 	 */
 	dont_close =  c->ch.connection.v_vec.len >= ka.len &&
-	    !my_strncasecmp(ka.ptr, c->ch.connection.v_vec.ptr, ka.len);
+	    !strncasecmp(ka.ptr, c->ch.connection.v_vec.ptr, ka.len);
 	dont_close = 0;
 	if (c->request)
 		free(c->request);
@@ -955,7 +955,7 @@ disconnect(struct llhead *lp)
 		c->ctx->nactive--;
 		assert(c->ctx->nactive >= 0);
 		LeaveCriticalSection(&c->ctx->mutex);
-		
+
 		free(c);
 	}
 }

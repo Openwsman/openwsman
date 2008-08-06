@@ -412,17 +412,18 @@ extern struct shttpd_ctx *init_from_argc_argv(const char *, int, char *[]);
                 if (level == E_FATAL) exit(EXIT_FAILURE); \
         } while (0)
 
-extern void	log_access(FILE *fp, const struct conn *c);
+// extern void	log_access(FILE *fp, const struct conn *c);
 
 /*
  * string.c
  */
 extern void	my_strlcpy(register char *, register const char *, size_t);
-extern int	my_strncasecmp(register const char *,
-		register const char *, size_t);
+/*
+extern int	my_strncasecmp(register const char *, register const char *, size_t);
 extern char	*my_strndup(const char *ptr, size_t len);
 extern char	*my_strdup(const char *str);
 extern int	my_snprintf(char *buf, size_t buflen, const char *fmt, ...);
+*/
 extern int	match_extension(const char *path, const char *ext_list);
 
 /*

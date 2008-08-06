@@ -94,7 +94,7 @@ set_control_values(HWND hDlg, const struct shttpd_ctx *ctx)
 			CheckDlgButton(hDlg, id,
 			    v->v_int ? BST_CHECKED : BST_UNCHECKED);
 		} else if (opt->flags & OPT_INT) {
-			my_snprintf(buf, sizeof(buf), "%d", v->v_int);
+			snprintf(buf, sizeof(buf), "%d", v->v_int);
 			SetDlgItemText(hDlg, id, buf);
 		} else {
 			SetDlgItemText(hDlg, id, v->v_str);
@@ -340,7 +340,7 @@ LogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		len = GetWindowText(hEdit, buf, sizeof(buf));
 		if (len > sizeof(buf) * 4 / 5)
 			len = sizeof(buf) * 4 / 5;
-		my_snprintf(buf + len, sizeof(buf) - len,
+		snprintf(buf + len, sizeof(buf) - len,
 		    "%s\r\n", (char *) lParam);
 		SetWindowText(hEdit, buf);
 		SendMessage(hEdit, WM_VSCROLL, SB_BOTTOM, 0);
@@ -349,17 +349,17 @@ LogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		/* Print statistics on a status bar */
 		up = current_time - ctx->start_time;
-		(void) my_snprintf(text, sizeof(text),
+		(void) snprintf(text, sizeof(text),
 		    " Up: %3d h %2d min %2d sec",
 		    up / 3600, up / 60 % 60, up % 60);
 		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM) text);
-		(void) my_snprintf(text, sizeof(text),
+		(void) snprintf(text, sizeof(text),
 		    " Requests: %u", ctx->nrequests);
 		SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM) text);
-		(void) my_snprintf(text, sizeof(text),
+		(void) snprintf(text, sizeof(text),
 		    " Sent: %4.2f Mb", (double) ctx->out / 1048576);
 		SendMessage(hStatus, SB_SETTEXT, 2, (LPARAM) text);
-		(void) my_snprintf(text, sizeof(text),
+		(void) snprintf(text, sizeof(text),
 		    " Received: %4.2f Mb", (double) ctx->in / 1048576);
 		SendMessage(hStatus, SB_SETTEXT, 3, (LPARAM) text);
 		break;
@@ -448,7 +448,7 @@ WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		ni.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 		ni.hIcon = hIcon;
 		ni.hWnd = hWnd;
-		my_snprintf(ni.szTip, sizeof(ni.szTip), "SHTTPD web server");
+		snprintf(ni.szTip, sizeof(ni.szTip), "SHTTPD web server");
 		ni.uCallbackMessage = WM_USER;
 		Shell_NotifyIcon(NIM_ADD, &ni);
 		ctx->ev[0] = CreateEvent(0, TRUE, FALSE, 0);
@@ -686,7 +686,7 @@ opendir(const char *name)
 	} else if ((dir = malloc(sizeof(*dir))) == NULL) {
 		errno = ENOMEM;
 	} else {
-		my_snprintf(path, sizeof(path), "%s/*", name);
+		snprintf(path, sizeof(path), "%s/*", name);
 		fix_directory_separators(path);
 		MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath));
 		dir->handle = FindFirstFileW(wpath, &dir->info);
@@ -887,14 +887,14 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 				*p = '\0';
 			(void) fclose(fp);
 		}
-		(void) my_snprintf(cmdline, sizeof(cmdline), "%s%s%s",
+		(void) snprintf(cmdline, sizeof(cmdline), "%s%s%s",
 		    line + 2, line[2] == '\0' ? "" : " ", prog);
 	} else {
-		(void) my_snprintf(cmdline, sizeof(cmdline), "%s %s",
+		(void) snprintf(cmdline, sizeof(cmdline), "%s %s",
 		    c->ctx->cgi_interpreter, prog);
 	}
 
-	(void) my_snprintf(line, sizeof(line), "%s", dir);
+	(void) snprintf(line, sizeof(line), "%s", dir);
 	fix_directory_separators(line);
 	fix_directory_separators(cmdline);
 

@@ -237,7 +237,7 @@ run_cgi(struct conn *c, const char *prog)
 	pair[0] = pair[1] = -1;
 
 	/* CGI must be executed in its own directory */
-	(void) my_snprintf(dir, sizeof(dir), "%s", prog);
+	(void) snprintf(dir, sizeof(dir), "%s", prog);
 	for (p = dir + strlen(dir) - 1; p > dir; p--)
 		if (*p == '/') {
 			*p++ = '\0';
