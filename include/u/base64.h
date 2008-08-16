@@ -33,5 +33,5 @@
  */
 
 extern void ws_base64_encode(const char *from, int len, char *to);
-extern int  ws_base64_decode(const char *from, int len, char *to);
+extern int  ws_base64_decode(const char *from, int len, char *to, int to_len);
 

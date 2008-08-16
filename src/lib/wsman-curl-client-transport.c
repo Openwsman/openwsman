@@ -218,11 +218,12 @@ static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void 
 	return 0;
 }
 
-static CURLcode 
+static CURLcode
 sslctxfun(CURL *curl, void *sslctx, void *parm)
 {
 	CURLcode r = CURLE_OK;
 	SSL_CTX * ctx = (SSL_CTX *) sslctx ;
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER |  SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 0 );
 	SSL_CTX_set_cert_verify_callback(ctx, ssl_certificate_thumbprint_verify_callback, parm);
 	return r;
 }
@@ -290,7 +291,7 @@ init_curl_transport(WsManClient *cl)
 		}
 	}
 	// ceritificate thumbprint
-#ifdef ENABLE_EVENTING_SUPPORT	
+#ifdef ENABLE_EVENTING_SUPPORT
 	else if (cl->authentication.certificatethumbprint) {
 		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
 		if(r != 0) {
@@ -303,7 +304,7 @@ init_curl_transport(WsManClient *cl)
 			goto DONE;
 		}
 	}
-#endif	
+#endif
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
 	if (r != 0) {
@@ -395,7 +396,7 @@ wsmc_handler( WsManClient *cl,
 
 	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent(cl));
 	headers = curl_slist_append(headers, usag);
-	
+
 #if 0
 	soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
 	if (soapaction) {
@@ -533,7 +534,7 @@ wsmc_handler( WsManClient *cl,
                 size_t coverted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
 		  iconv_close(cd);
                 if( coverted == -1) {
-			cl->last_error = WS_LASTERR_BAD_CONTENT_ENCODING; 
+			cl->last_error = WS_LASTERR_BAD_CONTENT_ENCODING;
 			goto DONE2;
                 }
                 u_buf_append(con->response, mbbuf, u_buf_len(response) - inbuf_len);

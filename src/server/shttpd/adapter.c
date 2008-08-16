@@ -31,7 +31,7 @@ shttpd_get_credentials(struct shttpd_arg *arg,
 		}
 		*p = 0;
 
-		l = ws_base64_decode(pp, p - pp, buf);
+		l = ws_base64_decode(pp, p - pp, buf, 4095);
 		if (l <= 0) {
 			return ;
 		}
@@ -44,9 +44,9 @@ shttpd_get_credentials(struct shttpd_arg *arg,
 			return ;
 		}
 		*p++ = 0;
-		
+
 		*user = u_strdup(pp);
-		*pwd = u_strdup(p);		
+		*pwd = u_strdup(p);
 	}
 #ifdef SHHTPD_GSS
     else if(!my_strncasecmp(auth_vec->ptr, "Kerberos ", 9))

@@ -350,7 +350,7 @@ check_authorization(struct conn *c, const char *path)
 		}
 		*p = 0;
 
-		l = ws_base64_decode(pp, p - pp, buf);
+		l = ws_base64_decode(pp, p - pp, buf, 4095);
 		if (l <= 0) {
 			return 0;
 		}
