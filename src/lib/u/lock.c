@@ -50,6 +50,10 @@
 extern int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 #endif
 
+#if defined (__SVR4) && defined (__sun)
+#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
+#endif
+
 void u_init_lock(void *data)
 {
     pthread_mutexattr_t attr;

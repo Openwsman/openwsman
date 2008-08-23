@@ -168,7 +168,11 @@ initialize(void *arg)
 
 
 static int
+#if defined (__SVR4) && defined (__sun)
+pwd_conv(int num_msg, struct pam_message **msgm,
+#else
 pwd_conv(int num_msg, const struct pam_message **msgm,
+#endif
 		struct pam_response **response, void *appdata_ptr)
 {
 	char *pwd = (char *)appdata_ptr;

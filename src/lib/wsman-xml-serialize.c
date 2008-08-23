@@ -44,6 +44,10 @@
 #include <ctype.h>
 #include <assert.h>
 
+#if defined (__SVR4) && defined (__sun)
+#include <strings.h>
+#endif
+
 #include <u/libu.h>
 
 #include "wsman-xml-api.h"

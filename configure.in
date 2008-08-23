@@ -5,6 +5,7 @@ dnl *******************************************
 AC_PREREQ(2.53)
 AC_INIT(openwsman, 2.0.1)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
+AC_CANONICAL_HOST
 
 dnl Package version information
 PACKAGE=openwsman
@@ -31,6 +32,15 @@ AC_SUBST(WSMAN_CLIENT_TRANSPORT_PKG)
 AC_SUBST(WSMAN_CLIENTPP_PKG)
 AC_SUBST(WSMAN_SERVER_PKG)
 AC_SUBST(WSMAN_PKG)
+
+case "$host" in
+  *-*-solaris*)
+	solaris="yes"
+	;;
+  *)
+	;;
+esac
+
 
 dnl ***************************
 dnl *** Set debugging flags ***
@@ -190,6 +200,22 @@ CURL_LIBS=`curl-config --libs`
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
+dnl Need libcurl version 7.12.0 or higher
+CURLSTRVERSION="`curl-config --version`"
+CURLNVERSION=`echo $CURLSTRVERSION | $SED -e 's/[[^0-9]]/ /g' | $AWK '{print ($1*10000) + ($2*100) + $3}'`
+if test "$CURLNVERSION" -lt  71200 ; then
+	AC_MSG_ERROR([
+Openwsman requires libcurl version 7.12.00 or higher, and you 
+are running "$CURLSTRVERSION".  You may be able to install a newer 
+version via your operating system update facility, or you can 
+retrieve it from:
+
+    http://curl.haxx.se/
+
+and install it directly.]
+)
+	exit
+fi
 
 examples_default=no
 AC_ARG_WITH(examples,
@@ -320,6 +346,13 @@ fi
 
 AC_SUBST(CRYPT_LIBS)
 
+dnl
+dnl Use built-in UUID generation if on Solaris
+dnl
+
+if test x"$solaris" = x"yes" ; then
+	LDFLAGS="$LDFLAGS -luuid"
+fi
 
 if test "$prefix" = "NONE"; then
     prefix=$ac_default_prefix;

@@ -88,6 +88,10 @@
 
 #include <string.h>
 
+#if (defined (__SVR4) && defined (__sun))
+#include <uuid/uuid.h>
+#endif
+
 #ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>
 #endif
@@ -239,7 +243,7 @@ static int mac_address(unsigned char *data_ptr, size_t data_len)
 
 
 
-#else
+#elif !(defined (__SVR4) && defined (__sun))
 
 static long
 mac_addr_sys (u_char *addr)
@@ -284,6 +288,9 @@ mac_addr_sys (u_char *addr)
     return 0;
 }
 #endif
+#endif
+
+#if !(defined (__SVR4) && defined (__sun))
 
 int 
 generate_uuid ( char* buf, 
@@ -354,6 +361,43 @@ generate_uuid ( char* buf,
             uuid[3], uuid[2], uuid[1], uuid[0] );
 
     return 1;
+
+}
+
+#else /* Solaris */
+int
+generate_uuid ( char* buf,
+                int size,
+                int no_prefix)
+{
+    int max_length = SIZE_OF_UUID_STRING;
+    char* ptr = buf;
+	char uuid_str[UUID_PRINTABLE_STRING_LENGTH];
+	uuid_t uuid;
+
+    if ( !no_prefix ) max_length += 5;      // space for "uuid:"
+    if ( size < max_length )
+        return 0;
+
+    if ( buf == NULL )
+        return 0;
+
+    if ( !no_prefix )
+    {
+        sprintf( ptr, "uuid:" );
+        ptr += 5;
+    }
+
+	uuid_generate(uuid);
+	uuid_unparse(uuid, uuid_str);
+
+	int uuidlen = strlen(uuid_str);
+	if (((ptr - buf) + uuidlen) < size) {
+		strlcpy(ptr, uuid_str, uuidlen);
+		return 1;
+	}
+	else
+		return 0;
 
 }
 

@@ -32,6 +32,9 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/memory.h>
 
+#ifndef HAVE_STRSEP
+extern	char *strsep( char **, const char *);
+#endif
 
 
 /**

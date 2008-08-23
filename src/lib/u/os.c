@@ -134,8 +134,9 @@ cont:
 }
 
 #endif 
+#endif
 
-
+#if defined(WIN32) || (defined (__SVR4) && defined (__sun))
 
 
 #ifndef HAVE_STRSEP
@@ -150,6 +151,8 @@ cont:
  *
  * If *stringp is NULL, strsep returns NULL.
  */
+char *strsep(char **, const char *);
+
 char *
 strsep( char **stringp,
 	const char *delim)

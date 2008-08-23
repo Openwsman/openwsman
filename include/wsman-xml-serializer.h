@@ -79,6 +79,23 @@ typedef double XML_TYPE_REAL64;
 #define PTRTOINT unsigned long long
 #else
 #include <sys/types.h>
+#if defined (__SVR4) && defined (__sun)
+typedef uchar_t XML_TYPE_UINT8;
+typedef ushort_t XML_TYPE_UINT16;
+typedef uint_t XML_TYPE_UINT32;
+typedef u_longlong_t  XML_TYPE_UINT64;
+typedef char XML_TYPE_INT8;
+typedef short XML_TYPE_INT16;
+typedef int XML_TYPE_INT32;
+typedef long long XML_TYPE_INT64;
+typedef float XML_TYPE_REAL32;
+typedef double XML_TYPE_REAL64;
+
+typedef int XML_TYPE_BOOL;
+typedef char XML_TYPE_CHAR;
+#define PTRTOINT int
+
+#else
 typedef u_int8_t XML_TYPE_UINT8;
 typedef u_int16_t XML_TYPE_UINT16;
 typedef u_int32_t XML_TYPE_UINT32;
@@ -93,6 +110,7 @@ typedef double XML_TYPE_REAL64;
 typedef int XML_TYPE_BOOL;
 typedef char XML_TYPE_CHAR;
 #define PTRTOINT intptr_t
+#endif
 #endif
 typedef struct {
     struct tm tm;
