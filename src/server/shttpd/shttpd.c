@@ -375,7 +375,7 @@ find_index_file(struct conn *c, char *path, size_t maxpath, struct stat *stp)
 {
 	char		buf[FILENAME_MAX];
 	const char	*s = c->ctx->index_files;
-	size_t		len;
+	int		len;
 
 	FOR_EACH_WORD_IN_LIST(s, len) {
 		snprintf(buf, sizeof(buf), "%s%c%.*s",path, DIRSEP, len, s);
@@ -587,7 +587,7 @@ parse_http_request(struct conn *c)
 		send_server_error(c, 400, "Bad request");
 	else if (set_request_method(c))
 		send_server_error(c, 501, "Method Not Implemented");
-	else if ((c->request = strndup(s, req_len)) == NULL)
+	else if ((c->request = u_strndup(s, req_len)) == NULL)
 		send_server_error(c, 500, "Cannot allocate request");
 
 	if (c->loc.flags & FLAG_CLOSED)

@@ -317,7 +317,8 @@ static char * raw2hexadecimal(unsigned char *dest, int len)
 
 void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg)
 {
-	if(arg == NULL) return;
+	if(arg == NULL)
+		return;
 	hexadecimal2raw(arg, cl->authentication.certificatethumbprint, 20);
 }
 

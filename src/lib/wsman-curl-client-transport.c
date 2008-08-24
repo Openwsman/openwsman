@@ -298,7 +298,7 @@ init_curl_transport(WsManClient *cl)
 			curl_err("Could not curl_easy_setopt(curl, CURLOPT_CTX_FUNCTION)");
 			goto DONE;
 		}
-		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, cl->authentication.certificatethumbprint);
+		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, (void *)cl->authentication.certificatethumbprint);
 		if(r != 0) {
 			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA)");
 			goto DONE;

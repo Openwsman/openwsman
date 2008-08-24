@@ -293,7 +293,7 @@ check_authorization(struct conn *c, const char *path)
 		auth = LL_ENTRY(lp, struct uri_auth, link);
 		if (!strncmp(c->uri, auth->uri, strlen(c->uri))) {
 #ifdef SHTTPD_GSS
-			if (!my_strncasecmp(auth_vec->ptr, "Kerberos ", 9))
+			if (!strncasecmp(auth_vec->ptr, "Kerberos ", 9))
 			{
 				kerberos = 1;
             }
@@ -485,8 +485,8 @@ edit_passwords(const char *fname, const char *domain,
 	(void) fclose(fp2);
 
 	/* Put the temp file in place of real file */
-	(void) my_remove(fname);
-	(void) my_rename(tmp, fname);
+	(void) remove(fname);
+	(void) rename(tmp, fname);
 
 	return (ret);
 }

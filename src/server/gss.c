@@ -130,8 +130,8 @@ static int connectContext(
                                       &doid,
                                       reply,
                                       ret_flags,
-                                      0,         
-                                      0);     
+                                      0,
+                                      0);
 
 
     if (maj_stat != GSS_S_COMPLETE)
@@ -182,7 +182,7 @@ int do_gss(struct conn *c)
     // pp = start, p = end. Now decode
 
     char decbuf[p - pp]; // this is too long but we dont care
-    int l = ws_base64_decode(pp, p - pp, decbuf);
+    int l = ws_base64_decode(pp, p - pp, decbuf, 4095);
 
     int ret = connectContext(decbuf, l, gsscreds, &c->gss_ctx, &client_name, &reply, &retflags);
     if (ret != 0)
@@ -198,7 +198,7 @@ int do_gss(struct conn *c)
 
 
     io_clear(&c->loc.io);
-    c->loc.headers_len = c->loc.io.head = my_snprintf(c->loc.io.buf,
+    c->loc.headers_len = c->loc.io.head = snprintf(c->loc.io.buf,
                                                       c->loc.io.size, "HTTP/1.1 200 \r\nWWW-Authenticate: Kerberos %s\r\n\r\n",
                                                       repbuf);
     c->status = 200;
@@ -249,7 +249,7 @@ int gss_encrypt(struct shttpd_arg *arg, char *input, int inlen, char **output, i
     p += sizeof(KERB_CONTENT_TYPE) - 1;
     memcpy(p, ORIGINAL_CONTENT, sizeof(ORIGINAL_CONTENT) - 1);
     p += sizeof(ORIGINAL_CONTENT) - 1 ;
-    p += my_snprintf(p, 30, "%d\r\n", inlen * 2 + 2 + 1); // windows wants this to be the size of the encrypted data
+    p += snprintf(p, 30, "%d\r\n", inlen * 2 + 2 + 1); // windows wants this to be the size of the encrypted data
     // and gss adds an extra pad byte
     memcpy(p, ENCRYPTED_BOUNDARY, sizeof(ENCRYPTED_BOUNDARY) - 1);
     p += sizeof(ENCRYPTED_BOUNDARY) - 1;
@@ -336,12 +336,12 @@ char* gss_decrypt(struct shttpd_arg *arg, char *data, int len)
         return strdup("");
     }
     in += 4; // skip 2f000000, this is the GSS coding overhead
-    char *p = in;     
+    char *p = in;
     found = 0;
     while (p - data < len)
     {
         if (!memcmp(p,"-- Enc", 6))
-        {   
+        {
             found = 1;
             break;
         }
