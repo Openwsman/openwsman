@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 void 
 set_close_on_exec(int fd)

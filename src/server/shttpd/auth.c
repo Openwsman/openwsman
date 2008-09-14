@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 #ifdef SHTTPD_GSS
 void do_gss(struct conn *c);
 #endif

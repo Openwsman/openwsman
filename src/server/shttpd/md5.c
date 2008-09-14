@@ -15,7 +15,7 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 #ifndef HAVE_MD5
 #if __BYTE_ORDER == 1234

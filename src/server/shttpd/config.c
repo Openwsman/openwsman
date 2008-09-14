@@ -8,7 +8,8 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
+#include "wsmand-daemon.h"
 
 /*
  * Configuration parameters setters

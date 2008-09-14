@@ -18,7 +18,7 @@
  * INCLUDED MODULES
  **********************************************************************/
 #include <rtems.h>
-#include "defs.h"
+#include "shttpd_defs.h"
 
 #define MAX_WEB_BASE_PATH_LENGTH 256
 #define MIN_SHTTPD_STACK         (8*1024)

@@ -351,21 +351,11 @@ property2xml(CimClientInfo * client, CMPIData data,
 static void cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 		CMPIArgs * argsin)
 {
-	//CMCIClient *cc = (CMCIClient *) client->cc;
 	hscan_t hs;
 	hnode_t *hn;
 	hash_t * args = client->method_args;
-	//CMPIStatus rc;
 	hash_scan_begin(&hs, args);
-
-#if 0
-	op->ft->getMethodQualifier(op, client->method, NULL, &rc);
-	debug("getMethodQualifier() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
-
-#endif
 	while ((hn = hash_scan_next(&hs))) {
-
 		CMAddArg(argsin, (char *) hnode_getkey(hn),
 				(char *) hnode_get(hn), CMPI_chars);
 	}

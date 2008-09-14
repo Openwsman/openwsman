@@ -13,7 +13,7 @@
  * $Id: shttpd.c,v 1.18 2008/01/10 11:01:21 drozd Exp $
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 time_t		current_time;	/* Current UTC time		*/
 int		tz_offset;	/* Time zone offset from UTC	*/

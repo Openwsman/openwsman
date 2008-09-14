@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 static int
 write_file(struct stream *stream, const void *buf, size_t len)
@@ -93,7 +93,7 @@ void
 get_file(struct conn *c, struct stat *stp)
 {
 	char		date[64], lm[64], etag[64], range[64] = "";
-	size_t		n, status = 200;
+	int		n, status = 200;
 	unsigned long	r1, r2;
 	const char	*fmt = "%a, %d %b %Y %H:%M:%S GMT", *msg = "OK";
 	big_int_t	cl; /* Content-Length */

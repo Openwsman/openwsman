@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 static const struct mime_type default_mime_types[] = {
 	{"html",	4,	"text/html"			},

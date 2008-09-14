@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 #if !defined(NO_SSL)
 struct ssl_func	ssl_sw[] = {
@@ -25,9 +25,9 @@ struct ssl_func	ssl_sw[] = {
 	{"SSL_library_init",		{0}},
 	{"SSL_CTX_use_PrivateKey_file",	{0}},
 	{"SSL_CTX_use_certificate_file",{0}},
-	{"SSL_CTX_use_certificate_chain_file",{0}},
 	{"SSL_CTX_free", {0}},
 	{"SSL_pending", {0}},
+	{"SSL_CTX_use_certificate_file",{0}},
 	{NULL,				{0}}
 };
 
