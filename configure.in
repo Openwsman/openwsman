@@ -3,15 +3,15 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 2.0.1)
+AC_INIT(openwsman, 2.1.0)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AC_CANONICAL_HOST
 
 dnl Package version information
 PACKAGE=openwsman
 VERSION_MAJOR=2
-VERSION_MINOR=0
-VERSION_RELEASE=1
+VERSION_MINOR=1
+VERSION_RELEASE=0
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_RELEASE}
 
 AM_INIT_AUTOMAKE(${PACKAGE}, ${VERSION})
