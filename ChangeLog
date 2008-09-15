@@ -1,3 +1,7 @@
+2.1.0
+- Security related fixes
+- Many bug fixes related to http stack
+- GSSAPI support (thanks to Paul Moore)
 
 2.0.1
 - Added Java bindings
