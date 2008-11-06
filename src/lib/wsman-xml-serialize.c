@@ -1041,7 +1041,7 @@ int do_serialize_string(XmlSerializationData * data)
 			}
 
 			src = ws_xml_get_node_text(child);
-			if (src != NULL || *src != 0) {
+			if (src != NULL && *src != 0) {
 				char *dstPtr;
 				int dstSize = 1 + strlen(src);
 				dstPtr =
