@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 		entry->entry.text = (char *)hnode_get(hn);
 		hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
 	}
-	filter_t *filter = filter_create_selector(selectors_new, "root/cimv2");
+	filter_t *filter = filter_create_selector(selectors_new);
 	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
 	selector_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options, filter);
 

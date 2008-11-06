@@ -85,7 +85,7 @@ static void serialize_filter3(void)
         hash_alloc_insert(selectors, "CreationClassName", &entry1[2]);
         hash_alloc_insert(selectors, "SystemCreationClassName", &entry1[3]);
 	
-	filter_t *filter = filter_create_selector(selectors,NULL);
+	filter_t *filter = filter_create_selector(selectors);
 	WsXmlDocH doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         WsXmlNodeH node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
