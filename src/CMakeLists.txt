@@ -2,6 +2,8 @@
 # CMakeLists.txt for openwsman/src
 #
 
+enable_testing()
+
 add_subdirectory(lib)
 add_subdirectory(cpp)
 
