@@ -4,7 +4,11 @@
 # Generic openwsman server plugin
 #
 
-class WsmanPlugin
+module WsmanPlugin
+  def self.create_plugin
+    Sample.new
+  end
+  class Sample
   SCHEMA = "http://schema.opensuse.org/swig/wsman-schema/1-0"
   def initialize *args
     STDERR.puts "WsmanPlugin.new #{args}"
@@ -48,4 +52,5 @@ class WsmanPlugin
     STDERR.puts "WsmanPlugin.delete"
     0
   end
+end
 end

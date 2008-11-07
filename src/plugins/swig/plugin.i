@@ -42,10 +42,105 @@
 %module wsman_plugin
 %feature("autodoc","1");
 
+%include "typemaps.i"
+%include exception.i
+
 %{
+
+/*
+ * type definitions to keep the C code generic
+ */
+ 
+#if defined(SWIGPYTHON)
+#define Target_Null_p(x) (x == Py_None)
+#define Target_INCREF(x) Py_INCREF(x)
+#define Target_DECREF(x) Py_DECREF(x)
+#define Target_True Py_True
+#define Target_False Py_False
+#define Target_Null NULL
+#define Target_Void Py_None
+#define Target_Type PyObject*
+#define Target_Bool(x) PyBool_FromLong(x)
+#define Target_WChar(x) PyInt_FromLong(x)
+#define Target_Int(x) PyInt_FromLong(x)
+#define Target_String(x) PyString_FromString(x)
+#define Target_Real(x) Py_None
+#define Target_Array() PyList_New(0)
+#define Target_SizedArray(len) PyList_New(len)
+#define Target_Append(x,y) PyList_Append(x,y)
+#define Target_DateTime(x) Py_None
+#include <Python.h>
+#define TARGET_THREAD_BEGIN_BLOCK SWIG_PYTHON_THREAD_BEGIN_BLOCK
+#define TARGET_THREAD_END_BLOCK SWIG_PYTHON_THREAD_END_BLOCK
+#define TARGET_THREAD_BEGIN_ALLOW SWIG_PYTHON_THREAD_BEGIN_ALLOW
+#define TARGET_THREAD_END_ALLOW SWIG_PYTHON_THREAD_END_ALLOW
+#endif
+
+#if defined(SWIGRUBY)
+#define Target_Null_p(x) NIL_P(x)
+#define Target_INCREF(x) 
+#define Target_DECREF(x) 
+#define Target_True Qtrue
+#define Target_False Qfalse
+#define Target_Null Qnil
+#define Target_Void Qnil
+#define Target_Type VALUE
+#define Target_Bool(x) ((x)?Qtrue:Qfalse)
+#define Target_WChar(x) INT2FIX(x)
+#define Target_Int(x) INT2FIX(x)
+#define Target_String(x) rb_str_new2(x)
+#define Target_Real(x) rb_float_new(x)
+#define Target_Array() rb_ary_new()
+#define Target_SizedArray(len) rb_ary_new2(len)
+#define Target_Append(x,y) rb_ary_push(x,y)
+#define Target_DateTime(x) Qnil
+#define TARGET_THREAD_BEGIN_BLOCK do {} while(0)
+#define TARGET_THREAD_END_BLOCK do {} while(0)
+#define TARGET_THREAD_BEGIN_ALLOW do {} while(0)
+#define TARGET_THREAD_END_ALLOW do {} while(0)
+#include <ruby.h>
+#include <rubyio.h>
+#endif
+
+#if defined(SWIGPERL)
+#define TARGET_THREAD_BEGIN_BLOCK do {} while(0)
+#define TARGET_THREAD_END_BLOCK do {} while(0)
+#define TARGET_THREAD_BEGIN_ALLOW do {} while(0)
+#define TARGET_THREAD_END_ALLOW do {} while(0)
+
+SWIGINTERNINLINE SV *SWIG_From_long  SWIG_PERL_DECL_ARGS_1(long value);
+SWIGINTERNINLINE SV *SWIG_FromCharPtr(const char *cptr);
+SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
+
+#define Target_Null_p(x) (x == NULL)
+#define Target_INCREF(x) 
+#define Target_DECREF(x) 
+#define Target_True (&PL_sv_yes)
+#define Target_False (&PL_sv_no)
+#define Target_Null NULL
+#define Target_Void NULL
+#define Target_Type SV *
+#define Target_Bool(x) (x)?Target_True:Target_False
+#define Target_WChar(x) NULL
+#define Target_Int(x) SWIG_From_long(x)
+#define Target_String(x) SWIG_FromCharPtr(x)
+#define Target_Real(x) SWIG_From_double(x)
+#define Target_Array() (SV *)newAV()
+#define Target_SizedArray(len) (SV *)newAV()
+#define Target_Append(x,y) av_push(((AV *)(x)), y)
+#define Target_DateTime(x) NULL
+#include <perl.h>
+#include <EXTERN.h>
+#endif
+
+
+#include <stdint.h>
 
 #include <wsman-soap.h>
 
 #include "../src/swig-plugin.c"
 
 %}
+
+/* get type declarations from openwsman client bindings */
+%include "../../../bindings/wsman-types.i"

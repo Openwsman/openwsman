@@ -1,5 +1,53 @@
+/*
+ * swig-plugin.c
+ * 
+ * 'C' interface for swig-based openwsman server plugins
+ * 
+ * This file implements the plugin API as needed by openwsman
+ * 
+ */
+
+/*****************************************************************************
+* Copyright (C) 2008 Novell Inc. All rights reserved.
+* Copyright (C) 2008 SUSE Linux Products GmbH. All rights reserved.
+* 
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+* 
+*   - Redistributions of source code must retain the above copyright notice,
+*     this list of conditions and the following disclaimer.
+* 
+*   - Redistributions in binary form must reproduce the above copyright notice,
+*     this list of conditions and the following disclaimer in the documentation
+*     and/or other materials provided with the distribution.
+* 
+*   - Neither the name of Novell Inc. nor of SUSE Linux Products GmbH nor the
+*     names of its contributors may be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+* 
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL Novell Inc. OR SUSE Linux Products GmbH OR
+* THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+* EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+* OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+* ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*****************************************************************************/
 
 #ifdef HAVE_CONFIG_H
+#undef PACKAGE_NAME
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_STRING
+#undef PACKAGE_BUGREPORT
+#undef SIZEOF_SHORT
+#undef SIZEOF_INT
+#undef SIZEOF_LONG
+#undef SIZEOF_LONG_LONG
 #include "wsman_config.h"
 #endif
 
@@ -15,10 +63,121 @@
 #include <wsman-xml-serializer.h>
 #include <wsman-declarations.h>
 
-#ifdef SWIGRUBY
-#define PLUGINSCRIPT "rbwsmanplugin"
-#define PLUGINKLASS "WsmanPlugin"
-static VALUE klass = 0;
+int init( void *self, void **data );
+
+/*
+ * string2target
+ * char* -> Target_Type
+ * 
+ * *must* be called within TARGET_THREAD_BEGIN_BLOCK/TARGET_THREAD_END_BLOCK
+ */
+
+static Target_Type
+string2target(const char *s)
+{
+    Target_Type obj;
+
+    if (s == NULL)
+        return Target_Null;
+
+    obj = Target_String(s);
+ 
+    return obj;
+}
+
+
+/*
+ * proplist2target
+ * char** -> Target_Type
+ * 
+ * *must* be called within TARGET_THREAD_BEGIN_BLOCK/TARGET_THREAD_END_BLOCK
+ */
+
+static Target_Type
+proplist2target(const char** cplist)
+{
+    Target_Type pl;
+
+    if (cplist == NULL)
+    {
+        Target_INCREF(Target_Void);
+        return Target_Void; 
+    }
+ 
+    pl = Target_Array(); 
+    for (; (cplist!=NULL && *cplist != NULL); ++cplist)
+    {
+        Target_Append(pl, Target_String(*cplist)); 
+    }
+ 
+    return pl; 
+}
+
+
+static char *
+fmtstr(const char* fmt, ...)
+{
+    va_list ap; 
+    int len; 
+    char* str;
+
+    va_start(ap, fmt); 
+    len = vsnprintf(NULL, 0, fmt, ap); 
+    va_end(ap); 
+    if (len <= 0)
+    {
+        return NULL; 
+    }
+    str = (char*)malloc(len+1); 
+    if (str == NULL)
+    {
+        return NULL; 
+    }
+    va_start(ap, fmt); 
+    vsnprintf(str, len+1, fmt, ap); 
+    va_end(ap); 
+    return str; 
+}
+
+
+/*
+**==============================================================================
+**
+** Local definitions:
+**
+**==============================================================================
+*/
+
+
+/*
+ * There is one target interpreter, serving multiple plugins
+ * The number of plugins using the interpreter is counted in _PLUGIN_COUNT,
+ * when the last user goes aways, the target interpreter is unloaded.
+ * 
+ * _PLUGIN_INIT_MUTEX protects this references counter from concurrent access.
+ * 
+ */
+
+#if defined(SWIGPERL)
+static PerlInterpreter * _TARGET_INIT = 0; /* acts as a boolean - is target initialized? */
+#else
+static int _TARGET_INIT = 0; /* acts as a boolean - is target initialized? */
+#endif
+static int _PLUGIN_COUNT = 0;    /* use count, number of plugins */
+static pthread_mutex_t _PLUGIN_INIT_MUTEX = PTHREAD_MUTEX_INITIALIZER;  /* mutex around _PLUGIN_COUNT */
+static Target_Type _TARGET_MODULE = Target_Null;  /* The target module (aka namespace) */
+
+
+#if defined(SWIGPYTHON)
+#include "target_python.c"
+#endif
+
+#if defined(SWIGRUBY)
+#include "target_ruby.c"
+#endif
+
+#if defined(SWIGPERL)
+#include "target_perl.c"
 #endif
 
 struct __Swig
@@ -28,11 +187,21 @@ struct __Swig
 typedef struct __Swig Swig;
 
 
-// Service endpoint declaration
+/*
+ * Service endpoint declarations
+ * 
+ */
+
 static int
 Swig_Identify_EP( WsContextH cntx )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "identify" ), 0 ) );
+    int rc;
+    Target_Type _context;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
+    rc = TargetCall(_TARGET_MODULE, "identify", 1, _context); 
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 static int
@@ -40,7 +209,13 @@ Swig_Enumerate_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
 		WsmanStatus *status,
 		void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "enumerate" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
+    rc = TargetCall(_TARGET_MODULE, "enumerate", 1, _context );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
@@ -49,7 +224,13 @@ Swig_Release_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
 		WsmanStatus *status,
 		void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "release" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
+    rc = TargetCall(_TARGET_MODULE, "release", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
@@ -58,34 +239,61 @@ Swig_Pull_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
 		WsmanStatus *status,
 		void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "pull" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
+    rc = TargetCall(_TARGET_MODULE, "pull", 1, _context );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
 static int
 Swig_Get_EP( SoapOpH op, void* appData, void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "get" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    rc = TargetCall(_TARGET_MODULE, "get", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
 static int
 Swig_Custom_EP( SoapOpH op, void* appData, void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "custom" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    rc = TargetCall(_TARGET_MODULE, "custom", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
 static int
 Swig_Put_EP( SoapOpH op, void* appData, void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "put" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    rc = TargetCall(_TARGET_MODULE, "put", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
 static int
-Swig_Create_EP( SoapOpH op, void* appData, void *opaqueData ){
-  return FIX2INT( rb_funcall( klass, rb_intern( "create" ), 0 ) );
+Swig_Create_EP( SoapOpH op, void* appData, void *opaqueData )
+{
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    rc = TargetCall(_TARGET_MODULE, "create", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
 
 
@@ -93,10 +301,13 @@ Swig_Create_EP( SoapOpH op, void* appData, void *opaqueData ){
 static int
 Swig_Delete_EP( SoapOpH op, void* appData, void *opaqueData )
 {
-  return FIX2INT( rb_funcall( klass, rb_intern( "delete" ), 0 ) );
+    Target_Type _context;
+    int rc;
+    TARGET_THREAD_BEGIN_BLOCK; 
+    rc = TargetCall(_TARGET_MODULE, "delete", 0 );
+    TARGET_THREAD_END_BLOCK;
+    return rc;
 }
-
-
 
 
 /* ************** Array of end points for resource ****************
@@ -122,103 +333,56 @@ START_END_POINTS(Swig)
 #endif
    END_POINT_PULL(Swig,NULL),
    END_POINT_CUSTOM_METHOD(Swig, NULL),
+   END_POINT_IDENTIFY(Swig, NULL),
 FINISH_END_POINTS(Swig);
 
-/* register end points with server
- *
+/*----------------------------------------------------------------
+ * register end points with server
+ * called from wsman_init_plugins()
+ * 
+ * self: p_handle
+ * data: ifc (WsDispatchInterfaceInfo *)
  */
 
 void
-get_endpoints(void *self, void **data)
+get_endpoints(void *self, void *data_ifc)
 {
     char *namespace = NULL;
+    WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *)data_ifc;	
 
-    fprintf(stderr, "swig-plugin.c: get_endpoints (%p, %p)\n", self, data);
+    debug("get_endpoints (%p, %p)", self, ifc);
   
-    if (!klass)
-      init( self, data );
-    if (!klass)
-      return;
-#ifdef SWIGRUBY
-    /*
-     * Get namespaces
-     */
-  
-    list_t *namespaces = list_create(LISTCOUNT_T_MAX);
-    VALUE rbnamespaces = rb_funcall( klass, rb_intern( "namespaces" ), 0 );
-    VALUE ary = rb_check_array_type( rbnamespaces );
-    if (NIL_P(ary)) {
-      rb_raise( rb_eArgError, "%s.namespaces is not array", PLUGINKLASS);
-    }
-    int len = RARRAY(ary)->len;
-    if (len <= 0) {
-      rb_raise( rb_eArgError, "%s.namespaces returned array with %d elements", PLUGINKLASS, len);
-    }
-    int i;
-    for (i = 0; i < len; ++i) {
-      lnode_t *node;
-      VALUE elem = RARRAY(ary)->ptr[i];
-      VALUE pair = rb_check_array_type( elem );
-      if (NIL_P(pair)) {
-	rb_raise( rb_eArgError, "%s.namespaces must return array of arrays", PLUGINKLASS);
-      }
-      if (RARRAY(pair)->len != 2) {
-	rb_raise( rb_eArgError, "%s.namespaces must return array of ['<namespace>','<class_prefix>']", PLUGINKLASS);
-      }
-      WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
-      ns->ns = StringValuePtr( RARRAY(pair)->ptr[0] );
-      if (namespace == 0) namespace = ns->ns;
-      ns->class_prefix = StringValuePtr( RARRAY(pair)->ptr[1] );
-      node = lnode_create(ns);
-      list_append(namespaces, node);
-    }
-#endif
+    list_t *namespaces = TargetEndpoints( self, ifc->extraData );
+
     WsDispatchEndPointInfo *epi = Swig_EndPoints;
     while (epi->serviceEndPoint) {
       epi->data = namespace;
       ++epi;
     }
-    WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
     ifc->version = PACKAGE_VERSION;
     ifc->config_id = "swig";
     ifc->vendor = "Novell, Inc.";
-    ifc->displayName = PLUGINSCRIPT;
-    ifc->notes = "Swig based Ruby plugin";
+    ifc->displayName = PLUGIN_FILE;
+#if defined(SWIGPYTHON)
+    ifc->notes = "Python plugin";
+#endif
+#if defined(SWIGRUBY)
+    ifc->notes = "Ruby plugin";
+#endif
     ifc->compliance = XML_NS_WS_MAN;
     ifc->wsmanResourceUri = NULL;
     ifc->namespaces = namespaces;
-    ifc->extraData = NULL;
     ifc->endPoints = Swig_EndPoints;
 }
 
-/*===============================================================*/
-#ifdef SWIGRUBY
-
-/* protected code (might raise)
- *  to load external Ruby script
- */
-static VALUE
-load_code()
-{    
-    fprintf(stderr, "swig-plugin.c: load_code ()\n");
-    rb_require(PLUGINSCRIPT);
-}
-
-static VALUE
-create_plugin()
-{
-    fprintf(stderr, "swig-plugin.c: create_plugin ()\n");
-    klass = rb_class_new_instance(0, NULL, rb_const_get(rb_cObject, rb_intern(PLUGINKLASS)));
-    fprintf(stderr, "swig-plugin.c: create_plugin => %p\n", klass);
-    return klass;
-}
-#endif
-
-
 /*----------------------------------------------------------------
- * ??
+ * set configuration
+ * called from wsman_init_plugins()
+ * 
+ * self: p_handle
+ * config: listener->config
  */
 
 void
@@ -234,49 +398,22 @@ set_config( void *self, dictionary *config )
 void
 cleanup( void  *self, void *data )
 {
-#ifdef SWIGRUBY
-    ruby_finalize();
-#endif
-#ifdef SWIGPYTHON
-    Py_Finalize();
-#endif
+    TargetCleanup( self, data );
     return;
 }
 
 
 /*----------------------------------------------------------------
  * initialize plugin
+ * return zero on error
+ * 
+ * self: p_handle
+ * data: pointer to 'void *data'
+ *   init can fill this data which is passed to every other call
  */
 
 int
 init( void *self, void **data )
 {
-    fprintf(stderr, "swig-plugin.c: init (%p, %p)\n", self, data);
-    int rc = 1;
-#ifdef SWIGRUBY
-    int error = 0;
-    ruby_init();
-    ruby_init_loadpath();
-    /* name the script */
-    ruby_script(PLUGINSCRIPT);
-    /* load the script */
-    rb_protect(load_code, Qnil, &error);
-    if (error) {
-	debug("Ruby: FAILED loading %s.rb", PLUGINSCRIPT);
-        rc = 0;
-    }
-    else {
-        VALUE wsmanplugin;
-        debug("Ruby: loaded %s.rb", PLUGINSCRIPT);
-        wsmanplugin = rb_protect(create_plugin, Qnil, &error);
-        if (error) {
-            debug("Ruby: FAILED creating %s", PLUGINKLASS);
-	    rc = 0;
-	}
-	else {
-	    debug("Ruby: WsmanPlugin at %p", wsmanplugin);
-	}
-    }
-#endif
-    return rc;
+    return (TargetInitialize( self, data ) == 0);
 }
