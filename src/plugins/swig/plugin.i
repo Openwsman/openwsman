@@ -59,7 +59,7 @@
 #define Target_False Py_False
 #define Target_Null NULL
 #define Target_Void Py_None
-#define Target_Type PyObject*
+typedef PyObject * Target_Type;
 #define Target_Bool(x) PyBool_FromLong(x)
 #define Target_WChar(x) PyInt_FromLong(x)
 #define Target_Int(x) PyInt_FromLong(x)
@@ -84,7 +84,7 @@
 #define Target_False Qfalse
 #define Target_Null Qnil
 #define Target_Void Qnil
-#define Target_Type VALUE
+typedef VALUE Target_Type;
 #define Target_Bool(x) ((x)?Qtrue:Qfalse)
 #define Target_WChar(x) INT2FIX(x)
 #define Target_Int(x) INT2FIX(x)
@@ -119,7 +119,7 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 #define Target_False (&PL_sv_no)
 #define Target_Null NULL
 #define Target_Void NULL
-#define Target_Type SV *
+typedef SV * Target_Type;
 #define Target_Bool(x) (x)?Target_True:Target_False
 #define Target_WChar(x) NULL
 #define Target_Int(x) SWIG_From_long(x)
@@ -137,6 +137,7 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 #include <stdint.h>
 
 #include <wsman-soap.h>
+#include <wsman-faults.h>
 
 #include "../src/swig-plugin.c"
 
@@ -144,3 +145,5 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 
 /* get type declarations from openwsman client bindings */
 %include "../../../bindings/wsman-types.i"
+%include "../../../bindings/wsman-soap.i"
+%include "../../../bindings/wsman-xml.i"
