@@ -6,6 +6,8 @@ PROJECT(openwsman)
 
 cmake_minimum_required(VERSION 2.4)
 
+include(CTest)
+enable_testing()
 #
 # cmake2.6: backward compatibility to cmake 2.4
 #
@@ -139,6 +141,23 @@ MESSAGE(STATUS "Building Perl bindings" )
   ENDIF(BUILD_PERL_EXPLICIT)
  ENDIF(NOT PERL_INCLUDE_PATH )
 ENDIF( BUILD_PERL )
+
+# swig
+
+FIND_PACKAGE(SWIG)
+IF( NOT SWIG_EXECUTABLE)
+  FIND_PROGRAM(SWIG_EXECUTABLE
+    NAMES swig-1.3 swig
+    PATHS ${SWIG_DIR} ${SWIG_DIR}/.. ${SWIG_DIR}/../../bin /usr/bin /usr/local/bin ${CMAKE_INSTALL_PREFIX}/bin
+  )
+ENDIF( NOT SWIG_EXECUTABLE)
+
+IF ( NOT SWIG_EXECUTABLE )
+  MESSAGE( STATUS "SWIG not found, skipping bindings." )
+ELSE ( NOT SWIG_EXECUTABLE )
+  MESSAGE( STATUS "SWIG found at ${SWIG_EXECUTABLE}" )
+  ADD_SUBDIRECTORY(bindings)
+ENDIF ( NOT SWIG_EXECUTABLE )
 
 # curl
 
@@ -346,15 +365,6 @@ add_subdirectory(doc)
 add_subdirectory(etc)
 add_subdirectory(tests)
 
-FIND_PROGRAM(SWIG_EXECUTABLE
-  NAMES swig-1.3 swig
-    PATHS ${SWIG_DIR} ${SWIG_DIR}/.. ${SWIG_DIR}/../../bin /usr/bin /usr/local/bin ${CMAKE_INSTALL_PREFIX}/bin)
-IF ( NOT SWIG_EXECUTABLE )
-  MESSAGE( FATAL "SWIG not found." )
-ELSE ( NOT SWIG_EXECUTABLE )
-  MESSAGE( STATUS "SWIG found at ${SWIG_EXECUTABLE}" )
-  ADD_SUBDIRECTORY(bindings)
-ENDIF ( NOT SWIG_EXECUTABLE )
 
 IF ( BUILD_EXAMPLES )
 add_subdirectory(examples)
