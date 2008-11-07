@@ -114,13 +114,18 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 
 	while (node) {
 		WsManPlugin *p = (WsManPlugin *) node->list_data;
-		p->ifc =
-		    (WsDispatchInterfaceInfo *)
-		    malloc(sizeof(WsDispatchInterfaceInfo));
-
+	        if (p->init == NULL
+		    || p->init(p->p_handle, &(p->data)) == 0 ) {
+		    error ("Plugin fails init()");
+		    error("invalid plugin");
+		    goto next_plugin;
+		}
+	      
+                p->ifc = (WsDispatchInterfaceInfo *)
+                          malloc(sizeof(WsDispatchInterfaceInfo));
+		ifcinfo = p->ifc;
+	        ifcinfo->extraData = p->data;
 		p->set_config = dlsym(p->p_handle, "set_config");
-		p->get_endpoints = dlsym(p->p_handle, "get_endpoints");
-
 
 		if (listener->config && p->set_config) {
 			p->set_config(p->p_handle, listener->config);
@@ -131,14 +136,14 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 		if (p->get_endpoints)
 			p->get_endpoints(p->p_handle, p->ifc);
 
-		ifcinfo = p->ifc;
 		if (p->ifc && wsman_server_verify_plugin(ifcinfo)) {
 			lnode_t *i = lnode_create(p->ifc);
 			list_append(list, i);
 		} else {
 			error ("Plugin is not compatible with version of the software or plugin is invalid");
-			error("invalid plugins");
+			error("invalid plugin");
 		}
+next_plugin:
 		node = list_next(listener->plugins, node);
 	}
 	cntx = ws_create_runtime(list);

@@ -108,11 +108,13 @@ plugin_init(WsManPlugin *self, const char *p_name)
     WsManPluginError PluginError = PLUGIN_ERROR_OK ;
     self->p_name = u_strdup(p_name) ;
     if (NULL != (self->p_handle = dlopen(p_name, RTLD_LAZY))) {
-        if ( ! dlsym(self->p_handle, "get_endpoints")
-                &&  dlsym(self->p_handle, "init"))
+        self->init = dlsym(self->p_handle, "init");
+        self->get_endpoints = dlsym(self->p_handle, "get_endpoints");
+        if ( ! self->get_endpoints
+                && ! self->init)
         {
             self->init			        = 0 ;
-            PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
+	    PluginError = PLUGIN_ERROR_SYMBOLSNOTFOUND ;
         }
     } else {
         PluginError = PLUGIN_ERROR_NOTLOADED ;
