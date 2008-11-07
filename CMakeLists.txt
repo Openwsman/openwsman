@@ -19,6 +19,12 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0005 OLD)
 endif(COMMAND cmake_policy)
 	      
+# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+
+INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
+SET(VERSION "\"${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}\"")
+   MESSAGE(STATUS "Version ${VERSION}")
 
 # Library path (lib / lib64 )
 
@@ -79,7 +85,7 @@ OPTION( BUILD_RUBY "Build Ruby bindings" YES )
 OPTION( BUILD_PERL "Build Perl bindings" NO )
 OPTION( BUILD_CUNIT_TESTS "Build serialization tests" NO )
 OPTION( DISABLE_PLUGINS "Do not build plugins" NO )
-OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" NO )
+OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" YES )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
@@ -117,16 +123,23 @@ MESSAGE(STATUS "Building Ruby bindings" )
 ENDIF( BUILD_RUBY )
 
 IF( BUILD_PYTHON )
-INCLUDE(FindPythonInterp)
-INCLUDE(FindPythonLibs)
-MESSAGE(STATUS "Building Python bindings" )
- IF(NOT PYTHON_INCLUDE_PATH )
-  IF(BUILD_PYTHON_EXPLICIT)
-   NO_HEADERS_WARNING_EXPL(BUILD_PYTHON Python)
-  ELSE(BUILD_PYTHON_EXPLICIT)
-   NO_HEADERS_WARNING(BUILD_PYTHON Python)
-  ENDIF(BUILD_PYTHON_EXPLICIT)
- ENDIF(NOT PYTHON_INCLUDE_PATH )
+  MESSAGE(STATUS "Building Python bindings" )
+  FIND_PACKAGE(PythonLibs)
+  IF (PYTHON_LIBRARY)
+    FIND_PACKAGE(PythonInterp REQUIRED)
+    MESSAGE(STATUS "Found PythonLibs...")
+    FIND_PACKAGE(PythonLinkLibs)
+    IF (PYTHON_LINK_LIBS)
+      MESSAGE(STATUS "Building Python...")
+    ENDIF (PYTHON_LINK_LIBS)
+  ENDIF (PYTHON_LIBRARY)
+  IF(NOT PYTHON_INCLUDE_PATH )
+    IF(BUILD_PYTHON_EXPLICIT)
+      NO_HEADERS_WARNING_EXPL(BUILD_PYTHON Python)
+    ELSE(BUILD_PYTHON_EXPLICIT)
+      NO_HEADERS_WARNING(BUILD_PYTHON Python)
+    ENDIF(BUILD_PYTHON_EXPLICIT)
+  ENDIF(NOT PYTHON_INCLUDE_PATH )
 ENDIF( BUILD_PYTHON )
 
 IF( BUILD_PERL )
@@ -335,13 +348,7 @@ SET(STDC_HEADERS 1)
 # CONFIGURATION                                                    #
 ####################################################################
 
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-SET( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
-
-INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
-SET(VERSION "\"${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}\"")
-
-SET(CMAKE_VERBOSE_MAKEFILE ON)
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
