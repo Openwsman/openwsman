@@ -1,6 +1,8 @@
 #
 # CMakeLists.txt for openwsmann/src/plugins
 
+enable_testing()
+
 add_subdirectory(identify)
 add_subdirectory(wsman)
 
