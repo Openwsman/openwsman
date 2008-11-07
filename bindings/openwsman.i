@@ -49,6 +49,7 @@
 #include <wsman-xml-api.h>
 #include <wsman-epr.h>
 #include <wsman-filter.h>
+#include <wsman-soap.h>
 /*#include "openwsman.h"*/
 %}
 
@@ -62,7 +63,10 @@
 
 %include "wsman-filter.i"
 
+%include "wsman-soap.i"
+
 %include "client_opt.i"
+
 
 #if defined(SWIGRUBY)
 /*

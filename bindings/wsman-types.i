@@ -55,4 +55,16 @@ struct _WsXmlDoc {};
 %rename(WsContext) _WS_CONTEXT;
 struct _WS_CONTEXT {};
 
+%nodefault __WsEnumerateInfo;
+%rename(WsEnumerateInfo) __WsEnumerateInfo;
+struct __WsEnumerateInfo {};
+
+%nodefault __SoapOp;
+%rename(SoapOp) __SoapOp;
+struct __SoapOp {};
+
+%nodefault _WsmanStatus;
+%rename(WsmanStatus) _WsmanStatus;
+struct _WsmanStatus {};
+
 %include "wsman-types.h"
