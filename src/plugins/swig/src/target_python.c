@@ -186,10 +186,9 @@ PyGlobalInitialize()
  */
 
 static int 
-TargetCall(PyObject* instance, 
+TargetCall(WsXmlDocH doc, PyObject* instance, 
                  const char* opname, int nargs, ...)
 {
-    int rc = 1; 
     va_list vargs; 
     PyObject *pyargs = NULL; 
     PyObject *pyfunc = NULL; 
@@ -209,7 +208,6 @@ TargetCall(PyObject* instance,
 	status.fault_detail_code = 0;
 
         free(str); 
-        rc = 1; 
         goto cleanup; 
     }
     if (! PyCallable_Check(pyfunc))
@@ -220,7 +218,6 @@ TargetCall(PyObject* instance,
 	status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
 	status.fault_detail_code = 0;
         free(str); 
-        rc = 1; 
         goto cleanup; 
     }
     
@@ -240,10 +237,9 @@ TargetCall(PyObject* instance,
     result = PyObject_CallObject(pyfunc, pyargs);
     if (PyErr_Occurred())
     {
-	status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+        status.fault_code = WSMAN_INTERNAL_ERROR;
 	status.fault_detail_code = 0;
         PyErr_Clear(); 
-        rc = 1; 
         goto cleanup; 
     }
 
@@ -251,13 +247,9 @@ TargetCall(PyObject* instance,
             (PyTuple_Size(result) != 2 && PyTuple_Size(result) != 1))
     {
         TARGET_THREAD_BEGIN_ALLOW;
-        char* str = fmtstr("Python function \"%s\" didn't return a two-tuple",
-                opname); 
-        debug("%s", str); 
-	status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+        status.fault_msg = fmtstr("Python function \"%s\" didn't return a two-tuple", opname); 
+	status.fault_code = WSMAN_INTERNAL_ERROR;
 	status.fault_detail_code = 0;
-        free(str); 
-        rc = 1; 
         TARGET_THREAD_END_ALLOW; 
         goto cleanup; 
     }
@@ -271,32 +263,30 @@ TargetCall(PyObject* instance,
     if (! PyInt_Check(code) || (! PyInt_Check(detail) && detail != Py_None))
     {
         TARGET_THREAD_BEGIN_ALLOW;
-        char* str = fmtstr("Python function \"%s\" didn't return a {<int>, <int>) two-tuple", opname); 
-        debug("%s", str); 
-	status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+        status.fault_msg = fmtstr("Python function \"%s\" didn't return a {<int>, <int>) two-tuple", opname); 
+	status.fault_code = WSMAN_INTERNAL_ERROR;
 	status.fault_detail_code = 0;
-        free(str); 
-        rc = 1; 
         TARGET_THREAD_END_ALLOW; 
         goto cleanup; 
     }
     status.fault_code = PyInt_AsLong(code); 
     if (detail == Py_None)
     {
-	status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+	status.fault_code = WSMAN_INTERNAL_ERROR;
 	status.fault_detail_code = 0;
     }
     else
     {
         status.fault_detail_code = PyInt_AsLong(detail);
     }
-    rc = code != 0;
 cleanup:
+    if (status.fault_code != WSMAN_RC_OK)
+      wsman_generate_fault( doc, status.fault_code, status.fault_detail_code, status.fault_msg );
     Py_DecRef(pyargs);
     Py_DecRef(pyfunc);
     Py_DecRef(result);
  
-    return rc; 
+    return status.fault_code != WSMAN_RC_OK; 
 }
 
 
@@ -354,6 +344,7 @@ TargetInitialize(void *self, void **data)
       pthread_mutex_unlock(&_PLUGIN_INIT_MUTEX);
       return -1; 
     }
+    *data = _TARGET_MODULE;
   }
   pthread_mutex_unlock(&_PLUGIN_INIT_MUTEX);
   debug("<%d/0x%x> Python: _TARGET_MODULE at %p", getpid(), pthread_self(), _TARGET_MODULE);

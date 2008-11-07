@@ -201,16 +201,24 @@ exit:
 
 /*
  * TargetCall
- * Call function 'opname' with nargs arguments within managed interface hdl->instance
+ * Call function 'opname' with nargs arguments within instance
+ * 
+ * doc: in_doc from context, needed for fault generation
+ * instance: klass
+ * opname: name of method to call
+ * nargs: number of arguments
+ * ...: arguments as varargs
+ * 
  */
 
 static int 
-TargetCall(VALUE instance, const char* opname, int nargs, ...)
+TargetCall(WsXmlDocH doc, VALUE instance, const char* opname, int nargs, ...)
 {
   int i; 
   VALUE *args, result, op = rb_intern(opname);
   va_list vargs; 
   WsmanStatus status;
+  wsman_status_init(&status);
 
   debug("TargetCall(Ruby): %s", opname);
   
@@ -249,11 +257,12 @@ TargetCall(VALUE instance, const char* opname, int nargs, ...)
   if (i) /* exception ? */
     {
       char *trace = get_exc_trace();
-      char *str = fmtstr("Ruby: calling '%s' failed: %s", opname, trace); 
-      error("%s", str);
+      status.fault_msg = fmtstr("Ruby: calling '%s' failed: %s", opname, trace); 
+      status.fault_code = WSMAN_INTERNAL_ERROR;
+      status.fault_detail_code = 0;
+      error("%s", status.fault_msg);
       return 1;
     }
-  wsman_status_init(&status);
   
   if (NIL_P(result)) /* not or wrongly implemented */
     {
@@ -264,28 +273,49 @@ TargetCall(VALUE instance, const char* opname, int nargs, ...)
 
   if (result != Qtrue)
     {
+      int len;
       VALUE resulta = rb_check_array_type(result);
-      VALUE code, detail;
+      
       if (NIL_P(resulta))
 	{
-	  message(fmtstr("Ruby: calling '%s' returned unknown result", opname));
-	  status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+	  status.fault_msg = fmtstr("Ruby: calling '%s' returned unknown result", opname);
+	  status.fault_code = WSMAN_INTERNAL_ERROR;
 	  status.fault_detail_code = 0;
 	  return 1;
 	}
   
-      code = rb_ary_entry(resulta, 0);
-      detail = rb_ary_entry(resulta, 1);
-      if (!FIXNUM_P(code))
+      len = RARRAY(resulta)->len;
+      if (len > 0) 
 	{
-	  message(fmtstr("Ruby: calling '%s' returned non-numeric code", opname)); 
-	  status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-	  status.fault_detail_code = 0;
-	  return 1;
+	  VALUE code = rb_ary_entry(resulta, 0);
+	  if (!FIXNUM_P(code))
+	    {
+	      status.fault_msg = fmtstr("Ruby: calling '%s' returned non-numeric code", opname);
+	      status.fault_code = WSMAN_INTERNAL_ERROR;
+	      status.fault_detail_code = 0;
+	      return 1;
+	    }
+	  status.fault_code = FIX2LONG(code);
 	}
-      status.fault_code = FIX2LONG(code);
-      status.fault_detail_code = FIX2LONG(detail);
-      return 1;
+      
+      if (len > 1) 
+	{
+	  VALUE detail = rb_ary_entry(resulta, 1);
+	  if (!FIXNUM_P(detail))
+	    {
+	      status.fault_msg = fmtstr("Ruby: calling '%s' returned non-numeric detail", opname);
+	      status.fault_code = WSMAN_INTERNAL_ERROR;
+	      status.fault_detail_code = 0;
+	      return 1;
+	    }
+	  status.fault_detail_code = FIX2LONG(detail);
+	}
+      if (len > 2)
+	{
+	  VALUE str = rb_ary_entry(resulta, 2);
+	  status.fault_msg = StringValuePtr(str);
+	}
+      wsman_generate_fault( doc, status.fault_code, status.fault_detail_code, status.fault_msg );
     }
   
   /* all is fine */
