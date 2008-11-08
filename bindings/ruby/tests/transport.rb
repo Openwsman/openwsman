@@ -1,7 +1,7 @@
 # transport.rb
 
 require 'test/unit'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -10,24 +10,17 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     transport = client.transport
 
-    begin
-      t = WsMan::Transport.new( client )
-      assert false	# Transport.new() must raise
-    rescue RuntimeError
-      assert true
-    end
-
-    assert transport.auth_method?( WsMan::Transport::AUTH_BASIC )
-    assert WsMan::Transport.auth_name( WsMan::Transport::AUTH_DIGEST ) == "Digest"
+    assert transport.auth_method?( Rbwsman::BASIC_AUTH )
+    assert Rbwsman::Transport.auth_name( Rbwsman::DIGEST_AUTH ) == Rbwsman::DIGEST_AUTH_STR
 
     assert transport.agent = "agent"
     assert transport.agent == "agent"
 
-    assert transport.auth_method = "Digest"
-    assert transport.auth_method == WsMan::Transport.auth_name( WsMan::Transport::AUTH_DIGEST )
-    assert transport.auth_value == WsMan::Transport::AUTH_DIGEST
+    assert transport.auth_method = Rbwsman::DIGEST_AUTH_STR
+    assert transport.auth_method == Rbwsman::Transport.auth_name( Rbwsman::DIGEST_AUTH )
+    assert transport.auth_value == Rbwsman::DIGEST_AUTH
 
-    assert WsMan::Transport.error_string(0)
+    assert Rbwsman::Transport.error_string(0)
 
     assert transport.timeout = 42
     assert transport.timeout == 42

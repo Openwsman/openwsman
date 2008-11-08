@@ -2,21 +2,21 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    puts "Connecting as #{client.username}:#{client.password}"
-    options = WsMan::ClientOption.new
+    puts "Connecting as #{client.user}:#{client.password}"
+    options = Rbwsman::ClientOptions.new
     assert options
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
-    doc = REXML::Document.new result.rawxml
+    doc = REXML::Document.new result.to_s
     doc.write( $stdout, 0 )
 
     context = result.context

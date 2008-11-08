@@ -1,6 +1,6 @@
 # test client class
 require 'test/unit'
-require '../.libs/rbwsman'
+require './rbwsman'
 
 class ClientTest < Test::Unit::TestCase
   def test_client_constructor_uri_simple
@@ -29,5 +29,8 @@ class ClientTest < Test::Unit::TestCase
     assert client.port == 8889
     assert client.path == "/wsman"
   end
+  def test_client_client
+    require '_client'
+    assert Client.open
+  end
 end
-

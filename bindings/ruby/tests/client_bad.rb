@@ -1,7 +1,7 @@
 # client.rb
 
 require 'test/unit'
-require '../.libs/rbwsman'
+require 'rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase

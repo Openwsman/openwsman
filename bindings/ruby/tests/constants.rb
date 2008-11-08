@@ -1,6 +1,6 @@
 # test defined constants
 require 'test/unit'
-require '../.libs/rbwsman'
+require './rbwsman'
 
 class ConstantTest < Test::Unit::TestCase
   def test_constants
@@ -10,8 +10,8 @@ class ConstantTest < Test::Unit::TestCase
     assert Rbwsman::FLAG_ENUMERATION_ENUM_EPR == 4
     assert Rbwsman::FLAG_ENUMERATION_ENUM_OBJ_AND_EPR == 8
     assert Rbwsman::FLAG_DUMP_REQUEST == 16
-    assert Rbwsman::FLAG_IncludeSubClassProperties == 32
-    assert Rbwsman::FLAG_ExcludeSubClassProperties == 64
+    assert Rbwsman::FLAG_INCLUDESUBCLASSPROPERTIES == 32
+    assert Rbwsman::FLAG_EXCLUDESUBCLASSPROPERTIES == 64
     assert Rbwsman::FLAG_POLYMORPHISM_NONE == 128
     assert Rbwsman::FLAG_MUND_MAX_ESIZE == 256
     assert Rbwsman::FLAG_MUND_LOCALE == 512

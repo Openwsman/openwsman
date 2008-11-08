@@ -5,14 +5,14 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def get_owner h
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Rbwsman::ClientOptions.new
     options.selectors = { :Handle => h.to_s }
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
@@ -24,7 +24,7 @@ class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Rbwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
 #    puts "Flags = #{options.flags}"
@@ -35,7 +35,7 @@ class WsmanTest < Test::Unit::TestCase
 #
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
     results = 0

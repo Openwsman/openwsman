@@ -1,9 +1,10 @@
 # test identify action
 require 'test/unit'
-require '../.libs/rbwsman'
+require './rbwsman'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify
+#   Rbwsman::debug = 1
     client = Rbwsman::Client.new( "http://wsman:secret@localhost:8889/wsman" )
     assert client
     options = Rbwsman::ClientOptions.new

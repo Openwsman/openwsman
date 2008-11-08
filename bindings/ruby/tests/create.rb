@@ -2,19 +2,20 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Rbwsman::ClientOptions.new
     assert options
-    result = client.create( "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_TimeZoneSettingData", options, WsMan::XmlDoc.new )
+    s = Rbwsman::XmlDoc.new.to_s
+    result = client.create( options, "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_TimeZoneSettingData", s, s.size, "utf-8" )
     assert result
 
-    doc = REXML::Document.new result.rawxml
+    doc = REXML::Document.new result.to_s
     assert doc
 #    doc.write( $stdout, 0 )
   end

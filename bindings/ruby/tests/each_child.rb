@@ -7,14 +7,14 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Rbwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
 #    puts "Flags = #{options.flags}"
@@ -25,7 +25,7 @@ class WsmanTest < Test::Unit::TestCase
 #
 #    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service"
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
     results = 0
@@ -42,7 +42,7 @@ class WsmanTest < Test::Unit::TestCase
 
     results += 1
     body = result.body
-    fault = body.child( 0, WsMan::NS_SOAP, "Fault" )
+    fault = body.child( 0, Rbwsman::NS_SOAP, "Fault" )
     if fault
 	puts "Got fault"
 	faults += 1

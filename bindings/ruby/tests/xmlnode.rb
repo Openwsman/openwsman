@@ -1,11 +1,11 @@
 # test WsXmlNode class
 require 'test/unit'
-require '../.libs/rbwsman'
+require './rbwsman'
 
 class WsXmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes
   def test_node_constructor
-    doc = Rbwsman::WsXmlDoc.new
+    doc = Rbwsman::XmlDoc.new
     assert doc
     body = doc.body
     assert body
@@ -23,7 +23,7 @@ class WsXmlNodeTest < Test::Unit::TestCase
     assert i == 3
   end
   def test_node_accessor
-    doc = Rbwsman::WsXmlDoc.new
+    doc = Rbwsman::XmlDoc.new
     assert doc
     header = doc.element("Header")
     assert header

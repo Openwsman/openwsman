@@ -3,21 +3,21 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require './rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Rbwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::ClientOption::DUMP_REQUEST
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_OperatingSystem"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_HostedService"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_CommMechanismForManager"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ManagedElement"
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 #    puts result
 
