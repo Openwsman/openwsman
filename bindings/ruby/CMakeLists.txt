@@ -2,6 +2,9 @@
 # CMakeLists.txt for openwsman/bindings/ruby
 #
 
+enable_testing()
+add_subdirectory(tests)
+
 MESSAGE(STATUS "Ruby executable: ${RUBY_EXECUTABLE}")
 MESSAGE(STATUS "Ruby site arch dir: ${RUBY_SITEARCH_DIR}")
 MESSAGE(STATUS "Ruby include path: ${RUBY_INCLUDE_PATH}")
@@ -12,20 +15,23 @@ SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Ruby..."
-   COMMAND ${SWIG_EXECUTABLE} -ruby -features autodoc -autorename -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
+   COMMAND ${SWIG_EXECUTABLE} -ruby -features autodoc -autorename -I${CMAKE_SOURCE_DIR}/bindings -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.c
 )
 
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 
-SET(rbwsman_SRCS ${SWIG_OUTPUT} )
+SET(rbwsman_SRCS ${SWIG_OUTPUT} ${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c )
 ADD_LIBRARY( rbwsman SHARED ${rbwsman_SRCS} )
 SET_TARGET_PROPERTIES( rbwsman PROPERTIES PREFIX "" )
 ADD_DEPENDENCIES( rbwsman glue )
 
-INCLUDE_DIRECTORIES( ${RUBY_INCLUDE_PATH} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include )
+INCLUDE_DIRECTORIES( ${RUBY_INCLUDE_PATH} )
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/bindings ${CMAKE_SOURCE_DIR}/include )
 
 TARGET_LINK_LIBRARIES( rbwsman wsman )
 TARGET_LINK_LIBRARIES( rbwsman wsman_client )
