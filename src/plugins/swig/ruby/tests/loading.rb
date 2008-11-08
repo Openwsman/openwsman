@@ -1,4 +1,4 @@
-# load cmpi_rbwbem_bindings.rb
+# load rbwsmanplugin.rb
 
 $:.unshift("..")
-require 'cmpi_rbwbem_bindings'
+require 'rbwsmanplugin'
