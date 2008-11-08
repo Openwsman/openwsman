@@ -41,7 +41,7 @@
 #define PLUGIN_FILE "rbwsmanplugin"
 
 /* expect 'module <RB_PLUGIN_MODULE>' inside */
-#define PLUGIN_MODULE "WsmanPlugin"
+#define PLUGIN_MODULE "Rbwsman"
 
 /*
  * load_module
