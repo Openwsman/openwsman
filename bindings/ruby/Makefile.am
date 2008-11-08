@@ -21,7 +21,7 @@ LIBS = \
 
 GENERATED = openwsman_wrap.c \
 	    rbwsman.rb
-SWIG_SOURCES = ../openwsman.i
+SWIG_SOURCES = ../openwsman.i ../openwsman.c
 rbwsman_la_SOURCES = openwsman_wrap.c \
 			 $(SWIG_SOURCES)
 
