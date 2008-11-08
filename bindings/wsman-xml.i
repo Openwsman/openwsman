@@ -47,6 +47,13 @@
   WsXmlNodeH element(const char *name) {
     return ws_xml_get_soap_element( $self, name );
   }
+  /* get enum context */
+  const char *context() {
+    return wsmc_get_enum_context( $self );
+  }
+  WsXmlDocH generate_fault(WsmanStatus *s) {
+    return wsman_generate_fault( $self, s->fault_code, s->fault_detail_code, s->fault_msg);
+  }
 }
 
 

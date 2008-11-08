@@ -45,12 +45,43 @@
 %{
 #include <wsman-types.h>
 #include <wsman-client.h>
+#include <wsman-client-transport.h>
 #include <wsman-api.h>
 #include <wsman-xml-api.h>
 #include <wsman-epr.h>
 #include <wsman-filter.h>
 #include <wsman-soap.h>
-/*#include "openwsman.h"*/
+#include <wsman-soap-envelope.h>
+#include <openwsman.h>
+#if defined(SWIGRUBY)
+#include <ruby/helpers.c>
+#endif
+#if defined(SWIGPYTHON)
+#include <python/helpers.c>
+#endif
+#if defined(SWIGJAVA)
+#include <java/helpers.c>
+#endif
+
+/* fool swig into aliasing WsManClient and WsManTransport */
+struct _WsManTransport { };
+typedef struct _WsManTransport WsManTransport;
+
+static void set_debug(int dbg) {
+  static int init = 0;
+
+  if (!init && dbg != 0) {
+    init = 1;
+    debug_add_handler( debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL );
+  }
+  wsman_debug_set_level( dbg );
+	
+}
+
+static int get_debug() {
+  return (int)wsman_debug_get_level();
+}
+
 %}
 
 %include "wsman-types.i"
@@ -67,46 +98,35 @@
 
 %include "client_opt.i"
 
+%include "wsman-transport.i"
+
+/*-----------------------------------------------------------------*/
+/* debug */
 
 #if defined(SWIGRUBY)
+  %rename("debug=") set_debug(int debug);
 /*
  * call-seq:
- *   WsMan::debug
+ *   Rbwsman::debug
  *
  * Return openwsman debug level.
  */
+#endif
 
-static VALUE
-rwsman_debug_get( VALUE module )
-{
-    debug_level_e d = wsman_debug_get_level();
-    return INT2FIX( d );
-}
+static void set_debug(int dbg);
 
-
+#if defined(SWIGRUBY)
+  %rename("debug") get_debug();
 /*
  * call-seq:
- *   WsMan::debug = 1
- *   WsMan::debug = 0
+ *   Rbwsman::debug = 1
+ *   Rbwsman::debug = 0
  *
  * Set openwsman debug level.
  */
-
-static VALUE
-rwsman_debug_set( VALUE module, VALUE dbg )
-{
-    static int init = 0;
-    int d = FIX2INT( dbg );
-
-    if (!init && d != 0) {
-	init = 1;
-	debug_add_handler( debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL );
-    }
-    wsman_debug_set_level( d );
-
-    return Qnil;
-}
 #endif
+
+static int get_debug();
 
 /*-----------------------------------------------------------------*/
 /* client */
@@ -154,6 +174,20 @@ rwsman_debug_set( VALUE module, VALUE dbg )
   }
   char *password() {
     return wsmc_get_password( $self );
+  }
+  
+  /*
+   * transport
+   */
+  WsManTransport *transport() {
+    wsmc_transport_init($self, NULL);
+    wsmc_transport_set_auth_request_func( $self, auth_request_callback );
+
+    return (WsManTransport *)$self;
+  }
+
+  int send_request(WsXmlDocH request) {
+    return wsman_send_request($self, request);
   }
 }
 

@@ -10,61 +10,129 @@
  * However, SWIG need the definition in order to create bindings.
  */
 
+/*
+ * hash_t typemaps
+ */
+%typemap(in) hash_t * {
+ $1 = hash2value($input);
+}
 
-%rename(Client) _WsManClient;
+%typemap(out) hash_t * {
+ $result = value2hash(NULL, $1);
+}
+
+/*
+ * Client
+ */
+
+%rename("Client") _WsManClient;
 %nodefault _WsManClient;
 typedef struct _WsManClient {
 } WsManClient;
 
-%rename(EndPointReference) epr_t;
+/*
+ * Transport
+ *  this is just a convenience alias for WsManClient
+ *  see wsman-transport.i
+ */
+ 
+%rename("Transport") _WsManTransport;
+%nodefault _WsManTransport;
+typedef struct _WsManTransport {
+} WsManTransport;
+
+/*
+ * EndPointReference
+ */
+ 
+%rename("EndPointReference") epr_t;
 %nodefault epr_t;
 typedef struct {
     char * address;
 } epr_t;
 
-
-%rename(Filter) filter_t;
+/*
+ * Filter
+ */
+ 
+%rename("Filter") filter_t;
 %nodefault filter_t;
 typedef struct {
     char *resultClass;
     char *assocClass;
 } filter_t;
 
-%rename(ClientOptions) client_opt_t;
+/*
+ * ClientOptions
+ */
+ 
+%rename("ClientOptions") client_opt_t;
 %nodefault client_opt_t;
 typedef struct {
 } client_opt_t;
 
+/*
+ * WsXmlNode
+ */
+ 
 %nodefault __WsXmlNode; /* part of WsXmlDoc */
-%rename(WsXmlNode) __WsXmlNode;
+%rename("XmlNode") __WsXmlNode;
 %ignore __WsXmlNode::__undefined;
 
+/*
+ * WsXmlAttr
+ */
+ 
 %nodefault __WsXmlAttr; /* part of WsXmlNode */
-%rename(WsXmlAttr) __WsXmlAttr;
+%rename("XmlAttr") __WsXmlAttr;
 %ignore __WsXmlAttr::__undefined;
 
+/*
+ * WsXmlNs
+ */
+ 
 %nodefault __WsXmlNs;   /* part of WsXmlAttr */
-%rename(WsXmlNs) __WsXmlNs;
+%rename("XmlNs") __WsXmlNs;
 %ignore __WsXmlNs::__undefined;
 
+/*
+ * WsXmlDoc
+ */
+ 
 %nodefault _WsXmlDoc;
-%rename(WsXmlDoc) _WsXmlDoc;
+%rename("XmlDoc") _WsXmlDoc;
 struct _WsXmlDoc {};
 
+/*
+ * WsContext
+ */
+ 
 %nodefault _WS_CONTEXT;
-%rename(WsContext) _WS_CONTEXT;
+%rename("Context") _WS_CONTEXT;
 struct _WS_CONTEXT {};
 
+/*
+ * WsEnumerateInfo
+ */
+ 
 %nodefault __WsEnumerateInfo;
-%rename(WsEnumerateInfo) __WsEnumerateInfo;
+%rename("EnumerateInfo") __WsEnumerateInfo;
 struct __WsEnumerateInfo {};
 
+/*
+ * SoapOp
+ */
+ 
 %nodefault __SoapOp;
-%rename(SoapOp) __SoapOp;
+%rename("SoapOp") __SoapOp;
 struct __SoapOp {};
 
+/*
+ * WsmanStatus
+ */
+ 
 %nodefault _WsmanStatus;
-%rename(WsmanStatus) _WsmanStatus;
+%rename("Status") _WsmanStatus;
 struct _WsmanStatus {};
 
 %include "wsman-types.h"
