@@ -39,7 +39,22 @@
 
 %}
 
-%module wsman_plugin
+#if defined(SWIGJAVA)
+%module jwsman
+#endif
+
+#if defined(SWIGPYTHON)
+%module pywsman
+#endif
+
+#if defined(SWIGCSHARP)
+%module cswsman
+#endif
+
+#if defined(SWIGRUBY)
+%module rbwsman
+#endif
+
 %feature("autodoc","1");
 
 %include "typemaps.i"
