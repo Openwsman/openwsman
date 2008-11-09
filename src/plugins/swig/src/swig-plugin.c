@@ -213,6 +213,8 @@ Swig_Enumerate_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
     Target_Type _status;
     int rc;
     TARGET_THREAD_BEGIN_BLOCK; 
+    debug("Swig_Enumerate_EP(cntx %p, enumInfo %p, status %p, opaqueData %p", cntx, enumInfo, status, opaqueData);
+    debug("enumInfo.epr_to %s, epr_uri %s", enumInfo->epr_to, enumInfo->epr_uri);
     _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
     _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, 0);
     _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, 0);
