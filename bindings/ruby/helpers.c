@@ -67,13 +67,15 @@ as_string( VALUE v )
 VALUE
 hash2value( hash_t *hash )
 {
-    VALUE v = rb_hash_new();
+    VALUE v;
+    hnode_t *node;
+    hscan_t ptr;
+  
     if (!hash) return Qnil;
 
-    hscan_t ptr;
     hash_scan_begin( &ptr, hash );
 
-    hnode_t *node;
+    v = rb_hash_new();
     while ((node = hash_scan_next( &ptr )) ) {
 	rb_hash_aset( v, makestring( hnode_getkey( node ) ), makestring( hnode_get( node ) ) );
     }
@@ -105,6 +107,8 @@ add_i( VALUE key, VALUE value, hash_t *h )
 hash_t *
 value2hash( hash_t *h, VALUE v )
 {
+    if (NIL_P(v)) return NULL;
+  
     Check_Type( v, T_HASH );
 
     if (!h) h = hash_create(HASHCOUNT_T_MAX, 0, 0);
