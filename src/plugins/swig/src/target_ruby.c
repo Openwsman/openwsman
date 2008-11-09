@@ -147,7 +147,7 @@ RbGlobalInitialize( )
       error("Ruby: import '%s' doesn't define module '%s'", PLUGIN_MODULE);
       return -1;
     }  
-  debug("RbGlobalInitialize() succeeded -> %p", _TARGET_MODULE); 
+  debug("RbGlobalInitialize() succeeded -> module %s @ %p", PLUGIN_MODULE, _TARGET_MODULE); 
   return 0; 
 }
 
@@ -192,7 +192,7 @@ TargetInitialize( void *self, void **data )
       char *trace = get_exc_trace();
       error("Ruby: FAILED creating:", trace);
     }
-  debug("Created plugin @ %p", *data);
+  debug("Created plugin: klass @ %p", *data);
 exit:
   debug("Initialize() %s", (error == 0)? "succeeded":"failed");
   return error;
@@ -220,7 +220,7 @@ TargetCall(WsXmlDocH doc, VALUE instance, const char* opname, int nargs, ...)
   WsmanStatus status;
   wsman_status_init(&status);
 
-  debug("TargetCall(Ruby): %s", opname);
+  debug("TargetCall(Ruby): %p.%s", (void *)instance, opname);
   
   /* add instance, op and nargs to the args array, so rb_protect can be called */
   nargs += 3;
