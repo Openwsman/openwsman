@@ -27,16 +27,18 @@ SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../plugin.i" )
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Python ..."
-   COMMAND ${SWIG_EXECUTABLE} -python -threads -features autodoc -o ${SWIG_OUTPUT} -I${CMAKE_SOURCE_DIR}/include ${SWIG_INPUT}
+   COMMAND ${SWIG_EXECUTABLE} -python -threads -features autodoc -I${CMAKE_SOURCE_DIR}/include -I${CMAKE_SOURCE_DIR}/bindings -o ${SWIG_OUTPUT} ${SWIG_INPUT}
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../src/*.c
+   DEPENDS ${CMAKE_SOURCE_DIR}/bindings/*.i
 )
 
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -g" )
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/../src )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/bindings )
 # wsman_config.h is generated
 INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} )
 # all other wsman includes

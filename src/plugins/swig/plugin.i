@@ -152,13 +152,27 @@ typedef SV * Target_Type;
 #include <stdint.h>
 
 #include <wsman-soap.h>
+#include <wsman-soap-envelope.h>
 #include <wsman-faults.h>
+#include <wsman-client-api.h>
+
+#if defined(SWIGRUBY)
+#include <ruby/helpers.c>
+#endif
+#if defined(SWIGPYTHON)
+#include <python/helpers.c>
+#endif
+#if defined(SWIGJAVA)
+#include <java/helpers.c>
+#endif
 
 #include "../src/swig-plugin.c"
 
 %}
 
 /* get type declarations from openwsman client bindings */
-%include "../../../bindings/wsman-types.i"
-%include "../../../bindings/wsman-soap.i"
-%include "../../../bindings/wsman-xml.i"
+%include "wsman-types.i"
+%include "wsman-soap.i"
+%include "wsman-xml.i"
+%include "wsman-names.i"
+%include "wsman-filter.i"
