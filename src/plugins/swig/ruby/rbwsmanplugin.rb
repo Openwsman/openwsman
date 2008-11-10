@@ -8,35 +8,99 @@ module Rbwsman
   def self.create_plugin
     Sample.new
   end
+  #
+  # identify
+  #
   def self.identify context
     STDERR.puts "WsmanPlugin.identify, context #{context}"
   end
+  #
+  # enumerate
+  #
   def self.enumerate context, enum_info, status
-    STDERR.puts "WsmanPlugin.enumerate, context #{context}, enum_info #{enum_info}"
+    STDERR.puts "WsmanPlugin.enumerate, context #{context}, enum_info #{enum_info}, status #{status}"
     STDERR.puts "to #{enum_info.epr_to}, uri #{enum_info.epr_uri}"
+    STDERR.puts "class #{context.classname}, method #{context.method}"
+    STDERR.puts "action #{context.action}, resource_uri #{context.resource_uri}"
     selectors = context.selectors
     STDERR.puts "selectors #{selectors}"
+    
+    enum_info.index = 0;
+		      
+    enum_info.total_items = 10
+    # error
+    #   enumInfo.pull_result = nil
+    # end
+    enum_info.enum_results = 1
+    enum_info.enum_context = 1
+    return true
+
   end
+  #
+  # pull
+  #
+  def self.pull context, enum_info, status
+    STDERR.puts "WsmanPlugin.pull, context #{context}, enum_info #{enum_info}, status #{status}"
+    STDERR.puts "enum_info.index #{enum_info.index} enum_info.total_items #{enum_info.total_items}"
+    if enum_info.index < enum_info.total_items then
+      out_doc = context.indoc.create_response_envelope
+      body = out_doc.body
+      response = body.child_add(XML_NS_ENUMERATION, WSENUM_PULL_RESP)
+      response = response.child_add(XML_NS_ENUMERATION, WSENUM_ITEMS)
+      response.child_add(nil, "item#{enum_info.index}", "#{enum_info.index}")
+      STDERR.puts "pull response #{out_doc}"
+      enum_info.pull_result = out_doc
+      return true
+    else
+      enum_info.enum_results = nil
+      enum_info.enum_context = nil
+      STDERR.puts "pull failed"
+    end
+  end
+  #
+  # release
+  #
   def self.release context, enum_info, status
     STDERR.puts "WsmanPlugin.release, context #{context}"
+    true
   end
-  def self.pull context, enum_info, status
-    STDERR.puts "WsmanPlugin.pull, op #{op}"
-  end
+  #
+  # get
+  #
   def self.get op
     STDERR.puts "WsmanPlugin.get, op #{op}"
+    status.code = WSA_ENDPOINT_UNAVAILABLE
+    status.detail = WSMAN_DETAIL_LOCALE
+    status.msg = "This Ruby plugin does not implement 'get'"
+    doc = XmlDoc.new "fault"
+    status.generate_fault(doc)
   end
+  #
+  # custom
+  #
   def self.custom op
     STDERR.puts "WsmanPlugin.custom, op #{op}"
   end
+  #
+  # put
+  #
   def self.put op
     STDERR.puts "WsmanPlugin.put, op #{op}"
   end
+  #
+  # create
+  #
   def self.create op
     STDERR.puts "WsmanPlugin.create, op #{op}"
   end
+  #
+  # delete
+  #
   def self.delete op
     STDERR.puts "WsmanPlugin.delete, op #{op}"
+  end
+  def self.method_missing method, *args
+    STDERR.puts "WsmanPlugin.#{method} not implemented"
   end
   class Sample
     SCHEMA = "http://schema.opensuse.org/swig/wsman-schema/1-0"
