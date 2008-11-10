@@ -6,15 +6,20 @@
 
 %extend _WsXmlDoc {
   /* constructor */
-  _WsXmlDoc() {
-    return ws_xml_create_soap_envelope();
+  _WsXmlDoc(const char *rootname) {
+    return wsman_create_doc(rootname);
   }
   /* destructor */
   ~_WsXmlDoc() {
     ws_xml_destroy_doc( $self );
   }
 #if defined(SWIGRUBY)
-  %alias dump "to_s";
+  char *to_s() {
+    int size;
+    char *buf;
+    ws_xml_dump_memory_node_tree( ws_xml_get_doc_root($self), &buf, &size );
+    return buf;
+  }
 #endif
   /* dump doc as string */
   char *dump(const char *encoding="utf-8") {
@@ -53,6 +58,9 @@
   }
   WsXmlDocH generate_fault(WsmanStatus *s) {
     return wsman_generate_fault( $self, s->fault_code, s->fault_detail_code, s->fault_msg);
+  }
+  WsXmlDocH create_response_envelope(const char *action = NULL) {
+    return wsman_create_response_envelope($self, action);
   }
 }
 

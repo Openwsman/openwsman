@@ -82,6 +82,10 @@ static int get_debug() {
   return (int)wsman_debug_get_level();
 }
 
+static WsXmlDocH create_soap_envelope() {
+  return ws_xml_create_soap_envelope();
+}
+
 %}
 
 %include "wsman-types.i"
@@ -127,6 +131,8 @@ static void set_debug(int dbg);
 #endif
 
 static int get_debug();
+
+static WsXmlDocH create_soap_envelope();
 
 /*-----------------------------------------------------------------*/
 /* client */

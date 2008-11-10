@@ -5,7 +5,7 @@ require './rbwsman'
 class WsXmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes
   def test_node_constructor
-    doc = Rbwsman::XmlDoc.new
+    doc = Rbwsman::create_soap_envelope
     assert doc
     body = doc.body
     assert body
@@ -23,7 +23,7 @@ class WsXmlNodeTest < Test::Unit::TestCase
     assert i == 3
   end
   def test_node_accessor
-    doc = Rbwsman::XmlDoc.new
+    doc = Rbwsman::create_soap_envelope
     assert doc
     header = doc.element("Header")
     assert header

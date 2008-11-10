@@ -13,12 +13,12 @@
 /*
  * hash_t typemaps
  */
-%typemap(in) hash_t * {
- $1 = hash2value($input);
+%typemap(out) hash_t * {
+ $result = hash2value($1);
 }
 
-%typemap(out) hash_t * {
- $result = value2hash(NULL, $1);
+%typemap(in) hash_t * {
+ $input = value2hash(NULL, $1);
 }
 
 /*
@@ -126,6 +126,14 @@ struct __WsEnumerateInfo {};
 %nodefault __SoapOp;
 %rename("SoapOp") __SoapOp;
 struct __SoapOp {};
+
+/*
+ * Soap
+ */
+ 
+%nodefault __Soap;
+%rename("Soap") __Soap;
+struct __Soap {};
 
 /*
  * WsmanStatus

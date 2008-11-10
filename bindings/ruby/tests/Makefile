@@ -21,6 +21,10 @@ all:
 	# ClientOptions
 	ruby clientoptions.rb
 	ruby debug.rb
+	
+	# Soap
+	ruby status.rb
+
         # Identify
 	ruby identify.rb
 
