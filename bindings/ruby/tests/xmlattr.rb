@@ -4,7 +4,7 @@ require './rbwsman'
 
 class WsXmlAttrTest < Test::Unit::TestCase
   def test_attr_constructor
-    doc = Rbwsman::XmlDoc.new
+    doc = Rbwsman::XmlDoc.new "test"
     assert doc
     root = doc.root
     assert root
