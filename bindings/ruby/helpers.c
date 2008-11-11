@@ -48,10 +48,10 @@ makestring( char *s )
 
 
 /* convert symbol or string VALUE to char* */
-char *
+const char *
 as_string( VALUE v )
 {
-    char *s;
+    const char *s;
     if ( SYMBOL_P( v ) ) {
 	ID id = SYM2ID( v );
 	s = rb_id2name( id );
@@ -90,8 +90,8 @@ int
 add_i( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
-	char *k = as_string( key );
-        char *v = as_string( value );
+	const char *k = as_string( key );
+        const char *v = as_string( value );
 
 	if (!hash_lookup( h, k ) ) {
 	    if ( !hash_alloc_insert( h, k, v ) ) {
