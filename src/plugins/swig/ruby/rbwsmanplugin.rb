@@ -65,29 +65,6 @@ module Rbwsman
     true
   end
   #
-  # get
-  #
-  def self.get op
-    STDERR.puts "WsmanPlugin.get, op #{op}"
-    status.code = WSA_ENDPOINT_UNAVAILABLE
-    status.detail = WSMAN_DETAIL_LOCALE
-    status.msg = "This Ruby plugin does not implement 'get'"
-    doc = XmlDoc.new "fault"
-    status.generate_fault(doc)
-  end
-  #
-  # custom
-  #
-  def self.custom op
-    STDERR.puts "WsmanPlugin.custom, op #{op}"
-  end
-  #
-  # put
-  #
-  def self.put op
-    STDERR.puts "WsmanPlugin.put, op #{op}"
-  end
-  #
   # create
   #
   def self.create op
@@ -99,6 +76,50 @@ module Rbwsman
   def self.delete op
     STDERR.puts "WsmanPlugin.delete, op #{op}"
   end
+  #
+  # get
+  #
+  def self.get op
+    STDERR.puts "WsmanPlugin.get, op #{op}"
+    soap = op.soap
+    STDERR.puts "soap #{soap}"
+    indoc = op.indoc
+    STDERR.puts "indoc #{indoc}"
+    context = soap.create_ep_context
+    STDERR.puts "context #{context}"
+    # retrieve custom action
+    msg = op.msg
+    STDERR.puts "msg #{msg}"
+    action = op.action
+    STDERR.puts "action #{action}"
+    selectors = context.selectors
+    STDERR.puts "selectors #{selectors}"
+    uri = context.uri
+    STDERR.puts "uri #{uri}"
+	    
+    op.outdoc = context.indoc.create_response_envelope
+    true
+  end
+  #
+  # put
+  #
+  def self.put op
+    STDERR.puts "WsmanPlugin.put, op #{op}"
+  end
+  #
+  # custom
+  #
+  def self.custom op
+    STDERR.puts "WsmanPlugin.custom, op #{op}"
+    status.code = WSA_ENDPOINT_UNAVAILABLE
+    status.detail = WSMAN_DETAIL_LOCALE
+    status.msg = "This Ruby plugin does not implement 'get'"
+    doc = XmlDoc.new "fault"
+    status.generate_fault(doc)
+  end
+  #
+  # catch missing methods
+  #
   def self.method_missing method, *args
     STDERR.puts "WsmanPlugin.#{method} not implemented"
   end
