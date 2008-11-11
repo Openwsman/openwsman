@@ -31,7 +31,7 @@ TARGET_LINK_LIBRARIES( wsman wsman_client )
 ENDIF( ENABLE_EVENTING_SUPPORT )
 
 SET_TARGET_PROPERTIES(wsman PROPERTIES VERSION 1.0.0 SOVERSION 1)
-INSTALL(TARGETS wsman DESTINATION lib)
+INSTALL(TARGETS wsman DESTINATION ${LIB_INSTALL_DIR})
 
 ########### wsman_server ###############
 
@@ -40,7 +40,7 @@ IF ( NOT DISABLE_SERVER )
  ADD_LIBRARY( wsman_server SHARED ${wsman_server_SOURCES} )
  TARGET_LINK_LIBRARIES( wsman_server wsman )
  SET_TARGET_PROPERTIES(wsman_server PROPERTIES VERSION 1.0.0 SOVERSION 1)
- INSTALL(TARGETS wsman_server DESTINATION lib)
+ INSTALL(TARGETS wsman_server DESTINATION ${LIB_INSTALL_DIR})
 ENDIF ( NOT DISABLE_SERVER )
 
 ########## wsman_curl_client_transport ###############
@@ -49,7 +49,7 @@ SET( wsman_curl_client_transport_SOURCES wsman-client-transport.c wsman-curl-cli
 ADD_LIBRARY( wsman_curl_client_transport SHARED ${wsman_curl_client_transport_SOURCES} )
 TARGET_LINK_LIBRARIES( wsman_curl_client_transport ${CURL_LIBRARIES} )
 SET_TARGET_PROPERTIES(wsman_curl_client_transport PROPERTIES VERSION 1.0.0 SOVERSION 1)
-INSTALL(TARGETS wsman_curl_client_transport DESTINATION lib)
+INSTALL(TARGETS wsman_curl_client_transport DESTINATION ${LIB_INSTALL_DIR})
 
 
 ############### wsman_client ###############
@@ -59,7 +59,7 @@ SET( wsman_client_SOURCES wsman-client.c )
 ADD_LIBRARY( wsman_client SHARED ${wsman_client_SOURCES} )
 TARGET_LINK_LIBRARIES( wsman_client wsman_curl_client_transport )
 SET_TARGET_PROPERTIES(wsman_client PROPERTIES VERSION 1.0.0 SOVERSION 1)
-INSTALL(TARGETS wsman_client DESTINATION lib)
+INSTALL(TARGETS wsman_client DESTINATION ${LIB_INSTALL_DIR})
 
 #
 #EXTRA_DIST = \
