@@ -227,14 +227,19 @@ hash_t *u_parse_query(const char *query)
 		u_trim_quotes(val);
 		if (u_string_unify(key) || u_string_unify(val)) {
 			u_free(key);
+			u_free(val);
 			dbg("Could not unify query: %s", tok);
 			continue;
 		}
 		if (!hash_lookup(h, key)) {
 			if (!hash_alloc_insert(h, key, val)) {
+				u_free(key);
+				u_free(val);
 				warn("hash_alloc_insert failed");
 			}
 		} else {
+			u_free(key);
+			u_free(val);
 			warn("duplicate not added to hash");
 		}
 	}
