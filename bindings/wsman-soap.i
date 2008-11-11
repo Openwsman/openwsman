@@ -86,8 +86,23 @@
  */
 
 %extend __SoapOp {
-  WsXmlDocH doc(int inbound) {
-    return soap_get_op_doc($self, inbound);
+  WsXmlDocH indoc() {
+    return soap_get_op_doc($self, 1);
+  }
+#if defined(SWIGRUBY)
+  %rename("indoc=") set_indoc( WsXmlDocH doc );
+#endif
+  void set_indoc( WsXmlDocH doc ) {
+    soap_set_op_doc( $self, doc, 1 );
+  }
+  WsXmlDocH outdoc() {
+    return soap_get_op_doc($self, 0);
+  }
+#if defined(SWIGRUBY)
+  %rename("outdoc=") set_outdoc( WsXmlDocH doc );
+#endif
+  void set_outdoc( WsXmlDocH doc ) {
+    soap_set_op_doc( $self, doc, 0 );
   }
   const char *action(int inbound) {
     return soap_get_op_action($self, inbound);
@@ -121,7 +136,9 @@
   WsContextH context() {
     return ws_get_soap_context($self);
   }
-  
+  WsContextH create_ep_context( WsXmlDocH doc ) {
+    return ws_create_ep_context( $self, doc );
+  }
 }
 
 
