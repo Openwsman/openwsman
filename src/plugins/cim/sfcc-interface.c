@@ -1580,7 +1580,7 @@ cim_create_instance(CimClientInfo * client,
 	WsmanStatus statusP;
 	CMPIConstClass *class;
 	int fragment_flag;
-	char *element;
+	char *element = NULL;
 	int index;
 	WsXmlNodeH resource;
 	WsXmlNodeH child = NULL;
