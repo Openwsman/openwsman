@@ -63,6 +63,8 @@
 #include <wsman-xml-serializer.h>
 #include <wsman-declarations.h>
 
+#define OWN 1
+
 int init( void *self, void **data );
 
 /*
@@ -198,7 +200,7 @@ Swig_Identify_EP( WsContextH cntx )
     int rc;
     Target_Type _context;
     TARGET_THREAD_BEGIN_BLOCK; 
-    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, OWN);
     rc = TargetCall(cntx->indoc, _TARGET_MODULE, "identify", 1, _context); 
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -215,9 +217,9 @@ Swig_Enumerate_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
     TARGET_THREAD_BEGIN_BLOCK; 
     debug("Swig_Enumerate_EP(cntx %p, enumInfo %p, status %p, opaqueData %p", cntx, enumInfo, status, opaqueData);
     debug("enumInfo.epr_to %s, epr_uri %s", enumInfo->epr_to, enumInfo->epr_uri);
-    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
-    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, 0);
-    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, 0);
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, OWN);
+    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, OWN);
+    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, OWN);
     rc = TargetCall(cntx->indoc, _TARGET_MODULE, "enumerate", 3, _context, _enumInfo, _status );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -234,9 +236,9 @@ Swig_Release_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
     Target_Type _status;
     int rc;
     TARGET_THREAD_BEGIN_BLOCK; 
-    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
-    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, 0);
-    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, 0);
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, OWN);
+    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, OWN);
+    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, OWN);
     rc = TargetCall(cntx->indoc, _TARGET_MODULE, "release", 3, _context, _enumInfo, _status );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -253,9 +255,9 @@ Swig_Pull_EP( WsContextH cntx, WsEnumerateInfo* enumInfo,
     Target_Type _status;
     int rc;
     TARGET_THREAD_BEGIN_BLOCK; 
-    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, 0);
-    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, 0);
-    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, 0);
+    _context = SWIG_NewPointerObj((void*) cntx, SWIGTYPE_p__WS_CONTEXT, OWN);
+    _enumInfo = SWIG_NewPointerObj((void*) enumInfo, SWIGTYPE_p___WsEnumerateInfo, OWN);
+    _status = SWIG_NewPointerObj((void*) status, SWIGTYPE_p__WsmanStatus, OWN);
     rc = TargetCall(cntx->indoc, _TARGET_MODULE, "pull", 3, _context, _enumInfo, _status );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -269,7 +271,7 @@ Swig_Get_EP( SoapOpH op, void* appData, void *opaqueData )
     int rc;
     WsXmlDocH in_doc = soap_get_op_doc( op, 1 );
     TARGET_THREAD_BEGIN_BLOCK; 
-    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, 0);
+    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, OWN);
   
     rc = TargetCall(in_doc, _TARGET_MODULE, "get", 1, _op );
     TARGET_THREAD_END_BLOCK;
@@ -284,7 +286,7 @@ Swig_Custom_EP( SoapOpH op, void* appData, void *opaqueData )
     int rc;
     WsXmlDocH in_doc = soap_get_op_doc( op, 1 );
     TARGET_THREAD_BEGIN_BLOCK; 
-    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, 0);
+    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, OWN);
     rc = TargetCall(in_doc, _TARGET_MODULE, "custom", 1, _op );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -298,7 +300,7 @@ Swig_Put_EP( SoapOpH op, void* appData, void *opaqueData )
     int rc;
     WsXmlDocH in_doc = soap_get_op_doc( op, 1 );
     TARGET_THREAD_BEGIN_BLOCK; 
-    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, 0);
+    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, OWN);
     rc = TargetCall(in_doc, _TARGET_MODULE, "put", 1, _op );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -312,7 +314,7 @@ Swig_Create_EP( SoapOpH op, void* appData, void *opaqueData )
     int rc;
     WsXmlDocH in_doc = soap_get_op_doc( op, 1 );
     TARGET_THREAD_BEGIN_BLOCK; 
-    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, 0);
+    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, OWN);
     rc = TargetCall(in_doc, _TARGET_MODULE, "create", 1, _op );
     TARGET_THREAD_END_BLOCK;
     return rc;
@@ -327,7 +329,7 @@ Swig_Delete_EP( SoapOpH op, void* appData, void *opaqueData )
     int rc;
     WsXmlDocH in_doc = soap_get_op_doc( op, 1 );
     TARGET_THREAD_BEGIN_BLOCK; 
-    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, 0);
+    _op = SWIG_NewPointerObj((void*) op, SWIGTYPE_p___SoapOp, OWN);
     rc = TargetCall(in_doc, _TARGET_MODULE, "delete", 1, _op );
     TARGET_THREAD_END_BLOCK;
     return rc;
