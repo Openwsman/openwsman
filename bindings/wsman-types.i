@@ -120,20 +120,20 @@ struct _WS_CONTEXT {};
 struct __WsEnumerateInfo {};
 
 /*
- * SoapOp
- */
- 
-%nodefault __SoapOp;
-%rename("SoapOp") __SoapOp;
-struct __SoapOp {};
-
-/*
  * Soap
  */
  
 %nodefault __Soap;
 %rename("Soap") __Soap;
 struct __Soap {};
+
+/*
+ * SoapOp
+ */
+ 
+%nodefault __SoapOp;
+%rename("SoapOp") __SoapOp;
+struct __SoapOp {};
 
 /*
  * WsmanStatus

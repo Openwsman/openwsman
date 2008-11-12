@@ -13,7 +13,9 @@
   ~_WsXmlDoc() {
     ws_xml_destroy_doc( $self );
   }
+  %typemap(newfree) char * "free($1);";
 #if defined(SWIGRUBY)
+  %newobject to_s;
   char *to_s() {
     int size;
     char *buf;
@@ -22,6 +24,7 @@
   }
 #endif
   /* dump doc as string */
+  %newobject dump;
   char *dump(const char *encoding="utf-8") {
     int size;
     char *buf;
@@ -56,9 +59,11 @@
   const char *context() {
     return wsmc_get_enum_context( $self );
   }
+  %newobject generate_fault;
   WsXmlDocH generate_fault(WsmanStatus *s) {
     return wsman_generate_fault( $self, s->fault_code, s->fault_detail_code, s->fault_msg);
   }
+  %newobject create_response_envelope;
   WsXmlDocH create_response_envelope(const char *action = NULL) {
     return wsman_create_response_envelope($self, action);
   }
@@ -67,9 +72,10 @@
 
 %extend __WsXmlNode {
 #if defined(SWIGRUBY)
-  %alias text "to_s";
+  %alias dump "to_s";
 #endif
-  /* dump node as string */
+  %newobject dump;
+  /* dump node as XML string */
   char *dump() {
     int size;
     char *buf;
@@ -80,7 +86,7 @@
   void dump_file(FILE *fp) {
     ws_xml_dump_node_tree( fp, $self );
   }
-  /* get text of node */
+  /* get text (without xml tags) of node */
   char *text() {
     return ws_xml_get_node_text( $self );
   }

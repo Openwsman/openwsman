@@ -104,16 +104,10 @@
   void set_outdoc( WsXmlDocH doc ) {
     soap_set_op_doc( $self, doc, 0 );
   }
-  const char *action(int inbound) {
-    return soap_get_op_action($self, inbound);
-  }
-  int flags() {
-    return soap_get_op_flags($self);
-  }
   const char *dest_url() {
     return soap_get_op_dest_url($self);
   }
-  SoapH soap() {
+  struct __Soap *soap() {
     return soap_get_op_soap($self);
   }
   WsmanMessage *msg() {
@@ -130,12 +124,15 @@
  */
  
 %extend __Soap {
+  %typemap(newfree) WsContextH "free($1);";
+  %newobject create_context;
   WsContextH create_context() {
     return ws_create_context($self);
   }
   WsContextH context() {
     return ws_get_soap_context($self);
   }
+  %newobject create_ep_context;
   WsContextH create_ep_context( WsXmlDocH doc ) {
     return ws_create_ep_context( $self, doc );
   }
@@ -147,6 +144,8 @@
  */
 
 %extend _WS_CONTEXT {
+  %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
+  %newobject create_fault;
   WsXmlDocH create_fault(WsXmlDocH rqstDoc,
     const char *code, const char *subCodeNs, const char *subCode,
     const char *lang, const char *reason,
@@ -157,7 +156,7 @@
   WsXmlDocH indoc() {
     return $self->indoc;
   }
-  SoapH runtime() {
+  struct __Soap *runtime() {
     return ws_context_get_runtime($self);
   }
 #if defined(SWIGRUBY)
@@ -255,7 +254,8 @@
   const char *msg() {
     return $self->fault_msg;
   }
-
+  %newobject generate_fault;
+  %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
   WsXmlDocH generate_fault(WsXmlDocH doc) {
     return wsman_generate_fault( doc, $self->fault_code, $self->fault_detail_code, $self->fault_msg);
   }
