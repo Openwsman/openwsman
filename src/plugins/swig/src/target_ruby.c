@@ -362,7 +362,7 @@ TargetEndpoints( void *self, void *data )
      */
   
     list_t *namespaces = list_create(LISTCOUNT_T_MAX);
-    debug("TargetEndpoints(Ruby), calling namespaces", klass);
+    debug("TargetEndpoints(Ruby), calling namespaces");
     rbnamespaces = rb_protect(call_namespaces, klass, &error);
     if (error) {
       char *trace = get_exc_trace();
