@@ -424,9 +424,6 @@ void            soap_destroy_op(SoapOpH op);
 WsXmlDocH       soap_get_op_doc(SoapOpH op, int inbound);
 WsXmlDocH       soap_detach_op_doc(SoapOpH op, int inbound);
 int             soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound);
-char           *soap_get_op_action(SoapOpH op, int inbound);
-void            soap_set_op_action(SoapOpH op, char *action, int inbound);
-unsigned long   soap_get_op_flags(SoapOpH op);
 SoapH           soap_get_op_soap(SoapOpH op);
 char           *soap_get_op_dest_url(SoapOpH op);
 
