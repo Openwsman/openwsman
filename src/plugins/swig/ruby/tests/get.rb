@@ -25,6 +25,7 @@ class WsmanTest < Test::Unit::TestCase
     body = result.body
     assert body
 
+    puts "TEXT #{body.text}"
     puts "RAW #{body}"
 
   end

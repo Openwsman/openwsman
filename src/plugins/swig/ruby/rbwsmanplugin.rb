@@ -33,8 +33,7 @@ module Rbwsman
     # end
     enum_info.enum_results = 1
     enum_info.enum_context = 1
-    return true
-
+    true
   end
   #
   # pull
@@ -85,19 +84,20 @@ module Rbwsman
     STDERR.puts "soap #{soap}"
     indoc = op.indoc
     STDERR.puts "indoc #{indoc}"
-    context = soap.create_ep_context
+    context = soap.create_ep_context(indoc)
     STDERR.puts "context #{context}"
     # retrieve custom action
     msg = op.msg
     STDERR.puts "msg #{msg}"
-    action = op.action
-    STDERR.puts "action #{action}"
     selectors = context.selectors
     STDERR.puts "selectors #{selectors}"
-    uri = context.uri
+    uri = context.resource_uri
     STDERR.puts "uri #{uri}"
 	    
-    op.outdoc = context.indoc.create_response_envelope
+    op.outdoc = indoc.create_response_envelope
+    body = op.outdoc.body
+    response = body.child_add(XML_NS_TRANSFER, TRANSFER_GET_RESP)
+    response = response.child_add(XML_NS_TRANSFER, "foo", "bar")
     true
   end
   #
