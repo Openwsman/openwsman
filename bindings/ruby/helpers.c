@@ -39,7 +39,7 @@
 *****************************************************************************/
  
 /* convert char* to string VALUE */
-VALUE
+static VALUE
 makestring( char *s )
 {
     if (s) return rb_str_new2( s );
@@ -48,7 +48,7 @@ makestring( char *s )
 
 
 /* convert symbol or string VALUE to char* */
-const char *
+static const char *
 as_string( VALUE v )
 {
     const char *s;
@@ -64,7 +64,7 @@ as_string( VALUE v )
 
 
 /* convert openwsman hash_t* to hash VALUE (string pairs) */
-VALUE
+static VALUE
 hash2value( hash_t *hash )
 {
     VALUE v;
@@ -86,7 +86,7 @@ hash2value( hash_t *hash )
 /* add key,value VALUE pair to hash_t*
  *  (used as callback for value2hash)
  */
-int
+static int
 add_i( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
@@ -104,7 +104,7 @@ add_i( VALUE key, VALUE value, hash_t *h )
 
 
 /* create hash (h == NULL) or add to hash (h != NULL) from hash VALUE */
-hash_t *
+static hash_t *
 value2hash( hash_t *h, VALUE v )
 {
     if (NIL_P(v)) return NULL;
