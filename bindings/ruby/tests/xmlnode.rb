@@ -5,22 +5,23 @@ require './rbwsman'
 class WsXmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes
   def test_node_constructor
-    doc = Rbwsman::create_soap_envelope
+    doc = Rbwsman::XmlDoc.new "node"
     assert doc
-    body = doc.body
-    assert body
-    body.child_add( Rbwsman::XML_NS_SOAP_1_2, "one" )
-    body.child_add( Rbwsman::XML_NS_SOAP_1_2, "two", "2" )
-    child = body.child_add( Rbwsman::XML_NS_SOAP_1_2, "three", "drei" )
+    root = doc.root
+    root.add( Rbwsman::XML_NS_SOAP_1_2, "one" )
+    assert root[0].name = "one"
+    root.add( Rbwsman::XML_NS_SOAP_1_2, "two", "2" )
+    child = root.add( Rbwsman::XML_NS_SOAP_1_2, "three", "drei" )
     assert child.ns == Rbwsman::XML_NS_SOAP_1_2
     assert child.name == "three"
     assert child.text == "drei"
-    assert body.child_count == 3
+    assert root.size == 3
     child.text = "troi"
     assert child.text == "troi"
+    assert root[2] == child
     i = 0
-    body.each_child { |c| i += 1 }
-    assert i == 3
+    root.each { |c| i += 1 }
+    assert i == root.size
   end
   def test_node_accessor
     doc = Rbwsman::create_soap_envelope

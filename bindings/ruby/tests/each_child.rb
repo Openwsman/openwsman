@@ -51,7 +51,7 @@ class WsmanTest < Test::Unit::TestCase
 
     node = body.PullResponse.Items.child
 
-    node.each_child { |child|
+    node.each { |child|
 	text = child.text
 	acount = child.attr_count
 	puts "Child [#{acount}] #{child.name}: #{text}"

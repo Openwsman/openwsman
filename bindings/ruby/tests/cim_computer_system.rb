@@ -8,7 +8,7 @@ require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
-    Rbwsman::debug = 1
+#    Rbwsman::debug = 1
     client = Client.open
     assert client
     options = Rbwsman::ClientOptions.new
@@ -26,15 +26,22 @@ class WsmanTest < Test::Unit::TestCase
     context = result.context
     while (context)
 	count += 1
-	result = client.pull( uri, context, options )
+	result = client.pull( options, nil, uri, context )
 	puts "Response ##{count}"
 #	puts "### #{result}"
-	result.body.PullResponse.Items.child.each_child { |child|
+#	items = result.body.PullResponse.Items.child
+	items = result.body["PullResponse"]
+	assert items
+	items = items["Items"]
+	assert items
+	items = items.first
+	assert items
+	items.each { |child|
 	    puts "\t#{child.name} = #{child.text}"
 	}
 	context = result.context
     end
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Got #{count} responses"
   end
 end

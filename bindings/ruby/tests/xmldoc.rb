@@ -7,6 +7,10 @@ class WsXmlDocTest < Test::Unit::TestCase
     doc = Rbwsman::XmlDoc.new "test"
     assert doc
   end
+  def test_doc_rootname
+    doc = Rbwsman::XmlDoc.new "test"
+    assert doc.root.name == "test"
+  end
   def test_doc_dump
     doc = Rbwsman::XmlDoc.new "test"
     assert doc
@@ -17,9 +21,9 @@ class WsXmlDocTest < Test::Unit::TestCase
     assert doc
     assert doc.dump
     root = doc.root
-    root.child_add("namespace", "tag")
-    root.child_add("ns", "foo", "bar")
-    root.child_add(nil, "baz", "faz")
+    root.add("namespace", "tag")
+    root.add("ns", "foo", "bar")
+    root.add(nil, "baz", "faz")
     puts "#{doc}"
   end
   def test_doc_accessors
