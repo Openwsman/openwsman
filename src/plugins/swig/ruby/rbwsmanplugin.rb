@@ -44,9 +44,9 @@ module Rbwsman
     if enum_info.index < enum_info.total_items then
       out_doc = context.indoc.create_response_envelope
       body = out_doc.body
-      response = body.child_add(XML_NS_ENUMERATION, WSENUM_PULL_RESP)
-      response = response.child_add(XML_NS_ENUMERATION, WSENUM_ITEMS)
-      response.child_add(nil, "item#{enum_info.index}", "#{enum_info.index}")
+      response = body.add(XML_NS_ENUMERATION, WSENUM_PULL_RESP)
+      response = response.add(XML_NS_ENUMERATION, WSENUM_ITEMS)
+      response.add(nil, "item#{enum_info.index}", "#{enum_info.index}")
       STDERR.puts "pull response #{out_doc}"
       enum_info.pull_result = out_doc
       return true
@@ -96,8 +96,8 @@ module Rbwsman
 	    
     op.outdoc = indoc.create_response_envelope
     body = op.outdoc.body
-    response = body.child_add(XML_NS_TRANSFER, TRANSFER_GET_RESP)
-    response = response.child_add(XML_NS_TRANSFER, "foo", "bar")
+    response = body.add(XML_NS_TRANSFER, TRANSFER_GET_RESP)
+    response = response.add(XML_NS_TRANSFER, "foo", "bar")
     true
   end
   #
