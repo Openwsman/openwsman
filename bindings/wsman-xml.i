@@ -4,6 +4,11 @@
  *
  */
 
+/*
+ * class XmlDoc
+ *
+ */
+
 %extend _WsXmlDoc {
   /* constructor */
   _WsXmlDoc(const char *rootname) {
@@ -70,9 +75,14 @@
 }
 
 
+/*
+ * class XmlNode
+ *
+ */
+
 %extend __WsXmlNode {
 #if defined(SWIGRUBY)
-  %alias dump "to_s";
+  %alias text "to_s";
 #endif
   %newobject dump;
   /* dump node as XML string */
@@ -86,6 +96,19 @@
   void dump_file(FILE *fp) {
     ws_xml_dump_node_tree( fp, $self );
   }
+  
+#if defined(SWIGRUBY)
+  %alias equal "==";
+  %typemap(out) int equal
+    "$result = ($1 != 0) ? Qtrue : Qfalse;";
+#endif
+#if defined(SWIGPERL)
+  int __eq__( WsXmlNodeH n )
+#else
+  int equal( WsXmlNodeH n )
+#endif
+  { return $self == n; }	  
+  
   /* get text (without xml tags) of node */
   char *text() {
     return ws_xml_get_node_text( $self );
@@ -104,39 +127,70 @@
   WsXmlNodeH parent() {
     return ws_xml_get_node_parent( $self );
   }
+#if defined(SWIGRUBY)
+  %alias child "first";
+#endif
+  /* get first child of node */
+  WsXmlNodeH child() {
+    if( ws_xml_get_child_count( $self ) > 0 )
+      return ws_xml_get_child($self, 0, NULL, NULL);
+    return NULL;
+  }
   /* get name for node */
   char *name() {
     return ws_xml_get_node_local_name( $self );
   }
+#if defined(SWIGRUBY)
+  %rename("name=") set_name( const char *name);
+#endif
   /* set name of node */
-  void set_name( const char *nsuri, const char *name ) {
-    ws_xml_set_node_name( $self, nsuri, name );
+  void set_name( const char *name ) {
+    ws_xml_set_node_name( $self, ws_xml_get_node_name_ns( $self ), name );
   }
+  
   /* get namespace for node */
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
   }
+#if defined(SWIGRUBY)
+  %rename("ns=") set_ns( const char *nsuri );
+#endif
   /* set namespace of node */
-  void set_ns( const char *ns, const char *prefix ) {
-    ws_xml_set_ns( $self, ns, prefix );
+  void set_ns( const char *ns ) {
+    ws_xml_set_ns( $self, ns, ws_xml_get_node_name_ns_prefix($self) );
   }
-  
+
+  /* get prefix of nodes namespace */
+  const char *prefix() {
+    return ws_xml_get_node_name_ns_prefix($self);
+  }
+
+  /* set language */
+#if defined(SWIGRUBY)
+  %rename("lang=") set_lang(const char *lang);
+#endif
+  void set_lang(const char *lang) {
+    ws_xml_set_node_lang($self, lang);
+  }
+
   /* find node within tree */
   WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
     return ws_xml_find_in_tree( $self, ns, name, recursive );
   }
 				 
   /* count node children */
-  int child_count() {
+  int size() {
     return ws_xml_get_child_count( $self );
   }
   /* add child to node */
-  WsXmlNodeH child_add( const char *ns, const char *name, const char *value = NULL ) {
+  WsXmlNodeH add( const char *ns, const char *name, const char *value = NULL ) {
     return ws_xml_add_child( $self, ns, name, value );
   }
+
+  /* iterate children */
+
 #if defined(SWIGRUBY)
-  /* enumerate children */
-  void each_child() {
+  void each() {
     int i = 0;
     while ( i < ws_xml_get_child_count( $self ) ) {
       rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child($self, i, NULL, NULL), SWIGTYPE_p___WsXmlNode, 0));
@@ -144,7 +198,53 @@
     }
   }
 #endif
+
+#if defined(SWIGPYTHON)
+  %pythoncode %{
+    def __iter__(self):
+      r = range(0,self.size())
+      while r:
+        yield self.get(r.pop(0))
+  %}
+#endif
+
+#if defined(SWIGRUBY)
+  %alias get "[]";
+#endif
+  /*
+   * get child by index
+   */
+  WsXmlNodeH get(int i) {
+    if (i < 0 || i >= ws_xml_get_child_count($self))
+      return NULL;
+    return ws_xml_get_child($self, i, NULL, NULL);
+  }
   
+  /*
+   * get child by name
+   */
+  WsXmlNodeH get(const char *name) {
+    int i = 0;
+    while ( i < ws_xml_get_child_count($self)) {
+      WsXmlNodeH child = ws_xml_get_child($self, i, NULL, NULL);
+      if (!strcmp(ws_xml_get_node_local_name(child), name))
+        return child;
+    }
+    return NULL;
+  }
+  
+#if 0 /* defined(SWIGRUBY) */
+  %rubycode %{
+    def method_missing( name, *args )
+      if args then
+        find(args[0], name) 
+      else
+        find(nil, name)
+      end
+    end
+  %}
+#endif
+
   /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
     return ws_xml_get_node_attr( $self, index );
@@ -178,6 +278,14 @@
   }
 #endif
 }
+
+
+
+
+/*
+ * class XmlAttr
+ *
+ */
 
 
 %extend __WsXmlAttr {
