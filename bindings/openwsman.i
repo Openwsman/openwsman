@@ -48,6 +48,7 @@
 #include <wsman-client-transport.h>
 #include <wsman-api.h>
 #include <wsman-xml-api.h>
+#include <wsman-xml.h>
 #include <wsman-epr.h>
 #include <wsman-filter.h>
 #include <wsman-soap.h>
