@@ -39,4 +39,16 @@ class WsXmlNodeTest < Test::Unit::TestCase
     assert envelope.name == "Envelope"
     assert envelope.ns == Rbwsman::XML_NS_SOAP_1_2
   end
+  def test_node_add
+    doc = Rbwsman::XmlDoc.new "node"
+    root = doc.root
+    node = root.add("ns", "name", "value")
+    root << node
+    root << node
+    root << node
+    assert root.size == 4
+    assert root[1] != node # its a dup
+    assert root[0].name == root[1].name
+    puts doc
+  end
 end

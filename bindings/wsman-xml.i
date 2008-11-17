@@ -186,7 +186,14 @@
   WsXmlNodeH add( const char *ns, const char *name, const char *value = NULL ) {
     return ws_xml_add_child( $self, ns, name, value );
   }
-
+#if defined(SWIGRUBY)
+  %alias add "<<";
+#endif
+  WsXmlNodeH add(WsXmlNodeH node) {
+    ws_xml_duplicate_tree( $self, node );
+    return $self;
+  }
+  
   /* iterate children */
 
 #if defined(SWIGRUBY)
