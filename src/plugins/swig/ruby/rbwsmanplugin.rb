@@ -5,6 +5,16 @@
 #
 
 module Rbwsman
+  class XmlDoc
+    def self.method_missing method, *args
+      STDERR.puts "#{self.class}.#{method} not implemented"
+    end
+  end
+  class XmlNode
+    def self.method_missing method, *args
+      STDERR.puts "#{self.class}.#{method} not implemented"
+    end
+  end
   def self.create_plugin
     Sample.new
   end
@@ -121,7 +131,7 @@ module Rbwsman
   # catch missing methods
   #
   def self.method_missing method, *args
-    STDERR.puts "WsmanPlugin.#{method} not implemented"
+    STDERR.puts "#{self.class}.#{method} not implemented"
   end
   class Sample
     SCHEMA = "http://schema.opensuse.org/swig/wsman-schema/1-0"
