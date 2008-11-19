@@ -236,6 +236,7 @@
       WsXmlNodeH child = ws_xml_get_child($self, i, NULL, NULL);
       if (!strcmp(ws_xml_get_node_local_name(child), name))
         return child;
+      ++i;
     }
     return NULL;
   }
