@@ -17,7 +17,7 @@ class WsmanTest < Test::Unit::TestCase
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
     method = "GetOwner"
-    result = client.invoke( uri, method, options )
+    result = client.invoke( options, uri, method, nil, 0, "utf-8" )
 
   end
 
@@ -49,12 +49,12 @@ loop do
     break unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( uri, context, options )
+    result = client.pull( options, nil, uri, context )
     break unless result
 
     results += 1
     body = result.body
-    fault = body.child( 0, WsMan::NS_SOAP, "Fault" )
+    fault = body.find( Rbwsman::XML_NS_SOAP_1_2, "Fault" )
     if fault
 	puts "Got fault"
 	faults += 1
@@ -67,18 +67,18 @@ loop do
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    node = body.PullResponse.Items.CIM_Process
-    caption = node.Caption
-    handle = node.Handle
-    virtual_size = node.VirtualSize
-    proc_id = node.ProcessId
-    cmd = node.ExecutablePath
+    node = body.find(nil, "CIM_Process")
+    caption = node["Caption"]
+    handle = node["Handle"]
+    virtual_size = node["VirtualSize"]
+    proc_id = node["ProcessId"]
+    cmd = node["ExecutablePath"]
 
     ires = get_owner handle if handle
     b = ires.body
     output = b.GetOwner_OUTPUT
     user = ""
-    output.each_child { |child|
+    output.each { |child|
 	text = child.text
 	if child.name == "User"
 		user = text
@@ -89,7 +89,7 @@ loop do
     printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
 end
 
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
   end
 end
