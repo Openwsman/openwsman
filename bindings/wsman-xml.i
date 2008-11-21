@@ -81,6 +81,9 @@
  */
 
 %extend __WsXmlNode {
+  ~__WsXmlNode() {
+    ws_xml_unlink_node($self);
+  }
 #if defined(SWIGRUBY)
   %alias text "to_s";
 #endif
@@ -286,7 +289,6 @@
   }
 #endif
 }
-
 
 
 

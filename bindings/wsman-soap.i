@@ -13,6 +13,8 @@
  */
 
 %extend __WsEnumerateInfo {
+  ~__WsEnumerateInfo() {
+  }
   int max_items() { return $self->maxItems; }
 #if defined(SWIGRUBY)
   %rename("max_items=") set_max_items(int mi);
@@ -124,6 +126,9 @@
  */
  
 %extend __Soap {
+  ~__Soap() {
+    soap_destroy($self);
+  }
   %typemap(newfree) WsContextH "free($1);";
   %newobject create_context;
   WsContextH create_context() {
@@ -144,6 +149,9 @@
  */
 
 %extend _WS_CONTEXT {
+  ~_WS_CONTEXT() {
+    ws_destroy_context($self);
+  }
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
   %newobject create_fault;
   WsXmlDocH create_fault(WsXmlDocH rqstDoc,
