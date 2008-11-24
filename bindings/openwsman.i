@@ -234,7 +234,7 @@ static WsXmlDocH create_soap_envelope();
   WsXmlDocH delete( client_opt_t *options , char *resource_uri) {
     return wsmc_action_delete( $self, resource_uri, options);
   }
-  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, char *data, size_t size, char *encoding) {
+  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, char *data = NULL, size_t size = 0, char *encoding = "utf-8") {
     return wsmc_action_invoke_fromtext( $self, resource_uri, options, method, data, size, encoding);
   }
 
