@@ -22,16 +22,17 @@ class WsmanTest < Test::Unit::TestCase
     result = client.enumerate( options, nil, uri )
     assert result
 #    puts "Enum result #{result}"
+    context = result.context
 
 loop do
-    context = result.context
     assert context
     puts "Context: #{context}"
     
     result = client.pull( options, nil, uri, context )
     break unless result
-#    puts "Pull result #{result}"
+    puts "Pull result #{result}"
 
+    
     body = result.body
     fault = body.find( Rbwsman::XML_NS_SOAP_1_2, "Fault" )
     if fault
@@ -44,6 +45,9 @@ loop do
     puts "Items #{node}"
     
     break if body.find( Rbwsman::XML_NS_ENUMERATION, "EndOfSequence")
+    puts "Next"
+  
+    context = result.context
 end
 
     client.release( options, uri, context ) if context
