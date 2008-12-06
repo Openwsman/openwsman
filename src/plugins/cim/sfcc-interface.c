@@ -353,12 +353,15 @@ static void cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 {
 	hscan_t hs;
 	hnode_t *hn;
+	selector_entry *sentry = NULL;
 	hash_t * args = client->method_args;
 	hash_scan_begin(&hs, args);
 	while ((hn = hash_scan_next(&hs))) {
+		sentry = (selector_entry*)hnode_get(hn);
 		CMAddArg(argsin, (char *) hnode_getkey(hn),
-				(char *) hnode_get(hn), CMPI_chars);
+				(char *) sentry->entry.text, CMPI_chars);
 	}
+	u_free(sentry);
 }
 
 
