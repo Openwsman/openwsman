@@ -1,6 +1,10 @@
 # test WsXmlAttr class
+
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require './rbwsman'
+require 'rbwsman'
 
 class WsXmlAttrTest < Test::Unit::TestCase
   def test_attr_constructor

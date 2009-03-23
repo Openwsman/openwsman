@@ -1,6 +1,10 @@
 # test defined constants
+
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require './rbwsman'
+require 'rbwsman'
 
 class ConstantTest < Test::Unit::TestCase
   def test_constants

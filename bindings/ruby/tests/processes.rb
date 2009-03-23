@@ -1,8 +1,11 @@
 # enumerate.rb
 
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
 require 'rexml/document'
-require '../src/rwsman'
+require 'rbwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client

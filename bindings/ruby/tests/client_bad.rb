@@ -1,5 +1,8 @@
 # client.rb
 
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
 require 'rbwsman'
 require '_client'

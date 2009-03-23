@@ -5,11 +5,11 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rbwsman'
+require 'auth-callback'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify
-#   Rbwsman::debug = 1
-    client = Rbwsman::Client.new( "http://wsman:secret@localhost:8889/wsman" )
+    client = Rbwsman::Client.new( "http://wsman:secret@localhost:8889/wsman-anon/identify" )
     assert client
     options = Rbwsman::ClientOptions.new
     assert options

@@ -1,7 +1,10 @@
 # client.rb
 
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require './rbwsman'
+require 'rbwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_debug

@@ -1,7 +1,10 @@
 # identify.rb
 
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require '../src/rwsman'
+require 'rbwsman'
 require '_client'
 
 require 'auth-callback'

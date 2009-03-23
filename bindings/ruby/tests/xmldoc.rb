@@ -1,6 +1,10 @@
 # test WsXmlDoc class
+
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require './rbwsman'
+require 'rbwsman'
 
 class WsXmlDocTest < Test::Unit::TestCase
   def test_doc_constructor

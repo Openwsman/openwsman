@@ -1,3 +1,11 @@
+microsoft:
+  scheme: http
+  host: wsman.msft.net
+  port: 80
+  path: /wsman
+  username: 
+  password: 
+  
 localhost:
   scheme: http
   host: localhost

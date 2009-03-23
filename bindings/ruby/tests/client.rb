@@ -1,6 +1,10 @@
 # test client class
+
+$:.unshift "../../../build/bindings/ruby"
+$:.unshift "../.libs"
+
 require 'test/unit'
-require './rbwsman'
+require 'rbwsman'
 
 class ClientTest < Test::Unit::TestCase
   def test_client_constructor_uri_simple

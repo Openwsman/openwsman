@@ -1,5 +1,5 @@
-# cim_computer_system.rb
-#  enumerate/pull/release for CIM_OperatingSystem
+# cim_enumerate_classnames.rb
+#  test EnumerateClassnames CIM extension
 
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
@@ -10,13 +10,14 @@ require 'rbwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
-  def test_client
+  def test_enumerate_classnames
+#    Rbwsman::debug = 1
     client = Client.open
     assert client
     options = Rbwsman::ClientOptions.new
     assert options
-#    options.flags = WsMan::ClientOption::DUMP_REQUEST
-    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_OperatingSystem"
+    options.set_dump_request
+    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/ClassNames"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_HostedService"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_CommMechanismForManager"
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ManagedElement"
@@ -31,7 +32,14 @@ class WsmanTest < Test::Unit::TestCase
 	result = client.pull( options, nil, uri, context )
 	puts "Response ##{count}"
 #	puts "### #{result}"
-	result.body["PullResponse"]["Items"].child.each { |child|
+#	items = result.body.PullResponse.Items.child
+	items = result.body["PullResponse"]
+	assert items
+	items = items["Items"]
+	assert items
+	items = items.first
+	assert items
+	items.each { |child|
 	    puts "\t#{child.name} = #{child.text}"
 	}
 	context = result.context
