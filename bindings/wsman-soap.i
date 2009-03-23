@@ -9,8 +9,12 @@
 
 
 /*
- * EnumerateInfo
+ * __WsEnumerateInfo -> EnumerateInfo
  */
+ 
+%nodefault __WsEnumerateInfo;
+%rename(EnumerateInfo) __WsEnumerateInfo;
+struct __WsEnumerateInfo {};
 
 %extend __WsEnumerateInfo {
   ~__WsEnumerateInfo() {
@@ -84,8 +88,12 @@
 
 
 /*
- * SoapOp
+ * __SoapOp -> SoapOp
  */
+ 
+%nodefault __SoapOp;
+%rename(SoapOp) __SoapOp;
+struct __SoapOp {};
 
 %extend __SoapOp {
   WsXmlDocH indoc() {
@@ -122,8 +130,13 @@
 
 
 /*
- * Soap
+ * __Soap -> Soap
  */
+ 
+%nodefault __Soap;
+%rename(Soap) __Soap;
+struct __Soap {};
+
  
 %extend __Soap {
   ~__Soap() {
@@ -145,8 +158,12 @@
 
 
 /*
- * Context
+ * WsContext -> Context
  */
+ 
+%nodefault _WS_CONTEXT;
+%rename(Context) _WS_CONTEXT;
+struct _WS_CONTEXT {};
 
 %extend _WS_CONTEXT {
   ~_WS_CONTEXT() {
@@ -220,8 +237,12 @@
 
 
 /*
- * Status
+ * WsmanStatus -> Status
  */
+ 
+%nodefault _WsmanStatus;
+%rename(Status) _WsmanStatus;
+struct _WsmanStatus {};
 
 %extend _WsmanStatus {
   _WsmanStatus() {

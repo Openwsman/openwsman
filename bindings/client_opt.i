@@ -1,9 +1,16 @@
 /*
- * client_opt.i
+ *
+ * ClientOptions
  *
  * client option declarations for openwsman swig bindings
  *
  */
+ 
+%rename(ClientOptions) client_opt_t;
+%nodefault client_opt_t;
+typedef struct {
+} client_opt_t;
+
 
 %extend client_opt_t {
   client_opt_t() {

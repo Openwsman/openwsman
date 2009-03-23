@@ -14,6 +14,11 @@
  *
  */
 
+%rename(Transport) _WsManTransport;
+%nodefault _WsManTransport;
+typedef struct _WsManTransport {} WsManTransport;
+
+
 %extend WsManTransport {
 
  %constant int NO_AUTH           = WS_NO_AUTH;

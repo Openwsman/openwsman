@@ -2,8 +2,18 @@
  * wsman-epr.i
  *
  * end point reference declarations for openwsman swig bindings
+ *
+ * EndPointReference
+ *
  */
  
+ 
+%rename(EndPointReference) epr_t;
+%nodefault epr_t;
+typedef struct {
+    char * address;
+} epr_t;
+
 %extend epr_t {
   epr_t( const char *uri, const char *address) {
     return epr_create( uri, NULL, address);

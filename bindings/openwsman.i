@@ -137,6 +137,15 @@ static WsXmlDocH create_soap_envelope();
 /*-----------------------------------------------------------------*/
 /* client */
 
+/*
+ * Client
+ */
+
+%rename(Client) _WsManClient;
+%nodefault _WsManClient;
+typedef struct _WsManClient {
+} WsManClient;
+
 %extend WsManClient {
   /* constructor */
   WsManClient( const char *uri ) {
@@ -195,13 +204,12 @@ static WsXmlDocH create_soap_envelope();
   int send_request(WsXmlDocH request) {
     return wsman_send_request($self, request);
   }
-}
+
 
 
 /*-----------------------------------------------------------------*/
 /* actions */
 
-%extend WsManClient {
   WsXmlDocH identify( client_opt_t *options ) {
     return wsmc_action_identify( $self, options );
   }

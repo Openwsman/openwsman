@@ -3,7 +3,18 @@
  *
  * filter declarations for openwsman swig bindings
  *
+ *
+ * Filter
+ *
  */
+
+ 
+%rename(Filter) filter_t;
+%nodefault filter_t;
+typedef struct {
+    char *resultClass;
+    char *assocClass;
+} filter_t;
 
 %extend filter_t {
     filter_t() {

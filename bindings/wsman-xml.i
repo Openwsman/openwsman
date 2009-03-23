@@ -5,9 +5,25 @@
  */
 
 /*
+ * WsXmlNs
+ */
+ 
+%nodefault __WsXmlNs;   /* part of WsXmlAttr */
+%rename(XmlNs) __WsXmlNs;
+%ignore __WsXmlNs::__undefined;
+ 
+
+
+
+
+/*
  * class XmlDoc
  *
  */
+
+%nodefault _WsXmlDoc;
+%rename(XmlDoc) _WsXmlDoc;
+struct _WsXmlDoc {};
 
 %extend _WsXmlDoc {
   /* constructor */
@@ -74,11 +90,13 @@
   }
 }
 
-
 /*
- * class XmlNode
- *
+ * class XmlNode -> WsXmlNode
  */
+ 
+%nodefault __WsXmlNode; /* part of WsXmlDoc */
+%rename(XmlNode) __WsXmlNode;
+%ignore __WsXmlNode::__undefined;
 
 %extend __WsXmlNode {
   ~__WsXmlNode() {
@@ -291,11 +309,13 @@
 }
 
 
-
 /*
- * class XmlAttr
- *
+ * WsXmlAttr
  */
+ 
+%nodefault __WsXmlAttr; /* part of WsXmlNode */
+%rename(XmlAttr) __WsXmlAttr;
+%ignore __WsXmlAttr::__undefined;
 
 
 %extend __WsXmlAttr {
