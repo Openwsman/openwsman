@@ -151,6 +151,7 @@ typedef SV * Target_Type;
 
 #include <stdint.h>
 
+#include <wsman-xml.h>
 #include <wsman-soap.h>
 #include <wsman-soap-envelope.h>
 #include <wsman-faults.h>
