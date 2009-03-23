@@ -23,7 +23,7 @@ endif(COMMAND cmake_policy)
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
-SET(VERSION "\"${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}\"")
+SET(VERSION "${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}")
    MESSAGE(STATUS "Version ${VERSION}")
 
 # Library path (lib / lib64 )
@@ -144,16 +144,12 @@ IF( BUILD_PYTHON )
 ENDIF( BUILD_PYTHON )
 
 IF( BUILD_PERL )
-INCLUDE(FindPerl)
-INCLUDE(FindPerlLibs)
-MESSAGE(STATUS "Building Perl bindings" )
- IF(NOT PERL_INCLUDE_PATH )
-  IF(BUILD_PERL_EXPLICIT)
-   NO_HEADERS_WARNING_EXPL(BUILD_PERL Perl)
-  ELSE(BUILD_PERL_EXPLICIT)
-   NO_HEADERS_WARNING(BUILD_PERL Perl)
-  ENDIF(BUILD_PERL_EXPLICIT)
- ENDIF(NOT PERL_INCLUDE_PATH )
+  INCLUDE(FindPerl)
+  IF(PERL_EXECUTABLE)
+    MESSAGE(STATUS "Building Perl bindings" )
+  ELSE(PERL_EXECUTABLE)
+    MESSAGE(WARNING "Perl not found" )
+  ENDIF(PERL_EXECUTABLE)
 ENDIF( BUILD_PERL )
 
 # swig
@@ -355,17 +351,22 @@ ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 SET(PACKAGE "\"openwsman\"")
 SET(PACKAGE_BUGREPORT "\"www.openwsman.org\"")
-SET(PACKAGE_NAME "\"openwsman\"")
+SET(PACKAGE_NAME "openwsman")
 SET(PACKAGE_STRING "\"WS-Management for all\"")
 SET(PACKAGE_TARNAME "\"openwsman-${VERSION}.tar.bz2\"")
-SET(PACKAGE_VERSION "${VERSION}")
+SET(PACKAGE_VERSION "\"${VERSION}\"")
+
+SET("prefix" ${PREFIX})
+SET(WSMAN_PKG wsman)
+SET(WSMAN_CLIENT_PKG wsman_client)
+SET(WSMAN_CLIENT_TRANSPORT_PKG wsman_curl_client_transport)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/wsman_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/wsman_config.h)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman++.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman-server.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.spec.cmake ${CMAKE_CURRENT_BINARY_DIR}/openwsman.spec)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman++.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman-server.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.spec.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.spec)
 
 add_subdirectory(include)
 add_subdirectory(src)
@@ -384,10 +385,6 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Woverloaded-virtual" )
 SET( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -g -Wall" )
 SET( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3" )
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3" )
-
-########### install files ###############
-
-install(FILES  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/openwsman )
 
 ####################################################################
 # PACKAGING                                                        #
@@ -462,6 +459,7 @@ ENDIF(HAVE_WARNINGS)
 #install-data-local: openwsman.pc
 #	$(mkinstalldirs) $(DESTDIR)$(libdir)/pkgconfig
 #	$(INSTALL_DATA)  openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc DESTINATION lib/pkgconfig )
 #	$(INSTALL_DATA)  openwsman++.pc $(DESTDIR)$(libdir)/pkgconfig
 #	$(INSTALL_DATA)  openwsman-server.pc $(DESTDIR)$(libdir)/pkgconfig
 #
