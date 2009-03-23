@@ -3,6 +3,7 @@
 #
 
 enable_testing()
+
 add_subdirectory(tests)
 
 MESSAGE(STATUS "Ruby executable: ${RUBY_EXECUTABLE}")
@@ -27,7 +28,6 @@ SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 SET(rbwsman_SRCS ${SWIG_OUTPUT} ${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c )
 ADD_LIBRARY( rbwsman SHARED ${rbwsman_SRCS} )
 SET_TARGET_PROPERTIES( rbwsman PROPERTIES PREFIX "" )
-ADD_DEPENDENCIES( rbwsman glue )
 
 INCLUDE_DIRECTORIES( ${RUBY_INCLUDE_PATH} )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
