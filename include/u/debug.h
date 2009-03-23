@@ -81,9 +81,15 @@ void debug_full_verbose(debug_level_e  level, char *file,
 
 // #define ENABLE_TRACING
 #ifdef ENABLE_TRACING
+#if defined (__SUNPRO_C) || defined(__SUNPRO_CC)
+#define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __func__, __FILE__, __LINE__ );
+#define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __func__, __FILE__, __LINE__ , debug_helper (format));
+#define TRACE_EXIT  printf("TRACE: Leaving %s %s:%d\n", __func__, __FILE__, __LINE__ );
+#else // __SUNPRO_C || __SUNPRO_CC
 #define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
 #define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __FUNCTION__, __FILE__, __LINE__ , debug_helper (format));
 #define TRACE_EXIT  printf("TRACE: Leaving %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
+#endif // __SUNPRO_C || __SUNPRO_CC
 #else
 #define TRACE_ENTER
 #ifdef _WIN32
@@ -115,12 +121,21 @@ static __inline void message(char* format, ...) {
 
 #ifdef WSMAN_DEBUG_VERBOSE
 
+#if defined (__SUNPRO_C) || defined(__SUNPRO_CC)
+#define debug(format...) \
+        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__func__, format)
+#define error(format...) \
+        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__func__, format)
+#define message(format...) \
+        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__func__, format)
+#else // __SUNPRO_C || __SUNPRO_CC
 #define debug(format...) \
         debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
 #define error(format...) \
         debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, format)
 #define message(format...) \
         debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
+#endif // __SUNPRO_C || __SUNPRO_CC
 
 #else // WSMAN_DEBUG_VERBOSE
 

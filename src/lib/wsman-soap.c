@@ -618,7 +618,7 @@ wsman_register_endpoint(WsContextH cntx,
 	SoapH soap = ws_context_get_runtime(cntx);
 	char *action = NULL;
 
-	debug("Registering Endpoint: %s", ep->inAction);
+	debug("Registering Endpoint: %s", ep->inAction ? ep->inAction : "<null>");
 	switch (ep->flags & WS_DISP_TYPE_MASK) {
 	case WS_DISP_TYPE_IDENTIFY:
 		debug("Registering endpoint for Identify");

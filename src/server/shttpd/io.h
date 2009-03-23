@@ -14,6 +14,14 @@
 #include <assert.h>
 #include <stddef.h>
 
+#ifdef __GNUC__
+#define __INLINE__ __inline__
+#elif _WIN32
+#define __INLINE__ __inline
+#elif defined (__SUNPRO_C) || defined (__SUNPRO_CC)
+#define __INLINE__ inline
+#endif
+
 /*
  * I/O buffer descriptor
  */
@@ -25,7 +33,7 @@ struct io {
 	size_t		total;		/* Total bytes read		*/
 };
 
-static __inline void
+static __INLINE__ void
 io_clear(struct io *io)
 {
 	assert(io->buf != NULL);
@@ -33,7 +41,7 @@ io_clear(struct io *io)
 	io->total = io->tail = io->head = 0;
 }
 
-static __inline char *
+static __INLINE__ char *
 io_space(struct io *io)
 {
 	assert(io->buf != NULL);
@@ -42,7 +50,7 @@ io_space(struct io *io)
 	return (io->buf + io->head);
 }
 
-static __inline char *
+static __INLINE__ char *
 io_data(struct io *io)
 {
 	assert(io->buf != NULL);
@@ -51,7 +59,7 @@ io_data(struct io *io)
 	return (io->buf + io->tail);
 }
 
-static __inline size_t
+static __INLINE__ size_t
 io_space_len(const struct io *io)
 {
 	assert(io->buf != NULL);
@@ -60,7 +68,7 @@ io_space_len(const struct io *io)
 	return (io->size - io->head);
 }
 
-static __inline size_t
+static __INLINE__ size_t
 io_data_len(const struct io *io)
 {
 	assert(io->buf != NULL);
@@ -70,7 +78,7 @@ io_data_len(const struct io *io)
 	return (io->head - io->tail);
 }
 
-static __inline void
+static __INLINE__ void
 io_inc_tail(struct io *io, size_t n)
 {
 	assert(io->buf != NULL);
@@ -83,7 +91,7 @@ io_inc_tail(struct io *io, size_t n)
 		io->head = io->tail = 0;
 }
 
-static __inline void
+static __INLINE__ void
 io_inc_head(struct io *io, size_t n)
 {
 	assert(io->buf != NULL);

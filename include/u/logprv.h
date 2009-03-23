@@ -12,8 +12,13 @@
 extern "C" {
 #endif
 
+#if defined (__SUNPRO_C) || defined(__SUNPRO_CC)
+#define u_log_write(fac, lev, ctx, ...) \
+    u_log_write_ex(fac, lev, ctx, __FILE__, __LINE__,__func__, __VA_ARGS__)
+#else /* __SUNPRO_C || __SUNPRO_CC */
 #define u_log_write(fac, lev, ctx, ...) \
     u_log_write_ex(fac, lev, ctx, __FILE__, __LINE__,__FUNCTION__, __VA_ARGS__)
+#endif /* __SUNPRO_C || __SUNPRO_CC */
 
 /** pack context information (if [ctx] is > 0) and the priority label and 
     send both to the log system followed by the user message string 

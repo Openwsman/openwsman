@@ -73,6 +73,8 @@ typedef int ssize_t;
 #define __INLINE__ __inline__
 #elif _WIN32
 #define __INLINE__ __inline
+#elif __SUNPRO_C || __SUNPRO_CC
+#define __INLINE__ inline
 #  endif
 
 #ifndef _PASSWORD_LEN
