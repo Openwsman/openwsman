@@ -166,6 +166,10 @@ typedef SV * Target_Type;
 #include <java/helpers.c>
 #endif
 
+/* fool swig into aliasing WsManClient and WsManTransport */
+struct _WsManTransport { };
+typedef struct _WsManTransport WsManTransport;
+
 #include "../src/swig-plugin.c"
 
 %}
@@ -176,3 +180,4 @@ typedef SV * Target_Type;
 %include "wsman-xml.i"
 %include "wsman-names.i"
 %include "wsman-filter.i"
+%include "wsman-client.i"
