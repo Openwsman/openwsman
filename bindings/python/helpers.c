@@ -47,25 +47,53 @@
 static void
 auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username, char **password )
 {
+    PyObject *prv = NULL;
+    PyObject *puser = NULL;
+    PyObject *ppass = NULL;
     PyObject *c = SWIG_NewPointerObj((void*) client, SWIGTYPE_p__WsManClient, 0);
-#if 0
-    /* ruby callback */
-    VALUE result = rb_funcall( cTransport.klass, rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
+  
+    PyObject *pyfunc = PyObject_GetAttrString(c, "auth_request_callback"); 
 
-    if (CLASS_OF( result ) == rb_cArray) {
-	if (RARRAY(result)->len == 2 ) {
-	    VALUE first = rb_ary_entry( result, 0 );
-	    VALUE second = rb_ary_entry( result, 1 );
-	    if ((TYPE( first ) == T_STRING)
-		&& (TYPE( second ) == T_STRING) )
-	    {
-		*username = StringValuePtr( first );
-		*password= StringValuePtr( second );
-		return;
-	    }
-	}
-    }
-#endif
     *username = NULL;		/* abort authentication */
+
+    if (pyfunc == NULL)
+    {
+        PyErr_Print(); 
+        PyErr_Clear(); 
+        goto cleanup;
+    }
+    if (! PyCallable_Check(pyfunc)) 
+    {
+        goto cleanup; 
+    }
+    
+    prv = PyObject_CallObject(pyfunc, NULL);
+    if (PyErr_Occurred())
+    {
+        PyErr_Clear(); 
+        goto cleanup; 
+    }
+
+    /* expect a 2-elements tuple as return */
+
+    if (! PyTuple_Check(prv)
+	|| (PyTuple_Size(prv) != 2))
+    {
+        goto cleanup; 
+    }
+    puser = PyTuple_GetItem(prv, 0); 
+    ppass = PyTuple_GetItem(prv, 0); 
+    if (PyString_Check(puser) && PyString_Check(ppass))
+    {
+        *username = PyString_AsString(puser);
+        *password = PyString_AsString(ppass);
+    }
+
+cleanup:
+    if (puser) Py_DecRef(puser);
+    if (ppass) Py_DecRef(ppass);
+    if (pyfunc) Py_DecRef(pyfunc);
+    if (prv) Py_DecRef(prv);
+ 
     return;
 }
