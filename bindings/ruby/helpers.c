@@ -40,7 +40,7 @@
  
 /* convert char* to string VALUE */
 static VALUE
-makestring( char *s )
+makestring( const char *s )
 {
     if (s) return rb_str_new2( s );
     return Qnil;
