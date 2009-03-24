@@ -156,6 +156,7 @@ typedef SV * Target_Type;
 #include <wsman-soap-envelope.h>
 #include <wsman-faults.h>
 #include <wsman-client-api.h>
+#include <wsman-client-transport.h>
 
 #if defined(SWIGRUBY)
 #include <ruby/helpers.c>
