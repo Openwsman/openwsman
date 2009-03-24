@@ -1,3 +1,5 @@
+%module openwsman
+
 #if defined(SWIGJAVA)
 %module jwsman
 #endif
@@ -6,13 +8,7 @@
 %module pywsman
 #endif
 
-#if defined(SWIGCSHARP)
-%module cswsman
-#endif
-
 #if defined(SWIGRUBY)
-
-%module rbwsman
 
 %{
 #include <rubyio.h>
@@ -27,12 +23,9 @@
   /*rb_io_check_writable(fptr);*/
   $1 = GetReadFile(fptr);
 }
-
-/*SWIG 1.3.33: %feature("autodoc","1")*/
 #endif
 
 #if defined(SWIGPERL)
-%module openwsman
 
 //==================================
 // Typemap: Allow FILE* as PerlIO
