@@ -1,16 +1,6 @@
 /*
  * wsman-transport.i
- *
  * client transport declarations for openwsman swig bindings
- *
- * Transport is no separate struct in openwsman but part of WsManClient
- * However, accessing transport in e.g. Ruby as
- *  client.transport_<foo>
- * is cumbersome
- * Instead we provide
- *  t = client.transport
- *  t.<foo>
- * as a convenience
  *
  */
 
@@ -18,7 +8,19 @@
 %nodefault _WsManTransport;
 typedef struct _WsManTransport {} WsManTransport;
 
-
+/*
+ * Transport is no separate struct in openwsman but part of WsManClient
+ *
+ * However, accessing transport in e.g. Ruby as
+ *  client.transport_<foo>
+ * is cumbersome
+ *
+ * Instead we provide
+ *  t = client.transport
+ *  t.<foo>
+ * as a convenience
+ *
+ */
 %extend WsManTransport {
 
  %constant int NO_AUTH           = WS_NO_AUTH;

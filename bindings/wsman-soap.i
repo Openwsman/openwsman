@@ -8,14 +8,19 @@
 %include "wsman-faults.h"
 
 
-/*
- * __WsEnumerateInfo -> EnumerateInfo
- */
- 
 %nodefault __WsEnumerateInfo;
 %rename(EnumerateInfo) __WsEnumerateInfo;
 struct __WsEnumerateInfo {};
 
+/*
+ * EnumerateInfo contains all information related to an enumeration
+ * request.
+ *
+ * The initial client.enumerate operation only returns a +context+
+ * which can be used to +pull+ the next enumeration item. This item
+ * contains the next context in the chain.
+ *
+ */
 %extend __WsEnumerateInfo {
   ~__WsEnumerateInfo() {
   }
@@ -95,6 +100,10 @@ struct __WsEnumerateInfo {};
 %rename(SoapOp) __SoapOp;
 struct __SoapOp {};
 
+/*
+ * SoapOp represents a SOAP operation
+ *
+ */
 %extend __SoapOp {
   WsXmlDocH indoc() {
     return soap_get_op_doc($self, 1);
@@ -137,20 +146,39 @@ struct __SoapOp {};
 %rename(Soap) __Soap;
 struct __Soap {};
 
- 
+/*
+ * Soap represents a part of a SoapOp used to create and reference
+ * context information.
+ *
+ * There is no constructor for Soap, use SoapOp.soap to access the
+ * Soap instance associated with a SOAP operation.
+ *
+ */
 %extend __Soap {
   ~__Soap() {
     soap_destroy($self);
   }
   %typemap(newfree) WsContextH "free($1);";
   %newobject create_context;
+  /*
+   * Create a new Context
+   *
+   */
   WsContextH create_context() {
     return ws_create_context($self);
   }
+  /*
+   * Get the current Context
+   *
+   */
   WsContextH context() {
     return ws_get_soap_context($self);
   }
   %newobject create_ep_context;
+  /*
+   * Create a new endpoint Context
+   *
+   */
   WsContextH create_ep_context( WsXmlDocH doc ) {
     return ws_create_ep_context( $self, doc );
   }
@@ -165,12 +193,23 @@ struct __Soap {};
 %rename(Context) _WS_CONTEXT;
 struct _WS_CONTEXT {};
 
+/*
+ * Context contains all information of an ongoing SOAP operation
+ *
+ * There is no constructor for Context, use Soap.context to get the
+ * current one.
+ *
+ */
 %extend _WS_CONTEXT {
   ~_WS_CONTEXT() {
     ws_destroy_context($self);
   }
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
   %newobject create_fault;
+  /*
+   * Create a fault XmlDoc
+   *
+   */
   WsXmlDocH create_fault(WsXmlDocH rqstDoc,
     const char *code, const char *subCodeNs, const char *subCode,
     const char *lang, const char *reason,
@@ -181,6 +220,10 @@ struct _WS_CONTEXT {};
   WsXmlDocH indoc() {
     return $self->indoc;
   }
+  /*
+   * Get the Soap runtime environment
+   *
+   */
   struct __Soap *runtime() {
     return ws_context_get_runtime($self);
   }
@@ -244,7 +287,15 @@ struct _WS_CONTEXT {};
 %rename(Status) _WsmanStatus;
 struct _WsmanStatus {};
 
+/*
+ * Status
+ *
+ */
 %extend _WsmanStatus {
+  /*
+   * Create an empty status
+   *
+   */
   _WsmanStatus() {
     WsmanStatus *s = (WsmanStatus *)malloc(sizeof(WsmanStatus));
     wsman_status_init(s);
@@ -267,6 +318,10 @@ struct _WsmanStatus {};
 #if defined(SWIGRUBY)
   %rename("detail=") set_detail(int detail);
 #endif
+  /*
+   * Set the fault detail code
+   *
+   */
   void set_detail(int detail) { $self->fault_detail_code = detail; }
   int detail() {
     return $self->fault_detail_code;
@@ -274,6 +329,10 @@ struct _WsmanStatus {};
 #if defined(SWIGRUBY)
   %rename("msg=") set_msg(const char *msg);
 #endif
+  /*
+   * Set the fault message
+   *
+   */
   void set_msg(const char *msg) {
     if (msg)
       $self->fault_msg = strdup(msg);
@@ -285,6 +344,10 @@ struct _WsmanStatus {};
   }
   %newobject generate_fault;
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
+  /*
+   * Create a new fault XmlDoc
+   *
+   */
   WsXmlDocH generate_fault(WsXmlDocH doc) {
     return wsman_generate_fault( doc, $self->fault_code, $self->fault_detail_code, $self->fault_msg);
   }

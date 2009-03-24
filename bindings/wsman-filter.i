@@ -14,8 +14,6 @@ typedef struct {
 } filter_t;
 
 /*
- * Document-class: Filter
- *
  * Filter are evaluated on the server side and help to reduce the amount
  * of processing and information transport.
  *
