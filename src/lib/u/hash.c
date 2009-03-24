@@ -588,7 +588,7 @@ hnode_t *hash_scan_next(hscan_t *scan)
  *    where N is the base 2 logarithm of the size of the hash table.
  */
 
-void hash_insert(hash_t *hash, hnode_t *node, void *key)
+void hash_insert(hash_t *hash, hnode_t *node, const void *key)
 {
     hash_val_t hkey, chain;
 
@@ -693,7 +693,7 @@ hnode_t *hash_delete(hash_t *hash, hnode_t *node)
     return node;
 }
 
-int hash_alloc_insert(hash_t *hash, void *key, void *data)
+int hash_alloc_insert(hash_t *hash, const void *key, const void *data)
 {
     hnode_t *node = hash->allocnode(hash->context);
 
@@ -824,14 +824,14 @@ static void hnode_free(hnode_t *node, void *context)
 
 static void hnode_free2(hnode_t *node, void *context)
 {
-   free(node->data);
+   free((void *)node->data);
    free(node);
 }
 
 static void hnode_free3(hnode_t *node, void *context)
 {
-   free(node->data);
-   free(node->key);
+   free((void *)node->data);
+   free((void *)node->key);
    free(node);
 }
 
@@ -839,7 +839,7 @@ static void hnode_free3(hnode_t *node, void *context)
  * Create a hash table node dynamically and assign it the given data.
  */
 
-hnode_t *hnode_create(void *data)
+hnode_t *hnode_create(const void *data)
 {
     hnode_t *node = malloc(sizeof *node);
     if (node) {
@@ -853,7 +853,7 @@ hnode_t *hnode_create(void *data)
  * Initialize a client-supplied node
  */
 
-hnode_t *hnode_init(hnode_t *hnode, void *data)
+hnode_t *hnode_init(hnode_t *hnode, const void *data)
 {
     hnode->data = data;
     hnode->next = NULL;
@@ -870,13 +870,13 @@ void hnode_destroy(hnode_t *hnode)
 }
 
 #undef hnode_put
-void ow_hnode_put(hnode_t *node, void *data)
+void ow_hnode_put(hnode_t *node, const void *data)
 {
     node->data = data;
 }
 
 #undef hnode_get
-void *ow_hnode_get(hnode_t *node)
+const void *ow_hnode_get(hnode_t *node)
 {
     return node->data;
 }

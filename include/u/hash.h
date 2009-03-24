@@ -73,8 +73,8 @@ extern int hash_val_t_bit;
 typedef struct hnode_t {
     #if defined(HASH_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)	/* 1 */
     struct hnode_t *hash_next;		/* 2 */
-    void *hash_key;		/* 3 */
-    void *hash_data;			/* 4 */
+    const void *hash_key;		/* 3 */
+    const void *hash_data;		/* 4 */
     hash_val_t hash_hkey;		/* 5 */
     #else
     int hash_dummy;
@@ -195,14 +195,14 @@ extern void ow_hash_free_nodes(hash_t *);
 extern void ow_hash_free(hash_t *);
 extern hash_t *ow_hash_init(hash_t *, hashcount_t, hash_comp_t,
 	hash_fun_t, hnode_t **, hashcount_t);
-extern void ow_hash_insert(hash_t *, hnode_t *, void *);
+extern void ow_hash_insert(hash_t *, hnode_t *, const void *);
 extern hnode_t *ow_hash_lookup(hash_t *, const void *);
 extern hnode_t *ow_hash_delete(hash_t *, hnode_t *);
-extern int ow_hash_alloc_insert(hash_t *, void *, void *);
+extern int ow_hash_alloc_insert(hash_t *, const void *, const void *);
 extern void ow_hash_delete_free(hash_t *, hnode_t *);
 
-extern void ow_hnode_put(hnode_t *, void *);
-extern void *ow_hnode_get(hnode_t *);
+extern void ow_hnode_put(hnode_t *, const void *);
+extern const void *ow_hnode_get(hnode_t *);
 extern const void *ow_hnode_getkey(hnode_t *);
 extern hashcount_t ow_hash_count(hash_t *);
 extern hashcount_t ow_hash_size(hash_t *);
@@ -217,8 +217,8 @@ extern void ow_hash_scan_delfree(hash_t *, hnode_t *);
 
 extern int ow_hash_verify(hash_t *);
 
-extern hnode_t *ow_hnode_create(void *);
-extern hnode_t *ow_hnode_init(hnode_t *, void *);
+extern hnode_t *ow_hnode_create(const void *);
+extern hnode_t *ow_hnode_init(hnode_t *, const void *);
 extern void ow_hnode_destroy(hnode_t *);
 
 #if defined(HASH_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
