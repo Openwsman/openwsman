@@ -3,8 +3,6 @@
  *
  * client declarations for openwsman swig bindings
  *
- * WsManClient
- *
  */
  
 %rename(Client) _WsManClient;
@@ -21,10 +19,22 @@ typedef struct _WsManClient {
  */
  
 %extend WsManClient {
-  /* constructor */
+  /*
+   * Create a client connection.
+   *
+   * There are two ways to connect to a client, either by specifying a
+   * URL or by passing all client parameters separately
+   *
+   * call-seq:
+   *  Client.new("http://user:pass@host.domain.com:1234/path")
+   *  Client.new(host, port, path, scheme, username, password)
+   *  Client.new("host.domain.com", 1234, "/path", "http", "user", "pass")
+   *
+   */
   WsManClient( const char *uri ) {
     return wsmc_create_from_uri( uri );
   }
+  /* :nodoc: */
   WsManClient(const char *hostname,
               const int port, const char *path,
               const char *scheme,
