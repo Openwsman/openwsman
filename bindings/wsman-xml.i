@@ -70,13 +70,13 @@ struct _WsXmlDoc {};
   }
 
   /*
-   * dump document as string with specific encoding
+   * encode document as string with specific encoding
    *
    * encoding defaults to 'utf-8'
    *
    */
-  %newobject dump;
-  char *dump(const char *encoding="utf-8") {
+  %newobject encode;
+  char *encode(const char *encoding="utf-8") {
     int size;
     char *buf;
     ws_xml_dump_memory_enc( $self, &buf, &size, encoding );
@@ -196,9 +196,9 @@ struct _WsXmlDoc {};
   %rename("__str__") text();
 #endif
 
-  %newobject dump;
+  %newobject string;
   /* dump node as XML string */
-  char *dump() {
+  char *string() {
     int size;
     char *buf;
     ws_xml_dump_memory_node_tree( $self, &buf, &size );
