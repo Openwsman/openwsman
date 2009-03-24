@@ -441,9 +441,9 @@ WsContextH      ws_get_soap_context(SoapH soap);
 
 int             ws_destroy_context(WsContextH hCntx);
 
-void           *get_context_val(WsContextH hCntx, char *name);
+const void     *get_context_val(WsContextH hCntx, const char *name);
 
-void           *ws_get_context_val(WsContextH cntx, char *name, int *size);
+const void     *ws_get_context_val(WsContextH cntx, const char *name, int *size);
 
 unsigned long   ws_get_context_ulong_val(WsContextH cntx, char *name);
 

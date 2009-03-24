@@ -138,7 +138,7 @@ set_context_val(WsContextH cntx,
 static void
 free_hentry_func(hnode_t * n, void *arg)
 {
-	u_free(hnode_getkey(n));
+	u_free((void*)hnode_getkey(n));
 	u_free(n);
 }
 
@@ -2351,10 +2351,10 @@ ws_context_get_runtime(WsContextH cntx)
 }
 
 
-void *
-get_context_val(WsContextH cntx, char *name)
+const void *
+get_context_val(WsContextH cntx, const char *name)
 {
-	char           *val = NULL;
+	const char *val = NULL;
 	if (cntx && name) {
 		u_lock(cntx->soap);
 		if (cntx->entries) {
@@ -2368,8 +2368,8 @@ get_context_val(WsContextH cntx, char *name)
 }
 
 
-void *
-ws_get_context_val(WsContextH cntx, char *name, int *size)
+const void *
+ws_get_context_val(WsContextH cntx, const char *name, int *size)
 {
 	return get_context_val(cntx, name);
 }
@@ -2378,7 +2378,7 @@ ws_get_context_val(WsContextH cntx, char *name, int *size)
 unsigned long
 ws_get_context_ulong_val(WsContextH cntx, char *name)
 {
-	void  *ptr = get_context_val(cntx, name);
+	const void *ptr = get_context_val(cntx, name);
 	if (ptr != NULL)
 		return *((unsigned long *) ptr);
 	return 0;
