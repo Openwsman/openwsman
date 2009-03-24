@@ -1,3 +1,9 @@
+2.1.1
+- Support SUNpro C compiler
+- Add SWIG server-side plugin support (Klaus Kaempf)
+- Add Perl client bindings (Klaus Kaempf)
+- Client bindings cleanup and improvements (Klaus Kaempf)
+
 2.1.0
 - Security related fixes
 - Many bug fixes related to http stack
