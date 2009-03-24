@@ -36,6 +36,11 @@
 #endif
 
 %{
+#if defined(SWIGPERL)
+/* filter_t is defined in Perls CORE/perl.h */
+#define filter_t filter_type
+#endif
+
 #include <wsman-types.h>
 #include <wsman-client.h>
 #include <wsman-client-transport.h>
@@ -54,6 +59,9 @@
 #endif
 #if defined(SWIGJAVA)
 #include <java/helpers.c>
+#endif
+#if defined(SWIGPERL)
+#include <perl/helpers.c>
 #endif
 
 /* fool swig into aliasing WsManClient and WsManTransport */

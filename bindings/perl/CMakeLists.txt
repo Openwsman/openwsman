@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt for openwsman/bindings/python
+# CMakeLists.txt for openwsman/bindings/perl
 #
 #
 # !!Attn!!: This creates two files
@@ -42,8 +42,12 @@ SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 SET(wsman_SRCS ${SWIG_OUTPUT} )
 ADD_LIBRARY( plwsman SHARED ${wsman_SRCS} )
 SET_TARGET_PROPERTIES( plwsman PROPERTIES PREFIX "" )
+SET_TARGET_PROPERTIES( plwsman PROPERTIES OUTPUT_NAME "openwsman" )
 
-INCLUDE_DIRECTORIES( ${PERL_CORE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include )
+INCLUDE_DIRECTORIES( ${PERL_CORE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/bindings )
+
+# libperl.so lives here
+LINK_DIRECTORIES(${PERL_CORE_DIR})
 
 TARGET_LINK_LIBRARIES( plwsman wsman )
 TARGET_LINK_LIBRARIES( plwsman wsman_client )
