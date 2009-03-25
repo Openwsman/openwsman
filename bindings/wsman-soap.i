@@ -28,32 +28,63 @@ struct __WsEnumerateInfo {};
 #if defined(SWIGRUBY)
   %rename("max_items=") set_max_items(int mi);
 #endif
+  /*
+   * Set the maximum number of items returned by this enumeration
+   */
   void set_max_items(int mi) { $self->maxItems = mi; }
-  
+
+  /*
+   * flags
+   */
   int flags() {
     return $self->flags;
   }
+  
+  /*
+   * The URL of the endpoint receiving the enumeration (String)
+   */
   const char *epr_to() {
     return $self->epr_to;
   }
+  /*
+   * The URI of the end point reference (String)
+   */
   const char *epr_uri() {
     return $self->epr_uri;
   }
+  /*
+   * The current encoding (defaults to 'utf-8')
+   */
   const char *encoding() {
     return $self->encoding;
   }
+  /*
+   * The Filter for this enumeration
+   */
   const filter_t *filter() {
     return $self->filter;
   }
+  /*
+   * The current index (number of the last returned item)
+   */
   int index() {
     return $self->index;
   }
 #if defined(SWIGRUBY)
   %rename("index=") set_index(int i);
 #endif
+  /*
+   * Set a specific index (used to skip ahead)
+   */
   void set_index(int i) {
     $self->index = i;
   }
+  /*
+   * The total number of items in this enumeration
+   *
+   * index is the number already returned, this is the total number
+   *
+   */
   int total_items() {
     return $self->totalItems;
   }
@@ -80,12 +111,21 @@ struct __WsEnumerateInfo {};
     $self->appEnumContext = (void *)context;
   }
 #endif
+  /*
+   * XmlDoc representing the result pulled last
+   */
   WsXmlDocH pull_result() {
     return (WsXmlDocH)$self->pullResultPtr;
   }
 #if defined(SWIGRUBY)
   %rename("pull_result=") set_pull_result(WsXmlDocH result);
 #endif
+  /*
+   * Set the pull result (XmlDoc)
+   *
+   * Used for server-side plugin extensions
+   *
+   */
   void set_pull_result(WsXmlDocH result) {
     $self->pullResultPtr = (void *)result;
   }
@@ -105,33 +145,58 @@ struct __SoapOp {};
  *
  */
 %extend __SoapOp {
+  /*
+   * The incoming XmlDoc
+   */
   WsXmlDocH indoc() {
     return soap_get_op_doc($self, 1);
   }
 #if defined(SWIGRUBY)
   %rename("indoc=") set_indoc( WsXmlDocH doc );
 #endif
+  /*
+   * Set the incoming XmlDoc
+   */
   void set_indoc( WsXmlDocH doc ) {
     soap_set_op_doc( $self, doc, 1 );
   }
+  /*
+   * The outgoing XmlDoc
+   */
   WsXmlDocH outdoc() {
     return soap_get_op_doc($self, 0);
   }
 #if defined(SWIGRUBY)
   %rename("outdoc=") set_outdoc( WsXmlDocH doc );
 #endif
+  /*
+   * Set the outgoing XmlDoc
+   */
   void set_outdoc( WsXmlDocH doc ) {
     soap_set_op_doc( $self, doc, 0 );
   }
+  /*
+   * The destination URL (String)
+   */
   const char *dest_url() {
     return soap_get_op_dest_url($self);
   }
+  /*
+   * The Soap instance of this operation
+   */
   struct __Soap *soap() {
     return soap_get_op_soap($self);
   }
+  /*
+   * The raw (SOAP) message for this operation (opaque pointer
+   * currently)
+   */
   WsmanMessage *msg() {
     return wsman_get_msg_from_op($self);
   }
+  /*
+   * The maximum size (on the wire) of this operation
+   */
   unsigned long maxsize(){
     return wsman_get_maxsize_from_op($self);
   }
@@ -217,6 +282,9 @@ struct _WS_CONTEXT {};
   {
     return wsman_create_fault($self, rqstDoc, code, subCodeNs, subCode, lang, reason, addDetailProc, addDetailProcData);
   }
+  /*
+   * The incoming XmlDoc
+   */
   WsXmlDocH indoc() {
     return $self->indoc;
   }
@@ -230,15 +298,27 @@ struct _WS_CONTEXT {};
 #if defined(SWIGRUBY)
   %rename("enum_idle_timeout=") set_enumIdleTimeout(unsigned long timeout);
 #endif
+  /*
+   * Set the idle timeout for enumerations
+   */
   void set_enumIdleTimeout(unsigned long timeout) {
     ws_set_context_enumIdleTimeout($self, timeout);
   }
+  /*
+   * The class name (String)
+   */
   const char *classname() {
     return wsman_get_class_name($self);
   }
+  /*
+   * The method name (String)
+   */
   const char *method() {
     return wsman_get_method_name($self);
   }
+  /*
+   * The method arguments (Hash)
+   */
   hash_t *method_args(const char *resource_uri) {
     return wsman_get_method_args($self, resource_uri);
   }
@@ -305,13 +385,22 @@ struct _WsmanStatus {};
     if ($self->fault_msg) free($self->fault_msg);
     free($self);
   }
+  /*
+   * String representation (returns the fault message)
+   */
   const char *to_s() {
     return $self->fault_msg;
   }
 #if defined(SWIGRUBY)
   %rename("code=") set_code(int code);
 #endif
+  /*
+   * Set the fault code
+   */
   void set_code(int code) { $self->fault_code = code; }
+  /*
+   * Get the fault code
+   */
   int code() {
     return $self->fault_code;
   }
