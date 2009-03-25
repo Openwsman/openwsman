@@ -136,28 +136,25 @@ static WsXmlDocH create_soap_envelope() {
 
 #if defined(SWIGRUBY)
   %rename("debug=") set_debug(int debug);
-/*
- * call-seq:
- *   Rbwsman::debug
- *
- * Return openwsman debug level.
- */
 #endif
 
+/*
+ * Return openwsman debug level.
+ */
 static void set_debug(int dbg);
 
 #if defined(SWIGRUBY)
   %rename("debug") get_debug();
-/*
- * call-seq:
- *   Rbwsman::debug = 1
- *   Rbwsman::debug = 0
- *
- * Set openwsman debug level.
- */
 #endif
 
+/*
+ * Set openwsman debug level.
+ */
 static int get_debug();
 
+/*
+ * Create empty SOAP envelope (XmlDoc)
+ * 
+ */
 static WsXmlDocH create_soap_envelope();
 
