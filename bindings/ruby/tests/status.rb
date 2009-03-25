@@ -9,7 +9,7 @@ require 'rbwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_status
-    status = Rbwsman::Status.new
+    status = Openwsman::Status.new
     assert status
     status.code = 42
     assert status.code == 42

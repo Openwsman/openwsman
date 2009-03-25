@@ -17,7 +17,7 @@ class Client
       STDERR.puts "Client.open unknown name '#{name}'"
       raise "Check WSMANCLIENT environment variable against clients.yml"
     end
-    wsmc = Rbwsman::Client.new( client["host"], client["port"], client["path"], client["scheme"], client["username"], client["password"] )
+    wsmc = Openwsman::Client.new( client["host"], client["port"], client["path"], client["scheme"], client["username"], client["password"] )
     wsmc.transport.timeout = 5
     wsmc
   end

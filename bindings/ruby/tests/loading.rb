@@ -6,7 +6,7 @@ $:.unshift "../.libs"
 
 class LoadTest < Test::Unit::TestCase
   def test_loading
-    require 'rbwsman'
+    require 'openwsman'
     assert true
   end
 end

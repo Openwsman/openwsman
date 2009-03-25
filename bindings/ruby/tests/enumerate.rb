@@ -13,7 +13,7 @@ class WsmanTest < Test::Unit::TestCase
     client = Client.open
     assert client
     puts "Connecting as #{client.user}:#{client.password}"
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"
     result = client.enumerate( options, nil, uri )

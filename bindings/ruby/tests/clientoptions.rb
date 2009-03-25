@@ -8,7 +8,7 @@ require 'rbwsman'
 
 class ClientOptionsTest < Test::Unit::TestCase
   def test_client_options_constructor
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
   end
 end

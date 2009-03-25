@@ -17,7 +17,7 @@ class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
 #    puts "Flags = #{options.flags}"
@@ -45,7 +45,7 @@ class WsmanTest < Test::Unit::TestCase
 
     results += 1
     body = result.body
-    fault = body.child( 0, Rbwsman::NS_SOAP, "Fault" )
+    fault = body.child( 0, Openwsman::NS_SOAP, "Fault" )
     if fault
 	puts "Got fault"
 	faults += 1

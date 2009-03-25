@@ -15,7 +15,7 @@ class WsmanTest < Test::Unit::TestCase
   def get_owner h
     client = Client.open
     assert client
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     options.selectors = { :Handle => h.to_s }
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
@@ -27,7 +27,7 @@ class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
 #    puts "Flags = #{options.flags}"
@@ -57,7 +57,7 @@ loop do
 
     results += 1
     body = result.body
-    fault = body.find( Rbwsman::XML_NS_SOAP_1_2, "Fault" )
+    fault = body.find( Openwsman::XML_NS_SOAP_1_2, "Fault" )
     if fault
 	puts "Got fault"
 	faults += 1

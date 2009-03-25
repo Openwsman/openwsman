@@ -9,14 +9,14 @@ require 'rbwsman'
 class WsXmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes
   def test_node_constructor
-    doc = Rbwsman::XmlDoc.new "node"
+    doc = Openwsman::XmlDoc.new "node"
     assert doc
     root = doc.root
-    root.add( Rbwsman::XML_NS_SOAP_1_2, "one" )
+    root.add( Openwsman::XML_NS_SOAP_1_2, "one" )
     assert root[0].name = "one"
-    root.add( Rbwsman::XML_NS_SOAP_1_2, "two", "2" )
-    child = root.add( Rbwsman::XML_NS_SOAP_1_2, "three", "drei" )
-    assert child.ns == Rbwsman::XML_NS_SOAP_1_2
+    root.add( Openwsman::XML_NS_SOAP_1_2, "two", "2" )
+    child = root.add( Openwsman::XML_NS_SOAP_1_2, "three", "drei" )
+    assert child.ns == Openwsman::XML_NS_SOAP_1_2
     assert child.name == "three"
     assert child.text == "drei"
     assert root.size == 3
@@ -28,23 +28,23 @@ class WsXmlNodeTest < Test::Unit::TestCase
     assert i == root.size
   end
   def test_node_accessor
-    doc = Rbwsman::create_soap_envelope
+    doc = Openwsman::create_soap_envelope
     assert doc
     header = doc.element("Header")
     assert header
     assert header.name == "Header"
-    assert header.dump
+    assert header.to_s
     body = doc.element("Body")
     assert body
     assert body.name == "Body"
-    assert body.dump
+    assert body.to_s
     envelope = doc.envelope
     assert envelope
     assert envelope.name == "Envelope"
-    assert envelope.ns == Rbwsman::XML_NS_SOAP_1_2
+    assert envelope.ns == Openwsman::XML_NS_SOAP_1_2
   end
   def test_node_add
-    doc = Rbwsman::XmlDoc.new "node"
+    doc = Openwsman::XmlDoc.new "node"
     root = doc.root
     node = root.add("ns", "name", "value")
     root << node

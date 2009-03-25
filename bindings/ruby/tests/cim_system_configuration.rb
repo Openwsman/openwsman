@@ -13,7 +13,7 @@ class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
 #    options.flags = WsMan::ClientOption::DUMP_REQUEST
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_SystemConfiguration"

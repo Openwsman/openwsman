@@ -12,9 +12,9 @@ class WsmanTest < Test::Unit::TestCase
   def test_create
     client = Client.open
     assert client
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
-    s = Rbwsman::XmlDoc.new("create").to_s
+    s = Openwsman::XmlDoc.new("create").to_s
     result = client.create( options, "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_TimeZoneSettingData", s, s.size, "utf-8" )
     assert result
 
