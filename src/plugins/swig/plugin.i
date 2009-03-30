@@ -39,6 +39,8 @@
 
 %}
 
+%module openwsman
+
 #if defined(SWIGJAVA)
 %module jwsman
 #endif
@@ -51,14 +53,12 @@
 %module cswsman
 #endif
 
-#if defined(SWIGRUBY)
-%module rbwsman
-#endif
-
 %feature("autodoc","1");
 
 %include "typemaps.i"
 %include exception.i
+
+#define __type
 
 %{
 
