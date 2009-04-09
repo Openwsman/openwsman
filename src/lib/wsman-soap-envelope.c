@@ -713,6 +713,13 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 	return 0;
 }
 
+/*
+ * get option value
+ * 
+ * !! caller must u_free returned string
+ * 
+ */
+
 char *
 wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 		const char *op)
@@ -736,7 +743,8 @@ wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 			if (attrVal && strcmp(attrVal, op ) == 0 ) {
 				optval = ws_xml_get_node_text(option);
 				if (optval[0] == 0)
-					optval = u_strdup_printf("true");
+					optval = "true";
+				optval = u_strdup(optval);
 				debug("Option: %s=%s", attrVal, optval);
 				break;
 			}
