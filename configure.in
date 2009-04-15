@@ -312,7 +312,17 @@ if test "x$enable_ruby" = "xyes"; then
   fi
 fi
 AM_CONDITIONAL(BUILD_RUBY, test "x$enable_ruby" = "xyes")
+
+java_default=no
+AC_ARG_ENABLE(java,
+                [  --enable-java=[no/yes] build Java bindings [default=no]],,
+              enable_java=$java_default)
 AM_CONDITIONAL(BUILD_JAVA, test "x$enable_java" = "xyes")
+
+perl_default=no
+AC_ARG_ENABLE(perl,
+                [  --enable-perl=[no/yes] build Perl bindings [default=no]],,
+              enable_perl=$perl_default)
 AM_CONDITIONAL(BUILD_PERL, test "x$enable_perl" = "xyes")
 
 AC_ARG_ENABLE(ssl, [  --enable-ssl             Turn on Secure Sockets Layer support [default=yes]],,
