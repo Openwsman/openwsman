@@ -1325,6 +1325,35 @@ void cim_release_client(CimClientInfo * cimclient)
 	}
 }
 
+void release_cmpi_data(CMPIData data)
+{
+        debug("release_cmpi_data, type = %d",data.type);
+        switch(data.type)
+        {
+                case CMPI_string:
+                        debug("release String");
+                        CMRelease(data.value.string);
+                        break;
+                case CMPI_chars:
+                        debug("free chars");
+                        free (data.value.chars);
+                        break;
+                case CMPI_instance:
+                        debug("release instance");
+                        CMRelease(data.value.inst);
+                        break;
+                case CMPI_ref:
+                        debug("release ref");
+                        CMRelease(data.value.ref);
+                        break;
+                case CMPI_dateTime:
+                        debug("release datetime");
+                        CMRelease(data.value.dateTime);
+                        break;
+                default:
+                        break;
+        }
+}
 
 
 
@@ -1397,6 +1426,7 @@ cim_invoke_method(CimClientInfo * client,
 			CMRelease(argsin);
 		if (argsout)
 			CMRelease(argsout);
+		release_cmpi_data(data);
 	} else {
 		status->fault_code = statusP.fault_code;
 		status->fault_detail_code = statusP.fault_detail_code;
