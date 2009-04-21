@@ -115,7 +115,7 @@ xml_serializer_add_child(XmlSerializationData * data, char *value)
 	WsXmlNodeH node;
 
 	TRACE_ENTER;
-	debug("name = %s; value(%p) = %s", name, value, value);
+	debug("name = %s; value(%p) = %s", name ? name : "NULL", value, value ? value : "NULL");
 	node = ws_xml_add_child(data->xmlNode, ns, name, value);
 	TRACE_EXIT;
 	return node;
@@ -1367,7 +1367,8 @@ int do_serialize_struct(XmlSerializationData * data)
 	TRACE_ENTER;
 
 	debug("handle %d structure \"%s\" ptr = %p", DATA_COUNT(data),
-	      data->elementInfo->name, data->elementBuf);
+	      data->elementInfo->name ? data->elementInfo->name : "NULL",
+	      data->elementBuf);
 	if (data->mode != XML_SMODE_SERIALIZE &&
 	    data->mode != XML_SMODE_DESERIALIZE &&
 	    data->mode != XML_SMODE_FREE_MEM) {
@@ -1384,13 +1385,13 @@ int do_serialize_struct(XmlSerializationData * data)
 	    DATA_SIZE(data) : DATA_ALL_SIZE(data);
 	if ((char *) DATA_BUF(data) + retVal > data->stopper) {
 		error("size of %d structures \"%s\" exceeds stopper (%p > %p)",
-		      DATA_COUNT(data), DATA_ELNAME(data),
+		      DATA_COUNT(data), DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL",
 		      (char *) DATA_BUF(data) + retVal, data->stopper);
 		return WS_ERR_INVALID_PARAMETER;
 	}
 	if (DATA_MUST_BE_SKIPPED(data)) {
 		debug(" %d elements %s skipped", DATA_COUNT(data),
-		      DATA_ELNAME(data));
+		      DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL");
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
 		return retVal;
 	}
@@ -1415,7 +1416,8 @@ int do_serialize_struct(XmlSerializationData * data)
 		savedLocalIndex = data->index;
 		savedLocalElementBuf = DATA_BUF(data);
 		data->stopper = savedLocalElementBuf + DATA_SIZE(data);
-		debug("%s[%d] = %p", DATA_ELNAME(data), data->index,
+		debug("%s[%d] = %p", DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL",
+		      data->index,
 		      DATA_BUF(data));
 		if (data->mode == XML_SMODE_SERIALIZE) {
 			child = xml_serializer_add_child(data, NULL);
@@ -1431,7 +1433,7 @@ int do_serialize_struct(XmlSerializationData * data)
 				error
 				    ("not enough (%d < %d) instances of element %s",
 				     data->index, DATA_COUNT(data),
-				     DATA_ELNAME(data));
+				     DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL");
 				retVal = WS_ERR_XML_PARSING;
 				goto DONE;
 			}
@@ -1439,14 +1441,14 @@ int do_serialize_struct(XmlSerializationData * data)
 		}
 
 		debug("before for loop. Struct %s = %p",
-		      savedElement->name, DATA_BUF(data));
+		      savedElement->name ? savedElement->name : "NULL", DATA_BUF(data));
 
 		for (i = 0; retVal > 0 && i < elementCount; i++) {
 			data->elementInfo = &elements[i];
 			debug
 			    ("handle %d elements %s of struct %s. dstPtr = %p",
-			     DATA_COUNT(data), DATA_ELNAME(data),
-			     savedElement->name, DATA_BUF(data));
+			     DATA_COUNT(data), DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL",
+			     savedElement->name ? savedElement->name : "NULL", DATA_BUF(data));
 			if (XML_IS_SKIP(data->elementInfo)) {
 				data->mode = XML_SMODE_SKIP;
 			}
@@ -1456,7 +1458,7 @@ int do_serialize_struct(XmlSerializationData * data)
 
 			if (tmp < 0) {
 				error("handling of element \"%s\" failed = %d",
-				      DATA_ELNAME(data), tmp);
+				      DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL", tmp);
 				retVal = tmp;
 				goto DONE;
 			}

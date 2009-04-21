@@ -98,7 +98,7 @@ static int is_mu_header(WsXmlNodeH header)
 				return 1;
 		}
 	}
-	debug("mustUnderstand: %s:%s", !ns ? "null" : ns, name);
+	debug("mustUnderstand: %s:%s", !ns ? "null" : ns, name ? name : "NULL");
 	return 0;
 }
 
@@ -931,7 +931,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		WsXmlNodeH temp = ws_xml_get_child( ws_xml_get_soap_header(doc), 0,
 			XML_NS_EVENTING, WSEVENT_IDENTIFIER);
 		char *uuid = ws_xml_get_node_text(temp);
-		debug("Request uuid: %s", uuid);
+		debug("Request uuid: %s", uuid ? uuid : "NULL");
 		if(uuid) {
 			lnode_t *t = list_first(cntx->subscriptionMemList);
 			while(t != NULL) {
@@ -964,7 +964,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		}
 	}
 #endif
-	debug("uri: %s, action: %s", uri, action);
+	debug("uri: %s, action: %s", uri ? uri : "NULL", action ? action : "NULL");
 	if ((!uri || !action) && !wsman_is_identify_request(doc)) {
 		goto cleanup;
 	}
