@@ -361,7 +361,6 @@ static void cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 		CMAddArg(argsin, (char *) hnode_getkey(hn),
 				(char *) sentry->entry.text, CMPI_chars);
 	}
-	u_free(sentry);
 }
 
 
