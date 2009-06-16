@@ -348,23 +348,6 @@ property2xml(CimClientInfo * client, CMPIData data,
 }
 
 
-static void cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
-		CMPIArgs * argsin)
-{
-	hscan_t hs;
-	hnode_t *hn;
-	selector_entry *sentry = NULL;
-	hash_t * args = client->method_args;
-	hash_scan_begin(&hs, args);
-	while ((hn = hash_scan_next(&hs))) {
-		sentry = (selector_entry*)hnode_get(hn);
-		CMAddArg(argsin, (char *) hnode_getkey(hn),
-				(char *) sentry->entry.text, CMPI_chars);
-	}
-}
-
-
-
 char *cim_get_namespace_selector(hash_t * keys)
 {
 	char *cim_namespace = NULL;
@@ -396,21 +379,51 @@ static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 
 static CMPIObjectPath *
 cim_epr_to_objectpath(epr_t *epr) {
-	CMPIObjectPath * objectpath;
+	CMPIObjectPath * objectpath = NULL;
 	char *class = NULL;
 	if (epr && epr->refparams.uri) {
 		debug("uri: %s", epr->refparams.uri);
-		class = strrchr(epr->refparams.uri, '/') + 1;
+		class = strrchr(epr->refparams.uri, '/');
 	}
-	// FIXME
-	objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
-	wsman_epr_selector_cb(epr, cim_add_keys_from_filter_cb, objectpath);
-
-	debug( "ObjectPath: %s",
+	if (class) {
+		class++;
+		objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
+		wsman_epr_selector_cb(epr, cim_add_keys_from_filter_cb, objectpath);
+		debug( "ObjectPath: %s",
 			CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
-
+	}
 	return objectpath;
+}
 
+
+static void
+cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
+		CMPIArgs * argsin)
+{
+	hscan_t hs;
+	hnode_t *hn;
+	if (NULL == argsin) {
+		return;
+	}
+	hash_scan_begin(&hs, client->method_args);
+	while ((hn = hash_scan_next(&hs))) {
+		selector_entry *sentry = (selector_entry *)hnode_get(hn);
+		char *hkey = (char *)hnode_getkey(hn);
+		if (0 != sentry->type) {  /* reference */
+			CMPIValue value;
+			debug("epr: %p", sentry->entry.eprp);
+			if (NULL != sentry->entry.eprp) {
+				value.ref = cim_epr_to_objectpath(sentry->entry.eprp);
+				if (NULL != value.ref) {
+					CMAddArg(argsin, hkey, &value, CMPI_ref);
+				}
+			}
+		} else {
+			debug("text: %s", sentry->entry.text);
+			CMAddArg(argsin, hkey, sentry->entry.text, CMPI_chars);
+		}
+		u_free(sentry);
+	}
 }
 
 static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
@@ -431,8 +444,10 @@ static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 		else {
 			CMPIValue value;
 			value.ref = cim_epr_to_objectpath(sentry->entry.eprp);;
-			CMAddKey(objectpath, (char *) hnode_getkey(hn),
+			if (NULL != value.ref) {
+				CMAddKey(objectpath, (char *) hnode_getkey(hn),
 					&value, CMPI_ref);
+			}
 		}
 
 	}
