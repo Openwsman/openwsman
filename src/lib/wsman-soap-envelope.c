@@ -904,6 +904,11 @@ wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 }
 
 
+/*
+ * convert xml method args to hash_t
+ *
+ */
+
 hash_t *
 wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
@@ -932,25 +937,26 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 	if (in_node) {
 		WsXmlNodeH arg;
 		int index = 0;
+	        /* extract method args and build up hash 'h' */
 		while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
 			char *key = ws_xml_get_node_local_name(arg);
 
 			sentry = u_malloc(sizeof(*sentry));
+		        /* Check if the method argument has an epr child */
 			epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
 					WSA_REFERENCE_PARAMETERS);
 			if (epr) {
+			        /* extract embedded reference arg */
 				sentry->type = 1;
-				sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 0);
-				if (!hash_alloc_insert(h, key, sentry)) {
-					error("hash_alloc_insert failed");
-				}
+				sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 1);
 			} else {
+			        /* extract text arg */
 				debug("text: %s", key);
 				sentry->type = 0;
 				sentry->entry.text = ws_xml_get_node_text(arg);
-				if (!hash_alloc_insert(h, key, sentry)) {
-					error("hash_alloc_insert failed");
-				}
+			}
+			if (!hash_alloc_insert(h, key, sentry)) {
+			        error("hash_alloc_insert failed");
 			}
 		}
 	}
