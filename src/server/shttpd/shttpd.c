@@ -238,7 +238,7 @@ send_server_error(struct conn *c, int status, const char *reason)
 
 	io_clear(&c->loc.io);
 	c->loc.headers_len = c->loc.io.head = snprintf(c->loc.io.buf,
-	    c->loc.io.size, "HTTP/1.1 %d %s\r\n\r\n%d %s",
+	    c->loc.io.size, "HTTP/1.1 %d %s\r\nConnection: Close\r\n\r\n%d %s",
 	    status, reason, status, reason);
 	c->status = status;
 	stop_stream(&c->loc);

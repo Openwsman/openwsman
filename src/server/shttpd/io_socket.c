@@ -28,6 +28,7 @@ static void
 close_socket(struct stream *stream)
 {
 	assert(stream->chan.sock != -1);
+	shutdown(stream->chan.sock,SHUT_RDWR);
 	(void) closesocket(stream->chan.sock);
 }
 
