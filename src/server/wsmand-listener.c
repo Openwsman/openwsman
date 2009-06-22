@@ -388,6 +388,7 @@ DONE:
 #ifdef SHTTPD_GSS
     }
 #endif
+	shttpd_printf(arg,"Connection: Close\r\n");
 	shttpd_printf(arg, "\r\n");
 
 	/* add response body to output buffer */
