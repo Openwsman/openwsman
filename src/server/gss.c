@@ -30,7 +30,7 @@
 
 #ifdef SHTTPD_GSS
 
-#include "defs.h"
+#include "shttpd_defs.h"
 
 #include <gssapi/gssapi_generic.h>
 
