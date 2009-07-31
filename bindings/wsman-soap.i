@@ -270,18 +270,6 @@ struct _WS_CONTEXT {};
     ws_destroy_context($self);
   }
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
-  %newobject create_fault;
-  /*
-   * Create a fault XmlDoc
-   *
-   */
-  WsXmlDocH create_fault(WsXmlDocH rqstDoc,
-    const char *code, const char *subCodeNs, const char *subCode,
-    const char *lang, const char *reason,
-    void (*addDetailProc) (WsXmlNodeH, void *), void *addDetailProcData)
-  {
-    return wsman_create_fault($self, rqstDoc, code, subCodeNs, subCode, lang, reason, addDetailProc, addDetailProcData);
-  }
   /*
    * The incoming XmlDoc
    */
