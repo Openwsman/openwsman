@@ -43,10 +43,11 @@ openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 perl_LTLIBRARIES = openwsman.la
 
 openwsman_wrap.c: $(SWIG_SOURCES)
-	$(SWIG) -perl -I$(top_srcdir)/include -o $@ $<
+	$(SWIG) -perl -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
 	rm -f $(DESTDIR)${perlvendordir}/$(perl_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 
+EXTRA_DIST = helpers.c

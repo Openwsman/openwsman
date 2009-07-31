@@ -15,4 +15,4 @@ if BUILD_JAVA
 SUBDIRS += java
 endif
 
-EXTRA_DIST = openwsman.i openwsman.h
+EXTRA_DIST = *.i openwsman.h

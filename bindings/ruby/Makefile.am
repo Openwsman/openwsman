@@ -33,10 +33,11 @@ rbwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 ruby_LTLIBRARIES = rbwsman.la
 
 openwsman_wrap.c: $(SWIG_SOURCES)
-	$(SWIG) -ruby -I$(top_srcdir)/include -o $@ $<
+	$(SWIG) -ruby -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
 	rm -f $(DESTDIR)${rubydir}/$(ruby_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 
+EXTRA_DIST=helpers.c

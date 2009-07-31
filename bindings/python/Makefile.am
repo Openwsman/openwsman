@@ -30,11 +30,11 @@ _pywsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 python_LTLIBRARIES = _pywsman.la
 
 $(GENERATED): $(SWIG_SOURCES)
-	$(SWIG) -python -I$(top_srcdir)/include -o $@ $<
+	$(SWIG) -python -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
 	rm -f $(DESTDIR)${pythondir}/$(python_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED) *.pyc
 
-
+EXTRA_DIST=helpers.c
