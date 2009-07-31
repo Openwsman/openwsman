@@ -176,12 +176,6 @@ struct __SoapOp {};
     soap_set_op_doc( $self, doc, 0 );
   }
   /*
-   * The destination URL (String)
-   */
-  const char *dest_url() {
-    return soap_get_op_dest_url($self);
-  }
-  /*
    * The Soap instance of this operation
    */
   struct __Soap *soap() {

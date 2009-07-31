@@ -425,7 +425,6 @@ WsXmlDocH       soap_get_op_doc(SoapOpH op, int inbound);
 WsXmlDocH       soap_detach_op_doc(SoapOpH op, int inbound);
 int             soap_set_op_doc(SoapOpH op, WsXmlDocH doc, int inbound);
 SoapH           soap_get_op_soap(SoapOpH op);
-char           *soap_get_op_dest_url(SoapOpH op);
 
 
 
