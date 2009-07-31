@@ -5,7 +5,7 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_status

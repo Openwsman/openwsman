@@ -4,7 +4,7 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 
 class ConstantTest < Test::Unit::TestCase
   def test_constants

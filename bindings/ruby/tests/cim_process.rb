@@ -8,7 +8,7 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -29,7 +29,7 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-#    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
+#    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUEST
 #    puts "Flags = #{options.flags}"
 
 #
@@ -63,8 +63,8 @@ loop do
 	faults += 1
 	break
     end
-#    node = body.child( 0, WsMan::NS_ENUMERATION, "PullResponse" );
-#    node = node.child( 0, WsMan::NS_ENUMERATION, "Items" );
+#    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
+#    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
 #    node = node.child( 0, uri, "Win32_Service" );
 
 #    name = node.child( 0, uri, "Name" ).text;

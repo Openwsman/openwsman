@@ -4,12 +4,12 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 
 class NsConstsTest < Test::Unit::TestCase
   def test_consts
-    assert WsMan::NS_WSMAN == "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
-    assert WsMan::NS_SCHEMA_INSTANCE
+    assert Openwsman::NS_WSMAN == "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
+    assert Openwsman::NS_SCHEMA_INSTANCE
   end
 end
 

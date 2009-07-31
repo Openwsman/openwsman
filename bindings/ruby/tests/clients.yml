@@ -69,3 +69,11 @@ xphome:
   path: /wsman
   username: wsman
   password: secret
+
+virtualbox:
+  scheme: http
+  host: 10.10.100.66
+  port: 80
+  path: /wsman
+  username: wsman
+  password: secret

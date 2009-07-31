@@ -10,16 +10,16 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Openwsman::ClientOptions.new
     assert options
-#    options.flags = WsMan::CLIENTOPTION_DUMP_REQUESTz
+#    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUESTz
 #    puts "Flags = #{options.flags}"
 
 #
@@ -45,14 +45,14 @@ loop do
 
     results += 1
     body = result.body
-    fault = body.child( 0, WsMan::NS_SOAP, "Fault" )
+    fault = body.child( 0, Openwsman::NS_SOAP, "Fault" )
     if fault
 	puts "Got fault"
 	faults += 1
 	break
     end
-#    node = body.child( 0, WsMan::NS_ENUMERATION, "PullResponse" );
-#    node = node.child( 0, WsMan::NS_ENUMERATION, "Items" );
+#    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
+#    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
 #    puts node
 #    node = node.child( 0, uri, "Win32_Service" );
 
@@ -66,7 +66,7 @@ loop do
 
     method = "Shutdown"
 #    method = "StopService"
-    WsMan::debug = -1
+    Openwsman::debug = -1
     result = client.invoke( uri, method, options )
     puts result.rawxml
 

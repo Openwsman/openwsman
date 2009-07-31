@@ -10,17 +10,17 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 require '_client'
+require 'auth-callback'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Openwsman::ClientOptions.new
     assert options
-#    options.flags = WsMan::CLIENTOPTION_DUMP_REQUESTz
-#    puts "Flags = #{options.flags}"
+#    options.set_dump_request
 
 #
 # see http://msdn2.microsoft.com/en-us/library/aa386179.aspx for a list of CIM classes
@@ -28,7 +28,7 @@ class WsmanTest < Test::Unit::TestCase
 #
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service"
 
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
     results = 0
@@ -40,27 +40,31 @@ loop do
     break unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( uri, context, options )
+    filter = nil
+    result = client.pull( options, filter, uri, context )
     break unless result
 
     results += 1
     body = result.body
-    fault = body.child( 0, WsMan::NS_SOAP, "Fault" )
+    fault = body.find( Openwsman::XML_NS_SOAP_1_1, "Fault", 1 )
     if fault
-	puts "Got fault"
-	faults += 1
-	break
+      puts "Got fault"
+      faults += 1
+      break
     end
-#    node = body.child( 0, WsMan::NS_ENUMERATION, "PullResponse" );
-#    node = node.child( 0, WsMan::NS_ENUMERATION, "Items" );
+      
+#    puts body.string
+    
+#    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
+#    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
 #    node = node.child( 0, uri, "Win32_Service" );
 
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    node = body.PullResponse.Items.Win32_Service
-    name = node.Name
-    state = node.State
+    node = body.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Win32_Service" )
+    name = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Name" )
+    state = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "State" )
 
     puts "#{name} is #{state}"
 end

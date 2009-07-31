@@ -5,16 +5,16 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
-#    wsmc = WsMan::Client.new( client["scheme"], client["host"], client["port"], client["path"], client["username"], client["password"] )
-    client = WsMan::Client.new( "http://pegasus:secret@localhost:8889/wsman" )
+#    wsmc = Openwsman::Client.new( client["scheme"], client["host"], client["port"], client["path"], client["username"], client["password"] )
+    client = Openwsman::Client.new( "http://pegasus:secret@localhost:8889/wsman" )
     client.transport.timeout = 5
     assert client
     puts "Connected as #{client.username}:#{client.password}"
-    options = WsMan::ClientOption.new
+    options = Openwsman::ClientOptions.new
     assert options
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
     result = client.enumerate( uri, options )

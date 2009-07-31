@@ -4,7 +4,7 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 require 'auth-callback'
 
 class IdentifyTest < Test::Unit::TestCase

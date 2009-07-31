@@ -4,7 +4,7 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 
 class ClientOptionsTest < Test::Unit::TestCase
   def test_client_options_constructor

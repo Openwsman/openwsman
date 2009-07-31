@@ -4,7 +4,7 @@ $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'rbwsman'
+require 'openwsman'
 
 class WsXmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes

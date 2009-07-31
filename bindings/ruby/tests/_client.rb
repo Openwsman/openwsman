@@ -19,6 +19,7 @@ class Client
     end
     wsmc = Openwsman::Client.new( client["host"], client["port"], client["path"], client["scheme"], client["username"], client["password"] )
     wsmc.transport.timeout = 5
+    wsmc.transport.auth_method = Openwsman::BASIC_AUTH_STR
     wsmc
   end
 end

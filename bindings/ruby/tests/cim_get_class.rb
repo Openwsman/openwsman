@@ -6,7 +6,7 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase

@@ -2,7 +2,7 @@
 # define transport authorization callback, provide username & password interactively
 #
 
-module WsMan
+module Openwsman
   class Transport
       def Transport.auth_request_callback( client, auth_type )
 	puts "Transport.auth_request_callback( #{client}, #{auth_type} )"
@@ -14,7 +14,7 @@ module WsMan
 	print "Password:"
 	STDOUT.flush
 	password = STDIN.gets.chomp
-	return [ username, password ] if auth_type == Transport::AUTH_BASIC
+	return [ username, password ] if auth_type == BASIC_AUTH
 	return nil     # abort, if non-basic auth
       end
   end

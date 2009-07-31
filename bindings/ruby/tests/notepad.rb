@@ -5,16 +5,16 @@ $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'rbwsman'
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Client.open
     assert client
-    options = WsMan::ClientOption.new
+    options = Openwsman::ClientOptions.new
     assert options
-    options.flags = WsMan::CLIENTOPTION_DUMP_REQUEST
+    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUEST
 
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Process"
 

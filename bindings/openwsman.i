@@ -25,7 +25,6 @@
  *
  */
  
-%module openwsman
 
 #if defined(SWIGJAVA)
 %module jwsman
@@ -36,6 +35,7 @@
 #endif
 
 #if defined(SWIGRUBY)
+%module openwsman
 
 %{
 #include <rubyio.h>
@@ -53,6 +53,7 @@
 #endif
 
 #if defined(SWIGPERL)
+%module openwsman
 
 //==================================
 // Typemap: Allow FILE* as PerlIO
