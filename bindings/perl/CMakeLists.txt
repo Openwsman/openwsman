@@ -3,8 +3,8 @@
 #
 #
 # !!Attn!!: This creates two files
-#  1. _wsman.so
-#  2. wsman.pm
+#  1. openwsman.so
+#  2. openwsman.pm
 # and the .pm file gets loaded. See bindings/perl/tests.
 #
 
@@ -54,4 +54,4 @@ TARGET_LINK_LIBRARIES( plwsman wsman_client )
 TARGET_LINK_LIBRARIES( plwsman perl )
 
 INSTALL(TARGETS plwsman LIBRARY DESTINATION ${PERL_VENDOR_ARCH} )
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/wsman.pm DESTINATION ${PERL_VENDOR_LIB} )
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pm DESTINATION ${PERL_VENDOR_LIB} )
