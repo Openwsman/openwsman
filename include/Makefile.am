@@ -17,8 +17,6 @@ wsmaninclude_HEADERS = \
 	wsman-faults.h \
 	wsman-soap-message.h \
 	wsman-api.h \
-  	wsman-xml-api.h \
-	wsman-client.h \
 	wsman-declarations.h \
 	wsman-soap.h \
 	wsman-epr.h \
