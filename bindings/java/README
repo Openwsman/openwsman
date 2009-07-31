@@ -14,6 +14,8 @@ files with a java compiler, for example:
 
 This will generate the class files. To run the sample program, run
 
-# java test_identify
+# cd tests
+# javac identify.java
+# java identify
 
 Make sure to modify the code to reflect your wsman service settings and authentication data.
