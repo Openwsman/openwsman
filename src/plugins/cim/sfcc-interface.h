@@ -25,6 +25,7 @@ CMCIClient *cim_connect_to_cimom(char *cim_host, char *cim_port,
 
 void cim_release_client(CimClientInfo * cimclient);
 
+void release_cmpi_data(CMPIData data);
 
 void
 create_instance_from_xml(CMPIInstance * instance,
