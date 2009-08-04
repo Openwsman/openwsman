@@ -352,18 +352,6 @@ struct _WsXmlDoc {};
     }
     return NULL;
   }
-  
-#if 0 /* defined(SWIGRUBY) */
-  %rubycode %{
-    def method_missing( name, *args )
-      if args then
-        find(args[0], name) 
-      else
-        find(nil, name)
-      end
-    end
-  %}
-#endif
 
   /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
