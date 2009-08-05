@@ -5,6 +5,6 @@
 include_directories(${CMAKE_BINARY_DIR})
 add_subdirectory(file)
 
-IF( USE_PAM )
+IF( HAVE_PAM )
 add_subdirectory(pam)
-ENDIF( USE_PAM )
+ENDIF( HAVE_PAM )
