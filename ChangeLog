@@ -1,3 +1,10 @@
+2.2
+- Change the Ruby bindings module name to 'Openwsman'
+- Perl example code added (by warptrosse@gmail.com)
+- Fixes to the CMake build environment
+- Fixes to the sfcc backend (argument handling)
+- Many other bug fixes
+
 2.1.1
 - Support SUNpro C compiler
 - Add SWIG server-side plugin support (Klaus Kaempf)
@@ -32,7 +39,7 @@
 
  * Use latest shttpd code base
  * Fixed SSL related issues with shttpd.
- * Ruby bindings using swish now and part of openwsman
+ * Ruby bindings using swig now and part of openwsman
  * Python bindings update
  * serialize/de-serialize APIs updated. 
    Make serialize/de-serialize APIs independent of server related structure; 
