@@ -676,7 +676,7 @@ static int find_in_tree_callback(WsXmlNodeH node, void *_data)
 /**
  * Find node in XML tree
  * @param head Head XML node
- * @param nsUri Namespace URI
+ * @param nsUri Namespace URI, NULL for wildcard
  * @param localName Node local name
  * @param bRecursive Recursive flag
  * @return Result XML node
@@ -788,8 +788,9 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 	if (!node)
 		return 0;
 	nodeNsUri = ws_xml_get_node_name_ns(node);
-	if ((nsUri == nodeNsUri) || (nsUri != NULL && nodeNsUri != NULL &&
-			 !strcmp(nodeNsUri, nsUri))) {
+	if ((nsUri == NULL)
+	    || (nsUri == nodeNsUri)
+	    || (nsUri != NULL && nodeNsUri != NULL && !strcmp(nodeNsUri, nsUri))) {
 		if (name == NULL || !strcmp(name, ws_xml_get_node_local_name(node)))
 			retVal = 1;
 	}
