@@ -5,12 +5,13 @@
 #
 #
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -28,7 +29,7 @@ class WsmanTest < Test::Unit::TestCase
 #
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_OperatingSystem"
 
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
     results = 0
@@ -40,13 +41,12 @@ loop do
     break unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( uri, context, options )
+    result = client.pull( options, nil, uri, context )
     break unless result
 
     results += 1
     body = result.body
-    fault = body.child( 0, Openwsman::NS_SOAP, "Fault" )
-    if fault
+    if result.fault?
 	puts "Got fault"
 	faults += 1
 	break
@@ -62,13 +62,13 @@ loop do
     node = body.PullResponse.Items.Win32_OperatingSystem
     name = node.Name
     
-    options.selector_add( "Name", name.to_s )
+    options.add_selector( "Name", name.to_s )
 
     method = "Shutdown"
 #    method = "StopService"
     Openwsman::debug = -1
-    result = client.invoke( uri, method, options )
-    puts result.rawxml
+    result = client.invoke( options, uri, method )
+    puts result
 
 end
 

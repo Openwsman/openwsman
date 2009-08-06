@@ -14,19 +14,20 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUEST
+    options.set_dump_request
 
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Process"
 
-    options.properties = { "CommandLine" => "notepad.exe", "CurrentDirectory" => "C:\\" }
+    options.add_selector( "CommandLine", "notepad.exe")
+    options.add_selector( "CurrentDirectory", "C:\\" )
 
     method = "Create"
 #    method = "StopService"
-    result = client.invoke( uri, method, options )
+    result = client.invoke( options, uri, method )
     assert result
 
     puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
-    puts "#{result.rawxml}"
+    puts "#{result}"
   end
 end
 

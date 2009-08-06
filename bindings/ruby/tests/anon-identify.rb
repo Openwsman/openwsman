@@ -9,7 +9,7 @@ require 'auth-callback'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify
-    client = Openwsman::Client.new( "http://wsman:secret@localhost:8889/wsman-anon/identify" )
+    client = Openwsman::Client.new( "http://wsman:secret@localhost:5985/wsman-anon/identify" )
     assert client
     options = Openwsman::ClientOptions.new
     assert options

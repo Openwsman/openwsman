@@ -6,18 +6,21 @@ $:.unshift "../.libs"
 require 'test/unit'
 require 'rexml/document'
 require 'openwsman'
+require 'auth-callback'
 
 class WsmanTest < Test::Unit::TestCase
   def test_client
 #    wsmc = Openwsman::Client.new( client["scheme"], client["host"], client["port"], client["path"], client["username"], client["password"] )
-    client = Openwsman::Client.new( "http://pegasus:secret@localhost:8889/wsman" )
+    client = Openwsman::Client.new( "http://wsman:secret@localhost:5985/wsman" )
     client.transport.timeout = 5
     assert client
-    puts "Connected as #{client.username}:#{client.password}"
+    puts "Connected as #{client.user}:#{client.password}"
+    client.transport.auth_method = Openwsman::BASIC_AUTH_STR
+
     options = Openwsman::ClientOptions.new
     assert options
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
     
     first = true
@@ -27,7 +30,7 @@ class WsmanTest < Test::Unit::TestCase
       assert context
 #      puts "Context: #{context}"
 
-      result = client.pull( uri, context, options )
+      result = client.pull( options, uri, context )
       break unless result
       
       node = result.body.PullResponse.Items.child

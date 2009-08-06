@@ -22,7 +22,7 @@ class WsmanTest < Test::Unit::TestCase
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/CIM_Process"
 
     method = "GetOwner"
-    result = client.invoke( uri, method, options )
+    result = client.invoke( options, uri, method )
 
   end
 
@@ -40,7 +40,7 @@ class WsmanTest < Test::Unit::TestCase
 #
     uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/CIM_Process"
 
-    result = client.enumerate( uri, options )
+    result = client.enumerate( options, nil, uri )
     assert result
 
     results = 0
@@ -54,13 +54,12 @@ loop do
     break unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( uri, context, options )
+    result = client.pull( options, uri, context )
     break unless result
 
     results += 1
     body = result.body
-    fault = body.child( 0, Openwsman::NS_SOAP, "Fault" )
-    if fault
+    if result.fault?
 	puts "Got fault"
 	faults += 1
 	break
@@ -94,7 +93,7 @@ loop do
     printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
 end
 
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
   end
 end

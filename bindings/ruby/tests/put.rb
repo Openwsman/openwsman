@@ -14,10 +14,13 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-    result = client.put( "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_TimeZoneSettingData", options, Openwsman::XmlDoc.new )
+    uri = "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_TimeZoneSettingData"
+    data = Openwsman::XmlDoc.new("data")
+    data_s = data.to_s
+    result = client.put( options, uri, data_s, data_s.size, client.encoding )
     assert result
 
-    doc = REXML::Document.new result.rawxml
+    doc = REXML::Document.new result.to_s
     assert doc
 #    doc.write( $stdout, 0 )
   end

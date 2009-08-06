@@ -13,11 +13,11 @@ class WsmanTest < Test::Unit::TestCase
   def test_client
     client = Openwsman::Client.new( "http://wsman:secret@192.168.0.3:80/wsman" )
     assert client
-    puts "Connected as #{client.username}:#{client.password}"
+    puts "Connected as #{client.user}:#{client.password}"
 
     options = Openwsman::ClientOptions.new
 #    Openwsman::debug = -1
-    options.cim_ns = "http://schema.opensuse.org/YaST/wsman-schema/10-3"
+#    options.cim_ns = "http://schema.opensuse.org/YaST/wsman-schema/10-3"
   
     result = client.identify( options )
     assert result

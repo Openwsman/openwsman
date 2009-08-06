@@ -16,10 +16,10 @@ class WsmanTest < Test::Unit::TestCase
     assert options
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"
     context = "1e9ba1a2-2412-1412-8002-020202020202"
-    result = client.release( uri, context, options )
+    result = client.release( options, uri, context )
     assert result
 
-    doc = REXML::Document.new result.rawxml
+    doc = REXML::Document.new result.to_s
     assert doc
 #    doc.write( $stdout, 0 )
   end
