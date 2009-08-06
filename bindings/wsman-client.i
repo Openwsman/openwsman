@@ -117,7 +117,22 @@ typedef struct _WsManClient {
     return wsman_send_request($self, request);
   }
 
-
+  /*
+   * Get client encoding
+   */
+  char *encoding() {
+    return wsmc_get_encoding($self);
+  }
+  
+#if defined(SWIGRUBY)
+  %rename( "encoding=" ) set_encoding( const char *encoding );
+#endif
+  /*
+   * Set client encoding
+   */
+  void set_encoding(const char *encoding) {
+    wsmc_set_encoding($self, encoding);
+  }
 
 /*-----------------------------------------------------------------*/
 /* actions */
@@ -157,13 +172,13 @@ typedef struct _WsManClient {
   /*
    * WS-Create
    */
-  WsXmlDocH create( client_opt_t *options, char *resource_uri, char *data, size_t size, char *encoding) {
+  WsXmlDocH create( client_opt_t *options, char *resource_uri, char *data, size_t size, char *encoding = "utf-8") {
     return wsmc_action_create_fromtext( $self, resource_uri, options, data, size, encoding);
   }
   /*
    * WS-Transport: put
    */
-  WsXmlDocH put( client_opt_t *options , char *resource_uri,  char *data, size_t size, char *encoding) {
+  WsXmlDocH put( client_opt_t *options , char *resource_uri,  char *data, size_t size, char *encoding = "utf-8") {
     return wsmc_action_put_fromtext( $self, resource_uri, options, data, size, encoding);
   }
   /*
