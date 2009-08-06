@@ -1,13 +1,17 @@
 How to compile and run openwsman from Subversion? 
-===============================
+=================================================
 
-After checking out the project from subversion run ./autoconfiscate in the TOP directory and 
-follow that by running ./configure <options>.
-If you download a packaged version, then there is no need to run ./autoconfiscate and you will
-be able to run ./configure directly.
+After checking out the project from subversion run ./autoconfiscate.sh
+in the TOP directory and follow that by running ./configure <options>.
 
-Most likely you will need to install some of the packages, depending on the distribution
-you are running.
+If you download a packaged version, then there is no need to run
+./autoconfiscate.sh and you will be able to run ./configure directly.
+
+For the bindings, you must pass "--disable-more-warnings" to
+./configure because SWIG isn't good at generating prototypes
+
+Most likely you will need to install some of the packages, depending
+on the distribution you are running.
 
 Packages and other software needed:
 
@@ -16,9 +20,10 @@ Packages and other software needed:
 - swig and python for python binding support
 - other development packages like autoconf, automake etc.
 
-After all packages are installed, compile everything and install. The server can run as
-a daemon, which would require root access; But it can be run in the foreground with debugging
-messages printed to stdout as well. This the help output when you run:
+After all packages are installed, compile everything and install. The
+server can run as a daemon, which would require root access; But it
+can be run in the foreground with debugging messages printed to stdout
+as well. This the help output when you run:
 
 % /usr/local/sbin/openwsmand --help
 Usage:
@@ -34,8 +39,9 @@ Application Options:
   -c, --config-file=<file>     Alternate configuration file
 
 
-Starting from version 0.1.1 a configuration file is needed. you can find an example in the 
-./etc directory. The configuration file has the following syntax:
+Starting from version 0.1.1 a configuration file is needed. you can
+find an example in the ./etc directory. The configuration file has the
+following syntax:
 
 [server]
 port = 8889
