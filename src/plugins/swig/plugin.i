@@ -183,3 +183,4 @@ typedef struct _WsManTransport WsManTransport;
 %include "wsman-names.i"
 %include "wsman-filter.i"
 %include "wsman-client.i"
+%include "wsman-transport.i"
