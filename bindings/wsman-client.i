@@ -213,4 +213,17 @@ typedef struct _WsManClient {
     return wsmc_action_renew($self, resource_uri, options, identifier);
   }
 
+  /*
+   * fault string
+   */
+  char *fault_string() {
+    return wsmc_get_fault_string($self);
+  }
+  
+  /*
+   * last error
+   */
+   int last_error() {
+     return wsmc_get_last_error($self);
+   }
 }

@@ -17,9 +17,9 @@ class WsmanTest < Test::Unit::TestCase
 #    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"
     uri = "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2/OpenWBEM_UnitaryComputerSystem"
 #    uri = "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2/OMC_UnitaryComputerSystem"
-    options.selector_add( "Name", "heron.suse.de" );
-    options.selector_add( "CreationClassName", "OpenWBEM_UnitaryComputerSystem" );
-    result = client.get( uri, options )
+    options.add_selector( "Name", "heron.suse.de" );
+    options.add_selector( "CreationClassName", "OpenWBEM_UnitaryComputerSystem" );
+    result = client.get( options, uri )
     assert result
 
     puts result

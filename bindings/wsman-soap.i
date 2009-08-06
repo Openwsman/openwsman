@@ -5,6 +5,9 @@
  *
  */
 
+%ignore __WsmanFaultCodeTable;
+%ignore __WsmanFaultDetailTable;
+
 %include "wsman-faults.h"
 
 
@@ -421,5 +424,38 @@ struct _WsmanStatus {};
    */
   WsXmlDocH generate_fault(WsXmlDocH doc) {
     return wsman_generate_fault( doc, $self->fault_code, $self->fault_detail_code, $self->fault_msg);
+  }
+}
+
+/*
+ * WsManFault -> Fault
+ */
+ 
+%nodefault _WsManFault;
+%rename(Fault) _WsManFault;
+struct _WsManFault {};
+
+/*
+ * Fault
+ *
+ */
+%extend _WsManFault {
+  _WsManFault() {
+    return wsmc_fault_new();
+  }
+  ~_WsManFault() {
+    wsmc_fault_destroy($self);
+  }
+  const char *code() {
+    return $self->code;
+  }
+  const char *subcode() {
+    return $self->subcode;
+  }
+  const char *reason() {
+    return $self->reason;
+  }
+  const char *detail() {
+    return $self->fault_detail;
   }
 }

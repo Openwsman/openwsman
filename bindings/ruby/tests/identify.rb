@@ -16,6 +16,7 @@ class IdentifyTest < Test::Unit::TestCase
     assert options
     doc = client.identify( options )
     assert doc
+    puts "Error!" if doc.fault?
     root = doc.root
     assert root
 #

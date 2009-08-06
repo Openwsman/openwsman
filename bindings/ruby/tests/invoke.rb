@@ -19,16 +19,22 @@ class WsmanTest < Test::Unit::TestCase
 #    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service"
 
     service = "Themes"
-    options.selector_add( "Name", service )
+    options.add_selector( "Name", service )
 
     method = "StartService"
 #    method = "StopService"
-    result = client.invoke( uri, method, options )
+    result = client.invoke( options, uri, method )
     assert result
 
     bodychild = result.body.child
-    puts "Error" if bodychild.name == "Fault"
-
+    if result.fault?
+      fault = result.fault
+      puts "Error!"
+#      puts "Code #{fault.code}"
+#      puts "Subcode #{fault.subcode}"
+#      puts "Reason #{fault.reason}"
+#      puts "Detail #{fault.detail}" 
+    end
     puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
   end
 end

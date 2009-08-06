@@ -151,6 +151,30 @@ struct _WsXmlDoc {};
   WsXmlDocH generate_fault(WsmanStatus *s) {
     return wsman_generate_fault( $self, s->fault_code, s->fault_detail_code, s->fault_msg);
   }
+#if defined(SWIGRUBY)
+  %rename("fault?") is_fault();
+  %typemap(out) int is_fault
+    "$result = ($1 != 0) ? Qtrue : Qfalse;";
+#endif
+  /*
+   * Check if document represents a fault
+   *
+   */
+  int is_fault() {
+    return wsmc_check_for_fault( $self );
+  }
+  /*
+   * retrieve fault data
+   */
+  %newobject fault;
+  WsManFault *fault() {
+    WsManFault *f = NULL;
+    if (wsmc_check_for_fault($self)) {
+      f = (WsManFault *)calloc(1, sizeof(WsManFault));
+      wsmc_get_fault_data($self, f);
+    }
+    return f;
+  }
   %newobject create_response_envelope;
   /*
    * Generate response envelope document, optionally relating to a
