@@ -5,7 +5,7 @@
 require 'yaml'
 
 class Client
-  @@clients = YAML.load( File.open( "clients.yml" ) )
+  @@clients = YAML.load( File.open( File.join(File.dirname(__FILE__),"clients.yml") ) )
   def Client.open( name=nil )
     name = ENV["WSMANCLIENT"] if name.nil?
     if name.nil?
