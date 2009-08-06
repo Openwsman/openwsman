@@ -96,6 +96,8 @@
 struct _WsManTransport { };
 typedef struct _WsManTransport WsManTransport;
 
+static void set_debug(int dbg);
+
 static void set_debug(int dbg) {
   static int init = 0;
 
@@ -107,10 +109,13 @@ static void set_debug(int dbg) {
 	
 }
 
-static int get_debug() {
+static int get_debug(void);
+
+static int get_debug(void) {
   return (int)wsman_debug_get_level();
 }
 
+static WsXmlDocH create_soap_envelope(void);
 static WsXmlDocH create_soap_envelope() {
   return ws_xml_create_soap_envelope();
 }
