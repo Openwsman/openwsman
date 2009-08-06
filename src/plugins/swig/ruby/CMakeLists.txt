@@ -58,6 +58,6 @@ TARGET_LINK_LIBRARIES( ${NAME} pthread )
 INSTALL(TARGETS ${NAME} LIBRARY DESTINATION ${PACKAGE_PLUGIN_DIR})
 
 #
-# rbwsmanplugin.rb: plugin implementation
+# openwsmanplugin.rb: plugin implementation
 #
-INSTALL(FILES rbwsmanplugin.rb DESTINATION ${RUBY_LIB_DIR})
+INSTALL(FILES openwsmanplugin.rb DESTINATION ${RUBY_LIB_DIR})

@@ -1,10 +1,10 @@
 #
-# rbwsmanplugin.rb
+# openwsmanplugin.rb
 #
 # Generic openwsman server plugin
 #
 
-module Rbwsman
+module Openwsman
   class XmlDoc
     def self.method_missing method, *args
       STDERR.puts "#{self.class}.#{method} not implemented"
@@ -22,13 +22,13 @@ module Rbwsman
   # identify
   #
   def self.identify context
-    STDERR.puts "WsmanPlugin.identify, context #{context}"
+    STDERR.puts "OpenwsmanPlugin.identify, context #{context}"
   end
   #
   # enumerate
   #
   def self.enumerate context, enum_info, status
-    STDERR.puts "WsmanPlugin.enumerate, context #{context}, enum_info #{enum_info}, status #{status}"
+    STDERR.puts "OpenwsmanPlugin.enumerate, context #{context}, enum_info #{enum_info}, status #{status}"
     STDERR.puts "to #{enum_info.epr_to}, uri #{enum_info.epr_uri}"
     STDERR.puts "class #{context.classname}, method #{context.method}"
     STDERR.puts "action #{context.action}, resource_uri #{context.resource_uri}"
@@ -49,7 +49,7 @@ module Rbwsman
   # pull
   #
   def self.pull context, enum_info, status
-    STDERR.puts "WsmanPlugin.pull, context #{context}, enum_info #{enum_info}, status #{status}"
+    STDERR.puts "OpenwsmanPlugin.pull, context #{context}, enum_info #{enum_info}, status #{status}"
     STDERR.puts "enum_info.index #{enum_info.index} enum_info.total_items #{enum_info.total_items}"
     if enum_info.index < enum_info.total_items then
       out_doc = context.indoc.create_response_envelope
@@ -70,26 +70,26 @@ module Rbwsman
   # release
   #
   def self.release context, enum_info, status
-    STDERR.puts "WsmanPlugin.release, context #{context}"
+    STDERR.puts "OpenwsmanPlugin.release, context #{context}"
     true
   end
   #
   # create
   #
   def self.create op
-    STDERR.puts "WsmanPlugin.create, op #{op}"
+    STDERR.puts "OpenwsmanPlugin.create, op #{op}"
   end
   #
   # delete
   #
   def self.delete op
-    STDERR.puts "WsmanPlugin.delete, op #{op}"
+    STDERR.puts "OpenwsmanPlugin.delete, op #{op}"
   end
   #
   # get
   #
   def self.get op
-    STDERR.puts "WsmanPlugin.get, op #{op}"
+    STDERR.puts "OpenwsmanPlugin.get, op #{op}"
     soap = op.soap
     STDERR.puts "soap #{soap}"
     indoc = op.indoc
@@ -114,13 +114,13 @@ module Rbwsman
   # put
   #
   def self.put op
-    STDERR.puts "WsmanPlugin.put, op #{op}"
+    STDERR.puts "OpenwsmanPlugin.put, op #{op}"
   end
   #
   # custom
   #
   def self.custom op
-    STDERR.puts "WsmanPlugin.custom, op #{op}"
+    STDERR.puts "OpenwsmanPlugin.custom, op #{op}"
     status.code = WSA_ENDPOINT_UNAVAILABLE
     status.detail = WSMAN_DETAIL_LOCALE
     status.msg = "This Ruby plugin does not implement 'get'"
@@ -136,38 +136,38 @@ module Rbwsman
   class Sample
     SCHEMA = "http://schema.opensuse.org/swig/wsman-schema/1-0"
     def initialize *args
-      STDERR.puts "WsmanPlugin.new #{args}"
+      STDERR.puts "OpenwsmanPlugin.new #{args}"
     end
     def namespaces
       [ [SCHEMA, "Ruby"] ]
     end
     def identify context
-      STDERR.puts "WsmanPlugin.identify, context #{context}"
+      STDERR.puts "OpenwsmanPlugin.identify, context #{context}"
     end
     def enumerate context, enum_info, status
       
-      STDERR.puts "WsmanPlugin.enumerate, context #{context}"
+      STDERR.puts "OpenwsmanPlugin.enumerate, context #{context}"
     end
     def release context, enum_info, status
-      STDERR.puts "WsmanPlugin.release, context #{context}"
+      STDERR.puts "OpenwsmanPlugin.release, context #{context}"
     end
     def pull context, enum_info, status
-      STDERR.puts "WsmanPlugin.pull, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.pull, op #{op}"
     end
     def get op
-      STDERR.puts "WsmanPlugin.get, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.get, op #{op}"
     end
     def custom op
-      STDERR.puts "WsmanPlugin.custom, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.custom, op #{op}"
     end
     def put op
-      STDERR.puts "WsmanPlugin.put, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.put, op #{op}"
     end
     def create op
-      STDERR.puts "WsmanPlugin.create, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.create, op #{op}"
     end
     def delete op
-      STDERR.puts "WsmanPlugin.delete, op #{op}"
+      STDERR.puts "OpenwsmanPlugin.delete, op #{op}"
     end
   end
 end

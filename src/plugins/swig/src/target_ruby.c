@@ -38,10 +38,10 @@
 *****************************************************************************/
 
 /* load <RB_PLUGIN_FILE>.rb */
-#define PLUGIN_FILE "rbwsmanplugin"
+#define PLUGIN_FILE "openwsmanplugin"
 
 /* expect 'module <RB_PLUGIN_MODULE>' inside */
-#define PLUGIN_MODULE "Rbwsman"
+#define PLUGIN_MODULE "Openwsman"
 
 /*
  * load_module
