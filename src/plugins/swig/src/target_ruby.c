@@ -204,7 +204,7 @@ exit:
  * Call function 'opname' with nargs arguments within instance
  * 
  * doc: in_doc from context, needed for fault generation
- * instance: klass
+ * instance: module
  * opname: name of method to call
  * nargs: number of arguments
  * ...: arguments as varargs
