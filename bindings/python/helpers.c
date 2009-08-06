@@ -37,7 +37,7 @@
 * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
- 
+
 
 /* convert openwsman hash_t* to hash PyObject (string pairs) */
 static PyObject *
@@ -47,14 +47,14 @@ hash2value( hash_t *hash )
 }
 
 
-
+#if 0 /* currently unused */
 /* create hash (h == NULL) or add to hash (h != NULL) from hash PyObject */
 static hash_t *
 value2hash( hash_t *h, PyObject *v )
 {
   return h;
 }
-
+#endif
 
 
 /*
