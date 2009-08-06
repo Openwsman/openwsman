@@ -1,9 +1,13 @@
 2.2
-- Change the Ruby bindings module name to 'Openwsman'
-- Perl example code added (by warptrosse@gmail.com)
-- Fixes to the CMake build environment
-- Fixes to the sfcc backend (argument handling)
-- Many other bug fixes
+- Major changes:
+  - Adapt IANA ports of 5985 (http) and 5986 (https)
+  - Change the Ruby bindings module name to 'Openwsman'
+  - Change the Ruby plugin module name to 'Openwsman'
+- Minor changes:
+  - Perl example code added (by warptrosse@gmail.com)
+  - Fixes to the CMake build environment
+  - Fixes to the sfcc backend (argument handling)
+  - Many other bug fixes
 
 2.1.1
 - Support SUNpro C compiler
