@@ -4,7 +4,9 @@
 #
 
 require 'test/unit'
-require '../../../../../build/bindings/ruby/rbwsman'
+$:.unshift "../../../../../build/bindings/ruby"
+$:.unshift "../../../../../bindings/ruby/tests"
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -12,9 +14,9 @@ class WsmanTest < Test::Unit::TestCase
     client = Client.open
     assert client
     puts "Connecting as #{client.user}:#{client.password}"
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
-    Rbwsman::debug = -1
+    Openwsman::debug = -1
 
     schema = "http://schema.opensuse.org/swig/wsman-schema/1-0"
     uri = schema + "/plugin/swig/get/test"

@@ -2,7 +2,9 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '../../../../../build/bindings/ruby/rbwsman'
+$:.unshift "../../../../../build/bindings/ruby"
+$:.unshift "../../../../../bindings/ruby/tests"
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -11,7 +13,7 @@ class WsmanTest < Test::Unit::TestCase
     client = Client.open
     assert client
     puts "Connecting as #{client.user}:#{client.password}"
-    options = Rbwsman::ClientOptions.new
+    options = Openwsman::ClientOptions.new
     assert options
     uri = "http://schema.opensuse.org/swig/wsman-schema/1-0"
     
@@ -34,17 +36,17 @@ loop do
 
     
     body = result.body
-    fault = body.find( Rbwsman::XML_NS_SOAP_1_2, "Fault" )
+    fault = body.find( Openwsman::XML_NS_SOAP_1_2, "Fault" )
     if fault
 	puts "Got fault"
 	break
     end
 
-    node = body.find( Rbwsman::XML_NS_ENUMERATION, "Items" )
+    node = body.find( Openwsman::XML_NS_ENUMERATION, "Items" )
     
     puts "Items #{node}"
     
-    break if body.find( Rbwsman::XML_NS_ENUMERATION, "EndOfSequence")
+    break if body.find( Openwsman::XML_NS_ENUMERATION, "EndOfSequence")
     puts "Next"
   
     context = result.context
