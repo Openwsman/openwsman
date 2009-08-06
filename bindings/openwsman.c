@@ -1,5 +1,5 @@
 #include <wsman-debug.h>
-//#include <openwsman.h>
+#include "openwsman.h"
 /*-----------------------------------------------------------------*/
 /* Rbwsman */
 /* debug (mostly stolen from src/server/wsmand.c) */
