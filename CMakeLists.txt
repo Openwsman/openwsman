@@ -409,9 +409,10 @@ SET(CPACK_PACKAGE_VENDOR "openwsman.org")
 SET(CPACK_PACKAGE_VERSION_MAJOR ${OPENWSMAN_MAJOR})
 SET(CPACK_PACKAGE_VERSION_MINOR ${OPENWSMAN_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${OPENWSMAN_PATCH})
-SET( CPACK_GENERATOR "TBZ2")
-SET( CPACK_SOURCE_GENERATOR "TBZ2")
-SET( CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE}-${VERSION}" )
+SET(CPACK_GENERATOR "TBZ2")
+SET(CPACK_SOURCE_GENERATOR "TBZ2")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${VERSION}" )
+   MESSAGE(STATUS "Package file ${CPACK_SOURCE_PACKAGE_FILE_NAME}")
 
 # The following components are regex's to match anywhere (unless anchored)
 # in absolute path + filename to find files or directories to be excluded
@@ -443,6 +444,11 @@ SET (CPACK_SOURCE_IGNORE_FILES
 "\\\\.lo$"
 "\\\\.la$"
 "Makefile\\\\.in$"
+# autotool
+"autom4te.cache"
+"config.log"
+# generated
+"bindings/java/*.java"
 )
 
 INCLUDE(CPack)
@@ -450,8 +456,8 @@ INCLUDE(CPack)
 ####################################################################
 
 SET( DOC_INSTALL_DIR
-   "${CMAKE_INSTALL_PREFIX}/share/doc/packages/${PACKAGE}"
-   CACHE PATH "The install dir for documentation (default prefix/share/doc/packages/${PACKAGE})"
+   "${CMAKE_INSTALL_PREFIX}/share/doc/packages/${PACKAGE_NAME}"
+   CACHE PATH "The install dir for documentation (default prefix/share/doc/packages/${PACKAGE_NAME})"
    FORCE
 )
 
@@ -461,7 +467,6 @@ IF(HAVE_WARNINGS)
  MESSAGE(STATUS "   *******************************")
 ENDIF(HAVE_WARNINGS) 
     
-#AUTOMAKE_OPTIONS = no-dist-gzip dist-bzip2
 #
 #package: dist
 #	cp openwsman.spec /usr/src/packages/SPEC
