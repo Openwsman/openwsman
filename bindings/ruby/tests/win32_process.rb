@@ -5,24 +5,26 @@
 #
 #
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
-  def get_owner h
+  def get_owner handle, namespace
     client = Client.open
     assert client
     options = Openwsman::ClientOptions.new
-    options.selectors = { :Handle => h.to_s }
-    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/CIM_Process"
+    options.add_selector( "Handle", handle.to_s )
 
     method = "GetOwner"
-    result = client.invoke( options, uri, method )
+    data = Openwsman::XmlDoc.new "root"
+    data_s = data.to_s
+    client.invoke( options, namespace, method, data_s, data_s.size )
 
   end
 
@@ -47,14 +49,14 @@ class WsmanTest < Test::Unit::TestCase
     faults = 0
     context = nil
  
-    printf("%-20s %-10s %-10s  %s\n", "User", "PID", "VSZ", "Command");
-    puts "-------------------------------------------------------------"
-loop do
+    printf("%-15s %-15s %10s %10s  %s\n", "User", "Domain", "PID", "VSZ", "Command");
+    puts "-"*70
+  loop do
     context = result.context
     break unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( options, uri, context )
+    result = client.pull( options, nil, uri, context )
     break unless result
 
     results += 1
@@ -64,34 +66,27 @@ loop do
 	faults += 1
 	break
     end
-#    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
-#    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
-#    node = node.child( 0, uri, "Win32_Service" );
 
-#    name = node.child( 0, uri, "Name" ).text;
-#    state = node.child( 0, uri, "State" ).text;
+    node = body.PullResponse.Items.Win32_Process
 
-    node = body.PullResponse.Items.CIM_Process
     caption = node.Caption
     handle = node.Handle
     virtual_size = node.VirtualSize
     proc_id = node.ProcessId
-    cmd = node.ExecutablePath
-
-    ires = get_owner handle if handle
-    b = ires.body
-    output = b.GetOwner_OUTPUT
+    cmd = node.ExecutablePath || caption
+    
     user = ""
-    output.each_child { |child|
-	text = child.text
-	if child.name == "User"
-		user = text
-	end
-    }
-    vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f
+    domain = ""
+    if handle
+      ires = get_owner handle, node.ns
+      raise ires.to_s if ires.fault?
+      user = ires.body.User
+      domain = ires.body.Domain
+    end
+    vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f rescue 0
 
-    printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
-end
+    printf("%-15s %-15s %10s %10.0f  %s\n", user, domain, proc_id, vsz, cmd);
+  end
 
     client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
