@@ -447,8 +447,12 @@ SET (CPACK_SOURCE_IGNORE_FILES
 # autotool
 "autom4te.cache"
 "config.log"
+"depcomp"
+"config.guess"
+"install.sh"
 # generated
 "bindings/java/*.java"
+"\\\\.bz2$"
 )
 
 INCLUDE(CPack)
