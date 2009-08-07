@@ -60,15 +60,17 @@ loop do
 #    state = node.child( 0, uri, "State" ).text;
 
     node = body.PullResponse.Items.Win32_OperatingSystem
-    name = node.Name
     
-    options.add_selector( "Name", name.to_s )
+    name = node.Name
+    puts name
+    
+#    options.add_selector( "Name", name.to_s )
 
-    method = "Shutdown"
+#    method = "Shutdown"
 #    method = "StopService"
-    Openwsman::debug = -1
-    result = client.invoke( options, uri, method )
-    puts result
+#    Openwsman::debug = -1
+#    result = client.invoke( options, uri, method )
+#    puts result
 
 end
 
