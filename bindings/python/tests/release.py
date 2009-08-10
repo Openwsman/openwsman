@@ -6,7 +6,7 @@ from pywsman import *
 class TestSequenceFunctions(unittest.TestCase):
 
 	def test_enum_release(self):
-		client = Client( "http://wsman:secret@localhost:8889/wsman" )
+		client = Client( "http://wsman:secret@localhost:5985/wsman" )
 		options = ClientOptions()
 		doc = client.enumerate( options , None, "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem")
 		root = doc.root()

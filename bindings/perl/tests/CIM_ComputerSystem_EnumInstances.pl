@@ -16,7 +16,7 @@ use openwsman;
 
 # Create client instance.
 # (host, port, path, scheme, username, password)
-my $client = new openwsman::Client::('localhost', 8889, '/wsman', 'http', 'wsman', 'secret')
+my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret')
     or die print "[ERROR] Could not create client handler.\n";
 
 # Alternate way.

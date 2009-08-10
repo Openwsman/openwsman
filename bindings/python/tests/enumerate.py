@@ -6,7 +6,7 @@ from pywsman import *
 class TestSequenceFunctions(unittest.TestCase):
 
 	def test_enum(self):
-		client = Client( "http://wsman:secret@localhost:8889/wsman" )
+		client = Client( "http://wsman:secret@localhost:5985/wsman" )
 		options = ClientOptions()
 		doc = client.enumerate( options , None, "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem")
 		assert doc is not None
@@ -15,7 +15,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		context = root.find(XML_NS_ENUMERATION, "EnumerationContext" )
 		print "Context: %s" % context.text()
 	def test_enum_and_pull(self):
-		client = Client( "http://wsman:secret@localhost:8889/wsman" )
+		client = Client( "http://wsman:secret@localhost:5985/wsman" )
 		options = ClientOptions()
 		doc = client.enumerate( options , None, "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem")
 		root = doc.root()

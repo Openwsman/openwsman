@@ -6,7 +6,7 @@ from pywsman import *
 class TestSequenceFunctions(unittest.TestCase):
 
 	def test_identify(self):
-		client = Client( "http://wsman:secret@localhost:8889/wsman" )
+		client = Client( "http://wsman:secret@localhost:5985/wsman" )
 		assert client is not None
 		options = ClientOptions()
 		assert options is not None

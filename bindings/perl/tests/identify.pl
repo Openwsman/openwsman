@@ -9,7 +9,7 @@ use openwsman;
 # openwsman::set_debug(1);
 
 # host, port, path, scheme, username, password
-$self->{CLIENT} = new openwsman::Client::('localhost', 8889, '/wsman', 'http', 'wsman', 'secret') or die print '<span class="error">[ERROR] Could not create client handler.</span><br/>';
+$self->{CLIENT} = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret') or die print '<span class="error">[ERROR] Could not create client handler.</span><br/>';
 
 # alternate way 
 # $self->{CLIENT} = new openwsman::Client::('http://wsman:secret@localhost:8889/wsman') or die print '<span class="error">[ERROR] Could not create client handler.</span><br/>';
