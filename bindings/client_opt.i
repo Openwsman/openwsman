@@ -46,17 +46,33 @@ typedef struct {
    * Add a selector as key/value pair
    *
    */
-  void add_selector(char *key, char *value) {
+#if defined(SWIGRUBY)
+  void add_selector(VALUE k, VALUE v)
+  {
+    VALUE k_s = rb_funcall(k, rb_intern("to_s"), 0 );
+    VALUE v_s = rb_funcall(v, rb_intern("to_s"), 0 );
+    const char *key = StringValuePtr(k_s);
+    const char *value = StringValuePtr(v_s);
+#else
+  void add_selector(const char *key, const char *value)
+  {
+#endif
     wsmc_add_selector($self, key, value);
   }
 
+  /*
+   * Set delivery uri
+   */
 #if defined(SWIGRUBY)
   %rename("delivery_uri=") set_delivery_uri();
 #endif
   void set_delivery_uri( const char *delivery_uri ) {
     wsmc_set_delivery_uri(delivery_uri, $self);
   }
-	
+
+  /*
+   * Set sub expiry
+   */
 #if defined(SWIGRUBY)
   %rename("sub_expiry=") set_sub_expiry();
 #endif
