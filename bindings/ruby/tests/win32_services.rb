@@ -5,12 +5,13 @@
 #
 #
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require '_client'
 require 'auth-callback'
 
@@ -45,9 +46,7 @@ loop do
     break unless result
 
     results += 1
-    body = result.body
-    fault = body.find( Openwsman::XML_NS_SOAP_1_1, "Fault", 1 )
-    if fault
+    if result.fault?
       puts "Got fault"
       faults += 1
       break
@@ -62,14 +61,14 @@ loop do
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    node = body.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Win32_Service" )
+    node = result.body.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Win32_Service" )
     name = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Name" )
     state = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "State" )
 
     puts "#{name} is #{state}"
 end
 
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
   end
 end

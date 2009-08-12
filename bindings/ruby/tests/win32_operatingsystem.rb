@@ -74,7 +74,7 @@ loop do
 
 end
 
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
   end
 end

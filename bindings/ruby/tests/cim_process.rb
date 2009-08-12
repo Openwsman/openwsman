@@ -3,20 +3,29 @@
 #
 #
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
-  def get_owner h
+  def get_owner process
     client = Client.open
     assert client
     options = Openwsman::ClientOptions.new
-    options.selectors = { :Handle => h.to_s }
+    # WMI just needs the Handle
+    unless process.name == "Win32_Service"
+      options.add_selector( "CSCreationClassName", process.CSCreationClassName )
+      options.add_selector( "CSName", process.CSName )
+      options.add_selector( "OSCreationClassName", process.OSCreationClassName )
+      options.add_selector( "OSName", process.OSName )
+      options.add_selector( "CreationClassName", process.CreationClassName )
+    end
+    options.add_selector( "Handle", process.Handle )
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
     method = "GetOwner"
@@ -56,13 +65,15 @@ loop do
     break unless result
 
     results += 1
-    body = result.body
-    fault = body.find( Openwsman::XML_NS_SOAP_1_2, "Fault" )
-    if fault
-	puts "Got fault"
-	faults += 1
-	break
+    if result.fault?
+      puts "Got fault"
+      faults += 1
+      break
     end
+    
+    items = result.body.PullResponse.Items
+    node = items.child
+
 #    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
 #    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
 #    node = node.child( 0, uri, "Win32_Service" );
@@ -70,26 +81,36 @@ loop do
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    node = body.find(nil, "CIM_Process")
-    caption = node["Caption"]
-    handle = node["Handle"]
-    virtual_size = node["VirtualSize"]
-    proc_id = node["ProcessId"]
-    cmd = node["ExecutablePath"]
-
-    ires = get_owner handle if handle
-    b = ires.body
-    output = b.GetOwner_OUTPUT
+    if node.name == "Win32_Service"
+      caption = node["Caption"]
+      handle = node["Handle"]
+      virtual_size = node["VirtualSize"]
+      proc_id = node["ProcessId"]
+      cmd = node["ExecutablePath"]
+    else
+      caption = node["Caption"]
+      handle = node["Handle"]
+      virtual_size = 0
+      proc_id = handle
+      cmd = node["Name"]
+    end
     user = ""
-    output.each { |child|
+
+    ires = get_owner node
+    if ires
+      b = ires.body
+      output = b.GetOwner_OUTPUT
+      output.each do |child|
 	text = child.text
 	if child.name == "User"
-		user = text
+	  user = text
 	end
-    }
+      end if output
+    end
     vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f
 
     printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
+
 end
 
     client.release( options, uri, context ) if context

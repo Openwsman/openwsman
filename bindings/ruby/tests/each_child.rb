@@ -5,12 +5,13 @@
 #
 #
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase
@@ -19,7 +20,7 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-#    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUEST
+#    options.set_dump_request
 #    puts "Flags = #{options.flags}"
 
 #
@@ -40,36 +41,35 @@ class WsmanTest < Test::Unit::TestCase
     raise "No context inside result" unless context
 #    puts "Context #{context} retrieved"
 
-    result = client.pull( uri, context, options )
+    result = client.pull( options, nil, uri, context )
     break unless result
 
     results += 1
-    body = result.body
-    fault = body.child( 0, Openwsman::NS_SOAP, "Fault" )
-    if fault
+
+    if result.fault?
 	puts "Got fault"
 	faults += 1
 	break
     end
 
-    node = body.PullResponse.Items.child
+    node = result.body.PullResponse.Items.child
 
-    node.each { |child|
-	text = child.text
-	acount = child.attr_count
-	puts "Child [#{acount}] #{child.name}: #{text}"
-	if acount > 0
-	    child.each_attr{ |attr| puts "\tAttr #{attr.ns}:#{attr.name}=#{attr.value}" }
-	end
-#	return false if text.nil?
-    }
+    node.each do |child|
+      text = child.text
+      acount = child.attr_count
+      puts "Child [#{acount}] #{child.name}: #{text}"
+      if acount > 0
+	child.each_attr{ |attr| puts "\tAttr #{attr.ns}:#{attr.name}=#{attr.value}" }
+      end
+      #	return false if text.nil?
+    end
     name = node.Name
     state = node.State
 
     puts "#{name} is #{state}"
 #end
 
-    client.release( uri, context, options ) if context
+    client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
   end
 end

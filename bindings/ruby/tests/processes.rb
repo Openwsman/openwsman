@@ -1,11 +1,12 @@
 # enumerate.rb
 
+$:.unshift "../../../bindings/ruby"
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman'
+require 'openwsman/openwsman'
 require 'auth-callback'
 
 class WsmanTest < Test::Unit::TestCase
@@ -24,18 +25,20 @@ class WsmanTest < Test::Unit::TestCase
     assert result
     
     first = true
-    
+    context = nil
+
     loop do
       context = result.context
+      puts "Result #{result.string}" unless context
       assert context
 #      puts "Context: #{context}"
 
-      result = client.pull( options, uri, context )
+      result = client.pull( options, nil, uri, context )
       break unless result
       
       node = result.body.PullResponse.Items.child
       if first
-	node.each_child { |child|
+	node.each_child do |child|
 	  text = child.text
 	  acount = child.attr_count
 	  puts "Child [#{acount}] #{child.name}: #{text}"
@@ -43,7 +46,7 @@ class WsmanTest < Test::Unit::TestCase
 	    child.each_attr{ |attr| puts "\tAttr #{attr.ns}:#{attr.name}=#{attr.value}" }
 	  end
 	  #	return false if text.nil?
-	}
+	end
 	first = false
       end
       
@@ -51,7 +54,10 @@ class WsmanTest < Test::Unit::TestCase
       state = node.ExecutionState
 
       printf "%20s\t%s\n", name, state
+      
+      break if result.end_of_sequence?
     end
+    client.release( options, uri, context ) if context
+     
   end
 end
-

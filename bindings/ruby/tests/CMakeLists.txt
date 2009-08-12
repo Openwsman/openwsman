@@ -49,6 +49,3 @@ ADD_TEST(bindings_ruby_release              ruby -C ${CMAKE_CURRENT_SOURCE_DIR} 
 ADD_TEST(bindings_ruby_win32_operatingsystem ruby -C ${CMAKE_CURRENT_SOURCE_DIR} win32_operatingsystem.rb )
 ADD_TEST(bindings_ruby_win32_process         ruby -C ${CMAKE_CURRENT_SOURCE_DIR} win32_process.rb )
 ADD_TEST(bindings_ruby_win32_services        ruby -C ${CMAKE_CURRENT_SOURCE_DIR} win32_services.rb )
-
-	# needs Windows XP
-ADD_TEST(bindings_ruby_xp ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xp.rb )
