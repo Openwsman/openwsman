@@ -59,7 +59,25 @@ typedef struct {
 #endif
     wsmc_add_selector($self, key, value);
   }
-
+  
+  /*
+   * Add a property as key/value pair
+   *
+   */
+#if defined(SWIGRUBY)
+  void add_property(VALUE k, VALUE v)
+  {
+    VALUE k_s = rb_funcall(k, rb_intern("to_s"), 0 );
+    VALUE v_s = rb_funcall(v, rb_intern("to_s"), 0 );
+    const char *key = StringValuePtr(k_s);
+    const char *value = StringValuePtr(v_s);
+#else
+  void add_property(const char *key, const char *value)
+  {
+#endif
+    wsmc_add_property($self, key, value);
+  }
+  
   /*
    * Set delivery uri
    */
