@@ -594,7 +594,8 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 			else {
 				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 				statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-				debug("selector value: [ %s ] not matched", sentry->entry.text);
+				debug("selector '%s', value: [ %s ] not matched", hnode_getkey(hn), sentry->entry.text);
+			        debug("data.type 0x%x, cv '%s'", data.type, cv?cv:"<NULL>");
 				u_free(cv);
 				break;
 			}
