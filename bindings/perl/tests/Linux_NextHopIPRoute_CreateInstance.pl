@@ -1,0 +1,61 @@
+#!/usr/bin/perl -w
+
+use strict;
+use warnings;
+use lib '../../../build/bindings/perl';
+use lib '..';
+use openwsman;
+
+# debug (to stderr)
+# openwsman::set_debug(1);
+
+# Create client instance.
+# (host, port, path, scheme, username, password)
+my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret')
+    or die print "[ERROR] Could not create client handler.\n";
+
+# Alternate way.
+# my $client = new openwsman::Client::('http://wsman:secret@localhost:8889/wsman')
+#  or die print "[ERROR] Could not create client handler.\n";
+
+# Set up client options.
+my $options = new openwsman::ClientOptions::()
+    or die print "[ERROR] Could not create client options handler.\n";
+
+# Force basic auth.
+$client->transport()->set_auth_method($openwsman::BASIC_AUTH_STR);
+
+my $uri = 'http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_NextHopIPRoute'; # Uri.
+my @dataInfo = (
+    ['AddressType'        , "1"],
+    ['AdminDistance'      , "1"],
+    ['Caption'            , "NextHop IPv4 route."],
+    ['Description'        , "NextHop IPv4 route."],
+    ['DestinationAddress' , "192.168.0.0"],
+    ['DestinationMask'    , "24"],
+    ['ElementName'        , "IPv4-192.168.0.0/24"],
+    ['InstanceID'         , "localhost|192.168.0.0|24|254|2|0|"],
+    ['IsStatic'           , "1"],
+    ['OtherDerivation'    , ""],
+    ['PrefixLength'       , ""],
+    ['RouteDerivation'    , "3"],
+    ['RouteMetric'        , "1"],
+    ['TypeOfRoute'        , "2"]
+    ); # Selectors list.
+my $result; # Used to store obtained data.
+
+# Establish data.
+# (key, value)
+my $data = new openwsman::XmlDoc::("Linux_NextHopIPRoute");
+my $root = $data->root();
+$root->set_ns($uri);
+for(my $i=0 ; $i<scalar(@dataInfo) ; $i++) {
+    $root->add($uri, $dataInfo[$i][0], $dataInfo[$i][1]);
+}
+
+$options->set_dump_request();
+
+$result = $client->create($options, $uri, $data->string(), length($data->string()),"utf-8");
+unless($result) {
+    print "[ERROR] Could not create instance.";
+}
