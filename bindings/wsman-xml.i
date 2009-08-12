@@ -52,7 +52,7 @@ struct _WsXmlDoc {};
   }
   %typemap(newfree) char * "free($1);";
 #if defined(SWIGRUBY)
-  %rename("to_s") string();
+  %alias string "to_s";
 #endif
 #if defined(SWIGPYTHON)
   %rename("__str__") string();
@@ -151,6 +151,7 @@ struct _WsXmlDoc {};
   WsXmlDocH generate_fault(WsmanStatus *s) {
     return wsman_generate_fault( $self, s->fault_code, s->fault_detail_code, s->fault_msg);
   }
+  
 #if defined(SWIGRUBY)
   %rename("fault?") is_fault();
   %typemap(out) int is_fault
@@ -163,6 +164,7 @@ struct _WsXmlDoc {};
   int is_fault() {
     return wsmc_check_for_fault( $self );
   }
+  
   /*
    * retrieve fault data
    */
@@ -175,6 +177,7 @@ struct _WsXmlDoc {};
     }
     return f;
   }
+  
   %newobject create_response_envelope;
   /*
    * Generate response envelope document, optionally relating to a
@@ -186,6 +189,20 @@ struct _WsXmlDoc {};
   WsXmlDocH create_response_envelope(const char *action = NULL) {
     return wsman_create_response_envelope($self, action);
   }
+  
+#if defined(SWIGRUBY)
+  %rename("end_of_sequence?") is_end_of_sequence();
+  %typemap(out) int is_end_of_sequence
+    "$result = ($1 != 0) ? Qtrue : Qfalse;";
+#endif
+  /*
+   * Check if document represents an end of sequence (last enumeration item)
+   *
+   */
+  int is_end_of_sequence() {
+    return ws_xml_find_in_tree( ws_xml_get_soap_body( $self ), XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 1 );
+  }
+
 }
 
 
@@ -221,14 +238,19 @@ struct _WsXmlDoc {};
 #endif
 
   %newobject string;
-  /* dump node as XML string */
+  /*
+   * dump node as XML string
+   */
   char *string() {
     int size;
     char *buf;
     ws_xml_dump_memory_node_tree( $self, &buf, &size );
     return buf;
   }
-  /* dump node to file */
+  
+  /*
+   * dump node to file
+   */
   void dump_file(FILE *fp) {
     ws_xml_dump_node_tree( fp, $self );
   }
@@ -245,63 +267,92 @@ struct _WsXmlDoc {};
 #endif
   { return $self == n; }	  
   
-  /* get text (without xml tags) of node */
+  /*
+   * get text (without xml tags) of node
+   */
   char *text() {
     return ws_xml_get_node_text( $self );
   }
 #if defined(SWIGRUBY)
   %rename( "text=" ) set_text( const char *text );
 #endif
+  /*
+   * Set text of node
+   */
   void set_text( const char *text ) {
     ws_xml_set_node_text( $self, text );
   }
-  /* get doc for node */
+  
+  /*
+   * get XmlDoc to which node belongs
+   */
   WsXmlDocH doc() {
     return ws_xml_get_node_doc( $self );
   }
-  /* get parent for node */
+  
+  /*
+   * get parent for node
+   */
   WsXmlNodeH parent() {
     return ws_xml_get_node_parent( $self );
   }
 #if defined(SWIGRUBY)
   %alias child "first";
 #endif
-  /* get first child of node */
+
+  /*
+   * get first child of node
+   */
   WsXmlNodeH child() {
     if( ws_xml_get_child_count( $self ) > 0 )
       return ws_xml_get_child($self, 0, NULL, NULL);
     return NULL;
   }
-  /* get name for node */
+  
+  /*
+   * get name for node
+   */
   char *name() {
     return ws_xml_get_node_local_name( $self );
   }
 #if defined(SWIGRUBY)
   %rename("name=") set_name( const char *name);
 #endif
-  /* set name of node */
+
+  /*
+   * set name of node
+   */
   void set_name( const char *name ) {
     ws_xml_set_node_name( $self, ws_xml_get_node_name_ns( $self ), name );
   }
   
-  /* get namespace for node */
+  /*
+   * get namespace for node
+   */
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
   }
 #if defined(SWIGRUBY)
   %rename("ns=") set_ns( const char *nsuri );
 #endif
-  /* set namespace of node */
+
+  /*
+   * set namespace of node
+   */
   void set_ns( const char *ns ) {
     ws_xml_set_ns( $self, ns, ws_xml_get_node_name_ns_prefix($self) );
   }
 
-  /* get prefix of nodes namespace */
+  /*
+   * get prefix of nodes namespace
+   */
   const char *prefix() {
     return ws_xml_get_node_name_ns_prefix($self);
   }
 
-  /* set language */
+  /*
+   * set language
+   */
 #if defined(SWIGRUBY)
   %rename("lang=") set_lang(const char *lang);
 #endif
@@ -309,28 +360,42 @@ struct _WsXmlDoc {};
     ws_xml_set_node_lang($self, lang);
   }
 
-  /* find node within tree */
+  /*
+   * find node within tree
+   * a NULL passed as 'ns' (namespace) is treated as wildcard
+   */
   WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
     return ws_xml_find_in_tree( $self, ns, name, recursive );
   }
 				 
-  /* count node children */
+  /*
+   * count node children
+   */
   int size() {
     return ws_xml_get_child_count( $self );
   }
-  /* add child to node */
-  WsXmlNodeH add( const char *ns, const char *name, const char *value = NULL ) {
-    return ws_xml_add_child( $self, ns, name, value );
+  
+  /*
+   * add child (namespace, name, text) to node
+   */
+  WsXmlNodeH add( const char *ns, const char *name, const char *text = NULL ) {
+    return ws_xml_add_child( $self, ns, name, text );
   }
 #if defined(SWIGRUBY)
   %alias add "<<";
 #endif
+
+  /*
+   * add node as child
+   */
   WsXmlNodeH add(WsXmlNodeH node) {
     ws_xml_duplicate_tree( $self, node );
     return $self;
   }
   
-  /* iterate children */
+  /*
+   * iterate children
+   */
 
 #if defined(SWIGRUBY)
   void each() {
