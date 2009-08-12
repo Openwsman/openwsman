@@ -924,7 +924,7 @@ cim_enum_instances(CimClientInfo * client,
 			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 
 	if (rc.rc) {
-		debug("CMCIClient enumInstances() failed");
+		debug("*** CMCIClient enumInstances() failed");
 		cim_to_wsman_status(rc, status);
 		if (rc.msg)
 			CMRelease(rc.msg);
@@ -1323,7 +1323,7 @@ cim_connect_to_cimom(char *cim_host,
 			cim_host_passwd, &rc);
 
 	if (cimclient == NULL) {
-		debug( "Connection to CIMOM failed");
+	        debug( "*** Connection to CIMOM %s://%s:%s failed", frontend, cim_host, cim_port);
 	} else {
 		debug("new cimclient: 0x%8x", cimclient);
 		debug("new cimclient: %d", cimclient->ft->ftVersion);
@@ -2289,7 +2289,7 @@ CMPIArray *cim_enum_instancenames(CimClientInfo * client,
 			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
 
 	if (rc.rc) {
-		debug("CMCIClient enumInstanceNames() failed");
+		debug("*** CMCIClient enumInstanceNames() failed");
 		cim_to_wsman_status(rc, status);
 		return NULL;
 	}
