@@ -42,9 +42,12 @@ struct _WsXmlDoc {};
  *
  */
 %extend _WsXmlDoc {
-  /* constructor */
-  _WsXmlDoc(const char *rootname) {
-    return wsman_create_doc(rootname);
+  /*
+   * Create XmlDoc with node name
+   * optionally pass namespace as 2nd arg (defaults to NULL)
+   */
+  _WsXmlDoc(const char *name, const char *ns = NULL) {
+    return ws_xml_create_doc(ns, name);
   }
   /* destructor */
   ~_WsXmlDoc() {
