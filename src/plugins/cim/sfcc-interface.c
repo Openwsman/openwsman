@@ -1638,6 +1638,7 @@ cim_create_instance(CimClientInfo * client,
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
+        /* now ask the CIMOM for the class definition */
 	class = cim_get_class(client, client->requested_class,
 			CMPI_FLAG_IncludeQualifiers, status);
 	if (class) {
@@ -1647,6 +1648,15 @@ cim_create_instance(CimClientInfo * client,
 	if(fragstr == NULL) {
 		resource = ws_xml_get_child(in_body, 0, client->resource_uri,
 				client->requested_class);
+	        if(!resource) {
+		        /* cim_data_stubs allows .xsd suffix for the namespace
+			 * follow this convention here.
+			 */
+			char *xsd = u_strdup_printf("%s.xsd", client->resource_uri);
+		        resource = ws_xml_get_child(in_body, 0, xsd,
+				client->requested_class);
+			u_free(xsd);
+		}
 	}
 	else {
 		resource = ws_xml_get_child(in_body, 0, XML_NS_WS_MAN, WSM_XML_FRAGMENT);
@@ -1658,7 +1668,7 @@ cim_create_instance(CimClientInfo * client,
 	}
 	wsman_get_fragment_type(fragstr, &fragment_flag, &element, &index);
 	/*
-	 * Add keys
+	 * Add keys (according to class definition)
 	 */
 	for (i = 0; i < numproperties; i++) {
 		CMPIString *propertyname;
