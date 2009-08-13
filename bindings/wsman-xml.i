@@ -203,7 +203,7 @@ struct _WsXmlDoc {};
    *
    */
   int is_end_of_sequence() {
-    return ws_xml_find_in_tree( ws_xml_get_soap_body( $self ), XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 1 );
+    return NULL != ws_xml_find_in_tree( ws_xml_get_soap_body( $self ), XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 1 );
   }
 
 }
