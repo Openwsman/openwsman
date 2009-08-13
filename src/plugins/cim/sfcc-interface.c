@@ -1096,14 +1096,15 @@ create_instance_from_xml(CMPIInstance * instance,
 	CMPIData data;
 	CMPIObjectPath *objectpath =
 		instance->ft->getObjectPath(instance, NULL);
+  debug("create_instance_from_xml: objectpath %p", objectpath);
 	CMPIString *classname =
 		objectpath->ft->getClassName(objectpath, NULL);
-
+  debug("create_instance_from_xml: classname %p", classname);
 	int numproperties = 0;
 	numproperties = class->ft->getPropertyCount(class, NULL);
-
+  debug("create_instance_from_xml: numproperties %d", numproperties);
 	wsman_get_fragment_type(fragstr, &fragment_flag, &element, &index);
-	debug("num props=%d", numproperties);
+	debug("create_instance_from_xml: num props=%d, fragment_flag %d, element %s, index %d", numproperties, fragment_flag, element, index);
 	for (i = 0; i < numproperties; i++) {
 		CMPIString *propertyname;
 		data = class->ft->getPropertyAt(class,
@@ -1115,7 +1116,6 @@ create_instance_from_xml(CMPIInstance * instance,
 					(char *) propertyname->hdl);
 			if (child) {
 				value = ws_xml_get_node_text(child);
-
 				WsXmlAttrH attr =
 					ws_xml_find_node_attr(child,
 							XML_NS_SCHEMA_INSTANCE,
@@ -1143,6 +1143,7 @@ create_instance_from_xml(CMPIInstance * instance,
 		}
 		else {
 			if(strcmp(element, (char *) propertyname->hdl ) == 0) {
+			  debug("release %s", element);
 				CMRelease(propertyname);
 				break;
 			}
@@ -1667,6 +1668,7 @@ cim_create_instance(CimClientInfo * client,
 		goto cleanup;
 	}
 	wsman_get_fragment_type(fragstr, &fragment_flag, &element, &index);
+	debug("cim_create_instance: num props=%d, fragment_flag %d, element %s, index %d", numproperties, fragment_flag, element, index);
 	/*
 	 * Add keys (according to class definition)
 	 */
@@ -1676,12 +1678,13 @@ cim_create_instance(CimClientInfo * client,
 		class->ft->getPropertyQualifier(class,
 				(char *) propertyname->hdl,
 				"KEY", &rc);
-		debug("working on property: %s", (char *) propertyname->hdl );
+		debug("working on property: %s, rc.rc %d", (char *) propertyname->hdl, rc.rc );
 		if (rc.rc == 0 && fragstr == NULL &&
 				!ws_xml_get_child(resource, 0,
 					client->resource_uri,
-					(char *) propertyname->
-					hdl)) {
+					(char *) propertyname->hdl)) {
+		  debug("WXF_INVALID_REPRESENTATION");
+		  debug("No <%s:%s>", client->resource_uri,(char *) propertyname->hdl);
 			status->fault_code = WXF_INVALID_REPRESENTATION;
 			status->fault_detail_code =
 				WSMAN_DETAIL_MISSING_VALUES;
@@ -1690,6 +1693,7 @@ cim_create_instance(CimClientInfo * client,
 			if(fragstr == NULL) {
 				child = ws_xml_get_child(resource, 0,
 						client->resource_uri, (char *)propertyname->hdl);
+			  debug("child %p", child);
 			}
 			else {
 				if(strcmp(element, (char *)propertyname->hdl)) {
@@ -1701,9 +1705,11 @@ cim_create_instance(CimClientInfo * client,
 			}
 
 			char *value = ws_xml_get_node_text(child);
+		  debug("value %s", value );
 			CMAddKey(objectpath, (char *) propertyname->hdl,
 					value, CMPI_chars);
 			if(fragstr && strcmp(element, (char *)propertyname->hdl) == 0) {
+			  debug("fragstr, early break");
 				CMRelease(propertyname);
 				break;
 			}
@@ -1712,15 +1718,17 @@ cim_create_instance(CimClientInfo * client,
 	}
 
 	if(fragstr && i == numproperties) {
+	  debug("WSMAN_INVALID_SELECTORS");
 		status->fault_code = WSMAN_INVALID_SELECTORS;
 		status->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
 		goto cleanup;
 	}
 
 	instance = newCMPIInstance(objectpath, NULL);
-	if (status->fault_code != 0)
+	if (!instance) {
+                debug("newCMPIInstance failed");
 		goto cleanup;
-
+	}
 
 	create_instance_from_xml(instance, class,
 			resource, fragstr, client->resource_uri, status);
