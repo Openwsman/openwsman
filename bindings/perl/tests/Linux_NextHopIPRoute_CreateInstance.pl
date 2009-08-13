@@ -34,6 +34,7 @@ my @dataInfo = (
     ['DestinationAddress' , "192.168.0.0"],
     ['DestinationMask'    , "24"],
     ['ElementName'        , "IPv4-192.168.0.0/24"],
+    ['Generation'         , "1"],
     ['InstanceID'         , "localhost|192.168.0.0|24|254|2|0|"],
     ['IsStatic'           , "1"],
     ['OtherDerivation'    , ""],
