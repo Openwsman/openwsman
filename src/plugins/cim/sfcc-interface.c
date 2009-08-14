@@ -178,6 +178,110 @@ path2xml(CimClientInfo * client,
 
 
 void
+xml2objectpath(CMPIObjectPath * objectpath, CMPIData data, char *name, char *value)
+{
+	CMPIStatus rc;
+	CMPIType type = data.type;
+debug("xml2objectpath(type 0x%x, %s:%s)", type, name, value);
+
+	if (type & CMPI_ARRAY) {
+		//
+	} else if (type & CMPI_ENC) {
+		switch (type) {
+		case CMPI_instance:
+			break;
+		case CMPI_ref:
+			break;
+		case CMPI_args:
+			break;
+		case CMPI_filter:
+			break;
+		case CMPI_string:
+		case CMPI_numericString:
+		case CMPI_booleanString:
+		case CMPI_dateTimeString:
+		case CMPI_classNameString:
+			rc = CMAddKey(objectpath, name, value,
+					CMPI_chars);
+			debug("CMAddKey: %d %s", rc.rc,  (rc.msg)? (char *)rc.msg->hdl : NULL );
+			break;
+		case CMPI_dateTime:
+			break;
+		}
+	} else if (type & CMPI_SIMPLE) {
+		int yes = 0;
+		switch (type) {
+		case CMPI_boolean:
+			if (strcmp(value, "true") == 0)
+				yes = 1;
+			CMAddKey(objectpath, name, (CMPIValue *) & yes,
+					CMPI_boolean);
+			break;
+		case CMPI_char16:
+			CMAddKey(objectpath, name, value, CMPI_chars);
+			break;
+		}
+	} else if (type & CMPI_INTEGER) {
+		unsigned long tmp;
+		unsigned long long tmp_ll;
+		int val;
+		long val_l;
+		long long val_ll;
+		switch (type) {
+		case CMPI_uint8:
+			tmp = strtoul(value, NULL, 10);
+			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
+					type);
+			break;
+		case CMPI_sint8:
+			val = atoi(value);
+			CMAddKey(objectpath, name, (CMPIValue *) & val,
+					type);
+			break;
+		case CMPI_uint16:
+			tmp = strtoul(value, NULL, 10);
+			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
+					type);
+			break;
+		case CMPI_sint16:
+			val = atoi(value);
+			CMAddKey(objectpath, name, (CMPIValue *) & val,
+					type);
+			break;
+		case CMPI_uint32:
+			tmp = strtoul(value, NULL, 10);
+			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
+					type);
+			break;
+		case CMPI_sint32:
+			val_l = atol(value);
+			CMAddKey(objectpath, name,
+					(CMPIValue *) & val_l, type);
+			break;
+		case CMPI_uint64:
+			tmp_ll = strtoull(value, NULL, 10);
+			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
+					type);
+			break;
+		case CMPI_sint64:
+			val_ll = atoll(value);
+			CMAddKey(objectpath, name,
+					(CMPIValue *) & val_ll, type);
+			break;
+		}
+	} else if (type & CMPI_REAL) {
+		switch (type) {
+		case CMPI_real32:
+			break;
+		case CMPI_real64:
+			break;
+		}
+	}
+debug("xml2objectpath => %s", CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
+}
+
+
+void
 xml2property(CMPIInstance * instance,
 		CMPIData data, char *name, char *value)
 {
@@ -1094,17 +1198,15 @@ create_instance_from_xml(CMPIInstance * instance,
 	WsXmlNodeH child = NULL;
 	char *value = NULL;
 	CMPIData data;
+
 	CMPIObjectPath *objectpath =
 		instance->ft->getObjectPath(instance, NULL);
-  debug("create_instance_from_xml: objectpath %p", objectpath);
 	CMPIString *classname =
 		objectpath->ft->getClassName(objectpath, NULL);
-  debug("create_instance_from_xml: classname %p", classname);
 	int numproperties = 0;
 	numproperties = class->ft->getPropertyCount(class, NULL);
-  debug("create_instance_from_xml: numproperties %d", numproperties);
 	wsman_get_fragment_type(fragstr, &fragment_flag, &element, &index);
-	debug("create_instance_from_xml: num props=%d, fragment_flag %d, element %s, index %d", numproperties, fragment_flag, element, index);
+
 	for (i = 0; i < numproperties; i++) {
 		CMPIString *propertyname;
 		data = class->ft->getPropertyAt(class,
@@ -1325,7 +1427,7 @@ cim_connect_to_cimom(char *cim_host,
 			cim_host_passwd, &rc);
 
 	if (cimclient == NULL) {
-	        debug( "*** Connection to CIMOM %s://%s:%s failed", frontend, cim_host, cim_port);
+	        debug( "*** Connection to CIMOM %s://%s:%s failed with %d:%s", frontend, cim_host, cim_port, rc.rc, rc.msg);
 	} else {
 		debug("new cimclient: 0x%8x", cimclient);
 		debug("new cimclient: %d", cimclient->ft->ftVersion);
@@ -1668,17 +1770,17 @@ cim_create_instance(CimClientInfo * client,
 		goto cleanup;
 	}
 	wsman_get_fragment_type(fragstr, &fragment_flag, &element, &index);
-	debug("cim_create_instance: num props=%d, fragment_flag %d, element %s, index %d", numproperties, fragment_flag, element, index);
+
 	/*
 	 * Add keys (according to class definition)
 	 */
 	for (i = 0; i < numproperties; i++) {
 		CMPIString *propertyname;
-		class->ft->getPropertyAt(class, i, &propertyname, NULL);
+                /* retrieve property type (in data) and name (in propertyname) */
+	        CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
 		class->ft->getPropertyQualifier(class,
 				(char *) propertyname->hdl,
 				"KEY", &rc);
-		debug("working on property: %s, rc.rc %d", (char *) propertyname->hdl, rc.rc );
 		if (rc.rc == 0 && fragstr == NULL &&
 				!ws_xml_get_child(resource, 0,
 					client->resource_uri,
@@ -1693,7 +1795,6 @@ cim_create_instance(CimClientInfo * client,
 			if(fragstr == NULL) {
 				child = ws_xml_get_child(resource, 0,
 						client->resource_uri, (char *)propertyname->hdl);
-			  debug("child %p", child);
 			}
 			else {
 				if(strcmp(element, (char *)propertyname->hdl)) {
@@ -1704,10 +1805,9 @@ cim_create_instance(CimClientInfo * client,
 					child = ws_xml_get_child(resource, 0, NULL, element);
 			}
 
-			char *value = ws_xml_get_node_text(child);
-		  debug("value %s", value );
-			CMAddKey(objectpath, (char *) propertyname->hdl,
-					value, CMPI_chars);
+			/* assemble objectpath, passing value with correct type */
+		        xml2objectpath(objectpath, data, (char *) propertyname->hdl, ws_xml_get_node_text(child));
+
 			if(fragstr && strcmp(element, (char *)propertyname->hdl) == 0) {
 			  debug("fragstr, early break");
 				CMRelease(propertyname);
@@ -1723,13 +1823,15 @@ cim_create_instance(CimClientInfo * client,
 		status->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
 		goto cleanup;
 	}
-
+      
+        /* create a new (empty) instance */
 	instance = newCMPIInstance(objectpath, NULL);
 	if (!instance) {
                 debug("newCMPIInstance failed");
 		goto cleanup;
 	}
 
+        /* write properties to the instance */
 	create_instance_from_xml(instance, class,
 			resource, fragstr, client->resource_uri, status);
 	if (status->fault_code == 0) {
