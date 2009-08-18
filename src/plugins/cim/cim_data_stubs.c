@@ -359,7 +359,7 @@ CimResource_Custom_EP( SoapOpH op,
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
 		status.fault_detail_code = OWSMAN_NO_DETAILS;
 		doc = wsman_generate_fault( in_doc, status.fault_code,
-				status.fault_detail_code, NULL);
+				status.fault_detail_code, status.fault_msg);
 		debug("action not supported");
 		goto cleanup;
 	}
@@ -367,7 +367,7 @@ CimResource_Custom_EP( SoapOpH op,
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
 		doc = wsman_generate_fault(in_doc, status.fault_code,
-				status.fault_detail_code, NULL);
+				status.fault_detail_code, status.fault_msg);
 	} else {
 
 		if ((doc = wsman_create_response_envelope( in_doc, NULL))) {
@@ -378,7 +378,7 @@ CimResource_Custom_EP( SoapOpH op,
 		if (status.fault_code != 0) {
 			ws_xml_destroy_doc(doc);
 			doc = wsman_generate_fault( in_doc, status.fault_code,
-					status.fault_detail_code, NULL);
+					status.fault_detail_code, status.fault_msg);
 		}
 	}
 

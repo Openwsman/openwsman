@@ -2353,12 +2353,9 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 	default:
 		status->fault_code = WSMAN_UNKNOWN;
 	}
-	/*
-	   if (rc.msg) {
-	   status->msg = (char *)soap_alloc(strlen(rc.msg->hdl ), 0 );
-	   status->msg = strndup(rc.msg->hdl, strlen(rc.msg->hdl ));
-	   }
-	   */
+	if (rc.msg && rc.msg->hdl) {
+	        status->fault_msg = u_strdup(rc.msg->hdl);
+	}
 }
 
 
