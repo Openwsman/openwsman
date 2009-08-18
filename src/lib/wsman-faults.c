@@ -136,6 +136,7 @@ WsmanFaultCodeTable fault_code_table[] =
 {
 	{
 		SOAP_FAULT_MUSTUNDERSTAND,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSA_ACTION_FAULT,
 		XML_NS_SOAP_1_2,
 		FAULT_MUSTUNDERSTAND_CODE,
@@ -147,7 +148,8 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_ENDPOINT_UNAVAILABLE,
-		WSA_ACTION_FAULT,
+	        WSMAN_STATUS_SERVICE_UNAVAILABLE,
+	        WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
 		"EndpointUnavailable",
@@ -155,6 +157,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_ACCESS_DENIED,
+	        WSMAN_STATUS_UNAUTHORIZED,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -163,6 +166,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_ACTION_NOT_SUPPORTED,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
@@ -171,6 +175,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_ALREADY_EXISTS,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -179,7 +184,8 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_CANNOT_PROCESS_FILTER,
-		WSENUM_ACTION_FAULT,
+	        WSMAN_STATUS_UNPROCESSABLE_ENTITY,
+	        WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
 		"CannotProcessFilter",
@@ -187,6 +193,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_CANNOT_PROCESS_FILTER,
+	        WSMAN_STATUS_UNPROCESSABLE_ENTITY,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -195,14 +202,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_CONCURRENCY,
-		WSMAN_ACTION_FAULT,
-		XML_NS_WS_MAN,
-		FAULT_SENDER_CODE,
-		"Concurrency",
-		"The action could not be completed due to concurrency or locking problems."
-	},
-	{
-		WSMAN_CONCURRENCY,
+	        WSMAN_STATUS_CONFLICT,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -211,6 +211,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_DESTINATION_UNREACHABLE,
+	        WSMAN_STATUS_SERVICE_UNAVAILABLE,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
@@ -219,6 +220,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_ENCODING_LIMIT,
+	        WSMAN_STATUS_REQUEST_ENTITY_TOO_LARGE,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -227,6 +229,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_ENDPOINT_UNAVAILABLE,
+	        WSMAN_STATUS_SERVICE_UNAVAILABLE,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_RECEIVER_CODE,
@@ -235,6 +238,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
@@ -243,6 +247,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_FILTERING_NOT_SUPPORTED,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_SENDER_CODE,
@@ -251,6 +256,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_FRAGMENT_DIALECT_NOT_SUPPORTED,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
@@ -259,6 +265,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_INTERNAL_ERROR,
+	        WSMAN_STATUS_INTERNAL_SERVER_ERROR,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
@@ -267,6 +274,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_INVALID_ENUMERATION_CONTEXT,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
@@ -275,6 +283,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_INVALID_MESSAGE_INFORMATION_HEADER,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
@@ -283,6 +292,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_INVALID_OPTIONS,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -291,6 +301,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_INVALID_PARAMETER,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -299,6 +310,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WXF_INVALID_REPRESENTATION,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSXF_ACTION_FAULT,
 		XML_NS_TRANSFER,
 		FAULT_SENDER_CODE,
@@ -307,6 +319,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_INVALID_SELECTORS,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -315,6 +328,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSA_MESSAGE_INFORMATION_HEADER_REQUIRED,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSA_ACTION_FAULT,
 		XML_NS_ADDRESSING,
 		FAULT_SENDER_CODE,
@@ -323,6 +337,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_NO_ACK,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -331,6 +346,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_QUOTA_LIMIT,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -339,6 +355,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_SCHEMA_VALIDATION_ERROR,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -347,6 +364,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_TIMED_OUT,
+	        WSMAN_STATUS_REQUEST_TIMEOUT,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
@@ -355,6 +373,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_TIMED_OUT,
+	        WSMAN_STATUS_REQUEST_TIMEOUT,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
@@ -363,6 +382,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSEN_UNSUPPORTED_EXPIRATION_TYPE,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSENUM_ACTION_FAULT,
 		XML_NS_ENUMERATION,
 		FAULT_RECEIVER_CODE,
@@ -371,6 +391,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_UNSUPPORTED_FEATURE,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_SENDER_CODE,
@@ -379,6 +400,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_UNSUPPORTED_FEATURE,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSMAN_ACTION_FAULT,
 		XML_NS_CIM_BINDING,
 		FAULT_RECEIVER_CODE,
@@ -387,6 +409,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
 		WSMAN_EVENT_DELIVER_TO_UNUSABLE,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSMAN_ACTION_FAULT,
 		XML_NS_CIM_BINDING,
 		FAULT_RECEIVER_CODE,
@@ -395,6 +418,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
 	{
     		WSMB_POLYMORPHISM_MODE_NOT_SUPPORTED,
+	        WSMAN_STATUS_NOT_IMPLEMENTED,
 		WSMB_ACTION_FAULT,
 		XML_NS_WS_MAN,
 		FAULT_RECEIVER_CODE,
@@ -403,6 +427,7 @@ WsmanFaultCodeTable fault_code_table[] =
 	},
     	{
     		WSE_INVALID_EXPIRATION_TIME,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
 		FAULT_SENDER_CODE,
@@ -412,6 +437,7 @@ WsmanFaultCodeTable fault_code_table[] =
     	},
     	{
     		WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE,
+	        WSMAN_STATUS_BAD_REQUEST,
     		WSEVENT_ACTION_FAULT,
     		XML_NS_EVENTING,
     		FAULT_SENDER_CODE,
@@ -420,6 +446,7 @@ WsmanFaultCodeTable fault_code_table[] =
     	},
     	{
     		WSE_FILTERING_NOT_SUPPORTED,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
 		FAULT_SENDER_CODE,
@@ -428,6 +455,7 @@ WsmanFaultCodeTable fault_code_table[] =
     	},
     	{
 		WSE_INVALID_MESSAGE,
+	        WSMAN_STATUS_BAD_REQUEST,
 		WSEVENT_ACTION_FAULT,
 		XML_NS_EVENTING,
 		FAULT_SENDER_CODE,
@@ -436,6 +464,7 @@ WsmanFaultCodeTable fault_code_table[] =
     	},
 	{
 		WSMAN_UNKNOWN,
+	        WSMAN_STATUS_NOT_FOUND,
 		NULL,
 		NULL,
 		NULL,
@@ -497,18 +526,8 @@ WsmanKnownStatusCode wsman_find_httpcode_for_fault_code( WsmanFaultCodeType faul
 	{
 		if (fault_code_table[i].fault_code == faultCode )
 		{
-			if (strcmp(fault_code_table[i].code, FAULT_RECEIVER_CODE ) == 0) {
-				httpcode = WSMAN_STATUS_INTERNAL_SERVER_ERROR;
-				break;
-			}
-			else if (strcmp(fault_code_table[i].code, FAULT_SENDER_CODE ) == 0) {
-				httpcode = WSMAN_STATUS_BAD_REQUEST;
-				break;
-			}
-			else if (strcmp(fault_code_table[i].code, FAULT_MUSTUNDERSTAND_CODE ) == 0) {
-				httpcode = WSMAN_STATUS_BAD_REQUEST;
-				break;
-			}
+			httpcode = fault_code_table[i].http_code;
+		        break;
 		}
 	}
 	return httpcode;

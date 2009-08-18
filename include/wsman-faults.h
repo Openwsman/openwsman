@@ -299,6 +299,7 @@ typedef enum {
 struct __WsmanFaultCodeTable
 {
 	WsmanFaultCodeType  fault_code;
+        WsmanKnownStatusCode http_code;
 	char*               fault_action;
 	char*               subCodeNs;
 	char*               code;
