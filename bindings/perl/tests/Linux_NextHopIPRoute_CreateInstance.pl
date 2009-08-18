@@ -45,9 +45,18 @@ my @dataInfo = (
     ); # Selectors list.
 my $result; # Used to store obtained data.
 
+# Get class name.
+my $className;
+if(($uri =~ /.\/(\w+)$/)) {
+    $className = $1;
+} else {
+    print "[ERROR] Malformed uri.";
+    return 1;
+}
+
 # Establish data.
 # (key, value)
-my $data = new openwsman::XmlDoc::("Linux_NextHopIPRoute");
+my $data = new openwsman::XmlDoc::($className);
 my $root = $data->root();
 $root->set_ns($uri);
 for(my $i=0 ; $i<scalar(@dataInfo) ; $i++) {
@@ -56,7 +65,8 @@ for(my $i=0 ; $i<scalar(@dataInfo) ; $i++) {
 
 $options->set_dump_request();
 
+# Create instance.
 $result = $client->create($options, $uri, $data->string(), length($data->string()),"utf-8");
-unless($result) {
+unless($result && $result->is_fault eq 0) {
     print "[ERROR] Could not create instance.";
 }
