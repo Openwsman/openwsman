@@ -389,6 +389,8 @@ DONE:
     }
 #endif
 	shttpd_printf(arg,"Connection: Close\r\n");
+  
+        /* separate header from message-body */
 	shttpd_printf(arg, "\r\n");
 
 	/* add response body to output buffer */
@@ -409,8 +411,6 @@ CONTINUE:
 		 state->index += l ;
 		 arg->out.num_bytes += l;
 	}
-	shttpd_printf(arg, "\r\n\r\n");
-
 
 	u_buf_free(state->request);
 	u_free(state->response);
