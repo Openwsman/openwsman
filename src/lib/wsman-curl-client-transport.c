@@ -290,7 +290,7 @@ init_curl_transport(WsManClient *cl)
 			goto DONE;
 		}
 	}
-	// ceritificate thumbprint
+	// certificate thumbprint
 #ifdef ENABLE_EVENTING_SUPPORT
 	else if (cl->authentication.certificatethumbprint) {
 		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
