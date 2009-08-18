@@ -355,7 +355,8 @@ filter_t * filter_deserialize(WsXmlNodeH node)
 	filter_t *filter = NULL;
 	WsXmlNodeH instance_node = NULL;
 	WsXmlNodeH entry_node = NULL;
-	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_FILTER);
+        /* look for wse:Filter */
+	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSM_FILTER);
 	if(filter_node == NULL) return NULL;
 	filter = u_zalloc(sizeof(filter_t));
 	dialect = ws_xml_find_attr_value(filter_node, NULL, WSM_DIALECT);
