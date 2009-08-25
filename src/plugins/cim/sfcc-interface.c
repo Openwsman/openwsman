@@ -426,7 +426,6 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 			debug("text: %s", sentry->entry.text);
 			CMAddArg(argsin, hkey, sentry->entry.text, CMPI_chars);
 		}
-		u_free(sentry);
 	}
 }
 
