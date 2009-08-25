@@ -36,10 +36,13 @@ create_instance_from_xml(CMPIInstance * instance,
 void
 xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri);
 
-void xml2property(CMPIInstance * instance, CMPIData data, char *name,
+void xml2objectpath(CMPIObjectPath * objectpath, CMPIData *data, char *name,
 		  char *value);
 
-void property2xml(CimClientInfo * client, CMPIData data, const char *name,
+void xml2property(CMPIInstance * instance, CMPIData *data, char *name,
+		  char *value);
+
+void property2xml(CimClientInfo * client, CMPIData *data, const char *name,
 		  WsXmlNodeH node, char *resourceUri, int frag_type, int is_key);
 
 extern char *value2Chars(CMPIType type, CMPIValue * value);

@@ -123,8 +123,8 @@ path2xml(CimClientInfo * client,
 	CMPIString *namespace = objectpath->ft->getNameSpace(objectpath, NULL);
 #if 0
 	CMPIString *opstr = CMObjectPathToString(objectpath, NULL);
-	debug("objectpath: %s", (char *) opstr->hdl);
-	debug("namespace: %s", (char *) namespace->hdl);
+	debug("objectpath: %s", (char *) CMGetCharPtr(opstr));
+	debug("namespace: %s", (char *) CMGetCharPtr(namespace));
 #endif
 	CMPIString *classname =  objectpath->ft->getClassName(objectpath, NULL);
 	numkeys = objectpath->ft->getKeyCount(objectpath, NULL);
@@ -176,234 +176,134 @@ path2xml(CimClientInfo * client,
 }
 
 
-
-void
-xml2objectpath(CMPIObjectPath * objectpath, CMPIData data, char *name, char *value)
+/*
+ * convert xml (string) value to CMPIData honoring type
+ * I: data.type = expected type
+ * I: value = pointer to string representation
+ * O: data.value = type-correct value
+ */
+static void
+xml2data(CMPIData *data, char *value)
 {
-	CMPIStatus rc;
-	CMPIType type = data.type;
-debug("xml2objectpath(type 0x%x, %s:%s)", type, name, value);
+	CMPIType type = data->type;
 
 	if (type & CMPI_ARRAY) {
-		//
-	} else if (type & CMPI_ENC) {
+		debug("*** xml2data: Array unsupported");
+	        data->value.array = NULL;
+	} else {
 		switch (type) {
 		case CMPI_instance:
+		        data->value.inst = NULL;
 			break;
 		case CMPI_ref:
+		        data->value.ref = NULL;
 			break;
 		case CMPI_args:
+		        data->value.args = NULL;
 			break;
+#if CMPI_VER_200		  
 		case CMPI_filter:
+		        data->value.filter = NULL;
 			break;
+#endif		  
 		case CMPI_string:
 		case CMPI_numericString:
 		case CMPI_booleanString:
 		case CMPI_dateTimeString:
 		case CMPI_classNameString:
-			rc = CMAddKey(objectpath, name, value,
-					CMPI_chars);
-			debug("CMAddKey: %d %s", rc.rc,  (rc.msg)? (char *)rc.msg->hdl : NULL );
+		        data->value.chars = value;
 			break;
 		case CMPI_dateTime:
+		        data->value.dateTime = NULL;
 			break;
-		}
-	} else if (type & CMPI_SIMPLE) {
-		int yes = 0;
-		switch (type) {
-		case CMPI_boolean:
+		case CMPI_boolean: {
+		      	int yes = 0;
 			if (strcmp(value, "true") == 0)
 				yes = 1;
-			CMAddKey(objectpath, name, (CMPIValue *) & yes,
-					CMPI_boolean);
-			break;
-		case CMPI_char16:
-			CMAddKey(objectpath, name, value, CMPI_chars);
+		        data->value.boolean = yes;
 			break;
 		}
-	} else if (type & CMPI_INTEGER) {
-		unsigned long tmp;
-		unsigned long long tmp_ll;
-		int val;
-		long val_l;
-		long long val_ll;
-		switch (type) {
+		case CMPI_char16:
+		        data->value.chars = value;
+			break;
 		case CMPI_uint8:
-			tmp = strtoul(value, NULL, 10);
-			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
-					type);
+		        data->value.uint8 = strtoul(value, NULL, 10);
 			break;
 		case CMPI_sint8:
-			val = atoi(value);
-			CMAddKey(objectpath, name, (CMPIValue *) & val,
-					type);
+		        data->value.sint8 = atoi(value);
 			break;
 		case CMPI_uint16:
-			tmp = strtoul(value, NULL, 10);
-			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
-					type);
+			data->value.uint16 = strtoul(value, NULL, 10);
 			break;
 		case CMPI_sint16:
-			val = atoi(value);
-			CMAddKey(objectpath, name, (CMPIValue *) & val,
-					type);
+			data->value.sint16 = atoi(value);
 			break;
 		case CMPI_uint32:
-			tmp = strtoul(value, NULL, 10);
-			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
-					type);
+			data->value.uint32 = strtoul(value, NULL, 10);
 			break;
 		case CMPI_sint32:
-			val_l = atol(value);
-			CMAddKey(objectpath, name,
-					(CMPIValue *) & val_l, type);
+			data->value.sint32 = atol(value);
 			break;
 		case CMPI_uint64:
-			tmp_ll = strtoull(value, NULL, 10);
-			CMAddKey(objectpath, name, (CMPIValue *) & tmp,
-					type);
+			data->value.uint64 = strtoull(value, NULL, 10);
 			break;
 		case CMPI_sint64:
-			val_ll = atoll(value);
-			CMAddKey(objectpath, name,
-					(CMPIValue *) & val_ll, type);
+			data->value.sint64 = atoll(value);
 			break;
-		}
-	} else if (type & CMPI_REAL) {
-		switch (type) {
 		case CMPI_real32:
+		        data->value.real32 = atof(value);
 			break;
 		case CMPI_real64:
+		        data->value.real64 = atof(value);
 			break;
+		default:
+		        debug("*** xml2data: type %x unsupported", type);
 		}
 	}
-debug("xml2objectpath => %s", CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
+}
+
+
+
+void
+xml2objectpath(CMPIObjectPath * objectpath,
+	         CMPIData *data, char *name, char *value)
+{
+  debug("xml2objectpath([0x%04x]%s:%s)", data->type, name, value);
+        xml2data(data, value);
+        CMAddKey(objectpath, name, &(data->value), data->type);
 }
 
 
 void
 xml2property(CMPIInstance * instance,
-		CMPIData data, char *name, char *value)
+		CMPIData *data, char *name, char *value)
 {
-
-	CMPIStatus rc;
-	CMPIType type = data.type;
-
-	if (type & CMPI_ARRAY) {
-		//
-	} else if (type & CMPI_ENC) {
-		switch (type) {
-		case CMPI_instance:
-			break;
-		case CMPI_ref:
-			break;
-		case CMPI_args:
-			break;
-		case CMPI_filter:
-			break;
-		case CMPI_string:
-		case CMPI_numericString:
-		case CMPI_booleanString:
-		case CMPI_dateTimeString:
-		case CMPI_classNameString:
-			rc = CMSetProperty(instance, name, value,
-					CMPI_chars);
-			debug("CMSetProperty: %d %s", rc.rc,  (rc.msg)? (char *)rc.msg->hdl : NULL );
-			break;
-		case CMPI_dateTime:
-			break;
-		}
-	} else if (type & CMPI_SIMPLE) {
-		int yes = 0;
-		switch (type) {
-		case CMPI_boolean:
-			if (strcmp(value, "true") == 0)
-				yes = 1;
-			CMSetProperty(instance, name, (CMPIValue *) & yes,
-					CMPI_boolean);
-			break;
-		case CMPI_char16:
-			CMSetProperty(instance, name, value, CMPI_chars);
-			break;
-		}
-	} else if (type & CMPI_INTEGER) {
-		unsigned long tmp;
-		unsigned long long tmp_ll;
-		int val;
-		long val_l;
-		long long val_ll;
-		switch (type) {
-		case CMPI_uint8:
-			tmp = strtoul(value, NULL, 10);
-			CMSetProperty(instance, name, (CMPIValue *) & tmp,
-					type);
-			break;
-		case CMPI_sint8:
-			val = atoi(value);
-			CMSetProperty(instance, name, (CMPIValue *) & val,
-					type);
-			break;
-		case CMPI_uint16:
-			tmp = strtoul(value, NULL, 10);
-			CMSetProperty(instance, name, (CMPIValue *) & tmp,
-					type);
-			break;
-		case CMPI_sint16:
-			val = atoi(value);
-			CMSetProperty(instance, name, (CMPIValue *) & val,
-					type);
-			break;
-		case CMPI_uint32:
-			tmp = strtoul(value, NULL, 10);
-			CMSetProperty(instance, name, (CMPIValue *) & tmp,
-					type);
-			break;
-		case CMPI_sint32:
-			val_l = atol(value);
-			CMSetProperty(instance, name,
-					(CMPIValue *) & val_l, type);
-			break;
-		case CMPI_uint64:
-			tmp_ll = strtoull(value, NULL, 10);
-			CMSetProperty(instance, name, (CMPIValue *) & tmp,
-					type);
-			break;
-		case CMPI_sint64:
-			val_ll = atoll(value);
-			CMSetProperty(instance, name,
-					(CMPIValue *) & val_ll, type);
-			break;
-		}
-	} else if (type & CMPI_REAL) {
-		switch (type) {
-		case CMPI_real32:
-			break;
-		case CMPI_real64:
-			break;
-		}
-	}
+  debug("xml2property([0x%04x]%s:%s)", data->type, name, value);
+        xml2data(data, value);
+        CMSetProperty(instance, name, &(data->value), data->type);
 }
 
+
 void
-property2xml(CimClientInfo * client, CMPIData data,
+property2xml(CimClientInfo * client, CMPIData *data,
 		const char *name, WsXmlNodeH node, char *resource_uri,
 		int frag_type, int is_key)
 {
 
 	char *valuestr = NULL;
 
-	if (CMIsArray(data)) {
+	if (CMIsArray((*data))) {
 		WsXmlNodeH nilnode;
 		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
-				&& data.state == CMPI_nullValue) {
+				&& data->state == CMPI_nullValue) {
 			return;
-		} else if (data.type == CMPI_null && data.state == CMPI_nullValue) {
+		} else if (data->type == CMPI_null && data->state == CMPI_nullValue) {
 			nilnode = ws_xml_add_child_sort(node, resource_uri, name, NULL);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 			return;
 		}
-		CMPIArray *arr = data.value.array;
-		CMPIType eletyp = data.type & ~CMPI_ARRAY;
+		CMPIArray *arr = data->value.array;
+		CMPIType eletyp = data->type & ~CMPI_ARRAY;
 		int j, n;
 		if (arr != NULL) {
 			n = CMGetArrayCount(arr, NULL);
@@ -416,17 +316,17 @@ property2xml(CimClientInfo * client, CMPIData data,
 		}
 	} else {
 		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
-				&&  data.state == CMPI_nullValue) {
+				&&  data->state == CMPI_nullValue) {
 			return;
-		} else if (data.type != CMPI_null && data.state != CMPI_nullValue) {
+		} else if (data->type != CMPI_null && data->state != CMPI_nullValue) {
 			WsXmlNodeH refpoint = NULL;
 			WsXmlNodeH propnode;
 
-			if (data.type == CMPI_ref) {
+			if (data->type == CMPI_ref) {
 				refpoint = ws_xml_add_child_sort(node, resource_uri, name, NULL);
-				path2xml(client, refpoint, resource_uri, &data.value);
+				path2xml(client, refpoint, resource_uri, &(data->value));
 			} else {
-				valuestr = value2Chars(data.type, &data.value);
+				valuestr = value2Chars(data->type, &(data->value));
 				if(frag_type == 2)
 					ws_xml_set_node_text(node, valuestr);
 				else if(frag_type == 1) {
@@ -839,7 +739,7 @@ instance2xml(CimClientInfo * client,
 			continue;
 		}
 		objectpath->ft->getKey(objectpath, (char *) propertyname->hdl, &is_key);
-		property2xml(client, data, (char *) propertyname->hdl, xmlr,
+		property2xml(client, &data, (char *) propertyname->hdl, xmlr,
 				class_namespace, frag_type, is_key.rc);
 		CMRelease(propertyname);
 	}
@@ -1228,7 +1128,7 @@ create_instance_from_xml(CMPIInstance * instance,
 				}
 				debug("prop value: %s", value );
 				if (value) {
-					xml2property(instance, data,
+					xml2property(instance, &data,
 							(char *) propertyname->hdl,
 							value);
 				}
@@ -1273,7 +1173,7 @@ create_instance_from_xml(CMPIInstance * instance,
 				value = ws_xml_get_node_text(resource);
 			debug("prop value: %s", value );
 			if (value) {
-				xml2property(instance, data,
+				xml2property(instance, &data,
 						element, value);
 			}
 		}
@@ -1320,7 +1220,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 
 			char *value = ws_xml_get_node_text(child);
 			if (value) {
-				xml2property(instance, data,
+				xml2property(instance, &data,
 						(char *) propertyname->hdl,
 						value);
 			}
@@ -1519,7 +1419,7 @@ cim_invoke_method(CimClientInfo * client,
 				client->method);
 
 		if (rc.rc == 0) {
-			property2xml(client, data, "ReturnValue",
+			property2xml(client, &data, "ReturnValue",
 					method_node, client->resource_uri, 0, 1);
 		}
 
@@ -1530,7 +1430,7 @@ cim_invoke_method(CimClientInfo * client,
 				CMPIString *argname;
 				CMPIData data =
 					CMGetArgAt(argsout, i, &argname, NULL);
-				property2xml(client, data,
+				property2xml(client, &data,
 						(char *) argname->hdl,
 						method_node, client->resource_uri, 0, 0);
 				CMRelease(argname);
@@ -1744,10 +1644,14 @@ cim_create_instance(CimClientInfo * client,
         /* now ask the CIMOM for the class definition */
 	class = cim_get_class(client, client->requested_class,
 			CMPI_FLAG_IncludeQualifiers, status);
-	if (class) {
-		numproperties = class->ft->getPropertyCount(class, NULL);
+	if (!class) {
+	        /* couldn't connect to CIMOM */
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+	        status->fault_detail_code = OWSMAN_DETAIL_ENDPOINT_ERROR;
+		goto cleanup;
 	}
-
+        numproperties = class->ft->getPropertyCount(class, NULL);
+debug("cim_create_instance: class %s, %d properties", client->requested_class, numproperties);
 	if(fragstr == NULL) {
 		resource = ws_xml_get_child(in_body, 0, client->resource_uri,
 				client->requested_class);
@@ -1781,6 +1685,7 @@ cim_create_instance(CimClientInfo * client,
 		class->ft->getPropertyQualifier(class,
 				(char *) propertyname->hdl,
 				"KEY", &rc);
+
 		if (rc.rc == 0 && fragstr == NULL &&
 				!ws_xml_get_child(resource, 0,
 					client->resource_uri,
@@ -1806,7 +1711,7 @@ cim_create_instance(CimClientInfo * client,
 			}
 
 			/* assemble objectpath, passing value with correct type */
-		        xml2objectpath(objectpath, data, (char *) propertyname->hdl, ws_xml_get_node_text(child));
+		        xml2objectpath(objectpath, &data, (char *) propertyname->hdl, ws_xml_get_node_text(child));
 
 			if(fragstr && strcmp(element, (char *)propertyname->hdl) == 0) {
 			  debug("fragstr, early break");
@@ -1818,7 +1723,6 @@ cim_create_instance(CimClientInfo * client,
 	}
 
 	if(fragstr && i == numproperties) {
-	  debug("WSMAN_INVALID_SELECTORS");
 		status->fault_code = WSMAN_INVALID_SELECTORS;
 		status->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
 		goto cleanup;
@@ -1826,6 +1730,7 @@ cim_create_instance(CimClientInfo * client,
       
         /* create a new (empty) instance */
 	instance = newCMPIInstance(objectpath, NULL);
+debug("newCMPIInstance(%s) = %p", CMGetCharPtr(CMObjectPathToString(objectpath, NULL)), instance);
 	if (!instance) {
                 debug("newCMPIInstance failed");
 		goto cleanup;
@@ -2353,8 +2258,8 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 	default:
 		status->fault_code = WSMAN_UNKNOWN;
 	}
-	if (rc.msg && rc.msg->hdl) {
-	        status->fault_msg = u_strdup(rc.msg->hdl);
+        if (rc.msg) {
+	   status->fault_msg = u_strdup(CMGetCharPtr(rc.msg));
 	}
 }
 
