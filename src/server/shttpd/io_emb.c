@@ -162,7 +162,13 @@ shttpd_get_env(struct shttpd_arg *arg, const char *env_name)
 			return (vec->ptr);
 		}
 	} else if (strcmp(env_name, "REMOTE_ADDR") == 0) {
+#ifdef ENABLE_IPV6
+		static char str[INET6_ADDRSTRLEN];
+                inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
+		return (const char*)str;
+#else
 		return (inet_ntoa(c->sa.u.sin.sin_addr));/* FIXME NOT MT safe */
+#endif
 	}
 
 	return (NULL);

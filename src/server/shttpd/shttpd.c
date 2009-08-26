@@ -160,13 +160,25 @@ open_listening_port(int port)
 	{WSADATA data;	WSAStartup(MAKEWORD(2,2), &data);}
 #endif /* _WIN32 */
 
-	sa.len				= sizeof(sa.u.sin);
-	sa.u.sin.sin_family		= AF_INET;
-	sa.u.sin.sin_port		= htons((uint16_t) port);
-	sa.u.sin.sin_addr.s_addr	= htonl(INADDR_ANY);
+	sa.len                          = sizeof(sa.u.sin);
+
+
+#ifdef ENABLE_IPV6
+	sa.u.sin.sin6_family		= AF_INET6;
+	sa.u.sin.sin6_addr		= in6addr_any;
+	sa.u.sin.sin6_port              = htons((uint16_t) port);
+
+	if ((sock = socket(AF_INET6, SOCK_STREAM, 6)) == -1)
+		goto fail;
+#else
+	sa.u.sin.sin_family             = AF_INET;
+	sa.u.sin.sin_addr.s_addr        = htonl(INADDR_ANY);	
+	sa.u.sin.sin_port              = htons((uint16_t) port);
 
 	if ((sock = socket(PF_INET, SOCK_STREAM, 6)) == -1)
-		goto fail;
+               goto fail;
+#endif	
+
 	if (set_non_blocking_mode(sock) != 0)
 		goto fail;
 	if (setsockopt(sock, SOL_SOCKET,
@@ -704,7 +716,11 @@ shttpd_add_socket(struct shttpd_ctx *ctx, int sock, int is_ssl)
 		c->expire_time	= current_time + EXPIRE_TIME;
 
 		(void) getsockname(sock, &sa.u.sa, &sa.len);
+#ifdef ENABLE_IPV6	
+		c->loc_port = sa.u.sin.sin6_port;
+#else
 		c->loc_port = sa.u.sin.sin_port;
+#endif
 
 		set_close_on_exec(sock);
 
@@ -733,10 +749,15 @@ shttpd_add_socket(struct shttpd_ctx *ctx, int sock, int is_ssl)
 		LL_TAIL(&ctx->connections, &c->link);
 		ctx->nactive++;
 		LeaveCriticalSection(&ctx->mutex);
-
-		DBG(("%s:%hu connected (socket %d)",
-		    inet_ntoa(* (struct in_addr *) &sa.u.sin.sin_addr.s_addr),
-		    ntohs(sa.u.sin.sin_port), sock));
+#ifdef ENABLE_IPV6
+		char str[INET6_ADDRSTRLEN];
+		inet_ntop( AF_INET6,&sa.u.sin.sin6_addr, str, sizeof(str));
+		DBG(("%s:%hu connected (socket %d)",  str , ntohs(sa.u.sin.sin6_port), sock));
+#else
+		 DBG(("%s:%hu connected (socket %d)",
+                    inet_ntoa(* (struct in_addr *) &sa.u.sin.sin_addr.s_addr),
+                    ntohs(sa.u.sin.sin_port), sock));
+#endif
 	}
 }
 
@@ -981,7 +1002,11 @@ is_allowed(const struct shttpd_ctx *ctx, const struct usa *usa)
 
 	LL_FOREACH(&ctx->acl, lp) {
 		acl = LL_ENTRY(lp, struct acl, link);
+#ifdef ENABLE_IPV6
+		return allowed;
+#else
 		(void) memcpy(&ip, &usa->u.sin.sin_addr, sizeof(ip));
+#endif
 		if (acl->ip == (ntohl(ip) & acl->mask))
 			allowed = acl->flag;
 	}
@@ -1155,9 +1180,7 @@ shttpd_poll(struct shttpd_ctx *ctx, int milliseconds)
 					   "socket %d, too busy", ctx, sock);
 					(void) closesocket(sock);
 				} else if (!is_allowed(ctx, &sa)) {
-					elog(E_LOG, NULL, "shttpd_poll: %s "
-					    "is not allowed to connect",
-					   inet_ntoa(sa.u.sin.sin_addr));
+					//elog(E_LOG, NULL, "shttpd_poll: %s is not allowed to connect",   inet_ntoa(sa.u.sin.sin_addr));
 					(void) closesocket(sock);
 				} else {
 					shttpd_add_socket(ctx, sock, l->is_ssl);

@@ -25,18 +25,40 @@ struct env_block {
 static int
 my_socketpair(struct conn *c, int sp[2])
 {
-	struct sockaddr_in	sa;
+
+
+#ifdef ENABLE_IPV6
+	struct sockaddr_in6	sa;
+#else
+	struct sockaddr_in      sa;
+#endif
 	int			sock, ret = -1;
 	socklen_t		len = sizeof(sa);
 
 	(void) memset(&sa, 0, sizeof(sa));
-	sa.sin_family 		= AF_INET;
-	sa.sin_port		= htons(0);
-	sa.sin_addr.s_addr	= htonl(INADDR_LOOPBACK);
+#ifdef ENABLE_IPV6
+	sa.sin6_family          = AF_INET6;
+        sa.sin6_addr		= in6addr_loopback;
+	sa.sin6_port           	= htons(0);
 
+#else
+	sa.sin_family           = AF_INET;
+	sa.sin_addr.s_addr      = htonl(INADDR_LOOPBACK);
+	sa.sin_port             = htons(0);
+#endif
+	
+#ifdef ENABLE_IPV6
+	 if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
+                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
+        } 
+
+#else
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
-	} else if (bind(sock, (struct sockaddr *) &sa, len) != 0) {
+	} 
+
+#endif
+	else if (bind(sock, (struct sockaddr *) &sa, len) != 0) {
 		elog(E_LOG, c, "mysocketpair: bind(): %d", ERRNO);
 		(void) closesocket(sock);
 	} else if (listen(sock, 1) != 0) {
@@ -45,10 +67,23 @@ my_socketpair(struct conn *c, int sp[2])
 	} else if (getsockname(sock, (struct sockaddr *) &sa, &len) != 0) {
 		elog(E_LOG, c, "mysocketpair: getsockname(): %d", ERRNO);
 		(void) closesocket(sock);
-	} else if ((sp[0] = socket(AF_INET, SOCK_STREAM, 6)) == -1) {
+	} 
+
+#ifdef ENABLE_IPV6
+	else if ((sp[0] = socket(AF_INET6, SOCK_STREAM, 6)) == -1) {
+                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
+                (void) closesocket(sock);
+        }
+
+
+#else
+	else if ((sp[0] = socket(AF_INET, SOCK_STREAM, 6)) == -1) {
 		elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
 		(void) closesocket(sock);
-	} else if (connect(sp[0], (struct sockaddr *) &sa, len) != 0) {
+	} 
+#endif
+
+	else if (connect(sp[0], (struct sockaddr *) &sa, len) != 0) {
 		elog(E_LOG, c, "mysocketpair: connect(): %d", ERRNO);
 		(void) closesocket(sock);
 		(void) closesocket(sp[0]);
@@ -159,8 +194,18 @@ prepare_environment(const struct conn *c, const char *prog,
 	addenv(blk, "SERVER_ROOT=%s", c->ctx->document_root);
 	addenv(blk, "DOCUMENT_ROOT=%s", c->ctx->document_root);
 	addenv(blk, "REQUEST_METHOD=%s", known_http_methods[c->method].ptr);
+#ifdef ENABLE_IPV6
+	char str[INET6_ADDRSTRLEN];
+       	inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
+	addenv(blk, "REMOTE_ADDR=%s", str);
+        addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin6_port));
+
+#else
+
 	addenv(blk, "REMOTE_ADDR=%s", inet_ntoa(c->sa.u.sin.sin_addr));
 	addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin_port));
+#endif
+
 	addenv(blk, "REQUEST_URI=%s", c->uri);
 	addenv(blk, "SCRIPT_NAME=%s", prog + strlen(c->ctx->document_root));
 	addenv(blk, "SCRIPT_FILENAME=%s", prog);	/* PHP */

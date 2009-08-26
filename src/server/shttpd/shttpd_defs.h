@@ -11,6 +11,8 @@
 #ifndef DEFS_HEADER_DEFINED
 #define	DEFS_HEADER_DEFINED
 
+#include "wsman_config.h"
+
 #ifdef SHTTPD_GSS
 #include <gssapi/gssapi_generic.h>
 #endif
@@ -90,7 +92,11 @@ struct usa {
 	socklen_t len;
 	union {
 		struct sockaddr	sa;
+#ifdef ENABLE_IPV6
+		struct sockaddr_in6 sin;
+#else
 		struct sockaddr_in sin;
+#endif
 	} u;
 };
 
