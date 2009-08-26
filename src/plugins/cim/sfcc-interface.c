@@ -1320,6 +1320,7 @@ cim_connect_to_cimom(char *cim_host,
 		WsmanStatus * status)
 {
 	CMPIStatus rc;
+        CMSetStatus(&rc,0) /* workaround for sfcb bug #2844812 */
 	if (strcmp(frontend, "SfcbLocal") != 0)
 		frontend = "http";
 
