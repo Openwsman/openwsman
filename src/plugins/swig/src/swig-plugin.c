@@ -336,6 +336,44 @@ Swig_Delete_EP( SoapOpH op, void* appData, void *opaqueData )
 }
 
 
+static int
+Swig_UnSubscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+	return -1;
+}
+
+
+static int
+Swig_SubscriptionCancel_EP(WsEventThreadContextH cntx)
+{
+    WsmanStatus status;
+    return Swig_UnSubscribe_EP(cntx->soap->cntx, cntx->subsInfo, &status, NULL);
+}
+
+
+static int
+Swig_Subscribe_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+    return -1;
+}
+
+
+static int
+Swig_Renew_EP(WsContextH cntx,
+		WsSubscribeInfo* subsInfo,
+		WsmanStatus *status,
+		void *opaqueData)
+{
+    return -1;
+}
+
+
 /* ************** Array of end points for resource ****************
  *
  * Must follow general convention xxx_EndPoints
