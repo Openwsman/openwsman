@@ -405,9 +405,8 @@ CONTINUE:
 		 return;
 	}
 	else {
-        int l = state->len - state->index;
-		memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index,
-			state->len - state->index);
+	         int l = state->len - state->index;
+		 memcpy(arg->out.buf + arg->out.num_bytes, state->response + state->index, l);
 		 state->index += l ;
 		 arg->out.num_bytes += l;
 	}
