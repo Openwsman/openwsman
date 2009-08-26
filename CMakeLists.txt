@@ -93,6 +93,19 @@ OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" YES )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
+OPTION( ENABLE_IPV6 "Enable IPv6 support" YES )
+
+IF (ENABLE_EVENTING_SUPPORT)
+  SET(ENABLE_EVENTING_SUPPORT 1)
+ELSE (ENABLE_EVENTING_SUPPORT)
+  SET(ENABLE_EVENTING_SUPPORT 0)
+ENDIF (ENABLE_EVENTING_SUPPORT)
+
+IF(WSMAN_DEBUG_VERBOSE)
+  SET(WSMAN_DEBUG_VERBOSE 1)
+ELSE(WSMAN_DEBUG_VERBOSE)
+  SET(WSMAN_DEBUG_VERBOSE 0)
+ENDIF(WSMAN_DEBUG_VERBOSE)
 
 OPTION( USE_PAM "Use PAM authentication" YES )
 IF( USE_PAM )
@@ -111,8 +124,8 @@ ENDIF( USE_PAM )
 
 INCLUDE(FindOpenSSL)
 IF(OPENSSL_FOUND)
-SET(HAVE_SSL TRUE)
-SET(USE_OPENSSL TRUE)
+  SET(HAVE_SSL 1)
+  SET(USE_OPENSSL 1)
 ENDIF(OPENSSL_FOUND)
 
 IF( BUILD_RUBY )
@@ -252,7 +265,7 @@ INCLUDE(CheckIncludeFile)
 #
 # The wsman_config file checks include file existance via "#if",
 # requiring a 0/1 argument
-# HoweverHECK_INCLUDE_FILE , returns ""/"1" resulting in
+# However CHECK_INCLUDE_FILE , returns ""/"1" resulting in
 # an empty argument to "#if" in the 'false' case
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
@@ -332,7 +345,7 @@ SET( CMAKE_REQUIRED_IUNCLUDE "/usr/include/netinet" )
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
 
-SET (TYPES_TO_TEST "in_addr_t" "in_port_t" "sa_family_t" "int" "long" "long long" "short" )
+SET (TYPES_TO_TEST "in_addr_t" "in_port_t" "sa_family_t" "int" "long" "long long" "short")
 FOREACH( TYPE ${TYPES_TO_TEST})
   STRING(TOUPPER ${TYPE} UPNAME)
   STRING(REGEX REPLACE " " "_" UPNAME ${UPNAME})
@@ -347,11 +360,29 @@ FOREACH( TYPE ${TYPES_TO_TEST})
 ENDFOREACH( TYPE ${TYPES_TO_TEST})
 
 
-#
-#/* Define if struct sockaddr contains sa_len */
-# HAVE_SA_LEN
-SET(HAVE_SA_LEN 0)
-#
+INCLUDE(CheckStructHasMember)
+# Check if struct sockaddr contains sa_len
+CHECK_STRUCT_HAS_MEMBER("struct sockaddr" sa_len sys/socket.h HAVE_SA_LEN)
+IF(HAVE_SA_LEN)
+  SET(HAVE_SA_LEN 1)
+ELSE(HAVE_SA_LEN)
+  SET(HAVE_SA_LEN 0)
+ENDIF(HAVE_SA_LEN)
+  
+IF (ENABLE_IPV6)
+  # Check if struct sockaddr_in6 contains sin6
+  CHECK_STRUCT_HAS_MEMBER("struct sockaddr_in6" sin6_addr netinet/in.h HAVE_IPV6)
+
+  IF (NOT HAVE_IPV6)
+    MESSAGE( SEND_ERROR " IPv6 not supported by system, disabling" )
+    SET(ENABLE_IPV6 0)
+  ELSE (NOT HAVE_IPV6)
+    SET(ENABLE_IPV6 1)
+  ENDIF (NOT HAVE_IPV6)
+ELSE (ENABLE_IPV6)
+  SET(ENABLE_IPV6 1)
+ENDIF (ENABLE_IPV6)
+
 #
 #/* Define to 1 if you have the ANSI C header files. */
 # STDC_HEADERS

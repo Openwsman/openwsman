@@ -388,3 +388,8 @@
 #if @SSIZE_T_MISSING@
 #define ssize_t int
 #endif
+
+/* Define to 1 if you want to enable IPv6 support. */
+#if @ENABLE_IPV6@
+#define ENABLE_IPV6 1
+#endif
