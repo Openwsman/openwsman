@@ -167,6 +167,8 @@ open_listening_port(int port)
 	sa.u.sin.sin6_family		= AF_INET6;
 	sa.u.sin.sin6_addr		= in6addr_any;
 	sa.u.sin.sin6_port              = htons((uint16_t) port);
+	sa.u.sin.sin6_flowinfo          = 0;
+	sa.u.sin.sin6_scope_id          = 0;
 
 	if ((sock = socket(AF_INET6, SOCK_STREAM, 6)) == -1)
 		goto fail;
