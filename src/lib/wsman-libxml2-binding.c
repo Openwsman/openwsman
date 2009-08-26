@@ -599,7 +599,7 @@ int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree)
 
 static xmlNodePtr
 make_new_xml_node(xmlNodePtr base,
-		const char *uri, const char *name, const char *value)
+		const char *uri, const char *name, const char *value, int xmlescape)
 {
 	xmlNodePtr newNode = NULL;
 	xmlNsPtr ns = NULL;
@@ -608,8 +608,12 @@ make_new_xml_node(xmlNodePtr base,
 			 (xmlNsPtr) xml_parser_ns_find((WsXmlNodeH) base, uri, NULL, 1,
 				 1)) != NULL) {
 		if ((newNode = xmlNewNode(ns, BAD_CAST name)) != NULL) {
-			if (value != NULL)
-				xmlNodeSetContent(newNode, BAD_CAST value);
+			if (value != NULL){		
+				if (xmlescape == 1)
+					xmlNodeAddContent(newNode, BAD_CAST value);
+				else
+					xmlNodeSetContent(newNode, BAD_CAST value);
+			}
 			newNode->_private = u_zalloc(sizeof(iWsNode));
 		}
 	}
@@ -625,14 +629,14 @@ WsXmlNodeH
 xml_parser_node_add(WsXmlNodeH base,
 		int where,
 		const char *nsUri,
-		const char *localName, const char *value)
+		const char *localName, const char *value, int xmlescape)
 {
 	xmlNodePtr xmlBase = (xmlNodePtr) base;
 	xmlNodePtr newNode =
 		make_new_xml_node((where != XML_ELEMENT_NEXT &&
 					where != XML_ELEMENT_PREV)
 				? xmlBase : xmlBase->parent, nsUri,
-				localName, value);
+				localName, value, xmlescape);
 	if (newNode) {
 		switch (where) {
 		case XML_ELEMENT_NEXT:

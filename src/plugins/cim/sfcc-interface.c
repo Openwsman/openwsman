@@ -292,13 +292,15 @@ property2xml(CimClientInfo * client, CMPIData *data,
 
 	char *valuestr = NULL;
 
+	int xmlescape = strcasecmp("SfcbLocal", get_cim_client_frontend())==0 ? 1 : 0;
+
 	if (CMIsArray((*data))) {
 		WsXmlNodeH nilnode;
 		if (( client->flags & FLAG_CIM_SCHEMA_OPT ) == FLAG_CIM_SCHEMA_OPT
 				&& data->state == CMPI_nullValue) {
 			return;
 		} else if (data->type == CMPI_null && data->state == CMPI_nullValue) {
-			nilnode = ws_xml_add_child_sort(node, resource_uri, name, NULL);
+			nilnode = ws_xml_add_child_sort(node, resource_uri, name, NULL, xmlescape);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 			return;
 		}
@@ -310,7 +312,7 @@ property2xml(CimClientInfo * client, CMPIData *data,
 			for (j = 0; j < n; ++j) {
 				CMPIData ele = CMGetArrayElementAt(arr, j, NULL);
 				valuestr = value2Chars(eletyp, &ele.value);
-				ws_xml_add_child_sort(node, resource_uri, name, valuestr);
+				ws_xml_add_child_sort(node, resource_uri, name, valuestr, xmlescape);
 				free(valuestr);
 			}
 		}
@@ -323,7 +325,7 @@ property2xml(CimClientInfo * client, CMPIData *data,
 			WsXmlNodeH propnode;
 
 			if (data->type == CMPI_ref) {
-				refpoint = ws_xml_add_child_sort(node, resource_uri, name, NULL);
+				refpoint = ws_xml_add_child_sort(node, resource_uri, name, NULL, xmlescape);
 				path2xml(client, refpoint, resource_uri, &(data->value));
 			} else {
 				valuestr = value2Chars(data->type, &(data->value));
@@ -333,7 +335,7 @@ property2xml(CimClientInfo * client, CMPIData *data,
 					ws_xml_add_child(node, NULL, name, valuestr);
 				}
 				else {
-					propnode = ws_xml_add_child_sort(node, resource_uri, name, valuestr);
+					propnode = ws_xml_add_child_sort(node, resource_uri, name, valuestr, xmlescape);
 					if (is_key == 0 &&
 							(client->flags & WSMAN_ENUMINFO_EXT )) {
 						ws_xml_add_node_attr(propnode, XML_NS_CIM_SCHEMA, "Key",
@@ -345,7 +347,7 @@ property2xml(CimClientInfo * client, CMPIData *data,
 			}
 		} else {
 			WsXmlNodeH nilnode = ws_xml_add_child_sort(node, resource_uri, name,
-					NULL);
+					NULL, xmlescape);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
 		}
 	}

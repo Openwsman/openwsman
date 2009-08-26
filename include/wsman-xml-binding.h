@@ -80,7 +80,7 @@ int xml_parser_get_count(WsXmlNodeH node, int what, int bWalkUpTree);
 
 WsXmlNodeH xml_parser_node_add(WsXmlNodeH base, int where,
 			       const char *nsUri, const char *localName,
-			       const char *value);
+			       const char *value, int xmlescape);
 
 int xml_parser_node_remove(WsXmlNodeH node);
 

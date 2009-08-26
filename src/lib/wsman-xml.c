@@ -980,29 +980,29 @@ ws_xml_add_child(WsXmlNodeH node,
 		 const char *nsUri, const char *localName, const char *val)
 {
 	WsXmlNodeH newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri,
-			localName, val);
+			localName, val, 0);
 	return newNode;
 }
 
 WsXmlNodeH
 ws_xml_add_child_sort(WsXmlNodeH node,
-		 const char *nsUri, const char *localName, const char *val)
+		 const char *nsUri, const char *localName, const char *val, int xmlescape)
 {
 	int i;
 	WsXmlNodeH child, newNode = NULL;
 	int count = ws_xml_get_child_count(node) ;
 	if ( count == 0 ) {
-		newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
+		newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val, xmlescape);
 	} else {
 		for (i = 0; (child = ws_xml_get_child(node, i, NULL, NULL)) != NULL; i++) {
 				char *name = ws_xml_get_node_local_name(child);
 				if (strcmp(localName, name) < 0 ) {
-					newNode = xml_parser_node_add(child, XML_ELEMENT_PREV, nsUri, localName, val);
+					newNode = xml_parser_node_add(child, XML_ELEMENT_PREV, nsUri, localName, val, xmlescape);
 					break;
 				}
 		}
 		if (newNode == NULL) {
-			newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val);
+			newNode = xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName, val, xmlescape);
 		}
 	}
 	return newNode;
@@ -1019,7 +1019,7 @@ ws_xml_add_empty_child_format(WsXmlNodeH node, const char *nsUri,
 	vsnprintf(buf, 4096, format, args);
 	va_end(args);
 	newNode =
-	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL);
+	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, buf, NULL, 0);
 
 	return newNode;
 }
@@ -1036,7 +1036,7 @@ ws_xml_add_child_format(WsXmlNodeH node, const char *nsUri,
 	va_end(args);
 	newNode =
 	    xml_parser_node_add(node, XML_LAST_CHILD, nsUri, localName,
-				buf);
+				buf, 0);
 
 	return newNode;
 }
