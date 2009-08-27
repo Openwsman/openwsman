@@ -221,7 +221,7 @@ struct __Soap {};
     soap_destroy($self);
   }
   %typemap(newfree) WsContextH "free($1);";
-  %newobject create_context;
+
   /*
    * Create a new Context
    *
@@ -236,7 +236,7 @@ struct __Soap {};
   WsContextH context() {
     return ws_get_soap_context($self);
   }
-  %newobject create_ep_context;
+
   /*
    * Create a new endpoint Context
    *
@@ -416,7 +416,7 @@ struct _WsmanStatus {};
   const char *msg() {
     return $self->fault_msg;
   }
-  %newobject generate_fault;
+
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
   /*
    * Create a new fault XmlDoc

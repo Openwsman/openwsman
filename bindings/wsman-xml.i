@@ -12,14 +12,14 @@
 %nodefault __WsXmlNs;   /* part of WsXmlAttr */
 %rename(XmlNs) __WsXmlNs;
 %ignore __WsXmlNs::__undefined;
- 
-
-
 
 
 /*
  * class XmlDoc
  *
+ * Implementation advice
+ *  DONT do a %newobject on functions returning WsXmlDoc. Swig will
+ * free the WsXmlDocH immediately after wrapping !
  */
 
 %nodefault _WsXmlDoc;
@@ -144,7 +144,6 @@ struct _WsXmlDoc {};
   const char *context() {
     return wsmc_get_enum_context( $self );
   }
-  %newobject generate_fault;
   /*
    * Generate fault document based on given status
    *
@@ -181,7 +180,6 @@ struct _WsXmlDoc {};
     return f;
   }
   
-  %newobject create_response_envelope;
   /*
    * Generate response envelope document, optionally relating to a
    * specific action.
