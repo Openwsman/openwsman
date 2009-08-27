@@ -52,7 +52,7 @@ static char *cim_namespace = NULL;
 hash_t *vendor_namespaces = NULL;
 char *cim_host = "localhost";
 char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
-char *server_port = "8889";
+char *server_port = "5985";
 char *cim_client_frontend = "XML";
 int omit_schema_optional = 0;
 char *cim_indication_SourceNamespace = NULL;
@@ -81,6 +81,7 @@ FINISH_END_POINTS(CimResource);
 START_NAMESPACES(CimResource)
   ADD_NAMESPACE( XML_NS_CIM_CLASS, "CIM"),
   ADD_NAMESPACE( XML_NS_CIM_ALL_CLASS, "CIMALL"),
+  ADD_NAMESPACE( XML_NS_CIM_INTRINSIC, "INTRINSIC"),
 FINISH_NAMESPACES(CimResource);
 
 
@@ -157,7 +158,7 @@ void set_config( void *self, dictionary *config )
     cim_host = iniparser_getstring(config, "cim:host", "localhost");
     cim_client_frontend = iniparser_getstring(config, "cim:cim_client_frontend", "XML");
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
-    server_port = iniparser_getstring(config, "server:port", "8889");
+    server_port = iniparser_getstring(config, "server:port", server_port);
     omit_schema_optional = iniparser_getboolean(config, "cim:omit_schema_optional", 0);
     cim_indication_SourceNamespace = iniparser_getstr(config, "cim:indication_source_namespace");
     debug("vendor namespaces: %s", namespaces);
