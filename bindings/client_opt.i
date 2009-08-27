@@ -43,6 +43,22 @@ typedef struct {
   }
 
   /*
+   * set option flag(s)
+   *
+   */
+  void set_flags(int flags) {
+    wsmc_set_action_option($self, flags);
+  }
+
+  /*
+   * clear option flag(s)
+   *
+   */
+  void clear_flags(int flags) {
+    wsmc_clear_action_option($self, flags);
+  }
+   
+  /*
    * Add a selector as key/value pair
    *
    */
@@ -60,6 +76,17 @@ typedef struct {
     wsmc_add_selector($self, key, value);
   }
   
+#if defined(SWIGRUBY)
+  /*
+   * Set selectors from Hash
+   */
+  %rename( "selectors=" ) set_selectors(VALUE hash);
+  void set_selectors(VALUE hash)
+  {
+    $self->selectors = value2hash(NULL, hash);
+  }
+#endif
+
   /*
    * Add a property as key/value pair
    *
@@ -78,6 +105,17 @@ typedef struct {
     wsmc_add_property($self, key, value);
   }
   
+#if defined(SWIGRUBY)
+  /*
+   * Set properties from Hash
+   */
+  %rename( "properties=" ) set_properties(VALUE hash);
+  void set_properties(VALUE hash)
+  {
+    $self->properties = value2hash(NULL, hash);
+  }
+#endif
+
   /*
    * Set delivery uri
    */
