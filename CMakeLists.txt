@@ -92,7 +92,7 @@ OPTION( DISABLE_PLUGINS "Do not build plugins" NO )
 OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" YES )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
-OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" YES )
+OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" NO )
 OPTION( ENABLE_IPV6 "Enable IPv6 support" YES )
 
 IF (ENABLE_EVENTING_SUPPORT)
