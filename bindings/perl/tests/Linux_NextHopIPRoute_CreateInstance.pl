@@ -69,4 +69,6 @@ $options->set_dump_request();
 $result = $client->create($options, $uri, $data->string(), length($data->string()),"utf-8");
 unless($result && $result->is_fault eq 0) {
     print "[ERROR] Could not create instance.";
+} else {
+  print "Result", $result->string();
 }
