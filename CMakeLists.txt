@@ -93,7 +93,7 @@ OPTION( BUILD_SWIG_PLUGIN "Build SWIG plugin" YES )
 OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" NO )
-OPTION( ENABLE_IPV6 "Enable IPv6 support" YES )
+OPTION( ENABLE_IPV6 "Enable IPv6 support" NO )
 
 IF (ENABLE_EVENTING_SUPPORT)
   SET(ENABLE_EVENTING_SUPPORT 1)
@@ -373,14 +373,14 @@ IF (ENABLE_IPV6)
   # Check if struct sockaddr_in6 contains sin6
   CHECK_STRUCT_HAS_MEMBER("struct sockaddr_in6" sin6_addr netinet/in.h HAVE_IPV6)
 
-  IF (NOT HAVE_IPV6)
+  IF (HAVE_IPV6)
+    SET(ENABLE_IPV6 1)
+  ELSE (HAVE_IPV6)
     MESSAGE( SEND_ERROR " IPv6 not supported by system, disabling" )
     SET(ENABLE_IPV6 0)
-  ELSE (NOT HAVE_IPV6)
-    SET(ENABLE_IPV6 1)
-  ENDIF (NOT HAVE_IPV6)
+  ENDIF (HAVE_IPV6)
 ELSE (ENABLE_IPV6)
-  SET(ENABLE_IPV6 1)
+  SET(ENABLE_IPV6 0)
 ENDIF (ENABLE_IPV6)
 
 #
