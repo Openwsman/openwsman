@@ -29,7 +29,7 @@ class WsmanTest < Test::Unit::TestCase
     result = client.invoke( options, uri, method )
     assert result
     unless result.fault?
-      output = result.body["names"]
+      output = result.body[method]
       classes = []
       output.each do |c|
 	classes << c.to_s
