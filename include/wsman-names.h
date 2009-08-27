@@ -63,6 +63,7 @@
 #define XML_NS_CIM_CLASS            "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
 #define XML_NS_CIM_BINDING          "http://schemas.dmtf.org/wbem/wsman/1/cimbinding.xsd"
 
+#define XML_NS_CIM_INTRINSIC        "http://schemas.openwsman.org/wbem/wscim/1/intrinsic"
 
 // WS-Management
 #define XML_NS_WS_MAN               "http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd"
@@ -397,6 +398,11 @@
 #define CIM_ALL_AVAILABLE_CLASSES	"http://schemas.dmtf.org/wbem/wscim/1/*"
 #define XML_NS_CIM_ALL_CLASS		"http://schemas.dmtf.org/wbem/wscim/1"
 
+#define CIM_ACTION_ENUMERATE_CLASS_NAMES    "EnumerateClassNames"
+#define CIM_ACTION_ENUMERATE_INSTANCE_NAMES "EnumerateInstanceNames"
+#define CIM_ACTION_ENUMERATE_CLASSES        "EnumerateClasses"
+#define CIM_ACTION_GET_CLASS                "GetClass"
+#define CIM_ACTION_DELETE_CLASS             "DeleteClass"
 
 #define WST_ISSUEDTOKENS		"IssuedTokens"
 #define WST_REQUESTSECURITYTOKENRESPONSE			"RequestSecurityTokenResponse"
