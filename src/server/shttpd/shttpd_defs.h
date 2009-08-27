@@ -26,6 +26,7 @@
 #include "u/libu.h"
 #include <dlfcn.h>
 
+#undef VERSION
 #define	VERSION		"1.39"		/* Version			*/
 
 #ifndef CONFIG
