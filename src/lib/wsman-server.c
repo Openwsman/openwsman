@@ -116,7 +116,7 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 		WsManPlugin *p = (WsManPlugin *) node->list_data;
 	        if (p->init == NULL
 		    || p->init(p->p_handle, &(p->data)) == 0 ) {
-		    error ("Plugin fails init()");
+		    error ("Plugin %s fails init()", p->p_name);
 		    error("invalid plugin");
 		    goto next_plugin;
 		}
@@ -140,7 +140,7 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 			lnode_t *i = lnode_create(p->ifc);
 			list_append(list, i);
 		} else {
-			error ("Plugin is not compatible with version of the software or plugin is invalid");
+			error ("Plugin '%s' is not compatible with version of the software or plugin is invalid", p->p_name);
 			error("invalid plugin");
 		}
 next_plugin:
