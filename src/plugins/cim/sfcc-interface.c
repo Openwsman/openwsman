@@ -66,7 +66,8 @@ typedef struct _sfcc_enumcontext {
 	CMPIEnumeration *ecEnumeration;
 } sfcc_enumcontext;
 
-static char *cim_find_namespace_for_class(CimClientInfo * client,
+static char *
+cim_find_namespace_for_class(CimClientInfo * client,
 		WsEnumerateInfo * enumInfo,
 		char *classname)
 {
@@ -354,7 +355,8 @@ property2xml(CimClientInfo * client, CMPIData *data,
 }
 
 
-char *cim_get_namespace_selector(hash_t * keys)
+char *
+cim_get_namespace_selector(hash_t * keys)
 {
 	char *cim_namespace = NULL;
 	selector_entry *sentry = NULL;
@@ -371,7 +373,8 @@ char *cim_get_namespace_selector(hash_t * keys)
 	return cim_namespace;
 }
 
-static int cim_add_keys_from_filter_cb(void *objectpath, const char* key,
+static int
+cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 		const char *value)
 {
 	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
@@ -431,7 +434,8 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 	}
 }
 
-static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
+static void
+cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 {
 	hscan_t hs;
 	hnode_t *hn;
@@ -442,7 +446,7 @@ static void cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 	hash_scan_begin(&hs, keys);
 	while ((hn = hash_scan_next(&hs))) {
 		sentry = (selector_entry *)hnode_get(hn);
-		debug("in cim_add_keys:: text: %s", sentry->entry.text);
+		debug("in cim_add_keys: key: %s, text: %s", hnode_getkey(hn), sentry->entry.text);
 		if(sentry->type == 0)
 			CMAddKey(objectpath, (char *) hnode_getkey(hn),
 					sentry->entry.text, CMPI_chars);
@@ -631,7 +635,8 @@ cleanup:
 
 
 
-static CMPIConstClass *cim_get_class(CimClientInfo * client,
+static CMPIConstClass *
+cim_get_class(CimClientInfo * client,
 		const char *class,
 		CMPIFlags flags, WsmanStatus * status)
 {
@@ -644,14 +649,15 @@ static CMPIConstClass *cim_get_class(CimClientInfo * client,
 	_class = cc->ft->getClass(cc, op, flags, NULL, &rc);
 
 	debug("getClass() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : "<NULL>");
 	cim_to_wsman_status(rc, status);
 	if (op)
 		CMRelease(op);
 	return _class;
 }
 
-static int filter_instance(CMPIInstance * instance, WsEnumerateInfo * enumInfo)
+static int
+filter_instance(CMPIInstance * instance, WsEnumerateInfo * enumInfo)
 {
 	filter_t *filter = enumInfo->filter;
 	int i;
@@ -775,7 +781,8 @@ instance2xml(CimClientInfo * client,
 
 
 
-static CMPIObjectPath *cim_get_op_from_enum(CimClientInfo * client,
+static CMPIObjectPath *
+cim_get_op_from_enum(CimClientInfo * client,
 		WsmanStatus * statusP)
 {
 	CMPIStatus rc;
@@ -1320,7 +1327,7 @@ cim_connect_to_cimom(char *cim_host,
 		WsmanStatus * status)
 {
 	CMPIStatus rc;
-        CMSetStatus(&rc,0) /* workaround for sfcb bug #2844812 */
+        memset(&rc, 0, sizeof(CMPIStatus)); /* workaround for sfcb bug #2844812 */
 	if (strcmp(frontend, "SfcbLocal") != 0)
 		frontend = "http";
 
@@ -1338,14 +1345,16 @@ cim_connect_to_cimom(char *cim_host,
 	return cimclient;
 }
 
-void cim_release_client(CimClientInfo * cimclient)
+void
+cim_release_client(CimClientInfo * cimclient)
 {
 	if (cimclient->cc) {
 		CMRelease((CMCIClient *) cimclient->cc);
 	}
 }
 
-void release_cmpi_data(CMPIData data)
+void
+release_cmpi_data(CMPIData data)
 {
         debug("release_cmpi_data, type = %d",data.type);
         switch(data.type)
@@ -1376,6 +1385,120 @@ void release_cmpi_data(CMPIData data)
 }
 
 
+/*
+ * Invoke 'EnumerateClassNames' intrinsic method
+ *
+ */
+void
+invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
+{
+	CMPIObjectPath *op = newCMPIObjectPath(client->cim_namespace, "", NULL);
+	CMCIClient *cc = (CMCIClient *)client->cc;
+	CMPIEnumeration *classnames = cc->ft->enumClassNames(cc, op, client->flags | CMPI_FLAG_DeepInheritance, rc);
+	if (classnames) {
+		WsXmlNodeH node = ws_xml_add_child(body, client->resource_uri, client->method, NULL);
+		while (classnames->ft->hasNext(classnames, NULL)) {
+			CMPIData next = classnames->ft->getNext(classnames, NULL);
+			char *name = CMGetCharPtr(CMObjectPathToString(next.value.ref, NULL));
+			ws_xml_add_child(node, client->resource_uri, "name", name);
+		}
+	}
+	if (op)
+		CMRelease(op);
+}
+
+
+/*
+ * Invoke 'GetClass' intrinsic method
+ *
+ */
+
+void
+invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
+{
+	CMPIObjectPath *op = newCMPIObjectPath(client->cim_namespace, client->requested_class, NULL);
+	CMCIClient *cc = (CMCIClient *)client->cc;
+	CMPIConstClass *_class = cc->ft->getClass(cc, op,
+		client->flags | (CMPI_FLAG_LocalOnly|CMPI_FLAG_IncludeQualifiers|CMPI_FLAG_IncludeClassOrigin),
+		NULL, rc);
+
+	if (_class) {
+		char *classname = CMGetCharPtr(_class->ft->getClassName(_class, rc));
+		unsigned int property_count = _class->ft->getPropertyCount(_class, rc);
+		unsigned int qualifier_count = _class->ft->getQualifierCount(_class, rc);
+
+		/* <body><GetClass>...</GetClass> */
+		WsXmlNodeH node = ws_xml_add_child(body, client->resource_uri, client->method, NULL);
+
+		/* <GetClass><name>name</name> */
+		ws_xml_add_child(node, client->resource_uri, "name", classname);
+
+		/* <GetClass><qualifiers>...</qualifiers> */
+		WsXmlNodeH qualifiers = ws_xml_add_child(node, client->resource_uri, "qualifiers", NULL);
+		unsigned int i = 0;
+    
+		debug("getClass: %s", classname);
+		debug("%d properties, %d qualifiers", property_count, qualifier_count);
+    
+		while (i++ < qualifier_count) {
+			CMPIString *qualifier_name;
+			CMPIData data = _class->ft->getQualifierAt(_class, i, &qualifier_name, rc);
+			if (rc->rc)
+				return;
+			property2xml(client, &data, CMGetCharPtr(qualifier_name),
+				qualifiers, client->resource_uri, 0, 1);
+      
+			CMRelease(qualifier_name);
+		}
+
+		/* <GetClass><properties>...</properties> */
+		WsXmlNodeH properties = ws_xml_add_child(node, client->resource_uri, "properties", NULL);			      
+		i = 0;
+		while (i < property_count) {
+			unsigned int property_qualifier_count;
+			unsigned int j = 0;
+			CMPIString *property_name;
+			CMPIData data = _class->ft->getPropertyAt(_class, i, &property_name, rc);
+			if (rc->rc)
+				return;
+			i++;
+
+			property_qualifier_count = _class->ft->getPropertyQualifierCount(
+				_class, CMGetCharPtr(property_name), rc);
+
+			if (rc->rc) 
+				return;
+      
+			/* <properties><property>... */
+			WsXmlNodeH property = ws_xml_add_child(properties, client->resource_uri, "property", NULL);
+
+			/* <property><name>...</name> */
+			ws_xml_add_child(property, client->resource_uri, "name", CMGetCharPtr(property_name));
+
+			/* <property><qualifiers>...</qualifiers> */
+			WsXmlNodeH property_qualifiers = ws_xml_add_child(property, client->resource_uri, "qualifiers", NULL);
+			while (j < property_qualifier_count) {
+				CMPIString *property_qualifier_name;
+				data = _class->ft->getPropertyQualifierAt(_class,
+					CMGetCharPtr(property_name), j, &property_qualifier_name, rc);
+				if (rc->rc) 
+					continue;
+
+				j++;
+				property2xml(client, &data, CMGetCharPtr(property_qualifier_name),
+					property_qualifiers, client->resource_uri, 0, 1);
+				CMRelease(property_qualifier_name);
+			}
+			CMRelease(property_name);
+		}
+    
+		CMRelease(_class);			      
+	}
+
+	if (op)
+		CMRelease(op);
+}
+
 
 void
 cim_invoke_method(CimClientInfo * client,
@@ -1387,9 +1510,11 @@ cim_invoke_method(CimClientInfo * client,
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	WsXmlNodeH method_node = NULL;
 
+        memset(&rc, 0, sizeof(CMPIStatus));
 	wsman_status_init(&statusP);
-	if (client->resource_uri &&
-			strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
+	if (client->resource_uri
+	    && strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
+	        /* uri specifies class */
 		objectpath = cim_get_op_from_enum(client, &statusP);
 	} else {
 		debug("no base class, getting instance directly with getInstance");
@@ -1407,37 +1532,49 @@ cim_invoke_method(CimClientInfo * client,
 			debug("adding method arguments");
 			cim_add_args(client, objectpath, argsin);
 		}
-		argsout = newCMPIArgs(NULL);
-		CMPIData data = cc->ft->invokeMethod(cc, objectpath,
+	  
+	        if (strstr(client->resource_uri, XML_NS_CIM_INTRINSIC) != NULL) {
+			debug("Instrinsic op ?");
+
+			if (!strcmp(client->method, CIM_ACTION_ENUMERATE_CLASS_NAMES))
+				invoke_enumerate_class_names(client, body, &rc);
+			else if (!strcmp(client->method, CIM_ACTION_GET_CLASS))
+				invoke_get_class(client, body, &rc);
+
+		} else  {
+	  
+			argsout = newCMPIArgs(NULL);
+			CMPIData data = cc->ft->invokeMethod(cc, objectpath,
 				client->method,
 				argsin, argsout, &rc);
+	  
+			debug("invokeMethod(%s) rc=%d, msg=%s",
+				client->method, rc.rc, (rc.msg) ? (char *) rc.msg->hdl : "<NULL>");
 
-		debug("invokeMethod() rc=%d, msg=%s",
-				rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
-
-		method_node = ws_xml_add_empty_child_format(body,
+			method_node = ws_xml_add_empty_child_format(body,
 				client->resource_uri,
 				"%s_OUTPUT",
 				client->method);
 
-		if (rc.rc == 0) {
-			property2xml(client, &data, "ReturnValue",
+			if (rc.rc == 0) {
+				property2xml(client, &data, "ReturnValue",
 					method_node, client->resource_uri, 0, 1);
-		}
-
-		if (argsout) {
-			int count = CMGetArgCount(argsout, NULL);
-			int i = 0;
-			for (i = 0; i < count; i++) {
-				CMPIString *argname;
-				CMPIData data =
-					CMGetArgAt(argsout, i, &argname, NULL);
-				property2xml(client, &data,
-						(char *) argname->hdl,
-						method_node, client->resource_uri, 0, 0);
-				CMRelease(argname);
 			}
-		}
+
+			if (argsout) {
+				int count = CMGetArgCount(argsout, NULL);
+				int i = 0;
+				for (i = 0; i < count; i++) {
+					CMPIString *argname;
+					CMPIData data =
+						CMGetArgAt(argsout, i, &argname, NULL);
+					property2xml(client, &data,
+							(char *) argname->hdl,
+							method_node, client->resource_uri, 0, 0);
+					CMRelease(argname);
+				}
+			}
+	        }
 
 		cim_to_wsman_status(rc, status);
 		if (rc.msg)
@@ -1772,7 +1909,8 @@ cleanup:
 	return;
 }
 
-void cim_delete_instance(CimClientInfo * client, WsmanStatus * status)
+void
+cim_delete_instance(CimClientInfo * client, WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath;
 	CMPIStatus rc;
@@ -1888,7 +2026,8 @@ cim_get_instance(CimClientInfo * client,
 	}
 }
 
-static CMPIObjectPath *cim_indication_filter_objectpath(CimClientInfo *client,
+static CMPIObjectPath *
+cim_indication_filter_objectpath(CimClientInfo *client,
 		WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
 	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(subsInfo->cim_namespace,
@@ -1920,7 +2059,8 @@ static CMPIObjectPath
 	return objectpath_handler;
 }
 
-CMPIObjectPath *cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+CMPIObjectPath *
+cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
@@ -1967,7 +2107,8 @@ cleanup:
 		CMRelease(instance);
 	return filter_op;
 }
-static char * create_cimxml_listener_path(char *uuid)
+static char *
+create_cimxml_listener_path(char *uuid)
 {
 	char path[128];
 	snprintf(path, 128, "/cimindicationlistener/%s", uuid);
@@ -1975,7 +2116,8 @@ static char * create_cimxml_listener_path(char *uuid)
 }
 
 
-CMPIObjectPath *cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+CMPIObjectPath *
+cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath = NULL;
@@ -2026,7 +2168,8 @@ cleanup:
 	return handler_op;
 }
 
-void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
+void
+cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subsInfo, CMPIObjectPath *filter, CMPIObjectPath *handler, WsmanStatus *status)
 {
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *instance_r = NULL;
@@ -2089,7 +2232,8 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	return;
 }
 
-void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+void
+cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIObjectPath *objectpath = NULL;
 	CMPIInstance *instance = NULL;
@@ -2145,7 +2289,8 @@ cleanup:
 	return;
 }
 
-void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
+void
+cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status)
 {
 	CMPIStatus rc;
 	CMPIObjectPath *objectpath_subscription = NULL;
@@ -2203,7 +2348,8 @@ cleanup:
 	return;
 }
 
-void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
+void
+cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 {
 	if (!status) {
 		return;
@@ -2266,7 +2412,8 @@ void cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 }
 
 
-void cim_release_enum_context(WsEnumerateInfo * enumInfo)
+void
+cim_release_enum_context(WsEnumerateInfo * enumInfo)
 {
 	if (!enumInfo->appEnumContext)
 		return;
@@ -2286,7 +2433,8 @@ void cim_release_enum_context(WsEnumerateInfo * enumInfo)
 	u_free(enumcontext);
 }
 
-CimClientInfo *cim_getclient_from_enum_context(WsEnumerateInfo * enumInfo)
+CimClientInfo *
+cim_getclient_from_enum_context(WsEnumerateInfo * enumInfo)
 {
 	CimClientInfo *cimclient = NULL;
 	if (enumInfo && enumInfo->appEnumContext) {
@@ -2297,7 +2445,8 @@ CimClientInfo *cim_getclient_from_enum_context(WsEnumerateInfo * enumInfo)
 	return cimclient;
 }
 
-CMPIArray *cim_enum_instancenames(CimClientInfo * client,
+CMPIArray *
+cim_enum_instancenames(CimClientInfo * client,
 		char *class_name, WsmanStatus * status)
 {
 	CMPIStatus rc;
@@ -2326,13 +2475,15 @@ CMPIArray *cim_enum_instancenames(CimClientInfo * client,
 }
 
 
-CMPICount cim_enum_totalItems(CMPIArray * enumArr)
+CMPICount
+cim_enum_totalItems(CMPIArray * enumArr)
 {
 	return enumArr->ft->getSize(enumArr, NULL);
 }
 
 
-char *cim_get_property(CMPIInstance * instance, char *property)
+char *
+cim_get_property(CMPIInstance * instance, char *property)
 {
 	CMPIStatus rc;
 	CMPIData data = instance->ft->getProperty(instance, property, &rc);
@@ -2351,7 +2502,8 @@ char *cim_get_property(CMPIInstance * instance, char *property)
 	return valuestr;
 }
 
-char *cim_get_keyvalue(CMPIObjectPath * objpath, char *keyname)
+char *
+cim_get_keyvalue(CMPIObjectPath * objpath, char *keyname)
 {
 	CMPIStatus status;
 	char *valuestr;
