@@ -1356,6 +1356,8 @@ cim_release_client(CimClientInfo * cimclient)
 void
 release_cmpi_data(CMPIData data)
 {
+        if (data.state == CMPI_nullValue)
+                return;
         debug("release_cmpi_data, type = %d",data.type);
         switch(data.type)
         {
@@ -1395,6 +1397,9 @@ invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus 
 	CMPIObjectPath *op = newCMPIObjectPath(client->cim_namespace, "", NULL);
 	CMCIClient *cc = (CMCIClient *)client->cc;
 	CMPIEnumeration *classnames = cc->ft->enumClassNames(cc, op, client->flags | CMPI_FLAG_DeepInheritance, rc);
+  
+        debug("invoke_enumerate_class_names");
+  
 	if (classnames) {
 		WsXmlNodeH node = ws_xml_add_child(body, client->resource_uri, client->method, NULL);
 		while (classnames->ft->hasNext(classnames, NULL)) {
@@ -1402,6 +1407,7 @@ invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus 
 			char *name = CMGetCharPtr(CMObjectPathToString(next.value.ref, NULL));
 			ws_xml_add_child(node, client->resource_uri, "name", name);
 		}
+	        CMRelease(classnames);
 	}
 	if (op)
 		CMRelease(op);
@@ -1422,6 +1428,8 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 		client->flags | (CMPI_FLAG_LocalOnly|CMPI_FLAG_IncludeQualifiers|CMPI_FLAG_IncludeClassOrigin),
 		NULL, rc);
 
+        debug("invoke_get_class");
+  
 	if (_class) {
 		char *classname = CMGetCharPtr(_class->ft->getClassName(_class, rc));
 		unsigned int property_count = _class->ft->getPropertyCount(_class, rc);
@@ -1534,7 +1542,7 @@ cim_invoke_method(CimClientInfo * client,
 		}
 	  
 	        if (strstr(client->resource_uri, XML_NS_CIM_INTRINSIC) != NULL) {
-			debug("Instrinsic op ?");
+			debug("Instrinsic op ?: %s", client->method);
 
 			if (!strcmp(client->method, CIM_ACTION_ENUMERATE_CLASS_NAMES))
 				invoke_enumerate_class_names(client, body, &rc);
@@ -1561,20 +1569,20 @@ cim_invoke_method(CimClientInfo * client,
 					method_node, client->resource_uri, 0, 1);
 			}
 
+		        release_cmpi_data(data);
+
 			if (argsout) {
 				int count = CMGetArgCount(argsout, NULL);
 				int i = 0;
 				for (i = 0; i < count; i++) {
 					CMPIString *argname;
-					CMPIData data =
-						CMGetArgAt(argsout, i, &argname, NULL);
+					data = CMGetArgAt(argsout, i, &argname, NULL);
 					property2xml(client, &data,
 							(char *) argname->hdl,
 							method_node, client->resource_uri, 0, 0);
 					CMRelease(argname);
 				}
 			}
-		        release_cmpi_data(data);
 	        }
 
 		cim_to_wsman_status(rc, status);
