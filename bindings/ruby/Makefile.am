@@ -20,17 +20,17 @@ LIBS = \
 
 
 GENERATED = openwsman_wrap.c \
-	    rbwsman.rb
+	    openwsman.rb
 SWIG_SOURCES = ../openwsman.i ../openwsman.c
-rbwsman_la_SOURCES = openwsman_wrap.c \
+openwsman_la_SOURCES = openwsman_wrap.c \
 			 $(SWIG_SOURCES)
 
 
-rbwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
+openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
-rbwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
+openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
-ruby_LTLIBRARIES = rbwsman.la
+ruby_LTLIBRARIES = openwsman.la
 
 openwsman_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) -ruby -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<

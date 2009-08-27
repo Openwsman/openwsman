@@ -3,14 +3,15 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 2.2pre)
+AC_INIT(openwsman, 2.2.0)
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AC_CANONICAL_HOST
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl Package version information
 PACKAGE=openwsman
 VERSION_MAJOR=2
-VERSION_MINOR=2pre
+VERSION_MINOR=2
 VERSION_RELEASE=0
 VERSION=${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_RELEASE}
 
@@ -273,22 +274,14 @@ AC_ARG_ENABLE(python,
 if test "x$enable_python" = "xyes"; then
 AM_PATH_PYTHON
 AC_PROG_SWIG(1.3.17)
-AC_CHECK_PROG(PYTHON_CONFIG, python-config,yes)
+AC_CHECK_PROG(PYTHON_CONFIG,python-config,yes)
 if test "$PYTHON_CONFIG" = "yes" ; then
 	PYTHON_CFLAGS=`python-config --cflags`
 	PYTHON_LIBS=`python-config --libs`
 	AC_SUBST(PYTHON_CFLAGS)
 	AC_SUBST(PYTHON_LIBS)
 else
-	AM_PATH_PYTHON(2.2)
-	LIBS="$LIBS $PYTHON_LIB_FLAGS"
-	PYTHON_INCLUDE_FLAGS=`python -c "import os,sys; print '-I' + os.path.join(sys.prefix, 'include', 'python' + sys.version[[:3]])"`
-	if test $prefix = NONE; then
-		pythondir=`python -c "import os,sys; print os.path.join(sys.prefix, 'lib', 'python' + sys.version[[:3]], 'site-packages')"`
-	fi
-	PYTHON_PREFIX=`python -c "import os,sys; print sys.prefix"`
-	PYTHON_EXEC_PREFIX=`python -c "import os,sys; print sys.exec_prefix"`
-	CFLAGS="$CFLAGS $PYTHON_INCLUDE_FLAGS"
+        AC_MSG_ERROR(python-config not found)
 fi
 fi
 AM_CONDITIONAL(BUILD_PYTHON, test "x$enable_python" = "xyes")
@@ -360,6 +353,21 @@ AC_ARG_ENABLE(perl,
                 [  --enable-perl=[no/yes] build Perl bindings [default=no]],,
               enable_perl=$perl_default)
 AM_CONDITIONAL(BUILD_PERL, test "x$enable_perl" = "xyes")
+
+if test "$enable_perl" = "yes"; then
+  AC_MSG_CHECKING(Perl configuration)
+  PERLCCFLAGS=`perl -MConfig -e 'print $Config{ccflags}'`
+  PERLCOREDIR=`perl -MConfig -e 'print $Config{archlib}."/CORE"'`
+  PERLVENDORARCHDIR=`perl -MConfig -e 'print $Config{installvendorarch}'`
+  PERLVENDORLIBDIR=`perl -MConfig -e 'print $Config{installvendorlib}'`
+  PERLLDFLAGS=`perl -MConfig -e 'print $Config{ccdlflags}'`
+  AC_MSG_RESULT($PERLVENDORARCHDIR)
+  AC_SUBST(PERLCCFLAGS)
+  AC_SUBST(PERLCOREDIR)
+  AC_SUBST(PERLVENDORARCHDIR)
+  AC_SUBST(PERLVENDORLIBDIR)
+  AC_SUBST(PERLLDFLAGS)
+fi
 
 AC_ARG_ENABLE(ssl, [  --enable-ssl             Turn on Secure Sockets Layer support [default=yes]],,
               enable_ssl=auto)

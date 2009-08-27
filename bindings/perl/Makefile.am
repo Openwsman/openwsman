@@ -2,12 +2,7 @@
 # Makefile.am for openwsman/bindings/perl
 #
 
-perlccflags = $(shell perl -e "use Config; print \\\$Config{ccflags}")
-perlcoredir = $(shell perl -e "use Config; print \\\$Config{archlib}.\"/CORE\"")
-perlvendorarchdir = $(shell perl -e "use Config; print \\\$Config{installvendorarch}")
-perlvendorlibdir = $(shell perl -e "use Config; print \\\$Config{installvendorlib}")
-perlldflags = $(shell perl -e "use Config; print \\\$Config{ccdlflags}")
-perldir = ${perlvendorarchdir}
+perldir = @PERLVENDORARCHDIR@
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -15,12 +10,12 @@ INCLUDES =  \
 	   -I$(top_srcdir)/bindings \
 	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\" \
-	   -I${perlcoredir}
-
-CFLAGS += ${perlccflags}
+	   -I@PERLCOREDIR@
+	   
+CFLAGS += @PERLCCFLAGS@ -Wno-unused -Wno-error -Wno-nonnull
 
 LDADD = \
-       ${perlldflags}
+       @PERLLDFLAGS@
 
 LIBS = \
        $(OPENSSL_LIBS) \
@@ -46,7 +41,7 @@ openwsman_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) -perl -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
-	rm -f $(DESTDIR)${perlvendordir}/$(perl_LTLIBRARIES)
+	rm -f $(DESTDIR)$(perldir)/$(perl_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 

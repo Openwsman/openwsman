@@ -1,3 +1,8 @@
+#
+# Makefile.am for openwsman
+#
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = include src doc etc bindings
 
 if BUILD_EXAMPLES
@@ -31,4 +36,4 @@ uninstall-local:
 	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman++.pc
 	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman-server.pc
 
-EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln
+EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln autoconfiscate.sh
