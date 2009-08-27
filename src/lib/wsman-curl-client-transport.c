@@ -97,7 +97,7 @@ reauthenticate(WsManClient *cl,
 		goto REQUEST_PASSWORD;
 	}
 
-	printf("Client does not support authentication type "
+	debug("Client does not support authentication type "
 			" acceptable by server\n");
 	return 0;
 
@@ -180,8 +180,14 @@ convert_to_last_error(CURLcode r)
 		return WS_LASTERR_RECV_ERROR;
 	case CURLE_BAD_CONTENT_ENCODING:
 		return WS_LASTERR_BAD_CONTENT_ENCODING;
-#if LIBCURL_VERSION_NUM > 0x70C01
+#if LIBCURL_VERSION_NUM >= 0x70D01
 	case CURLE_LOGIN_DENIED:
+		return WS_LASTERR_LOGIN_DENIED;
+#else
+	/* Map 67 (same as CURLE_LOGIN_DENIED) got from OS that has lower version of CURL in which
+	 * CURLE_LOGIN_DENIED is not defined. This way we get the same error code in case of login failure
+	 */
+	case 67:
 		return WS_LASTERR_LOGIN_DENIED;
 #endif
 	default:
@@ -437,6 +443,7 @@ wsmc_handler( WsManClient *cl,
 		goto DONE;
 	}
 
+	int iDone = 0;
 	while (1) {
 		u_free(_user);
 		u_free(_pass);
@@ -468,12 +475,14 @@ wsmc_handler( WsManClient *cl,
 		if (wsman_debug_level_debugged(DEBUG_LEVEL_MESSAGE)) {
 			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 		}
+
 		r = curl_easy_perform(curl);
 		if (r != CURLE_OK) {
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_perform failed");
 			goto DONE;
 		}
+
 		r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 		if (r != CURLE_OK) {
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
@@ -481,9 +490,30 @@ wsmc_handler( WsManClient *cl,
 			goto DONE;
 		}
 
-		if (http_code != 401) {
+		switch (http_code) 
+		{
+			case 200:
+			case 400:
+			case 500:
+				// The resource was successfully retrieved or WSMan server 
+				// returned a HTTP status code. You can use WinHttpReadData to 
+				// read the contents of the server's response.
+				iDone = 1;
+				break;
+			case 401:
+				// The server requires authentication.
+				break;
+			default:
+				// The status code does not indicate success.
+				r = WS_LASTERR_OTHER_ERROR;
+				iDone = 1;
+				break;
+		}
+
+		if(iDone == 1) {
 			break;
 		}
+
 		/* we are here because of authentication required */
 		r = curl_easy_getinfo(curl, CURLINFO_HTTPAUTH_AVAIL, &auth_avail);
 		if (r != CURLE_OK) {
@@ -508,10 +538,13 @@ wsmc_handler( WsManClient *cl,
                 u_buf_clear(response);
                 if (cl->data.auth_set == 0) {
                     /* FIXME: user wants to cancel authentication */
-#if LIBCURL_VERSION_NUM > 0x70C01
+#if LIBCURL_VERSION_NUM >= 0x70D01
                     r = CURLE_LOGIN_DENIED;
 #else
-		    r = 1000;
+					/* Map the login failure error to CURLE_LOGIN_DENIED (67) so that we
+					 * get the same error code in case of login failure
+					 */
+					r = 67;
 #endif
                     curl_err("user/password wrong or empty.");
 		    break;
@@ -543,9 +576,14 @@ wsmc_handler( WsManClient *cl,
 #endif
 	u_buf_append(con->response, u_buf_ptr(response), u_buf_len(response));
 DONE:
-	r = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 	cl->response_code = http_code;
 	cl->last_error = convert_to_last_error(r);
+
+	debug("curl error code: %d.", r);
+	debug("cl->response_code: %d.", cl->response_code);
+	debug("cl->last_error code: %d.", cl->last_error);
+
 	curl_slist_free_all(headers);
 	u_buf_free(response);
 	u_free(soapact_header);
