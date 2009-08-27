@@ -27,6 +27,7 @@ class WsmanTest < Test::Unit::TestCase
 
     result = client.invoke( options, uri, method )
     assert result
+#    print result
     unless result.fault?
       node = result.body[method]
       name = node["name"]
