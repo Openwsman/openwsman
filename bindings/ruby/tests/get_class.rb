@@ -20,7 +20,7 @@ class WsmanTest < Test::Unit::TestCase
 #    options.set_dump_request
     
     method = Openwsman::CIM_ACTION_GET_CLASS
-    uri = Openwsman::XML_NS_CIM_INTRINSIC + "/CIM_ComputerSystem"
+    uri = Openwsman::XML_NS_CIM_INTRINSIC + "/CIM_Service"
 #    uri = Openwsman::CIM_ALL_AVAILABLE_CLASSES
     
 #    options.properties = { "Prefix" => "Linux" }
