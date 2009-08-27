@@ -1574,6 +1574,7 @@ cim_invoke_method(CimClientInfo * client,
 					CMRelease(argname);
 				}
 			}
+		        release_cmpi_data(data);
 	        }
 
 		cim_to_wsman_status(rc, status);
@@ -1583,7 +1584,6 @@ cim_invoke_method(CimClientInfo * client,
 			CMRelease(argsin);
 		if (argsout)
 			CMRelease(argsout);
-		release_cmpi_data(data);
 	} else {
 		status->fault_code = statusP.fault_code;
 		status->fault_detail_code = statusP.fault_detail_code;
