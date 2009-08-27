@@ -173,12 +173,14 @@ verify_class_namespace(CimClientInfo *client)
 	if ( strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) ==0 ) {
 		return 1;
 	}
-	debug("Requested Class: %s", client->requested_class );
-	if ( client && (strstr(client->requested_class, "CIM") != NULL ) &&
-			(strstr(client->resource_uri ,
-				XML_NS_CIM_CLASS) != NULL ) &&
-			 strcmp(client->method, TRANSFER_CREATE) != 0
-			) {
+        if ( strstr( client->resource_uri, XML_NS_CIM_INTRINSIC ) != NULL ) {
+	        return 1;
+	}
+  
+        /* Ok if class contains CIM, uri contains XML_NS_CIM_CLASS, and method is not 'Create' */
+	if ( (strstr(client->requested_class, "CIM") != NULL )
+	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL )
+	    && (strcmp(client->method, TRANSFER_CREATE) != 0)) {
 		return 1;
 	}
 
