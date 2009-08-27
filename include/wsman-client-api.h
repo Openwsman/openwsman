@@ -167,8 +167,8 @@ typedef enum {
 #define FLAG_CIM_EXTENSIONS                  0x1000
 #define FLAG_CIM_REFERENCES                  0x2000
 #define FLAG_CIM_ASSOCIATORS                 0x4000
-#define FLAG_EVENT_SENDBOOKMARK				 0X8000
-#define FLAG_CIM_SCHEMA_OPT				 	 0X10000
+#define FLAG_EVENT_SENDBOOKMARK		     0X8000
+#define FLAG_CIM_SCHEMA_OPT		    0X10000
 
 	typedef struct {
 		unsigned long flags;
@@ -721,7 +721,7 @@ typedef enum {
 	client_opt_t *wsmc_options_init(void);
 
 	/**
-	 * destroy client requeust options
+	 * destroy client request options
 	 * @param options structure
 	 * @return void
 	 */
@@ -739,6 +739,9 @@ typedef enum {
 					     client_opt_t * options);
 
 	void wsmc_set_action_option(client_opt_t * options,
+				     unsigned int);
+
+	void wsmc_clear_action_option(client_opt_t * options,
 				     unsigned int);
 
 	void wsmc_set_options_from_uri(const char *resource_uri,

@@ -316,6 +316,14 @@ wsmc_set_action_option(client_opt_t * options, unsigned int flag)
 
 
 void
+wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
+{
+	options->flags &= ~flag;
+	return;
+}
+
+
+void
 wsmc_add_property(client_opt_t * options,
 		const char *key,
 		const char *value)
