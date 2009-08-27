@@ -561,7 +561,7 @@ ws_create_runtime(list_t * interfaces)
 		if (wsman_register_interface(soap->cntx,
 				(WsDispatchInterfaceInfo *) node->list_data,
 				 dispInfo) != 0) {
-			error("Interface registeration failed");
+			error("Interface registration failed");
 			u_free(dispInfo);
 			soap_destroy(soap);
 			return NULL;
