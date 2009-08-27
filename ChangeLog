@@ -3,6 +3,9 @@
   - Adapt IANA ports of 5985 (http) and 5986 (https)
   - Change the Ruby bindings module name to 'Openwsman'
   - Change the Ruby plugin module name to 'Openwsman'
+  - IPv6 support
+  - preliminary support for wbem intrinsic operations
+    'EnumerateClassNames' and 'GetClass'
 - Minor changes:
   - Perl example code added (by warptrosse@gmail.com)
   - Fixes to the CMake build environment
