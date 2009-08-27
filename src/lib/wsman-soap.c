@@ -558,10 +558,9 @@ ws_create_runtime(list_t * interfaces)
 	dispInfo->interfaces = interfaces;
 	node = list_first(interfaces);
 	while (node != NULL) {
-		if (wsman_register_interface(soap->cntx,
-				(WsDispatchInterfaceInfo *) node->list_data,
-				 dispInfo) != 0) {
-			error("Interface registration failed");
+	        WsDispatchInterfaceInfo *wdii = (WsDispatchInterfaceInfo *) node->list_data;
+		if (wsman_register_interface(soap->cntx, wdii, dispInfo) != 0) {
+			error("Interface registration failed for %s", wdii->displayName);
 			u_free(dispInfo);
 			soap_destroy(soap);
 			return NULL;
