@@ -203,8 +203,8 @@ typedef struct _WsManClient {
   /*
    * WS-Invoke
    */
-  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, char *data = NULL, size_t size = 0, char *encoding = "utf-8") {
-    return wsmc_action_invoke_fromtext( $self, resource_uri, options, method, data, size, encoding);
+  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, WsXmlDocH data = NULL) {
+    return wsmc_action_invoke( $self, resource_uri, options, method, data);
   }
 
   /*

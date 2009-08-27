@@ -22,9 +22,7 @@ class WsmanTest < Test::Unit::TestCase
     options.add_selector( "Handle", handle.to_s )
 
     method = "GetOwner"
-    data = Openwsman::XmlDoc.new "root"
-    data_s = data.to_s
-    client.invoke( options, namespace, method, data_s, data_s.size )
+    client.invoke( options, namespace, method )
 
   end
 

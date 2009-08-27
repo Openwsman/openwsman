@@ -29,7 +29,7 @@ class WsmanTest < Test::Unit::TestCase
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
     method = "GetOwner"
-    result = client.invoke( options, uri, method, nil, 0, "utf-8" )
+    result = client.invoke( options, uri, method )
 
   end
 
