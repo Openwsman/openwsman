@@ -33,7 +33,7 @@ $(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -python -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
-	rm -f $(DESTDIR)${pyexecdir}/$(python_LTLIBRARIES)
+	rm -f $(DESTDIR)${pyexecdir}/$(pyexec_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED) *.pyc
 

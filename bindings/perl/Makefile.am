@@ -2,7 +2,8 @@
 # Makefile.am for openwsman/bindings/perl
 #
 
-perldir = @PERLVENDORARCHDIR@
+perlarchdir = @PERLVENDORARCHDIR@
+perllibdir = @PERLVENDORLIBDIR@
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -35,13 +36,17 @@ openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
 openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
-perl_LTLIBRARIES = openwsman.la
+perlarch_LTLIBRARIES = openwsman.la
 
-openwsman_wrap.c: $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -perl -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(perllibdir)
+	@INSTALL@ -m 0644 openwsman.pm $(DESTDIR)$(perllibdir)
+
 install-data-hook:
-	rm -f $(DESTDIR)$(perldir)/$(perl_LTLIBRARIES)
+	rm -f $(DESTDIR)$(perlarchdir)/$(perlarch_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 

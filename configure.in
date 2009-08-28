@@ -524,6 +524,7 @@ AC_OUTPUT([
 	bindings/Makefile
 	bindings/python/Makefile
 	bindings/ruby/Makefile
+	bindings/ruby/openwsman/Makefile
 	bindings/java/Makefile
 	bindings/perl/Makefile
 	])

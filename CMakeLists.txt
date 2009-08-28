@@ -402,7 +402,9 @@ SET(PACKAGE_NAME "openwsman")
 SET(PACKAGE_STRING "\"WS-Management for all\"")
 SET(PACKAGE_TARNAME "\"openwsman-${VERSION}.tar.bz2\"")
 
-SET("prefix" ${PREFIX})
+SET("prefix" ${CMAKE_INSTALL_PREFIX})
+SET("includedir" ${CMAKE_INSTALL_PREFIX}/include)
+SET("libdir" ${LIB_INSTALL_DIR})
 SET(WSMAN_PKG wsman)
 SET(WSMAN_CLIENT_PKG wsman_client)
 SET(WSMAN_CLIENT_TRANSPORT_PKG wsman_curl_client_transport)
@@ -413,6 +415,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.in ${CMAKE_CURRENT_BINAR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman++.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman-server.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.spec.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.spec)
+
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc
+              ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc
+	      ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
 add_subdirectory(include)
 add_subdirectory(src)
@@ -501,26 +507,3 @@ IF(HAVE_WARNINGS)
  MESSAGE(STATUS "   Warnings occurred during cmake configuration... Please see output")
  MESSAGE(STATUS "   *******************************")
 ENDIF(HAVE_WARNINGS) 
-    
-#
-#package: dist
-#	cp openwsman.spec /usr/src/packages/SPEC
-#	cp openwsman-*.tar.gz /usr/src/packages/SOURCES
-#	rpmbuild -ba openwsman.spec
-#
-#etags: TAGS
-#	find . -name "*.[chCH]" -print | etags -
-#
-#install-data-local: openwsman.pc
-#	$(mkinstalldirs) $(DESTDIR)$(libdir)/pkgconfig
-#	$(INSTALL_DATA)  openwsman.pc $(DESTDIR)$(libdir)/pkgconfig
-install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc DESTINATION lib/pkgconfig )
-#	$(INSTALL_DATA)  openwsman++.pc $(DESTDIR)$(libdir)/pkgconfig
-#	$(INSTALL_DATA)  openwsman-server.pc $(DESTDIR)$(libdir)/pkgconfig
-#
-#uninstall-local:
-#	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman.pc
-#	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman++.pc
-#	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman-server.pc
-#
-#EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln

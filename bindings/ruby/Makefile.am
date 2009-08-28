@@ -1,5 +1,11 @@
+#
+# Makefile.am for openwsman/bindings/ruby
+#
 
-rubydir = $(shell ruby -r rbconfig -e "print Config::CONFIG['sitearchdir']")
+SUBDIRS = openwsman
+
+rubylibdir = $(shell ruby -r rbconfig -e "print (Config::CONFIG['vendorarchdir'] rescue Config::CONFIG['sitearchdir'])")
+rubyarchdir = $(shell ruby -r rbconfig -e "print (Config::CONFIG['vendorarchdir'] rescue Config::CONFIG['sitearchdir'])")
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -18,25 +24,23 @@ LIBS = \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/lib/libwsman_curl_client_transport.la
 
+GENERATED = openwsman_wrap.c
 
-GENERATED = openwsman_wrap.c \
-	    openwsman.rb
 SWIG_SOURCES = ../openwsman.i ../openwsman.c
-openwsman_la_SOURCES = openwsman_wrap.c \
-			 $(SWIG_SOURCES)
 
+openwsman_la_SOURCES = $(SWIG_SOURCES) $(GENERATED)
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
 openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
-ruby_LTLIBRARIES = openwsman.la
+rubylib_LTLIBRARIES = openwsman.la
 
-openwsman_wrap.c: $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -ruby -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
-	rm -f $(DESTDIR)${rubydir}/$(ruby_LTLIBRARIES)
+	rm -f $(DESTDIR)${rubyarchdir}/$(rubylib_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 
