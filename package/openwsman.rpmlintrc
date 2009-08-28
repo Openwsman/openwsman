@@ -1,0 +1,2 @@
+addFilter("devel-file-in-non-devel-package .*/usr/lib.*/openwsman/.*/.*")
+addFilter("openwsman-client.*shlib-policy-name-error.*")

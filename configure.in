@@ -489,7 +489,7 @@ AC_CONFIG_FILES([
         openwsman.pc
         openwsman++.pc
         openwsman-server.pc
-        openwsman.spec])
+        package/openwsman.spec])
 
 AC_OUTPUT([
         Doxyfile

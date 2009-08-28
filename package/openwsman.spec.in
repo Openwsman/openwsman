@@ -1,69 +1,310 @@
-Name:           openwsman
-Version:       @PACKAGE_VERSION@
-Release:        1
-License:        BSD
-Url:            http://www.openwsman.org/
-Source:         %{name}-%{version}.tar.bz2
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-Group:          Applications/Management
-BuildRequires:  sblim-sfcc-devel curl-devel pkgconfig libxml2-devel pam-devel gcc-c++
-Requires:       sblim-sfcc curl libxml2 openssl pam
-Summary:        Opensource Implementation of WS-Management
+#
+# spec file for package openwsman (Version 2.2.0)
+#
+# Copyright (c) 2009 SUSE LINUX Products GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
 
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+# norootforbuild
+
+
+Name:           openwsman
+BuildRequires:  gcc-c++ pkg-config swig
+BuildRequires:  libcurl-devel libopenssl-devel libxml2-devel pam-devel sblim-sfcc-devel
+BuildRequires:  python-devel ruby-devel perl
+%if 0%{?fedora_version}
+BuildRequires:  perl-devel
+%endif
+%if 0%{?suse_version} > 1020
+BuildRequires:  fdupes
+%endif
+PreReq:         sed coreutils grep /bin/hostname
+Version:        @VERSION@
+Release:        1
+Url:            http://www.openwsman.org/
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+Summary:        Opensource Implementation of WS-Management
+Source:         %{name}-%{version}.tar.bz2
+Source1:        %{name}.rpmlintrc
+Patch0:         %{name}-pam-auth.patch
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
 Opensource Implementation of WS-Management
 
 
-%package devel
-Summary:        Openwsman Development files
-Group:          Applications/Management
-Requires:       openwsman
-%description devel
-Openwsman Development files
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package -n libwsman1
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+Summary:        Opensource Implementation of WS-Management
+Provides:       openwsman = %{version}
+Obsoletes:      openwsman < %{version}
+
+%description -n libwsman1
+Opensource Implementation of WS-Management
 
 
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package -n libwsman-devel
+License:        BSD 3-clause (or similar)
+Group:          Development/Libraries/C and C++
+Summary:        Opensource Implementation of WS-Management
+Provides:       openwsman-devel = %{version}
+Obsoletes:      openwsman-devel < %{version}
+Requires:       libwsman1 = %{version}
+Requires:       %{name}-server = %{version}
+Requires:       %{name}-client = %{version}
+Requires:       sblim-sfcc-devel libxml2-devel pam-devel
+Requires:       libcurl-devel
+
+%description -n libwsman-devel
+Opensource Implementation of WS-Management
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package client
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+Summary:        Openwsman Client libraries
+
+%description client
+Openwsman Client libraries
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package server
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+PreReq:         sed coreutils grep diffutils fillup /bin/hostname
+Summary:        Openwsman Server and service libraries
+
+%description server
+Openwsman Server and service libraries
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package python
+License:        BSD 3-clause (or similar)
+Group:          Development/Libraries/Python
+Summary:        Python bindings for openwsman client API
+%if 0%{?fedora_version}
+%{!?python_sitelib: %define py_sitedir %(%__python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+%{!?py_requires: %define py_requires Requires: python}
+%endif
+%{py_requires}
+
+%description python
+This package provides Python bindings to access the openwsman client
+API.
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package ruby
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+Requires:       ruby
+Summary:        Ruby bindings for openwsman client API
+
+%description ruby
+This package provides Ruby bindings to access the openwsman client API.
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package perl
+License:        BSD 3-clause (or similar)
+Group:          System/Management
+Requires:       perl = %{perl_version}
+Summary:        Perl bindings for openwsman client API
+
+%description perl
+This package provides Perl bindings to access the openwsman client API.
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
 
 %prep
-%setup
+%setup -q
+%patch0
 
 %build
-%configure --with-shttpd --disable-more-warnings
-make
+sh autoconfiscate.sh
+%configure \
+    --disable-more-warnings \
+    --disable-static \
+    --enable-python \
+    --enable-ruby \
+    --enable-perl \
+    --enable-ipv6
+make clean
+make %{?jobs:-j%jobs}
 
 %install
-make DESTDIR=%{buildroot} install
-install -c -m 644 etc/openwsman.conf $RPM_BUILD_ROOT/etc/openwsman
-install -c -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT/etc/openwsman
+make DESTDIR=$RPM_BUILD_ROOT install
+rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
+install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
+install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
+install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
+install -m 644 %{S:1} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
+ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 
 %clean
-rm -rf "$RPM_BUILD_ROOT"
+rm -rf $RPM_BUILD_ROOT
 
-%files
+%post -n libwsman1 -p /sbin/ldconfig
+
+%postun -n libwsman1 -p /sbin/ldconfig
+
+%post server
+/sbin/ldconfig
+%{fillup_and_insserv openwsmand}
+
+%preun server
+%{stop_on_removal openwsmand}
+
+%postun server
+%{insserv_cleanup openwsmand}
+rm -f /var/log/wsmand.log
+/sbin/ldconfig
+
+%post client -p /sbin/ldconfig
+
+%postun client -p /sbin/ldconfig
+
+%files -n libwsman1
 %defattr(-,root,root)
-%{_libdir}/*.so*
-%{_sbindir}/openwsmand
-%dir %{_libdir}/openwsman
-%dir %{_libdir}/openwsman/plugins
-%{_libdir}/openwsman/plugins/*so*
-%dir %{_libdir}/openwsman/authenticators
-%{_libdir}/openwsman/authenticators/*so*
-%dir /etc/openwsman
-%config /etc/openwsman/openwsman.conf
-/etc/openwsman/owsmangencert.sh
-/etc/openwsman/ssleay.cnf
+%doc AUTHORS COPYING ChangeLog README TODO
+%{_libdir}/libwsman.so.*
+%{_libdir}/libwsman_client.so.*
+%{_libdir}/libwsman_curl_client_transport.so.*
 
-
-%files devel
+%files -n libwsman-devel
 %defattr(-,root,root)
 %{_includedir}/*
-%{_libdir}/*.a
-%{_libdir}/*.la
-%{_libdir}/openwsman/authenticators/*.a
-%{_libdir}/openwsman/authenticators/*.la
-%{_libdir}/openwsman/plugins/*.a
-%{_libdir}/openwsman/plugins/*.la
-%{_libdir}/pkgconfig/openwsman.pc
-%{_libdir}/pkgconfig/openwsman++.pc
-%{_libdir}/pkgconfig/openwsman-server.pc
+%{_libdir}/pkgconfig/*
+%{_libdir}/*.so
 
+%files python
+%defattr(-,root,root)
+%{python_sitearch}/*.so
+%{python_sitelib}/*.py
+
+%files ruby
+%defattr(-,root,root)
+%if 0%{?suse_version}
+%if 0%{?suse_version} < 1100
+%dir %{_libdir}/ruby/site_ruby/%{rb_ver}/%{rb_arch}
+%{_libdir}/ruby/site_ruby/%{rb_ver}/%{rb_arch}/openwsman.so
+%dir %{_libdir}/ruby/site_ruby/%{rb_ver}/openwsman
+%{_libdir}/ruby/site_ruby/%{rb_ver}/openwsman/openwsman.rb
+%{_libdir}/ruby/site_ruby/%{rb_ver}/openwsman/wsxmlnode.rb
+%else
+%{_libdir}/ruby/vendor_ruby/%{rb_ver}/%{rb_arch}/openwsman.so
+%dir %{_libdir}/ruby/vendor_ruby/%{rb_ver}/openwsman
+%{_libdir}/ruby/vendor_ruby/%{rb_ver}/openwsman/openwsman.rb
+%{_libdir}/ruby/vendor_ruby/%{rb_ver}/openwsman/wsxmlnode.rb
+%endif
+%endif
+%if 0%{?mandriva_version}
+%{ruby_sitearchdir}/openwsman.so
+%{ruby_sitelibdir}/openwsman/openwsman.rb
+%{ruby_sitelibdir}/openwsman/wsxmlnode.rb
+%endif
+%if 0%{?fedora_version}
+%{ruby_sitearch}/openwsman.so
+%dir %{ruby_sitelib}/openwsman
+%{ruby_sitelib}/openwsman/openwsman.rb
+%{ruby_sitelib}/openwsman/wsxmlnode.rb
+%endif
+
+%files perl
+%defattr(-,root,root)
+%{perl_vendorarch}/openwsman.so
+%{perl_vendorlib}/openwsman.pm
+
+%files server
+%defattr(-,root,root)
+%dir %{_sysconfdir}/openwsman
+%config(noreplace) %{_sysconfdir}/openwsman/openwsman.conf
+%config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
+%attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
+%config %{_sysconfdir}/pam.d/openwsman
+%attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
+%dir %{_libdir}/openwsman
+%dir %{_libdir}/openwsman/authenticators
+%{_libdir}/openwsman/authenticators/*.so
+%{_libdir}/openwsman/authenticators/*.so.*
+%dir %{_libdir}/openwsman/plugins
+%{_libdir}/openwsman/plugins/*.so
+%{_libdir}/openwsman/plugins/*.so.*
+%{_sbindir}/openwsmand
+%{_sbindir}/rcopenwsmand
+%{_libdir}/libwsman_server.so.*
+
+%files client
+%defattr(-,root,root)
+%{_libdir}/libwsman_clientpp.so.*
+
+%changelog
