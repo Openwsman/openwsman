@@ -4,8 +4,7 @@
 
 SUBDIRS = openwsman
 
-rubylibdir = $(shell ruby -r rbconfig -e "print (Config::CONFIG['vendorarchdir'] rescue Config::CONFIG['sitearchdir'])")
-rubyarchdir = $(shell ruby -r rbconfig -e "print (Config::CONFIG['vendorarchdir'] rescue Config::CONFIG['sitearchdir'])")
+rubyarchdir = $(shell ruby -r rbconfig -e "vad = Config::CONFIG['vendorarchdir']; print(vad ? vad : Config::CONFIG['sitearchdir'])")
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -34,13 +33,13 @@ openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
 openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
-rubylib_LTLIBRARIES = openwsman.la
+rubyarch_LTLIBRARIES = openwsman.la
 
 $(GENERATED): $(SWIG_SOURCES)
 	$(SWIG) -ruby -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
-	rm -f $(DESTDIR)${rubyarchdir}/$(rubylib_LTLIBRARIES)
+	rm -f $(DESTDIR)${rubyarchdir}/$(rubyarch_LTLIBRARIES)
 
 CLEANFILES= $(GENERATED)
 
