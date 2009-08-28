@@ -10,7 +10,7 @@
   - Perl example code added (by warptrosse@gmail.com)
   - Fixes to the CMake build environment
   - Fixes to the sfcc backend (argument handling, xml escaping)
-  - Many other bug fixes:
+  - Many other bug fixes, e.g.
     297: More detailed http status codes
     309: Use correct namespace for detecting Filter node
     288: CIM Provider Faults not getting propagated to client 

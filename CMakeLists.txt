@@ -414,7 +414,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DI
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman++.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman-server.pc.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.spec.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.spec)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package/openwsman.spec.in ${CMAKE_CURRENT_BINARY_DIR}/package/openwsman.spec)
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc
               ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc
