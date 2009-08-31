@@ -235,6 +235,12 @@ and install it directly.]
 	exit
 fi
 
+dnl [ curl-Bugs-1924441 ] SSL callback option with NSS-linked libcurl
+dnl CURLOPT_SSL_CTX_FUNCTION is defined, but does not work on e.g. Fedora
+
+if test -f "/etc/fedora-release"; then
+  CFLAGS="$CFLAGS -DNO_SSL_CALLBACK"
+fi
 
 #
 # IPv6

@@ -211,7 +211,10 @@ sh autoconfiscate.sh
     --enable-perl \
     --enable-ipv6
 make clean
-make %{?jobs:-j%jobs}
+%if 0%{?fedora}
+export RPM_OPT_FLAGS=$RPM_OPT_FLAGS -DFEDORA
+%endif
+make CFLAGS=$RPM_OPT_FLAGS %{?jobs:-j%jobs}
 
 %install
 make DESTDIR=$RPM_BUILD_ROOT install

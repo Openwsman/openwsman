@@ -298,6 +298,8 @@ init_curl_transport(WsManClient *cl)
 	}
 	// certificate thumbprint
 #ifdef ENABLE_EVENTING_SUPPORT
+/*  Bug in e.g. Fedora: [ curl-Bugs-1924441 ] SSL callback option with NSS-linked libcurl */
+#ifndef NO_SSL_CALLBACK
 	else if (cl->authentication.certificatethumbprint) {
 		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
 		if(r != 0) {
@@ -310,6 +312,7 @@ init_curl_transport(WsManClient *cl)
 			goto DONE;
 		}
 	}
+#endif
 #endif
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
