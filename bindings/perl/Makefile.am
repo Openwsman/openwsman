@@ -28,10 +28,11 @@ LIBS = \
 
 GENERATED = openwsman_wrap.c \
 	    openwsman.pm
+
 SWIG_SOURCES = ../openwsman.i
 openwsman_la_SOURCES = openwsman_wrap.c \
+			 ../openwsman.c \
 			 $(SWIG_SOURCES)
-
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 

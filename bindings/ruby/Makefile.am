@@ -25,9 +25,9 @@ LIBS = \
 
 GENERATED = openwsman_wrap.c
 
-SWIG_SOURCES = ../openwsman.i ../openwsman.c
+SWIG_SOURCES = ../openwsman.i
 
-openwsman_la_SOURCES = $(SWIG_SOURCES) $(GENERATED)
+openwsman_la_SOURCES =  ../openwsman.c $(SWIG_SOURCES) $(GENERATED)
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 

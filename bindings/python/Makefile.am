@@ -19,9 +19,11 @@ LIBS = $(OPENSSL_LIBS) \
 GENERATED = openwsman_wrap.c \
 	    pywsman.py
 
-SWIG_SOURCES = ../openwsman.i ../openwsman.c
+SWIG_SOURCES = ../openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
+			 ../openwsman.c \
 			 $(SWIG_SOURCES)
+
 all-local:	pywsman.py
 
 install-data-local:

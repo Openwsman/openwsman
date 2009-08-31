@@ -20,8 +20,9 @@ LIBS = $(OPENSSL_LIBS) \
 
 GENERATED = openwsman_wrap.c 
 
-SWIG_SOURCES = ../openwsman.i ../openwsman.c
+SWIG_SOURCES = ../openwsman.i
 libjwsman_la_SOURCES = openwsman_wrap.c \
+			 ../openwsman.c
 			 $(SWIG_SOURCES)
 
 libjwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
