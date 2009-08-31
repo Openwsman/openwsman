@@ -133,7 +133,8 @@ License:        BSD 3-clause (or similar)
 Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
 %if 0%{?fedora}
-%{!?python_sitelib: %define py_sitedir %(%__python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?py_requires: %define py_requires Requires: python}
 %endif
 %{py_requires}
@@ -154,6 +155,11 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          System/Management
 Requires:       ruby
+%if 0%{?fedora}
+Requires:       ruby(abi) = 1.8
+%{!?ruby_sitelib: %global ruby_sitelib %(ruby -rrbconfig -e 'puts Config::CONFIG["sitelibdir"] ')}
+%{!?ruby_sitearch: %global ruby_sitearch %(ruby -rrbconfig -e 'puts Config::CONFIG["sitearchdir"] ')}
+%endif
 Summary:        Ruby bindings for openwsman client API
 
 %description ruby
@@ -251,6 +257,10 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %{python_sitearch}/*.so
 %{python_sitelib}/*.py
+%if 0%{?fedora}
+%{python_sitelib}/*.pyc
+%{python_sitelib}/*.pyo
+%endif
 
 %files ruby
 %defattr(-,root,root)
