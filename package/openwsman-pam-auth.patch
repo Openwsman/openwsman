@@ -1,6 +1,7 @@
-This switches from file-based auth to pam-based out for basic auth.
---- etc/openwsman.conf
-+++ etc/openwsman.conf
+Index: openwsman.conf
+===================================================================
+--- etc/openwsman.conf	(revision 3221)
++++ etc/openwsman.conf	(working copy)
 @@ -4,7 +4,7 @@
  ssl_cert_file = /etc/openwsman/servercert.pem
  ssl_key_file = /etc/openwsman/serverkey.pem
@@ -19,5 +20,5 @@ This switches from file-based auth to pam-based out for basic auth.
 +basic_authenticator = libwsman_pam_auth.so
 +basic_authenticator_arg = openwsman
  
- 
- [client]
+ #
+ # WS-Management unauthenticated wsmid:Identify file

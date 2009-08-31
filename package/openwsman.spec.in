@@ -19,14 +19,17 @@
 
 
 Name:           openwsman
-BuildRequires:  gcc-c++ pkg-config swig
-BuildRequires:  libcurl-devel libopenssl-devel libxml2-devel pam-devel sblim-sfcc-devel
+BuildRequires:  gcc-c++ swig
+BuildRequires:  libcurl-devel libxml2-devel pam-devel sblim-sfcc-devel
 BuildRequires:  python-devel ruby-devel perl
-%if 0%{?fedora_version}
-BuildRequires:  perl-devel
+%if 0%{?fedora}
+BuildRequires:  perl-devel pkgconfig openssl-devel 
 %endif
+%if 0%{?suse_version}
+BuildRequires:  pkg-config libopenssl-devel 
 %if 0%{?suse_version} > 1020
 BuildRequires:  fdupes
+%endif
 %endif
 PreReq:         sed coreutils grep /bin/hostname
 Version:        @VERSION@
@@ -129,7 +132,7 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
-%if 0%{?fedora_version}
+%if 0%{?fedora}
 %{!?python_sitelib: %define py_sitedir %(%__python -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?py_requires: %define py_requires Requires: python}
 %endif
@@ -270,7 +273,7 @@ rm -f /var/log/wsmand.log
 %{ruby_sitelibdir}/openwsman/openwsman.rb
 %{ruby_sitelibdir}/openwsman/wsxmlnode.rb
 %endif
-%if 0%{?fedora_version}
+%if 0%{?fedora}
 %{ruby_sitearch}/openwsman.so
 %dir %{ruby_sitelib}/openwsman
 %{ruby_sitelib}/openwsman/openwsman.rb
