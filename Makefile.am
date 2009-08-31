@@ -37,4 +37,4 @@ uninstall-local:
 	rm $(DESTDIR)$(libdir)/pkgconfig/openwsman-server.pc
 
 EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln autoconfiscate.sh \
-	openwsman.pam package/openwsman.rpmlintrc
+	package/openwsman.rpmlintrc package/openwsman.spec.in
