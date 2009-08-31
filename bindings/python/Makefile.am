@@ -19,10 +19,10 @@ LIBS = $(OPENSSL_LIBS) \
 GENERATED = openwsman_wrap.c \
 	    pywsman.py
 
-SWIG_SOURCES = ../openwsman.i
+SWIG_INPUT = ../openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
 			 ../openwsman.c \
-			 $(SWIG_SOURCES)
+			 $(SWIG_INPUT)
 
 all-local:	pywsman.py
 
@@ -36,7 +36,7 @@ _pywsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 pyexec_LTLIBRARIES = _pywsman.la
 
-$(GENERATED): $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_INPUT)
 	$(SWIG) -python -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:

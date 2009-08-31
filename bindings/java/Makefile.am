@@ -20,10 +20,10 @@ LIBS = $(OPENSSL_LIBS) \
 
 GENERATED = openwsman_wrap.c 
 
-SWIG_SOURCES = ../openwsman.i
+SWIG_INPUT = ../openwsman.i
 libjwsman_la_SOURCES = openwsman_wrap.c \
 			 ../openwsman.c
-			 $(SWIG_SOURCES)
+			 $(SWIG_INPUT)
 
 libjwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
@@ -31,7 +31,7 @@ libjwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 java_LTLIBRARIES = libjwsman.la
 
-$(GENERATED): $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_INPUT)
 	$(SWIG) -java -I$(top_srcdir)/include -o $@ $<
 
 CLEANFILES= $(GENERATED) *.java *.class

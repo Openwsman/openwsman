@@ -29,10 +29,10 @@ LIBS = \
 GENERATED = openwsman_wrap.c \
 	    openwsman.pm
 
-SWIG_SOURCES = ../openwsman.i
+SWIG_INPUT = ../openwsman.i
 openwsman_la_SOURCES = openwsman_wrap.c \
 			 ../openwsman.c \
-			 $(SWIG_SOURCES)
+			 $(SWIG_INPUT)
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
@@ -40,7 +40,7 @@ openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 perlarch_LTLIBRARIES = openwsman.la
 
-$(GENERATED): $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_INPUT)
 	$(SWIG) -perl -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-local:

@@ -25,9 +25,9 @@ LIBS = \
 
 GENERATED = openwsman_wrap.c
 
-SWIG_SOURCES = ../openwsman.i
+SWIG_INPUT = ../openwsman.i
 
-openwsman_la_SOURCES =  ../openwsman.c $(SWIG_SOURCES) $(GENERATED)
+openwsman_la_SOURCES =  ../openwsman.c $(SWIG_INPUT) $(GENERATED)
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
@@ -35,7 +35,7 @@ openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 rubyarch_LTLIBRARIES = openwsman.la
 
-$(GENERATED): $(SWIG_SOURCES)
+$(GENERATED): $(SWIG_INPUT)
 	$(SWIG) -ruby -I$(top_srcdir)/include -I$(top_srcdir)/bindings -o $@ $<
 
 install-data-hook:
