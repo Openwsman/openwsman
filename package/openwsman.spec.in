@@ -180,7 +180,7 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          System/Management
 %if 0%{?fedora}
-Requires:       perl(:MODULE_COMPAT_%(eval "%{__perl} -V:version"; echo $version))
+Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 %else
 Requires:       perl = %{perl_version}
 %endif
