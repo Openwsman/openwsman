@@ -1,6 +1,7 @@
 #
 # Makefile.am for openwsman/bindings/perl
 #
+SUBDIRS = tests
 
 perlarchdir = @PERLVENDORARCHDIR@
 perllibdir = @PERLVENDORLIBDIR@

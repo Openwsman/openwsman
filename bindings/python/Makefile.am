@@ -1,3 +1,8 @@
+#
+# Makefile.am for openwsman/bindings/python
+#
+SUBDIRS = tests
+
 INCLUDES =  -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/bindings \

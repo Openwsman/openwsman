@@ -1,3 +1,9 @@
+#
+# Makefile.am for openwsman/bindings/java
+#
+
+SUBDIRS = tests
+
 javadir = @libdir@/java
 
 INCLUDES =  -I$(top_srcdir) \

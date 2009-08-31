@@ -114,7 +114,10 @@ Authors:
 %package server
 License:        BSD 3-clause (or similar)
 Group:          System/Management
-PreReq:         sed coreutils grep diffutils fillup /bin/hostname
+PreReq:         sed coreutils grep diffutils /bin/hostname
+%if 0%{?suse_version}
+PreReq:         fillup
+%endif
 Summary:        Openwsman Server and service libraries
 
 %description server

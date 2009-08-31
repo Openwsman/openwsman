@@ -523,8 +523,12 @@ AC_OUTPUT([
         examples/Makefile
 	bindings/Makefile
 	bindings/python/Makefile
+	bindings/python/tests/Makefile
 	bindings/ruby/Makefile
+	bindings/ruby/tests/Makefile
 	bindings/ruby/openwsman/Makefile
 	bindings/java/Makefile
+	bindings/java/tests/Makefile
 	bindings/perl/Makefile
+	bindings/perl/tests/Makefile
 	])

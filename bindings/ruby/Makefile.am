@@ -2,7 +2,7 @@
 # Makefile.am for openwsman/bindings/ruby
 #
 
-SUBDIRS = openwsman
+SUBDIRS = openwsman tests
 
 rubyarchdir = $(shell ruby -r rbconfig -e "vad = Config::CONFIG['vendorarchdir']; print(vad ? vad : Config::CONFIG['sitearchdir'])")
 
