@@ -1448,9 +1448,9 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 		debug("getClass: %s", classname);
 		debug("%d properties, %d qualifiers", property_count, qualifier_count);
     
-		while (i++ < qualifier_count) {
+		while (i < qualifier_count) {
 			CMPIString *qualifier_name;
-			CMPIData data = _class->ft->getQualifierAt(_class, i, &qualifier_name, rc);
+			CMPIData data = _class->ft->getQualifierAt(_class, i++, &qualifier_name, rc);
 			if (rc->rc)
 				return;
 			property2xml(client, &data, CMGetCharPtr(qualifier_name),
@@ -1466,10 +1466,9 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 			unsigned int property_qualifier_count;
 			unsigned int j = 0;
 			CMPIString *property_name;
-			CMPIData data = _class->ft->getPropertyAt(_class, i, &property_name, rc);
+			CMPIData data = _class->ft->getPropertyAt(_class, i++, &property_name, rc);
 			if (rc->rc)
 				return;
-			i++;
 
 			property_qualifier_count = _class->ft->getPropertyQualifierCount(
 				_class, CMGetCharPtr(property_name), rc);
@@ -1488,11 +1487,10 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 			while (j < property_qualifier_count) {
 				CMPIString *property_qualifier_name;
 				data = _class->ft->getPropertyQualifierAt(_class,
-					CMGetCharPtr(property_name), j, &property_qualifier_name, rc);
+					CMGetCharPtr(property_name), j++, &property_qualifier_name, rc);
 				if (rc->rc) 
 					continue;
 
-				j++;
 				property2xml(client, &data, CMGetCharPtr(property_qualifier_name),
 					property_qualifiers, client->resource_uri, 0, 1);
 				CMRelease(property_qualifier_name);
