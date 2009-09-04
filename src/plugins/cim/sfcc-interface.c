@@ -112,6 +112,62 @@ cim_find_namespace_for_class(CimClientInfo * client,
 	return ns;
 }
 
+
+static char *
+cmpitype2string (CMPIType type)
+{
+   type &= ~CMPI_ARRAY;
+   switch (type) {
+      case CMPI_instance:
+	return "instance";
+      case CMPI_ref:
+	return "reference";
+      case CMPI_args:
+	return "args";
+      case CMPI_filter:
+	return "filter";
+      case CMPI_string:
+	return "string";
+      case CMPI_numericString:
+	return "numericstring";
+      case CMPI_booleanString:
+	return "booleanstring";
+      case CMPI_dateTimeString:
+	return "datetimestring";
+      case CMPI_classNameString:
+	return "classnamestring";
+      case CMPI_dateTime:
+	return "datetime";
+      case CMPI_boolean:
+	return "boolean";
+      case CMPI_char16:
+	return "char16";
+      case CMPI_uint8:
+	return "uint8";
+      case CMPI_sint8:
+	return "sint8";
+      case CMPI_uint16:
+	return "uint16";
+      case CMPI_sint16:
+	return "sint16";
+      case CMPI_uint32:
+	return "uint32";
+      case CMPI_sint32:
+	return "sint32";
+      case CMPI_uint64:
+	return "uint64";
+      case CMPI_sint64:
+	return "sint64";
+      case CMPI_real32:
+	return "real32";
+      case CMPI_real64:
+	return "real64";
+   }
+   return "***Unknown***";
+}
+
+
+
 void
 path2xml(CimClientInfo * client,
 		WsXmlNodeH node, char *resource_uri, CMPIValue * val)
@@ -286,6 +342,20 @@ xml2property(CMPIInstance * instance,
 
 
 void
+type2xml(CimClientInfo * client, WsXmlNodeH node, char *resource_uri, CMPIType type)
+{
+        const char *typestr = cmpitype2string(type);
+        if (type & CMPI_ARRAY) {
+                WsXmlNodeH typenode = ws_xml_add_child(node, resource_uri, "type", NULL);
+                ws_xml_add_child(typenode, resource_uri, "array", typestr);
+	}
+        else {
+	        ws_xml_add_child(node, resource_uri, "type", typestr);
+        }
+}
+
+
+void
 property2xml(CimClientInfo * client, CMPIData *data,
 		const char *name, WsXmlNodeH node, char *resource_uri,
 		int frag_type, int is_key)
@@ -350,6 +420,55 @@ property2xml(CimClientInfo * client, CMPIData *data,
 			WsXmlNodeH nilnode = ws_xml_add_child_sort(node, resource_uri, name,
 					NULL, xmlescape);
 			ws_xml_add_node_attr(nilnode, XML_NS_SCHEMA_INSTANCE, "nil", "true");
+		}
+	}
+}
+
+
+WsXmlNodeH
+datatype2xml(CimClientInfo * client, WsXmlNodeH parent, char *resource_uri, const char *nodename, const char *name, CMPIData *data)
+{
+       WsXmlNodeH node = ws_xml_add_child(parent, resource_uri, nodename, NULL);
+       ws_xml_add_child(node, resource_uri, "name", name);
+       type2xml(client, node, resource_uri, data->type);
+       property2xml(client, data, "value", node, resource_uri, 0, 0);
+       return node;
+}
+
+
+/*
+ * Convert class or property qualifiers to xml
+ * client: client
+ * _class: class
+ * property_name: NULL for class qualifiers
+ */
+
+void
+qualifiers2xml(CimClientInfo *client, WsXmlNodeH node, CMPIConstClass *_class, const char *property_name)
+{
+        unsigned int count;
+        CMPIStatus rc;
+        if (property_name)
+		count = _class->ft->getPropertyQualifierCount(_class, property_name, &rc);
+        else
+ 		count = _class->ft->getQualifierCount(_class, &rc);
+
+        if (count > 0) {
+	        unsigned int i = 0;
+		WsXmlNodeH qualifiers = ws_xml_add_child(node, client->resource_uri, "qualifiers", NULL);
+		while (i < count) {
+			CMPIString *qualifier_name;
+			CMPIData data;
+		        if (property_name)
+				data = _class->ft->getPropertyQualifierAt(_class,
+					property_name, i++, &qualifier_name, &rc);
+		        else
+		                data = _class->ft->getQualifierAt(_class, i++, &qualifier_name, &rc);
+		        if (rc.rc)
+				return;
+			datatype2xml(client, qualifiers, client->resource_uri, "qualifier", CMGetCharPtr(qualifier_name), &data);
+
+		        CMRelease(qualifier_name);
 		}
 	}
 }
@@ -1433,69 +1552,33 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 	if (_class) {
 		char *classname = CMGetCharPtr(_class->ft->getClassName(_class, rc));
 		unsigned int property_count = _class->ft->getPropertyCount(_class, rc);
-		unsigned int qualifier_count = _class->ft->getQualifierCount(_class, rc);
 
 		/* <body><GetClass>...</GetClass> */
 		WsXmlNodeH node = ws_xml_add_child(body, client->resource_uri, client->method, NULL);
 
 		/* <GetClass><name>name</name> */
 		ws_xml_add_child(node, client->resource_uri, "name", classname);
-
-		/* <GetClass><qualifiers>...</qualifiers> */
-		WsXmlNodeH qualifiers = ws_xml_add_child(node, client->resource_uri, "qualifiers", NULL);
-		unsigned int i = 0;
     
 		debug("getClass: %s", classname);
-		debug("%d properties, %d qualifiers", property_count, qualifier_count);
-    
-		while (i < qualifier_count) {
-			CMPIString *qualifier_name;
-			CMPIData data = _class->ft->getQualifierAt(_class, i++, &qualifier_name, rc);
-			if (rc->rc)
-				return;
-			property2xml(client, &data, CMGetCharPtr(qualifier_name),
-				qualifiers, client->resource_uri, 0, 1);
-      
-			CMRelease(qualifier_name);
-		}
 
-		/* <GetClass><properties>...</properties> */
-		WsXmlNodeH properties = ws_xml_add_child(node, client->resource_uri, "properties", NULL);			      
-		i = 0;
-		while (i < property_count) {
-			unsigned int property_qualifier_count;
-			unsigned int j = 0;
-			CMPIString *property_name;
-			CMPIData data = _class->ft->getPropertyAt(_class, i++, &property_name, rc);
-			if (rc->rc)
-				return;
+	        qualifiers2xml(client, node, _class, NULL);
 
-			property_qualifier_count = _class->ft->getPropertyQualifierCount(
-				_class, CMGetCharPtr(property_name), rc);
-
-			if (rc->rc) 
-				return;
-      
-			/* <properties><property>... */
-			WsXmlNodeH property = ws_xml_add_child(properties, client->resource_uri, "property", NULL);
-
-			/* <property><name>...</name> */
-			ws_xml_add_child(property, client->resource_uri, "name", CMGetCharPtr(property_name));
-
-			/* <property><qualifiers>...</qualifiers> */
-			WsXmlNodeH property_qualifiers = ws_xml_add_child(property, client->resource_uri, "qualifiers", NULL);
-			while (j < property_qualifier_count) {
-				CMPIString *property_qualifier_name;
-				data = _class->ft->getPropertyQualifierAt(_class,
-					CMGetCharPtr(property_name), j++, &property_qualifier_name, rc);
-				if (rc->rc) 
-					continue;
-
-				property2xml(client, &data, CMGetCharPtr(property_qualifier_name),
-					property_qualifiers, client->resource_uri, 0, 1);
-				CMRelease(property_qualifier_name);
+	        if (property_count > 0) {
+		        unsigned int i = 0;
+	      
+		        /* <GetClass><properties>...</properties> */
+		        WsXmlNodeH properties = ws_xml_add_child(node, client->resource_uri, "properties", NULL);			      
+		        while (i < property_count) {
+			        unsigned int property_qualifier_count;
+			        unsigned int j = 0;
+			        CMPIString *property_name;
+			        CMPIData data = _class->ft->getPropertyAt(_class, i++, &property_name, rc);
+			        if (rc->rc)
+				        return;
+			        WsXmlNodeH property = datatype2xml(client, properties, client->resource_uri, "property", CMGetCharPtr(property_name), &data);
+			        qualifiers2xml(client, property, _class, CMGetCharPtr(property_name));
 			}
-			CMRelease(property_name);
+		  
 		}
     
 		CMRelease(_class);			      
