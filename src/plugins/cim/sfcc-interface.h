@@ -52,6 +52,16 @@ void class2xml(CMPIConstClass * class, WsXmlNodeH node, char *resourceUri);
 void path2xml(CimClientInfo * client, WsXmlNodeH node, char *resourceUri,
 	      CMPIValue * val);
 
+void type2xml(CimClientInfo * client, WsXmlNodeH node, char *resource_uri,
+	      CMPIType type);
+
+WsXmlNodeH datatype2xml(CimClientInfo * client, WsXmlNodeH parent,
+	      char *resource_uri, const char *nodename, const char *name,
+	      CMPIData *data);
+
+void qualifiers2xml(CimClientInfo *client, WsXmlNodeH node,
+	      CMPIConstClass *_class, const char *property_name);
+
 void add_cim_location(WsXmlNodeH resource, char *resourceUri,
 		      CMPIObjectPath * objectpath);
 
@@ -131,5 +141,8 @@ void cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo 
 	CMPIObjectPath *handler, WsmanStatus *status);
 void cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
 void cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsInfo, WsmanStatus *status);
+
+void invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc);
+void invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc);
 
 #endif				/*SFCC_INTERFACE_H_ */

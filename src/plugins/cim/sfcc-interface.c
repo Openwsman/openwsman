@@ -1507,6 +1507,7 @@ release_cmpi_data(CMPIData data)
  * Invoke 'EnumerateClassNames' intrinsic method
  *
  */
+
 void
 invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 {
@@ -1566,8 +1567,6 @@ invoke_get_class(CimClientInfo *client, WsXmlNodeH body, CMPIStatus *rc)
 		        /* <GetClass><properties>...</properties> */
 		        WsXmlNodeH properties = ws_xml_add_child(node, client->resource_uri, "properties", NULL);			      
 		        while (i < property_count) {
-			        unsigned int property_qualifier_count;
-			        unsigned int j = 0;
 			        CMPIString *property_name;
 			        CMPIData data = _class->ft->getPropertyAt(_class, i++, &property_name, rc);
 			        if (rc->rc)
