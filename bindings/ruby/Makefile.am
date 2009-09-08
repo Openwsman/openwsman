@@ -5,6 +5,8 @@
 SUBDIRS = openwsman tests
 
 rubyarchdir = $(shell ruby -r rbconfig -e "vad = Config::CONFIG['vendorarchdir']; print(vad ? vad : Config::CONFIG['sitearchdir'])")
+rubydir = $(shell ruby -r rbconfig -e "vd = Config::CONFIG['vendordir']; print(vd ? vd : Config::CONFIG['sitedir'])")
+rubyincdir = $(shell ruby -r rbconfig -e "print(Config::CONFIG['archdir'])")
 
 INCLUDES =  \
            -I$(top_srcdir) \
@@ -12,10 +14,7 @@ INCLUDES =  \
 	   -I$(top_srcdir)/bindings \
 	    $(OPENSSL_CFLAGS) \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\" \
-	   -I${rbincdir}
-
-LDADD = \
-       ${rbldadd}       
+	   -I${rubyincdir}
 
 LIBS = \
        $(OPENSSL_LIBS) \
