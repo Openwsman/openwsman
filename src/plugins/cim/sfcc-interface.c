@@ -134,7 +134,7 @@ cmpitype2string (CMPIType type)
 	return "booleanstring";
       case CMPI_dateTimeString:
 	return "datetimestring";
-      case CMPI_classNameString:
+      case CMPI_classNameString:  /* identical with CMPI_chars */
 	return "classnamestring";
       case CMPI_dateTime:
 	return "datetime";
@@ -267,8 +267,8 @@ xml2data(CMPIData *data, char *value)
 		case CMPI_numericString:
 		case CMPI_booleanString:
 		case CMPI_dateTimeString:
-		case CMPI_classNameString:
-		        data->value.chars = value;
+		case CMPI_classNameString: /* identical to CMPI_chars */
+		        data->value.string = newCMPIString(value, NULL);
 			break;
 		case CMPI_dateTime:
 		        data->value.dateTime = NULL;
@@ -280,9 +280,6 @@ xml2data(CMPIData *data, char *value)
 		        data->value.boolean = yes;
 			break;
 		}
-		case CMPI_char16:
-		        data->value.chars = value;
-			break;
 		case CMPI_uint8:
 		        data->value.uint8 = strtoul(value, NULL, 10);
 			break;
