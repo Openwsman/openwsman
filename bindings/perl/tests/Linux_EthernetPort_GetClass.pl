@@ -1,5 +1,10 @@
 #!/usr/bin/perl -w
 
+#
+# perl example to get Linux_EthernetPort class info.
+# written by warptrosse@gmail.com
+#
+
 use strict;
 use warnings;
 use lib '../../../build/bindings/perl';
@@ -33,8 +38,8 @@ my $result; # Used to store obtained data.
 # Get class.
 # (options, resource uri)
 $result = $client->invoke($options, $uri, $method);
-unless($result) {
-    die print "<span class=\"error\">[ERROR] Could not get class.</span><br/>";
+unless($result && $result->is_fault eq 0) {
+    die print "[ERROR] Could not get class.\n";
 }
 my $classInfo = $result->body()->child();
 
@@ -81,6 +86,7 @@ for((my $cnt = 0) ; ($cnt<$classInfo->size()) ; ($cnt++)) {
     }
 }
 
+# Print output.
 print "---------------------------------------------------\n";
 print 'Class Name: ', $name, "\n";
 print "Class Qualifiers:\n";

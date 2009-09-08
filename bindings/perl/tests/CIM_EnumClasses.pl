@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 #
-# perl example to get Linux_EthernetPort specified instance.
+# perl example to enumerate CIMOM classes names.
 # written by warptrosse@gmail.com
 #
 
@@ -31,43 +31,27 @@ my $options = new openwsman::ClientOptions::()
 # Force basic auth.
 $client->transport()->set_auth_method($openwsman::BASIC_AUTH_STR);
 
-my $uri = 'http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_EthernetPort'; # Uri.
-my @selectors = (
-    ['DeviceID', 'eth0'],
-    ['CreationClassName', 'Linux_EthernetPort'],
-    ['SystemCreationClassName', 'Linux_ComputerSystem'],
-    ['SystemName', 'localhost.localdomain']); # Selectors list.
+my $uri = $openwsman::XML_NS_CIM_INTRINSIC; # Uri.
+my $method = $openwsman::CIM_ACTION_ENUMERATE_CLASS_NAMES; # GetClass Method.
 my $result; # Used to store obtained data.
-my @inst; # Instance.
 
-# Establishing selectors.
-# (key, value)
-for(my $i=0 ; $i<scalar(@selectors) ; $i++) {
-    $options->add_selector($selectors[$i][0],
-                           $selectors[$i][1]);
-}
-
-# Get instance.
+# Get classes.
 # (options, resource uri)
-$result = $client->get($options, $uri);
+$result = $client->invoke($options, $uri, $method);
 unless($result && $result->is_fault eq 0) {
-    die print "[ERROR] Could not get instance.\n";
+    die print "[ERROR] Could not get classes.\n";
 }
-my $info = $result->body()->child();
+my $classesInfo = $result->body()->child();
 
 # Get items.
-my $items;
-for((my $cnt = 0) ; ($cnt<$info->size()) ; ($cnt++)) {
-    $items->{$info->get($cnt)->name()} = $info->get($cnt)->text();
+my @classes; # Classes list.
+for((my $cnt = 0) ; ($cnt<$classesInfo->size()) ; ($cnt++)) {
+    push @classes, $classesInfo->get($cnt)->text();
 }
-push @inst, $items;
 
-# Print output.
 print "---------------------------------------------------\n";
-foreach(@inst) {
-    my %inf = %$_; # Info container.
-    for my $key (keys %inf) {
-        print $key,': ',$inf{$key},"\n";
-    }
+print "Classes names:\n\n";
+foreach(@classes) {
+    print $_, "\n";
 }
 print "---------------------------------------------------\n";

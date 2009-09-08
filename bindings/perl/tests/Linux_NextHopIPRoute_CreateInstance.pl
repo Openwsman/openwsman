@@ -1,5 +1,10 @@
 #!/usr/bin/perl -w
 
+#
+# perl example to create a new Linux_NextHopIPRoute instance.
+# written by warptrosse@gmail.com
+#
+
 use strict;
 use warnings;
 use lib '../../../build/bindings/perl';
@@ -11,7 +16,8 @@ use openwsman;
 
 # Create client instance.
 # (host, port, path, scheme, username, password)
-my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret')
+my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http',
+                                     'wsman', 'secret')
     or die print "[ERROR] Could not create client handler.\n";
 
 # Alternate way.
@@ -50,7 +56,7 @@ my $className;
 if(($uri =~ /.\/(\w+)$/)) {
     $className = $1;
 } else {
-    print "[ERROR] Malformed uri.";
+    print "[ERROR] Malformed uri.\n";
     return 1;
 }
 
@@ -63,12 +69,18 @@ for(my $i=0 ; $i<scalar(@dataInfo) ; $i++) {
     $root->add($uri, $dataInfo[$i][0], $dataInfo[$i][1]);
 }
 
-$options->set_dump_request();
+# Dump the XML request to stdout.
+# $options->set_dump_request();
 
 # Create instance.
-$result = $client->create($options, $uri, $data->string(), length($data->string()),"utf-8");
+# (options, uri, data, data length, encoding)
+$result = $client->create($options, $uri, $data->string(),
+                          length($data->string()),"utf-8");
 unless($result && $result->is_fault eq 0) {
-    print "[ERROR] Could not create instance.";
+    print "[ERROR] Could not create instance.\n";
 } else {
-  print "Result", $result->string();
+    # Print output.
+    print "---------------------------------------------------\n";
+    print "Result: \n\n", $result->string();
+    print "---------------------------------------------------\n";
 }

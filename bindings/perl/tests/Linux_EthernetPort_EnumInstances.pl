@@ -1,5 +1,10 @@
 #!/usr/bin/perl -w
 
+#
+# perl example to enumerate instances of Linux_EthernetPort
+# written by warptrosse@gmail.com
+#
+
 use strict;
 use warnings;
 use lib '../../../build/bindings/perl';
@@ -11,7 +16,8 @@ use openwsman;
 
 # Create client instance.
 # (host, port, path, scheme, username, password)
-my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret')
+my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http',
+                                     'wsman', 'secret')
     or die print "[ERROR] Could not create client handler.\n";
 
 # Alternate way.
@@ -32,7 +38,7 @@ my @list;   # Instances list.
 # Enumerate from external schema (uri).
 # (options, filter, resource uri)
 $result = $client->enumerate($options, undef, $uri);
-unless($result) {
+unless($result && $result->is_fault eq 0) {
     die print "[ERROR] Could not enumerate instances.\n";
 }
 
@@ -63,11 +69,12 @@ while($context) {
 # Release context.
 $client->release($options, $uri, $context) if($context);
 
+# Print output.
 foreach(@list) {
+    print "---------------------------------------------------\n";
     my %route = %$_;
-    print "-----------------\n";
     foreach my $key (keys %route) {
         print $key,": ",$route{$key},"\n";
-    }    
-    print "-----------------\n\n";
+    }
+    print "---------------------------------------------------\n";
 }

@@ -1,5 +1,10 @@
 #!/usr/bin/perl -w
 
+#
+# perl example to delete a specified Linux_NextHopIPRoute instance.
+# written by warptrosse@gmail.com
+#
+
 use strict;
 use warnings;
 use lib '../../../build/bindings/perl';
@@ -11,7 +16,8 @@ use openwsman;
 
 # Create client instance.
 # (host, port, path, scheme, username, password)
-my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http', 'wsman', 'secret')
+my $client = new openwsman::Client::('localhost', 5985, '/wsman', 'http',
+                                     'wsman', 'secret')
     or die print "[ERROR] Could not create client handler.\n";
 
 # Alternate way.
@@ -38,10 +44,12 @@ for(my $i=0 ; $i<scalar(@selectors) ; $i++) {
                            $selectors[$i][1]);
 }
 
+# Dump the XML request to stdout.
 $options->set_dump_request();
 
 # Delete instance.
+# (options, uri)
 $result = $client->delete($options, $uri);
-unless($result) {
-    print "[ERROR] Could not delete instance.";
+unless($result && $result->is_fault eq 0) {
+    print "[ERROR] Could not delete instance.\n";
 }
