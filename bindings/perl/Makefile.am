@@ -14,7 +14,7 @@ INCLUDES =  \
 	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\" \
 	   -I@PERLCOREDIR@
 	   
-CFLAGS += @PERLCCFLAGS@ -Wno-unused -Wno-error -Wno-nonnull
+openwsman_la_CFLAGS = @PERLCCFLAGS@ -Wno-unused -Wno-error -Wno-nonnull
 
 LDADD = \
        @PERLLDFLAGS@
