@@ -38,4 +38,8 @@ uninstall-local:
 
 EXTRA_DIST = OpenWsmanLib.vcproj OpenWsmanLib.sln autoconfiscate.sh \
 	package/openwsman.rpmlintrc package/openwsman.spec.in \
-	package/openwsman-pam-auth.patch
+	package/openwsman-pam-auth.patch \
+	m4
+
+dist-hook:
+	-rm $(distdir)/m4/*.m4
