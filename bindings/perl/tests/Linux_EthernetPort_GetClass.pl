@@ -48,12 +48,10 @@ my $name; # Class name.
 my @qualifiers; # Class qualifiers.
 my @properties; # Class properties.
 for((my $cnt = 0) ; ($cnt<$classInfo->size()) ; ($cnt++)) {
-    if($classInfo->get($cnt)->name() eq 'name') {
+    if($classInfo->get($cnt)->name() eq 'name') { # Class name.
         $name = $classInfo->get($cnt)->text();
-        next;
-    }
 
-    if($classInfo->get($cnt)->name() eq 'qualifiers') {
+    } elsif($classInfo->get($cnt)->name() eq 'qualifiers') { # Qualifiers.
         my $qualifNode = $classInfo->get($cnt); # Node which contains qualifiers.
 
         # Loop qualifiers.
@@ -62,27 +60,46 @@ for((my $cnt = 0) ; ($cnt<$classInfo->size()) ; ($cnt++)) {
             $qualif->{$qualifNode->get($cnt4)->name()} = $qualifNode->get($cnt4)->text();
             push @qualifiers, $qualif;
         }
-        next;
-    }
-
-    if($classInfo->get($cnt)->name() eq 'properties') {
+        
+    } elsif($classInfo->get($cnt)->name() eq 'properties') { # Properties.
         my $propsNode = $classInfo->get($cnt); # Node which contains properties.
 
         # Loop properties.
         for((my $cnt2 = 0) ; ($cnt2<$propsNode->size()) ; ($cnt2++)) {
             my $propNode = $propsNode->get($cnt2); # Property node.
             my $prop;
-            $prop->{'name'} = $propNode->get(0)->text();
-                      
-            # Loop properties qualifiers.
-            for((my $cnt3 = 0) ; ($cnt3<$propNode->get(1)->size()) ; ($cnt3++)) {
-                $prop->{'qualifiers'}->{$propNode->get(1)->get($cnt3)->name()} =
-                    $propNode->get(1)->get($cnt3)->text();
+
+            for((my $cnt3 = 0) ; ($cnt3<$propNode->size()) ; ($cnt3++)) {
+                if($propNode->get($cnt3)->name() eq 'name') { # Name.
+                    $prop->{'name'} = $propNode->get($cnt3)->text();
+                    
+                } elsif ($propNode->get($cnt3)->name() eq 'type') { # Type.
+                    $prop->{'type'} = $propNode->get($cnt3)->text();
+                    
+                } elsif ($propNode->get($cnt3)->name() eq 'value') { # Default Value.
+                    $prop->{'value'} = $propNode->get($cnt3)->text();
+                    
+                } elsif ($propNode->get($cnt3)->name() eq 'qualifiers') { # Qualifiers.
+
+                    # Loop properties qualifiers.
+                    for((my $cnt4 = 0) ; ($cnt4<$propNode->get($cnt3)->size()) ; ($cnt4++)) {
+                        my $propQual = $propNode->get($cnt3)->get($cnt4); # Property Qualifier node.
+
+                        for((my $cnt5 = 0) ; ($cnt5<$propQual->size()) ; ($cnt5++)) {
+                            if($propQual->get($cnt5)->name() eq 'type') {
+                                $prop->{'qualifiers'}->{$propQual->get(0)->text()}->{'type'} =
+                                    $propQual->get($cnt5)->text();
+                            } elsif($propQual->get($cnt5)->name() eq 'value') {
+                                push @{$prop->{'qualifiers'}->{$propQual->get(0)->text()}->{'value'}},
+                                $propQual->get($cnt5)->text();
+                            }
+                        }
+                    }
+                }
             }
 
             push @properties, $prop;
         }
-        next;
     }
 }
 
@@ -98,19 +115,20 @@ foreach(@qualifiers) {
 }
 print "Class Properties: \n";
 foreach(@properties) {
-    my %inf = %$_; # Info container.
+    my %inf = %{$_}; # Info container.
     print "\tName: ", $inf{'name'}, "\n";
+    print "\tType: ", $inf{'type'}, "\n";
+    print "\tDefault Value: ", $inf{'value'}, "\n";
     print "\tQualifiers:\n";
-    for my $key (keys %inf) {
-        if($key eq 'name') {
-            next;
+    for my $key (keys %{$inf{'qualifiers'}}) {
+        my %qualif = %{$inf{'qualifiers'}->{$key}};
+        print "\t\tName: ", $key, "\n";
+        print "\t\tType: ", $qualif{'type'}, "\n";
+        print "\t\tValue/s: | ";
+        foreach(@{$qualif{'value'}}) {
+            print $_, ' | ';
         }
-        if($key eq 'qualifiers') {
-            my %qualif = %{$inf{$key}};
-            for my $key2 (keys %qualif) {
-                print "\t\t", $key2,': ', $qualif{$key2}, "\n";
-            }
-        }
+        print "\n\n";
     }
     print "\n";
 }
