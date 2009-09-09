@@ -346,7 +346,7 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 
 }
 
-filter_t * filter_deserialize(WsXmlNodeH node)
+filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
 {
 	char *dialect = NULL;
 	int properNum = 0;
@@ -356,7 +356,7 @@ filter_t * filter_deserialize(WsXmlNodeH node)
 	WsXmlNodeH instance_node = NULL;
 	WsXmlNodeH entry_node = NULL;
         /* look for wse:Filter */
-	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSM_FILTER);
+	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, ns, WSM_FILTER);
 	if(filter_node == NULL) return NULL;
 	filter = u_zalloc(sizeof(filter_t));
 	dialect = ws_xml_find_attr_value(filter_node, NULL, WSM_DIALECT);

@@ -568,7 +568,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 		}
 
 		/* Filter */
-		filter = filter_deserialize(node);
+		filter = filter_deserialize(node, XML_NS_WS_MAN);
 		enumInfo->filter = filter;
 		if(filter) {
 			if(strcmp(filter->dialect, WSM_ASSOCIATION_FILTER_DIALECT) == 0) {
@@ -689,7 +689,7 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 	if (node && (node = ws_xml_get_child(node, 0,
 					XML_NS_EVENTING,
 					WSEVENT_SUBSCRIBE))) {
-		f = filter_deserialize(node);
+		f = filter_deserialize(node, XML_NS_EVENTING);
 		subsInfo->filter = f;
 		if(f) {
 			if(strcmp(f->dialect,WSM_CQL_FILTER_DIALECT) == 0)

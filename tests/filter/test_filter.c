@@ -111,7 +111,7 @@ static void deserialize_filter1(void)
 	WsXmlDocH doc = ws_xml_read_file("./sample1.xml", "UTF-8", 0);
 	WsXmlNodeH node = ws_xml_get_soap_body(doc);
 	node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-	filter_t *filter = filter_deserialize(node);
+	filter_t *filter = filter_deserialize(node, XML_NS_WS_MAN);
 	if(filter == NULL) {
 		printf("\033[22;31mfilter deserialize failed!\033[m\n");
 		return;
@@ -136,7 +136,7 @@ static void deserialize_filter2(void)
         WsXmlDocH doc = ws_xml_read_file("./sample2.xml", "UTF-8", 0);
         WsXmlNodeH node = ws_xml_get_soap_body(doc);
         node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-        filter_t *filter = filter_deserialize(node);
+        filter_t *filter = filter_deserialize(node, XML_NS_WS_MAN);
         if(filter == NULL) {
                 printf("\033[22;31mfilter deserialize failed!\033[m\n");
                 return;
@@ -161,7 +161,7 @@ static void deserialize_filter3(void)
         WsXmlDocH doc = ws_xml_read_file("./sample3.xml", "UTF-8", 0);
         WsXmlNodeH node = ws_xml_get_soap_body(doc);
         node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION, WSENUM_ENUMERATE);
-        filter_t *filter = filter_deserialize(node);
+        filter_t *filter = filter_deserialize(node, XML_NS_WS_MAN);
         if(filter == NULL) {
                 printf("\033[22;31mfilter deserialize failed!\033[m\n");
                 return;

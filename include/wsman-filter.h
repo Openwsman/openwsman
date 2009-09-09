@@ -143,7 +143,7 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter);
  * @param node Node which contains filter XML snippet
  * @return filter_t  A point to a malloced filter_t structure
  */
-filter_t * filter_deserialize(WsXmlNodeH node);
+filter_t * filter_deserialize(WsXmlNodeH node, const char *ns);
 
 #ifdef __cplusplus
 }
