@@ -30,17 +30,18 @@ my $options = new openwsman::ClientOptions::()
 
 # Set up EndPointReference.
 # (uri, address)
-my $epr = new openwsman::EndPointReference::("http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_ComputerSystem", undef)
+my $epr = new openwsman::EndPointReference::('http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_ComputerSystem', undef)
     or die print "[ERROR] Could not create EndPointReference.\n";
 # (name, value)
-$epr->add_selector("Name", "etacarinae");
+$epr->add_selector('Name', 'etacarinae');
+$epr->add_selector('CreationClassName', 'Linux_ComputerSystem');
 
 # Set up filter.
 my $filter = new openwsman::Filter::()
     or die print "[ERROR] Could not create filter.\n";
 # (epr, assocClass, resultClass, role, resultRole, resultProp, propNum)
-$filter->associators($epr, "Linux_CSNetworkPort", "CIM_NetworkPort",
-                     "GroupComponent", "PartComponent", undef, 0);
+$filter->associators($epr, 'Linux_CSNetworkPort', 'CIM_NetworkPort',
+                     'GroupComponent', 'PartComponent', undef, 0);
 
 # Force basic auth.
 $client->transport()->set_auth_method($openwsman::BASIC_AUTH_STR);
@@ -48,7 +49,7 @@ $client->transport()->set_auth_method($openwsman::BASIC_AUTH_STR);
 # Dump the XML request to stdout.
 $options->set_dump_request();
 
-my $uri = 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_NetworkPort'; # Uri.
+my $uri = 'http://schemas.dmtf.org/wbem/wscim/1/*';
 my $result; # Used to store obtained data.
 my @list;   # Instances list.
 
