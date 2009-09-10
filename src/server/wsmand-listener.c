@@ -127,7 +127,7 @@ static
 char *get_request_encoding(struct shttpd_arg *arg) {
 	const char *content_type;
 	char *p;
-	char *encoding = NULL;
+	char *encoding = "UTF-8";
 
 	content_type = shttpd_get_header(arg, "Content-Type");
 	if(content_type ) {
@@ -143,7 +143,7 @@ char *get_request_encoding(struct shttpd_arg *arg) {
 static
 void server_callback(struct shttpd_arg *arg)
 {
-	char *encoding = NULL;
+	char *encoding = "UTF-8";
 	const char  *s;
 	SoapH soap;
 	int k;
@@ -151,31 +151,31 @@ void server_callback(struct shttpd_arg *arg)
 	char *request_uri;
 
 	char *fault_reason = NULL;
-    struct state {
-        size_t  cl;     /* Content-Length   */
-        size_t  nread;      /* Number of bytes read */
-	 	u_buf_t     *request;
-	 	char  *response;
-		size_t len;
-		int index;
-		int type;
-    } *state;
+	struct state {
+        	size_t  cl;     /* Content-Length   */
+	        size_t  nread;      /* Number of bytes read */
+	 	u_buf_t *request;
+	 	char    *response;
+		size_t  len;
+		int     index;
+		int     type;
+	} *state;
 
 
-    /* If the connection was broken prematurely, cleanup */
-    if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
-        free(arg->state);
+	/* If the connection was broken prematurely, cleanup */
+	if ( (arg->flags & SHTTPD_CONNECTION_ERROR ) && arg->state) {
+        	free(arg->state);
 		return;
-    } else if ((s = shttpd_get_header(arg, "Content-Length")) == NULL) {
-        shttpd_printf(arg, "HTTP/1.0 411 Length Required\n\n");
-        arg->flags |= SHTTPD_END_OF_OUTPUT;
+	} else if ((s = shttpd_get_header(arg, "Content-Length")) == NULL) {
+        	shttpd_printf(arg, "HTTP/1.0 411 Length Required\n\n");
+	        arg->flags |= SHTTPD_END_OF_OUTPUT;
 		return;
-    } else if (arg->state == NULL) {
-        /* New request. Allocate a state structure */
-        arg->state = state = calloc(1, sizeof(*state));
-        state->cl = strtoul(s, NULL, 10);
+	} else if (arg->state == NULL) {
+        	/* New request. Allocate a state structure */
+        	arg->state = state = calloc(1, sizeof(*state));
+	        state->cl = strtoul(s, NULL, 10);
 		u_buf_create(&(state->request));
-    }
+	}
 
 	state = arg->state;
 	if ( state->response ) {
@@ -194,40 +194,37 @@ void server_callback(struct shttpd_arg *arg)
 	} else {
 		return;
 	}
- #ifdef SHTTPD_GSS
-    const char *ct = shttpd_get_header(arg, "Content-Type");
-    char *payload = 0; // used for gss encrypt
-    if(ct && !memcmp(ct, "multipart/encrypted", 19))
-    {
-        // we have a encrypted payload. decrypt it 
-        payload = gss_decrypt(arg, u_buf_ptr(state->request), u_buf_len(state->request));
-    }
- #endif
+#ifdef SHTTPD_GSS
+	const char *ct = shttpd_get_header(arg, "Content-Type");
+	char *payload = 0; // used for gss encrypt
+
+	if (ct && !memcmp(ct, "multipart/encrypted", 19)) {
+	        // we have a encrypted payload. decrypt it 
+        	payload = gss_decrypt(arg, u_buf_ptr(state->request), u_buf_len(state->request));
+	}
+#endif
 	request_uri = (char *)shttpd_get_env(arg, "REQUEST_URI");
 	if (strcmp(request_uri, "/wsman") == 0 ) {
 
 		/* Here we must handle the initial request */
 		WsmanMessage *wsman_msg = wsman_soap_message_new();
 #ifdef SHTTPD_GSS
-        if(payload == 0)
-        {
+	        if(payload == 0) {
 #endif
-		if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
-			wsman_soap_message_destroy(wsman_msg);
-			goto DONE;
-		}
-		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
-			wsman_msg->charset = u_strdup(encoding);
-		}
-            u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
+			if ( (status = check_request_content_type(arg) ) != WSMAN_STATUS_OK ) {
+				wsman_soap_message_destroy(wsman_msg);
+				goto DONE;
+			}
+			encoding = get_request_encoding(arg);
+
+			u_buf_set(wsman_msg->request, u_buf_ptr(state->request), u_buf_len(state->request));
 #ifdef SHTTPD_GSS
-        }
-        else
-        {
-            wsman_msg->charset = u_strdup("UTF-8");
-            u_buf_set(wsman_msg->request, payload, strlen(payload));
-        }
+	        }
+		else {
+			u_buf_set(wsman_msg->request, payload, strlen(payload));
+		}
 #endif
+	        wsman_msg->charset = u_strdup(encoding);
 		soap = (SoapH) arg->user_data;
 		wsman_msg->status.fault_code = WSMAN_RC_OK;
 
@@ -254,17 +251,15 @@ void server_callback(struct shttpd_arg *arg)
 		}
 		if (wsman_msg->request) {
 #ifdef SHTTPD_GSS
-            if(payload)
-            {
-                free(payload);
-                /* note that payload is stiil set - this is used as a flag later */
-            }
-            else
-            {
+			if (payload) {
+				free(payload);
+				/* note that payload is stiil set - this is used as a flag later */
+			}
+			else {
 #endif
-			u_buf_free(wsman_msg->request);
+				u_buf_free(wsman_msg->request);
 #ifdef SHTTPD_GSS
-            }
+			}
 #endif
 			wsman_msg->request = NULL;
 		}
@@ -289,9 +284,8 @@ void server_callback(struct shttpd_arg *arg)
 		if (tmp && ( end = strrchr(tmp, '/')) != NULL ) {
 			uuid = &end[1];
 		}
-		if ( (encoding =  get_request_encoding(arg)) != NULL ) {
-			cimxml_msg->charset = u_strdup(encoding);
-		}
+	        encoding = get_request_encoding(arg);
+		cimxml_msg->charset = u_strdup(encoding);
 		const char *cimexport = shttpd_get_header(arg, "CIMExport");
 		const char *cimexportmethod = shttpd_get_header(arg, "CIMExportMethod");
 		if ( cimexportmethod && cimexport ) {
@@ -362,31 +356,29 @@ DONE:
 	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, PACKAGE_VERSION);
 #ifdef SHTTPD_GSS
-    if(payload)
-    {
-        // we had an encrypted message so now we have to encypt the reply
-        char *enc;
-        int enclen;
-        gss_encrypt(arg, state->response, state->len, &enc, &enclen);
-        u_free(state->response);
-        state->response = enc;
-        state->len = enclen;
-        payload = 0; // and reset the indicator so that if we send in packates we dont do this again
-        shttpd_printf(arg, "Content-Type: multipart/encrypted;protocol=\"application/HTTP-Kerberos-session-encrypted\";boundary=\"Encrypted Boundary\"\r\n");
-	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
-    }
-    else
-    {
-#endif
-	if (state->type == 1) {
-		shttpd_printf(arg, "Content-Type: application/xml; charset=\"utf-8\"\r\n");
-		shttpd_printf(arg, "CIMExport: MethodResponse\r\n");
-	} else {
-		shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
+	if(payload) {
+		// we had an encrypted message so now we have to encypt the reply
+		char *enc;
+		int enclen;
+		gss_encrypt(arg, state->response, state->len, &enc, &enclen);
+		u_free(state->response);
+		state->response = enc;
+		state->len = enclen;
+		payload = 0; // and reset the indicator so that if we send in packates we dont do this again
+		shttpd_printf(arg, "Content-Type: multipart/encrypted;protocol=\"application/HTTP-Kerberos-session-encrypted\";boundary=\"Encrypted Boundary\"\r\n");
+		shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
 	}
-    	shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
+	else {
+#endif
+		if (state->type == 1) { /* eventing */
+			shttpd_printf(arg, "Content-Type: application/xml; charset=\"utf-8\"\r\n");
+			shttpd_printf(arg, "CIMExport: MethodResponse\r\n");
+		} else {
+			shttpd_printf(arg, "Content-Type: application/soap+xml;charset=%s\r\n", encoding);
+		}
+    		shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
 #ifdef SHTTPD_GSS
-    }
+	}
 #endif
 	shttpd_printf(arg,"Connection: Close\r\n");
   
@@ -428,7 +420,7 @@ static void listener_shutdown_handler(void *p)
 static void protect_uri(struct shttpd_ctx *ctx, char *uri)
 {
 	if (wsmand_options_get_digest_password_file()) {
-			shttpd_protect_uri(ctx, uri,
+		shttpd_protect_uri(ctx, uri,
                    wsmand_options_get_digest_password_file(),NULL, 1);
 		debug("Using Digest Authorization for %s:", uri);
 	}
