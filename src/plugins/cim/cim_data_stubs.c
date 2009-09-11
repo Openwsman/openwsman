@@ -228,17 +228,20 @@ CimResource_Delete_EP( SoapOpH op,
 	in_doc = soap_get_op_doc(op, 1);
 	cntx = ws_create_ep_context(soap, in_doc);
 
-	if (msg) {
-		cimclient = CimResource_Init(cntx,
-				msg->auth_data.username,
-				msg->auth_data.password );
-		if (!cimclient) {
-			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status.fault_detail_code = 0;
-			goto cleanup;
-		}
-
+	if (!msg) {
+		status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status.fault_detail_code=0;
+		goto cleanup;
 	}
+	cimclient = CimResource_Init(cntx,
+			msg->auth_data.username,
+			msg->auth_data.password );
+	if (!cimclient) {
+		status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status.fault_detail_code = 0;
+		goto cleanup;
+	}
+
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -289,15 +292,18 @@ CimResource_Get_EP( SoapOpH op,
 	WsContextH cntx = ws_create_ep_context(soap, in_doc);
 
 	wsman_status_init(&status);
-	if (msg) {
-		cimclient = CimResource_Init(cntx,
-				msg->auth_data.username,
-				msg->auth_data.password );
-		if (!cimclient) {
-			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status.fault_detail_code = 0;
-			goto cleanup;
-		}
+	if (!msg) {
+		status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status.fault_detail_code=0;
+		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			msg->auth_data.username,
+			msg->auth_data.password );
+	if (!cimclient) {
+		status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status.fault_detail_code = 0;
+		goto cleanup;
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -355,14 +361,17 @@ CimResource_Custom_EP( SoapOpH op,
 
 	msg = wsman_get_msg_from_op(op);
 	action = wsman_get_action(cntx, in_doc );
-	if (msg) {
-		cimclient = CimResource_Init(cntx, msg->auth_data.username,
-				msg->auth_data.password);
-		if (!cimclient) {
-			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status.fault_detail_code = 0;
-			goto cleanup;
-		}
+	if (!msg) {
+		status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status.fault_detail_code=0;
+		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx, msg->auth_data.username,
+			msg->auth_data.password);
+	if (!cimclient) {
+		status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status.fault_detail_code = 0;
+		goto cleanup;
 	}
 	if (action && cimclient->resource_uri &&
 			!strstr(action, cimclient->resource_uri)) {
@@ -419,16 +428,20 @@ CimResource_Enumerate_EP( WsContextH cntx,
 
 	CimClientInfo *cimclient = NULL;
 
-	if ( enumInfo ) {
-		cimclient = CimResource_Init(cntx,
-				enumInfo->auth_data.username,
-				enumInfo->auth_data.password );
-		if (!cimclient) {
-			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status->fault_detail_code = 0;
-			retval = 1;
-			goto cleanup;
-		}
+	if (!enumInfo) {
+		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status->fault_detail_code=0;
+		goto cleanup;
+	}
+
+	cimclient = CimResource_Init(cntx,
+			enumInfo->auth_data.username,
+			enumInfo->auth_data.password );
+	if (!cimclient) {
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status->fault_detail_code = 0;
+		retval = 1;
+		goto cleanup;
 	}
 
 	if (!verify_class_namespace(cimclient)) {
@@ -505,19 +518,22 @@ CimResource_Pull_EP( WsContextH cntx,
 	unsigned long maxsize;
 	debug( "Pull Endpoint Called");
 
-	if ( enumInfo) {
-		cimclient = cim_getclient_from_enum_context(enumInfo);
-		if (!cimclient) {
-			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status->fault_detail_code = 0;
-			doc = wsman_generate_fault( cntx->indoc, status->fault_code,
-				status->fault_detail_code, NULL);
-			goto cleanup;
-		}
-		cimclient->cntx = cntx;
-	}
-	if (!cimclient)
+	if (!enumInfo) {
+		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status->fault_detail_code=0;
 		goto cleanup;
+	}
+
+	cimclient = cim_getclient_from_enum_context(enumInfo);
+	if (!cimclient) {
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status->fault_detail_code = 0;
+		doc = wsman_generate_fault( cntx->indoc, status->fault_code,
+			status->fault_detail_code, NULL);
+		goto cleanup;
+	}
+	cimclient->cntx = cntx;
+
 	if (!verify_class_namespace(cimclient) ) {
 		status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
@@ -574,14 +590,17 @@ CimResource_Create_EP( SoapOpH op,
 	debug( "Create Endpoint Called");
 	wsman_status_init(&status);
 
-	if (msg) {
-		cimclient = CimResource_Init(cntx,
-				msg->auth_data.username, msg->auth_data.password );
-		if (!cimclient) {
-			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status.fault_detail_code = 0;
-			goto cleanup;
-		}
+	if (!msg) {
+		status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status.fault_detail_code=0;
+		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			msg->auth_data.username, msg->auth_data.password );
+	if (!cimclient) {
+		status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status.fault_detail_code = 0;
+		goto cleanup;
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
@@ -655,15 +674,16 @@ CimResource_Put_EP( SoapOpH op,
 	wsman_status_init(&status);
 	msg = wsman_get_msg_from_op(op);
 
-	if (msg) {
-		cimclient = CimResource_Init(cntx,
-				msg->auth_data.username, msg->auth_data.password );
-		if (!cimclient) {
-			status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status.fault_detail_code = 0;
-			goto cleanup;
-		}
-	} else {
+	if (!msg) {
+		status.fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status.fault_detail_code=0;
+		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			msg->auth_data.username, msg->auth_data.password );
+	if (!cimclient) {
+		status.fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status.fault_detail_code = 0;
 		goto cleanup;
 	}
 
@@ -725,16 +745,19 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	CMPIObjectPath *indicationfilter = NULL;
 	CMPIObjectPath *indicationhandler = NULL;
 	CMPIObjectPath *indicationsubscription = NULL;
-	if ( subsInfo ) {
-		cimclient = CimResource_Init(cntx,
-				subsInfo->auth_data.username,
-				subsInfo->auth_data.password );
-		if (!cimclient) {
-			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status->fault_detail_code = 0;
-			retval = 1;
-			goto cleanup;
-		}
+	if (!subsInfo) {
+		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status->fault_detail_code=0;
+		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			subsInfo->auth_data.username,
+			subsInfo->auth_data.password );
+	if (!cimclient) {
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status->fault_detail_code = 0;
+		retval = 1;
+		goto cleanup;
 	}
 
 	if (!verify_class_namespace(cimclient)) {
@@ -798,21 +821,26 @@ int CimResource_Renew_EP(WsContextH cntx,
 	debug("CIM Renew");
 	int retval = 0;
 	CimClientInfo *cimclient = NULL;
-	if ( subsInfo ) {
-		cimclient = CimResource_Init(cntx,
-				subsInfo->auth_data.username,
-				subsInfo->auth_data.password );
-		if (!cimclient) {
-			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status->fault_detail_code = 0;
-			retval = 1;
-			return retval;
-		}
+	if (!subsInfo) {
+		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status->fault_detail_code=0;
+		retval = 1;
+ 		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			subsInfo->auth_data.username,
+			subsInfo->auth_data.password );
+	if (!cimclient) {
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status->fault_detail_code = 0;
+		retval = 1;
+		goto cleanup;
 	}
 	cim_update_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
 	CimResource_destroy(cimclient);
+cleanup:
 	return retval;
 }
 
@@ -824,21 +852,26 @@ int CimResource_UnSubscribe_EP(WsContextH cntx,
 	debug("CIM UnSubscribe");
 	int retval = 0;
 	CimClientInfo *cimclient = NULL;
-	if ( subsInfo ) {
-		cimclient = CimResource_Init(cntx,
-				subsInfo->auth_data.username,
-				subsInfo->auth_data.password );
-		if (!cimclient) {
-			status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
-			status->fault_detail_code = 0;
-			retval = 1;
-			return retval;
-		}
+	if (!subsInfo) {
+		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
+		status->fault_detail_code=0;
+		retval = 1;
+ 		goto cleanup;
+	}
+	cimclient = CimResource_Init(cntx,
+			subsInfo->auth_data.username,
+			subsInfo->auth_data.password );
+	if (!cimclient) {
+		status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+		status->fault_detail_code = 0;
+		retval = 1;
+ 		goto cleanup;
 	}
 	cim_delete_indication_subscription(cimclient, subsInfo, status);
 	if(status->fault_code)
 		retval = 1;
 	CimResource_destroy(cimclient);
+cleanup:
 	return retval;
 }
 

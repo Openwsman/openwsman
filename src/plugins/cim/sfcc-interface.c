@@ -2500,7 +2500,7 @@ cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 void
 cim_release_enum_context(WsEnumerateInfo * enumInfo)
 {
-	if (!enumInfo->appEnumContext)
+	if (!(enumInfo && enumInfo->appEnumContext))
 		return;
 
 	debug("releasing enumInfo->appEnumContext");
