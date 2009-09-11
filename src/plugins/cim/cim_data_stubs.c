@@ -59,67 +59,6 @@
 #include "cim_data.h"
 
 
-static CimClientInfo*
-CimResource_Init(WsContextH cntx, char *username, char *password)
-{
-	char *_tmp = NULL;
-	char *resource_uri = NULL;
-	char *show_extensions;
-	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
-	WsmanStatus status;
-
-	wsman_status_init(&status);
-	resource_uri = wsman_get_resource_uri(cntx, NULL);
-	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
-
-	debug("Connecting using sfcc %s frontend", get_cim_client_frontend());
-
-	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
-			get_cim_port(), username, password , get_cim_client_frontend(), &status);
-
-	if (!cimclient->cc) {
-		return NULL;
-	}
-
-	cimclient->cntx = cntx;
-	cimclient->namespaces = get_vendor_namespaces();
-	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
-
-	cimclient->requested_class = wsman_get_class_name(cntx);
-
-	cimclient->method = wsman_get_method_name(cntx);
-	if(username) {
-		cimclient->username = u_strdup(username);
-	}
-	if(password) {
-		cimclient->password = u_strdup(password);
-	}
-
-	if (cimclient->selectors) {
-		_tmp = cim_get_namespace_selector(cimclient->selectors);
-	}
-	if (_tmp) {
-		cimclient->cim_namespace = _tmp;
-	} else {
-		cimclient->cim_namespace = get_cim_namespace();
-	}
-	if(resource_uri) {
-		cimclient->resource_uri = u_strdup(resource_uri);
-		cimclient->method_args = wsman_get_method_args(cntx, resource_uri );
-	}
-	show_extensions = wsman_get_option_set(cntx, NULL, WSMB_SHOW_EXTENSION );
-
-	if (show_extensions && strcmp(show_extensions, "true") == 0) {
-		cimclient->flags |= FLAG_CIM_EXTENSIONS;
-	}
-	if (get_omit_schema_optional() == 1) {
-		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
-	}
-
-	u_free(show_extensions);
-	return cimclient;
-}
-
 static void
 CimResource_destroy(CimClientInfo *cimclient)
 {
@@ -164,27 +103,96 @@ CimResource_destroy(CimClientInfo *cimclient)
 
 
 
+static CimClientInfo*
+CimResource_Init(WsContextH cntx, char *username, char *password)
+{
+	char *_tmp = NULL;
+	char *resource_uri = NULL;
+	char *show_extensions;
+	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
+	if(!cimclient){
+		return NULL;
+	}
+	WsmanStatus status;
+
+	wsman_status_init(&status);
+	resource_uri = wsman_get_resource_uri(cntx, NULL);
+	debug ("username: %s, password: %s", username, (password)?"XXXXX":"Not Set" );
+
+	debug("Connecting using sfcc %s frontend", get_cim_client_frontend());
+
+	cimclient->cc = (void *)cim_connect_to_cimom(get_cim_host(),
+			get_cim_port(), username, password , get_cim_client_frontend(), &status);
+
+	if (!cimclient->cc) {
+		CimResource_destroy(cimclient);
+		return NULL;
+	}
+
+	cimclient->cntx = cntx;
+	cimclient->namespaces = get_vendor_namespaces();
+	cimclient->selectors = wsman_get_selector_list(cntx, NULL);
+
+	cimclient->requested_class = wsman_get_class_name(cntx);
+
+	cimclient->method = wsman_get_method_name(cntx);
+	if(username) {
+		cimclient->username = u_strdup(username);
+	}
+	if(password) {
+		cimclient->password = u_strdup(password);
+	}
+
+	if (cimclient->selectors) {
+		_tmp = cim_get_namespace_selector(cimclient->selectors);
+	}
+	if (_tmp) {
+		cimclient->cim_namespace = _tmp;
+	} else {
+		cimclient->cim_namespace = get_cim_namespace();
+	}
+	if(resource_uri) {
+		cimclient->resource_uri = u_strdup(resource_uri);
+		cimclient->method_args = wsman_get_method_args(cntx, resource_uri );
+	}
+	show_extensions = wsman_get_option_set(cntx, NULL, WSMB_SHOW_EXTENSION );
+
+	if (show_extensions && strcmp(show_extensions, "true") == 0) {
+		cimclient->flags |= FLAG_CIM_EXTENSIONS;
+	}
+	if (get_omit_schema_optional() == 1) {
+		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
+	}
+
+	u_free(show_extensions);
+	return cimclient;
+}
+
 static int
 verify_class_namespace(CimClientInfo *client)
 {
 	hscan_t hs;
 	hnode_t *hn;
 	int rv = 0;
-	if ( strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) ==0 ) {
+	if(!client){
+		return 0;
+	}
+	if (client->resource_uri && (strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) ==0) ) {
 		return 1;
 	}
-        if ( strstr( client->resource_uri, XML_NS_CIM_INTRINSIC ) != NULL ) {
+        if ( client->resource_uri && (strstr( client->resource_uri, XML_NS_CIM_INTRINSIC ) != NULL )) {
 	        return 1;
 	}
   
         /* Ok if class contains CIM, uri contains XML_NS_CIM_CLASS, and method is not 'Create' */
-	if ( (strstr(client->requested_class, "CIM") != NULL )
+	if (client->requested_class && client->resource_uri && client->method
+            && (strstr(client->requested_class, "CIM") != NULL )
 	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL )
 	    && (strcmp(client->method, TRANSFER_CREATE) != 0)) {
 		return 1;
 	}
 
-	if (client->requested_class && client->namespaces) {
+	if (client->requested_class && client->namespaces && client->resource_uri) {
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
 			if ( ( strstr(client->requested_class,
