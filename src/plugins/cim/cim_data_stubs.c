@@ -253,12 +253,6 @@ CimResource_Delete_EP( SoapOpH op,
 			cim_delete_instance(cimclient, &status);
 		}
 	}
-	else if (status.fault_code != 0) {
-		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault(in_doc, status.fault_code,
-				status.fault_detail_code, NULL);
-	}
-debug("here");
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
@@ -308,8 +302,6 @@ CimResource_Get_EP( SoapOpH op,
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault( in_doc, status.fault_code,
-				status.fault_detail_code, NULL);
 	} else {
 		if ( (doc = wsman_create_response_envelope( in_doc, NULL)) ) {
 			WsXmlNodeH body = ws_xml_get_soap_body(doc);
@@ -377,31 +369,26 @@ CimResource_Custom_EP( SoapOpH op,
 			!strstr(action, cimclient->resource_uri)) {
 		status.fault_code = WSA_ACTION_NOT_SUPPORTED;
 		status.fault_detail_code = OWSMAN_NO_DETAILS;
-		doc = wsman_generate_fault( in_doc, status.fault_code,
-				status.fault_detail_code, status.fault_msg);
 		debug("action not supported");
 		goto cleanup;
 	}
 	if (!verify_class_namespace(cimclient) ) {
 		status.fault_code = WSA_DESTINATION_UNREACHABLE;
 		status.fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-		doc = wsman_generate_fault(in_doc, status.fault_code,
-				status.fault_detail_code, status.fault_msg);
 	} else {
 
 		if ((doc = wsman_create_response_envelope( in_doc, NULL))) {
 			WsXmlNodeH body = ws_xml_get_soap_body(doc);
 			cim_invoke_method(cimclient, cntx, body, &status);
 		}
-
-		if (status.fault_code != 0) {
-			ws_xml_destroy_doc(doc);
-			doc = wsman_generate_fault( in_doc, status.fault_code,
-					status.fault_detail_code, status.fault_msg);
-		}
 	}
 
 cleanup:
+	if (wsman_check_status(&status) != 0) {
+		ws_xml_destroy_doc(doc);
+		doc = wsman_generate_fault( in_doc
+				status.fault_code, status.fault_detail_code, status.fault_msg);
+	}
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
 	} else {
@@ -430,7 +417,8 @@ CimResource_Enumerate_EP( WsContextH cntx,
 
 	if (!enumInfo) {
 		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
-		status->fault_detail_code=0;
+		status->fault_detail_code = 0;
+		retval = 1;
 		goto cleanup;
 	}
 
@@ -521,6 +509,8 @@ CimResource_Pull_EP( WsContextH cntx,
 	if (!enumInfo) {
 		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
 		status->fault_detail_code=0;
+		doc = wsman_generate_fault( cntx->indoc, status->fault_code,
+                        status->fault_detail_code, NULL);
 		goto cleanup;
 	}
 
@@ -748,6 +738,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	if (!subsInfo) {
 		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
 		status->fault_detail_code=0;
+		retval=1;
 		goto cleanup;
 	}
 	cimclient = CimResource_Init(cntx,
