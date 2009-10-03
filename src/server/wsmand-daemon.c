@@ -153,8 +153,8 @@ int wsmand_read_config(dictionary * ini)
 		return 0;
 	}
 
-	server_port = iniparser_getint(ini, "server:port", 8889);
-	server_ssl_port = iniparser_getint(ini, "server:ssl_port", 8888);
+	server_port = iniparser_getint(ini, "server:port", 5985);
+	server_ssl_port = iniparser_getint(ini, "server:ssl_port", 5986);
 	debug_level = iniparser_getint(ini, "server:debug_level", 0);
 	enumIdleTimeout =
 	    (unsigned long) iniparser_getint(ini,
