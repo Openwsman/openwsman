@@ -71,26 +71,6 @@ WsManListenerH *wsman_dispatch_list_new()
 	return list;
 }
 
-#if 0
-void wsman_server_read_plugin_config(void *arg, char *config_file)
-{
-	lnode_t *node;
-	SoapH soap = (SoapH) arg;
-	WsManListenerH * listener = ((WsManListenerH *)soap->listener;
-	node = list_first(listener->plugins);
-	while (node) {
-		WsManPlugin *p = (WsManPlugin *) node->list_data;
-		p->set_config = dlsym(p->p_handle, "set_config");
-		if (listener->config && p->set_config) {
-			p->set_config(p->p_handle, listener->config);
-		} else {
-			debug("no configuration available for plugin: %s", p->p_name);
-		}
-	}
-}
-
-
-#endif
 
 static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo)
 {
@@ -100,7 +80,6 @@ static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo)
 	}
 	return 0;
 }
-
 
 
 WsContextH wsman_init_plugins(WsManListenerH * listener)
