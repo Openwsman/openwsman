@@ -85,15 +85,15 @@ wsmc_get_dumpfile(WsManClient *cl)
 static char*
 wsman_make_action(char *uri, char *op_name)
 {
-	size_t len = strlen(uri) + strlen(op_name) + 2;
-	char *ptr = (char *) malloc(len);
-	if (ptr) {
-		if (uri && op_name)
+	if (uri && op_name){
+		size_t len = strlen(uri) + strlen(op_name) + 2;
+		char *ptr = (char *) malloc(len);
+		if(ptr){
 			sprintf(ptr, "%s/%s", uri, op_name);
-		else
-			return NULL;
+			return ptr;
+		}
 	}
-	return ptr;
+	return NULL;
 }
 
 
