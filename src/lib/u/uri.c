@@ -107,7 +107,7 @@ int u_uri_parse(const char *s, u_uri_t ** pu)
 {
 	const char *p, *p0;
 	const char *end, *question;
-	char *uri_string;
+	char *uri_string=NULL;
 	int i;
 	u_uri_t *uri;
 
@@ -161,6 +161,7 @@ int u_uri_parse(const char *s, u_uri_t ** pu)
 	u_free(uri_string);
 	return 0;
       err:
+	u_free(uri_string);
 	u_uri_free(uri);
 	return ~0;
 }
@@ -202,7 +203,7 @@ static int u_string_unify(char *s)
 hash_t *u_parse_query(const char *query)
 {
 	char *pp, *tok, *src, *q = NULL;
-	char *key, *val;
+	char *key=NULL, *val=NULL;
 	hash_t *h = NULL;
 
 	dbg_err_if(query == NULL);
@@ -247,6 +248,7 @@ hash_t *u_parse_query(const char *query)
 	return h;
 err:
 	u_free(q);
+	u_free(key);
 	return NULL;
 }
 
