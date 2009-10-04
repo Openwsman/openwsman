@@ -1,18 +1,12 @@
 #
-# CMakeLists.txt for openwsman/bindings/python
+# CMakeLists.txt for openwsman/bindings/java
 #
 #
 # !!Attn!!: This creates two files
 #  1. _jwsman.so
 #
 
-
-EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; print sys.path[2]" OUTPUT_VARIABLE PYTHON_LIB_DIR)
-STRING(REPLACE "\n" "" PYTHON_LIB_DIR "${PYTHON_LIB_DIR}")
-
-MESSAGE(STATUS "Python executable: ${PYTHON_EXECUTABLE}")
-MESSAGE(STATUS "Python lib dir: ${PYTHON_LIB_DIR}")
-MESSAGE(STATUS "Python site dir: ${PYTHON_LIB_DIR}/site-packages")
+MESSAGE(STATUS "Java include path: ${JAVA_INCLUDE_PATH}")
 
 SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
 SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
@@ -40,5 +34,4 @@ INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/bindings )
 TARGET_LINK_LIBRARIES( jwsman wsman )
 TARGET_LINK_LIBRARIES( jwsman wsman_client )
 
-#INSTALL(TARGETS jwsman LIBRARY DESTINATION ${PYTHON_LIB_DIR}/site-packages)
-#INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pywsman.py DESTINATION ${PYTHON_LIB_DIR}/site-packages )
+#INSTALL(TARGETS jwsman LIBRARY DESTINATION ${JAVA_LIB_DIR}/site-packages)
