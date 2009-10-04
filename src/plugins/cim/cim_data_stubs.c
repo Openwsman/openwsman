@@ -386,7 +386,7 @@ CimResource_Custom_EP( SoapOpH op,
 cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
-		doc = wsman_generate_fault( in_doc
+		doc = wsman_generate_fault( in_doc,
 				status.fault_code, status.fault_detail_code, status.fault_msg);
 	}
 	if (doc) {
