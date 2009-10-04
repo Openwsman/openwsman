@@ -608,6 +608,8 @@ static void *thread_function(void *param)
 
     for (;;)
         shttpd_poll(thread->ctx, 1000);
+
+    return NULL;
 }
 
 
