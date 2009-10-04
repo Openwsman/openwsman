@@ -1842,6 +1842,8 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 	int r;
 	int hours;
 	int mins;
+	struct tm tm;
+	time_t t;
 
 	TRACE_ENTER;
 	if (text == NULL) {
@@ -1862,6 +1864,11 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 	}
 	tmx->tm.tm_year -= 1900;
 	tmx->tm.tm_mon -= 1;
+
+	t = time(NULL);
+	localtime_r(&t, &tm);
+	tmx->tm.tm_isdst = tm.tm_isdst;
+
 	if (hours < 0) {
 		tmx->tz_min = 60 * hours - mins;
 	} else {
