@@ -1,4 +1,4 @@
-/* wsman_config.h.in.  Generated from configure.in by autoheader.  */
+/* wsman_config.h.cmake.  Copied from wsman_config.h.in  */
 
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
@@ -12,8 +12,11 @@
 #define C_ALLOCA 1
 #endif
 
-/* Default config file */
+/* Default server config file */
 #define DEFAULT_CONFIG_FILE @DEFAULT_CONFIG_FILE@
+
+/* Default client config file */
+#define DEFAULT_CLIENT_CONFIG_FILE @DEFAULT_CLIENT_CONFIG_FILE@
 
 /* Defined if WS-Eventing wanted */
 #if @ENABLE_EVENTING_SUPPORT@

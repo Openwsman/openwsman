@@ -425,6 +425,7 @@ if test "$prefix" = "NONE"; then
 fi
 SYSCONFDIR_TMP="`eval echo $sysconfdir`"
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${SYSCONFDIR_TMP}/openwsman/openwsman.conf"] , [Default config file])
+AC_DEFINE_UNQUOTED([DEFAULT_CLIENT_CONFIG_FILE], ["${SYSCONFDIR_TMP}/openwsman/openwsman_client.conf"] , [Default client config file])
 SYSCONFDIR=${sysconfdir}/openwsman
 
 test "$localstatedir" = '${prefix}/var' && localstatedir=/var || localstatedir=$localstatedir

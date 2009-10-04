@@ -67,6 +67,8 @@ get_selectors_from_uri(const char *resource_uri)
 	}
 	return selectors;
 }
+
+
 void
 wsmc_set_dumpfile( WsManClient *cl, FILE *f )
 {
@@ -75,6 +77,7 @@ wsmc_set_dumpfile( WsManClient *cl, FILE *f )
     return;
 }
 
+
 FILE *
 wsmc_get_dumpfile(WsManClient *cl)
 {
@@ -82,13 +85,29 @@ wsmc_get_dumpfile(WsManClient *cl)
 }
 
 
+#ifndef _WIN32
+void
+wsmc_set_conffile(WsManClient *cl, char *f )
+{
+        u_free(cl->client_config_file);
+        cl->client_config_file = (f != NULL) ? u_strdup(f): NULL;
+}
+
+char *
+wsmc_get_conffile(WsManClient *cl)
+{
+        return cl->client_config_file;
+}
+#endif
+
+
 static char*
 wsman_make_action(char *uri, char *op_name)
 {
-	if (uri && op_name){
+	if (uri && op_name) {
 		size_t len = strlen(uri) + strlen(op_name) + 2;
 		char *ptr = (char *) malloc(len);
-		if(ptr){
+		if (ptr) {
 			sprintf(ptr, "%s/%s", uri, op_name);
 			return ptr;
 		}
@@ -1736,8 +1755,10 @@ wsmc_create(const char *hostname,
 		u_free(wsc);
 		return NULL;
 	}
+#ifndef _WIN32
+	wsmc_set_conffile(wsc, DEFAULT_CLIENT_CONFIG_FILE);
+#endif
 	wsc->serctx = ws_serializer_init();
-
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = u_strdup(scheme ? scheme : "http");
 	wsc->data.hostname = hostname ? u_strdup(hostname) : u_strdup("localhost");
@@ -1757,6 +1778,10 @@ wsmc_create(const char *hostname,
 	debug("Endpoint: %s", wsc->data.endpoint);
 	wsc->authentication.verify_host = 1; //verify CN in server certicates by default
 	wsc->authentication.verify_peer = 1; //validate server certificates by default
+#ifndef _WIN32
+	wsc->authentication.crl_check = 0;   // No CRL check by default
+	wsc->authentication.crl_file = NULL;
+#endif
 
 	init_client_connection(wsc);
 
@@ -1811,10 +1836,15 @@ wsmc_release(WsManClient * cl)
 		u_free(cl->content_encoding);
 		cl->content_encoding = NULL;
 	}
-	if(cl->cim_ns) {
+	if (cl->cim_ns) {
 		u_free(cl->cim_ns);
 		cl->cim_ns = NULL;
 	}
+	if (cl->authentication.crl_file != NULL) {
+		u_free(cl->authentication.crl_file);
+		cl->authentication.crl_file = NULL;
+	}
+	 
 	wsman_transport_close_transport(cl);
 
 	u_free(cl);

@@ -105,6 +105,7 @@ typedef enum {
 		WS_LASTERR_LOGIN_DENIED,	// user, password or similar was not
 		// accepted and we failed to login
 
+		WS_LASTERR_BAD_CRL_FILE, //bad CRL file provided (Format, Path or permission)
 		WS_LASTERR_LAST	// never use!
 	} WS_LASTERR_Code;
 
@@ -778,6 +779,11 @@ typedef enum {
 
 	FILE *wsmc_get_dumpfile(WsManClient *cl);
 
+#ifndef _WIN32
+	void wsmc_set_conffile(WsManClient *cl, char * f);
+
+	char * wsmc_get_conffile(WsManClient *cl);
+#endif
 	void
 	wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options);
 

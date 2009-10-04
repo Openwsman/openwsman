@@ -59,6 +59,14 @@
 
 #define DEFAULT_TRANSFER_LEN 32000
 
+#ifndef CURLOPT_CRLFILE
+	#define CURLOPT_CRLFILE 10169
+#endif
+#ifndef CURLE_SSL_CRL_BADFILE
+	#define CURLE_SSL_CRL_BADFILE 82
+#endif
+
+
 extern wsman_auth_request_func_t request_func;
 void wsmc_handler( WsManClient *cl, WsXmlDocH rqstDoc, void* user_data);
 
@@ -190,6 +198,9 @@ convert_to_last_error(CURLcode r)
 	case 67:
 		return WS_LASTERR_LOGIN_DENIED;
 #endif
+	case CURLE_SSL_CRL_BADFILE:
+		return WS_LASTERR_BAD_CRL_FILE;
+
 	default:
 		return WS_LASTERR_OTHER_ERROR;
 	}
@@ -279,6 +290,28 @@ init_curl_transport(WsManClient *cl)
 	if (r != 0) {
 		curl_err("Could notcurl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, ...)");
 		goto DONE;
+	}
+	
+	if (0 != cl->authentication.verify_peer && 0 != cl->authentication.crl_check)
+	{
+		dictionary *ini = NULL;
+		
+		if (cl->authentication.crl_file == NULL)
+		{
+			ini = iniparser_new(cl->client_config_file);
+			if (ini != NULL)
+			{
+			        char *crlfile = iniparser_getstr(ini, "client:crlfile");
+				wsman_transport_set_crlfile(cl, crlfile);
+			        iniparser_free(ini);
+			}
+		}
+		if (cl->authentication.crl_file != NULL)
+		{
+			debug("wsman-curl-client-transport.c: init_curl_transport() : CRL file = %s\n",cl->authentication.crl_file);
+			r = curl_easy_setopt(curl, CURLOPT_CRLFILE, cl->authentication.crl_file);		
+		}
+		
 	}
 
 	if (cl->authentication.capath) {

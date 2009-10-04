@@ -253,6 +253,30 @@ unsigned int wsman_transport_get_verify_host(WsManClient *cl)
 	return cl->authentication.verify_host;
 }
 
+void wsman_transport_set_crlcheck(WsManClient * cl, unsigned int arg)
+{
+	cl->authentication.crl_check = arg;
+}
+
+unsigned int wsman_transport_get_crlcheck(WsManClient * cl)
+{
+        return cl->authentication.crl_check;
+}
+
+#ifndef _WIN32
+void wsman_transport_set_crlfile(WsManClient * cl, const char *arg)
+{
+        u_free(cl->authentication.crl_file);
+        cl->authentication.crl_file = arg ? u_strdup( arg ) : NULL;
+}
+
+char *wsman_transport_get_crlfile(WsManClient *cl)
+{
+        return cl->authentication.crl_file; 
+}
+#endif
+
+
 
 void wsman_transport_set_cainfo(WsManClient * cl, const char *arg)
 {

@@ -102,6 +102,12 @@ extern unsigned int  wsman_transport_get_verify_peer(WsManClient *cl);
 extern void wsman_transport_set_verify_host(WsManClient *cl, unsigned int value);
 extern unsigned int  wsman_transport_get_verify_host(WsManClient *cl);
 
+extern void wsman_transport_set_crlcheck(WsManClient * cl, unsigned int value);
+extern unsigned int wsman_transport_get_crlcheck(WsManClient * cl);
+
+extern void wsman_transport_set_crlfile(WsManClient *cl, const char *arg);
+extern char *wsman_transport_get_crlfile(WsManClient *cl);
+
 extern void  wsman_transport_set_proxy(WsManClient *cl, const char *proxy);
 extern char *wsman_transport_get_proxy(WsManClient *cl);
 

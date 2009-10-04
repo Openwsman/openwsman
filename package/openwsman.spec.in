@@ -223,6 +223,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
+install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
@@ -327,5 +328,6 @@ rm -f /var/log/wsmand.log
 %files client
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so.*
+%config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
 
 %changelog

@@ -81,8 +81,11 @@ extern "C" {
 		char *sslkey;
 		unsigned int verify_peer;
 		unsigned int verify_host;
-                wsman_auth_request_func_t auth_request_func;
-                char *method;
+	        wsman_auth_request_func_t auth_request_func;
+	        char *method;
+
+		unsigned int crl_check;
+		char *crl_file;
 	};
 	typedef struct _WsManAuthData WsManAuthData;
 
@@ -119,6 +122,10 @@ extern "C" {
 		char * user_agent;
 		FILE *dumpfile;
 		long initialized;
+#ifndef _WIN32
+		char *client_config_file;
+#endif
+
 	};
 
 
