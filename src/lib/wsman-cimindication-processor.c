@@ -121,24 +121,37 @@ char * get_cim_indication_namespace(WsSubscribeInfo *subsInfo, char *classname) 
 	return NULL;
 }
 
-static
-WsNotificationInfoH create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlNodeH node){
+static WsNotificationInfoH
+create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlNodeH node)
+{
 	char *classname = NULL;
 	char *class_namespace = NULL;
 	WsXmlNodeH indicationnode = NULL;
 	WsNotificationInfoH notificationinfo = NULL;
 	notificationinfo = u_zalloc(sizeof(*notificationinfo));
+	if (notificationinfo == NULL) {
+		return NULL;
+	}
 	WsXmlNodeH instance = ws_xml_get_child(node, 0, NULL, CIMXML_EXPMETHODCALL);
-	if(instance == NULL) return NULL;
+	if (instance == NULL) {
+		u_free(notificationinfo);
+		return NULL;
+	}
 	instance = ws_xml_get_child(instance, 0, NULL, CIMXML_EXPPARAMVALUE);
-	if(instance == NULL) return NULL;
+	if (instance == NULL) {
+		u_free(notificationinfo);
+		return NULL;
+	}
 	instance = ws_xml_get_child(instance, 0, NULL, CIMXML_INSTANCE);
-	if(instance == NULL) return NULL;
+	if (instance == NULL) {
+		u_free(notificationinfo);
+		return NULL;
+	}
 	WsXmlAttrH attr = ws_xml_find_node_attr(instance, NULL, CIMXML_CLASSNAME);
-	if(attr) {
+	if (attr) {
 		classname = ws_xml_get_attr_value(attr);
 		class_namespace = get_cim_indication_namespace(subsInfo, classname);
-		notificationinfo->EventAction = u_strdup_printf("%s/%s",class_namespace, classname);
+		notificationinfo->EventAction = u_strdup_printf("%s/%s", class_namespace, classname);
 	}
 	notificationinfo->EventContent = ws_xml_create_doc(notificationinfo->EventAction, classname);
 	indicationnode = ws_xml_get_doc_root(notificationinfo->EventContent);
@@ -157,7 +170,7 @@ WsNotificationInfoH create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlN
 		ws_xml_add_child(indicationnode, notificationinfo->EventAction, property, value);
 		n++;
 	}
-	if(class_namespace)
+	if (class_namespace)
 		u_free(class_namespace);
 	return notificationinfo;
 }
