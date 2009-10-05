@@ -350,7 +350,7 @@ insert_enum_info(WsContextH cntx,
 
 	u_lock(cntx->soap);
 	gettimeofday(&tv, NULL);
-	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	enumInfo->timeStamp = tv.tv_sec;
 	if (create_context_entry(cntx->enuminfos, enumInfo->enumId, enumInfo)) {
 		retVal = 0;
 	}
@@ -424,7 +424,7 @@ unlock_enuminfo(WsContextH cntx, WsEnumerateInfo *enumInfo)
 		return;
 	}
 	enumInfo->flags &= ~WSMAN_ENUMINFO_INWORK_FLAG;
-	enumInfo->timeStamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	enumInfo->timeStamp = tv.tv_sec;
 	u_unlock(cntx->soap);
 }
 

@@ -1,3 +1,14 @@
+2.2.1
+- Major changes:
+  - Enumeration timeout fixed, resulting in --enum-idle-timeout option
+    to openwsmand taking seconds (instead of miliseconds) now
+  - Client side CRL (certificate revocation list) support
+    (by Arun Venkatachalam)
+  - split off client config as /etc/openwsman/openwsman_client.conf
+- Minor changes:
+  - clean up fault generation in CIM backend (Suresh Sundriyal)
+  - fix various memory leaks (Suresh Sundriyal)
+  
 2.2
 - Major changes:
   - Adapt IANA ports of 5985 (http) and 5986 (https)

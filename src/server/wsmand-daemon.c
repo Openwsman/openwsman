@@ -91,7 +91,7 @@ static char *basic_authenticator_arg = NULL;
 static char *basic_authenticator = DEFAULT_BASIC_AUTH;
 static int max_threads = 1;
 static int min_threads = 4;
-static unsigned long enumIdleTimeout = 100 * 1000;
+static unsigned long enumIdleTimeout = 100;
 
 static char *config_file = NULL;
 
@@ -116,7 +116,7 @@ int wsmand_parse_options(int argc, char **argv)
 		 "Set the verbosity of syslog output.", "0-6"},
 		{"enum-idle-timeout", 'e', U_OPTION_ARG_INT,
 		 &enumIdleTimeout,
-		 "Enumeration Idle timeout in msecs", "default 100000"},
+		 "Enumeration Idle timeout in secs", "default 100"},
 		{"config-file", 'c', U_OPTION_ARG_STRING, &config_file,
 		 "Alternate configuration file", "<file>"},
 		{"pid-file", 'p', U_OPTION_ARG_STRING, &pid_file,
@@ -159,7 +159,7 @@ int wsmand_read_config(dictionary * ini)
 	enumIdleTimeout =
 	    (unsigned long) iniparser_getint(ini,
 					     "server:enum_idle_timeout",
-					     100 * 1000);
+					     100);
 	service_path =
 	    iniparser_getstring(ini, "server:service_path", "/wsman");
 	ssl_key_file = iniparser_getstr(ini, "server:ssl_key_file");
