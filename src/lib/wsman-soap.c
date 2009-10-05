@@ -1283,7 +1283,7 @@ wsman_get_expired_enuminfos(WsContextH cntx)
 		return NULL;
 	}
 	gettimeofday(&tv, NULL);
-	mytime = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	mytime = tv.tv_sec;
 	u_lock(cntx->soap);
 	if (hash_isempty(cntx->enuminfos)) {
 		u_unlock(cntx->soap);
