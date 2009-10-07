@@ -1782,7 +1782,12 @@ cim_put_instance(CimClientInfo * client,
 	wsman_status_init(&statusP);
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
-	if(fragstr == NULL) {
+        if (!objectpath) {
+		status->fault_code = WXF_INVALID_REPRESENTATION;
+		status->fault_detail_code = WSMAN_DETAIL_INVALID_NAMESPACE;
+	        goto cleanup;
+	}
+	if (fragstr == NULL) {
 		resource = ws_xml_get_child(in_body, 0, client->resource_uri,
 				client->requested_class);
 	}
@@ -1795,21 +1800,19 @@ cim_put_instance(CimClientInfo * client,
 		goto cleanup;
 	}
 
-	if (objectpath != NULL) {
-		cim_add_keys(objectpath, client->selectors);
-		if (!objectpath) {
-			goto cleanup;
-		}
-	}
+	cim_add_keys(objectpath, client->selectors);
 
 	instance = newCMPIInstance(objectpath, NULL);
-	if (!instance)
+	if (!instance) {
+		status->fault_code = WXF_INVALID_REPRESENTATION;
+		status->fault_detail_code = WSMAN_DETAIL_INVALID_NAMESPACE;
 		goto cleanup;
+	}
 
 	class = cim_get_class(client, client->requested_class,
 			CMPI_FLAG_IncludeQualifiers,
 			status);
-	if (class ) {
+	if (class) {
 		create_instance_from_xml(instance, class, resource,
 				fragstr, client->resource_uri, status);
 		CMRelease(class);
@@ -1827,8 +1830,7 @@ cim_put_instance(CimClientInfo * client,
 			cim_to_wsman_status(rc, status);
 		}
 		if (rc.rc == 0) {
-			if (instance)
-				instance2xml(client, instance, fragstr, body, NULL);
+			instance2xml(client, instance, fragstr, body, NULL);
 		}
 		if (rc.msg)
 			CMRelease(rc.msg);
