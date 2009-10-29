@@ -287,7 +287,9 @@ if test "$PYTHON_CONFIG" = "yes" ; then
 	AC_SUBST(PYTHON_CFLAGS)
 	AC_SUBST(PYTHON_LIBS)
 else
-        AC_MSG_ERROR(python-config not found)
+        PYTHON_VERSION=`python -c "import sys; print sys.version[:3]"`
+        PYTHON_CFLAGS="-I/usr/include/python"
+	PYTHON_LIBS="-lpython$(PYTHON_VERSION)"
 fi
 fi
 AM_CONDITIONAL(BUILD_PYTHON, test "x$enable_python" = "xyes")
