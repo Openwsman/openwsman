@@ -15,9 +15,7 @@ LIBS = $(OPENSSL_LIBS) \
        $(top_builddir)/src/lib/libwsman_client.la \
        $(top_builddir)/src/lib/libwsman_curl_client_transport.la
 
-
-GENERATED = openwsman_wrap.c \
-	    pywsman.py
+GENERATED = openwsman_wrap.c
 
 SWIG_INPUT = ../openwsman.i
 _pywsman_la_SOURCES = openwsman_wrap.c \
@@ -42,6 +40,6 @@ $(GENERATED): $(SWIG_INPUT)
 install-data-hook:
 	rm -f $(DESTDIR)${pyexecdir}/$(pyexec_LTLIBRARIES)
 
-CLEANFILES= $(GENERATED) *.pyc
+CLEANFILES= $(GENERATED) pywsman.py *.pyc
 
 EXTRA_DIST=helpers.c

@@ -122,6 +122,8 @@ static WsXmlDocH create_soap_envelope() {
 
 %}
 
+%ignore __undefined;
+
 %include "wsman-types.i"
 
 %include "wsman-names.i"
