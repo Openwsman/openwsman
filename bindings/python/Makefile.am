@@ -42,4 +42,8 @@ install-data-hook:
 
 CLEANFILES= $(GENERATED) pywsman.py *.pyc
 
+dist-hook:
+	rm -f $(distdir)/openwsman_wrap.c
+	rm -f $(distdir)/pywsman.py
+
 EXTRA_DIST=helpers.c

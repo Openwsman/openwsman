@@ -34,6 +34,9 @@ java_LTLIBRARIES = libjwsman.la
 $(GENERATED): $(SWIG_INPUT)
 	$(SWIG) -java -I$(top_srcdir)/include -o $@ $<
 
+dist-hook:
+	rm -f $(distdir)/openwsman_wrap.c
+
 CLEANFILES= $(GENERATED) *.java *.class
 
 

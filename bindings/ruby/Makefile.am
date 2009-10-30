@@ -42,4 +42,7 @@ install-data-hook:
 
 CLEANFILES= $(GENERATED)
 
+dist-hook:
+	rm -f $(distdir)/openwsman_wrap.c
+
 EXTRA_DIST=helpers.c
