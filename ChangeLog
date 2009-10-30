@@ -8,20 +8,22 @@
 - Minor changes:
   - clean up fault generation in CIM backend (Suresh Sundriyal)
   - fix various memory leaks (Suresh Sundriyal)
+  - fix Python bindings build
   
 2.2
 - Major changes:
   - Adapt IANA ports of 5985 (http) and 5986 (https)
   - Change the Ruby bindings module name to 'Openwsman'
   - Change the Ruby plugin module name to 'Openwsman'
-  - IPv6 support
+  - IPv6 support (A_Venkatachalam@Dell.com)
   - preliminary support for wbem intrinsic operations
-    'EnumerateClassNames' and 'GetClass'
+    'EnumerateClassNames' and 'GetClass' (kkaempf@suse.de)
     (needs fixed sblim-sfcc, see www.openwsman.org for details)
 - Minor changes:
   - Perl example code added (by warptrosse@gmail.com)
   - Fixes to the CMake build environment
   - Fixes to the sfcc backend (argument handling, xml escaping)
+  - Fix segfault when HTTP Content-Type not set (ssundriy@vmware.com)
   - Many other bug fixes, e.g.
     297: More detailed http status codes
     309: Use correct namespace for detecting Filter node
