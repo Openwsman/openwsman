@@ -20,16 +20,17 @@
 
 Name:           openwsman
 BuildRequires:  gcc-c++ swig
-BuildRequires:  libcurl-devel libxml2-devel pam-devel sblim-sfcc-devel
+BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
 
 BuildRequires:  python-devel perl
 
-%if 0%{?fedora}
-BuildRequires:  perl-devel pkgconfig openssl-devel ruby-devel
+%if 0%{?fedora} + 0%{?rhel_version} > 0
+BuildRequires:  curl-devel perl pkgconfig openssl-devel ruby-devel
 %endif
 
 %if 0%{?suse_version} > 0
 
+BuildRequires:  libcurl-devel 
 %if 0%{?suse_version} > 1020
 BuildRequires:  fdupes libopenssl-devel 
 %endif
@@ -237,7 +238,7 @@ mkdir -p m4
     --enable-ipv6
 make clean
 %if 0%{?fedora}
-export RPM_OPT_FLAGS=$RPM_OPT_FLAGS -DFEDORA
+export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DFEDORA"
 %endif
 make CFLAGS="$RPM_OPT_FLAGS" %{?jobs:-j%jobs}
 
@@ -291,16 +292,11 @@ rm -f /var/log/wsmand.log
 
 %files python
 %defattr(-,root,root)
-%if 0%{?suse_version} < 1100
-%{py_sitedir}/*.so
-%{py_sitedir}/*.py
-%else
 %{python_sitearch}/*.so
 %{python_sitelib}/*.py
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel_version}
 %{python_sitelib}/*.pyc
 %{python_sitelib}/*.pyo
-%endif
 %endif
 
 %files ruby
