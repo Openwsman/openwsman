@@ -22,7 +22,7 @@ _pywsman_la_SOURCES = openwsman_wrap.c \
 			 ../openwsman.c \
 			 $(SWIG_INPUT)
 
-all-local:	pywsman.py
+all-local: $(GENERATED)
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pythondir)
