@@ -510,7 +510,7 @@ CimResource_Pull_EP( WsContextH cntx,
 		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
 		status->fault_detail_code=0;
 		doc = wsman_generate_fault( cntx->indoc, status->fault_code,
-                        status->fault_detail_code, NULL);
+			status->fault_detail_code, NULL);
 		goto cleanup;
 	}
 
@@ -738,7 +738,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	if (!subsInfo) {
 		status->fault_code = WSMAN_SCHEMA_VALIDATION_ERROR;
 		status->fault_detail_code=0;
-		retval=1;
+		retval = 1;
 		goto cleanup;
 	}
 	cimclient = CimResource_Init(cntx,
