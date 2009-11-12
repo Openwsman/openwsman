@@ -129,7 +129,7 @@ char *u_strndup(const char *s, size_t len)
 {
     char *cp;
 
-    if((cp = (char*) u_malloc(len + 1)) == NULL)
+    if ((cp = (char*) u_malloc(len + 1)) == NULL)
         return NULL;
     memcpy(cp, s, len);
     cp[len] = 0;
