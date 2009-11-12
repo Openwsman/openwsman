@@ -284,15 +284,15 @@ void filter_destroy(filter_t *filter)
 	u_free(filter);
 }
 
-int filter_serialize(WsXmlNodeH node, filter_t *filter)
+int filter_serialize(WsXmlNodeH node, filter_t *filter, const char *ns)
 {
 	int r = 0;
 	WsXmlNodeH filter_node = NULL;
 	WsXmlNodeH instance_node = NULL;
 	if(filter->query) {
-		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, filter->query);
+		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, filter->query);
 	} else if(filter->epr) {
-		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
+		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, NULL);
 		if(filter->assocType == 0)
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES, NULL);
 		else
@@ -322,7 +322,7 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter)
 
 	} else if(filter->selectorset.count) {
 		int i = 0;
-		filter_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_FILTER, NULL);
+		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, NULL);
 		node = ws_xml_add_child(filter_node, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
 
 		while (i < filter->selectorset.count) {

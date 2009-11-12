@@ -134,9 +134,10 @@ void filter_destroy(filter_t *filter);
  * Turn filter_t structure into an XML snippet
  * @param node Node which contains filter XML snippet
  * @param filter A point to filter_t structure
+ * @param namespace for the filter (XML_NS_WS_MAN or XML_NS_EVENTING)
  * @return 0 for success, others mean failure
  */
-int filter_serialize(WsXmlNodeH node, filter_t *filter);
+int filter_serialize(WsXmlNodeH node, filter_t *filter, const char *ns);
 
 /**
  * Form filter_t structure from an XML snippet
