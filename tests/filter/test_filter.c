@@ -31,7 +31,7 @@ static void serialize_filter1(void)
 
 	filter_t *filter_cpy = filter_copy(filter); //test filter_copy
 
-	int r = filter_serialize(node, filter_cpy);
+	int r = filter_serialize(node, filter_cpy, XML_NS_EVENTING);
 	if(r) {
 		printf("\033[22;31mfilter serialize failed!\033[m\n");
 		return;
@@ -55,7 +55,7 @@ static void serialize_filter2(void)
 	
 	filter_t *filter_cpy = filter_copy(filter); //test filter_copy
 
-        int r = filter_serialize(node, filter_cpy);
+        int r = filter_serialize(node, filter_cpy, XML_NS_WS_MAN);
         if(r) {
                 printf("\t\033[22;31mfilter serialize failed!\033[m\n");
                 return;
@@ -92,7 +92,7 @@ static void serialize_filter3(void)
 
         filter_t *filter_cpy = filter_copy(filter); //test filter_copy
 
-        int r = filter_serialize(node, filter_cpy);
+        int r = filter_serialize(node, filter_cpy, XML_NS_WS_MAN);
         if(r) {
                 printf("\033[22;31mfilter serialize failed!\033[m\n");
                 return;
@@ -120,7 +120,7 @@ static void deserialize_filter1(void)
 	doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
-	int r = filter_serialize(node, filter);
+	int r = filter_serialize(node, filter, XML_NS_WS_MAN);
         if(r) {
                 printf("\033[22;31mfilter serialize failed!\033[m\n");
                 return;
@@ -145,7 +145,7 @@ static void deserialize_filter2(void)
         doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
-        int r = filter_serialize(node, filter);
+        int r = filter_serialize(node, filter, XML_NS_WS_MAN);
         if(r) {
                 printf("\033[22;31mfilter serialize failed!\033[m\n");
                 return;
@@ -171,7 +171,7 @@ static void deserialize_filter3(void)
         doc = ws_xml_create_envelope();
         WsXmlNodeH body = ws_xml_get_soap_body(doc);
         node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
-        int r = filter_serialize(node, filter);
+        int r = filter_serialize(node, filter, XML_NS_WS_MAN);
         if(r) {
                 printf("\033[22;31mfilter serialize failed!\033[m\n");
                 return;
