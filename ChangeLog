@@ -1,3 +1,7 @@
+2.2.2
+- Fix security risk when listing indication subscriptions (Suresh Sundriyal)
+- Fix xml namespace for enumeration and subscription filters
+
 2.2.1
 - Major changes:
   - Enumeration timeout fixed, resulting in --enum-idle-timeout option
