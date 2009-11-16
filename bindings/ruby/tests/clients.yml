@@ -6,6 +6,14 @@ microsoft:
   username: 
   password: 
   
+xp:
+  scheme: http
+  host: 192.168.0.12
+  port: 80
+  path: /wsman
+  username: wsman
+  password: secret
+  
 localhost:
   scheme: http
   host: localhost

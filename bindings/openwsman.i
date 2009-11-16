@@ -124,13 +124,21 @@ static WsXmlDocH create_soap_envelope() {
 
 %}
 
+/*
+ * hash_t typemaps
+ */
+%typemap(out) hash_t * {
+ $result = hash2value($1);
+}
+
+%typemap(in) hash_t * {
+ $input = value2hash(NULL, $1);
+}
+
 %ignore __undefined;
 
-/* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right
-   it triggers (ignored) warnings, though */
+/* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right */
 %include "wsman-xml.i"
-
-%include "wsman-types.i"
 
 %include "wsman-names.i"
 

@@ -9,9 +9,10 @@
  * Xml namespace
  */
  
-%nodefault __WsXmlNs;   /* part of WsXmlAttr */
 %rename(XmlNs) __WsXmlNs;
+%nodefault __WsXmlNs;   /* part of WsXmlAttr */
 struct __WsXmlNs {}; /* without empty struct, the %rename isn't executed. */
+typedef struct __WsXmlNs* WsXmlNsH;
 
 /*
  * class XmlDoc
@@ -21,9 +22,10 @@ struct __WsXmlNs {}; /* without empty struct, the %rename isn't executed. */
  * free the WsXmlDocH immediately after wrapping !
  */
 
-%nodefault _WsXmlDoc;
 %rename(XmlDoc) _WsXmlDoc;
+%nodefault _WsXmlDoc;
 struct _WsXmlDoc {};
+typedef struct _WsXmlDoc* WsXmlDocH;
 
 /*
  * Document-class: XmlDoc
@@ -222,9 +224,10 @@ struct _WsXmlDoc {};
  *
  */
  
-%nodefault __WsXmlNode;
 %rename(XmlNode) __WsXmlNode;
+%nodefault __WsXmlNode;
 struct __WsXmlNode {}; /* without empty struct, the %rename isn't executed. */
+typedef struct __WsXmlNode* WsXmlNodeH;
 
 %extend __WsXmlNode {
   ~__WsXmlNode() {
@@ -491,9 +494,10 @@ struct __WsXmlNode {}; /* without empty struct, the %rename isn't executed. */
  *
  */
  
-%nodefault __WsXmlAttr; /* part of WsXmlNode */
 %rename(XmlAttr) __WsXmlAttr;
+%nodefault __WsXmlAttr; /* part of WsXmlNode */
 struct __WsXmlAttr {}; /* without empty struct, the %rename isn't executed. */
+typedef struct __WsXmlAttr* WsXmlAttrH;
 
 %extend __WsXmlAttr {
 #if defined(SWIGRUBY)

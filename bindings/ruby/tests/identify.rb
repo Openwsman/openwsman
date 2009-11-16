@@ -2,6 +2,7 @@
 
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
+$:.unshift ".."
 
 require 'test/unit'
 require 'openwsman/openwsman'
@@ -19,6 +20,8 @@ class IdentifyTest < Test::Unit::TestCase
     puts "Error!" if doc.fault?
     root = doc.root
     assert root
+    
+#    print root
 #
 # root.find is the 'clumsy' way
 #    prot_version = root.find( Openwsman::XML_NS_WSMAN_ID, "ProtocolVersion" )
@@ -30,7 +33,7 @@ class IdentifyTest < Test::Unit::TestCase
     prod_vendor = root.ProductVendor
     prod_version = root.ProductVersion
 
-    puts "Protocol #{prot_version}, Vendor #{prod_vendor}, Version #{prod_version}"
+    puts "\tProtocol #{prot_version}\n\tVendor #{prod_vendor}\n\tVersion #{prod_version}"
     
   end
 end

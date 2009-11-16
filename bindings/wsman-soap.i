@@ -251,9 +251,11 @@ struct __Soap {};
  * WsContext -> Context
  */
  
-%nodefault _WS_CONTEXT;
 %rename(Context) _WS_CONTEXT;
+%nodefault _WS_CONTEXT;
 struct _WS_CONTEXT {};
+typedef struct _WS_CONTEXT* WsContextH;
+
 
 /*
  * Context contains all information of an ongoing SOAP operation

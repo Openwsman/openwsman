@@ -8,4 +8,4 @@
 require 'openwsman'
 
 # this extends Openwsman::XmlNode with method_missing
-require 'openwsman/wsxmlnode'
+require 'openwsman/xmlnode'

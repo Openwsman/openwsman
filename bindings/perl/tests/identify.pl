@@ -8,6 +8,7 @@
 use strict;
 use warnings;
 use lib '../../../build/bindings/perl';
+use lib '../.libs';
 use lib '..';
 use openwsman;
 
