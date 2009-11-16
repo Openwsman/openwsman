@@ -2223,8 +2223,13 @@ cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, 
 
 	char *servicepath = create_cimxml_listener_path(subsInfo->subsId);
 	char serverpath[128];
+#if 0
+  /* might be a security risk */
 	snprintf(serverpath, 128, "http://%s:%s@localhost:%s%s", client->username, client->password,
 			get_server_port(), servicepath);
+#else
+	snprintf(serverpath, 128, "http://localhost:%s%s", get_server_port(), servicepath);
+#endif
 	u_free(servicepath);
 	CMPIValue value;
 	value.uint16 = 2;
