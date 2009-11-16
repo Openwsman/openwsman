@@ -694,13 +694,13 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 		 * WS-Management defines wsman:Filter as the filter element to wse:Subscribe
 		 * but also allows wse:Filter to be compatible with WS-Eventing implementations
 		 * R10.2.2-50, R10.2.2-51 to DSP0226 */
-		 */
+
 		wsman_f = filter_deserialize(node, XML_NS_WS_MAN);
 		wse_f = filter_deserialize(node, XML_NS_EVENTING);
 	        if (wsman_f && wse_f) {
 	                /* return wse:InvalidMessage if wsman:Filter and wse:Filter are given
 			 * see R10.2.2-52 of DSP0226 */
-		        *faultcode = WSE_INVALID_MESSAGE
+		        *faultcode = WSE_INVALID_MESSAGE;
 		        return -1;
 		}
 	        /* use the wse:Filter variant if wsman:Filter not given */
