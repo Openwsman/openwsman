@@ -681,7 +681,8 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 		WsmanFaultDetailType *detailcode)
 {
 	WsXmlNodeH node;
-	filter_t *f = NULL;
+        filter_t *wsman_f = NULL;
+	filter_t *wse_f = NULL;
 	if (!doc)
 		return 0;
 
@@ -689,19 +690,35 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 	if (node && (node = ws_xml_get_child(node, 0,
 					XML_NS_EVENTING,
 					WSEVENT_SUBSCRIBE))) {
-		f = filter_deserialize(node, XML_NS_EVENTING);
-		subsInfo->filter = f;
-		if(f) {
-			if(strcmp(f->dialect,WSM_CQL_FILTER_DIALECT) == 0)
+	        /* See DSP0226 (WS-Management), Section 10.2.2 Filtering
+		 * WS-Management defines wsman:Filter as the filter element to wse:Subscribe
+		 * but also allows wse:Filter to be compatible with WS-Eventing implementations
+		 * R10.2.2-50, R10.2.2-51 to DSP0226 */
+		 */
+		wsman_f = filter_deserialize(node, XML_NS_WS_MAN);
+		wse_f = filter_deserialize(node, XML_NS_EVENTING);
+	        if (wsman_f && wse_f) {
+	                /* return wse:InvalidMessage if wsman:Filter and wse:Filter are given
+			 * see R10.2.2-52 of DSP0226 */
+		        *faultcode = WSE_INVALID_MESSAGE
+		        return -1;
+		}
+	        /* use the wse:Filter variant if wsman:Filter not given */
+	        if (!wsman_f)
+	                wsman_f = wse_f;
+	  
+	        subsInfo->filter = wsman_f;      
+		if (wsman_f) {
+			if (strcmp(wsman_f->dialect, WSM_CQL_FILTER_DIALECT) == 0)
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_CQL;
-			else if(strcmp(f->dialect, WSM_WQL_FILTER_DIALECT) == 0)
+			else if (strcmp(wsman_f->dialect, WSM_WQL_FILTER_DIALECT) == 0)
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_WQL;
 			else {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
-					return -1;
+			        return -1;
 			}
 		} else {
-			if(is_existing_filter_epr(ws_xml_get_soap_header(doc), &f)) {
+			if (is_existing_filter_epr(ws_xml_get_soap_header(doc), &wsman_f)) {
 				*faultcode = WSE_FILTERING_NOT_SUPPORTED;
 				return -1;
 			} else {

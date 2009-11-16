@@ -628,7 +628,7 @@ wsman_set_enumeration_options(WsManClient * cl, WsXmlNodeH body, const char* res
 				WSMB_POLYMORPHISM_MODE, "None");
 	}
 
-	if(filter != NULL) {
+	if (filter != NULL) {
 		filter_serialize(node, filter, XML_NS_WS_MAN);
 	}
 	return;
@@ -700,12 +700,12 @@ wsman_set_subscribe_options(WsManClient * cl,
 				ws_xml_duplicate_tree(temp, node3);
 		}
 	}
-	if(options->expires) {
+	if (options->expires) {
 		snprintf(buf, 32, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 	}
-	if(filter) {
-		filter_serialize(node, filter, XML_NS_EVENTING);
+	if (filter) {
+		filter_serialize(node, filter, XML_NS_WS_MAN);
 	}
 	if (options->flags & FLAG_EVENT_SENDBOOKMARK) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SENDBOOKMARKS, NULL);
