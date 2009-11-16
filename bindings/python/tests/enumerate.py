@@ -14,7 +14,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		root = doc.root()
 		assert root is not None
 		context = root.find(XML_NS_ENUMERATION, "EnumerationContext" )
-		print "Context: %s" % context.text()
+		print "Context: %s" % context
 	def test_enum_and_pull(self):
 		client = Client( "http://wsman:secret@localhost:5985/wsman" )
 #		client.transport().set_auth_method(BASIC_AUTH_STR) # Windows winrm needs this
@@ -23,7 +23,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		root = doc.root()
 		assert root is not None
 		context = root.find(XML_NS_ENUMERATION, "EnumerationContext" )
-		doc = client.pull( options , None, "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", context.text())
+		doc = client.pull( options , None, "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem", context)
 		assert doc is not None
 		root = doc.root()
 		assert root is not None
