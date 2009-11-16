@@ -177,9 +177,8 @@ typedef struct _WsManTransport WsManTransport;
 %}
 
 /* get type declarations from openwsman client bindings */
-%include "wsman-types.i"
-%include "wsman-soap.i"
 %include "wsman-xml.i"
+%include "wsman-soap.i"
 %include "wsman-names.i"
 %include "wsman-filter.i"
 %include "wsman-client.i"
