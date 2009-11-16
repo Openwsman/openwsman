@@ -109,6 +109,8 @@ static void set_debug(int dbg) {
 	
 }
 
+/* module-level methods */
+
 static int get_debug(void);
 
 static int get_debug(void) {
@@ -124,11 +126,13 @@ static WsXmlDocH create_soap_envelope() {
 
 %ignore __undefined;
 
+/* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right
+   it triggers (ignored) warnings, though */
+%include "wsman-xml.i"
+
 %include "wsman-types.i"
 
 %include "wsman-names.i"
-
-%include "wsman-xml.i"
 
 %include "wsman-epr.i"
 

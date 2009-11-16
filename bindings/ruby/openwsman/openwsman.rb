@@ -7,5 +7,5 @@
 # this loads the binary .so file
 require 'openwsman'
 
-# this extends Openwsman::WsXmlNode with method_missing
+# this extends Openwsman::XmlNode with method_missing
 require 'openwsman/wsxmlnode'

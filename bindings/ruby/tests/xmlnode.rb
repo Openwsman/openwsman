@@ -1,4 +1,4 @@
-# test WsXmlNode class
+# test XmlNode class
 
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
@@ -6,7 +6,7 @@ $:.unshift "../.libs"
 require 'test/unit'
 require 'openwsman'
 
-class WsXmlNodeTest < Test::Unit::TestCase
+class XmlNodeTest < Test::Unit::TestCase
   # Nodes are not constructed, but added to other nodes
   def test_node_constructor
     doc = Openwsman::XmlDoc.new "node"

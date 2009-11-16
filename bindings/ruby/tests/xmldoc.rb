@@ -1,4 +1,4 @@
-# test WsXmlDoc class
+# test XmlDoc class
 
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
@@ -6,7 +6,7 @@ $:.unshift "../.libs"
 require 'test/unit'
 require 'openwsman'
 
-class WsXmlDocTest < Test::Unit::TestCase
+class XmlDocTest < Test::Unit::TestCase
   def test_doc_constructor
     doc = Openwsman::XmlDoc.new "test"
     assert doc
