@@ -2,6 +2,8 @@
 
 UNAME=`uname`
 
+mkdir -p m4
+
 if [ "$UNAME" = "Darwin" ]; then
 libtoolize --copy --force --automake
 aclocal-1.9
