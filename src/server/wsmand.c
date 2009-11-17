@@ -217,7 +217,8 @@ static void daemonize(void)
 	setsid();
 
 	/* Change our CWD to / */
-	chdir("/");
+	i=chdir("/");
+        assert(i == 0);
 
 	/* Close all file descriptors. */
 	for (i = getdtablesize(); i >= 0; --i)
