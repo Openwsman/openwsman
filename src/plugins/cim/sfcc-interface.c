@@ -913,7 +913,6 @@ cim_get_op_from_enum(CimClientInfo * client,
 	int match = 0;
 	CMPIEnumeration *enumeration;
 	CMPIObjectPath *result_op = NULL;
-	WsmanStatus statusPP;
 	CMPIArray *enumArr = NULL;
 
 	if (client->requested_class)
@@ -939,7 +938,6 @@ cim_get_op_from_enum(CimClientInfo * client,
 
 	enumArr = enumeration->ft->toArray(enumeration, NULL);
 	int n = CMGetArrayCount(enumArr, NULL);
-	wsman_status_init(&statusPP);
 	if (n > 0) {
 		while (enumeration->ft->hasNext(enumeration, NULL)) {
 			CMPIData data = enumeration->ft->getNext(enumeration,
@@ -947,7 +945,7 @@ cim_get_op_from_enum(CimClientInfo * client,
 			CMPIObjectPath *op = CMClone(data.value.ref, NULL);
 			CMPIString *opstr = CMObjectPathToString(op, NULL);
 			debug("objectpath: %s", (char *) opstr->hdl);
-			if (cim_verify_keys(op, client->selectors, &statusPP) != 0) {
+			if (cim_verify_keys(op, client->selectors, statusP) != 0) {
 				if (opstr)
 					CMRelease(opstr);
 				if (op)
@@ -969,8 +967,6 @@ cim_get_op_from_enum(CimClientInfo * client,
 			if (op)
 				CMRelease(op);
 		}
-		statusP->fault_code = statusPP.fault_code;
-		statusP->fault_detail_code = statusPP.fault_detail_code;
 	} else {
 		statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 		statusP->fault_detail_code =
@@ -1599,17 +1595,13 @@ cim_invoke_method(CimClientInfo * client,
 		WsContextH cntx, WsXmlNodeH body, WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath;
-	CMPIStatus rc;
-	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	WsXmlNodeH method_node = NULL;
 
-        memset(&rc, 0, sizeof(CMPIStatus));
-	wsman_status_init(&statusP);
 	if (client->resource_uri
 	    && strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
 	        /* uri specifies class */
-		objectpath = cim_get_op_from_enum(client, &statusP);
+		objectpath = cim_get_op_from_enum(client, status);
 	} else {
 		debug("no base class, getting instance directly with getInstance");
 		objectpath = newCMPIObjectPath(client->cim_namespace,
@@ -1619,8 +1611,14 @@ cim_invoke_method(CimClientInfo * client,
 	}
 
 	if (objectpath != NULL) {
+		CMPIStatus rc;
 		CMPIArgs *argsin = NULL, *argsout = NULL;
+
+	        memset(&rc, 0, sizeof(CMPIStatus));
 		argsin = newCMPIArgs(NULL);
+
+		u_free(status->fault_msg);
+	        wsman_status_init(status);
 
 		if (client->method_args && hash_count(client->method_args) > 0) {
 			debug("adding method arguments");
@@ -1678,9 +1676,6 @@ cim_invoke_method(CimClientInfo * client,
 			CMRelease(argsin);
 		if (argsout)
 			CMRelease(argsout);
-	} else {
-		status->fault_code = statusP.fault_code;
-		status->fault_detail_code = statusP.fault_detail_code;
 	}
 
 	if (objectpath)
@@ -1698,24 +1693,21 @@ cim_delete_instance_from_enum(CimClientInfo * client, WsmanStatus * status)
 {
 	CMPIObjectPath *objectpath = NULL;
 	CMPIStatus rc;
-	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	if (!cc) {
 		goto cleanup;
 	}
-	wsman_status_init(&statusP);
 
-	if ((objectpath = cim_get_op_from_enum(client, &statusP)) != NULL) {
+	if ((objectpath = cim_get_op_from_enum(client, status)) != NULL) {
+        u_free(status->fault_msg);
+        wsman_status_init(status);
 		rc = cc->ft->deleteInstance(cc, objectpath);
 		if (rc.rc != 0) {
 			cim_to_wsman_status(rc, status);
 		}
 		debug("deleteInstance rc=%d, msg=%s", rc.rc,
 				(rc.msg) ? (char *) rc.msg->hdl : NULL);
-	} else {
-		status->fault_code = statusP.fault_code;
-		status->fault_detail_code = statusP.fault_detail_code;
 	}
 
 	debug("fault: %d %d", status->fault_code,
@@ -1737,15 +1729,15 @@ cim_get_instance_from_enum(CimClientInfo * client,
 	CMPIInstance *instance;
 	CMPIObjectPath *objectpath;
 	CMPIStatus rc;
-	WsmanStatus statusP;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 
 	if (!cc) {
 		goto cleanup;
 	}
-	wsman_status_init(&statusP);
 
-	if ((objectpath = cim_get_op_from_enum(client, &statusP)) != NULL) {
+	if ((objectpath = cim_get_op_from_enum(client, status)) != NULL) {
+	        u_free(status->fault_msg);
+	        wsman_status_init(status);
 		instance = cc->ft->getInstance(cc, objectpath,
 				CMPI_FLAG_IncludeClassOrigin,
 				NULL, &rc);
@@ -1760,9 +1752,6 @@ cim_get_instance_from_enum(CimClientInfo * client,
 				(rc.msg) ? (char *) rc.msg->hdl : NULL);
 		if (instance)
 			CMRelease(instance);
-	} else {
-		status->fault_code = statusP.fault_code;
-		status->fault_detail_code = statusP.fault_detail_code;
 	}
 
 	debug("fault: %d %d", status->fault_code,
@@ -1783,12 +1772,10 @@ cim_put_instance(CimClientInfo * client,
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath;
 	CMPIStatus rc;
-	WsmanStatus statusP;
 	WsXmlNodeH resource = NULL;
 	CMCIClient *cc = (CMCIClient *) client->cc;
 	CMPIConstClass *class = NULL;
 
-	wsman_status_init(&statusP);
 	objectpath = newCMPIObjectPath(client->cim_namespace,
 			client->requested_class, NULL);
         if (!objectpath) {
@@ -1863,14 +1850,12 @@ cim_create_instance(CimClientInfo * client,
 	CMPIInstance *instance = NULL;
 	CMPIObjectPath *objectpath, *objectpath_r;
 	CMPIStatus rc;
-	WsmanStatus statusP;
 	CMPIConstClass *class;
 	int fragment_flag;
 	char *element = NULL;
 	int index;
 	WsXmlNodeH resource;
 	WsXmlNodeH child = NULL;
-	wsman_status_init(&statusP);
 	int numproperties = 0, i;
 
 	CMCIClient *cc = (CMCIClient *) client->cc;

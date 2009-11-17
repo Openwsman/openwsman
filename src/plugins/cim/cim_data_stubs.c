@@ -126,6 +126,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 
 	if (!cimclient->cc) {
 		CimResource_destroy(cimclient);
+		u_free(status.fault_msg);
 		return NULL;
 	}
 
@@ -165,6 +166,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	}
 
 	u_free(show_extensions);
+	u_free(status.fault_msg);
 	return cimclient;
 }
 
@@ -257,7 +259,7 @@ cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
 		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
-				status.fault_code, status.fault_detail_code, NULL);
+				status.fault_code, status.fault_detail_code, status.fault_msg);
 	}
 	if (doc) {
 		soap_set_op_doc(op, doc, 0);
@@ -267,6 +269,7 @@ cleanup:
 
 	CimResource_destroy(cimclient);
 	ws_destroy_context(cntx);
+	u_free(status.fault_msg);
 	return 0;
 }
 
@@ -321,7 +324,7 @@ cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
 		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
-				status.fault_code, status.fault_detail_code, NULL);
+				status.fault_code, status.fault_detail_code, status.fault_msg);
 	}
 	if ( doc ) {
 		soap_set_op_doc(op, doc, 0);
@@ -331,6 +334,7 @@ cleanup:
 
 	CimResource_destroy(cimclient);
 	ws_destroy_context(cntx);
+	u_free(status.fault_msg);
 	return 0;
 }
 
@@ -397,6 +401,7 @@ cleanup:
 
 	ws_destroy_context(cntx);
 	CimResource_destroy(cimclient);
+	u_free(status.fault_msg);
 	return 0;
 }
 
@@ -629,7 +634,7 @@ cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
 		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
-				status.fault_code, status.fault_detail_code, NULL);
+				status.fault_code, status.fault_detail_code, status.fault_msg);
 	}
 
 	if ( doc ) {
@@ -640,6 +645,7 @@ cleanup:
 
 	CimResource_destroy(cimclient);
 	ws_destroy_context(cntx);
+	u_free(status.fault_msg);
 	return 0;
 }
 
@@ -701,7 +707,7 @@ cleanup:
 	if (wsman_check_status(&status) != 0) {
 		ws_xml_destroy_doc(doc);
 		doc = wsman_generate_fault( indoc,
-				status.fault_code, status.fault_detail_code, NULL);
+				status.fault_code, status.fault_detail_code, status.fault_msg);
 	}
 
 	if ( doc ) {
@@ -712,6 +718,7 @@ cleanup:
 
 	CimResource_destroy(cimclient);
 	ws_destroy_context(cntx);
+	u_free(status.fault_msg);
 	return 0;
 }
 #ifdef ENABLE_EVENTING_SUPPORT

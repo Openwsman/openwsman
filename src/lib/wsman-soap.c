@@ -1015,7 +1015,7 @@ wsenum_enumerate_stub(SoapOpH op,
 	if (endPoint && (retVal = endPoint(epcntx, enumInfo, &status, opaqueData))) {
                 debug("enumeration fault");
 		doc = wsman_generate_fault( _doc, status.fault_code,
-				status.fault_detail_code, NULL);
+				status.fault_detail_code, status.fault_msg);
 		destroy_enuminfo(enumInfo);
 		goto DONE;
 	}
@@ -1059,6 +1059,7 @@ DONE:
 		soap_set_op_doc(op, doc, 0);
 	}
 	ws_destroy_context(epcntx);
+	u_free(status.fault_msg);
 	return retVal;
 }
 
@@ -1736,7 +1737,7 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	}
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("Subscribe fault");
-		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, status.fault_msg);
 		destroy_subsinfo(subsInfo);
 		goto DONE;
 	}
@@ -1806,6 +1807,7 @@ DONE:
 	u_free(expiresstr);
 	ws_serializer_free_all(epcntx->serializercntx);
 	ws_destroy_context(epcntx);
+	u_free(status.fault_msg);
 	return retVal;
 }
 
@@ -1870,7 +1872,7 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	pthread_mutex_unlock(&soap->lockSubs);
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                debug("UnSubscribe fault");
-		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, status.fault_msg);
 		goto DONE;
 	}
 	pthread_mutex_lock(&subsInfo->notificationlock);
@@ -1886,6 +1888,7 @@ DONE:
 	}
 	ws_serializer_free_all(epcntx->serializercntx);
 	ws_destroy_context(epcntx);
+	u_free(status.fault_msg);
 	return retVal;
 }
 
@@ -1967,7 +1970,7 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 
 	if (endPoint && (retVal = endPoint(epcntx, subsInfo, &status, opaqueData))) {
                 debug("renew fault in plug-in");
-		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, NULL);
+		doc = wsman_generate_fault( _doc, status.fault_code, status.fault_detail_code, status.fault_msg);
 		pthread_mutex_unlock(&subsInfo->notificationlock);
 		goto DONE;
 	}
@@ -1983,6 +1986,7 @@ DONE:
 	}
 	ws_serializer_free_all(epcntx->serializercntx);
 	ws_destroy_context(epcntx);
+	u_free(status.fault_msg);
 	return retVal;
 }
 
