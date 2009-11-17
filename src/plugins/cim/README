@@ -1,0 +1,6 @@
+This is a collection of information bits and reminders for the cim
+plugin
+
+- if any additions are made to the CIM plugin files, it should be kept
+  in mind that the WsmanStatus.fault_msg needs to be explicitly free'd.
+  
