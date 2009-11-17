@@ -922,6 +922,33 @@ unsigned long wsman_get_maxsize_from_op(SoapOpH op)
 	return _op->maxsize;
 }
 
+static
+unsigned long get_total_enum_context(WsContextH cntx){
+        hscan_t hs;
+        u_lock(cntx->soap);
+        hash_scan_begin(&hs, cntx->enuminfos);
+        unsigned long total = hash_count(hs.hash_table);
+        u_unlock(cntx->soap);
+        return total;
+}
+
+/**
+ * The following extern methods are defined in wsmand-daemon.c,
+ * which is compiled into openwsmand binary, which in turn links
+ * to libwsman.la. So when a call is made to the following methods
+ * from the openwsmand binary, they should be present.
+ *
+ * However, if they are dlopened from somewhere other than 
+ * openwsmand library or linked to some other
+ * binary or shared object, then these methods may or may not be
+ * preset, hence marking them as weak symbols and testing to see
+ * if they are resolved before using them.
+ */
+#pragma weak wsmand_options_get_max_threads
+extern int wsmand_options_get_max_threads(void);
+#pragma weak wsmand_options_get_max_connections_per_thread
+extern int wsmand_options_get_max_connections_per_thread(void);
+
 /**
  * Enumeration Stub for processing enumeration requests
  * @param op SOAP pperation handler
@@ -947,6 +974,35 @@ wsenum_enumerate_stub(SoapOpH op,
 
 	WsXmlDocH       _doc = soap_get_op_doc(op, 1);
 	WsContextH      epcntx;
+
+        int max_threads = 0;
+        int max_connections_per_thread = 0;
+        int(* fptr)(void);
+        if((fptr = wsmand_options_get_max_threads) != 0){
+                max_threads = (* fptr)();
+                if((fptr = wsmand_options_get_max_connections_per_thread) != 0){
+                        max_connections_per_thread = (* fptr)();
+                }
+                else{
+                        debug("Could not resolve wsmand_options_get_max_connections_per_thread");
+                        max_threads=0;
+                }
+        }
+        else{
+                debug("Could not resolve wsman_options_get_max_threads");
+        }
+
+        if(max_threads){
+                if(get_total_enum_context(ws_get_soap_context(soap)) >= (max_threads * max_connections_per_thread)){
+                        debug("enum context queue is full, we wait till some expire or are cleared");
+                        doc = wsman_generate_fault(_doc, WSMAN_QUOTA_LIMIT, OWSMAN_NO_DETAILS,
+                                    "The service is busy servicing other requests. Try later.");
+                        if(doc){
+                                soap_set_op_doc(op, doc, 0);
+                        }
+                        return 1;
+                }
+        }
 
 	epcntx = ws_create_ep_context(soap, _doc);
 	wsman_status_init(&status);

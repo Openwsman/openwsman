@@ -86,6 +86,8 @@ int wsmand_options_get_foreground_debug(void);
 char * wsmand_options_get_subscription_repository_uri(void);
 char *wsmand_options_get_identify_file(void);
 char *wsmand_options_get_anon_identify_file(void);
+unsigned int wsmand_options_get_thread_stack_size(void);
+int wsmand_options_get_max_connections_per_thread(void);
 
 const char **wsmand_options_get_argv(void);
 int wsmand_read_config(dictionary * ini);

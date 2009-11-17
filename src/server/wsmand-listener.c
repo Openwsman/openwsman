@@ -83,7 +83,6 @@
 #endif
 #include <sys/socket.h>
 
-#define MAX_CONNECTIONS_PER_THREAD 20
 
 static pthread_mutex_t shttpd_mutex;
 static pthread_cond_t shttpd_cond;
@@ -600,6 +599,13 @@ static int wsman_setup_thread(pthread_attr_t *pattrs) {
 		return ret;
 	}
 	return 1;
+        size_t thread_stack_size = wsmand_options_get_thread_stack_size();
+        if(thread_stack_size){
+                if(( r = pthread_attr_setstacksize(pattrs, thread_stack_size)) !=0) {
+                        debug("pthread_attr_setstacksize failed = %d", r);
+                        return ret;
+                }
+        }
 }
 
 static void *thread_function(void *param)
@@ -638,13 +644,14 @@ spawn_new_thread(pthread_attr_t pattrs, SoapH soap)
 
 
 static struct thread *
-find_not_busy_thread(void)
+find_not_busy_thread(int *num_threads, int max_connections_per_thread)
 {
     struct thread   *thread;
 
-    for (thread = threads; thread != NULL; thread = thread->next) {
-		debug("Active sockets: %d", shttpd_active(thread->ctx) );
-        if (shttpd_active(thread->ctx) < MAX_CONNECTIONS_PER_THREAD)
+    for (thread = threads, *num_threads=0; thread != NULL; thread = thread->next) {
+	debug("Active sockets: %d, Thread Number: %d", shttpd_active(thread->ctx), *num_threads );
+        (*num_threads)++;
+        if (shttpd_active(thread->ctx) < max_connections_per_thread)
             return (thread);
 	}
 
@@ -667,6 +674,13 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	WsManListenerH *listener = wsman_dispatch_list_new();
 	listener->config = ini;
 	WsContextH cntx = wsman_init_plugins(listener);
+        int num_threads=0;
+        int max_threads=wsmand_options_get_max_threads();
+        int max_connections_per_thread = wsmand_options_get_max_connections_per_thread();
+        if(max_threads && !max_connections_per_thread){
+                error("max_threads: %d and max_connections_per_thread : %d", max_threads, max_connections_per_thread);
+                return listener;
+        }
 
 #ifdef ENABLE_EVENTING_SUPPORT
 	wsman_event_init(cntx->soap);
@@ -712,10 +726,20 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 			continue;
 		}
 		debug("Sock %d accepted", sock);
-        if ((thread = find_not_busy_thread()) == NULL)
-            thread = spawn_new_thread(pattrs, soap);
-
-        shttpd_add_socket(thread->ctx, sock, use_ssl);
-	}
-	return listener;
+                if ((thread = find_not_busy_thread(&num_threads, max_connections_per_thread)) == NULL){
+                        if(max_threads){
+                                if(num_threads < max_threads){
+                                        thread = spawn_new_thread(pattrs, soap);
+                                }
+                                else{
+                                        continue;
+                                }
+                        }
+                        else{
+                                thread = spawn_new_thread(pattrs, soap);
+                        }
+		}
+                shttpd_add_socket(thread->ctx, sock, use_ssl);
+        }
+        return listener;
 }
