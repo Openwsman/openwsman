@@ -1,7 +1,8 @@
 2.2.2
 - Major changes:
   - Fix upper limit check for threads and their stack usage
-    Reintroduce max_thread config file parameter and two new parameters:
+    (Allowing to confine memory usage in the 10-20MB range!)
+    Reintroduce max_thread config file parameter and two new parameters
     * max_connections_per_thread
     * thread_stack_size
     (Suresh Sundriyal)

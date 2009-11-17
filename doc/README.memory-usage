@@ -1,0 +1,135 @@
+A couple of days ago, I had sent in an email with the following observation:
+
+>Memory consumption:
+>===================
+>
+>In case of stress test involving lots of clients doing enumeration at
+>the same time, the memory consumption starts growing at an alarming
+>rate. This is understandable, since Openwsman has to cache the
+>enumeration results till the client actually pulls them or they expire.
+>This might not be a problem under normal systems where the memory is not
+>at a premium but on embedded systems, this will definitely cause problems.
+>
+>Actually, let me take that back. It will cause problems on normal
+>systems as well. Somewhere between 1.5.0 and 2.0.0 we got rid of the
+>max_thread parameter. Currently, I believe each listener thread is setup
+>to handle 20 clients. In case there is a 21st simultaneous client,
+>another listener thread is spawned.
+>
+>Now if one were to look at compat_unix.h, we see this:
+>
+>
+>#define InitializeCriticalSection(x)    /* FIXME UNIX version is not MT
+>safe */
+>#define EnterCriticalSection(x)
+>#define LeaveCriticalSection(x)
+>
+>
+>Seems like mutex locking code is def'ed to nothing on unix systems. If
+>that is the case then the moment the system spawns another listener
+>thread, there will be problems and since you cannot contain the number
+>of threads spawned, you have no control over another thread being spawned.
+>
+>I tried to fix compat_unix.h but that just leads to deadlocks that
+>Helgrind can't seem to identify.
+>
+>This seems like a limitation of the spec and the way Openwsman is
+>engineered. I have a working fix for this albeit in the Openwsman 2.1.0
+>codebase. Let me try and port it over to 2.2.0 and I shall send the fix
+>along. Might take me a day or two to get to this.
+>
+>The fix is not conventional but it is config file driven so it can be
+>turned on or off on the fly.
+
+I'm sending in the patch to fix this problem.
+
+The patch reintroduces the max_thread config file parameter and introduces
+two new parameters:
+
+* max_connections_per_thread
+* thread_stack_size
+
+Explanation for the patch:
+================
+
+1. wsmand-daemon.c & wsmand-daemon.h:
+
+The changes here are to read in the config file parameters.
+
+2. wsmand-listener.c:
+
+As I had mentioned earlier, the multithreading capabilities in Openwsman seem
+to be busted, since compat_unix.c defines all the locking/unlocking primitives to
+blanks. Since we got rid of the max_thread parameter this makes it quite dangerous
+since if we have a thread serving 20 clients and a 21st client sends in a request
+another thread is spawned which is dangerous without the concurrency primitives
+in place.
+
+The change in this file first of all reintroduces the max_thread parameter. I usually
+keep this to 1, since I don't want more than 1 listener thread running if there is no
+concurrency support. It also uses the max_connections_per_thread parameter to
+optimize how many clients you wish to serve by that thread. If more than max_thread
+* max_connections_per_thread client comes in it is blocked till one of the threads is
+free. I also modified find_not_busy thread to count how many threads are active.
+
+After some profiling it was also a pleasant surprise that Openwsman does not
+utilize a lot of stack space. Since each thread by default is given about 2Mb if I
+am not wrong, which seems wasteful, so I introduced the thread_stack_size to
+optimize the thread stack space. This parameter takes in stack size in bytes and
+is used as the input to pthread_attr_setstacksize(). I've tested with as low as
+256k(262144 bytes) and Openwsman works just fine even under stress. Your
+mileage may vary depending on the OS. 
+
+When max_thread is set to 0, Openwsman behaves as it used to. The only
+caveat is when max_thread is non-zero, max_connections_per_thread cannot
+be zero, since that would effectively mean that the threads cannot serve any
+clients.
+
+ In the case of thread_stack_size set to 0, Openwsman again behaves like it used
+ to. So set both these parameters to zero to turn off these optimizations.
+
+3. wsman-soap.c:
+
+This is to tackle the problem of Openwsman using lots of memory when there
+are too many clients doing Enumerations. Enumerations require Openwsman
+to keep the results in memory till they expire or till they are pulled by the client.
+On an embedded system, where the memory constraints are stringent, this
+could cause problems.
+
+To get around this problem, if there are already max_threads*max_connections_
+per_thread number of enumeration results in memory and another enumeration
+request is encountered,  I return an error saying "Insufficient Resource.......", till
+one of the enumerations is pulled or one of them expires. 
+max_threads*max_connections_per_thread means that all the available
+listeners have been utilized to do enumerations, therefore there could be that
+many clients making pull requests. I do not block the pull operations or any other
+operations since those do not require Openwsman to cache the results.
+
+This optimization can again be turned off by setting max_threads to 0 which is
+the default.
+
+Testing:
+=====
+
+Before these changes, the idle Openwsman memory usage was about 8MB and with
+10 clients doing simultaneous enumearations would climb up to about 50-60MB. With
+the following parameters in place:
+
+max_threads=1
+max_connections_per_thread=8
+thread_stack_size=262144
+
+the idle memory usage was about 4MB and with 10 clients doing enumearation, it went
+up to about 19MB.
+
+NOTE:
+-------
+I could get the idle usage down a lot more with setting the main stack even lower than
+the thread stack using `ulimit -s` in the wsman init file. I could set it down to about 64K
+and Openwsman worked just fine. 
+
+Your mileage may again vary but feel free to play around with that if you are on a memory
+starved system.
+
+--
+Suresh
