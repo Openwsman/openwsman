@@ -471,6 +471,11 @@ qualifiers2xml(CimClientInfo *client, WsXmlNodeH node, CMPIConstClass *_class, c
 }
 
 
+/*
+ * Get value of hash node "__cimnamespace"
+ * 
+ */
+
 char *
 cim_get_namespace_selector(hash_t * keys)
 {
@@ -489,6 +494,7 @@ cim_get_namespace_selector(hash_t * keys)
 	return cim_namespace;
 }
 
+
 static int
 cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 		const char *value)
@@ -502,8 +508,10 @@ cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 	return 0;
 }
 
+
 static CMPIObjectPath *
-cim_epr_to_objectpath(epr_t *epr) {
+cim_epr_to_objectpath(epr_t *epr)
+{
 	CMPIObjectPath * objectpath = NULL;
 	char *class = NULL;
 	if (epr && epr->refparams.uri) {
@@ -1025,7 +1033,8 @@ cim_enum_instances(CimClientInfo * client,
 		wsman_selectorset_cb(&filter->selectorset,
 				cim_add_keys_from_filter_cb, objectpath);
 		debug( "ObjectPath: %s",
-				CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));*/
+				CMGetCharPtr(CMObjectPathToString(objectpath, &rc)));
+		 */
 	} else {
 		objectpath = newCMPIObjectPath(client->cim_namespace,
 				client->requested_class, NULL);
@@ -1617,7 +1626,7 @@ cim_invoke_method(CimClientInfo * client,
 			debug("adding method arguments");
 			cim_add_args(client, objectpath, argsin);
 		}
-	  
+
 	        if (strstr(client->resource_uri, XML_NS_CIM_INTRINSIC) != NULL) {
 			debug("Instrinsic op ?: %s", client->method);
 
@@ -1627,7 +1636,7 @@ cim_invoke_method(CimClientInfo * client,
 				invoke_get_class(client, body, &rc);
 
 		} else  {
-	  
+
 			argsout = newCMPIArgs(NULL);
 			CMPIData data = cc->ft->invokeMethod(cc, objectpath,
 				client->method,
