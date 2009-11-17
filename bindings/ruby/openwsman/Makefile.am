@@ -7,6 +7,6 @@ rubylibdir = $(shell ruby -r rbconfig -e "vld = Config::CONFIG['vendorlibdir']; 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(rubylibdir)/openwsman
 	@INSTALL@ -m 0644 openwsman.rb $(DESTDIR)$(rubylibdir)/openwsman
-	@INSTALL@ -m 0644 wsxmlnode.rb $(DESTDIR)$(rubylibdir)/openwsman
+	@INSTALL@ -m 0644 xmlnode.rb $(DESTDIR)$(rubylibdir)/openwsman
 
-EXTRA_DIST= openwsman.rb wsxmlnode.rb
+EXTRA_DIST= openwsman.rb xmlnode.rb
