@@ -1,30 +1,25 @@
-2.2.2
-- Major changes:
-  - Fix upper limit check for threads and their stack usage
-    (Allowing to confine memory usage in the 10-20MB range!)
-    Reintroduce max_thread config file parameter and two new parameters
-    * max_connections_per_thread
-    * thread_stack_size
-    (Suresh Sundriyal)
-- Minor changes:
-  - Fix security risk when listing indication subscriptions (Suresh Sundriyal)
-  - Fix xml namespace for enumeration and subscription filters (kkaempf)
-  - Fix class names for swig bindings, makes Python bindings
-    operational (kkaempf)
-
 2.2.1
 - Major changes:
   - Enumeration timeout fixed, resulting in --enum-idle-timeout option
     to openwsmand taking seconds (instead of miliseconds) now
   - Client side CRL (certificate revocation list) support
-    (by Arun Venkatachalam)
+    (Arun Venkatachalam)
   - split off client config as /etc/openwsman/openwsman_client.conf
+  - Fix upper limit check for threads and their stack usage (Suresh Sundriyal)
+    (Allowing to confine memory usage in the 10-20MB range!)
+    Reintroduce max_thread config file parameter and two new parameters
+    * max_connections_per_thread
+    * thread_stack_size
 - Minor changes:
   - clean up fault generation in CIM backend (Suresh Sundriyal)
   - fix various memory leaks (Suresh Sundriyal)
-  - fix Python bindings build
+  - fix Python bindings build (kkaempf)
+  - Fix security risk when listing indication subscriptions (Suresh Sundriyal)
+  - Fix xml namespace for enumeration and subscription filters (kkaempf)
+  - Fix class names for swig bindings, makes Python bindings
+    operational (kkaempf)
   
-2.2
+2.2.0
 - Major changes:
   - Adapt IANA ports of 5985 (http) and 5986 (https)
   - Change the Ruby bindings module name to 'Openwsman'
