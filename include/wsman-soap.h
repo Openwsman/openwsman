@@ -474,6 +474,7 @@ wsman_generate_fault(WsXmlDocH inDoc,
 		     char *fault_msg);
 void
 wsman_generate_fault_buffer( WsXmlDocH inDoc,
+			     const char *encoding,
 			    WsmanFaultCodeType faultCode,
 			    WsmanFaultDetailType faultDetail,
 			    char *fault_msg,

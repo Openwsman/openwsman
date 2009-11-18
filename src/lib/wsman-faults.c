@@ -576,6 +576,7 @@ wsman_generate_fault( WsXmlDocH in_doc,
 
 void
 wsman_generate_fault_buffer ( WsXmlDocH in_doc,
+			      const char *encoding,
 		WsmanFaultCodeType faultCode,
 		WsmanFaultDetailType faultDetail,
 		char * fault_msg,
@@ -585,7 +586,7 @@ wsman_generate_fault_buffer ( WsXmlDocH in_doc,
 
 	WsXmlDocH doc = wsman_generate_fault( in_doc, faultCode, faultDetail, fault_msg);
 	debug( "Fault Code: %d", faultCode);
-	ws_xml_dump_memory_enc(doc, buf, len, NULL);
+	ws_xml_dump_memory_enc(doc, buf, len, encoding);
 	ws_xml_destroy_doc(doc);
 	return;
 }

@@ -668,6 +668,7 @@ dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 
 	if (wsman_fault_occured(msg)) {
 		wsman_generate_fault_buffer(in_doc,
+					    msg->charset,
 					    msg->status.fault_code,
 					    msg->status.fault_detail_code,
 					    msg->status.fault_msg,
