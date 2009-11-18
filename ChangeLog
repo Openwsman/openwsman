@@ -18,6 +18,7 @@
   - Fix xml namespace for enumeration and subscription filters (kkaempf)
   - Fix class names for swig bindings, makes Python bindings
     operational (kkaempf)
+  - Use same encoding for faults as in incoming msg (bug305, kkaempf)
   
 2.2.0
 - Major changes:
