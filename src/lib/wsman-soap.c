@@ -1162,14 +1162,14 @@ wsenum_pull_stub(SoapOpH op, void *appData,
 		goto DONE;
 	}
 	if (enumInfo->pullResultPtr) {
-		WsXmlNodeH itemsNode = ws_xml_add_child(node,
-				    XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
-		ws_serialize(soapCntx->serializercntx, itemsNode, enumInfo->pullResultPtr,
-			 typeInfo, ep->respName, (char *) ep->data, NULL, 1);
 		if (enumId) {
 			ws_serialize_str(soapCntx->serializercntx, node, enumId,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		}
+		WsXmlNodeH itemsNode = ws_xml_add_child(node,
+				    XML_NS_ENUMERATION, WSENUM_ITEMS, NULL);
+		ws_serialize(soapCntx->serializercntx, itemsNode, enumInfo->pullResultPtr,
+			 typeInfo, ep->respName, (char *) ep->data, NULL, 1);
 		ws_serializer_free_mem(soapCntx->serializercntx,
 			enumInfo->pullResultPtr, typeInfo);
 	} else {
@@ -1240,13 +1240,15 @@ wsenum_pull_direct_stub(SoapOpH op,
 		enumInfo->index++;
 		if (enumInfo->pullResultPtr) {
 			WsXmlNodeH      body;
-			WsXmlNodeH      response;
+			WsXmlNodeH      response, items;
 			doc = enumInfo->pullResultPtr;
 			wsman_set_estimated_total(_doc, doc, enumInfo);
 
 			body = ws_xml_get_soap_body(doc);
 			response = ws_xml_get_child(body, 0,
 					XML_NS_ENUMERATION, WSENUM_PULL_RESP);
+			items = ws_xml_get_child(body, 0,
+                                        XML_NS_ENUMERATION, WSENUM_ITEMS);
 
 			if (enumInfo->totalItems == 0 || enumInfo->index == enumInfo->totalItems) {
 				/*
@@ -1259,8 +1261,9 @@ wsenum_pull_direct_stub(SoapOpH op,
 				locked = 0;
 				destroy_enuminfo(enumInfo);
 			} else  {
-				ws_serialize_str(soapCntx->serializercntx, response, enumInfo->enumId,
-						XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
+			        /* add Context before Items to comply to WS-Enumeration xsd */
+				ws_xml_add_prev_sibling(items, XML_NS_ENUMERATION,
+							WSENUM_ENUMERATION_CONTEXT, enumInfo->enumId);
 			}
 		}
 	}
