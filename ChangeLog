@@ -19,7 +19,9 @@
   - Fix class names for swig bindings, makes Python bindings
     operational (kkaempf)
   - Use same encoding for faults as in incoming msg (bug305, kkaempf)
-  
+  - Make WS-Enumeration pull response comply to WS-Enumeration sequence
+    ordering (Suresh Sundriyal)
+
 2.2.0
 - Major changes:
   - Adapt IANA ports of 5985 (http) and 5986 (https)
