@@ -1,5 +1,5 @@
 #
-# spec file for package openwsman (Version 2.2.0)
+# spec file for package openwsman (Version @VERSION@)
 #
 # Copyright (c) 2009 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
@@ -155,11 +155,9 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
-%if 0%{?python_sitelib} == 0
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?py_requires: %define py_requires Requires: python}
-%endif
 %{py_requires}
 
 %description python
@@ -304,20 +302,17 @@ rm -f /var/log/wsmand.log
 %if 0%{?suse_version}
 %{ruby_sitearch}/openwsman.so
 %dir %{ruby_sitelib}/openwsman
-%{ruby_sitelib}/openwsman/openwsman.rb
-%{ruby_sitelib}/openwsman/wsxmlnode.rb
+%{ruby_sitelib}/openwsman/*.rb
 %endif
 %if 0%{?mandriva_version}
 %{ruby_sitearchdir}/openwsman.so
 %dir %{ruby_sitelibdir}/openwsman
-%{ruby_sitelibdir}/openwsman/openwsman.rb
-%{ruby_sitelibdir}/openwsman/wsxmlnode.rb
+%{ruby_sitelibdir}/openwsman/*.rb
 %endif
 %if 0%{?fedora}
 %{ruby_sitearch}/openwsman.so
 %dir %{ruby_sitelib}/openwsman
-%{ruby_sitelib}/openwsman/openwsman.rb
-%{ruby_sitelib}/openwsman/wsxmlnode.rb
+%{ruby_sitelib}/openwsman/*.rb
 %endif
 
 %files perl
