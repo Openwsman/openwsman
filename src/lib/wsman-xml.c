@@ -984,6 +984,23 @@ ws_xml_add_child(WsXmlNodeH node,
 	return newNode;
 }
 
+/**
+ *** Add a previous sibling to an XML node
+ *** @param node XML node
+ *** @param nsUri Namespace URI
+ *** @param localName local name
+ *** @param val Value of the node
+ *** @return New XML node
+ ***/
+WsXmlNodeH
+ws_xml_add_prev_sibling(WsXmlNodeH node,
+		const char *nsUri, const char *localName, const char *val)
+{
+	WsXmlNodeH newNode = xml_parser_node_add(node, XML_ELEMENT_PREV, nsUri,
+			localName, val, 0);
+	return newNode;
+}
+
 WsXmlNodeH
 ws_xml_add_child_sort(WsXmlNodeH node,
 		 const char *nsUri, const char *localName, const char *val, int xmlescape)

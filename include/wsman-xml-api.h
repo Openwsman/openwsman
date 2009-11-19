@@ -140,6 +140,8 @@ int ws_xml_enum_children(WsXmlNodeH parent, WsXmlEnumCallback callback,
 
 WsXmlNodeH ws_xml_add_child(WsXmlNodeH node, const char *ns,
 			    const char *localName, const char *val);
+WsXmlNodeH ws_xml_add_prev_sibling(WsXmlNodeH node, const char *ns,
+			    const char *localName, const char *val);
 WsXmlNodeH ws_xml_add_child_sort(WsXmlNodeH node, const char *ns,
 			    const char *localName, const char *val, int xmlescape);
 

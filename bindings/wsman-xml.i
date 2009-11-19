@@ -384,10 +384,17 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   WsXmlNodeH add( const char *ns, const char *name, const char *text = NULL ) {
     return ws_xml_add_child( $self, ns, name, text );
   }
+
+  /*
+   * add child (namespace, name, text) before(!) node
+   */
+  WsXmlNodeH add_before( const char *ns, const char *name, const char *text = NULL ) {
+    return ws_xml_add_prev_sibling( $self, ns, name, text );
+  }
+
 #if defined(SWIGRUBY)
   %alias add "<<";
 #endif
-
   /*
    * add node as child
    */
