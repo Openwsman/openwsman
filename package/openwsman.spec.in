@@ -19,7 +19,7 @@
 
 
 Name:           openwsman
-BuildRequires:  gcc-c++ swig
+BuildRequires:  gcc-c++ swig >= 1.3.30
 BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
 
 BuildRequires:  python-devel perl
