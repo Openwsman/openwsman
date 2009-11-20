@@ -30,6 +30,8 @@ openwsman_la_SOURCES =  ../openwsman.c $(SWIG_INPUT) $(GENERATED)
 
 openwsman_la_LIBADD = $(LIBS) -lpthread $(CURL_LIBS)
 
+openwsman_la_CFLAGS = $(RUBY_CFLAGS)
+
 openwsman_la_LDFLAGS = -module -avoid-version $(NO_UNDEFINED)
 
 rubyarch_LTLIBRARIES = openwsman.la
