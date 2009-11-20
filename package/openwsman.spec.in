@@ -24,6 +24,10 @@ BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
 
 BuildRequires:  python-devel perl
 
+%if 0%{?rhel_version} > 0
+BuildRequires:  -vim
+%endif
+
 %if 0%{?fedora} + 0%{?rhel_version} > 0
 BuildRequires:  curl-devel perl pkgconfig openssl-devel ruby-devel
 %endif
