@@ -63,6 +63,8 @@ Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
+Source2:        %{name}.pam
+Source3:        %{name}.SuSEfirewall2
 Patch0:         %{name}-pam-auth.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -252,9 +254,13 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
+install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
+install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
+%if 0%{?suse_version} > 0
+install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -296,7 +302,7 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %{python_sitearch}/*.so
 %{python_sitelib}/*.py
-%if 0%{?fedora} || 0%{?rhel_version}
+%if 0%{?fedora} > 0 || 0%{?rhel_version} > 0
 %{python_sitelib}/*.pyc
 %{python_sitelib}/*.pyo
 %endif
@@ -313,7 +319,7 @@ rm -f /var/log/wsmand.log
 %dir %{ruby_sitelibdir}/openwsman
 %{ruby_sitelibdir}/openwsman/*.rb
 %endif
-%if 0%{?fedora}
+%if 0%{?fedora} > 0 || 0%{?rhel_version} > 0
 %{ruby_sitearch}/openwsman.so
 %dir %{ruby_sitelib}/openwsman
 %{ruby_sitelib}/openwsman/*.rb
@@ -331,6 +337,9 @@ rm -f /var/log/wsmand.log
 %config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
 %attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
 %config %{_sysconfdir}/pam.d/openwsman
+%if 0%{?suse_version} > 0
+%config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+%endif
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/authenticators

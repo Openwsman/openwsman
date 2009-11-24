@@ -1,0 +1,6 @@
+## Name: Openwsman server
+## Description: opens ports for Openwsman server in order to allow remote system management
+
+# space separated list of allowed ports
+TCP="5985 5986"
+
