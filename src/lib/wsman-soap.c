@@ -1247,7 +1247,7 @@ wsenum_pull_direct_stub(SoapOpH op,
 			body = ws_xml_get_soap_body(doc);
 			response = ws_xml_get_child(body, 0,
 					XML_NS_ENUMERATION, WSENUM_PULL_RESP);
-			items = ws_xml_get_child(body, 0,
+			items = ws_xml_get_child(response, 0,
                                         XML_NS_ENUMERATION, WSENUM_ITEMS);
 
 			if (enumInfo->totalItems == 0 || enumInfo->index == enumInfo->totalItems) {
