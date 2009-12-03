@@ -19,7 +19,9 @@ wsmanincludedir = $(includedir)/openwsman
 
 package: dist
 	cp openwsman.spec /usr/src/packages/SPEC
-	cp openwsman-*.tar.gz /usr/src/packages/SOURCES
+	cp openwsman-*.tar.bz2 /usr/src/packages/SOURCES
+	cp package/openwsman.rpmlintrc /usr/src/packages/SOURCES
+	cp package/openwsman-pam-auth.patch /usr/src/packages/SOURCES
 	rpmbuild -ba openwsman.spec
 
 etags: TAGS
