@@ -29,7 +29,7 @@ BuildRequires:  -vim
 %endif
 
 %if 0%{?fedora} + 0%{?rhel_version} > 0
-BuildRequires:  curl-devel perl pkgconfig openssl-devel ruby-devel
+BuildRequires:  curl-devel pkgconfig openssl-devel ruby-devel
 %endif
 
 %if 0%{?suse_version} > 0
@@ -57,6 +57,8 @@ BuildRequires:  pkg-config
 PreReq:         sed coreutils grep /bin/hostname
 Version:        @VERSION@
 Release:        1
+# Mandriva:
+# Release %mkrel 1
 Url:            http://www.openwsman.org/
 License:        BSD 3-clause (or similar)
 Group:          System/Management
