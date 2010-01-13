@@ -28,7 +28,7 @@ BuildRequires:  python-devel perl
 BuildRequires:  -vim
 %endif
 
-%if (0%{?fedora} + 0%{?rhel_version}) > 0
+%if 0%{?fedora} + 0%{?rhel_version} > 0
 BuildRequires:  curl-devel pkgconfig openssl-devel ruby ruby-devel
 %if 0%{?fedora} > 0
 BuildRequires: perl-devel
@@ -187,7 +187,7 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          System/Management
 Requires:       ruby
-%if (0%{?fedora} + 0%{?rhel_version}) > 0
+%if 0%{?fedora} + 0%{?rhel_version} > 0
 Requires:       ruby(abi) = 1.8
 %endif
 %if 0%{?suse_version} > 1110
