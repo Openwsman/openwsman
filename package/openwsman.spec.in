@@ -187,7 +187,7 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          System/Management
 Requires:       ruby
-%if 0%{?fedora}
+%if 0%{?fedora} + 0%{rhel_version}
 Requires:       ruby(abi) = 1.8
 %endif
 %if 0%{?suse_version} > 1110
