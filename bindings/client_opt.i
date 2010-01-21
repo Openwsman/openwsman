@@ -5,11 +5,10 @@
  * client option declarations for openwsman swig bindings
  *
  */
- 
+
 %rename(ClientOptions) client_opt_t;
 %nodefault client_opt_t;
-typedef struct {
-} client_opt_t;
+typedef struct {} client_opt_t;
 
 
 /*
@@ -127,7 +126,14 @@ typedef struct {
   }
 
   /*
-   * Set sub expiry
+   * Get delivery uri
+   */
+  const char *delivery_uri() {
+    return $self->delivery_uri;
+  }
+
+  /*
+   * Set subscription expiry timeout (in seconds)
    */
 #if defined(SWIGRUBY)
   %rename( "sub_expiry=" ) set_sub_expiry(int event_subscription_expire);
@@ -135,7 +141,10 @@ typedef struct {
   void set_sub_expiry(int event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
   }
-	
+
+  /*
+   * Set subscription heartbeat interval (in seconds)
+   */
 #if defined(SWIGRUBY)
   %rename("heartbeat_interval=") set_heartbeat_interval(int heartbeat_interval);
 #endif
@@ -143,11 +152,25 @@ typedef struct {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
   }
 
+  /*
+   * Set subscription delivery mode (push, pushwithack,events,pull)
+   */
 #if defined(SWIGRUBY)
-  %rename( "delivery_mode=" ) set_delivery_mode(WsmanDeliveryMode delivery_mode);
+  %rename( "delivery_mode=" ) set_delivery_mode(int delivery_mode);
 #endif
-  void set_delivery_mode(WsmanDeliveryMode delivery_mode) {
+  void set_delivery_mode(int delivery_mode) {
 	wsmc_set_delivery_mode(delivery_mode, $self);
+  }
+
+
+  /*
+   * Set subscription delivery security mode (lots)
+   */
+#if defined(SWIGRUBY)
+  %rename( "delivery_sec_mode=" ) set_delivery_sec_mode(int delivery_mode);
+#endif
+  void set_delivery_sec_mode(int delivery_sec_mode) {
+	wsmc_set_delivery_sec_mode(delivery_sec_mode, $self);
   }
 }
 
