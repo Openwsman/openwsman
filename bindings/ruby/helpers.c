@@ -126,11 +126,25 @@ value2hash( hash_t *h, VALUE v )
 static void
 auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username, char **password )
 {
-    extern swig_class cTransport;
+
+/*
+ * Uhm, swig 1.3.40 (or earlier) renamed its internal class variables from
+ * cFoo to SwigClassFoo
+ * 1.3.36 certainly used cFoo
+ *
+ */
+
+#if SWIG_VERSION < 0x010340
+#define TRANSPORT_CLASS cTransport
+#else
+#define TRANSPORT_CLASS SwigClassTransport
+#endif
+  
+    extern swig_class TRANSPORT_CLASS;
     VALUE c = SWIG_NewPointerObj((void*) client, SWIGTYPE_p__WsManClient, 0);
 
     /* ruby callback */
-    VALUE result = rb_funcall( cTransport.klass, rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
+    VALUE result = rb_funcall( TRANSPORT_CLASS.klass, rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
 
     if (CLASS_OF( result ) == rb_cArray) {
 	if (RARRAY(result)->len == 2 ) {
