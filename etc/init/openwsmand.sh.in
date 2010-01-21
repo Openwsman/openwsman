@@ -18,8 +18,10 @@
 
 NAME=openwsmand
 DAEMON=/usr/sbin/$NAME
-OPTIONS=
+OPTIONS=-S # with SSL
 PIDFILE=/var/run/$NAME.pid
+
+lsb=0
 
 if [ $EUID != 0 ]; then
  echo "This script must be run as root."
@@ -34,29 +36,31 @@ lockfile=${SVIlock:-/var/lock/subsys/$NAME}
 
 [ -x $DAEMON ] || exit 0
 
-if [ -f "/etc/sysconfig/openwsman" ]; then
-    . /etc/sysconfig/openwsman
+if [ -f /etc/rc.status ]; then
+        # LSB conformant system
+	lsb=1
+	
+	# See how we were called.
+	. /etc/rc.status
+
+	# Reset status of this service
+	rc_reset
+
 fi
-# See how we were called.
-. /etc/rc.status
 
-# Reset status of this service
-rc_reset
-
-
-case "$1" in
-    start)
+start()
+{
     if [ ! -f "@SYSCONFDIR@/serverkey.pem" ]; then
-        if [ -f "/etc/ssl/servercerts/servercert.pem" \
-                -a -f "/etc/ssl/servercerts/serverkey.pem" ]; then
-            echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
-            ln -s /etc/ssl/servercerts/server{cert,key}.pem /etc/openwsman/
-        else
-            echo "Generating Openwsman server public certificate and private key"
-            FQDN=`hostname --fqdn`
-            if [ "x${FQDN}" = "x" ]; then
-                FQDN=localhost.localdomain
-            fi
+      if [ -f "/etc/ssl/servercerts/servercert.pem" \
+           -a -f "/etc/ssl/servercerts/serverkey.pem" ]; then
+	echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
+	ln -s /etc/ssl/servercerts/server{cert,key}.pem @SYSCONFDIR@
+      else
+        echo "Generating Openwsman server public certificate and private key"
+	FQDN=`hostname --fqdn`
+	if [ "x${FQDN}" = "x" ]; then
+	  FQDN=localhost.localdomain
+	fi
 cat << EOF | sh @SYSCONFDIR@/owsmangencert.sh > /dev/null 2>&1
 --
 SomeState
@@ -66,44 +70,87 @@ SomeOrganizationalUnit
 ${FQDN}
 root@${FQDN}
 EOF
-        fi
+      fi
     fi
 
     # Start daemons.
     echo -n "Starting the $DESCRIPTIVE"
-    startproc -p $PIDFILE $DAEMON > /dev/null 2>&1
-    rc_status -v
-    touch $lockfile
+    if [ $lsb -ne 0 ]; then
+      startproc -p $PIDFILE $DAEMON $OPTIONS> /dev/null 2>&1
+      rc_status -v
+    else
+      $DAEMON -S && echo "               done." || echo "  failed."
+    fi
+}
+
+stop()
+{
+	# Stop daemons.
+	echo -n "Shutting down $DESCRIPTIVE  "
+	if [ $lsb -ne 0 ]; then
+          killproc -TERM $DAEMON
+          rc_status -v
+	else
+          kill -9 `pidof openwsmand` > /dev/null 2>&1
+	  if [ $? -eq 0 ]; then
+	    echo "		done"
+	  fi 
+	fi
+}
+
+case "$1" in
+    start)
+	start
+    	touch $lockfile
     ;;
 
     stop)
-    # Stop daemons.
-    echo -n "Shutting down $DESCRIPTIVE"
-    killproc -p $PIDFILE -TERM $DAEMON
-    rc_status -v
-    rm -f $lockfile
+    	stop
+	rm -f $lockfile
     ;;
 
-    restart|force-reload)
-    $0 stop
-    $0 start
+    restart)
+    	stop
+    	start
+
+    ;;
+    force-reload)
+    	stop
+    	start
 
     ;;
 
     reload)
     echo -n "Reload service $DESCRIPTIVE"
-    killproc -p $PIDFILE  -HUP $DAEMON
-    rc_status -v
+    if [ $lsb -ne 0 ]; then
+      killproc -HUP $DAEMON
+      rc_status -v
+    else
+      killall -HUP openwsmand && echo "                 done." || echo "  failed."
+    fi
     ;;
 
     status)
     echo -n "Checking for service $DESCRIPTIVE"
-    checkproc -p $PIDFILE $DAEMON
-    rc_status -v
+    if [ $lsb -ne 0 ]; then
+      checkproc $DAEMON
+      rc_status -v
+    else
+      pidof openwsmand > /dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        echo "             running"
+      else
+        echo "             stopped"
+      fi
+    fi
     ;;
 
     *)
     echo "Usage: $0 {restart|start|stop|reload|force-reload|status}"
 esac
 
-rc_exit
+if [ $lsb -ne 0 ]; then
+	rc_exit
+else
+	exit 0
+fi
