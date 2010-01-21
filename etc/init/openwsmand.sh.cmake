@@ -50,18 +50,18 @@ fi
 
 start()
 {
-    if [ ! -f "@SYSCONF_DIR@/serverkey.pem" ]; then
+    if [ ! -f "@WSMANCONF_DIR@/serverkey.pem" ]; then
       if [ -f "/etc/ssl/servercerts/servercert.pem" \
            -a -f "/etc/ssl/servercerts/serverkey.pem" ]; then
 	echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
-	ln -s /etc/ssl/servercerts/server{cert,key}.pem @SYSCONF_DIR@
+	ln -s /etc/ssl/servercerts/server{cert,key}.pem @WSMANCONF_DIR@
       else
         echo "Generating Openwsman server public certificate and private key"
 	FQDN=`hostname --fqdn`
 	if [ "x${X1}{FQDN}" = "x" ]; then
 	  FQDN=localhost.localdomain
 	fi
-cat << EOF | sh @SYSCONF_DIR@/owsmangencert.sh > /dev/null 2>&1
+cat << EOF | sh @WSMANCONF_DIR@/owsmangencert.sh > /dev/null 2>&1
 --
 SomeState
 SomeCity
