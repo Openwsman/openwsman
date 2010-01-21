@@ -7,6 +7,7 @@
     verify_host flag is set (bnc#569611, A_Venkatachalam@Dell.com)
   - adapt bindings/ruby/helpers.c to Swig 1.3.40 class variable name
     change
+  - fix bindings to accept ints (enums can't be expressed)
 
 2.2.1-1
 - fix NULL pointer dereference in PullResponse (bnc#572553, Suresh Sundriyal)
