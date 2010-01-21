@@ -1,5 +1,15 @@
+2.2.2
+- Bugfix release:
+  - fix init.d script to run on non-LSB systems (bnc#571873, Chandrasekhar_R@Dell.com)
+  - Clean up CMake build (kkaempf)
+  - Fix build for RHEL5, Fedora 11+12, CentOS 5
+  - Fix host certificate check in eventing, enable only if the
+    verify_host flag is set (bnc#569611, A_Venkatachalam@Dell.com)
+  - adapt bindings/ruby/helpers.c to Swig 1.3.40 class variable name
+    change
+
 2.2.1-1
-- fix NULL pointer dereference in PullResponse (Suresh Sundriyal)
+- fix NULL pointer dereference in PullResponse (bnc#572553, Suresh Sundriyal)
 
 2.2.1
 - Major changes:

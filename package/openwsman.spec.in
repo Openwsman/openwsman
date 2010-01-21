@@ -282,13 +282,23 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/ldconfig
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
+%else
+# chkconfig?!
 %endif
 
 %preun server
+%if 0%{?suse_version}
 %{stop_on_removal openwsmand}
+%else
+# chkconfig?!
+%endif
 
 %postun server
+%if 0%{?suse_version}
 %{insserv_cleanup openwsmand}
+%else
+# chkconfig?!
+%endif
 rm -f /var/log/wsmand.log
 /sbin/ldconfig
 
