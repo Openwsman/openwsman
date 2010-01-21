@@ -451,6 +451,12 @@ wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options)
 }
 
 void
+wsmc_set_delivery_security_mode(WsManDeliverySecurityMode delivery_sec_mode, client_opt_t * options)
+{
+        options->delivery_sec_mode = delivery_sec_mode;
+}
+
+void
 wsmc_add_selector_from_uri(WsXmlDocH doc,
 		const char *resource_uri)
 {
