@@ -5,7 +5,6 @@ INCLUDES =  \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/src/server/shttpd \
 	    $(OPENSSL_CFLAGS) \
-	   -DSYSCONFDIR=\""$(sysconfdir)/openwsman"\" \
 	   -DEMBEDDED  -DNO_CGI -DNO_SSI 
 
 
