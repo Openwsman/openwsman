@@ -120,7 +120,7 @@ typedef struct {
    * Set delivery uri
    */
 #if defined(SWIGRUBY)
-  %rename("delivery_uri=") set_delivery_uri();
+  %rename( "delivery_uri=" ) set_delivery_uri(const char *delivery_uri);
 #endif
   void set_delivery_uri( const char *delivery_uri ) {
     wsmc_set_delivery_uri(delivery_uri, $self);
@@ -130,21 +130,21 @@ typedef struct {
    * Set sub expiry
    */
 #if defined(SWIGRUBY)
-  %rename("sub_expiry=") set_sub_expiry();
+  %rename( "sub_expiry=" ) set_sub_expiry(int event_subscription_expire);
 #endif
   void set_sub_expiry(int event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
   }
 	
 #if defined(SWIGRUBY)
-  %rename("heartbeat_interval=") set_heartbeat_interval();
+  %rename("heartbeat_interval=") set_heartbeat_interval(int heartbeat_interval);
 #endif
   void set_heartbeat_interval(int heartbeat_interval) {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
   }
 
 #if defined(SWIGRUBY)
-  %rename("delivery_mode=") set_delivery_mode();
+  %rename( "delivery_mode=" ) set_delivery_mode(WsmanDeliveryMode delivery_mode);
 #endif
   void set_delivery_mode(WsmanDeliveryMode delivery_mode) {
 	wsmc_set_delivery_mode(delivery_mode, $self);
