@@ -28,7 +28,7 @@ BuildRequires:  python-devel perl
 BuildRequires:  -vim
 %endif
 
-%if 0%{?fedora} + 0%{?rhel_version} > 0
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 BuildRequires:  curl-devel pkgconfig openssl-devel ruby ruby-devel
 %if 0%{?fedora} > 0
 BuildRequires: perl-devel
@@ -112,7 +112,11 @@ Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
 Requires:       %{name}-client = %{version}
 Requires:       sblim-sfcc-devel libxml2-devel pam-devel
+%if 0%{?suse_version} > 0
 Requires:       libcurl-devel
+%else
+Requires:       curl-devel
+%endif
 
 %description -n libwsman-devel
 Opensource Implementation of WS-Management
@@ -187,7 +191,7 @@ Authors:
 License:        BSD 3-clause (or similar)
 Group:          System/Management
 Requires:       ruby
-%if 0%{?fedora} + 0%{?rhel_version} > 0
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 Requires:       ruby(abi) = 1.8
 %endif
 %if 0%{?suse_version} > 1110
@@ -263,7 +267,7 @@ install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openw
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
-%if 0%{?suse_version} > 0
+%if 0%{?suse_version}
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 
@@ -276,7 +280,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %post server
 /sbin/ldconfig
+%if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
+%endif
 
 %preun server
 %{stop_on_removal openwsmand}
