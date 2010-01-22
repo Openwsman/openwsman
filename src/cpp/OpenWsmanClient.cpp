@@ -51,7 +51,7 @@ OpenWsmanClient::OpenWsmanClient(const char *host,
 		// search for a client cert with this name
 		const char *cert,
 		// search for a cient cert with this oid
-		const char *oid,
+		const char *oid
 #endif
 		)
 {

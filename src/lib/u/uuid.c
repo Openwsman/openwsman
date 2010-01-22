@@ -288,7 +288,6 @@ mac_addr_sys (u_char *addr)
     return 0;
 }
 #endif
-#endif
 
 #if !(defined (__SVR4) && defined (__sun))
 
@@ -403,4 +402,4 @@ generate_uuid ( char* buf,
 
 #endif
 
-
+#endif /* #if WIN32 ... #else */

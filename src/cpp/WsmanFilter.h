@@ -16,9 +16,6 @@ namespace WsmanClientNamespace {
 		private:
 			filter_t *filter;
 		public:
-			WsmanFilter() {
-				filter = new filter_t;
-			}
 			WsmanFilter(WsmanFilter &filter) {
 				this->filter = filter_copy(filter.getfilter());
 			}

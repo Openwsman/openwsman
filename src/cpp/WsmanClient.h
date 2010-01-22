@@ -68,10 +68,6 @@ namespace WsmanClientNamespace
 		string GetFaultDetail() const throw() {return soapDetail;}
 	};
 
-	// type for holding selectors.
-	typedef std::map<std::string, std::string> NameValuePairs;
-	typedef std::map<std::string, std::string>::const_iterator PairsIterator;
-
 	typedef enum {
 		WSMAN_DELIVERY_PUSH = 0,
 		WSMAN_DELIVERY_PUSHWITHACK,
