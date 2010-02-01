@@ -430,7 +430,7 @@ AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], ["${SYSCONFDIR_TMP}/openwsman/openwsma
 AC_DEFINE_UNQUOTED([DEFAULT_CLIENT_CONFIG_FILE], ["${SYSCONFDIR_TMP}/openwsman/openwsman_client.conf"] , [Default client config file])
 SYSCONFDIR=${sysconfdir}/openwsman
 
-test "$localstatedir" = '${prefix}/var' && localstatedir=/var || localstatedir=$localstatedir
+test x"$localstatedir" = x"" && localstatedir=/var
 dnl Subst PACKAGE_PLUGIN_DIR.
 packagesubscriptiondir="${localstatedir}"/lib/${PACKAGE}/subscriptions
 PACKAGE_SUBSCRIPTION_DIR="${packagesubscriptiondir}"
