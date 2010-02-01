@@ -1817,7 +1817,7 @@ int ws_deserialize_duration(const char *t, time_t * value)
 			got = 1;
 			break;
 		default:
-			debug("wrong format %c", e[0]);
+			debug("wrong format %c", *e);
 			goto DONE;
 		}
 		t = e;
