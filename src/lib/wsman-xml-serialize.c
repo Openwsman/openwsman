@@ -1702,6 +1702,16 @@ unsigned long ws_deserialize_uint32(WsSerializerContextH serctx,
 
 /*
  * Returns duration in seconds in <value> argument
+ *
+ *  the format of OperationTimeout is defined by the
+ *  XML Schema Datatypes Section 3.2.6.1 http://www.w3.org/TR/xmlschema-2/
+ * 
+ * Sample: P0Y0M0DT0H0M60.00S
+ * 
+ * (must start with 'P', 'T' separated date from time, seconds may have fraction)
+ * 
+ * FIXME: handle fractions of seconds (don't return a time_t but a struct timeval)
+ * 
  */
 int ws_deserialize_duration(const char *t, time_t * value)
 {
@@ -1713,113 +1723,111 @@ int ws_deserialize_duration(const char *t, time_t * value)
 	long secs = 0;
 	time_t vs;
 	int v;
-	double f;
-	char *e;
-	int got = 0;
-	int res = 0;
-	int time_handeled = 0;
+	double f;               /* float for fractional second */
+	char *e;                /* end pointer for strtol */
+        int got = 64;           /* bitmask of parsing position, 64==year */
+	int res = 1;            /* final result, 1 == error */
+	int time_handeled = 0;  /* seen 'T' */
 	int negative = 0;
 
 	TRACE_ENTER;
 	if (t == NULL) {
 		debug("node text == NULL");
-		res = 1;
 		goto DONE;
 	}
 
-	if (t[0] == '-') {
+	if (*t == '-') {
 		negative = 1;
 		t++;
 	}
-	if (t[0] != 'P') {
+	if (*t != 'P') {
 		debug("Wrong begining of duration");
-		res = 1;
 		goto DONE;
 	}
-	t++;
-	while (strlen(t) > 0) {
-		if (t[0] == 'T') {
+	while (*t++) {
+		if (*t == 'T') {
 			time_handeled = 1;
 			t++;
 			continue;
 		}
 		v = strtol(t, &e, 10);
-		if (time_handeled && (e[0] == '.')) {
+		if (t == e) {
+			debug("wrong format, missing numeric value");
+			goto DONE;
+		}
+		if (time_handeled && (*e == '.')) {
 			f = strtod(t, &e);
-			if (e[0] != 'S') {
+			if (*e != 'S') {
 				debug("float but not secs");
-				res = 1;
 				goto DONE;
 			}
-			if (f > v) {
-				v++;
+			if (round(f) > v) {
+				v++;  /* round value up */
 			}
 		}
-		switch (e[0]) {
+		switch (*e) {
 		case 'Y':
-			if (got >= 32 || time_handeled) {
+			if (got <= 32 || time_handeled) {
 				debug("wrong order Y");
-				res = 1;
 				goto DONE;
 			}
 			years = v;
-			got |= 32;
+			got = 32;
 			break;
 		case 'M':
 			if (!time_handeled) {	// months
-				if (got >= 16) {
+				if (got <= 16) {
 					debug("wrong order M");
-					res = 1;
 					goto DONE;
 				}
 				months = v;
-				got |= 16;
+				got = 16;
 				break;
 			}
 			// minutes
-			if (got >= 2 || !time_handeled) {
+			if (got <= 2 || !time_handeled) {
 				debug("wrong order M");
-				res = 1;
 				goto DONE;
 			}
 			mins = v;
-			got |= 2;
+			got = 2;
 			break;
 		case 'D':
-			if (got >= 8 || time_handeled) {
+			if (got <= 8 || time_handeled) {
 				debug("wrong order D");
-				res = 1;
 				goto DONE;
 			}
 			days = v;
-			got |= 8;
+			got = 8;
 			break;
 		case 'H':
-			if (got >= 4 || !time_handeled) {
+			if (got <= 4 || !time_handeled) {
 				debug("wrong order H");
-				res = 1;
 				goto DONE;
 			}
 			hours = v;
-			got |= 4;
+			got = 4;
 			break;
 		case 'S':
-			if (got >= 1 || !time_handeled) {
+			if (got <= 1 || !time_handeled) {
 				debug("wrong order S");
-				res = 1;
 				goto DONE;
 			}
 			secs = v;
-			got |= 1;
+			got = 1;
 			break;
 		default:
 			debug("wrong format %c", e[0]);
-			res = 1;
 			goto DONE;
 		}
-		t = e + 1;
+		t = e;
 	}
 
+	// invalid if T found and no HMS, or no time value detected
+	if ((time_handeled && (got > 4)) || (64 == got)){
+		debug("wrong format: floating T or no time value detected");
+		goto DONE;
+	}
 
 	// We don't know exact date and time of the sender.
 	// For simplicity comsider 1 month = 30days;
@@ -1830,6 +1838,8 @@ int ws_deserialize_duration(const char *t, time_t * value)
 		vs = 0 - vs;
 	}
 	*value = vs;
+	res = 0; // good at this point
+
       DONE:
 	TRACE_EXIT;
 	return res;
