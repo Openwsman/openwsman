@@ -160,6 +160,7 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 			XML_NS_ADDRESSING, WSA_MESSAGE_ID, 1);
 	}
 	if (options->timeout) {
+	  /* FIXME: see wsman-xml-serialize.c */
 		char            buf[20];
 		sprintf(buf, "PT%u.%uS", (unsigned int) options->timeout / 1000,
 				(unsigned int) options->timeout % 1000);
