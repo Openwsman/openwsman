@@ -136,41 +136,62 @@ typedef struct {} client_opt_t;
    * Set subscription expiry timeout (in seconds)
    */
 #if defined(SWIGRUBY)
-  %rename( "sub_expiry=" ) set_sub_expiry(int event_subscription_expire);
+  %rename( "sub_expiry=" ) set_sub_expiry(unsigned int event_subscription_expire);
 #endif
-  void set_sub_expiry(int event_subscription_expire) {
+  void set_sub_expiry(unsigned int event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
+  }
+
+  int sub_expiry() {
+    return $self->expires;
   }
 
   /*
    * Set subscription heartbeat interval (in seconds)
    */
 #if defined(SWIGRUBY)
-  %rename("heartbeat_interval=") set_heartbeat_interval(int heartbeat_interval);
+  %rename("heartbeat_interval=") set_heartbeat_interval(unsigned int heartbeat_interval);
 #endif
-  void set_heartbeat_interval(int heartbeat_interval) {
+  void set_heartbeat_interval(unsigned int heartbeat_interval) {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
+  }
+
+  int heartbeat_interval() {
+    return $self->heartbeat_interval;
   }
 
   /*
    * Set subscription delivery mode (push, pushwithack,events,pull)
    */
 #if defined(SWIGRUBY)
-  %rename( "delivery_mode=" ) set_delivery_mode(int delivery_mode);
+  %rename( "delivery_mode=" ) set_delivery_mode(unsigned int delivery_mode);
 #endif
-  void set_delivery_mode(int delivery_mode) {
-	wsmc_set_delivery_mode(delivery_mode, $self);
+  void set_delivery_mode(unsigned int delivery_mode) {
+    if (delivery_mode > WSMAN_DELIVERY_PULL)
+      SWIG_exception( SWIG_ValueError, "Bad delivery mode" );
+	
+    wsmc_set_delivery_mode(delivery_mode, $self);
   }
 
+  int delivery_mode() {
+    return $self->delivery_mode;
+  }
 
   /*
    * Set subscription delivery security mode (lots)
    */
 #if defined(SWIGRUBY)
-  %rename( "delivery_sec_mode=" ) set_delivery_sec_mode(int delivery_mode);
+  %rename( "delivery_sec_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
 #endif
-  void set_delivery_sec_mode(int delivery_sec_mode) {
-	wsmc_set_delivery_sec_mode(delivery_sec_mode, $self);
+  void set_delivery_sec_mode(unsigned int delivery_sec_mode) {
+    if (delivery_sec_mode > WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS)
+      SWIG_exception( SWIG_ValueError, "Bad delivery security mode" );
+    wsmc_set_delivery_sec_mode(delivery_sec_mode, $self);
   }
+  
+  int delivery_sec_mode() {
+    return $self->delivery_sec_mode;
+  }
+
 }
 
