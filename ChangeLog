@@ -4,6 +4,7 @@
   - accept OperationTimeout values as outlined in Section 3.2.6.1
     of http://www.w3.org/TR/xmlschema-2 (Chris Poblete)
   - fix to build with non-standard subscriptions dir (Chris Poblete)
+  - fall back to IPv4 if IPv6 unsupported (Arun Venkatachalam)
 
 2.2.2
 - Bugfix release:

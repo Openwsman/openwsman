@@ -171,7 +171,8 @@ open_listening_port(int port)
 	sa.u.sin.sin6_scope_id          = 0;
 
 	if ((sock = socket(AF_INET6, SOCK_STREAM, 6)) == -1)
-		goto fail;
+		if((sock = socket(PF_INET,SOCK_STREAM,6)) == -1)
+			goto fail;	
 #else
 	sa.u.sin.sin_family             = AF_INET;
 	sa.u.sin.sin_addr.s_addr        = htonl(INADDR_ANY);	

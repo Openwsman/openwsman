@@ -49,7 +49,8 @@ my_socketpair(struct conn *c, int sp[2])
 	
 #ifdef ENABLE_IPV6
 	 if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
-                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
+		if((sock = socket(AF_INET,SOCK_STREAM,0)) == -1)
+	                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
         } 
 
 #else
