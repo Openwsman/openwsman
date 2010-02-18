@@ -292,15 +292,17 @@ int main(int argc, char **argv)
 
 	initialize_logging();
 	
-	if ((listener = wsmand_start_server(ini)) == NULL) {
-		wsman_plugins_unload(listener);
-		u_free(listener);
-		exit(EXIT_FAILURE);
+	listener = wsmand_start_server(ini);
+  
+        if (listener) {
+	   wsman_plugins_unload(listener);
+	   u_free(listener);
 	}
-
-	wsman_plugins_unload(listener);
-	u_free(listener);
+  
 	debug_destroy_handlers();
 	iniparser_free(ini);
+        if (!listener) {
+	   exit(EXIT_FAILURE);
+	}
 	return 0;
 }
