@@ -171,6 +171,7 @@ open_listening_port(int port)
 
 #ifdef ENABLE_IPV6
 	sa.len                          = sizeof(sa.u.sin6);
+        memset(&sa.u.sin6, 0, sa.len);
 	sa.u.sin6.sin6_family		= AF_INET6;
 	sa.u.sin6.sin6_addr		= in6addr_any;
 	sa.u.sin6.sin6_port             = htons((uint16_t) port);
@@ -183,6 +184,7 @@ open_listening_port(int port)
 		if (wsmand_options_get_use_ipv4()) {
 #endif	
 			sa.len                         = sizeof(sa.u.sin);
+			memset(&sa.u.sin, 0, sa.len);
 			sa.u.sin.sin_family            = AF_INET;
 			sa.u.sin.sin_addr.s_addr       = htonl(INADDR_ANY);	
 			sa.u.sin.sin_port              = htons((uint16_t) port);
