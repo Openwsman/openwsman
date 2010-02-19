@@ -94,10 +94,9 @@ struct usa {
 	union {
 		struct sockaddr	sa;
 #ifdef ENABLE_IPV6
-		struct sockaddr_in6 sin;
-#else
-		struct sockaddr_in sin;
+		struct sockaddr_in6 sin6;
 #endif
+		struct sockaddr_in sin;
 	} u;
 };
 

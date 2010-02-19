@@ -163,11 +163,16 @@ shttpd_get_env(struct shttpd_arg *arg, const char *env_name)
 		}
 	} else if (strcmp(env_name, "REMOTE_ADDR") == 0) {
 #ifdef ENABLE_IPV6
-		static char str[INET6_ADDRSTRLEN];
-                inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
-		return (const char*)str;
-#else
-		return (inet_ntoa(c->sa.u.sin.sin_addr));/* FIXME NOT MT safe */
+		if (wsmand_options_get_use_ipv6()) {
+			static char str[INET6_ADDRSTRLEN];
+			inet_ntop( AF_INET6,&c->sa.u.sin6.sin6_addr, str, sizeof(str));
+			return (const char*)str;
+		}
+		else {
+#endif
+			return (inet_ntoa(c->sa.u.sin.sin_addr));/* FIXME NOT MT safe */
+#ifdef ENABLE_IPV6
+		}
 #endif
 	}
 

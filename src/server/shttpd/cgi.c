@@ -32,7 +32,7 @@ my_socketpair(struct conn *c, int sp[2])
 #else
 	struct sockaddr_in      sa;
 #endif
-	int			sock, ret = -1;
+	int			sock = -1, ret = -1;
 	socklen_t		len = sizeof(sa);
 
 	(void) memset(&sa, 0, sizeof(sa));
@@ -48,8 +48,10 @@ my_socketpair(struct conn *c, int sp[2])
 #endif
 	
 #ifdef ENABLE_IPV6
-	 if ((sock = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
-		if((sock = socket(AF_INET,SOCK_STREAM,0)) == -1)
+	 if (!wsmand_options_get_use_ipv6()
+	     || (sock = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
+		if(!wsmand_options_get_use_ipv4()
+		   || (sock = socket(AF_INET,SOCK_STREAM,0)) == -1)
 	                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
         } 
 
@@ -75,8 +77,6 @@ my_socketpair(struct conn *c, int sp[2])
                 elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
                 (void) closesocket(sock);
         }
-
-
 #else
 	else if ((sp[0] = socket(AF_INET, SOCK_STREAM, 6)) == -1) {
 		elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
@@ -196,15 +196,18 @@ prepare_environment(const struct conn *c, const char *prog,
 	addenv(blk, "DOCUMENT_ROOT=%s", c->ctx->document_root);
 	addenv(blk, "REQUEST_METHOD=%s", known_http_methods[c->method].ptr);
 #ifdef ENABLE_IPV6
-	char str[INET6_ADDRSTRLEN];
-       	inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
-	addenv(blk, "REMOTE_ADDR=%s", str);
-        addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin6_port));
-
-#else
-
-	addenv(blk, "REMOTE_ADDR=%s", inet_ntoa(c->sa.u.sin.sin_addr));
-	addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin_port));
+	if (wsmand_options_get_use_ipv6()) {
+		char str[INET6_ADDRSTRLEN];
+		inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
+		addenv(blk, "REMOTE_ADDR=%s", str);
+		addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin6_port));
+	}
+	else {
+#endif
+		addenv(blk, "REMOTE_ADDR=%s", inet_ntoa(c->sa.u.sin.sin_addr));
+		addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin_port));
+#ifdef ENABLE_IPV6
+	}
 #endif
 
 	addenv(blk, "REQUEST_URI=%s", c->uri);
