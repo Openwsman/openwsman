@@ -172,7 +172,11 @@ int wsmand_read_config(dictionary * ini)
 	ssl_cert_file = iniparser_getstr(ini, "server:ssl_cert_file");
 	use_ipv4 = iniparser_getboolean(ini, "server:ipv4", 1);
 #ifdef ENABLE_IPV6
-        use_ipv6 = iniparser_getboolean(ini, "server:ipv6", 0);
+        use_ipv6 = iniparser_getboolean(ini, "server:ipv6", 1);
+        if (! (use_ipv4 && use_ipv6)) {
+		fprintf(stderr, "Neither ipv4 nor ipv6 is enabled in openwsman.conf !\n");
+		exit(1);
+	}
 #endif
 	use_digest = iniparser_getboolean(ini, "server:use_digest", 0);
 	digest_password_file = iniparser_getstr(ini,
@@ -278,6 +282,12 @@ int wsmand_options_get_use_ipv4(void)
 int wsmand_options_get_use_ipv6(void)
 {
 	return use_ipv6;
+}
+
+/* called when opening an ipv6 socket failed */
+void wsmand_options_disable_use_ipv6(void)
+{
+	use_ipv6 = 0;
 }
 #endif
 

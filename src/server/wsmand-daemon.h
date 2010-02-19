@@ -67,6 +67,8 @@ int wsmand_options_get_use_ssl(void);
 int wsmand_options_get_use_ipv4(void);
 #ifdef ENABLE_IPV6
 int wsmand_options_get_use_ipv6(void);
+/* will be called to denote ipv4 fallback */
+void wsmand_options_disable_use_ipv6(void);
 #endif
 int wsmand_options_get_debug_level(void);
 int wsmand_options_get_syslog_level(void);
