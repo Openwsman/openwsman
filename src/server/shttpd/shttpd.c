@@ -15,6 +15,13 @@
 
 #include "shttpd_defs.h"
 
+/* from src/server/wsmand-daemon.h */
+extern int wsmand_options_get_use_ipv4(void);
+#ifdef ENABLE_IPV6
+extern int wsmand_options_get_use_ipv6(void);
+extern void wsmand_options_disable_use_ipv6(void);
+#endif
+
 time_t		current_time;	/* Current UTC time		*/
 int		tz_offset;	/* Time zone offset from UTC	*/
 
