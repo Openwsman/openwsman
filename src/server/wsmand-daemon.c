@@ -173,7 +173,7 @@ int wsmand_read_config(dictionary * ini)
 	use_ipv4 = iniparser_getboolean(ini, "server:ipv4", 1);
 #ifdef ENABLE_IPV6
         use_ipv6 = iniparser_getboolean(ini, "server:ipv6", 1);
-        if (! (use_ipv4 && use_ipv6)) {
+        if (! (use_ipv4 || use_ipv6)) {
 		fprintf(stderr, "Neither ipv4 nor ipv6 is enabled in openwsman.conf !\n");
 		exit(1);
 	}
