@@ -76,6 +76,13 @@ typedef struct {
 	} entry;
 } selector_entry;
 
+/* support for array values, all represented with the same key */	
+typedef struct {
+	char * key;
+	void * data;
+	int arraycount;
+} methodarglist_t;
+
 typedef int (*selector_callback ) (void *, const char*, const char*);
 
 void wsman_epr_selector_cb(epr_t *epr, selector_callback cb,
