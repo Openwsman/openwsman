@@ -280,6 +280,128 @@ int list_contains(list_t *list, lnode_t *node)
 }
 
 
+/*
+ * Split off a trailing sequence of nodes from the source list and relocate
+ * them to the tail of the destination list. The trailing sequence begins
+ * with node ``first'' and terminates with the last node of the source
+ * list. The nodes are added to the end of the new list in their original
+ * order.
+ */
+
+void ow_list_transfer(list_t *dest, list_t *source, lnode_t *first)
+{
+    listcount_t moved = 1;
+    lnode_t *last;
+
+    if (first == NULL)
+	return;
+
+    assert (list_contains(source, first));
+
+    last = source->nilnode.prev;
+	
+    source->nilnode.prev = first->prev;
+    first->prev->next = list_nil(source);
+	
+    last->next = list_nil(dest);
+    first->prev = dest->nilnode.prev;
+    dest->nilnode.prev->next = first;
+    dest->nilnode.prev = last;
+
+    while (first != last) {
+	first = first->next;
+	moved++;
+    }
+    
+    /* assert no weirdness */
+    assert (moved <= source->nodecount);
+
+    source->nodecount -= moved;
+    dest->nodecount += moved;
+
+    /* assert list sanity */
+    assert (list_verify(source));
+    assert (list_verify(dest));
+}
+
+
+/*
+ * merge source to dest, sorted
+ * 
+ */
+
+void ow_list_merge(list_t *dest, list_t *source,
+	int compare (const void *, const void *))
+{
+    lnode_t *dn, *sn, *tn;
+    lnode_t *d_nil = list_nil(dest), *s_nil = list_nil(source);
+
+    /* Nothing to do if source and destination list are the same. */
+    if (dest == source)
+	return;
+
+    /* lists must be sorted */
+    assert (list_is_sorted(source, compare));
+    assert (list_is_sorted(dest, compare));
+
+    dn = list_first_priv(dest);
+    sn = list_first_priv(source);
+
+    while (dn != d_nil && sn != s_nil) {
+	if (compare(lnode_get(dn), lnode_get(sn)) >= 0) {
+		tn = lnode_next(sn);
+		list_delete(source, sn);
+		list_ins_before(dest, sn, dn);
+		sn = tn;
+	} else {
+		dn = lnode_next(dn);
+	}
+    }
+
+    if (dn != d_nil) /* sn == s_nil */
+	return;
+
+    if (sn != s_nil)
+	list_transfer(dest, source, sn);
+}
+
+
+/*
+ * sort list according to compare()
+ * 
+ * quicksort
+ * 
+ */
+
+void ow_list_sort(list_t *list, int compare(const void *, const void *))
+{
+    list_t extra;
+    listcount_t middle;
+    lnode_t *node;
+
+    if (list_count(list) > 1) {
+	middle = list_count(list) / 2;
+	node = list_first_priv(list);
+
+	list_init(&extra, list_count(list) - middle);
+
+	/* advance node to middle */
+	while (middle--)
+	    node = lnode_next(node);
+
+	/* transfer 'right' half of list to extra  */
+	ow_list_transfer(&extra, list, node);
+	/* sort 'left' half */
+	ow_list_sort(list, compare);
+	/* sort 'right' half */
+	ow_list_sort(&extra, compare);
+	/* merge sorted halfs */
+	ow_list_merge(list, &extra, compare);
+    } 
+    assert (list_is_sorted(list, compare));
+}
+
+
 lnode_t *list_find(list_t *list, const void *key, int compare(const void *, const void *))
 {
     lnode_t *node;
