@@ -70,6 +70,10 @@ static const char **wsmand_argv = NULL;
 
 static int server_port = -1;
 static int server_ssl_port = -1;
+static int use_ipv4 = 1;
+#ifdef ENABLE_IPV6
+static int use_ipv6 = 0;
+#endif
 static int use_digest = 0;
 static char *ssl_key_file = NULL;
 static char *service_path = DEFAULT_SERVICE_PATH;
@@ -166,6 +170,10 @@ int wsmand_read_config(dictionary * ini)
 	    iniparser_getstring(ini, "server:service_path", "/wsman");
 	ssl_key_file = iniparser_getstr(ini, "server:ssl_key_file");
 	ssl_cert_file = iniparser_getstr(ini, "server:ssl_cert_file");
+	use_ipv4 = iniparser_getboolean(ini, "server:ipv4", 1);
+#ifdef ENABLE_IPV6
+        use_ipv6 = iniparser_getboolean(ini, "server:ipv6", 0);
+#endif
 	use_digest = iniparser_getboolean(ini, "server:use_digest", 0);
 	digest_password_file = iniparser_getstr(ini,
 						"server:digest_password_file");
@@ -260,6 +268,18 @@ int wsmand_options_get_use_ssl(void)
 {
 	return use_ssl;
 }
+
+int wsmand_options_get_use_ipv4(void)
+{
+	return use_ipv4;
+}
+
+#ifdef ENABLE_IPV6
+int wsmand_options_get_use_ipv6(void)
+{
+	return use_ipv6;
+}
+#endif
 
 int wsmand_options_get_foreground_debug(void)
 {

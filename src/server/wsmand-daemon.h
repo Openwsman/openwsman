@@ -64,6 +64,10 @@ int wsmand_parse_options(int argc, char **argv);
 int wsmand_options_get_daemon_flag(void);
 int wsmand_options_get_no_plugins_flag(void);
 int wsmand_options_get_use_ssl(void);
+int wsmand_options_get_use_ipv4(void);
+#ifdef ENABLE_IPV6
+int wsmand_options_get_use_ipv6(void);
+#endif
 int wsmand_options_get_debug_level(void);
 int wsmand_options_get_syslog_level(void);
 int wsmand_options_get_server_port(void);
