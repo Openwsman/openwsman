@@ -71,19 +71,7 @@ CimResource_destroy(CimClientInfo *cimclient)
 	if (cimclient->requested_class)
 		u_free(cimclient->requested_class);
 	if (cimclient->method_args) {
-                /* FIXME: this should use a 'free' function from hash.c with a per-node 'free' callback */
-		hscan_t hs;
-                hnode_t *hn;
-                selector_entry *sentry = NULL;
-                hash_t * args = cimclient->method_args;
-                hash_scan_begin(&hs, args);
-                while ((hn = hash_scan_next(&hs)))
-                {
-                        sentry = (selector_entry*)hnode_get(hn);
-                        if(NULL != sentry)
-                        	u_free(sentry); 
-                }
-
+		/* NOTE: clean up is performed with call to wsman_free_method_hnode() and hash_free() */
 		hash_free(cimclient->method_args);
 	}
 	if (cimclient->selectors) {

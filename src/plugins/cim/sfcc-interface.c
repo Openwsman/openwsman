@@ -510,7 +510,7 @@ cim_add_keys_from_filter_cb(void *objectpath, const char* key,
 
 
 static CMPIObjectPath *
-cim_epr_to_objectpath(epr_t *epr)
+cim_epr_to_objectpath(CimClientInfo * client, epr_t *epr)
 {
 	CMPIObjectPath * objectpath = NULL;
 	char *class = NULL;
@@ -520,12 +520,24 @@ cim_epr_to_objectpath(epr_t *epr)
 	}
 	if (class) {
 		class++;
-		objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
+		if ((NULL != client) && (NULL != client->cim_namespace))
+			objectpath = newCMPIObjectPath(client->cim_namespace, class, NULL);
+		else
+			objectpath = newCMPIObjectPath(CIM_NAMESPACE, class, NULL);
 		wsman_epr_selector_cb(epr, cim_add_keys_from_filter_cb, objectpath);
 		debug( "ObjectPath: %s",
 			CMGetCharPtr(CMObjectPathToString(objectpath, NULL)));
 	}
 	return objectpath;
+}
+
+
+static int
+comparef(const void *key1, const void *key2)
+{
+	methodarglist_t * d1 = (methodarglist_t*)key1;
+	methodarglist_t * d2 = (methodarglist_t*)key2;
+	return strcmp(d1->key, d2->key);
 }
 
 
@@ -535,26 +547,90 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 {
 	hscan_t hs;
 	hnode_t *hn;
-	if (NULL == argsin) {
-		return;
-	}
 	hash_scan_begin(&hs, client->method_args);
+	list_t *arglist = NULL;
+
+	debug("cim_add_args:");
 	while ((hn = hash_scan_next(&hs))) {
-		selector_entry *sentry = (selector_entry *)hnode_get(hn);
-		char *hkey = (char *)hnode_getkey(hn);
-		if (0 != sentry->type) {  /* reference */
-			CMPIValue value;
-			debug("epr: %p", sentry->entry.eprp);
-			if (NULL != sentry->entry.eprp) {
-				value.ref = cim_epr_to_objectpath(sentry->entry.eprp);
-				if (NULL != value.ref) {
-					CMAddArg(argsin, hkey, &value, CMPI_ref);
-				}
-			}
-		} else {
-			debug("text: %s", sentry->entry.text);
-			CMAddArg(argsin, hkey, sentry->entry.text, CMPI_chars);
+		if (strcmp(METHOD_ARGS_KEY, (char *)hnode_getkey(hn)) == 0)
+			arglist = (list_t *)hnode_get(hn);
+	}
+	if (NULL != arglist) {
+		lnode_t *argnode;
+		methodarglist_t *arraynode = NULL;
+		methodarglist_t *node_val;
+		int ii, jj, listcount = list_count(arglist);
+
+		// sort the list first then tag arrays
+		debug("cim_add_args: list count: %u", listcount);
+		if (0 >= listcount) {
+			return; // nothing to do so return
 		}
+		list_sort(arglist, comparef);
+		argnode = list_first(arglist);
+		arraynode = (methodarglist_t *)argnode->list_data;
+		argnode = list_next(arglist, argnode);
+		while (argnode) {
+			node_val = (methodarglist_t *)argnode->list_data;
+			if (strcmp(arraynode->key, node_val->key) == 0) {
+				arraynode->arraycount++;
+			} else {
+				arraynode = node_val;
+			}
+			argnode = list_next(arglist, argnode);
+		}
+
+		// reiterate the list and add args
+		argnode = list_first(arglist);
+		for (ii = 0; ii < listcount; ii++) {
+			CMPIValue value;
+			selector_entry *sentry;
+			node_val = (methodarglist_t *)argnode->list_data;
+			sentry = (selector_entry *)node_val->data;
+			if (0 < node_val->arraycount) {
+				CMPIArray *arraydata = NULL;
+				int arraytype = sentry->type;
+				node_val->arraycount++; // since value of 0 is singleton and value of 1 is actually 2 count in an array
+				debug("cim_add_args: array key: %s type: %u count: %u", node_val->key, arraytype, node_val->arraycount);
+				if (0 != arraytype)
+					arraydata = native_new_CMPIArray(node_val->arraycount, CMPI_ref, NULL);
+				else
+					arraydata = native_new_CMPIArray(node_val->arraycount, CMPI_string, NULL);
+				for (jj = 0; jj < node_val->arraycount; jj++) {
+					debug("cim_add_args: array %u object: %p", jj, sentry);
+					if (0 != arraytype) {
+						value.ref = cim_epr_to_objectpath(client, sentry->entry.eprp);
+						CMSetArrayElementAt(arraydata, jj, &value, CMPI_ref);
+					} else {
+						value.string = native_new_CMPIString((char *)sentry->entry.text, NULL);
+						CMSetArrayElementAt(arraydata, jj, &value, CMPI_string);
+					}
+					argnode = list_next(arglist, argnode);
+					if (NULL != argnode)
+						sentry = (selector_entry *)((methodarglist_t *)argnode->list_data)->data;
+				}
+				value.array = arraydata;
+				if (0 != arraytype)
+					CMAddArg(argsin, node_val->key, (char *)&value, CMPI_refA);
+				else
+					CMAddArg(argsin, node_val->key, (char *)&value, CMPI_stringA);
+				ii += (jj - 1);
+			} else {
+				debug("cim_add_args: single key: %s type: %u", node_val->key, sentry->type);
+				if (0 != sentry->type) {
+					epr_t *eprp = sentry->entry.eprp;
+					debug("epr_t: selectorcount: %u", eprp->refparams.selectorset.count);
+					value.ref = cim_epr_to_objectpath(client, sentry->entry.eprp);
+					CMAddArg(argsin, node_val->key, &value, CMPI_ref);
+				} else {
+					debug("text: %s", sentry->entry.text);
+					CMAddArg(argsin, node_val->key, sentry->entry.text, CMPI_chars);
+				}
+				argnode = list_next(arglist, argnode);
+			}
+		}
+	} else {
+		debug("cim_add_args: did not find any argument list");
 	}
 }
 
@@ -576,7 +652,7 @@ cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 					sentry->entry.text, CMPI_chars);
 		else {
 			CMPIValue value;
-			value.ref = cim_epr_to_objectpath(sentry->entry.eprp);;
+			value.ref = cim_epr_to_objectpath(NULL, sentry->entry.eprp);;
 			if (NULL != value.ref) {
 				CMAddKey(objectpath, (char *) hnode_getkey(hn),
 					&value, CMPI_ref);
@@ -734,7 +810,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 			}
 		}
 		else {
-			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(sentry->entry.eprp);
+			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(NULL, sentry->entry.eprp);
 			CMPIObjectPath *objectpath_epr2 = CMClone(data.value.ref, NULL);
 			if (cim_opcmp(objectpath_epr2, objectpath_epr) == 0) {
 				statusP->fault_code = WSMAN_RC_OK;
@@ -1391,6 +1467,21 @@ cim_add_epr_details(CimClientInfo * client,
 			XML_NS_WS_MAN,
 			WSM_SELECTOR_SET,
 			NULL);
+
+	if (0 < numkeys) {
+		CMPIString * cim_namespace = objectpath->ft->getNameSpace(objectpath, NULL);
+		char *str_namespace = client->cim_namespace;
+		if (NULL != cim_namespace && NULL != cim_namespace->hdl) {
+			str_namespace = (char *)cim_namespace->hdl;
+		}
+		if (str_namespace != NULL) {
+			WsXmlNodeH cimns = ws_xml_add_child(wsman_selector_set,
+				XML_NS_WS_MAN, WSM_SELECTOR,
+				(char *) str_namespace);
+			ws_xml_add_node_attr(cimns, NULL, "Name",
+				CIM_NAMESPACE_SELECTOR);
+		}
+	}
 
 	for (i = 0; i < numkeys; i++) {
 		CMPIString *keyname;

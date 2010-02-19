@@ -6,7 +6,9 @@
   - fix to build with non-standard subscriptions dir (Chris Poblete)
   - fall back to IPv4 if IPv6 unsupported (Arun Venkatachalam)
   - make IPv4 vs. IPv6 configurable (kkaempf)
-  
+  - support invoking a method with array type parameter/arguments
+    (Chris Poblete, bnc#581414)
+
 2.2.2
 - Bugfix release:
   - fix init.d script to run on non-LSB systems (bnc#571873, Chandrasekhar_R@Dell.com)

@@ -39,6 +39,9 @@
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 
+/* special hash key to denote method args (where array elements have identical keys) */
+#define METHOD_ARGS_KEY "method_args"
+
 int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc);
 
 char *wsman_get_soap_header_value( WsXmlDocH doc, const char *nsUri,

@@ -922,6 +922,50 @@ wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc)
 
 
 /*
+ * free list of method arguments
+ */
+
+static void
+wsman_free_method_list(list_t *list) 
+{
+	lnode_t *node = list_first(list);
+
+	debug("wsman_free_method_list:");
+	while (node) {
+		methodarglist_t *node_val = (methodarglist_t *)node->list_data;
+		selector_entry *sentry = (selector_entry *)node_val->data;
+		debug("freeing list entry key: %s", node_val->key);
+		switch (sentry->type) {
+			case 0: u_free(sentry->entry.text); break;
+			case 1: u_free(sentry->entry.eprp); break;
+		}
+		u_free(sentry);
+		u_free(node_val->key);
+		u_free(node_val);
+		node->list_data = NULL; // needed to prevent double free
+		node = list_next(list, node);
+	}
+	list_destroy_nodes(list);
+	list_destroy(list);
+}
+
+
+/*
+ * free hash node with method arguments
+ *   called from hash_set_allocator(), hence the dummy argument
+ */
+
+static void
+wsman_free_method_hnode(hnode_t * n, void *dummy)
+{
+	if (strcmp(METHOD_ARGS_KEY, (char *)hnode_getkey(n)) == 0) {
+		wsman_free_method_list((list_t *)hnode_get(n));
+	}
+	u_free(n);
+}
+
+
+/*
  * convert xml method args to hash_t
  *
  */
@@ -931,59 +975,59 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
 	char *input = NULL;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	hash_set_allocator(h, NULL, wsman_free_method_hnode, NULL);
 	WsXmlDocH doc = cntx->indoc;
-	WsXmlNodeH in_node, epr;
-	WsXmlNodeH body = ws_xml_get_soap_body(doc);
-	char *mn = NULL;
-	selector_entry *sentry;
-	debug("wsman_get_method_args");
-
-	if (!doc) {
-		error("xml document is null");
-		goto cleanup;
-	}
-
-	mn = wsman_get_method_name(cntx);
-	input = u_strdup_printf("%s_INPUT", mn);
-	in_node = ws_xml_get_child(body, 0, resource_uri, input);
-	if (!in_node) {
-		char *xsd = u_strdup_printf("%s.xsd", resource_uri);
-		in_node = ws_xml_get_child(body, 0, xsd, input);
-		u_free(xsd);
-	}
-	if (in_node) {
-		WsXmlNodeH arg;
-		int index = 0;
-	        /* extract method args and build up hash 'h' */
-		while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
-			char *key = ws_xml_get_node_local_name(arg);
-
-			sentry = u_malloc(sizeof(*sentry));
-		        /* Check if the method argument has an epr child */
-			epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
+	if (doc) {
+		WsXmlNodeH in_node;
+		WsXmlNodeH body = ws_xml_get_soap_body(doc);
+		char *mn = wsman_get_method_name(cntx);
+		input = u_strdup_printf("%s_INPUT", mn);
+		in_node = ws_xml_get_child(body, 0, resource_uri, input);
+		if (!in_node) {
+			char *xsd = u_strdup_printf("%s.xsd", resource_uri);
+			in_node = ws_xml_get_child(body, 0, xsd, input);
+			u_free(xsd);
+		}
+		if (in_node) {
+			WsXmlNodeH arg, epr;
+			int index = 0;
+			list_t *arglist = list_create(LISTCOUNT_T_MAX);
+			lnode_t *argnode;
+			while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
+				char *key = ws_xml_get_node_local_name(arg);
+				selector_entry *sentry = u_malloc(sizeof(*sentry));
+				methodarglist_t *nodeval = u_malloc(sizeof(methodarglist_t));
+				epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
 					WSA_REFERENCE_PARAMETERS);
-			if (epr) {
-			        /* extract embedded reference arg */
-				sentry->type = 1;
-				sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 1);
-			} else {
-			        /* extract text arg */
-				debug("text: %s", key);
-				sentry->type = 0;
-				sentry->entry.text = ws_xml_get_node_text(arg);
+				nodeval->key = u_strdup(key);
+				nodeval->arraycount = 0;
+				argnode = lnode_create(nodeval);
+				if (epr) {
+					debug("epr: %s", key);
+					sentry->type = 1;
+					sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 1); 
+					//wsman_get_epr(cntx, arg, key, XML_NS_CIM_CLASS);
+				} else {
+					debug("text: %s", key);
+					sentry->type = 0;
+					sentry->entry.text = u_strdup(ws_xml_get_node_text(arg));
+				}
+				nodeval->data = sentry;
+				list_append(arglist, argnode);
 			}
-			if (!hash_alloc_insert(h, key, sentry)) {
-			        error("hash_alloc_insert failed");
+			if (!hash_alloc_insert(h, METHOD_ARGS_KEY, arglist)) {
+				error("hash_alloc_insert failed");
+				wsman_free_method_list(arglist);
 			}
 		}
+		u_free(mn);
+		u_free(input);
+	} else {
+		error("error: xml document is NULL");
 	}
-	u_free(mn);
-	u_free(input);
-
-
 	if (!hash_isempty(h))
 		return h;
-cleanup:
+
 	hash_destroy(h);
 	return NULL;
 }
