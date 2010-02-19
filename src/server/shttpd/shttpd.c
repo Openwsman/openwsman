@@ -167,23 +167,24 @@ open_listening_port(int port)
 	{WSADATA data;	WSAStartup(MAKEWORD(2,2), &data);}
 #endif /* _WIN32 */
 
-	sa.len                          = sizeof(sa.u.sin);
 
 
 #ifdef ENABLE_IPV6
+	sa.len                          = sizeof(sa.u.sin6);
 	sa.u.sin6.sin6_family		= AF_INET6;
 	sa.u.sin6.sin6_addr		= in6addr_any;
-	sa.u.sin6.sin6_port              = htons((uint16_t) port);
-	sa.u.sin6.sin6_flowinfo          = 0;
-	sa.u.sin6.sin6_scope_id          = 0;
+	sa.u.sin6.sin6_port             = htons((uint16_t) port);
+	sa.u.sin6.sin6_flowinfo         = 0;
+	sa.u.sin6.sin6_scope_id         = 0;
 
 	if (!wsmand_options_get_use_ipv6()
 	    || (sock = socket(AF_INET6, SOCK_STREAM, 6)) == -1) {
 		wsmand_options_disable_use_ipv6();
 		if (wsmand_options_get_use_ipv4()) {
 #endif	
-			sa.u.sin.sin_family             = AF_INET;
-			sa.u.sin.sin_addr.s_addr        = htonl(INADDR_ANY);	
+			sa.len                         = sizeof(sa.u.sin);
+			sa.u.sin.sin_family            = AF_INET;
+			sa.u.sin.sin_addr.s_addr       = htonl(INADDR_ANY);	
 			sa.u.sin.sin_port              = htons((uint16_t) port);
 
 			if ((sock = socket(PF_INET, SOCK_STREAM, 6)) == -1)
