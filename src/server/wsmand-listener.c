@@ -701,8 +701,16 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 
 	if ((port = get_server_port()) == 0  )
 		return listener;
-
-	message("     Working on port %d", port);
+#ifdef ENABLE_IPV6
+	if (wsmand_options_get_use_ipv6()) {
+		message("     Working on IPv6 port %d", port);
+	}
+	else {
+#endif
+		message("     Working on IPv4 port %d", port);
+#ifdef ENABLE_IPV6
+	}
+#endif
 	if (!get_server_auth())
 		return listener;
 
