@@ -1,15 +1,19 @@
 2.2.3
 - Bugfix release:
   - fix Windows build (forum.openwsman.org)
+  - fix to build with non-standard subscriptions dir (Chris Poblete)
   - accept OperationTimeout values as outlined in Section 3.2.6.1
     of http://www.w3.org/TR/xmlschema-2 (Chris Poblete)
-  - fix to build with non-standard subscriptions dir (Chris Poblete)
   - fall back to IPv4 if IPv6 unsupported (Arun Venkatachalam)
   - make IPv4 vs. IPv6 configurable (kkaempf)
   - support invoking a method with array type parameter/arguments
     (Chris Poblete, bnc#581414)
   - fix crash in (unhandled) Array argument (Suresh Sundriyal)
   - handle MaxElements in Pull operations (Chris Poblete, kkaempf, bnc#581731)
+  - fix building with ssl when openssl/ssl.h is available (Chris Poblete)
+  - make plugin directory configurable (Chris Poblete)
+  - fix "WXF Invalid Representation" error when sending a Create instance request
+    using the WinRm client (Trevor Witten)
 
 2.2.2
 - Bugfix release:
