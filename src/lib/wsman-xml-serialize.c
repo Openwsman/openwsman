@@ -49,6 +49,7 @@
 #endif
 
 #include <u/libu.h>
+#include <math.h>
 
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
