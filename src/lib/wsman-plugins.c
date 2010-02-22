@@ -230,7 +230,9 @@ scan_plugins_in_directory ( WsManListenerH *listener,
 int
 wsman_plugins_load(WsManListenerH *listener)
 {
-    scan_plugins_in_directory(listener, PACKAGE_PLUGIN_DIR);
+    char *plugin_dir = iniparser_getstring(listener->config, "server:plugin_dir", PACKAGE_PLUGIN_DIR);
+    debug("using plugin directory: %s", plugin_dir);
+    scan_plugins_in_directory(listener, plugin_dir);
     return 0;
 }
 
