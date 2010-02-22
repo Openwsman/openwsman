@@ -549,7 +549,10 @@ int wsman_parse_enum_request(WsContextH cntx,
 			enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
 		}
 
-		/* Enum Optimization */
+		/* Enum Optimization ?
+		 *  wsen:Enum/wsman:Optimize
+		 *  wsen:Enum/wsman:MaxElements <optional>
+		 */
 		opt = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
 				WSM_OPTIMIZE_ENUM);
 		if (opt) {
@@ -771,6 +774,9 @@ wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 }
 
 
+/*
+ * Get wsen:Pull/wsen:MaxElements value
+ */
 
 int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 {
