@@ -8,7 +8,7 @@ microsoft:
   
 xp:
   scheme: http
-  host: 192.168.0.12
+  host: 10.10.100.66
   port: 80
   path: /wsman
   username: wsman
