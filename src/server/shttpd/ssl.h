@@ -8,6 +8,12 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
+#ifdef HAVE_OPENSSL
+
+# include <openssl/ssl.h>
+
+#else
+
 /*
  * Snatched from OpenSSL includes. I put the prototypes here to be independent
  * from the OpenSSL source installation. Having this, shttpd + SSL can be
@@ -22,6 +28,8 @@ typedef struct ssl_ctx_st SSL_CTX;
 #define	SSL_ERROR_WANT_WRITE	3
 #define SSL_ERROR_SYSCALL               5
 #define SSL_FILETYPE_PEM	1
+
+#endif
 
 /*
  * Dynamically loaded SSL functionality

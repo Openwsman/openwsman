@@ -18,7 +18,7 @@ LIBS +=  $(top_builddir)/src/lib/libwsman_client.la
 endif
 
 if USE_OPENSSL
-INCLUDES += $(OPENSSL_CFLAGS) 
+INCLUDES += -DHAVE_OPENSSL $(OPENSSL_CFLAGS) 
 LIBS += -lssl
 endif
 
