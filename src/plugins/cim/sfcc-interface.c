@@ -246,7 +246,7 @@ xml2data(CMPIData *data, char *value)
 
 	if (type & CMPI_ARRAY) {
 		debug("*** xml2data: Array unsupported");
-	        data->value.array = NULL;
+	        data->value.array = newCMPIArray(0, type, NULL);
 	} else {
 		switch (type) {
 		case CMPI_instance:
