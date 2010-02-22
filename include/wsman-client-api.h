@@ -800,6 +800,9 @@ typedef enum {
 	wsmc_set_delivery_mode(WsmanDeliveryMode delivery_mode, client_opt_t * options);
 
 
+	void
+	wsmc_set_delivery_security_mode(WsManDeliverySecurityMode delivery_sec_mode, client_opt_t * options);
+
 
 /** @} */
 
