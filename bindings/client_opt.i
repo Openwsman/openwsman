@@ -181,12 +181,12 @@ typedef struct {} client_opt_t;
    * Set subscription delivery security mode (lots)
    */
 #if defined(SWIGRUBY)
-  %rename( "delivery_sec_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
+  %rename( "delivery_security_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
 #endif
-  void set_delivery_sec_mode(unsigned int delivery_sec_mode) {
+  void set_delivery_security_mode(unsigned int delivery_sec_mode) {
     if (delivery_sec_mode > WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS)
       SWIG_exception( SWIG_ValueError, "Bad delivery security mode" );
-    wsmc_set_delivery_sec_mode(delivery_sec_mode, $self);
+    wsmc_set_delivery_security_mode(delivery_sec_mode, $self);
   }
   
   int delivery_sec_mode() {
