@@ -1946,6 +1946,7 @@ cim_create_instance(CimClientInfo * client,
 	char *element = NULL;
 	int index;
 	WsXmlNodeH resource;
+	char *resource_xsd = NULL;
 	WsXmlNodeH child = NULL;
 	int numproperties = 0, i;
 
@@ -1962,7 +1963,7 @@ cim_create_instance(CimClientInfo * client,
 		goto cleanup;
 	}
         numproperties = class->ft->getPropertyCount(class, NULL);
-debug("cim_create_instance: class %s, %d properties", client->requested_class, numproperties);
+	debug("cim_create_instance: class %s, %d properties", client->requested_class, numproperties);
 	if(fragstr == NULL) {
 		resource = ws_xml_get_child(in_body, 0, client->resource_uri,
 				client->requested_class);
@@ -1970,10 +1971,9 @@ debug("cim_create_instance: class %s, %d properties", client->requested_class, n
 		        /* cim_data_stubs allows .xsd suffix for the namespace
 			 * follow this convention here.
 			 */
-			char *xsd = u_strdup_printf("%s.xsd", client->resource_uri);
-		        resource = ws_xml_get_child(in_body, 0, xsd,
+			resource_xsd = u_strdup_printf("%s.xsd", client->resource_uri);
+		        resource = ws_xml_get_child(in_body, 0, resource_xsd,
 				client->requested_class);
-			u_free(xsd);
 		}
 	}
 	else {
@@ -1993,24 +1993,22 @@ debug("cim_create_instance: class %s, %d properties", client->requested_class, n
 		CMPIString *propertyname;
                 /* retrieve property type (in data) and name (in propertyname) */
 	        CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
-		class->ft->getPropertyQualifier(class,
-				(char *) propertyname->hdl,
-				"KEY", &rc);
+		class->ft->getPropertyQualifier(class, (char *) propertyname->hdl, "KEY", &rc);
 
-		if (rc.rc == 0 && fragstr == NULL &&
-				!ws_xml_get_child(resource, 0,
-					client->resource_uri,
+		if (rc.rc == 0
+		    && fragstr == NULL
+		    && !ws_xml_get_child(resource, 0,
+					resource_xsd ? resource_xsd : client->resource_uri,
 					(char *) propertyname->hdl)) {
-		  debug("WXF_INVALID_REPRESENTATION");
-		  debug("No <%s:%s>", client->resource_uri,(char *) propertyname->hdl);
+			debug("WXF_INVALID_REPRESENTATION");
+			debug("No <%s:%s>", resource_xsd ? resource_xsd : client->resource_uri,(char *) propertyname->hdl);
 			status->fault_code = WXF_INVALID_REPRESENTATION;
-			status->fault_detail_code =
-				WSMAN_DETAIL_MISSING_VALUES;
+			status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
 			break;
 		} else if (rc.rc == 0) {
 			if(fragstr == NULL) {
 				child = ws_xml_get_child(resource, 0,
-						client->resource_uri, (char *)propertyname->hdl);
+							 resource_xsd ? resource_xsd : client->resource_uri, (char *)propertyname->hdl);
 			}
 			else {
 				if(strcmp(element, (char *)propertyname->hdl)) {
@@ -2041,7 +2039,7 @@ debug("cim_create_instance: class %s, %d properties", client->requested_class, n
       
         /* create a new (empty) instance */
 	instance = newCMPIInstance(objectpath, NULL);
-debug("newCMPIInstance(%s) = %p", CMGetCharPtr(CMObjectPathToString(objectpath, NULL)), instance);
+	debug("newCMPIInstance(%s) = %p", CMGetCharPtr(CMObjectPathToString(objectpath, NULL)), instance);
 	if (!instance) {
                 debug("newCMPIInstance failed");
 		goto cleanup;
@@ -2070,6 +2068,8 @@ debug("newCMPIInstance(%s) = %p", CMGetCharPtr(CMObjectPathToString(objectpath, 
 			CMRelease(rc.msg);
 	}
 cleanup:
+	if (resource_xsd)
+		u_free(resource_xsd);	
 	if (class)
 		CMRelease(class);
 	if (instance)
