@@ -887,11 +887,14 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	if (action == WSMAN_ACTION_PULL || action == WSMAN_ACTION_ENUMERATION) {
 		if (options->max_elements > 0 ) {
 			node = ws_xml_get_child(body, 0, NULL, NULL);
-			if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
+			if ((action == WSMAN_ACTION_ENUMERATION)
+			    && (options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 					FLAG_ENUMERATION_OPTIMIZATION ) {
+				/* wsman:MaxElements is for Enumerate */
 				ws_xml_add_child_format(node, XML_NS_WS_MAN,
 						WSENUM_MAX_ELEMENTS, "%d", options->max_elements);
 			} else {
+				/* wsen:MaxElements is for Pull */
 				ws_xml_add_child_format(node, XML_NS_ENUMERATION,
 						WSENUM_MAX_ELEMENTS, "%d", options->max_elements);
 			}

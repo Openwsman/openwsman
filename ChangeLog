@@ -8,6 +8,8 @@
   - make IPv4 vs. IPv6 configurable (kkaempf)
   - support invoking a method with array type parameter/arguments
     (Chris Poblete, bnc#581414)
+  - fix crash in (unhandled) Array argument (Suresh Sundriyal)
+  - handle MaxElements in Pull operations (Chris Poblete, kkaempf, bnc#581731)
 
 2.2.2
 - Bugfix release:
