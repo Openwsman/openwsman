@@ -15,6 +15,8 @@
   - make plugin directory configurable (Chris Poblete)
   - fix "WXF Invalid Representation" error when sending a Create instance request
     using the WinRm client (Trevor Witten)
+  - add ExcludeNilProperties option to suppress nil properties per request
+    (Chris Poblete, kkaempf)
 
 2.2.2
 - Bugfix release:
