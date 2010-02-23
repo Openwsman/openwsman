@@ -170,6 +170,7 @@ typedef enum {
 #define FLAG_CIM_ASSOCIATORS                 0x4000
 #define FLAG_EVENT_SENDBOOKMARK		     0X8000
 #define FLAG_CIM_SCHEMA_OPT		    0X10000
+#define FLAG_EXCLUDE_NIL_PROPS		    0X20000
 
 	typedef struct {
 		unsigned long flags;

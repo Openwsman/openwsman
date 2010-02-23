@@ -814,12 +814,22 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	header = ws_xml_get_soap_header(request);
 	if (!body  || !header )
 		return NULL;
-	if (options && (options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
+	/*
+	 * flags to be passed as <w:OptionSet ...> <w:Option Name="..." ...> > */
+	if (options && (options->flags & (FLAG_CIM_EXTENSIONS|FLAG_EXCLUDE_NIL_PROPS))) {
 		WsXmlNodeH opset = ws_xml_add_child(header,
 				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
-		WsXmlNodeH op = ws_xml_add_child(opset,
+		if ((options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
+			WsXmlNodeH op = ws_xml_add_child(opset,
 				XML_NS_WS_MAN, WSM_OPTION, NULL);
-		ws_xml_add_node_attr(op, NULL, WSM_NAME, WSMB_SHOW_EXTENSION);
+			ws_xml_add_node_attr(op, NULL, WSM_NAME, WSMB_SHOW_EXTENSION);
+		}
+		if ((options->flags & FLAG_EXCLUDE_NIL_PROPS) == FLAG_EXCLUDE_NIL_PROPS) {
+			/* ExcludeNilProperties is non-standard, so put it under an openwsman namespace */
+			WsXmlNodeH op = ws_xml_add_child(opset,
+				XML_NS_OPENWSMAN, WSM_OPTION, NULL);
+			ws_xml_add_node_attr(op, NULL, WSM_NAME, WSMB_EXCLUDE_NIL_PROPS);
+		}
 	}
 
 

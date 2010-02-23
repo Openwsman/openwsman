@@ -349,6 +349,10 @@
 #define WSMB_ACTION_FAULT     		"http://schemas.dmtf.org/wbem/wsman/1/cimbinding/fault"
 #define WSMB_SHOW_EXTENSION		"ShowExtensions"
 
+/* ows:ExcludeNilProperties
+   a per-request version of cim:omit_schema_optional in openwsman.conf
+ */
+#define WSMB_EXCLUDE_NIL_PROPS          "ExcludeNilProperties"
 
 // Catalog
 
