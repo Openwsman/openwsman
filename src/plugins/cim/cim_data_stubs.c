@@ -97,6 +97,7 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 	char *_tmp = NULL;
 	char *resource_uri = NULL;
 	char *show_extensions;
+	char *exclude_nil_properties;
 	CimClientInfo *cimclient= (CimClientInfo *)u_zalloc(sizeof(CimClientInfo));
 	if(!cimclient){
 		return NULL;
@@ -148,6 +149,11 @@ CimResource_Init(WsContextH cntx, char *username, char *password)
 
 	if (show_extensions && strcmp(show_extensions, "true") == 0) {
 		cimclient->flags |= FLAG_CIM_EXTENSIONS;
+	}
+	
+	exclude_nil_properties = wsman_get_option_set(cntx, NULL, WSMB_EXCLUDE_NIL_PROPS);
+	if (exclude_nil_properties && strcmp(exclude_nil_properties, "true") == 0) {
+		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
 	}
 	if (get_omit_schema_optional() == 1) {
 		cimclient->flags |= FLAG_CIM_SCHEMA_OPT;
