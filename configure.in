@@ -213,13 +213,13 @@ AC_PATH_PROG(CURL_CONFIG, curl-config, no)
 if test "$CURL_CONFIG" = "no" ; then
 	AC_MSG_ERROR([the curl-config script installed by libcurl could not be found.  libcurl is required for tests.])
 fi
-CURL_CFLAGS=`$CURL_CONFIG --cflags`
-CURL_LIBS=`$CURL_CONFIG --libs`
+CURL_CFLAGS=`sh $CURL_CONFIG --cflags`
+CURL_LIBS=`sh $CURL_CONFIG --libs`
 AC_SUBST(CURL_CFLAGS)
 AC_SUBST(CURL_LIBS)
 
 dnl Need libcurl version 7.12.0 or higher
-CURLSTRVERSION="`$CURL_CONFIG --version`"
+CURLSTRVERSION="`sh $CURL_CONFIG --version`"
 CURLNVERSION=`echo $CURLSTRVERSION | $SED -e 's/[[^0-9]]/ /g' | $AWK '{print ($1*10000) + ($2*100) + $3}'`
 if test "$CURLNVERSION" -lt  71200 ; then
 	AC_MSG_ERROR([
