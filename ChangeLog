@@ -17,6 +17,8 @@
     using the WinRm client (Trevor Witten)
   - add ExcludeNilProperties option to suppress nil properties per request
     (Chris Poblete, kkaempf)
+  - cleanup: access CMPIString by macro, not by casted direct member access 
+  - fix connection error msg: rc.msg is a CMPIString, not a char*
 
 2.2.2
 - Bugfix release:
