@@ -191,8 +191,7 @@ path2xml(CimClientInfo * client,
 	refparam = ws_xml_add_child(node, XML_NS_ADDRESSING,
 			WSA_REFERENCE_PARAMETERS,
 			NULL);
-	_path_res_uri = cim_find_namespace_for_class(client, NULL,
-			(char *) classname->hdl);
+	_path_res_uri = cim_find_namespace_for_class(client, NULL, CMGetCharPtr(classname));
 	ws_xml_add_child_format(refparam, XML_NS_WS_MAN, WSM_RESOURCE_URI,
 			"%s", _path_res_uri);
 	u_free(_path_res_uri);
@@ -210,16 +209,16 @@ path2xml(CimClientInfo * client,
 		cv = (char *) value2Chars(data.  type, &data.  value);
 		s = ws_xml_add_child(wsman_selector_set, XML_NS_WS_MAN,
 				WSM_SELECTOR, cv );
-		ws_xml_add_node_attr(s, NULL, "Name", (char *) keyname->hdl);
+		ws_xml_add_node_attr(s, NULL, "Name", CMGetCharPtr(keyname));
 		if (cv)
 			u_free(cv);
 		if (keyname)
 			CMRelease(keyname);
 	}
-	if (namespace->hdl != NULL) {
+	if (CMGetCharPtr(namespace) != NULL) {
 		cimns = ws_xml_add_child(wsman_selector_set,
 				XML_NS_WS_MAN, WSM_SELECTOR,
-				(char *) namespace->hdl);
+				CMGetCharPtr(namespace));
 		ws_xml_add_node_attr(cimns, NULL, "Name",
 				CIM_NAMESPACE_SELECTOR);
 	}
@@ -683,8 +682,7 @@ cim_verify_class_keys(CMPIConstClass * class,
 		CMPIData data;
 		class->ft->getPropertyAt(class, i, &propertyname, NULL);
 		data = class->ft->getPropertyQualifier(class,
-				(char *) propertyname->
-				hdl, "Key", &rc);
+				CMGetCharPtr(propertyname), "Key", &rc);
 		if ((data.state != CMPI_nullValue) && (data.value.boolean)) {
 			ccount++;
 		}
@@ -766,7 +764,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 	}
 	opcount = CMGetKeyCount(objectpath, &rc);
 	debug("getKeyCount rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 
 
 	debug("selector count from user: %d, in object path: %d", count,
@@ -829,7 +827,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 	}
 cleanup:
 	debug("getKey rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	return statusP->fault_code;
 }
 
@@ -849,7 +847,7 @@ cim_get_class(CimClientInfo * client,
 	_class = cc->ft->getClass(cc, op, flags, NULL, &rc);
 
 	debug("getClass() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : "<NULL>");
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : "<NULL>");
 	cim_to_wsman_status(rc, status);
 	if (op)
 		CMRelease(op);
@@ -903,7 +901,7 @@ instance2xml(CimClientInfo * client,
 	objectpath = instance->ft->getObjectPath(instance, NULL);
 	classname = objectpath->ft->getClassName(objectpath, NULL);
 	class_namespace = cim_find_namespace_for_class(client, enumInfo,
-			(char *) classname->hdl);
+			CMGetCharPtr(classname));
 
 	final_class = u_strdup(strrchr(class_namespace, '/') + 1);
 
@@ -934,19 +932,19 @@ instance2xml(CimClientInfo * client,
 				&& enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_EXCLUDE)) {
 			_class->ft->getPropertyAt(_class, i, &propertyname,
 					NULL);
-			data = instance->ft->getProperty(instance, (char *) propertyname->hdl,
+			data = instance->ft->getProperty(instance, CMGetCharPtr(propertyname),
 					NULL);
 		} else {
 			data = instance->ft->getPropertyAt(instance, i,
 					&propertyname,
 					NULL);
 		}
-		if(propertystr && strcmp(propertystr, propertyname->hdl)) {
+		if(propertystr && strcmp(propertystr, CMGetCharPtr(propertyname))) {
 			CMRelease(propertyname);
 			continue;
 		}
-		objectpath->ft->getKey(objectpath, (char *) propertyname->hdl, &is_key);
-		property2xml(client, &data, (char *) propertyname->hdl, xmlr,
+		objectpath->ft->getKey(objectpath, CMGetCharPtr(propertyname), &is_key);
+		property2xml(client, &data, CMGetCharPtr(propertyname), xmlr,
 				class_namespace, frag_type, is_key.rc);
 		CMRelease(propertyname);
 	}
@@ -1002,7 +1000,7 @@ cim_get_op_from_enum(CimClientInfo * client,
 			objectpath,
 			&rc);
 	debug("enumInstanceNames rc=%d, msg=%s", rc.rc,
-			(rc.msg) ? (char *) rc.msg->hdl : NULL);
+			(rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 
 	if (rc.rc != 0) {
 		cim_to_wsman_status(rc, statusP);
@@ -1020,7 +1018,7 @@ cim_get_op_from_enum(CimClientInfo * client,
 					NULL);
 			CMPIObjectPath *op = CMClone(data.value.ref, NULL);
 			CMPIString *opstr = CMObjectPathToString(op, NULL);
-			debug("objectpath: %s", (char *) opstr->hdl);
+			debug("objectpath: %s", CMGetCharPtr(opstr));
 			if (cim_verify_keys(op, client->selectors, statusP) != 0) {
 				if (opstr)
 					CMRelease(opstr);
@@ -1131,7 +1129,7 @@ cim_enum_instances(CimClientInfo * client,
 	}
 
 	debug("enumInstances() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 
 	if (rc.rc) {
 		debug("*** CMCIClient enumInstances() failed");
@@ -1196,7 +1194,7 @@ cim_getElementAt(CimClientInfo * client,
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
 	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
-			(strcmp((char *) classname->hdl, client->requested_class) != 0)) {
+			(strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
 
@@ -1234,11 +1232,10 @@ cim_getEprAt(CimClientInfo * client,
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
 	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE)
-			&& (strcmp((char *) classname->hdl, client->requested_class) != 0)) {
+			&& (strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
-	uri = cim_find_namespace_for_class(client, enumInfo,
-			(char *) classname->hdl);
+	uri = cim_find_namespace_for_class(client, enumInfo, CMGetCharPtr(classname));
 	if (retval) {
 		cim_add_epr(client, itemsNode, uri, objectpath);
 	}
@@ -1268,11 +1265,10 @@ cim_getEprObjAt(CimClientInfo * client,
 		objectpath->ft->getClassName(objectpath, NULL);
 
 	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE) &&
-			(strcmp((char *) classname->hdl, client->requested_class) != 0)) {
+			(strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
-	uri = cim_find_namespace_for_class(client, enumInfo,
-			(char *) classname->hdl);
+	uri = cim_find_namespace_for_class(client, enumInfo, CMGetCharPtr(classname));
 
 	if (retval) {
 		WsXmlNodeH item =
@@ -1317,10 +1313,10 @@ create_instance_from_xml(CMPIInstance * instance,
 		data = class->ft->getPropertyAt(class,
 				i, &propertyname,
 				NULL);
-		debug("working on property: %s", (char *) propertyname->hdl );
+		debug("working on property: %s", CMGetCharPtr(propertyname) );
 		if(fragment_flag == 0) {
 			child = ws_xml_get_child(resource, 0, resource_uri,
-					(char *) propertyname->hdl);
+					CMGetCharPtr(propertyname));
 			if (child) {
 				value = ws_xml_get_node_text(child);
 				WsXmlAttrH attr =
@@ -1334,7 +1330,7 @@ create_instance_from_xml(CMPIInstance * instance,
 				debug("prop value: %s", value );
 				if (value) {
 					xml2property(instance, &data,
-							(char *) propertyname->hdl,
+							CMGetCharPtr(propertyname),
 							value);
 				}
 			} else if (data.type != CMPI_null
@@ -1349,7 +1345,7 @@ create_instance_from_xml(CMPIInstance * instance,
 			}
 		}
 		else {
-			if(strcmp(element, (char *) propertyname->hdl ) == 0) {
+			if(strcmp(element, CMGetCharPtr(propertyname) ) == 0) {
 			  debug("release %s", element);
 				CMRelease(propertyname);
 				break;
@@ -1409,7 +1405,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 	classname =objectpath->ft->getClassName(objectpath, NULL);
 
 	numproperties = instance->ft->getPropertyCount(instance, NULL);
-	r = ws_xml_get_child(body, 0, resourceUri,(char *) classname->hdl);
+	r = ws_xml_get_child(body, 0, resourceUri, CMGetCharPtr(classname));
 
 	if (numproperties) {
 		for (i = 0; i < numproperties; i++) {
@@ -1426,7 +1422,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 			char *value = ws_xml_get_node_text(child);
 			if (value) {
 				xml2property(instance, &data,
-						(char *) propertyname->hdl,
+						CMGetCharPtr(propertyname),
 						value);
 			}
 			CMRelease(propertyname);
@@ -1471,8 +1467,8 @@ cim_add_epr_details(CimClientInfo * client,
 	if (0 < numkeys) {
 		CMPIString * cim_namespace = objectpath->ft->getNameSpace(objectpath, NULL);
 		char *str_namespace = client->cim_namespace;
-		if (NULL != cim_namespace && NULL != cim_namespace->hdl) {
-			str_namespace = (char *)cim_namespace->hdl;
+		if (NULL != cim_namespace && NULL != CMGetCharPtr(cim_namespace)) {
+			str_namespace = CMGetCharPtr(cim_namespace);
 		}
 		if (str_namespace != NULL) {
 			WsXmlNodeH cimns = ws_xml_add_child(wsman_selector_set,
@@ -1506,8 +1502,7 @@ cim_add_epr_details(CimClientInfo * client,
 			if (valuestr)
 				free(valuestr);
 		}
-		ws_xml_add_node_attr(s, NULL, WSM_NAME,
-				(char *) keyname->hdl);
+		ws_xml_add_node_attr(s, NULL, WSM_NAME, CMGetCharPtr(keyname));
 
 
 		if (cv)
@@ -1732,7 +1727,7 @@ cim_invoke_method(CimClientInfo * client,
 				argsin, argsout, &rc);
 	  
 			debug("invokeMethod(%s) rc=%d, msg=%s",
-				client->method, rc.rc, (rc.msg) ? (char *) rc.msg->hdl : "<NULL>");
+				client->method, rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : "<NULL>");
 
 			method_node = ws_xml_add_empty_child_format(body,
 				client->resource_uri,
@@ -1753,7 +1748,7 @@ cim_invoke_method(CimClientInfo * client,
 					CMPIString *argname;
 					data = CMGetArgAt(argsout, i, &argname, NULL);
 					property2xml(client, &data,
-							(char *) argname->hdl,
+							CMGetCharPtr(argname),
 							method_node, client->resource_uri, 0, 0);
 					CMRelease(argname);
 				}
@@ -1798,7 +1793,7 @@ cim_delete_instance_from_enum(CimClientInfo * client, WsmanStatus * status)
 			cim_to_wsman_status(rc, status);
 		}
 		debug("deleteInstance rc=%d, msg=%s", rc.rc,
-				(rc.msg) ? (char *) rc.msg->hdl : NULL);
+				(rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	}
 
 	debug("fault: %d %d", status->fault_code,
@@ -1840,7 +1835,7 @@ cim_get_instance_from_enum(CimClientInfo * client,
 			cim_to_wsman_status(rc, status);
 		}
 		debug("getInstance rc=%d, msg=%s", rc.rc,
-				(rc.msg) ? (char *) rc.msg->hdl : NULL);
+				(rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 		if (instance)
 			CMRelease(instance);
 	}
@@ -1906,10 +1901,10 @@ cim_put_instance(CimClientInfo * client,
 	}
 	if (status->fault_code == 0 && instance ) {
 		CMPIString *opstr = CMObjectPathToString(objectpath, NULL);
-		debug("objectpath: %s", (char *)opstr->hdl );
+		debug("objectpath: %s", CMGetCharPtr(opstr) );
 		rc = cc->ft->setInstance(cc, objectpath, instance, 0, NULL);
 		debug("modifyInstance() rc=%d, msg=%s", rc.rc,
-				(rc.msg) ? (char *) rc.msg-> hdl : NULL);
+				(rc.msg) ? (char *) CMGetCharPtr(rc.msg) : NULL);
 		if (rc.rc == CMPI_RC_ERR_FAILED) {
 			status->fault_code =
 				WSA_ACTION_NOT_SUPPORTED;
@@ -1993,25 +1988,25 @@ cim_create_instance(CimClientInfo * client,
 		CMPIString *propertyname;
                 /* retrieve property type (in data) and name (in propertyname) */
 	        CMPIData data = class->ft->getPropertyAt(class, i, &propertyname, NULL);
-		class->ft->getPropertyQualifier(class, (char *) propertyname->hdl, "KEY", &rc);
+		class->ft->getPropertyQualifier(class, CMGetCharPtr(propertyname), "KEY", &rc);
 
 		if (rc.rc == 0
 		    && fragstr == NULL
 		    && !ws_xml_get_child(resource, 0,
 					resource_xsd ? resource_xsd : client->resource_uri,
-					(char *) propertyname->hdl)) {
+					CMGetCharPtr(propertyname))) {
 			debug("WXF_INVALID_REPRESENTATION");
-			debug("No <%s:%s>", resource_xsd ? resource_xsd : client->resource_uri,(char *) propertyname->hdl);
+			debug("No <%s:%s>", resource_xsd ? resource_xsd : client->resource_uri, CMGetCharPtr(propertyname));
 			status->fault_code = WXF_INVALID_REPRESENTATION;
 			status->fault_detail_code = WSMAN_DETAIL_MISSING_VALUES;
 			break;
 		} else if (rc.rc == 0) {
 			if(fragstr == NULL) {
 				child = ws_xml_get_child(resource, 0,
-							 resource_xsd ? resource_xsd : client->resource_uri, (char *)propertyname->hdl);
+							 resource_xsd ? resource_xsd : client->resource_uri, CMGetCharPtr(propertyname));
 			}
 			else {
-				if(strcmp(element, (char *)propertyname->hdl)) {
+				if(strcmp(element, CMGetCharPtr(propertyname))) {
 					CMRelease(propertyname);
 					continue;
 				}
@@ -2020,9 +2015,9 @@ cim_create_instance(CimClientInfo * client,
 			}
 
 			/* assemble objectpath, passing value with correct type */
-		        xml2objectpath(objectpath, &data, (char *) propertyname->hdl, ws_xml_get_node_text(child));
+		        xml2objectpath(objectpath, &data, CMGetCharPtr(propertyname), ws_xml_get_node_text(child));
 
-			if(fragstr && strcmp(element, (char *)propertyname->hdl) == 0) {
+			if(fragstr && strcmp(element, CMGetCharPtr(propertyname)) == 0) {
 			  debug("fragstr, early break");
 				CMRelease(propertyname);
 				break;
@@ -2051,7 +2046,7 @@ cim_create_instance(CimClientInfo * client,
 	if (status->fault_code == 0) {
 		objectpath_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 		debug("createInstance() rc=%d, msg=%s", rc.rc,
-				(rc.msg) ? (char *) rc.msg->hdl : NULL);
+				(rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 		if (objectpath_r) {
 			WsXmlNodeH epr = ws_xml_add_child(body, XML_NS_TRANSFER,
 					WXF_RESOURCE_CREATED,
@@ -2105,7 +2100,7 @@ cim_delete_instance(CimClientInfo * client, WsmanStatus * status)
 	rc = cc->ft->deleteInstance(cc, objectpath);
 	/* Print the results */
 	debug("deleteInstance() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	cim_to_wsman_status(rc, status);
 	if (rc.msg)
 		CMRelease(rc.msg);
@@ -2147,7 +2142,7 @@ cim_get_instance_from_selectors(CimClientInfo * client,
 			&rc);
 	/* Print the results */
 	debug("getInstance() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	cim_to_wsman_status(rc, status);
 	if (rc.msg)
 		CMRelease(rc.msg);
@@ -2263,7 +2258,7 @@ cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, W
 cleanup:
 	/* Print the results */
 	debug("create CIM_IndicationFilter() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 	} else if(rc.rc != 11){ // an object already exists. We take this erros as success
@@ -2328,7 +2323,7 @@ cim_create_indication_handler(CimClientInfo *client, WsSubscribeInfo *subsInfo, 
 cleanup:
 	/* Print the results */
 	debug("create CIM_IndicationHandlerCIMXML() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 	} else if(rc.rc != 11){ // an object already exists. We take this erros as success
@@ -2392,7 +2387,7 @@ cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subs
 
 	/* Print the results */
 	debug("create CIM_IndicationSubscription() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
 	} else if (rc.rc != 11){ // an object already exists. We take this erros as success
@@ -2452,7 +2447,7 @@ cleanup:
 		cim_to_wsman_status(rc, status);
 	}
 	debug("cim_update_indication_subscription() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (!(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) && objectpath_filter)
@@ -2513,7 +2508,7 @@ cleanup:
 		cim_to_wsman_status(rc, status);
 	}
 	debug("cim_delete_indication_subscription() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.msg)
 		CMRelease(rc.msg);
 	if (objectpath_filter)
@@ -2541,7 +2536,7 @@ cim_to_wsman_status(CMPIStatus rc, WsmanStatus * status)
 			WSMAN_DETAIL_INVALID_RESOURCEURI;
 		break;
 	case CMPI_RC_ERR_FAILED:
-		if (rc.msg && strcmp((char *) rc.msg->hdl, "CURL error: 7") == 0)
+		if (rc.msg && strcmp(CMGetCharPtr(rc.msg), "CURL error: 7") == 0)
 			status->fault_code = WSA_DESTINATION_UNREACHABLE;
 		else
 			status->fault_code = WSMAN_INTERNAL_ERROR;
@@ -2637,7 +2632,7 @@ cim_enum_instancenames(CimClientInfo * client,
 
 	enumeration = cc->ft->enumInstanceNames(cc, objectpath, &rc);
 	debug("enumInstanceNames() rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? (char *) rc.msg->hdl : NULL);
+			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 
 	if (rc.rc) {
 		debug("*** CMCIClient enumInstanceNames() failed");
