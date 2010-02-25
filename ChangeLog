@@ -1,10 +1,10 @@
-2.2.3.1
+2.2.3 final
 - Bugfix release:
   - cleanup: access CMPIString by macro, not by casted direct member access 
   - fix connection error msg: rc.msg is a CMPIString, not a char* (kkaempf)
   - fix for OperationTimeout parsing (Chris Poblete)
 
-2.2.3
+2.2.3pre
 - Bugfix release:
   - fix Windows build (forum.openwsman.org)
   - fix to build with non-standard subscriptions dir (Chris Poblete)
