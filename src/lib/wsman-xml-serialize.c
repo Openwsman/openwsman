@@ -1745,10 +1745,9 @@ int ws_deserialize_duration(const char *t, time_t * value)
 		debug("Wrong begining of duration");
 		goto DONE;
 	}
-	while (*t++) {
+	while (*++t) {
 		if (*t == 'T') {
 			time_handeled = 1;
-			t++;
 			continue;
 		}
 		v = strtol(t, &e, 10);
