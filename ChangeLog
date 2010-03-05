@@ -1,3 +1,7 @@
+- Bugfix release:
+  - fix Windows build (Trevor Witten)
+  - fix ssl (certificate thumbprint) callback check (Arun Venkatachalam)
+
 2.2.3 final
 - Bugfix release:
   - cleanup: access CMPIString by macro, not by casted direct member access 

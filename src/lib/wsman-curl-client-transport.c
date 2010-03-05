@@ -218,6 +218,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 	debug("write_handler: recieved %d bytes, all = %d\n", len, u_buf_len(buf));
 	return len;
 }
+
 #ifdef ENABLE_EVENTING_SUPPORT
 static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void *arg)
 {
@@ -333,7 +334,7 @@ init_curl_transport(WsManClient *cl)
 #ifdef ENABLE_EVENTING_SUPPORT
 /*  Bug in e.g. Fedora: [ curl-Bugs-1924441 ] SSL callback option with NSS-linked libcurl */
 #ifndef NO_SSL_CALLBACK
-	else if (cl->authentication.certificatethumbprint && 0 != cl->authentication.verify_peer) {
+	else if (strlen((char *)cl->authentication.certificatethumbprint) > 0 && 0 != cl->authentication.verify_peer) {
 		r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, sslctxfun);
 		if(r != 0) {
 			curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION)");
