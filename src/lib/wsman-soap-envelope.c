@@ -980,9 +980,9 @@ hash_t *
 wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 {
 	char *input = NULL;
+	WsXmlDocH doc = cntx->indoc;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 	hash_set_allocator(h, NULL, wsman_free_method_hnode, NULL);
-	WsXmlDocH doc = cntx->indoc;
 	if (doc) {
 		WsXmlNodeH in_node;
 		WsXmlNodeH body = ws_xml_get_soap_body(doc);
