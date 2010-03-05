@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK\include&quot;;&quot;$(MSSDK)\include&quot;;.\libiconv\include;.\libxml2\include;.\include;.\src\cpp"
-				PreprocessorDefinitions="WIN32;_WIN32_WINNT=0x0500;NDEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_WIN32_WINNT=0x0501;NDEBUG;USE_WINSOCK;LIBXML_STATIC;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
