@@ -1,0 +1,19 @@
+#!/usr/bin/ruby
+
+# This is ./rdoc
+#
+
+home = File.dirname __FILE__
+$:.unshift(home)
+new_rdoc = home+"/rdoc.rb"
+
+# Symlink ./rdoc.rb to /usr/bin/rdoc
+#
+File.symlink("/usr/bin/rdoc", new_rdoc) unless File.symlink?(new_rdoc)
+
+begin
+  require 'parse_swig.rb' # load the swig parser
+  require 'rdoc' # load the original rdoc
+ensure
+  File.delete new_rdoc # Discard the symlink
+end
