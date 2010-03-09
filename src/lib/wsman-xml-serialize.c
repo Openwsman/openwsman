@@ -1880,7 +1880,11 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 	tmx->tm.tm_mon -= 1;
 
 	t = time(NULL);
+#ifdef _WIN32
+	localtime_s(&tm, &t);
+#else
 	localtime_r(&t, &tm);
+#endif
 	tmx->tm.tm_isdst = tm.tm_isdst;
 
 	if (hours < 0) {
