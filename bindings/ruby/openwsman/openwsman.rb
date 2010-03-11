@@ -9,3 +9,6 @@ require 'openwsman'
 
 # this extends Openwsman::XmlNode with method_missing
 require 'openwsman/xmlnode'
+
+# this extends Openwsman::XmlDoc with method_missing
+require 'openwsman/xmldoc'
