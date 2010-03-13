@@ -407,6 +407,10 @@ typedef struct _WsmanStatus WsmanStatus;
     else {
       $self->fault_detail_code = detail;
     }
+#if defined(SWIGPYTHON) || defined(SWIGPERL)
+    fail:
+    return;
+#endif
   }
   int detail() {
     return $self->fault_detail_code;
