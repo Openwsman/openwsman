@@ -18,21 +18,24 @@ class WsmanTest < Test::Unit::TestCase
     detail = Openwsman::WSMAN_DETAIL_EXPIRED
     msg = "Testing fault handling"
     status.code = code
-    puts "Status.code #{status}"
+    puts "Status.code #{status.code}"
     status.detail = detail
-    puts "Status.detail #{status}"
-    status.msg = msg
-    puts "Status.msg #{status}"
+    puts "Status.detail #{status.detail}"
+#    status.msg = msg
+    puts "Status.msg '#{status.msg}'"
     
     doc = Openwsman::XmlDoc.new "FaultDoc", "namespace"
     puts "Doc #{doc}"
-    fault = doc.generate_fault status
-    puts "Fault #{fault}"
+    faultdoc = doc.generate_fault status
+    puts "Fault #{faultdoc}"
+    assert faultdoc.fault?
     
-    assert fault.fault?
-    assert_equal code, fault.code
-    assert_equal detail, fault.detail
-    assert_equal msg, fault.msg
+    fault = Openwsman::Fault.new faultdoc
+    
+    puts "Code '#{fault.code}'"
+    puts "Subcode '#{fault.subcode}'"
+    puts "Reason '#{fault.reason}'"
+    puts "Detail '#{fault.detail}'"
     
   end
 end
