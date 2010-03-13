@@ -141,9 +141,9 @@ WsmanFaultCodeTable fault_code_table[] =
 		XML_NS_SOAP_1_2,
 		FAULT_MUSTUNDERSTAND_CODE,
 		"",
-		"The WS-Management service cannot process a SOAP header in the request that" \
-		"is marked as mustUnderstand by the client.  This could be caused by the use" \
-		"of a version of the protocol which is not supported, or may be an" \
+		"The WS-Management service cannot process a SOAP header in the request that " \
+		"is marked as mustUnderstand by the client.  This could be caused by the use " \
+		"of a version of the protocol which is not supported, or may be an " \
 		"incompatibility  between the client and server implementations."
 	},
 	{
