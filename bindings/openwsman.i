@@ -92,7 +92,10 @@
 #include <perl/helpers.c>
 #endif
 
-/* fool swig into aliasing WsManClient and WsManTransport */
+/* Provide WsManTransport definition so it can be used as
+ * dedicated datatype in bindings.
+ * Internally, its aliased to WsManClient
+ */
 struct _WsManTransport { };
 typedef struct _WsManTransport WsManTransport;
 
@@ -136,6 +139,8 @@ static WsXmlDocH create_soap_envelope() {
 }
 
 %ignore __undefined;
+
+%include exception.i
 
 /* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right */
 %include "wsman-xml.i"
