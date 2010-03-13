@@ -349,10 +349,11 @@ typedef struct _WS_CONTEXT* WsContextH;
 /*
  * WsmanStatus -> Status
  */
- 
-%nodefault _WsmanStatus;
+
 %rename(Status) _WsmanStatus;
+%nodefault _WsmanStatus;
 struct _WsmanStatus {};
+typedef struct _WsmanStatus WsmanStatus;
 
 /*
  * Status
@@ -398,7 +399,15 @@ struct _WsmanStatus {};
    * Set the fault detail code
    *
    */
-  void set_detail(int detail) { $self->fault_detail_code = detail; }
+  void set_detail(int detail) {
+    if (detail < 0
+        || detail > OWSMAN_SYSTEM_ERROR) {
+      SWIG_exception( SWIG_ValueError, "Bad fault detail" );
+    }
+    else {
+      $self->fault_detail_code = detail;
+    }
+  }
   int detail() {
     return $self->fault_detail_code;
   }
@@ -432,10 +441,11 @@ struct _WsmanStatus {};
 /*
  * WsManFault -> Fault
  */
- 
-%nodefault _WsManFault;
+
 %rename(Fault) _WsManFault;
+%nodefault _WsManFault;
 struct _WsManFault {};
+typedef struct _WsManFault WsManFault;
 
 /*
  * Fault
