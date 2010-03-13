@@ -206,7 +206,7 @@ path2xml(CimClientInfo * client,
 		WsXmlNodeH s = NULL;
 		CMPIData data = objectpath->ft->getKeyAt(objectpath, i,
 				&keyname, NULL);
-		cv = (char *) value2Chars(data.  type, &data.  value);
+		cv = (char *) value2Chars(data.  type, &data.value);
 		s = ws_xml_add_child(wsman_selector_set, XML_NS_WS_MAN,
 				WSM_SELECTOR, cv );
 		ws_xml_add_node_attr(s, NULL, "Name", CMGetCharPtr(keyname));
@@ -802,7 +802,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 				statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
 				debug("selector '%s', value: [ %s ] not matched", hnode_getkey(hn), sentry->entry.text);
-			        debug("data.type 0x%x, cv '%s'", data.type, cv?cv:"<NULL>");
+			        debug("data.type 0x%04x, cv '%s'", data.type, cv?cv:"<NULL>");
 				u_free(cv);
 				break;
 			}
@@ -1565,7 +1565,7 @@ release_cmpi_data(CMPIData data)
 {
         if (data.state == CMPI_nullValue)
                 return;
-        debug("release_cmpi_data, type = %d",data.type);
+        debug("release_cmpi_data, type = 0x%04x", data.type);
         switch(data.type)
         {
                 case CMPI_string:
