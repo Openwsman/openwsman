@@ -456,8 +456,10 @@ typedef struct _WsManFault WsManFault;
  *
  */
 %extend _WsManFault {
-  _WsManFault() {
-    return wsmc_fault_new();
+  _WsManFault(WsXmlDocH doc) {
+    WsManFault *fault = wsmc_fault_new();
+    wsmc_get_fault_data(doc, fault);
+    return fault;
   }
   ~_WsManFault() {
     wsmc_fault_destroy($self);
