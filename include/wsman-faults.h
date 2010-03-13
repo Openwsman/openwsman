@@ -217,7 +217,7 @@ enum __WsmanFaultDetailType
     // OpenWSMAN
     OWSMAN_DETAIL_ENDPOINT_ERROR,
     OWSMAN_NO_DETAILS,
-    OWSMAN_SYSTEM_ERROR
+    OWSMAN_SYSTEM_ERROR /* keep this as last entry ! */		
 };
 typedef enum __WsmanFaultDetailType WsmanFaultDetailType;
 
