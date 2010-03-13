@@ -3,9 +3,9 @@
 # Test WsManFault bindings
 #
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-$:.unshift ".."
+$:.unshift File.join(File.dirname(__FILE__), "..","..","..","build","bindings","ruby")
+$:.unshift File.join(File.dirname(__FILE__), "..",".libs")
+$:.unshift File.join(File.dirname(__FILE__), "..")
 
 require 'test/unit'
 require 'openwsman/openwsman'
@@ -13,12 +13,16 @@ require 'openwsman/openwsman'
 class WsmanTest < Test::Unit::TestCase
   def test_fault
     status = Openwsman::Status.new
-    code = 42
-    detail = 4711
+    puts "Status #{status}"
+    code = Openwsman::SOAP_FAULT_MUSTUNDERSTAND
+    detail = Openwsman::WSMAN_DETAIL_EXPIRED
     msg = "Testing fault handling"
     status.code = code
+    puts "Status.code #{status}"
     status.detail = detail
+    puts "Status.detail #{status}"
     status.msg = msg
+    puts "Status.msg #{status}"
     
     doc = Openwsman::XmlDoc.new "FaultDoc", "namespace"
     puts "Doc #{doc}"
