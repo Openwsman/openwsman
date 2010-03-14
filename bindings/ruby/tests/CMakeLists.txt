@@ -27,6 +27,9 @@ ADD_TEST(bindings_ruby_debug      ruby -C ${CMAKE_CURRENT_SOURCE_DIR} debug.rb )
         # Identify
 ADD_TEST(bindings_ruby_identify   ruby -C ${CMAKE_CURRENT_SOURCE_DIR} identify.rb )
 
+	# data types
+ADD_TEST(bindings_ruby_fault      ruby -C ${CMAKE_CURRENT_SOURCE_DIR} fault.rb )
+
         # needs a CIMOM
 ADD_TEST(bindings_ruby_computer_system      ruby -C ${CMAKE_CURRENT_SOURCE_DIR} cim_computer_system.rb )
 ADD_TEST(bindings_ruby_operating_system     ruby -C ${CMAKE_CURRENT_SOURCE_DIR} cim_operating_system.rb )
