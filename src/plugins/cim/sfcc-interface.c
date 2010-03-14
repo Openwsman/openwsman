@@ -763,9 +763,6 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 		count = (int) hash_count(keys);
 	}
 	opcount = CMGetKeyCount(objectpath, &rc);
-	debug("getKeyCount rc=%d, msg=%s",
-			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
-
 
 	debug("selector count from user: %d, in object path: %d", count,
 			opcount);
@@ -787,7 +784,7 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 		if (rc.rc != 0) {	// key not found
 			statusP->fault_code = WSMAN_INVALID_SELECTORS;
 			statusP->fault_detail_code = WSMAN_DETAIL_UNEXPECTED_SELECTORS;
-			debug("unexpcted selectors");
+			debug("unexpected selectors");
 			break;
 		}
 		selector_entry *sentry = (selector_entry*)hnode_get(hn);
@@ -978,6 +975,13 @@ instance2xml(CimClientInfo * client,
 
 
 
+/*
+ * An operation (for a concrete instance) is given only the abstract base class
+ * 
+ * Enumerate through all instances of the base class, comparing keys to identify
+ * the matching instance
+ *
+ */
 
 static CMPIObjectPath *
 cim_get_op_from_enum(CimClientInfo * client,
@@ -1686,10 +1690,12 @@ cim_invoke_method(CimClientInfo * client,
 
 	if (client->resource_uri
 	    && strstr(client->resource_uri, XML_NS_CIM_CLASS) != NULL) {
-	        /* uri specifies class */
+	        /* Generic CIM uri given (pointing to abstract CIM_xxx class
+		 * enumerate through all instances of this class to
+		 * get the correct instance matching the selectors
+		 */
 		objectpath = cim_get_op_from_enum(client, status);
 	} else {
-		debug("no base class, getting instance directly with getInstance");
 		objectpath = newCMPIObjectPath(client->cim_namespace,
 				client->requested_class, NULL);
 		if (objectpath != NULL)
