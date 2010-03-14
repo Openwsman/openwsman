@@ -3,19 +3,17 @@
 #
 #
 
-$:.unshift "../../../bindings/ruby"
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
+$:.unshift File.join(File.dirname(__FILE__), "../../../bindings/ruby")
+$:.unshift File.join(File.dirname(__FILE__), "../../../build/bindings/ruby")
+$:.unshift File.join(File.dirname(__FILE__), "../.libs")
 
 require 'test/unit'
 require 'rexml/document'
 require 'openwsman/openwsman'
-require '_client'
+require File.join(File.dirname(__FILE__), '_client')
 
 class WsmanTest < Test::Unit::TestCase
-  def get_owner process
-    client = Client.open
-    assert client
+  def get_owner client, process
     options = Openwsman::ClientOptions.new
     # WMI just needs the Handle
     unless process.name == "Win32_Service"
@@ -26,8 +24,8 @@ class WsmanTest < Test::Unit::TestCase
       options.add_selector( "CreationClassName", process.CreationClassName )
     end
     options.add_selector( "Handle", process.Handle )
-    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
-
+    uri = process.ns
+    
     method = "GetOwner"
     result = client.invoke( options, uri, method )
 
@@ -70,10 +68,9 @@ loop do
       faults += 1
       break
     end
-    
     items = result.body.PullResponse.Items
     node = items.child
-
+    
 #    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
 #    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
 #    node = node.child( 0, uri, "Win32_Service" );
@@ -96,16 +93,18 @@ loop do
     end
     user = ""
 
-    ires = get_owner node
-    if ires
-      b = ires.body
-      output = b.GetOwner_OUTPUT
-      output.each do |child|
-	text = child.text
-	if child.name == "User"
-	  user = text
-	end
-      end if output
+    if node.name == "Win32_Service"
+      ires = get_owner client, node
+      if ires
+	b = ires.body
+	output = b.GetOwner_OUTPUT
+	output.each do |child|
+	  text = child.text
+	  if child.name == "User"
+	    user = text
+	  end
+	end if output
+      end
     end
     vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f
 
