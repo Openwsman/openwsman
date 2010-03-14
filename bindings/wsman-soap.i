@@ -363,10 +363,26 @@ typedef struct _WsmanStatus WsmanStatus;
   /*
    * Create an empty status
    *
+   * optionally pass
+   *  int code, int code_detail, string message
    */
-  _WsmanStatus() {
+  _WsmanStatus(int code = 0, int detail = 0, const char *msg = NULL) {
     WsmanStatus *s = (WsmanStatus *)malloc(sizeof(WsmanStatus));
     wsman_status_init(s);
+    if (code)
+      s->fault_code = code;
+    if (msg)
+      s->fault_msg = strdup(msg);
+    if (detail < 0
+        || detail > OWSMAN_SYSTEM_ERROR) {
+      SWIG_exception( SWIG_ValueError, "Bad fault detail" );
+    }
+    else {
+      s->fault_detail_code = detail;
+    }
+#if defined(SWIGPYTHON) || defined(SWIGPERL)
+    fail:
+#endif
     return s;
   }
   ~_WsmanStatus() {
