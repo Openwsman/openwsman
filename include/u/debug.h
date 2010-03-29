@@ -106,20 +106,34 @@ static __inline void TRACE_DETAILS(char* format, ...) {
 
 
 #ifdef WIN32
-		
-#define debug(char* format, ...) {
-        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__,
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-}
-#define error(char* format, ...) {
-        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__,
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-}
-#define message(char* format, ...) {
-        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__,
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-}
 
+# ifdef WSMAN_DEBUG_VERBOSE
+
+#define debug(char* format, ...) \
+        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, \
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
+
+#define error(char* format, ...) \
+        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, \
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
+
+#define message(char* format, ...) \
+        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, \
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
+
+# else // WSMAN_DEBUG_VERBOSE
+
+#define debug(char* format, ...) \
+        debug_full(DEBUG_LEVEL_DEBUG, format, __VA_ARGS__)
+
+#define error(char* format, ...) \
+        debug_full(DEBUG_LEVEL_ERROR, format, __VA_ARGS__)
+
+#define message(char* format, ...) \
+        debug_full(DEBUG_LEVEL_MESSAGE, format, __VA_ARGS__)
+
+# endif // WSMAN_DEBUG_VERBOSE
+	
 #else // WIN32
 
 #ifdef WSMAN_DEBUG_VERBOSE
@@ -141,9 +155,6 @@ static __inline void TRACE_DETAILS(char* format, ...) {
 #endif // __SUNPRO_C || __SUNPRO_CC
 
 #else // WSMAN_DEBUG_VERBOSE
-
-#define warnings(format...) \
-        debug_full(DEBUG_LEVEL_WARNING, format)
 
 #define debug(format...) \
         debug_full(DEBUG_LEVEL_DEBUG, format)
