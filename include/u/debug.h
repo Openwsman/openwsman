@@ -106,15 +106,18 @@ static __inline void TRACE_DETAILS(char* format, ...) {
 
 
 #ifdef WIN32
-
-static __inline void debug(char* format, ...) {
-    debug_full(DEBUG_LEVEL_WARNING, format);
+		
+#define debug(char* format, ...) {
+        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__,
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
 }
-static __inline void error(char* format, ...) {
-    debug_full(DEBUG_LEVEL_WARNING, format);
+#define error(char* format, ...) {
+        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__,
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
 }
-static __inline void message(char* format, ...) {
-    debug_full(DEBUG_LEVEL_WARNING, format);
+#define message(char* format, ...) {
+        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__,
+			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
 }
 
 #else // WIN32
