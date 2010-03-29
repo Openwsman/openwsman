@@ -238,13 +238,13 @@ u_tokenize1(char **result, size_t reslen, char *str, char delim)
             return i;
         if (*n == delim) {
             *n = '\0';
-            if (strlen(p))
+            if (*p)
                 result[i++] = p;
             p = ++n;
         } else
             n++;
     }
-    if (strlen(p))
+    if (*p)
         result[i++] = p;
     return i;           /* number of tokens */
 }
