@@ -1761,11 +1761,7 @@ int ws_deserialize_duration(const char *t, time_t * value)
 				debug("float but not secs");
 				goto DONE;
 			}
-#ifdef _WIN32
-			if (floor(f+0.5) > v) {
-#else
-			if (round(f) > v) {
-#endif			      
+			if (((int)floor(f+0.5)) > v) {
 				v++;  /* round value up */
 			}
 		}
