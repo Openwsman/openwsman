@@ -20,7 +20,9 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
+#ifndef SSL_LIB
 #define	SSL_LIB				"libssl.so"
+#endif
 #define	DIRSEP				'/'
 #define	IS_DIRSEP_CHAR(c)		((c) == '/')
 #define	O_BINARY			0
