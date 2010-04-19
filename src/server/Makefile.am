@@ -1,12 +1,12 @@
-AM_CFLAGS = @CFLAGS@  -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\"" -DPACKAGE_AUTH_DIR="\"${PACKAGE_AUTH_DIR}\""  -DPACKAGE_SUBSCRIPTION_DIR="\"${PACKAGE_SUBSCRIPTION_DIR}\""   
-
 INCLUDES =  \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/src/server/shttpd \
 	    $(OPENSSL_CFLAGS) \
-	   -DEMBEDDED  -DNO_CGI -DNO_SSI 
-
+	   -DEMBEDDED  -DNO_CGI -DNO_SSI \
+           -DPACKAGE_PLUGIN_DIR="\"${PACKAGE_PLUGIN_DIR}\"" \
+	   -DPACKAGE_AUTH_DIR="\"${PACKAGE_AUTH_DIR}\"" \
+	   -DPACKAGE_SUBSCRIPTION_DIR="\"${PACKAGE_SUBSCRIPTION_DIR}\""   
 
 LIBS = \
        $(OPENSSL_LIBS) \
