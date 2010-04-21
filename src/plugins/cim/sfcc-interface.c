@@ -1547,7 +1547,7 @@ cim_connect_to_cimom(char *cim_host,
 			cim_host_passwd, &rc);
 
 	if (cimclient == NULL) {
-	        debug( "*** Connection to CIMOM %s://%s:%s failed with %d:%s", frontend, cim_host, cim_port, rc.rc, CMGetCharPtr(rc.msg));
+	        debug( "*** Connection to CIMOM %s://%s:%s failed with %d:%s", frontend, cim_host, cim_port, rc.rc, rc.msg ? CMGetCharPtr(rc.msg) : "?");
 	} else {
 		debug("new cimclient: 0x%8x", cimclient);
 		debug("new cimclient: %d", cimclient->ft->ftVersion);
