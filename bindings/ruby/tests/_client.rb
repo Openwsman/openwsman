@@ -20,6 +20,13 @@ class Client
     wsmc = Openwsman::Client.new( client["host"], client["port"], client["path"], client["scheme"], client["username"], client["password"] )
     wsmc.transport.timeout = 5
     wsmc.transport.auth_method = Openwsman::BASIC_AUTH_STR
+    if client["scheme"] == "https"
+      wsmc.transport.key = "serverkey.pem"
+      wsmc.transport.cert = "servercert.pem"
+      wsmc.transport.verify_peer = 0
+      wsmc.transport.verify_host = 0
+    end
+    
     wsmc
   end
 end
