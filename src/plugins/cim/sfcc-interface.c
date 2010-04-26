@@ -540,7 +540,7 @@ comparef(const void *key1, const void *key2)
 }
 
 
-static void
+static int
 cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 		CMPIArgs * argsin)
 {
@@ -548,6 +548,7 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 	hnode_t *hn;
 	hash_scan_begin(&hs, client->method_args);
 	list_t *arglist = NULL;
+	int res = 0;
 
 	debug("cim_add_args:");
 	while ((hn = hash_scan_next(&hs))) {
@@ -563,7 +564,7 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 		// sort the list first then tag arrays
 		debug("cim_add_args: list count: %u", listcount);
 		if (0 >= listcount) {
-			return; // nothing to do so return
+			return res; // nothing to do so return
 		}
 		list_sort(arglist, comparef);
 		argnode = list_first(arglist);
@@ -599,6 +600,10 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 					debug("cim_add_args: array %u object: %p", jj, sentry);
 					if (0 != arraytype) {
 						value.ref = cim_epr_to_objectpath(client, sentry->entry.eprp);
+						if (value.ref == NULL) {
+						        res = 1;
+							break;
+						}
 						CMSetArrayElementAt(arraydata, jj, &value, CMPI_ref);
 					} else {
 						value.string = native_new_CMPIString((char *)sentry->entry.text, NULL);
@@ -618,6 +623,10 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 				debug("cim_add_args: single key: %s type: %u", node_val->key, sentry->type);
 				if (0 != sentry->type) {
 					epr_t *eprp = sentry->entry.eprp;
+					if (eprp == NULL) {
+						res = 1;
+						break;
+					}
 					debug("epr_t: selectorcount: %u", eprp->refparams.selectorset.count);
 					value.ref = cim_epr_to_objectpath(client, sentry->entry.eprp);
 					CMAddArg(argsin, node_val->key, &value, CMPI_ref);
@@ -631,7 +640,9 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 	} else {
 		debug("cim_add_args: did not find any argument list");
 	}
+	return res;
 }
+
 
 static void
 cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
@@ -1714,7 +1725,11 @@ cim_invoke_method(CimClientInfo * client,
 
 		if (client->method_args && hash_count(client->method_args) > 0) {
 			debug("adding method arguments");
-			cim_add_args(client, objectpath, argsin);
+			if (0 != cim_add_args(client, objectpath, argsin)) {
+				status->fault_code = WSMAN_INVALID_PARAMETER;
+				status->fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
+				goto cleanup;
+			}
 		}
 
 	        if (strstr(client->resource_uri, XML_NS_CIM_INTRINSIC) != NULL) {
@@ -1764,6 +1779,7 @@ cim_invoke_method(CimClientInfo * client,
 		cim_to_wsman_status(rc, status);
 		if (rc.msg)
 			CMRelease(rc.msg);
+cleanup:
 		if (argsin)
 			CMRelease(argsin);
 		if (argsout)
