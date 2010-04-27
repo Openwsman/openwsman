@@ -153,8 +153,8 @@ auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username
 	    if ((TYPE( first ) == T_STRING)
 		&& (TYPE( second ) == T_STRING) )
 	    {
-		*username = StringValuePtr( first );
-		*password= StringValuePtr( second );
+		*username = strdup(StringValuePtr( first ));
+		*password= strdup(StringValuePtr( second ));
 		return;
 	    }
 	}

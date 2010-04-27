@@ -118,8 +118,22 @@ REQUEST_PASSWORD:
 		return choosen_auth;
 	}
 
-	if ( cl->authentication.auth_request_func )
+	if (cl->authentication.auth_request_func) {
+		debug("Invoking Auth request callback");
+
+		/* free the username and password as these are OUT params to the auth_request_func
+		 * which the caller is expected to set
+		 */
+		if (*username) {
+			u_free(*username);
+			*username = NULL;
+		}
+		if (*password) {
+			u_free(*password);
+			*password = NULL;
+		}
 		cl->authentication.auth_request_func(cl, ws_auth, username, password);
+	}
 	else
 		return 0;
 
@@ -557,17 +571,6 @@ wsmc_handler( WsManClient *cl,
 			cl->fault_string = u_strdup(curl_easy_strerror(r));
 			curl_err("curl_easy_getinfo(CURLINFO_HTTPAUTH_AVAIL) failed");
 			goto DONE;
-		}
-
-		if (cl->data.auth_set) {
-			if (cl->data.user) {
-				u_free(cl->data.user);
-				cl->data.user = NULL;
-			}
-			if (cl->data.pwd) {
-				u_free(cl->data.pwd);
-				cl->data.pwd = NULL;
-			}
 		}
 
 		cl->data.auth_set = reauthenticate(cl, cl->data.auth_set, auth_avail,
