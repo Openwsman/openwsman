@@ -159,7 +159,9 @@ typedef enum {
 #define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    0x0008
 #define FLAG_DUMP_REQUEST                    0x0010
 #define FLAG_IncludeSubClassProperties       0x0020
+#define FLAG_INCLUDESUBCLASSPROPERTIES       FLAG_IncludeSubClassProperties
 #define FLAG_ExcludeSubClassProperties       0x0040
+#define FLAG_EXCLUDESUBCLASSPROPERTIES       FLAG_ExcludeSubClassProperties
 #define FLAG_POLYMORPHISM_NONE               0x0080
 #define FLAG_MUND_MAX_ESIZE                  0x0100
 #define FLAG_MUND_LOCALE                     0x0200
