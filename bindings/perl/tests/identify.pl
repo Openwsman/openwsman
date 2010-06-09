@@ -39,13 +39,13 @@ my $result; # Used to store obtained data.
 
 # Identify.
 # (options)
-$result = $client->identify($options)
+$result = $client->identify($options);
 unless($result && $result->is_fault eq 0) {
     die print "[ERROR] Could not identify server.\n";
 }
 
 # Get server info.
-my $root = $doc->root;
+my $root = $result->root;
 my $prot_version = $root->find($openwsman::XML_NS_WSMAN_ID,
                                "ProtocolVersion")->text();
 my $prod_vendor = $root->find($openwsman::XML_NS_WSMAN_ID,
