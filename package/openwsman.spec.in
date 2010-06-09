@@ -22,14 +22,14 @@ Name:           openwsman
 BuildRequires:  gcc-c++ swig >= 1.3.30
 BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
 
-BuildRequires:  python-devel perl
+BuildRequires:  perl python-devel
 
 %if 0%{?rhel_version} > 0
 BuildRequires:  -vim
 %endif
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-BuildRequires:  curl-devel pkgconfig openssl-devel ruby ruby-devel
+BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel
 %if 0%{?fedora} > 0
 BuildRequires: perl-devel
 %endif
@@ -253,7 +253,8 @@ make clean
 %if 0%{?fedora}
 export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DFEDORA"
 %endif
-make CFLAGS="$RPM_OPT_FLAGS" %{?jobs:-j%jobs}
+SSL_LIB=`readlink %{_libdir}/libssl.so`
+make CFLAGS="$RPM_OPT_FLAGS -DSSL_LIB='\"$SSL_LIB\"'" %{?jobs:-j%jobs}
 
 %install
 make DESTDIR=$RPM_BUILD_ROOT install
