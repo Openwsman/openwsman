@@ -1,34 +1,36 @@
 # test defined constants
 
+$:.unshift ".."
 $:.unshift "../../../build/bindings/ruby"
 $:.unshift "../.libs"
 
 require 'test/unit'
-require 'openwsman'
+require 'openwsman/openwsman'
 
 class ConstantTest < Test::Unit::TestCase
   def test_constants
-    assert Openwsman::FLAG_NONE == 0
-    assert Openwsman::FLAG_ENUMERATION_COUNT_ESTIMATION == 1
-    assert Openwsman::FLAG_ENUMERATION_OPTIMIZATION == 2
-    assert Openwsman::FLAG_ENUMERATION_ENUM_EPR == 4
-    assert Openwsman::FLAG_ENUMERATION_ENUM_OBJ_AND_EPR == 8
-    assert Openwsman::FLAG_DUMP_REQUEST == 16
-    assert Openwsman::FLAG_INCLUDESUBCLASSPROPERTIES == 32
-    assert Openwsman::FLAG_EXCLUDESUBCLASSPROPERTIES == 64
-    assert Openwsman::FLAG_POLYMORPHISM_NONE == 128
-    assert Openwsman::FLAG_MUND_MAX_ESIZE == 256
-    assert Openwsman::FLAG_MUND_LOCALE == 512
-    assert Openwsman::FLAG_MUND_OPTIONSET == 1024
-    assert Openwsman::FLAG_MUND_FRAGMENT == 2048
-    assert Openwsman::FLAG_CIM_EXTENSIONS == 4096
-    assert Openwsman::FLAG_CIM_REFERENCES == 8192
-    assert Openwsman::FLAG_CIM_ASSOCIATORS == 16384
-    assert Openwsman::FLAG_EVENT_SENDBOOKMARK == 32768
-    assert Openwsman::WSMAN_DELIVERY_PUSH == 0
-    assert Openwsman::WSMAN_DELIVERY_PUSHWITHACK == 1
-    assert Openwsman::WSMAN_DELIVERY_EVENTS == 2
-    assert Openwsman::WSMAN_DELIVERY_PULL == 3
+    assert_equal     0, Openwsman::FLAG_NONE
+    assert_equal     1, Openwsman::FLAG_ENUMERATION_COUNT_ESTIMATION
+    assert_equal     2, Openwsman::FLAG_ENUMERATION_OPTIMIZATION
+    assert_equal     4, Openwsman::FLAG_ENUMERATION_ENUM_EPR
+    assert_equal     8, Openwsman::FLAG_ENUMERATION_ENUM_OBJ_AND_EPR
+    assert_equal    16, Openwsman::FLAG_DUMP_REQUEST
+    assert_equal    32, Openwsman::FLAG_INCLUDESUBCLASSPROPERTIES
+    assert_equal    64, Openwsman::FLAG_EXCLUDESUBCLASSPROPERTIES
+    assert_equal   128, Openwsman::FLAG_POLYMORPHISM_NONE
+    assert_equal   256, Openwsman::FLAG_MUND_MAX_ESIZE
+    assert_equal   512, Openwsman::FLAG_MUND_LOCALE
+    assert_equal  1024, Openwsman::FLAG_MUND_OPTIONSET
+    assert_equal  2048, Openwsman::FLAG_MUND_FRAGMENT
+    assert_equal  4096, Openwsman::FLAG_CIM_EXTENSIONS
+    assert_equal  8192, Openwsman::FLAG_CIM_REFERENCES
+    assert_equal 16384, Openwsman::FLAG_CIM_ASSOCIATORS
+    assert_equal 32768, Openwsman::FLAG_EVENT_SENDBOOKMARK
+
+    assert_equal 0, Openwsman::WSMAN_DELIVERY_PUSH
+    assert_equal 1, Openwsman::WSMAN_DELIVERY_PUSHWITHACK
+    assert_equal 2, Openwsman::WSMAN_DELIVERY_EVENTS
+    assert_equal 3, Openwsman::WSMAN_DELIVERY_PULL
   end
 end
 
