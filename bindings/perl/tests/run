@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# run script for Perl tests
+#
+# Usage: run <dir> <file>
+#
+(cd $1; perl $2)
