@@ -8,6 +8,9 @@
 # and the .py file gets imported. See bindings/python/tests.
 #
 
+enable_testing()
+
+add_subdirectory(tests)
 
 EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; print sys.path[2]" OUTPUT_VARIABLE PYTHON_LIB_DIR)
 STRING(REPLACE "\n" "" PYTHON_LIB_DIR "${PYTHON_LIB_DIR}")
