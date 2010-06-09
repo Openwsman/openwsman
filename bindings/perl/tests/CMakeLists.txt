@@ -32,7 +32,6 @@ ADD_TEST(bindings_perl_identify   ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURREN
 
         # needs a CIMOM
 ADD_TEST(bindings_perl_computer_system ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} CIM_ComputerSystem_EnumInstances.pl )
-ADD_TEST(bindings_perl_computer_system ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} Linux_ComputerSystem_assoc.pl )
 
 
 # ADD_TEST(bindings_perl_operating_system     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} cim_operating_system.pl )
@@ -49,13 +48,15 @@ ADD_TEST(bindings_perl_enumerate ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT
 # ADD_TEST(bindings_perl_processes            ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} processes.pl )
 # ADD_TEST(bindings_perl_pull                 ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} pull.pl )
 # ADD_TEST(bindings_perl_put                  ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} put.pl )
-ADD_TEST(bindings_perl_release              ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} release.pl )
+# ADD_TEST(bindings_perl_release              ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} release.pl )
 
+       # Needs specific provider
 #Linux_EthernetPort_EnumInstances.pl
 #Linux_EthernetPort_GetClass.pl
 #Linux_EthernetPort_GetInstance.pl
 #Linux_NextHopIPRoute_CreateInstance.pl
 #Linux_NextHopIPRoute_DeleteInstance.pl
+#ADD_TEST(bindings_perl_computersystem_assoc ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} Linux_ComputerSystem_assoc.pl )
 
 	# needs WinRM system
 # ADD_TEST(bindings_perl_win32_operatingsystem ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} win32_operatingsystem.pl )
