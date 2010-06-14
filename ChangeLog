@@ -1,4 +1,17 @@
+2.2.3.9
 - Bugfix release:
+  - bindings (kkaempf)
+    - make all constants uppercase
+    - optionally pass code, code_detail, and message to WsmanStatus()
+      constructor
+    - Pass XmlDoc to Fault() constructor
+    - Fix exceptions for Perl and Python
+    - Ruby: Alias XmlDoc.foo to XmlDoc.body.foo
+    - Ruby: Create bindings documentation
+  - Fix Fedora/RH build (kkaempf)
+  - Use floor() instead of round() (Suresh Sundriyal)
+  - Reuse username/password if auth_request_func is not set (Arun Venkatachalam)
+  - Catch invalid reference parameters (report bad EPR values) (kkaempf)
   - fix Windows build (Trevor Witten)
   - fix ssl (certificate thumbprint) callback check (Arun Venkatachalam)
 
