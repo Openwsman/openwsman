@@ -380,7 +380,7 @@ typedef struct _WsmanStatus WsmanStatus;
     else {
       s->fault_detail_code = detail;
     }
-#if defined(SWIGPYTHON) || defined(SWIGPERL)
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
     fail:
 #endif
     return s;
@@ -423,7 +423,7 @@ typedef struct _WsmanStatus WsmanStatus;
     else {
       $self->fault_detail_code = detail;
     }
-#if defined(SWIGPYTHON) || defined(SWIGPERL)
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
     fail:
     return;
 #endif

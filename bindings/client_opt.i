@@ -171,7 +171,7 @@ typedef struct {} client_opt_t;
       SWIG_exception( SWIG_ValueError, "Bad delivery mode" );
 	
     wsmc_set_delivery_mode(delivery_mode, $self);
-#if defined(SWIGPYTHON) || defined(SWIGPERL)
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
     fail:
     return;
 #endif
@@ -191,7 +191,7 @@ typedef struct {} client_opt_t;
     if (delivery_sec_mode > WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS)
       SWIG_exception( SWIG_ValueError, "Bad delivery security mode" );
     wsmc_set_delivery_security_mode(delivery_sec_mode, $self);
-#if defined(SWIGPYTHON) || defined(SWIGPERL)
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
     fail:
     return;
 #endif
