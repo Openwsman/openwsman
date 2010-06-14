@@ -28,6 +28,17 @@
 
 #if defined(SWIGJAVA)
 %module jwsman
+
+%javaconst(1);
+/* get the java environment so we can throw exceptions */
+%{
+    static JNIEnv *jenv;
+    jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+      (*vm)->AttachCurrentThread(vm, (void **)&jenv, NULL);
+      return JNI_VERSION_1_2;
+    }
+%}
+
 #endif
 
 #if defined(SWIGPYTHON)
@@ -141,6 +152,18 @@ static WsXmlDocH create_soap_envelope() {
 %ignore __undefined;
 
 %include exception.i
+
+#if defined(SWIGJAVA)
+
+/* if java, pass the new exception macro to C not just SWIG */
+#undef SWIG_exception
+#define SWIG_exception(code, msg) {SWIG_JavaException(jenv, code, msg); goto fail;}
+%inline %{
+#undef SWIG_exception
+#define SWIG_exception(code, msg) {SWIG_JavaException(jenv, code, msg); goto fail;}
+%}
+
+#endif
 
 /* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right */
 %include "wsman-xml.i"
