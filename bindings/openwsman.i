@@ -29,7 +29,7 @@
 #if defined(SWIGJAVA)
 %module jwsman
 
-%javaconst(1);
+%javaconst(0);
 /* get the java environment so we can throw exceptions */
 %{
     static JNIEnv *jenv;
