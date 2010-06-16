@@ -2,9 +2,15 @@
 # CMakeLists.txt for openwsman/bindings/java
 #
 #
-# !!Attn!!: This creates two files
-#  1. _jwsman.so
+# This creates several files
+#  1. libjwsman.so
+#  2. *.java
 #
+
+enable_testing()
+
+add_subdirectory(tests)
+
 
 MESSAGE(STATUS "Java include path: ${JAVA_INCLUDE_PATH}")
 
@@ -14,7 +20,7 @@ SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Java ..."
-   COMMAND ${SWIG_EXECUTABLE} -java -features autodoc -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
+   COMMAND ${SWIG_EXECUTABLE} -java -package org.openwsman -features autodoc -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
@@ -25,7 +31,7 @@ SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 
 SET(jwsman_SRCS ${SWIG_OUTPUT} ${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c )
 ADD_LIBRARY( jwsman SHARED ${jwsman_SRCS} )
-SET_TARGET_PROPERTIES( jwsman PROPERTIES PREFIX "" )
+#SET_TARGET_PROPERTIES( jwsman PROPERTIES PREFIX "" )
 ADD_DEPENDENCIES( jwsman glue )
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} )
