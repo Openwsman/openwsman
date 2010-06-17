@@ -29,7 +29,12 @@
 #if defined(SWIGJAVA)
 %module jwsman
 
+/* evaluate constants */
 %javaconst(0);
+
+/* base class for loading the .so from the .jar */
+%typemap(javabase, notderived="1") SWIGTYPE "JWsManBase"
+
 /* get the java environment so we can throw exceptions */
 %{
     static JNIEnv *jenv;

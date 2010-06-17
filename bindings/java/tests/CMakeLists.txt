@@ -3,9 +3,9 @@
 #
 ENABLE_TESTING()
 
-ADD_TEST(bindings_java_compile_all javac -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} loading_jwsman )
+ADD_TEST(bindings_java_loading_compile ${JAVA_COMPILE} -d . -cp ${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
 	# loading jwsman
-ADD_TEST(bindings_java_loading     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} loading_jwsman )
+ADD_TEST(bindings_java_loading     ${JAVA_RUNTIME} -cp ${jar_NAME} loading_jwsman )
 
 	# predefined stuff
 # ADD_TEST(bindings_java_constants  ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} constants )
@@ -25,8 +25,10 @@ ADD_TEST(bindings_java_loading     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRE
 	# ClientOptions
 # ADD_TEST(bindings_java_options    ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} clientoptions )
 # ADD_TEST(bindings_java_debug      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} debug )
+
         # Identify
-ADD_TEST(bindings_java_identify    ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} identify )
+ADD_TEST(bindings_java_identify_compile ${JAVA_COMPILE} -d . -cp ${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
+ADD_TEST(bindings_java_identify    ${JAVA_RUNTIME} -cp ${jar_NAME} identify )
 
 	# data types
 # ADD_TEST(bindings_java_fault      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} fault )
