@@ -29,7 +29,7 @@
 #if defined(SWIGJAVA)
 %module jwsman
 
-/* evaluate constants */
+/* make JNI constants */
 %javaconst(0);
 
 /* base class for loading the .so from the .jar */
