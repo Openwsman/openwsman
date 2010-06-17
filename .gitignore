@@ -36,6 +36,8 @@ m4
 *.lo
 *.la
 *.class
+*.java
+!bindings/java/JWsManBase.java
 .deps
 .libs
 bindings/perl/openwsman.pm
