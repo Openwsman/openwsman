@@ -12,6 +12,9 @@ enable_testing()
 add_subdirectory(tests)
 
 
+MESSAGE(STATUS "Java compiler: ${JAVA_COMPILE}")
+MESSAGE(STATUS "Java runtime: ${JAVA_RUNTIME}")
+MESSAGE(STATUS "Java archiver: ${JAVA_ARCHIVE}")
 MESSAGE(STATUS "Java include path: ${JAVA_INCLUDE_PATH}")
 
 SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
@@ -27,18 +30,33 @@ ADD_CUSTOM_COMMAND (
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.c
 )
 
+SET( jar_NAME "openwsman-${PACKAGE_ARCHITECTURE}-${VERSION}.jar" )
+
+ADD_CUSTOM_COMMAND (
+   OUTPUT ${jar_NAME}
+   POST_BUILD
+   COMMAND ${CMAKE_COMMAND} -E echo_append "Compiling Java files ..."
+   COMMAND ${JAVA_COMPILE} *.java
+   COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
+   COMMAND ${JAVA_ARCHIVE} cvf ${jar_NAME} *.java *.class *.so
+   DEPENDS ${SWIG_OUTPUT}
+)
+
+ADD_CUSTOM_TARGET ( jwsman_all ALL
+   COMMAND ${CMAKE_COMMAND} -E echo_append "Building Java bindings ..."
+   DEPENDS ${jar_NAME}
+)
+
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 
 SET(jwsman_SRCS ${SWIG_OUTPUT} ${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c )
 ADD_LIBRARY( jwsman SHARED ${jwsman_SRCS} )
-#SET_TARGET_PROPERTIES( jwsman PROPERTIES PREFIX "" )
-ADD_DEPENDENCIES( jwsman glue )
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} )
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/bindings )
-INCLUDE_DIRECTORIES( ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH}/linux )
+INCLUDE_DIRECTORIES( ${JNI_INCLUDE_DIRS} )
 
 TARGET_LINK_LIBRARIES( jwsman wsman )
 TARGET_LINK_LIBRARIES( jwsman wsman_client )
 
-#INSTALL(TARGETS jwsman LIBRARY DESTINATION ${JAVA_LIB_DIR}/site-packages)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${jar_NAME} ARCHIVE DESTINATION /usr/share/java)
