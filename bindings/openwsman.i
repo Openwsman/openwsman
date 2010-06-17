@@ -29,8 +29,8 @@
 #if defined(SWIGJAVA)
 %module jwsman
 
-/* make JNI constants */
-%javaconst(0);
+/* evaluate constants */
+%javaconst(1);
 
 /* extend JNI class to automatically load shared library from jar file */
 %pragma(java) jniclassimports=%{

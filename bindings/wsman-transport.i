@@ -21,14 +21,18 @@ typedef struct _WsManTransport {} WsManTransport;
  * as a convenience
  *
  */
-%extend WsManTransport {
 
+%include "wsman-client-transport.h"
+
+%extend WsManTransport {
+#ifndef SWIGJAVA
  %constant int NO_AUTH           = WS_NO_AUTH;
  %constant int BASIC_AUTH        = WS_BASIC_AUTH;
  %constant int DIGEST_AUTH       = WS_DIGEST_AUTH;
  %constant int PASS_AUTH         = WS_PASS_AUTH;
  %constant int NTLM_AUTH         = WS_NTLM_AUTH;
  %constant int GSSNEGOTIATE_AUTH = WS_GSSNEGOTIATE_AUTH;
+#endif
 
 #if defined(SWIGJAVA)
  %javaconst(1) NO_AUTH_STR;
