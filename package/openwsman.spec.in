@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman (Version @VERSION@)
 #
-# Copyright (c) 2009 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2010 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -37,7 +37,6 @@ BuildRequires: perl-devel
 
 %if 0%{?suse_version} > 0
 
-BuildRequires:  libcurl-devel 
 %if 0%{?suse_version} > 1020
 BuildRequires:  fdupes libopenssl-devel 
 %endif
@@ -45,6 +44,9 @@ BuildRequires:  fdupes libopenssl-devel
 # SLE10
 %if 0%{?suse_version} < 1020
 BuildRequires:  libidn-devel openssl-devel 
+BuildRequires:  curl-devel 
+%else
+BuildRequires:  libcurl-devel 
 %endif
 
 # SLE9
@@ -63,7 +65,7 @@ Release:        1
 # Mandriva:
 # Release %mkrel 1
 Url:            http://www.openwsman.org/
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Source:         %{name}-%{version}.tar.bz2
@@ -85,7 +87,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package -n libwsman1
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Provides:       openwsman = %{version}
@@ -103,7 +105,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package -n libwsman-devel
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          Development/Libraries/C and C++
 Summary:        Opensource Implementation of WS-Management
 Provides:       openwsman-devel = %{version}
@@ -130,7 +132,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package client
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 Summary:        Openwsman Client libraries
 
@@ -146,7 +148,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package server
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 PreReq:         sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
@@ -167,7 +169,7 @@ Authors:
 
 
 %package python
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -188,7 +190,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package ruby
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 Requires:       ruby
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
@@ -215,7 +217,7 @@ Authors:
     Denis Sadykov <denis.sadykov@intel.com>
 
 %package perl
-License:        BSD 3-clause (or similar)
+License:        BSD3c(or similar)
 Group:          System/Management
 %if 0%{?fedora}
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
