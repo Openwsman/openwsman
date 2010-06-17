@@ -36,11 +36,9 @@ ADD_CUSTOM_COMMAND (
    OUTPUT ${jar_NAME}
    POST_BUILD
    COMMAND ${CMAKE_COMMAND} -E echo_append "Compiling Java files ..."
-   COMMAND ${JAVA_COMPILE} -d . ${CMAKE_CURRENT_SOURCE_DIR}/JWsManBase.java
    COMMAND ${JAVA_COMPILE} -d . *.java
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
    COMMAND ${JAVA_ARCHIVE} cvf ${jar_NAME} *.so org/*
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/JWsManBase.java
    DEPENDS ${SWIG_OUTPUT}
 )
 
