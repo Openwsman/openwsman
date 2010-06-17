@@ -456,6 +456,7 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3" )
 ####################################################################
 # PACKAGING                                                        #
 ####################################################################
+SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 1)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Web Services for Management")
 SET(CPACK_PACKAGE_VENDOR "openwsman.org")
 SET(CPACK_PACKAGE_VERSION_MAJOR ${OPENWSMAN_MAJOR})
@@ -470,6 +471,9 @@ SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${VERSION}" )
 # in absolute path + filename to find files or directories to be excluded
 # from source tarball.
 SET (CPACK_SOURCE_IGNORE_FILES
+#git files
+"/.git"
+"\\\\.gitignore$"
 #svn files
 "\\\\.svn/"
 "\\\\.cvsignore$"
@@ -496,15 +500,22 @@ SET (CPACK_SOURCE_IGNORE_FILES
 "\\\\.lo$"
 "\\\\.la$"
 "Makefile\\\\.in$"
+"Makefile$"
 # autotool
+"/m4/"
 "autom4te.cache"
 "config.log"
+"config.h"
+"configure$"
+"config.status"
 "depcomp"
 "config.guess"
 "install.sh"
+"libtool"
 # generated
-"bindings/java/*.java"
 "\\\\.bz2$"
+"\\\\.class$"
+"/bindings/ruby/rdoc/"
 )
 
 INCLUDE(CPack)
