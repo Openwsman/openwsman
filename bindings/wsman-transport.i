@@ -21,6 +21,14 @@ typedef struct _WsManTransport {} WsManTransport;
  * as a convenience
  *
  */
+#if defined(SWIGJAVA)
+%rename(NO_AUTH_STR) _WS_NO_AUTH;
+%rename(BASIC_AUTH_STR) _WS_BASIC_AUTH;
+%rename(DIGEST_AUTH_STR) _WS_DIGEST_AUTH;
+%rename(PASS_AUTH_STR) _WS_PASS_AUTH;
+%rename(NTLM_AUTH_STR) _WS_NTLM_AUTH;
+%rename(GSSNEGOTIATE_AUTH_STR) _WS_GSSNEGOTIATE_AUTH;
+#endif
 
 %include "wsman-client-transport.h"
 
@@ -32,20 +40,7 @@ typedef struct _WsManTransport {} WsManTransport;
  %constant int PASS_AUTH         = WS_PASS_AUTH;
  %constant int NTLM_AUTH         = WS_NTLM_AUTH;
  %constant int GSSNEGOTIATE_AUTH = WS_GSSNEGOTIATE_AUTH;
-#endif
 
-#if defined(SWIGJAVA)
- %javaconst(1) NO_AUTH_STR;
- %javaconst(1) BASIC_AUTH_STR;
- %javaconst(1) DIGEST_AUTH_STR;
- %javaconst(1) NTLM_AUTH_STR;
- %javaconst(1) GSSNEGOTIATE_AUTH_STR;
- %constant char *NO_AUTH_STR           = "No Auth";
- %constant char *BASIC_AUTH_STR        = "Basic";
- %constant char *DIGEST_AUTH_STR       = "Digest";
- %constant char *NTLM_AUTH_STR         = "NTLM";
- %constant char *GSSNEGOTIATE_AUTH_STR = "GSS-Negotiate";
-#else
  %constant char *NO_AUTH_STR           = _WS_NO_AUTH;
  %constant char *BASIC_AUTH_STR        = _WS_BASIC_AUTH;
  %constant char *DIGEST_AUTH_STR       = _WS_DIGEST_AUTH;
