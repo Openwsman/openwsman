@@ -42,7 +42,7 @@
 	public final static String libraryFileName = "libjwsman.so";
 
 	static {
-		InputStream inputStream = OpenWsManJNI.class.getClassLoader()
+		InputStream inputStream = jwsmanJNI.class.getClassLoader()
 				.getResourceAsStream(libraryFileName);
 
 		try {
