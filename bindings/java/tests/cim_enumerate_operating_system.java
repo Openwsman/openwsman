@@ -20,7 +20,7 @@ public class cim_enumerate_operating_system {
 		filter.wql("SELECT * FROM CIM_OperatingSystem");
 		
 		XmlDoc result = client.enumerate(options, filter, jwsmanConstants.CIM_ALL_AVAILABLE_CLASSES);
-		if ((result == null) || (result.is_fault() != 0))
+		if ((result == null) || result.isFault())
 			System.err.println("Enumeration failed: "
 					+ ((result != null) ? result.fault().detail() : "?"));
 		else {
@@ -28,7 +28,7 @@ public class cim_enumerate_operating_system {
 			while (context != null) {
 				System.out.println("Context: " + context);
 				result = client.pull(options, null, jwsmanConstants.CIM_ALL_AVAILABLE_CLASSES, context);
-				if (result == null || (result.is_fault() != 0))	 {
+				if (result == null || result.isFault())	 {
 					System.err.println("Pull failed: " +
 							((result != null) ? result.fault().detail() : "?"));
 					context = null;

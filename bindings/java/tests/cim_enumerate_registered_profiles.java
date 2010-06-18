@@ -20,7 +20,7 @@ public class cim_enumerate_registered_profiles {
 		client.transport().set_auth_method(jwsmanConstants.BASIC_AUTH_STR);
 
 		XmlDoc result = client.enumerate(options, null, URI);
-		if (result == null || (result.is_fault() != 0))
+		if (result == null || result.isFault())
 			System.err.println("Enumeration failed: "
 					+ ((result != null) ? result.fault().detail() : "?"));
 		else {
@@ -28,7 +28,7 @@ public class cim_enumerate_registered_profiles {
 			while (context != null) {
 				System.out.println("Context: " + context);
 				result = client.pull(options, null, URI, context);
-				if (result == null || (result.is_fault() != 0))	 {
+				if (result == null || result.isFault())	 {
 					System.err.println("Pull failed: " +
 							((result != null) ? result.fault().detail() : "?"));
 					context = null;

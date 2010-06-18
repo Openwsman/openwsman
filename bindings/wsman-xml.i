@@ -160,6 +160,13 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   %typemap(out) int is_fault
     "$result = ($1 != 0) ? Qtrue : Qfalse;";
 #endif
+#if defined(SWIGJAVA)
+  %rename("isFault") is_fault();
+  %typemap(jstype) int is_fault "boolean"
+  %typemap(javaout) int is_fault {
+	  return ( $jnicall != 0 ) ? true : false;
+  }
+#endif
   /*
    * Check if document represents a fault
    *

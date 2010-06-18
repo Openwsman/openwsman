@@ -15,7 +15,7 @@ public class identify {
 		c.transport().set_auth_method(jwsmanConstants.BASIC_AUTH_STR);
 
 		XmlDoc doc = c.identify(op);
-		if (doc == null || (doc.is_fault() != 0)) {
+		if (doc == null || doc.isFault()) {
 			System.err.println("Failed to identify: " + ((doc != null) ? doc.fault().detail() : "?"));
 			System.exit(1);
 		}
