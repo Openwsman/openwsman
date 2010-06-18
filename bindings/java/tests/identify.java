@@ -12,22 +12,22 @@ public class identify {
 		Client c = new Client("http://wsman:secret@localhost:5985/wsman");
 		ClientOptions op = new ClientOptions();
 		op.set_dump_request();
-		c.transport().set_auth_method("basic");
+		c.transport().set_auth_method(jwsmanConstants.BASIC_AUTH_STR);
 
 		XmlDoc doc = c.identify(op);
 		if (doc == null || (doc.is_fault() != 0)) {
-			System.out.println("Failed to identify");
+			System.err.println("Failed to identify: " + ((doc != null) ? doc.fault().detail() : "?"));
 			System.exit(1);
 		}
 
 		System.out.println("ProtocolVersion: "
 				+ doc.root().find(jwsmanConstants.XML_NS_WSMAN_ID,
-						"ProtocolVersion", 1).text());
+						jwsmanConstants.WSMID_PROTOCOL_VERSION, 1).text());
 		System.out.println("ProductVendor: "
 				+ doc.root().find(jwsmanConstants.XML_NS_WSMAN_ID,
-						"ProductVendor", 1).text());
+						jwsmanConstants.WSMID_PRODUCT_VENDOR, 1).text());
 		System.out.println("ProductVersion: "
 				+ doc.root().find(jwsmanConstants.XML_NS_WSMAN_ID,
-						"ProductVersion", 1).text());
+						jwsmanConstants.WSMID_PRODUCT_VERSION, 1).text());
 	}
 }
