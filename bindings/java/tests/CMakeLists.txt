@@ -3,9 +3,9 @@
 #
 ENABLE_TESTING()
 
-ADD_TEST(bindings_java_loading_compile ${JAVA_COMPILE} -d . -cp ${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
+ADD_TEST(bindings_java_loading_compile ${JAVA_COMPILE} -d ${CMAKE_CURRENT_BINARY_DIR} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/loading_sharedlib.java )
 	# loading jwsman
-ADD_TEST(bindings_java_loading     ${JAVA_RUNTIME} -cp ${jar_NAME} loading_jwsman )
+ADD_TEST(bindings_java_loading     ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME}:${CMAKE_CURRENT_BINARY_DIR} loading_sharedlib )
 
 	# predefined stuff
 # ADD_TEST(bindings_java_constants  ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} constants )
@@ -27,8 +27,8 @@ ADD_TEST(bindings_java_loading     ${JAVA_RUNTIME} -cp ${jar_NAME} loading_jwsma
 # ADD_TEST(bindings_java_debug      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} debug )
 
         # Identify
-ADD_TEST(bindings_java_identify_compile ${JAVA_COMPILE} -d . -cp ${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
-ADD_TEST(bindings_java_identify    ${JAVA_RUNTIME} -cp ${jar_NAME} identify )
+ADD_TEST(bindings_java_identify_compile ${JAVA_COMPILE} -d ${CMAKE_CURRENT_BINARY_DIR} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
+ADD_TEST(bindings_java_identify    ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME}:${CMAKE_CURRENT_BINARY_DIR} identify )
 
 	# data types
 # ADD_TEST(bindings_java_fault      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} fault )

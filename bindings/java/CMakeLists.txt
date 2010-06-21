@@ -7,11 +7,6 @@
 #  2. *.java
 #
 
-enable_testing()
-
-add_subdirectory(tests)
-
-
 MESSAGE(STATUS "Java compiler: ${JAVA_COMPILE}")
 MESSAGE(STATUS "Java runtime: ${JAVA_RUNTIME}")
 MESSAGE(STATUS "Java archiver: ${JAVA_ARCHIVE}")
@@ -60,3 +55,7 @@ TARGET_LINK_LIBRARIES( jwsman wsman )
 TARGET_LINK_LIBRARIES( jwsman wsman_client )
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${jar_NAME} ARCHIVE DESTINATION /usr/share/java)
+
+enable_testing()
+
+add_subdirectory(tests)
