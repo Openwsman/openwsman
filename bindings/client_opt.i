@@ -24,7 +24,14 @@ typedef struct {} client_opt_t;
 
 %extend client_opt_t {
   client_opt_t() {
-    return wsmc_options_init();
+    client_opt_t *options = wsmc_options_init();
+#if defined(SWIGJAVA)
+    if (options) {
+	    options->selectors = hash_create3(HASHCOUNT_T_MAX, 0, 0);
+	    options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
+    }
+#endif
+    return options;
   }
 
   ~client_opt_t() {
@@ -72,9 +79,13 @@ typedef struct {} client_opt_t;
   void add_selector(const char *key, const char *value)
   {
 #endif
+#if defined(SWIGJAVA)
+    key = strdup(key);
+    value = strdup(value);
+#endif
     wsmc_add_selector($self, key, value);
   }
-  
+
 #if defined(SWIGRUBY)
   /*
    * Set selectors from Hash
@@ -100,6 +111,10 @@ typedef struct {} client_opt_t;
 #else
   void add_property(const char *key, const char *value)
   {
+#endif
+#if defined(SWIGJAVA)
+    key = strdup(key);
+    value = strdup(value);
 #endif
     wsmc_add_property($self, key, value);
   }
