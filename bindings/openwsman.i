@@ -180,8 +180,20 @@ static WsXmlDocH create_soap_envelope() {
 /*
  * hash_t typemaps
  */
+#if defined(SWIGJAVA)
+%typemap(jni) hash_t * "jobject"
+%typemap(jtype) hash_t * "java.util.Map"
+%typemap(jstype) hash_t * "java.util.Map"
+%typemap(javaout) hash_t * {
+	return $jnicall;
+ }
+#endif
 %typemap(out) hash_t * {
+#if defined(SWIGJAVA)
+ $result = hash2value(jenv, $1);
+#else
  $result = hash2value($1);
+#endif
 }
 
 %typemap(in) hash_t * {

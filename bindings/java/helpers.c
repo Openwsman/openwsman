@@ -50,3 +50,54 @@ auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username
     *username = NULL;		/* abort authentication */
     return;
 }
+
+#ifndef JCALL0
+#ifdef __cplusplus
+#   define JCALL0(func, jenv) jenv->func()
+#   define JCALL1(func, jenv, ar1) jenv->func(ar1)
+#   define JCALL2(func, jenv, ar1, ar2) jenv->func(ar1, ar2)
+#   define JCALL3(func, jenv, ar1, ar2, ar3) jenv->func(ar1, ar2, ar3)
+#   define JCALL4(func, jenv, ar1, ar2, ar3, ar4) \
+	jenv->func(ar1, ar2, ar3, ar4)
+#   define JCALL7(func, jenv, ar1, ar2, ar3, ar4, ar5, ar6, ar7) \
+	jenv->func(ar1, ar2, ar3, ar4, ar5, ar6, ar7)
+#else
+#   define JCALL0(func, jenv) (*jenv)->func(jenv)
+#   define JCALL1(func, jenv, ar1) (*jenv)->func(jenv, ar1)
+#   define JCALL2(func, jenv, ar1, ar2) (*jenv)->func(jenv, ar1, ar2)
+#   define JCALL3(func, jenv, ar1, ar2, ar3) (*jenv)->func(jenv, ar1, ar2, ar3)
+#   define JCALL4(func, jenv, ar1, ar2, ar3, ar4) \
+	(*jenv)->func(jenv, ar1, ar2, ar3, ar4)
+#   define JCALL7(func, jenv, ar1, ar2, ar3, ar4, ar5, ar6, ar7) \
+	(*jenv)->func(jenv, ar1, ar2, ar3, ar4, ar5, ar6, ar7)
+#endif
+#endif
+
+static jobject hash2value(JNIEnv *jenv, hash_t *hash)
+{
+	hnode_t *node;
+	hscan_t ptr;
+	jclass cls = JCALL1(FindClass, jenv, "java/util/HashMap");
+	jobject dict = JCALL3(NewObject, jenv, cls,
+			      JCALL3(GetMethodID, jenv, cls, "<init>", "(I)V"),
+			      (jint) hash_count(hash));
+	jmethodID put = JCALL3(GetMethodID, jenv, cls, "put",
+			       "(Ljava/lang/Object;Ljava/lang/Object;)"
+			       "Ljava/lang/Object;");
+
+	if (!hash)
+		return NULL;
+
+	hash_scan_begin(&ptr, hash);
+
+	while ((node = hash_scan_next(&ptr))) {
+		const void *key = hnode_getkey(node);
+		const void *val = hnode_get(node);
+
+		JCALL4(CallObjectMethod, jenv, dict, put,
+		       JCALL1(NewStringUTF, jenv, key),
+		       JCALL1(NewStringUTF, jenv, val));
+	}
+
+	return dict;
+}
