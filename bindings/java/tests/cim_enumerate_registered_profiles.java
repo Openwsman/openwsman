@@ -1,7 +1,7 @@
 import org.openwsman.Client;
 import org.openwsman.ClientOptions;
 import org.openwsman.XmlDoc;
-import org.openwsman.jwsmanConstants;
+import org.openwsman.OpenWSManConstants;
 
 public class cim_enumerate_registered_profiles {
 
@@ -15,9 +15,9 @@ public class cim_enumerate_registered_profiles {
 				"http://wsman:secret@linux-3qev.localnet:5985/wsman");
 		ClientOptions options = new ClientOptions();
 		options.set_dump_request();
-		options.add_selector(jwsmanConstants.CIM_NAMESPACE_SELECTOR,
+		options.add_selector(OpenWSManConstants.CIM_NAMESPACE_SELECTOR,
 				"root/interop");
-		client.transport().set_auth_method(jwsmanConstants.BASIC_AUTH_STR);
+		client.transport().set_auth_method(OpenWSManConstants.BASIC_AUTH_STR);
 
 		XmlDoc result = client.enumerate(options, null, URI);
 		if (result == null || result.isFault())

@@ -1,7 +1,7 @@
 import org.openwsman.Client;
 import org.openwsman.ClientOptions;
 import org.openwsman.XmlDoc;
-import org.openwsman.jwsmanConstants;
+import org.openwsman.OpenWSManConstants;
 
 public class cim_linux_operatingsystem_exec_cmd {
 	public static final String URI = "http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_OperatingSystem";
@@ -14,7 +14,7 @@ public class cim_linux_operatingsystem_exec_cmd {
 				"http://wsman:secret@linux-3qev.localnet:5985/wsman");
 		ClientOptions options = new ClientOptions();
 		options.set_dump_request();
-		client.transport().set_auth_method(jwsmanConstants.BASIC_AUTH_STR);
+		client.transport().set_auth_method(OpenWSManConstants.BASIC_AUTH_STR);
 
 		XmlDoc result = client.enumerate(options, null, URI);
 		if ((result == null) || result.isFault()) {

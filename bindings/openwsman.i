@@ -27,7 +27,7 @@
  
 
 #if defined(SWIGJAVA)
-%module jwsman
+%module OpenWSMan
 
 /* evaluate constants */
 %javaconst(1);
@@ -42,7 +42,7 @@
 	public final static String libraryFileName = "libjwsman.so";
 
 	static {
-		InputStream inputStream = jwsmanJNI.class.getClassLoader()
+		InputStream inputStream = OpenWSManJNI.class.getClassLoader()
 				.getResourceAsStream(libraryFileName);
 
 		try {
