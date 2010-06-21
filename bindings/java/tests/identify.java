@@ -16,7 +16,7 @@ public class identify {
 
 		XmlDoc doc = c.identify(op);
 		if (doc == null || doc.isFault()) {
-			System.err.println("Failed to identify: " + ((doc != null) ? doc.fault().detail() : "?"));
+			System.err.println("Failed to identify: " + ((doc != null) ? doc.fault().reason() : "?"));
 			System.exit(1);
 		}
 

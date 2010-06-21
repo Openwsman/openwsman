@@ -11,7 +11,7 @@ public class cim_enumerate_operating_system {
 	 */
 	public static void main(String[] args) {
 		Client client = new Client(
-				"http://wsman:secret@linux-3qev.localnet:5985/wsman");
+				"http://wsman:secret@localhost:5985/wsman");
 		ClientOptions options = new ClientOptions();
 		options.set_dump_request();
 		client.transport().set_auth_method(OpenWSManConstants.BASIC_AUTH_STR);
@@ -22,7 +22,7 @@ public class cim_enumerate_operating_system {
 		XmlDoc result = client.enumerate(options, filter, OpenWSManConstants.CIM_ALL_AVAILABLE_CLASSES);
 		if ((result == null) || result.isFault())
 			System.err.println("Enumeration failed: "
-					+ ((result != null) ? result.fault().detail() : "?"));
+					+ ((result != null) ? result.fault().reason() : "?"));
 		else {
 			String context = result.context();
 			while (context != null) {
@@ -30,7 +30,7 @@ public class cim_enumerate_operating_system {
 				result = client.pull(options, null, OpenWSManConstants.CIM_ALL_AVAILABLE_CLASSES, context);
 				if (result == null || result.isFault())	 {
 					System.err.println("Pull failed: " +
-							((result != null) ? result.fault().detail() : "?"));
+							((result != null) ? result.fault().reason() : "?"));
 					context = null;
 					continue;
 				}
