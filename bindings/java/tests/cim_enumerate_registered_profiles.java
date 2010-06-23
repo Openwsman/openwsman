@@ -38,11 +38,7 @@ public class cim_enumerate_registered_profiles {
 				XmlNode id = result.root().find(null,"InstanceID", 1);
 				XmlNode name = result.root().find(null,"RegisteredName", 1);
 				
-				System.out.println(
-						(id == null ? "?" : id.text())
-						+ " (" +
-						(name == null ? "?" : name.text())
-						+ ")");
+				System.out.println(id + " (" + name	+ ")");
 				context = result.context();
 			}
 		}

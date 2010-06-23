@@ -61,7 +61,9 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 #if defined(SWIGPYTHON)
   %rename("__str__") string();
 #endif
-  
+#if defined(SWIGJAVA)
+  %rename("toString") string();
+#endif
   %newobject string;
   /*
    * generic string representation of the XmlDoc
@@ -245,6 +247,10 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #endif
 #if defined(SWIGPYTHON)
   %rename("__str__") text();
+#endif
+#if defined(SWIGJAVA)
+  %rename("toString") text();
+  %rename("toXML") string();
 #endif
 
   %newobject string;

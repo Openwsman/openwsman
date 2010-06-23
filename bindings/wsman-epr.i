@@ -65,6 +65,14 @@ typedef struct {
     return epr_to_txt($self, ns, epr_node_name);
   }
 
+#if defined(SWIGJAVA)
+  %rename("toString") string();
+#endif
+  %newobject string;
+  char *string() {
+	  return epr_to_txt($self, XML_NS_SOAP_1_2, "Header");
+  }
+
   /*
    * Number of selectors
    */

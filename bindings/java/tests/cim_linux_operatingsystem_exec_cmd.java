@@ -34,11 +34,11 @@ public class cim_linux_operatingsystem_exec_cmd {
 		System.err.println(result.encode("UTF-8"));
 
 		String CSCreationClassname = result.root().find(URI,
-				"CSCreationClassName", 1).text();
-		String CSName = result.root().find(URI, "CSName", 1).text();
+				"CSCreationClassName", 1).toString();
+		String CSName = result.root().find(URI, "CSName", 1).toString();
 		String CreationClassname = result.root().find(URI, "CreationClassName",
-				1).text();
-		String Name = result.root().find(URI, "Name", 1).text();
+				1).toString();
+		String Name = result.root().find(URI, "Name", 1).toString();
 
 		options.add_selector("CSCreationClassname", CSCreationClassname);
 		options.add_selector("CSName", CSName);

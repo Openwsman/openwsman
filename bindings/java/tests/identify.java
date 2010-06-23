@@ -22,12 +22,12 @@ public class identify {
 
 		System.out.println("ProtocolVersion: "
 				+ doc.root().find(OpenWSManConstants.XML_NS_WSMAN_ID,
-						OpenWSManConstants.WSMID_PROTOCOL_VERSION, 1).text());
+						OpenWSManConstants.WSMID_PROTOCOL_VERSION, 1));
 		System.out.println("ProductVendor: "
 				+ doc.root().find(OpenWSManConstants.XML_NS_WSMAN_ID,
-						OpenWSManConstants.WSMID_PRODUCT_VENDOR, 1).text());
+						OpenWSManConstants.WSMID_PRODUCT_VENDOR, 1));
 		System.out.println("ProductVersion: "
 				+ doc.root().find(OpenWSManConstants.XML_NS_WSMAN_ID,
-						OpenWSManConstants.WSMID_PRODUCT_VERSION, 1).text());
+						OpenWSManConstants.WSMID_PRODUCT_VERSION, 1));
 	}
 }
