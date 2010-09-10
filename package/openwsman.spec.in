@@ -70,7 +70,11 @@ Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
+Source2:        %{name}.pam.rh
+%else
 Source2:        %{name}.pam
+%endif
 Source3:        %{name}.SuSEfirewall2
 Patch0:         %{name}-pam-auth.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
