@@ -37,24 +37,21 @@ BuildRequires: perl-devel
 
 %if 0%{?suse_version} > 0
 
-%if 0%{?suse_version} > 1020
+%if 0%{?suse_version} > 1010
 BuildRequires:  fdupes libopenssl-devel 
-%endif
-
+BuildRequires:  libcurl-devel 
+%else
 # SLE10
-%if 0%{?suse_version} < 1020
 BuildRequires:  libidn-devel openssl-devel 
 BuildRequires:  curl-devel 
-%else
-BuildRequires:  libcurl-devel 
 %endif
 
-# SLE9
-%if 0%{?suse_version} < 920
-BuildRequires:  pkgconfig ruby
-%else
+%if 0%{?suse_version} > 910
 BuildRequires:  ruby-devel
 BuildRequires:  pkg-config
+%else
+# SLE9
+BuildRequires:  pkgconfig ruby
 %endif
 
 %endif
@@ -118,11 +115,6 @@ Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
 Requires:       %{name}-client = %{version}
 Requires:       sblim-sfcc-devel libxml2-devel pam-devel
-%if 0%{?suse_version} > 0
-Requires:       libcurl-devel
-%else
-Requires:       curl-devel
-%endif
 
 %description -n libwsman-devel
 Opensource Implementation of WS-Management
