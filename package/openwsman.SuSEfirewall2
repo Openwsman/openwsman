@@ -1,4 +1,4 @@
-## Name: Openwsman server
+## Name: Openwsman server (WS-Management)
 ## Description: opens ports for Openwsman server in order to allow remote system management
 
 # space separated list of allowed ports
