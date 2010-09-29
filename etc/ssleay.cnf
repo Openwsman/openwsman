@@ -2,7 +2,7 @@
 # SSLeay example configuration file.
 #
 
-RANDFILE                = $ENV::HOME/.rnd
+RANDFILE                = /dev/random
 
 [ req ]
 default_bits            = 1024
