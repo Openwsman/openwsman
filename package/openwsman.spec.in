@@ -21,15 +21,16 @@
 Name:           openwsman
 BuildRequires:  gcc-c++ swig >= 1.3.30
 BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
+BuildRequires:  cmake
 
-BuildRequires:  perl python-devel
+BuildRequires:  perl python-devel java-devel
 
 %if 0%{?rhel_version} > 0
 BuildRequires:  -vim
 %endif
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel
+BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel ruby-rdoc
 %if 0%{?fedora} > 0
 BuildRequires: perl-devel
 %endif
@@ -69,6 +70,7 @@ Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 Source2:        %{name}.pam.rh
+Patch1:         openwsman-initscript.patch
 %else
 Source2:        %{name}.pam
 %endif
@@ -181,9 +183,7 @@ API.
 
 Authors:
 --------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
+    Klaus Kaempf <kkaempf@suse.de>
 
 %package ruby
 License:        BSD3c(or similar)
@@ -208,9 +208,7 @@ This package provides Ruby bindings to access the openwsman client API.
 
 Authors:
 --------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
+    Klaus Kaempf <kkaempf@suse.de>
 
 %package perl
 License:        BSD3c(or similar)
@@ -229,40 +227,65 @@ This package provides Perl bindings to access the openwsman client API.
 
 Authors:
 --------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
+    Klaus Kaempf <kkaempf@suse.de>
+
+%package java
+License:        BSD3c(or similar)
+Group:          System/Management
+Requires:       java
+Requires:       libwsman1
+Summary:        Java bindings for openwsman client API
+
+%description java
+This package provides Java bindings to access the openwsman client API.
+
+
+
+Authors:
+--------
+    Klaus Kaempf <kkaempf@suse.de>
 
 %prep
 %setup -q
 %patch0
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
+%patch1 -p1
+%endif
 
 %build
-sh autoconfiscate.sh
-mkdir -p m4
-%configure \
-    --disable-more-warnings \
-    --disable-static \
-    --enable-python \
-    --enable-ruby \
-    --enable-perl \
-    --enable-ipv6
-make clean
+rm -rf build
+mkdir build
 %if 0%{?fedora}
 export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DFEDORA"
 %endif
-SSL_LIB=`readlink %{_libdir}/libssl.so`
-make CFLAGS="$RPM_OPT_FLAGS -DSSL_LIB='\"$SSL_LIB\"'" %{?jobs:-j%jobs}
+export SSL_LIB=`readlink %{_libdir}/libssl.so`
+cd build
+cmake \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS -fno-strict-aliasing" \
+  -DCMAKE_CXX_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS" \
+  -DCMAKE_SKIP_RPATH=1 \
+  -DPACKAGE_ARCHITECTURE=`uname -m` \
+  -DLIB=%{_lib} \
+  ..
+
+make CFLAGS="-DSSL_LIB='\"$SSL_LIB\"'"
 
 %install
+cd build
 make DESTDIR=$RPM_BUILD_ROOT install
+cd ..
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
+[ -d $RPM_BUILD_ROOT%{ruby_sitelib} ] && rm -f $RPM_BUILD_ROOT%{ruby_sitelib}/openwsmanplugin.rb
+[ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
+install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
@@ -321,7 +344,7 @@ rm -f /var/log/wsmand.log
 %files python
 %defattr(-,root,root)
 %{python_sitearch}/*.so
-%{python_sitelib}/*.py
+%{python_sitearch}/*.py
 
 %files ruby
 %defattr(-,root,root)
@@ -345,6 +368,10 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %{perl_vendorarch}/openwsman.so
 %{perl_vendorlib}/openwsman.pm
+
+%files java
+%defattr(-,root,root)
+%{_javadir}/*jar
 
 %files server
 %defattr(-,root,root)

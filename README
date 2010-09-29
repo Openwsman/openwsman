@@ -1,24 +1,24 @@
-How to compile and run openwsman from Subversion? 
-=================================================
+How to compile and run openwsman from GIT ? 
+===========================================
 
-After checking out the project from subversion run ./autoconfiscate.sh
-in the TOP directory and follow that by running ./configure <options>.
+After checking out the project from git, create a build directory
+with "mkdir build", cd into it, run "cmake .." and "make".
 
-If you download a packaged version, then there is no need to run
-./autoconfiscate.sh and you will be able to run ./configure directly.
-
-For the bindings, you must pass "--disable-more-warnings" to
-./configure because SWIG isn't good at generating prototypes
+See package/openwsman.spec.in for running cmake in 'release' mode
 
 Most likely you will need to install some of the packages, depending
 on the distribution you are running.
 
+Pre-build (RPM) packages for many distributions are available at
+https://build.opensuse.org/project/show?project=Openwsman
+
+
 Packages and other software needed:
 
 - libxml2
-- sfcc (from the sblim project)
+- sblim-sfcc (from the sblim project)
 - swig and python for python binding support
-- other development packages like autoconf, automake etc.
+- other development packages like cmake, gcc, etc.
 
 After all packages are installed, compile everything and install. The
 server can run as a daemon, which would require root access; But it
@@ -44,8 +44,8 @@ find an example in the ./etc directory. The configuration file has the
 following syntax:
 
 [server]
-port = 8889
-#ssl_port = 8888
+port = 5985
+#ssl_port = 5986
 ssl_cert_file = /etc/openwsman/servercert.pem
 ssl_key_file = /etc/openwsman/serverkey.pem
 #digest_password_file = /etc/openwsman/digest_auth.passwd
@@ -66,8 +66,8 @@ max_threads = 1
 
 
 [client]
-port = 8889
-agent = openwsman 1.5.9
+port = 5988
+agent = openwsman 2.2.4
 
 [cim]
 default_cim_namespace = root/cimv2
@@ -185,17 +185,7 @@ The above command should give the following result:
     <wsmid:IdentifyResponse>
       <wsmid:ProtocolVersion>http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd</wsmid:ProtocolVersion>
       <wsmid:ProductVendor>openwsman</wsmid:ProductVendor>
-      <wsmid:ProductVersion>2.0.0</wsmid:ProductVersion>
+      <wsmid:ProductVersion>2.2.4</wsmid:ProductVersion>
     </wsmid:IdentifyResponse>
   </s:Body>
 </s:Envelope>
-
-
-
-
-
-
-
-
-
-
