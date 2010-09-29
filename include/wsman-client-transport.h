@@ -53,6 +53,7 @@ extern "C" {
 #define _WS_NO_AUTH "No Auth"
 #define _WS_BASIC_AUTH "Basic"
 #define _WS_DIGEST_AUTH "Digest"
+#define _WS_PASS_AUTH "Passport"
 #define _WS_NTLM_AUTH "NTLM"
 #define _WS_GSSNEGOTIATE_AUTH "GSS-Negotiate"
 

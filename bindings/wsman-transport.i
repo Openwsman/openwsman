@@ -30,6 +30,13 @@ typedef struct _WsManTransport {} WsManTransport;
 %rename(GSSNEGOTIATE_AUTH_STR) _WS_GSSNEGOTIATE_AUTH;
 #endif
 
+%ignore _WS_NO_AUTH;
+%ignore _WS_BASIC_AUTH;
+%ignore _WS_DIGEST_AUTH;
+%ignore _WS_PASS_AUTH;
+%ignore _WS_NTLM_AUTH;
+%ignore _WS_GSSNEGOTIATE_AUTH;
+
 %include "wsman-client-transport.h"
 
 %extend WsManTransport {
@@ -44,6 +51,7 @@ typedef struct _WsManTransport {} WsManTransport;
  %constant char *NO_AUTH_STR           = _WS_NO_AUTH;
  %constant char *BASIC_AUTH_STR        = _WS_BASIC_AUTH;
  %constant char *DIGEST_AUTH_STR       = _WS_DIGEST_AUTH;
+ %constant char *PASS_AUTH_STR         = _WS_PASS_AUTH;
  %constant char *NTLM_AUTH_STR         = _WS_NTLM_AUTH;
  %constant char *GSSNEGOTIATE_AUTH_STR = _WS_GSSNEGOTIATE_AUTH;
 #endif
