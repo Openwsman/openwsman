@@ -116,6 +116,8 @@ char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
 		return _WS_BASIC_AUTH;
 	case WS_DIGEST_AUTH:
 		return _WS_DIGEST_AUTH;
+	case WS_PASS_AUTH:
+		return _WS_PASS_AUTH;
 	case WS_NTLM_AUTH:
 		return _WS_NTLM_AUTH;
 	case WS_GSSNEGOTIATE_AUTH:
