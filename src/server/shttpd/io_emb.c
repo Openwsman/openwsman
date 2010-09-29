@@ -10,6 +10,10 @@
 
 #include "shttpd_defs.h"
 
+#ifdef ENABLE_IPV6
+extern int wsmand_options_get_use_ipv6(void);
+#endif
+
 #if defined(EMBEDDED)
 const char *
 shttpd_version(void)
