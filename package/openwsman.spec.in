@@ -266,7 +266,7 @@ install -m 755 etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openw
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
-%if 0%{?suse_version}
+%if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 
@@ -353,7 +353,7 @@ rm -f /var/log/wsmand.log
 %config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
 %attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
 %config %{_sysconfdir}/pam.d/openwsman
-%if 0%{?suse_version} > 0
+%if 0%{?suse_version} > 1010
 %config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
