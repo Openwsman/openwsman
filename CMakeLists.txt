@@ -505,7 +505,7 @@ SET (CPACK_SOURCE_IGNORE_FILES
 "/m4/"
 "autom4te.cache"
 "config.log"
-"config.h"
+"config.h$"
 "configure$"
 "config.status"
 "depcomp"
