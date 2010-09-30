@@ -1,5 +1,11 @@
-2.2.3.9
-- Bugfix release:
+2.2.4
+- Features
+  - Build with cmake, deprecate autotools
+  - Java client bindings
+  - enforce manual creation of certificate (to get sufficient
+    entropy for randomness) (Praveen Paladugu)
+
+- Bugfixes
   - bindings (kkaempf)
     - make all constants uppercase
     - optionally pass code, code_detail, and message to WsmanStatus()
@@ -9,6 +15,7 @@
     - Ruby: Alias XmlDoc.foo to XmlDoc.body.foo
     - Ruby: Create bindings documentation
     - Java: Enable and fix for jdk 1.6.0 (unpackaged)
+    - fix pam config on RHEL/Fedora
   - Fix Fedora/RH build (kkaempf)
   - Use floor() instead of round() (Suresh Sundriyal)
   - Reuse username/password if auth_request_func is not set (Arun Venkatachalam)
