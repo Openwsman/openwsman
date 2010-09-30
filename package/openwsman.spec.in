@@ -38,6 +38,13 @@ BuildRequires: perl-devel
 
 %if 0%{?suse_version} > 0
 
+# No jni_md.h on SLE10 :-/
+#%if 0%{?suse_version} < 1100
+#BuildRequires:  java-1_5_0-ibm-devel
+#BuildRequires:  libgcj-devel
+#BuildRequires:  update-alternatives
+#%endif
+
 %if 0%{?suse_version} > 1010
 BuildRequires:  fdupes libopenssl-devel 
 BuildRequires:  libcurl-devel 
@@ -229,6 +236,7 @@ Authors:
 --------
     Klaus Kaempf <kkaempf@suse.de>
 
+%if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 %package java
 License:        BSD3c(or similar)
 Group:          System/Management
@@ -244,6 +252,7 @@ This package provides Java bindings to access the openwsman client API.
 Authors:
 --------
     Klaus Kaempf <kkaempf@suse.de>
+%endif
 
 %prep
 %setup -q
@@ -369,9 +378,11 @@ rm -f /var/log/wsmand.log
 %{perl_vendorarch}/openwsman.so
 %{perl_vendorlib}/openwsman.pm
 
+%if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 %files java
 %defattr(-,root,root)
 %{_javadir}/*jar
+%endif
 
 %files server
 %defattr(-,root,root)
