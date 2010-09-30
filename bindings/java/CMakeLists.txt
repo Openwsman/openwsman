@@ -10,7 +10,6 @@
 MESSAGE(STATUS "Java compiler: ${JAVA_COMPILE}")
 MESSAGE(STATUS "Java runtime: ${JAVA_RUNTIME}")
 MESSAGE(STATUS "Java archiver: ${JAVA_ARCHIVE}")
-MESSAGE(STATUS "Java include path: ${JAVA_INCLUDE_PATH}")
 
 SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
 SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
@@ -31,7 +30,7 @@ ADD_CUSTOM_COMMAND (
    OUTPUT ${jar_NAME}
    POST_BUILD
    COMMAND ${CMAKE_COMMAND} -E echo_append "Compiling Java files ..."
-   COMMAND ${JAVA_COMPILE} -d . *.java
+   COMMAND ${JAVA_COMPILE} -target 1.5 -d . *.java
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
    COMMAND ${JAVA_ARCHIVE} cvf ${jar_NAME} *.so org/*
    DEPENDS ${SWIG_OUTPUT}
