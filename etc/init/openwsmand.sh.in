@@ -56,20 +56,16 @@ start()
 	echo "Using common server certificate /etc/ssl/servercerts/servercert.pem"
 	ln -s /etc/ssl/servercerts/server{cert,key}.pem @SYSCONFDIR@
       else
-        echo "Generating Openwsman server public certificate and private key"
-	FQDN=`hostname --fqdn`
-	if [ "x${FQDN}" = "x" ]; then
-	  FQDN=localhost.localdomain
-	fi
-cat << EOF | sh @SYSCONFDIR@/owsmangencert.sh > /dev/null 2>&1
---
-SomeState
-SomeCity
-SomeOrganization
-SomeOrganizationalUnit
-${FQDN}
-root@${FQDN}
-EOF
+	echo "FAILED: Starting openwsman server"
+        echo "There is no ssl server key available for openwsman server to use."
+	echo -e "Please generate one with the following script and start the openwsman service again:\n"
+	echo "##################################"
+        echo "/etc/openwsman/owsmangencert.sh"
+	echo "================================="
+
+	echo "NOTE: The script uses /dev/random device for generating some random bits while generating the server key."
+	echo "      If this takes too long, you can replace the value of \"RANDFILE\" in @SYSCONFDIR@/ssleay.cnf with /dev/urandom. Please understand the implications of replacing the RNADFILE."
+		
       fi
     fi
 
@@ -145,8 +141,12 @@ case "$1" in
     fi
     ;;
 
+   condrestart)
+      [ -e $lockfile ] && restart
+    ;;
+
     *)
-    echo "Usage: $0 {restart|start|stop|reload|force-reload|status}"
+    echo "Usage: $0 {restart|start|stop|reload|force-reload|status|condrestart}"
 esac
 
 if [ $lsb -ne 0 ]; then
