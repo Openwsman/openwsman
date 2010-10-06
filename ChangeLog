@@ -1,11 +1,16 @@
 2.2.4
 - Features
-  - Build with cmake, deprecate autotools
-  - Java client bindings
+  - Build with cmake (kkaempf)
+    building with 'autotools' is now deprecated and will be
+    removed in future versions
+  - Java client bindings (kkaempf)
   - enforce manual creation of certificate (to get sufficient
     entropy for randomness) (Praveen Paladugu)
-
 - Bugfixes
+  - fix pam config on RHEL/Fedora (kkaempf
+
+2.2.3.9
+- Bugfix release:
   - bindings (kkaempf)
     - make all constants uppercase
     - optionally pass code, code_detail, and message to WsmanStatus()
