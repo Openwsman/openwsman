@@ -108,6 +108,7 @@ int wsmand_parse_options(int argc, char **argv)
 	char retval;
 	u_option_context_t *opt_ctx;
 	u_error_t *error = NULL;
+	char *version = NULL;
 
 	u_option_entry_t options[] = {
 #if 0
@@ -116,6 +117,8 @@ int wsmand_parse_options(int argc, char **argv)
 #endif
 		{"ssl", 'S', U_OPTION_ARG_NONE, &use_ssl,
 		 "Use SSL port", NULL},
+		{"version", 'q', U_OPTION_ARG_NONE, &version,
+		 "Display application version", NULL},
 		{"debug", 'd', U_OPTION_ARG_NONE, &foreground_debug,
 		 "Start daemon in foreground and turn on debugging", NULL},
 		{"syslog", 's', U_OPTION_ARG_INT, &syslog_level,
@@ -142,7 +145,11 @@ int wsmand_parse_options(int argc, char **argv)
 			printf("%s\n", error->message);
 		retval = 0;
 	}
-
+	if (version) {
+		fprintf(stdout, PACKAGE_NAME " " VERSION " (" PACKAGE_BUILDTS ")\n\n");
+		exit(0);
+	}
+	
 	u_error_free(error);
 	u_option_context_free(opt_ctx);
 	return retval;

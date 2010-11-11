@@ -357,6 +357,9 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION @PACKAGE_VERSION@
 
+/* Define to the built timestamp of this package. */
+#define PACKAGE_BUILDTS "@PACKAGE_BUILDTS@"
+
 /* The size of `int', as computed by sizeof. */
 #define SIZEOF_INT @SIZEOF_INT@
 
