@@ -52,6 +52,9 @@ typedef struct {} client_opt_t;
    * set option flag(s)
    *
    */
+#if defined(SWIGRUBY)
+  %rename( "flags=" ) set_flags(int flags);
+#endif
   void set_flags(int flags) {
     wsmc_set_action_option($self, flags);
   }

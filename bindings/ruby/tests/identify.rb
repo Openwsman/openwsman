@@ -9,12 +9,15 @@ require 'openwsman/openwsman'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify
-#   Openwsman::debug = 1
+    Openwsman::debug = 1
+    
     client = Openwsman::Client.new( "http://wsman:secret@localhost:5985/wsman" )
     assert client
     client.transport.auth_method = Openwsman::BASIC_AUTH_STR
     options = Openwsman::ClientOptions.new
     assert options
+    options.set_dump_request
+
     doc = client.identify( options )
     assert doc
     puts "Error!" if doc.fault?
