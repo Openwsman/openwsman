@@ -57,6 +57,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   %typemap(newfree) char * "free($1);";
 #if defined(SWIGRUBY)
   %alias string "to_s";
+  %alias string "to_xml";
 #endif
 #if defined(SWIGPYTHON)
   %rename("__str__") string();
@@ -244,6 +245,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   }
 #if defined(SWIGRUBY)
   %alias text "to_s";
+  %alias string "to_xml";
 #endif
 #if defined(SWIGPYTHON)
   %rename("__str__") text();
