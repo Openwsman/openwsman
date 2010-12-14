@@ -20,7 +20,7 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-#    options.flags = Openwsman::CLIENTOPTION_DUMP_REQUESTz
+#    options.set_dump_request
 #    puts "Flags = #{options.flags}"
 
 #
