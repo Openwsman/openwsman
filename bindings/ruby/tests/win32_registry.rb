@@ -3,8 +3,12 @@
 # Accessing Windows Registry through WS-Man
 #
 # References:
-#   VisualBasic: http://gallery.technet.microsoft.com/ScriptCenter/en-us/b994f262-be39-448d-ab62-edbbeacf2b0f
-#   StdRegProv class: http://msdn.microsoft.com/en-us/library/aa393664(v=vs.85).aspx
+#   VisualBasic demo script:
+#     http://gallery.technet.microsoft.com/ScriptCenter/en-us/b994f262-be39-448d-ab62-edbbeacf2b0f
+#   StdRegProv class:
+#     http://msdn.microsoft.com/en-us/library/aa393664(v=vs.85).aspx
+#   EnumKey Method of the StdRegProv Class:
+#     http://msdn.microsoft.com/en-us/library/aa390387(v=vs.85).aspx
 #
 
 $:.unshift "../../../build/bindings/ruby"
