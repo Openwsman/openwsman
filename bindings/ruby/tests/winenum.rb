@@ -11,18 +11,35 @@ require 'rexml/document'
 require 'openwsman/openwsman'
 require '_client'
 
+
 WIDTH = 25
 
-def enum_properties client, classname, *properties
+#
+# extract reference information from a node
+#
+# returns a [ <uri>, <selectors> ] pair
+#
+def get_reference_from node
+  uri = node.ReferenceParameters.ResourceURI
+  selectors = {}
+  node.ReferenceParameters.SelectorSet.each do |s|
+    name = s.attr_find(nil, "Name")
+    selectors[name] = s.text
+  end
+  [uri,selectors]
+end
+
+def enum_properties client, opt, classname, *properties
   options = Openwsman::ClientOptions.new
   uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/#{classname}"
   result = client.enumerate( options, nil, uri )
-
+#  puts result if opt.include? :raw
   puts classname
-  printf "%-#{WIDTH}s" * properties.size, *properties
-  puts
-  puts "-" * WIDTH * properties.size
-
+  unless properties.empty?
+    printf "%-#{WIDTH}s" * properties.size, *properties
+    puts
+    puts "-" * WIDTH * properties.size
+  end
   results = 0
   faults = 0
   context = nil
@@ -34,7 +51,6 @@ def enum_properties client, classname, *properties
     result = client.pull( options, nil, uri, context )
     break unless result
 
-    results += 1
     body = result.body
     if result.fault?
 	puts "Got fault"
@@ -42,23 +58,41 @@ def enum_properties client, classname, *properties
 	break
     end
 
-    node = body.PullResponse.Items.send classname
-    values = []
-    properties.each do |p|
-      values << node.send(p)
+    items = body.PullResponse.Items.send classname
+    next unless items
+    results += 1
+    puts items if opt.include? :raw
+    node = items.send classname
+    if properties.empty?
+#      puts node.string
+      node.each do |c|
+	puts "  #{c.name}: #{c.text}"
+      end
+    else
+      values = []
+      properties.each do |p|
+	values << node.send(p)
+      end
+      printf "%-#{WIDTH}s" * values.size, *values
+      puts
     end
-    printf "%-#{WIDTH}s" * values.size, *values
-    puts
 
   end
 
   client.release( options, uri, context ) if context
-#  puts "Context released, #{results} results, #{faults} faults"
-  puts
+  puts "#{results} results, #{faults} faults"
 end
 
 client = Client.open
-    
-classname = ARGV.shift
-enum_properties client, classname, *ARGV
+
+classname = ""
+opts = []
+loop do
+  classname = ARGV.shift
+  break unless classname
+  break unless classname[0,1] == "-"
+  opts << classname[2..-1].to_sym
+end
+
+enum_properties client, opts, classname, *ARGV
 
