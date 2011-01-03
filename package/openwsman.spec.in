@@ -265,7 +265,7 @@ Authors:
 rm -rf build
 mkdir build
 %if 0%{?fedora}
-export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DFEDORA"
+export RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
 %endif
 export SSL_LIB=`readlink %{_libdir}/libssl.so`
 cd build
