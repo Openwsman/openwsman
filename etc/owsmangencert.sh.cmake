@@ -2,9 +2,9 @@
 
 #!/bin/sh -e
 
-CERTFILE=@SYSCONFDIR@/servercert.pem
-KEYFILE=@SYSCONFDIR@/serverkey.pem
-CNFFILE=@SYSCONFDIR@/ssleay.cnf
+CERTFILE=@WSMANCONF_DIR@/servercert.pem
+KEYFILE=@WSMANCONF_DIR@/serverkey.pem
+CNFFILE=@WSMANCONF_DIR@/ssleay.cnf
 
 if [ "$1" != "--force" -a -f $KEYFILE ]; then
   echo "$KEYFILE exists!  Use \"$0 --force.\""

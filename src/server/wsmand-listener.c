@@ -353,7 +353,7 @@ DONE:
 	 */
 
 	shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE, PACKAGE_VERSION);
+	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE_NAME, PACKAGE_VERSION);
 #ifdef SHTTPD_GSS
 	if(payload) {
 		// we had an encrypted message so now we have to encypt the reply

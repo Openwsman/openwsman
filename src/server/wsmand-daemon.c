@@ -146,7 +146,7 @@ int wsmand_parse_options(int argc, char **argv)
 		retval = 0;
 	}
 	if (version) {
-		fprintf(stdout, PACKAGE_NAME " " VERSION " (" PACKAGE_BUILDTS ")\n\n");
+		fprintf(stdout, PACKAGE_NAME " " PACKAGE_VERSION " (" PACKAGE_BUILDTS ")\n\n");
 		exit(0);
 	}
 	

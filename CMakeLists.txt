@@ -23,7 +23,7 @@ endif(COMMAND cmake_policy)
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
-SET(VERSION \"${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}\")
+SET(VERSION "${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}")
    MESSAGE(STATUS "Version ${VERSION}")
 SET(PACKAGE_VERSION \"${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}\")
    MESSAGE(STATUS "Package Version ${PACKAGE_VERSION}")
@@ -52,8 +52,8 @@ ENDIF ( DEFINED  LIB )
 MESSAGE(STATUS "Libraries will be installed in ${LIB_INSTALL_DIR}" )
 SET( BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" )
 SET( INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include" )
-SET( SYSCONF_DIR "/etc" )
-SET( WSMANCONF_DIR "${SYSCONF_DIR}/openwsman" )
+SET( SYSCONFDIR "/etc" )
+SET( WSMANCONF_DIR "${SYSCONFDIR}/openwsman" )
 SET( DEFAULT_CONFIG_FILE "\"${WSMANCONF_DIR}/openwsman.conf\"")
 SET( DEFAULT_CLIENT_CONFIG_FILE "\"${WSMANCONF_DIR}/openwsman_client.conf\"")
 SET( PACKAGE_SUBSCRIPTION_DIR "/var/lib/openwsman/subscriptions" )
@@ -425,9 +425,9 @@ SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
-SET(PACKAGE "\"openwsman\"")
+SET(PACKAGE "openwsman")
 SET(PACKAGE_BUGREPORT "\"www.openwsman.org\"")
-SET(PACKAGE_NAME \"openwsman\")
+SET(PACKAGE_NAME "\"${PACKAGE}\"")
 SET(PACKAGE_STRING "\"WS-Management for all\"")
 SET(PACKAGE_TARNAME "\"openwsman-${VERSION}.tar.bz2\"")
 
@@ -478,7 +478,7 @@ SET(CPACK_PACKAGE_VERSION_MINOR ${OPENWSMAN_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${OPENWSMAN_PATCH})
 SET(CPACK_GENERATOR "TBZ2")
 SET(CPACK_SOURCE_GENERATOR "TBZ2")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE_NAME}-${VERSION}" )
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${PACKAGE}-${VERSION}" )
    MESSAGE(STATUS "Package file ${CPACK_SOURCE_PACKAGE_FILE_NAME}")
 
 # The following components are regex's to match anywhere (unless anchored)
@@ -537,8 +537,8 @@ INCLUDE(CPack)
 ####################################################################
 
 SET( DOC_INSTALL_DIR
-   "${CMAKE_INSTALL_PREFIX}/share/doc/packages/${PACKAGE_NAME}"
-   CACHE PATH "The install dir for documentation (default prefix/share/doc/packages/${PACKAGE_NAME})"
+   "${CMAKE_INSTALL_PREFIX}/share/doc/packages/${PACKAGE}"
+   CACHE PATH "The install dir for documentation (default prefix/share/doc/packages/${PACKAGE})"
    FORCE
 )
 
