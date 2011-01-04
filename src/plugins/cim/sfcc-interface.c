@@ -1927,15 +1927,15 @@ cim_put_instance(CimClientInfo * client,
 		rc = cc->ft->setInstance(cc, objectpath, instance, 0, NULL);
 		debug("modifyInstance() rc=%d, msg=%s", rc.rc,
 				(rc.msg) ? (char *) CMGetCharPtr(rc.msg) : NULL);
-		if (rc.rc == CMPI_RC_ERR_FAILED) {
-			status->fault_code =
-				WSA_ACTION_NOT_SUPPORTED;
-		} else {
-			cim_to_wsman_status(rc, status);
-		}
-		if (rc.rc == 0) {
+		cim_to_wsman_status(rc, status);
+		if (rc.rc == CMPI_RC_OK) {
+			// return the current representation of the resource
+			instance = cc->ft->getInstance(cc, objectpath,
+					CMPI_FLAG_IncludeClassOrigin,
+					NULL, &rc);
 			instance2xml(client, instance, fragstr, body, NULL);
 		}
+
 		if (rc.msg)
 			CMRelease(rc.msg);
 	}
