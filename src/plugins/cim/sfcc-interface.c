@@ -589,9 +589,25 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 			sentry = (selector_entry *)node_val->data;
 			if (0 < node_val->arraycount) {
 				CMPIArray *arraydata = NULL;
-				int arraytype = sentry->type;
+				lnode_t *t_anode = argnode;
+				int arraytype = sentry->type, kk;
 				node_val->arraycount++; // since value of 0 is singleton and value of 1 is actually 2 count in an array
 				debug("cim_add_args: array key: %s type: %u count: %u", node_val->key, arraytype, node_val->arraycount);
+
+				// first verify if array type is the same for all elements in the array.
+				for (kk = 1; kk < node_val->arraycount; kk++) {
+					t_anode = list_next(arglist, t_anode);
+					if (NULL != t_anode) {
+						selector_entry *t_sentry = (selector_entry *)((methodarglist_t *)t_anode->list_data)->data;
+						char *key = ((methodarglist_t *)t_anode->list_data)->key;
+						debug(" %s[0] = %d, %s[%d] = %d", key, sentry->type, key, kk, t_sentry->type);	
+						if (sentry->type != t_sentry->type) {
+							res = 1;
+							goto error;
+						}
+					}
+				}
+
 				if (0 != arraytype)
 					arraydata = native_new_CMPIArray(node_val->arraycount, CMPI_ref, NULL);
 				else
@@ -602,7 +618,7 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 						value.ref = cim_epr_to_objectpath(client, sentry->entry.eprp);
 						if (value.ref == NULL) {
 						        res = 1;
-							break;
+							goto error;
 						}
 						CMSetArrayElementAt(arraydata, jj, &value, CMPI_ref);
 					} else {
@@ -640,6 +656,8 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 	} else {
 		debug("cim_add_args: did not find any argument list");
 	}
+
+error:
 	return res;
 }
 
