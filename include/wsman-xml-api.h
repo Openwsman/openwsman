@@ -132,6 +132,9 @@ WsXmlNodeH ws_xml_get_node_parent(WsXmlNodeH node);
 
 int ws_xml_get_child_count(WsXmlNodeH parent);
 
+int ws_xml_get_child_count_by_qname(WsXmlNodeH parent,
+				    const char *nsUri, const char *name);
+
 WsXmlNodeH ws_xml_get_child(WsXmlNodeH parent, int index,
 			    const char *nsUri, const char *localName);
 

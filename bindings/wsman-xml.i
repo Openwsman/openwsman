@@ -322,9 +322,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * get first child of node
    */
   WsXmlNodeH child() {
-    if( ws_xml_get_child_count( $self ) > 0 )
-      return ws_xml_get_child($self, 0, NULL, NULL);
-    return NULL;
+    return xml_parser_get_first_child($self);
   }
   
   /*
@@ -388,9 +386,11 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 				 
   /*
    * count node children
+   * if name given, count children with this name
+   * if name + ns given, count children with this namespace and name
    */
-  int size() {
-    return ws_xml_get_child_count( $self );
+  int size(const char *name = NULL, const char *ns = NULL) {
+    return ws_xml_get_child_count_by_qname($self, ns, name);
   }
   
   /*
@@ -420,13 +420,14 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   
   /*
    * iterate children
+   * can be limited to children with specific name (and specific namespace)
    */
 
 #if defined(SWIGRUBY)
-  void each() {
+  void each(const char *name = NULL, const char *ns = NULL) {
     int i = 0;
-    while ( i < ws_xml_get_child_count( $self ) ) {
-      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child($self, i, NULL, NULL), SWIGTYPE_p___WsXmlNode, 0));
+    while ( i < ws_xml_get_child_count_by_qname( $self, ns, name ) ) {
+      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child($self, i, ns, name), SWIGTYPE_p___WsXmlNode, 0));
       ++i;
     }
   }
@@ -447,24 +448,29 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   /*
    * get child by index
    */
-  WsXmlNodeH get(int i) {
-    if (i < 0 || i >= ws_xml_get_child_count($self))
+  WsXmlNodeH get(int i, const char *name = NULL, const char *ns = NULL) {
+    if (i < 0 || i >= ws_xml_get_child_count_by_qname($self,ns,name))
       return NULL;
-    return ws_xml_get_child($self, i, NULL, NULL);
+    return ws_xml_get_child($self, i, ns, name);
   }
   
   /*
-   * get child by name
+   * get first child by name (and namespace)
    */
-  WsXmlNodeH get(const char *name) {
+  WsXmlNodeH get(const char *name, const char *ns = NULL) {
+#if 1
+    return ws_xml_get_child($self, 0, ns, name);
+#else
+    /* Hmm, why is this code so complicated ? */
     int i = 0;
-    while ( i < ws_xml_get_child_count($self)) {
-      WsXmlNodeH child = ws_xml_get_child($self, i, NULL, NULL);
+    while ( i < ws_xml_get_child_count_by_qname($self, ns, name)) {
+      WsXmlNodeH child = ws_xml_get_child($self, i, ns, name);
       if (!strcmp(ws_xml_get_node_local_name(child), name))
         return child;
       ++i;
     }
     return NULL;
+#endif
   }
 
   /* get node attribute */

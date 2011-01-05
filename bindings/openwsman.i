@@ -123,6 +123,7 @@
 #include <wsman-client.h>
 #include <wsman-client-transport.h>
 #include <wsman-api.h>
+#include <wsman-xml-binding.h>
 #include <wsman-xml.h>
 #include <wsman-epr.h>
 #include <wsman-filter.h>

@@ -798,6 +798,39 @@ int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 }
 
 
+/**
+ * Count number of XML node children with same qualified name
+ * (used to represent array elements)
+ * @param parent XML node
+ * @param nsUri Namespace URI
+ * @param name children name to look for
+ * @return Returns number of children of parent with this name
+ * @brief Identical to ws_xml_get_child_count() if nsUri==NULL and name==NULL
+ */
+int 
+ws_xml_get_child_count_by_qname(WsXmlNodeH parent, 
+      const char *nsUri, const char *name)
+{
+	WsXmlNodeH node;
+	int count;
+
+	if (!parent)
+	        return 0;
+	if (nsUri == NULL && name == NULL) {
+		return ws_xml_get_child_count(parent);
+	}
+	node = xml_parser_get_first_child(parent);
+	count = 0;
+	while (node != NULL) {
+		if (ws_xml_is_node_qname(node, nsUri, name)) {
+			count++;
+		}
+		node = xml_parser_get_next_child(node);
+	}
+	return count;
+}
+
+
 WsXmlDocH ws_xml_create_soap_envelope(void)
 {
 	return ws_xml_create_envelope();
