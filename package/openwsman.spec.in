@@ -265,7 +265,9 @@ Authors:
 rm -rf build
 mkdir build
 %if 0%{?fedora}
-export RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
+# [ curl-Bugs-1924441 ] SSL callback option with NSS-linked libcurl
+# CURLOPT_SSL_CTX_FUNCTION is defined, but does not work on e.g. Fedora
+export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DNO_SSL_CALLBACK"
 %endif
 export SSL_LIB=`readlink %{_libdir}/libssl.so`
 cd build

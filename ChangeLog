@@ -1,3 +1,16 @@
+2.2.5
+- Features
+  - Clean up cmake variable names (kkaempf)
+  - Add --version option to display version and build timestamp (Chris Poblete)
+- Bindings
+  - more Ruby examples to access winrm (kkaempf)
+  - replace to_s with to_xml when a XML representation is returned (kkaempf)
+- Bugfixes
+  - Always return the current instance representation after PUT (Chris Poblete)
+  - Issue wsman:MaxElements only for Enumerate and OptimizeEnumeration (Chris Poblete)
+  - Ensure all array elements have same type on invoke (Chris Poblete)
+  - Compile with -DNO_SSL_CALLBACK on Fedora [curl-Bugs-1924441] (Vitezslav Crhonek)
+
 2.2.4
 - Features
   - Build with cmake (kkaempf)
