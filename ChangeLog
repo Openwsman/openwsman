@@ -2,6 +2,8 @@
 - Features
   - Clean up cmake variable names (kkaempf)
   - Add --version option to display version and build timestamp (Chris Poblete)
+  - Support array representation in XML bindings (multiple children with same name) (kkaempf)
+  - Support array type in PUT operation (Chris Poblete)
 - Bindings
   - more Ruby examples to access winrm (kkaempf)
   - replace to_s with to_xml when a XML representation is returned (kkaempf)
