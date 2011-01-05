@@ -45,11 +45,10 @@
 #include "u/libu.h"
 
 
-#include "wsman-xml-api.h"
+#include "wsman-xml.h"
 #include "wsman-client-api.h"
 #include "wsman-soap.h"
 #include "wsman-soap-envelope.h"
-#include "wsman-xml.h"
 #include "wsman-epr.h"
 
 #include "sfcc-interface.h"
@@ -239,13 +238,28 @@ path2xml(CimClientInfo * client,
  * O: data.value = type-correct value
  */
 static void
-xml2data(CMPIData *data, char *value)
+xml2data(CMPIData *data, char *value, char *name, 
+   WsXmlNodeH resource, const char *resource_uri)
 {
 	CMPIType type = data->type;
 
 	if (type & CMPI_ARRAY) {
-		debug("*** xml2data: Array unsupported");
-	        data->value.array = newCMPIArray(0, type, NULL);
+		WsXmlNodeH child;
+		CMPIData adata;
+		int count, ii;
+
+		adata.type = (type ^ CMPI_ARRAY);
+		count = ws_xml_get_child_count_by_qname(resource, resource_uri, name);
+		data->value.array = newCMPIArray(count, adata.type, NULL);
+		for (ii = 0; ii < count; ii++) {
+			child = ws_xml_get_child(resource, ii, resource_uri, name);
+			if (child) {
+				if ((value = ws_xml_get_node_text(child))) {
+					xml2data(&adata, value, name, resource, resource_uri);
+					CMSetArrayElementAt(data->value.array, ii, &(adata.value), adata.type);
+				}
+			}
+		}
 	} else {
 		switch (type) {
 		case CMPI_instance:
@@ -322,17 +336,18 @@ xml2objectpath(CMPIObjectPath * objectpath,
 	         CMPIData *data, char *name, char *value)
 {
   debug("xml2objectpath([0x%04x]%s:%s)", data->type, name, value);
-        xml2data(data, value);
+        xml2data(data, value, NULL, NULL, NULL);
         CMAddKey(objectpath, name, &(data->value), data->type);
 }
 
 
 void
 xml2property(CMPIInstance * instance,
-		CMPIData *data, char *name, char *value)
+		CMPIData *data, char *name, char *value, 
+      WsXmlNodeH resource, const char *resource_uri)
 {
   debug("xml2property([0x%04x]%s:%s)", data->type, name, value);
-        xml2data(data, value);
+        xml2data(data, value, name, resource, resource_uri);
         CMSetProperty(instance, name, &(data->value), data->type);
 }
 
@@ -1364,7 +1379,7 @@ create_instance_from_xml(CMPIInstance * instance,
 				if (value) {
 					xml2property(instance, &data,
 							CMGetCharPtr(propertyname),
-							value);
+							value, resource, resource_uri);
 				}
 			} else if (data.type != CMPI_null
 					&& data.state != CMPI_nullValue) {
@@ -1408,7 +1423,7 @@ create_instance_from_xml(CMPIInstance * instance,
 			debug("prop value: %s", value );
 			if (value) {
 				xml2property(instance, &data,
-						element, value);
+						element, value, resource, NULL);
 			}
 		}
 	}
@@ -1456,7 +1471,7 @@ xml2instance(CMPIInstance * instance, WsXmlNodeH body, char *resourceUri)
 			if (value) {
 				xml2property(instance, &data,
 						CMGetCharPtr(propertyname),
-						value);
+						value, body, resourceUri);
 			}
 			CMRelease(propertyname);
 		}

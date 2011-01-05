@@ -40,7 +40,7 @@ void xml2objectpath(CMPIObjectPath * objectpath, CMPIData *data, char *name,
 		  char *value);
 
 void xml2property(CMPIInstance * instance, CMPIData *data, char *name,
-		  char *value);
+		  char *value, WsXmlNodeH resource, const char *resource_uri);
 
 void property2xml(CimClientInfo * client, CMPIData *data, const char *name,
 		  WsXmlNodeH node, char *resourceUri, int frag_type, int is_key);
