@@ -563,3 +563,25 @@ if test "x$enable_ruby" = "xyes" -o "x$enable_python" = "xyes" -o "x$enable_perl
   fi
 fi
 
+AC_OUTPUT
+
+echo =================================================================
+echo -e "Configuration Features:\n"
+echo -e "build plugins"\\t\\t\\t"${enable_plugins:-yes}"
+echo -e "build server"\\t\\t\\t"${enable_server:-yes}"
+echo -e "debug"\\t\\t\\t\\t"${enable_debug:-no}"
+echo -e "eventing"\\t\\t\\t"${enable_eventing:-yes}"
+echo -e "examples"\\t\\t\\t"${with_examples:-no}"
+echo -e "IPv6"\\t\\t\\t\\t"${enable_ipv6:-no}"
+echo -e "java binding"\\t\\t\\t"${enable_java:-no}"
+echo -e "PAM authentication"\\t\\t"${enable_pam:-yes}"
+echo -e "python binding"\\t\\t\\t"${enable_python:-no}"
+echo -e "perl binding"\\t\\t\\t"${enable_perl:-no}"
+echo -e "ruby binding"\\t\\t\\t"${enable_ruby:-no}"
+echo -e "ssl"\\t\\t\\t\\t"${enable_ssl:-yes}"
+echo -e "tests"\\t\\t\\t\\t"${with_tests:-no}"
+echo =================================================================
+echo
+echo "openwsman configuration complete.  you may now run 'make'"
+echo
+
