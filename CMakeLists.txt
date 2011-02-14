@@ -547,3 +547,28 @@ IF(HAVE_WARNINGS)
  MESSAGE(STATUS "   Warnings occurred during cmake configuration... Please see output")
  MESSAGE(STATUS "   *******************************")
 ENDIF(HAVE_WARNINGS) 
+
+####################################################################
+# RPM SPEC                                                         #
+####################################################################
+
+SET( AUTOBUILD_COMMAND
+  COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/package/*.tar.bz2
+  COMMAND mkdir -p _CPack_Packages/${CPACK_TOPLEVEL_TAG}
+  COMMAND ${CMAKE_MAKE_PROGRAM} package_source
+  COMMAND ${CMAKE_COMMAND} -E copy ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.bz2 ${CMAKE_BINARY_DIR}/package
+  COMMAND ${CMAKE_COMMAND} -E remove ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.bz2
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman-pam-auth.patch" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.pam" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.pam.rh" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.rpmlintrc" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.SuSEfirewall2" "${CMAKE_BINARY_DIR}/package"
+)
+
+ADD_CUSTOM_TARGET( srcpackage_local
+  ${AUTOBUILD_COMMAND}
+)
+
+ADD_CUSTOM_TARGET( srcpackage
+  ${AUTOBUILD_COMMAND}
+)
