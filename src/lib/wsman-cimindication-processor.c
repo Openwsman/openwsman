@@ -155,21 +155,37 @@ create_notification_entity(WsSubscribeInfo *subsInfo, WsXmlNodeH node)
 	}
 	notificationinfo->EventContent = ws_xml_create_doc(notificationinfo->EventAction, classname);
 	indicationnode = ws_xml_get_doc_root(notificationinfo->EventContent);
-	int m = ws_xml_get_child_count(instance);
-	int n = 0;
-	while(n < m) {
-		//only parse tag "Property" temporarily
-		node = ws_xml_get_child(instance, n, NULL, CIMXML_PROPERTY);
-		attr = ws_xml_find_node_attr(node, NULL, CIMXML_NAME);
-		char *property = NULL;
-		char *value = NULL;
-		if(attr) {
-			property = ws_xml_get_attr_value(attr);
-		}
-		value = ws_xml_get_node_text(node);
-		ws_xml_add_child(indicationnode, notificationinfo->EventAction, property, value);
-		n++;
-	}
+    //Parse "PROPERTY"
+    int n = 0;
+    while ( (node = ws_xml_get_child(instance, n++, NULL, CIMXML_PROPERTY)) ) {
+        attr = ws_xml_find_node_attr(node, NULL, CIMXML_NAME);
+        char *property = NULL;
+        char *value = NULL;
+        if ( attr ) {
+            property = ws_xml_get_attr_value(attr);
+        }
+        value = ws_xml_get_node_text(node);
+        ws_xml_add_child(indicationnode, notificationinfo->EventAction, property, value);
+    }
+ 
+    //Parse "PROPERTY.ARRAY"
+    n = 0;
+    while ( (node = ws_xml_get_child(instance, n++, NULL, CIMXML_PROPERTYARRAY)) ) {
+        attr = ws_xml_find_node_attr(node, NULL, CIMXML_NAME);
+        char *property = NULL;
+        if ( attr ) {
+            property = ws_xml_get_attr_value(attr);
+            WsXmlNodeH valarraynode = ws_xml_get_child(node, 0, NULL, CIMXML_VALUEARRAY);
+            if ( valarraynode ) {
+                int m = 0;
+                WsXmlNodeH valnode = NULL;
+                while ( (valnode = ws_xml_get_child(valarraynode, m++, NULL, CIMXML_VALUE)) ) {
+                    char *value = ws_xml_get_node_text(valnode);
+                    ws_xml_add_child(indicationnode, notificationinfo->EventAction, property, value);
+                }
+            }
+        }
+    }
 	if (class_namespace)
 		u_free(class_namespace);
 	return notificationinfo;

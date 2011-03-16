@@ -54,6 +54,8 @@
 #define CIMXML_VALUE "VALUE"
 #define CIMXML_TYPE "TYPE"
 #define CIMXML_CLASSNAME "CLASSNAME"
+#define CIMXML_PROPERTYARRAY "PROPERTY.ARRAY"
+#define CIMXML_VALUEARRAY "VALUE.ARRAY"
 
 typedef struct {
         SoapH soap;
