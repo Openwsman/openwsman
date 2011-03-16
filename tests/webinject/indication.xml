@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:wse="http://schemas.xmlsoap.org/ws/2004/08/eventing">
+  <s:Header>
+    <wsa:Action s:mustUnderstand="true">http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe</wsa:Action>
+    <wsa:To s:mustUnderstand="true">http://localhost:5985/wsman</wsa:To>
+    <wsman:ResourceURI s:mustUnderstand="true">http://schemas.dmtf.org/wbem/wscim/1/*</wsman:ResourceURI>
+    <wsa:MessageID s:mustUnderstand="true">uuid:0716ac62-98a8-18a8-8002-f4e83f290c00</wsa:MessageID>
+    <wsa:ReplyTo>
+      <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+    </wsa:ReplyTo>
+    <wsman:SelectorSet>
+      <wsman:Selector Name="__cimnamespace">root/interop</wsman:Selector>
+    </wsman:SelectorSet>
+  </s:Header>
+  <s:Body>
+    <wse:Subscribe>
+      <wse:Delivery Mode="http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push">
+        <wse:NotifyTo>
+          <wsa:Address>http://127.0.0.1:80/eventsink</wsa:Address>
+        </wse:NotifyTo>
+        <wsman:Heartbeats>PT2.000000S</wsman:Heartbeats>
+      </wse:Delivery>
+      <wse:Expires>PT240.000000S</wse:Expires>
+      <wsman:Filter Dialect="http://schemas.microsoft.com/wbem/wsman/1/WQL">SELECT * from CIM_ProcessIndication</wsman:Filter>
+    </wse:Subscribe>
+  </s:Body>
+</s:Envelope>
