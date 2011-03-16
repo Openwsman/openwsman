@@ -103,7 +103,7 @@ void set_config( void *self, dictionary *config );
 
 char *get_cim_namespace(void);
 char *get_cim_client_frontend(void);
-char *get_cim_indication_SourceNamespace(void);
+char *get_indication_profile_implementation_ns(void);
 
 hash_t* get_vendor_namespaces(void);
 char *get_cim_host(void);

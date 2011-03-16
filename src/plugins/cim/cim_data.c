@@ -55,7 +55,7 @@ char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
 char *server_port = "5985";
 char *cim_client_frontend = "XML";
 int omit_schema_optional = 0;
-char *cim_indication_SourceNamespace = NULL;
+char *indication_profile_implementation_ns = NULL;
 
 SER_START_ITEMS(CimResource)
 SER_END_ITEMS(CimResource);
@@ -160,7 +160,7 @@ void set_config( void *self, dictionary *config )
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
     server_port = iniparser_getstring(config, "server:port", server_port);
     omit_schema_optional = iniparser_getboolean(config, "cim:omit_schema_optional", 0);
-    cim_indication_SourceNamespace = iniparser_getstr(config, "cim:indication_source_namespace");
+    indication_profile_implementation_ns = iniparser_getstring(config, "cim:indication_profile_implementation_ns", "root/interop");
     debug("vendor namespaces: %s", namespaces);
     if (namespaces) {
       hash_t * t = u_parse_query(namespaces);
@@ -221,8 +221,7 @@ get_cim_namespace()
 }
 
 char *
-get_cim_indication_SourceNamespace()
+get_indication_profile_implementation_ns()
 {
-	return cim_indication_SourceNamespace;
+    return indication_profile_implementation_ns;
 }
-

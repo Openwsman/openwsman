@@ -765,7 +765,7 @@ CimResource_Subscribe_EP(WsContextH cntx,
 	subsInfo->vendor_namespaces = cimclient->namespaces;
 	subsInfo->cim_namespace = u_strdup(cimclient->cim_namespace);
 	if(subsInfo->flags & WSMAN_SUBSCRIPTION_SELECTORSET) { //Subscribe to an Indication filter instance
-		indicationfilter= cim_get_objectpath_from_selectors(cimclient, cntx, status);
+		indicationfilter = cim_get_indicationfilter_objectpath_from_selectors(cimclient, cntx, status);
 		if(indicationfilter)
 			subsInfo->existingfilterOP = CMClone(indicationfilter, NULL);
 		else {

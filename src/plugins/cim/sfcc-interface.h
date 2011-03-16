@@ -125,6 +125,10 @@ cim_get_instance_from_selectors(CimClientInfo * client,
 		 WsContextH cntx, WsmanStatus * status);
 
 CMPIObjectPath *
+cim_get_indicationfilter_objectpath_from_selectors(CimClientInfo * client,
+         WsContextH cntx, WsmanStatus * status);
+
+CMPIObjectPath *
 cim_get_objectpath_from_selectors(CimClientInfo * client,
 		 WsContextH cntx, WsmanStatus * status);
 

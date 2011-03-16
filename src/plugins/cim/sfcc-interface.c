@@ -2211,6 +2211,46 @@ cleanup:
 }
 
 CMPIObjectPath *
+cim_get_indicationfilter_objectpath_from_selectors(CimClientInfo * client,
+        WsContextH cntx, WsmanStatus * status)
+{
+    CMPIObjectPath *objectpath = NULL;
+
+    CMPIConstClass *class = NULL;
+
+    objectpath = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
+            client->requested_class, NULL);
+
+    if(objectpath) {
+        CMPIStatus rc;
+        CMCIClient *cc = (CMCIClient *)client->cc;
+        class = cc->ft->getClass(cc,
+                                 objectpath,
+                                 CMPI_FLAG_IncludeQualifiers,
+                                 NULL,
+                                 &rc);
+        if (!class){
+            CMRelease(objectpath);
+            goto cleanup;
+        }
+
+        cim_verify_class_keys(class, client->selectors, status);
+        if (status->fault_code != 0){
+            CMRelease(objectpath);
+            goto cleanup;
+        }
+
+        cim_add_keys(objectpath, client->selectors);
+    }
+cleanup:
+    if (class)
+        CMRelease(class);
+    return objectpath;
+
+}
+
+CMPIObjectPath *
 cim_get_objectpath_from_selectors(CimClientInfo * client,
 		WsContextH cntx, WsmanStatus * status)
 {
@@ -2252,7 +2292,8 @@ static CMPIObjectPath *
 cim_indication_filter_objectpath(CimClientInfo *client,
 		WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
-	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(subsInfo->cim_namespace,
+	CMPIObjectPath *objectpath_filter = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
 			"CIM_IndicationFilter", rc);
 	CMAddKey(objectpath_filter, "SystemCreationClassName",
 			SYSTEMCREATIONCLASSNAME, CMPI_chars);
@@ -2268,7 +2309,8 @@ cim_indication_filter_objectpath(CimClientInfo *client,
 static CMPIObjectPath
 *cim_indication_handler_objectpath(CimClientInfo *client, WsSubscribeInfo *subsInfo, CMPIStatus *rc)
 {
-	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(subsInfo->cim_namespace,
+	CMPIObjectPath *objectpath_handler = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
 			"CIM_IndicationHandlerCIMXML", rc);
 	CMAddKey(objectpath_handler, "SystemCreationClassName",
 			SYSTEMCREATIONCLASSNAME, CMPI_chars);
@@ -2304,7 +2346,7 @@ cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, W
 	else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CQL)
 		CMAddKey(objectpath, "QueryLanguage",
 				"CQL",CMPI_chars);
-	char *indicationns = get_cim_indication_SourceNamespace();
+	char *indicationns = subsInfo->cim_namespace;
 	if(indicationns)
 		CMAddKey(objectpath, "SourceNamespace",
 				indicationns, CMPI_chars);
@@ -2409,7 +2451,8 @@ cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subs
 	//	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	//	if(rc.rc) goto cleanup;
 
-	objectpath = newCMPIObjectPath(client->cim_namespace,
+	objectpath = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
 			"CIM_IndicationSubscription", NULL);
 	CMPIValue value;
 	value.ref = filter;
@@ -2479,7 +2522,8 @@ cim_update_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsI
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-	objectpath = newCMPIObjectPath(client->cim_namespace,
+	objectpath = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
 			"CIM_IndicationSubscription", NULL);
 	CMPIValue value;
 	value.ref = objectpath_filter;
@@ -2535,7 +2579,8 @@ cim_delete_indication_subscription(CimClientInfo *client, WsSubscribeInfo *subsI
 	objectpath_handler = cim_indication_handler_objectpath(client, subsInfo, &rc);
 	if(rc.rc)
 		goto cleanup;
-	objectpath_subscription = newCMPIObjectPath(subsInfo->cim_namespace,
+	objectpath_subscription = newCMPIObjectPath(
+            get_indication_profile_implementation_ns(),
 			"CIM_IndicationSubscription", &rc);
 	if(rc.rc)
 		goto cleanup;
