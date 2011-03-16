@@ -49,6 +49,16 @@ typedef struct {} client_opt_t;
   }
 
   /*
+   * Reset dump all operations to the dumpfile
+   *
+   * Used for debugging on the wire-level
+   *
+   */
+  void clear_dump_request(void) {
+    wsmc_clear_action_option($self, FLAG_DUMP_REQUEST );
+  }
+
+  /*
    * set option flag(s)
    *
    */
