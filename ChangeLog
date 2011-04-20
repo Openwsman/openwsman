@@ -1,11 +1,9 @@
-2.2.7
-- Bugfix
-  - Correctly prefix /etc when CMAKE_INSTALL_PREFIX is not /usr
-
 2.2.6
 - Features
   - Add array support for indications (Suresh Sundriyal)
   - Add indication_baseclass_namespace (Till Steinbach, Suresh Sundriyal)
+- Bugfix
+  - Correctly prefix /etc when CMAKE_INSTALL_PREFIX is not /usr (Chris Poblete)
 
 2.2.5
 - Features
