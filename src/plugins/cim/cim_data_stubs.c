@@ -461,6 +461,12 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		}
 	}
 cleanup:
+	/* the cimclient is stored inside the enumInfo and kept in-memory
+	 * during the Pull_EP requests until the final Release_EP call.
+	 * 
+	 * Only destroy it here in case of error
+	 * 
+	 */
 	if (retval && cimclient) {
 		CimResource_destroy(cimclient);
 	}
