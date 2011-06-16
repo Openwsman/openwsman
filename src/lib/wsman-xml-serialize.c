@@ -311,7 +311,8 @@ static int do_serialize_int(XmlSerializationData * data, int valSize)
 		error("size of %d structures %s exceeds stopper (%p > %p)",
 		      DATA_COUNT(data), DATA_ELNAME(data),
 		      DATA_BUF(data) + retVal, data->stopper);
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
@@ -460,7 +461,8 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 		error("size of %d structures %s exceeds stopper (%p > %p)",
 		      DATA_COUNT(data), DATA_ELNAME(data),
 		      DATA_BUF(data) + retVal, data->stopper);
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
@@ -801,7 +803,8 @@ static int do_serialize_real(XmlSerializationData * data, int valSize)
 		error("size of %d structures %s exceeds stopper (%p > %p)",
 		      DATA_COUNT(data), DATA_ELNAME(data),
 		      DATA_BUF(data) + retVal, data->stopper);
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
@@ -992,11 +995,12 @@ int do_serialize_string(XmlSerializationData * data)
 	if (DATA_BUF(data) + retVal > data->stopper) {
 		error("stopper: %p > %p",
 		      DATA_BUF(data) + retVal, data->stopper);
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data)) {
 		data->elementBuf = DATA_BUF(data) + retVal;
-		return retVal;
+		goto DONE;
 	}
 	DATA_BUF(data) = DATA_BUF(data) + pad;
 	debug("adjusted elementBuf = %p", data->elementBuf);
@@ -1097,11 +1101,12 @@ int do_serialize_bool(XmlSerializationData * data)
 	}
 	retVal += pad;
 	if (DATA_BUF(data) + retVal > data->stopper) {
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		data->elementBuf = DATA_BUF(data) + retVal;
-		return retVal;
+		goto DONE;
 	}
 	DATA_BUF(data) = DATA_BUF(data) + pad;
 	debug("adjusted elementBuf = %p", data->elementBuf);
@@ -1249,11 +1254,12 @@ int do_serialize_dyn_size_array(XmlSerializationData * data)
 
 	retVal = DATA_SIZE(data) + pad;
 	if (DATA_BUF(data) + retVal > data->stopper) {
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data)) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
-		return retVal;
+		goto DONE;
 	}
 	DATA_BUF(data) = DATA_BUF(data) + pad;
 	debug("adjusted elementBuf = %p", data->elementBuf);
@@ -1379,13 +1385,14 @@ int do_serialize_struct(XmlSerializationData * data)
 		error("size of %d structures \"%s\" exceeds stopper (%p > %p)",
 		      DATA_COUNT(data), DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL",
 		      (char *) DATA_BUF(data) + retVal, data->stopper);
-		return WS_ERR_INVALID_PARAMETER;
+		retVal = WS_ERR_INVALID_PARAMETER;
+		goto DONE;
 	}
 	if (DATA_MUST_BE_SKIPPED(data)) {
 		debug(" %d elements %s skipped", DATA_COUNT(data),
 		      DATA_ELNAME(data) ? DATA_ELNAME(data) : "NULL");
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
-		return retVal;
+		goto DONE;
 	}
 	DATA_BUF(data) = DATA_BUF(data) + pad;
 	debug("adjusted ptr= %p", data->elementBuf);
