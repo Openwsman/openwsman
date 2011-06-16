@@ -313,11 +313,8 @@ static int do_serialize_int(XmlSerializationData * data, int valSize)
 		      DATA_BUF(data) + retVal, data->stopper);
 		return WS_ERR_INVALID_PARAMETER;
 	}
-	if (DATA_MUST_BE_SKIPPED(data)) {
+	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
-		return retVal;
-	}
-	if (data->mode == XML_SMODE_FREE_MEM) {
 		goto DONE;
 	}
 	if ((data->mode != XML_SMODE_DESERIALIZE &&
@@ -465,11 +462,8 @@ static int do_serialize_uint(XmlSerializationData * data, int valSize)
 		      DATA_BUF(data) + retVal, data->stopper);
 		return WS_ERR_INVALID_PARAMETER;
 	}
-	if (DATA_MUST_BE_SKIPPED(data)) {
+	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
-		return retVal;
-	}
-	if (data->mode == XML_SMODE_FREE_MEM) {
 		goto DONE;
 	}
 	if ((data->mode != XML_SMODE_DESERIALIZE &&
@@ -809,11 +803,8 @@ static int do_serialize_real(XmlSerializationData * data, int valSize)
 		      DATA_BUF(data) + retVal, data->stopper);
 		return WS_ERR_INVALID_PARAMETER;
 	}
-	if (DATA_MUST_BE_SKIPPED(data)) {
+	if (DATA_MUST_BE_SKIPPED(data) || data->mode == XML_SMODE_FREE_MEM) {
 		DATA_BUF(data) = DATA_BUF(data) + retVal;
-		return retVal;
-	}
-	if (data->mode == XML_SMODE_FREE_MEM) {
 		goto DONE;
 	}
 	if ((data->mode != XML_SMODE_DESERIALIZE &&
