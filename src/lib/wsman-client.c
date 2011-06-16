@@ -1355,7 +1355,7 @@ wsmc_action_enumerate_and_pull(WsManClient * cl,
 		void *callback_data)
 {
 	WsXmlDocH doc;
-	char *enumContext;
+	char *enumContext = NULL;
 	WsXmlDocH enum_response = wsmc_action_enumerate(cl,
 			resource_uri, options, filter);
 
@@ -1377,14 +1377,17 @@ wsmc_action_enumerate_and_pull(WsManClient * cl,
 		doc = wsmc_action_pull(cl, resource_uri, options, filter, enumContext);
 
 		if (rc != 200 && rc != 400 && rc != 500) {
+			wsmc_free_enum_context(enumContext);
 			return 0;
 		}
 		callback(cl, doc, callback_data);
+		wsmc_free_enum_context(enumContext);
 		enumContext = wsmc_get_enum_context(doc);
 		if (doc) {
 			ws_xml_destroy_doc(doc);
 		}
 	}
+	wsmc_free_enum_context(enumContext);
 	return 1;
 }
 
