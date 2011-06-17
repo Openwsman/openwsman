@@ -1419,7 +1419,7 @@ int do_serialize_struct(XmlSerializationData * data)
 				retVal = WS_ERR_INSUFFICIENT_RESOURCES;
 				goto DONE;
 			}
-		} else {
+		} else if (data->mode == XML_SMODE_DESERIALIZE) {
 			child = xml_serializer_get_child(data);
 			if (child == NULL) {
 				error
