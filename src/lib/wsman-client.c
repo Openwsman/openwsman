@@ -1817,7 +1817,10 @@ wsmc_create(const char *hostname,
 void
 wsmc_release(WsManClient * cl)
 {
-
+	if (cl->client_config_file) {
+		u_free(cl->client_config_file);
+		cl->client_config_file = NULL;
+	}
 	if (cl->data.scheme) {
 		u_free(cl->data.scheme);
 		cl->data.scheme = NULL;
@@ -1867,6 +1870,10 @@ wsmc_release(WsManClient * cl)
 	if (cl->authentication.crl_file != NULL) {
 		u_free(cl->authentication.crl_file);
 		cl->authentication.crl_file = NULL;
+	}
+	if (cl->authentication.method != NULL) {
+		u_free(cl->authentication.method);
+		cl->authentication.method = NULL;
 	}
 	 
 	wsman_transport_close_transport(cl);
