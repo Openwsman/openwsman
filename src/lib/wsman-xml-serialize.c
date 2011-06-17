@@ -1013,7 +1013,7 @@ int do_serialize_string(XmlSerializationData * data)
 	for (data->index = 0; data->index < DATA_COUNT(data);
 	     data->index++) {
 		if (data->mode == XML_SMODE_FREE_MEM) {
-			xml_serializer_free(data, DATA_BUF(data));
+			xml_serializer_free(data, *(XML_TYPE_STR *) DATA_BUF(data));
 			*(XML_TYPE_STR *) DATA_BUF(data) = NULL;
 		} else if (data->mode == XML_SMODE_SERIALIZE) {
 			char *valPtr = *((char **) DATA_BUF(data));
