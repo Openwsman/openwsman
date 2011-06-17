@@ -1571,6 +1571,7 @@ int ws_serializer_free_mem(WsSerializerContextH serctx, XML_TYPE_PTR buf,
 					  buf,
 					  XML_SMODE_FREE_MEM, NULL, NULL);
 
+	data.stopper = (char *) buf + myinfo.size;
 	if ((retVal = info->proc(&data)) >= 0) {
 		xml_serializer_free(&data, buf);
 	}
