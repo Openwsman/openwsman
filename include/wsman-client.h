@@ -44,6 +44,7 @@ extern "C" {
 #include <pthread.h>
 #endif				/* // !WIN32 */
 
+#include "u/buf.h"
 #include "wsman-client-api.h"
 #include "wsman-xml-serialize.h"
 #define WSMAN_CLIENT_BUSY       0x0001

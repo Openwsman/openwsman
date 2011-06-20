@@ -41,7 +41,7 @@ extern "C" {
 #endif				/* __cplusplus */
 
 #include "wsman-types.h"
-#include "u/libu.h"
+#include "u/hash.h"
 
 typedef struct {
 	char *value; //string or nestes epr_t

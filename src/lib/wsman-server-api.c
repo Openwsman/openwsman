@@ -38,6 +38,7 @@
 #include <dlfcn.h>
 #endif
 
+#include "u/libu.h"
 #include "wsman-types.h"
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"

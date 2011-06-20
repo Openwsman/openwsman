@@ -66,6 +66,12 @@ struct __WsSerializerMemEntry {
 
 typedef struct __WsSerializerMemEntry WsSerializerMemEntry;
 
+struct __WsSerializerContext
+{
+	pthread_mutex_t lock;
+	list_t *WsSerializerAllocList;
+};
+
 WsSerializerContextH ws_serializer_init()
 {
 	WsSerializerContextH serializercntx = NULL;

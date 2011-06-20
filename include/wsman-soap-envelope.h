@@ -36,6 +36,8 @@
 #define WSMAN_SOAP_ENVELOPE_H_
 
 #include "wsman-types.h"
+#include "wsman-soap.h"
+#include "wsman-soap-message.h"
 
 #define ENFORCE_MUST_UNDERSTAND	"EnforceMustUnderstand"
 

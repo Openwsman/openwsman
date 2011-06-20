@@ -8,7 +8,6 @@
 #include <u/pthreadx.h>
 #include <u/syslog.h>
 #include <u/gettimeofday.h>
-#include <u/syslog.h>
 
 
 #if defined (__FreeBSD__)  || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)

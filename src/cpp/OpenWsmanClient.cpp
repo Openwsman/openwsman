@@ -12,6 +12,7 @@
 
 
 extern "C" {
+#include "u/libu.h"
 #include "wsman-api.h"
 }
 

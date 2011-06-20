@@ -38,7 +38,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-#include "u/libu.h"
+#include "u/buf.h"
+#include "u/hash.h"
+#include "wsman-faults.h"
 
 #define FLAG_IDENTIFY_REQUEST    1
 

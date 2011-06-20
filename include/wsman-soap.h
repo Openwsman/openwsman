@@ -38,7 +38,8 @@
 #ifndef WSMAN_SOAP_H_
 #define WSMAN_SOAP_H_
 
-#include "u/libu.h"
+#include "u/hash.h"
+#include "u/list.h"
 #include "wsman-faults.h"
 #include "wsman-soap-message.h"
 #include "wsman-xml-api.h"

@@ -45,10 +45,10 @@
 #include <unistd.h>
 #endif
 
+#include "u/libu.h"
 #include "wsman-client-transport.h"
 #include "wsman-soap.h"
 #include "wsman-client.h"
-#include "u/libu.h"
 
 static char *auth_methods[] = {
 	"noauth",

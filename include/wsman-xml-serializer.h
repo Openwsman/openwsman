@@ -43,9 +43,10 @@
 #ifndef WS_XML_SERIALIZER_H
 #define WS_XML_SERIALIZER_H
 
+#include <time.h>
+
 #include "wsman-types.h"
 #include "wsman-names.h"
-#include "u/libu.h"
 
 // Errors
 #define WS_ERR_INSUFFICIENT_RESOURCES	(-1)
@@ -154,12 +155,6 @@ struct __XmlSerializerInfo
     XML_TYPE_PTR extData;      /**< External Data */
 };
 typedef struct __XmlSerializerInfo XmlSerializerInfo;
-
-struct __WsSerializerContext
-{
-	pthread_mutex_t lock;
-	list_t *WsSerializerAllocList;
-};
 
 typedef struct __WsSerializerContext *WsSerializerContextH;
 

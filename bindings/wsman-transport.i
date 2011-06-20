@@ -37,6 +37,7 @@ typedef struct _WsManTransport {} WsManTransport;
 %ignore _WS_NTLM_AUTH;
 %ignore _WS_GSSNEGOTIATE_AUTH;
 
+%include "u/libu.h"
 %include "wsman-client-transport.h"
 
 %extend WsManTransport {

@@ -3,11 +3,11 @@
 #include "CUnit/Basic.h"
 #include "WsmanFilter.h"
 #include "WsmanEPR.h"
+#include "u/libu.h"
 #include "wsman-filter.h"
 #include "wsman-xml-api.h"
 #include "wsman-xml.h"
 #include "wsman-names.h"
-#include "u/libu.h"
 
 using namespace std;
 using namespace WsmanClientNamespace;

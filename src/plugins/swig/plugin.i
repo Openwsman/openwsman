@@ -151,6 +151,7 @@ typedef SV * Target_Type;
 
 #include <stdint.h>
 
+#include <u/libu.h>
 #include <wsman-xml.h>
 #include <wsman-xml-binding.h>
 #include <wsman-soap.h>

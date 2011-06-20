@@ -34,6 +34,8 @@
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
+
+#include <time.h>
 #include "wsman-debug.h"
 
 static int debug_level = DEBUG_LEVEL_ALWAYS;

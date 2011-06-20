@@ -119,6 +119,7 @@
 #define filter_t filter_type
 #endif
 
+#include <u/libu.h>
 #include <wsman-types.h>
 #include <wsman-client.h>
 #include <wsman-client-transport.h>

@@ -39,9 +39,9 @@
 #include <errno.h>
 #include <time.h>
 
+#include "u/libu.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
-#include "wsman-soap.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-xml-serialize.h"
 #include "wsman-epr.h"

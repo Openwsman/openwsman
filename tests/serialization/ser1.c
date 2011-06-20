@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "CUnit/Basic.h"
+#include "u/libu.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-soap.h"

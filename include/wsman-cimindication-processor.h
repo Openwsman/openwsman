@@ -34,6 +34,9 @@
 #ifndef WSMAN_CIMINDICATION_PROCESSOR_H_
 #define WSMAN_CIMINDICATION_PROCESSOR_H_
 
+#include "u/buf.h"
+#include "wsman-soap.h"
+
 #define CIMXML_CIM "CIM"
 #define CIMXML_CIMVERSION "CIMVERSION"
 #define CIMXML_DTDVERSION "DTDVERSION"

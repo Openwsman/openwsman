@@ -40,7 +40,6 @@
 extern "C" {
 #endif				/* __cplusplus */
 
-#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-names.h"
 #include "wsman-types.h"

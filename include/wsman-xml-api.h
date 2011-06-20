@@ -39,7 +39,8 @@
 extern "C" {
 #endif				/* __cplusplus */
 
-#include "u/libu.h"
+#include <stdio.h>
+
 #include "wsman-types.h"
 
 

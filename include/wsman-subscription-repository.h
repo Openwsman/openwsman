@@ -35,7 +35,7 @@
 #ifndef WSMAN_SUBSCRIPTION_REPOSITORY_H_
 #define WSMAN_SUBSCRIPTION_REPOSITORY_H_
 
-#include "u/libu.h"
+#include "u/list.h"
 
 typedef int (*SubscriptionOpInit) (char *, void *);
 typedef int (*SubscriptionOpFinalize) (char *, void *);

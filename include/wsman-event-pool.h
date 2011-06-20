@@ -38,6 +38,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "u/list.h"
   
 #define EUIDLEN		64
 

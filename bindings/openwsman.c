@@ -1,3 +1,4 @@
+#include <u/libu.h>
 #include <wsman-debug.h>
 #include "openwsman.h"
 /*-----------------------------------------------------------------*/

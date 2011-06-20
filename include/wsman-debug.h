@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-#include "u/libu.h"
+#include "u/debug.h"
 
 extern void           wsman_debug_set_level(debug_level_e level);
 extern debug_level_e  wsman_debug_get_level(void);

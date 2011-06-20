@@ -96,6 +96,7 @@
 #include <sys/time.h>
 #endif
 #include "u/uuid.h"
+#include "u/os.h"
 #include "u/debug.h"
 
 #ifdef WIN32

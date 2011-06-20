@@ -15,6 +15,7 @@ static const char rcsid[] =
 #include <u/carpal.h>
 #include <u/misc.h>
 #include <u/memory.h>
+#include <u/os.h>
 
 /**
  *  \defgroup uri URI

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "u/libu.h"
 #include "wsman-filter.h"
 #include "wsman-names.h"
 #include "wsman-xml.h"

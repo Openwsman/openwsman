@@ -40,7 +40,6 @@
 extern "C" {
 #endif
 
-#include "u/libu.h"
 #include "wsman-client-api.h"
 
 

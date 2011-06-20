@@ -41,6 +41,7 @@
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
+#include "u/libu.h"
 #include "wsman-soap.h"
 #include "wsman-names.h"
 #include "wsman-types.h"

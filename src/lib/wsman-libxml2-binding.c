@@ -50,6 +50,7 @@
 #include <libxml/xpathInternals.h>
 
 
+#include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-soap.h"
 #include "wsman-xml.h"

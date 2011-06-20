@@ -31,6 +31,7 @@
 /**
  * @author Liang Hou
  */
+#include "u/libu.h"
 #include "wsman-faults.h"
 #include "wsman-soap.h"
 #include "wsman-names.h"
