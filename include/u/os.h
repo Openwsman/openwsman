@@ -82,10 +82,12 @@ typedef int ssize_t;
 #endif
 
 
+#if defined(__vxworks) || defined(__VXWORKS__)
 /* on VxWorks/DCC there's not extern declaration (even if the var is available
    into library files) */
 extern char *optarg;
 extern int optind;
+#endif
 
 
 
