@@ -36,8 +36,9 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
+    options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
+    options.max_elements = 999
 #    options.set_dump_request
-#    puts "Flags = #{options.flags}"
 
 #
 # see http://msdn2.microsoft.com/en-us/library/aa386179.aspx for a list of CIM classes
@@ -47,7 +48,7 @@ class WsmanTest < Test::Unit::TestCase
 
     result = client.enumerate( options, nil, uri )
     assert result
-
+puts "Result #{result.to_xml}"
     results = 0
     faults = 0
     context = nil
