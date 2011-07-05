@@ -33,12 +33,12 @@ SER_END_ITEMS(CIM_ComputerSystem);
 
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
     WsSerializerContextH cntx = ws_serializer_init();
 //    SoapH soap = ws_context_get_runtime(cntx);
 
-    WsXmlDocH doc = ws_xml_read_file( "cim_computersystem_02.xml", "UTF-8", 0 ); 
+    WsXmlDocH doc = ws_xml_read_file( argv[1], "UTF-8", 0 ); 
     WsXmlNodeH node = ws_xml_get_soap_body(doc);
     if (!node)
 	    printf("no xml\n");
