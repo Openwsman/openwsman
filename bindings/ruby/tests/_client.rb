@@ -4,6 +4,8 @@
 
 require 'yaml'
 
+require 'auth-callback'
+
 class Client
   @@clients = YAML.load( File.open( File.join(File.dirname(__FILE__),"clients.yml") ) )
   def Client.open( name=nil )
