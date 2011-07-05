@@ -2806,7 +2806,6 @@ cim_get_enum_items(CimClientInfo * client,
 {
 	WsXmlNodeH itemsNode;
 	WsXmlDocH outdoc = NULL;
-	WsXmlDocH clonedoc = NULL;
 	int c = 0;
 	if (node == NULL)
 		return;
@@ -2815,67 +2814,42 @@ cim_get_enum_items(CimClientInfo * client,
 	debug("Total items: %d", enumInfo->totalItems);
 	debug("enum flags: %lu", enumInfo->flags );
 
+	outdoc = ws_xml_get_node_doc(node);
 	if(enumInfo->totalItems == 0) {
-		outdoc = ws_xml_get_node_doc(node);
-		enumInfo->pullResultPtr = outdoc;
+		/* nothing */
 	} else if (maxelements> 0) {
 		while (maxelements> 0 && enumInfo->index >= 0 &&
 				enumInfo->index < enumInfo->totalItems) {
-			outdoc = ws_xml_get_node_doc(node);
-			ws_xml_destroy_doc(clonedoc);
-			clonedoc = ws_xml_duplicate_doc(outdoc);
 			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
-				c = cim_getEprAt(client, enumInfo,
-						itemsNode);
+				c = cim_getEprAt(client, enumInfo, itemsNode);
 			} else if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
-				c = cim_getEprObjAt(client, enumInfo,
-						itemsNode);
+				c = cim_getEprObjAt(client, enumInfo, itemsNode);
 			} else {
-				c = cim_getElementAt(client, enumInfo,
-						itemsNode);
+				c = cim_getElementAt(client, enumInfo, itemsNode);
 			}
-			if(check_envelope_size(outdoc, maxsize, enumInfo->encoding)) {
-				enumInfo->pullResultPtr = clonedoc;
-				clonedoc = NULL;
-				ws_xml_destroy_doc(outdoc);
+			if (check_envelope_size(outdoc, maxsize, enumInfo->encoding)) {
 				break;
 			}
 			enumInfo->index++;
 			maxelements--;
 		}
 		enumInfo->index--;
-		if(clonedoc) {
-			enumInfo->pullResultPtr = outdoc;
-		}
-		ws_xml_destroy_doc(clonedoc);
 	} else {
 		while (enumInfo->index >= 0
 				&& enumInfo->index < enumInfo->totalItems) {
-			outdoc = ws_xml_get_node_doc(node);
-			ws_xml_destroy_doc(clonedoc);
-			clonedoc = ws_xml_duplicate_doc(outdoc);
 			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
-				c = cim_getEprAt(client, enumInfo,
-						itemsNode);
+				c = cim_getEprAt(client, enumInfo, itemsNode);
 			} else if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
-				c = cim_getEprObjAt(client, enumInfo,
-						itemsNode);
+				c = cim_getEprObjAt(client, enumInfo, itemsNode);
 			} else {
 				c = cim_getElementAt(client, enumInfo, itemsNode);
 			}
-			if(check_envelope_size(outdoc, enumInfo->maxsize, enumInfo->encoding)) {
-				enumInfo->pullResultPtr = clonedoc;
-				clonedoc = NULL;
-				ws_xml_destroy_doc(outdoc);
+			if (check_envelope_size(outdoc, enumInfo->maxsize, enumInfo->encoding)) {
 				break;
 			}
 			enumInfo->index++;
 		}
 		enumInfo->index--;
-
-		if(clonedoc) {
-			enumInfo->pullResultPtr = outdoc;
-		}
-		ws_xml_destroy_doc(clonedoc);
 	}
+	enumInfo->pullResultPtr = outdoc;
 }
