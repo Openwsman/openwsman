@@ -122,8 +122,7 @@ Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
 Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
-Requires:       %{name}-client = %{version}
-Requires:       sblim-sfcc-devel libxml2-devel pam-devel
+<Requires:       sblim-sfcc-devel libxml2-devel pam-devel
 
 %description -n libwsman-devel
 Opensource Implementation of WS-Management
@@ -136,13 +135,14 @@ Authors:
     Vadim Revyakin <vadim.revyakin@intel.com>
     Denis Sadykov <denis.sadykov@intel.com>
 
-%package client
+%package client-c++
 License:        BSD3c(or similar)
 Group:          System/Management
-Summary:        Openwsman Client libraries
-
-%description client
-Openwsman Client libraries
+Summary:        C++ bindings to Openwsman Client libraries
+Provides:       openwsman-client
+Obsoletes:      openwsman-client < %{version}
+%description client-c++
+An implementation of the WsmanClient interface using C++
 
 
 
@@ -335,9 +335,9 @@ rm -rf $RPM_BUILD_ROOT
 rm -f /var/log/wsmand.log
 /sbin/ldconfig
 
-%post client -p /sbin/ldconfig
+%post client-c++ -p /sbin/ldconfig
 
-%postun client -p /sbin/ldconfig
+%postun client-c++ -p /sbin/ldconfig
 
 %files -n libwsman1
 %defattr(-,root,root)
@@ -345,6 +345,7 @@ rm -f /var/log/wsmand.log
 %{_libdir}/libwsman.so.*
 %{_libdir}/libwsman_client.so.*
 %{_libdir}/libwsman_curl_client_transport.so.*
+%config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
 
 %files -n libwsman-devel
 %defattr(-,root,root)
@@ -408,9 +409,8 @@ rm -f /var/log/wsmand.log
 %{_sbindir}/rcopenwsmand
 %{_libdir}/libwsman_server.so.*
 
-%files client
+%files client-c++
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so.*
-%config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
 
 %changelog

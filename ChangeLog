@@ -1,3 +1,8 @@
+2.2.7
+- Features
+  - Rename openwsman-client to openwsman-client-c++ since it only
+    includes C++ bindings. Move openwsman_client.conf to libwsman1.
+
 2.2.6
 - Features
   - Add array support for indications (Suresh Sundriyal)
