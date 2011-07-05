@@ -76,6 +76,99 @@ typedef struct {} client_opt_t;
   void clear_flags(int flags) {
     wsmc_clear_action_option($self, flags);
   }
+
+  /*
+   * Limit size of result document
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "max_envelope_size=" ) set_max_envelope_size(unsigned long size);
+#endif
+  void set_max_envelope_size(unsigned long size) {
+    $self->max_envelope_size = size;
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "max_envelope_size" ) get_max_envelope_size();
+#endif
+  unsigned long get_max_envelope_size() {
+    return $self->max_envelope_size;
+  }
+   
+  /*
+   * Limit number of elements returned by enumeration
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "max_elements=" ) set_max_elements(int elements);
+#endif
+  void set_max_elements(int elements) {
+    $self->max_elements = elements;
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "max_elements" ) get_max_elements();
+#endif
+  int get_max_elements() {
+    return $self->max_elements;
+  }
+
+  /*
+   * Operation timeout
+   * See Openwsman::Transport.timeout for transport timeout
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "timeout=" ) set_timeout(unsigned long timeout);
+#endif
+  void set_timeout(unsigned long timeout) {
+    $self->timeout = timeout;
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "timeout" ) get_timeout();
+#endif
+  unsigned long get_timeout() {
+    return $self->timeout;
+  }
+   
+  /*
+   * Fragment
+   * (Supported Dialects: XPATH)
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "fragment=" ) set_fragment(char *fragment);
+#endif
+  void set_fragment(char *fragment) {
+    $self->fragment = fragment;
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "fragment" ) get_fragment();
+#endif
+  const char *get_fragment() {
+    return $self->fragment;
+  }
+   
+  /*
+   * CIM Namespace
+   * (default is root/cimv2)
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "cim_namespace=" ) set_cim_namespace(char *cim_namespace);
+#endif
+  void set_cim_namespace(char *cim_namespace) {
+    $self->cim_ns = cim_namespace;
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "cim_namespace" ) get_cim_namespace();
+#endif
+  const char *get_cim_namespace() {
+    return $self->cim_ns;
+  }
    
   /*
    * Add a selector as key/value pair
