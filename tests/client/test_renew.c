@@ -83,7 +83,7 @@ typedef struct {
 
 
 ServerData sd[] = {
-    {"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+    {"localhost", 5985, "/wsman", "http", "wsman", "secret"}
 };
 
 TestData tests[] = {

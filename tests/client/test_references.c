@@ -64,7 +64,7 @@ TestData test = {
 };
 
 ServerData sd[] = {
-	{"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+	{"localhost", 5985, "/wsman", "http", "wsman", "secret"}
 };
 
 static void wsman_output(WsXmlDocH doc)
@@ -94,6 +94,12 @@ int main(int argc, char** argv)
 
 	wsmc_set_action_option(options, FLAG_DUMP_REQUEST);
 	ref_resp = wsmc_action_enumerate(cl, (char *)test.resource_uri, options, filter);
+	if (!ref_resp) {
+		printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
+		wsmc_options_destroy(options);
+		wsmc_release(cl);
+		return -1;
+	}
 	wsman_output(ref_resp);
 
 

@@ -89,7 +89,7 @@ typedef struct {
 
 
 ServerData sd[] = {
-	{"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+	{"localhost", 5985, "/wsman", "http", "wsman", "secret"}
 };
 
 TestData tests[] = {
@@ -171,26 +171,26 @@ int main(int argc, char** argv)
     		sd[0].path,
     		sd[0].scheme,
     		sd[0].username,
-    		sd[0].password);		
-		options = wsmc_options_init();
-		
-		if (tests[i].selectors != NULL)
-			wsmc_add_selectors_from_str(options, tests[i].selectors);
-		if (tests[i].properties != NULL)
-			wsmc_add_prop_from_str(options, tests[i].properties);		
-		
-		wsmc_set_action_option(options, FLAG_DUMP_REQUEST); 
-		
-		doc = wsmc_action_get_and_put(cl, (char *)tests[i].resource_uri, options);
-		
-		wsman_output(doc);
-		
+    		sd[0].password);
+	options = wsmc_options_init();
 	wsmc_transport_init(cl, NULL);
+		
+	if (tests[i].selectors != NULL)
+	        wsmc_add_selectors_from_str(options, tests[i].selectors);
+	if (tests[i].properties != NULL)
+		wsmc_add_prop_from_str(options, tests[i].properties);		
+		
+        wsmc_set_action_option(options, FLAG_DUMP_REQUEST); 
+		
+	doc = wsmc_action_get_and_put(cl, (char *)tests[i].resource_uri, options);
+		
         if (!doc) {
                 printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
                 goto CONTINUE;
         }
-       if (tests[i].final_status != wsmc_get_response_code(cl)) {
+	wsman_output(doc);
+		
+	if (tests[i].final_status != wsmc_get_response_code(cl)) {
             printf("Status = %ld \t\t\033[22;31mFAILED\033[m\n",
                                 wsmc_get_response_code(cl));
             goto CONTINUE;

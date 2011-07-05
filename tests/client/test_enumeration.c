@@ -89,7 +89,7 @@ typedef struct {
 
 
 ServerData sd[] = {
-  {"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+  {"localhost", 5985, "/wsman", "http", "wsman", "secret"}
 };
 
 TestData tests[] = {
@@ -246,7 +246,8 @@ int main(int argc, char** argv)
                         sd[0].username,
                         sd[0].password);
     wsmc_transport_init(cl, NULL);
-
+    wsman_transport_set_auth_method(cl, _WS_BASIC_AUTH);
+		  
     options = wsmc_options_init();
     options->flags = tests[i].flags;
     options->max_elements = tests[i].max_elements;

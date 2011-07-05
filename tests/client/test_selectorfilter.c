@@ -61,7 +61,7 @@ TestData test = {
 };
 
 ServerData sd[] = {
-	{"localhost", 8889, "/wsman", "http", "wsman", "secret"}
+	{"localhost", 5985, "/wsman", "http", "wsman", "secret"}
 };
 
 static void wsman_output(WsXmlDocH doc)
