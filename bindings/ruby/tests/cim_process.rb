@@ -48,29 +48,24 @@ class WsmanTest < Test::Unit::TestCase
 
     result = client.enumerate( options, nil, uri )
     assert result
-puts "Result #{result.to_xml}"
+    if result.fault?
+      puts "Enumerate returned fault"
+      exit 1
+    end
+
+#    puts "Result #{result.to_xml}"
     results = 0
     faults = 0
     context = nil
  
     printf("%-20s %-10s %-10s  %s\n", "User", "PID", "VSZ", "Command");
     puts "-------------------------------------------------------------"
-loop do
+    
     context = result.context
-    break unless context
-#    puts "Context #{context} retrieved"
 
-    result = client.pull( options, nil, uri, context )
-    break unless result
+    result.body.EnumerateResponse.Items.each do |node|
 
-    results += 1
-    if result.fault?
-      puts "Got fault"
-      faults += 1
-      break
-    end
-    items = result.body.PullResponse.Items
-    node = items.child
+      results += 1
     
 #    node = body.child( 0, Openwsman::NS_ENUMERATION, "PullResponse" );
 #    node = node.child( 0, Openwsman::NS_ENUMERATION, "Items" );
@@ -79,39 +74,39 @@ loop do
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    if node.name == "Win32_Service"
-      caption = node["Caption"]
-      handle = node["Handle"]
-      virtual_size = node["VirtualSize"]
-      proc_id = node["ProcessId"]
-      cmd = node["ExecutablePath"]
-    else
-      caption = node["Caption"]
-      handle = node["Handle"]
-      virtual_size = 0
-      proc_id = handle
-      cmd = node["Name"]
-    end
-    user = ""
-
-    if node.name == "Win32_Service"
-      ires = get_owner client, node
-      if ires
-	b = ires.body
-	output = b.GetOwner_OUTPUT
-	output.each do |child|
-	  text = child.text
-	  if child.name == "User"
-	    user = text
-	  end
-	end if output
+      if node.name == "Win32_Service"
+	caption = node["Caption"]
+	handle = node["Handle"]
+	virtual_size = node["VirtualSize"]
+	proc_id = node["ProcessId"]
+	cmd = node["ExecutablePath"]
+      else
+	caption = node["Caption"]
+	handle = node["Handle"]
+	virtual_size = 0
+	proc_id = handle
+	cmd = node["Name"]
       end
+      user = ""
+
+      if node.name == "Win32_Service"
+	ires = get_owner client, node
+	if ires
+	  b = ires.body
+	  output = b.GetOwner_OUTPUT
+	  output.each do |child|
+	    text = child.text
+	    if child.name == "User"
+	      user = text
+	    end
+	  end if output
+	end
+      end
+      vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f
+      
+      printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
+
     end
-    vsz =  (virtual_size.to_s.to_i / (1024 * 1024 ) ).to_f
-
-    printf("%-20s %-10s %-5.0f  %s\n", user, proc_id, vsz, cmd);
-
-end
 
     client.release( options, uri, context ) if context
     puts "Context released, #{results} results, #{faults} faults"
