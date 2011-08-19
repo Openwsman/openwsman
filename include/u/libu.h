@@ -19,6 +19,7 @@
 
 
 #include <u/debug.h>
+#include <u/debug_internal.h>
 
 #include <u/hash.h>
 #include <u/uri.h>

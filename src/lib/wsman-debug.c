@@ -35,7 +35,9 @@
 #include <wsman_config.h>
 #endif
 
+#include <stdio.h>
 #include <time.h>
+
 #include "wsman-debug.h"
 
 static int debug_level = DEBUG_LEVEL_ALWAYS;

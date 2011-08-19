@@ -35,9 +35,6 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -57,14 +54,6 @@ typedef enum {
 typedef void (*debug_fn) (const char *message,
                            debug_level_e level,
                            void* user_data);
-struct _debug_handler_t {
-    debug_fn   	         fn;
-    debug_level_e 	level;
-    void*     		user_data;
-    unsigned int	id;
-};
-typedef struct _debug_handler_t debug_handler_t;
-
 
 unsigned int
 debug_add_handler (debug_fn fn,
@@ -73,102 +62,6 @@ debug_add_handler (debug_fn fn,
 
 void debug_remove_handler (unsigned int id);
 void debug_destroy_handlers (void);
-
-void debug_full(debug_level_e  level, const char *format, ...);
-void debug_full_verbose(debug_level_e  level, char *file,
-                 int line, const char *proc, const char *format, ...);
-
-// #define ENABLE_TRACING
-#ifdef ENABLE_TRACING
-#if defined (__SUNPRO_C) || defined(__SUNPRO_CC)
-#define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __func__, __FILE__, __LINE__ );
-#define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __func__, __FILE__, __LINE__ , debug_helper (format));
-#define TRACE_EXIT  printf("TRACE: Leaving %s %s:%d\n", __func__, __FILE__, __LINE__ );
-#else // __SUNPRO_C || __SUNPRO_CC
-#define TRACE_ENTER printf("TRACE: Entering %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
-#define TRACE_DETAILS(format...) printf("TRACE: %s :%s:%d --- %s\n", __FUNCTION__, __FILE__, __LINE__ , debug_helper (format));
-#define TRACE_EXIT  printf("TRACE: Leaving %s %s:%d\n", __FUNCTION__, __FILE__, __LINE__ );
-#endif // __SUNPRO_C || __SUNPRO_CC
-#else
-#define TRACE_ENTER
-#ifdef _WIN32
-static __inline void TRACE_DETAILS(char* format, ...) {
-    return;
-}
-#else
-#define TRACE_DETAILS(format...)
-#endif
-#define TRACE_EXIT
-#endif
-
-
-
-
-#ifdef WIN32
-
-# ifdef WSMAN_DEBUG_VERBOSE
-
-#define debug(char* format, ...) \
-        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, \
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-
-#define error(char* format, ...) \
-        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, \
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-
-#define message(char* format, ...) \
-        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, \
-			   __LINE__,__FUNCTION__, format, __VA_ARGS__)
-
-# else // WSMAN_DEBUG_VERBOSE
-
-#define debug(char* format, ...) \
-        debug_full(DEBUG_LEVEL_DEBUG, format, __VA_ARGS__)
-
-#define error(char* format, ...) \
-        debug_full(DEBUG_LEVEL_ERROR, format, __VA_ARGS__)
-
-#define message(char* format, ...) \
-        debug_full(DEBUG_LEVEL_MESSAGE, format, __VA_ARGS__)
-
-# endif // WSMAN_DEBUG_VERBOSE
-	
-#else // WIN32
-
-#ifdef WSMAN_DEBUG_VERBOSE
-
-#if defined (__SUNPRO_C) || defined(__SUNPRO_CC)
-#define debug(format...) \
-        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__func__, format)
-#define error(format...) \
-        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__func__, format)
-#define message(format...) \
-        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__func__, format)
-#else // __SUNPRO_C || __SUNPRO_CC
-#define debug(format...) \
-        debug_full_verbose(DEBUG_LEVEL_DEBUG, __FILE__, __LINE__,__FUNCTION__, format)
-#define error(format...) \
-        debug_full_verbose(DEBUG_LEVEL_ERROR, __FILE__, __LINE__,__FUNCTION__, format)
-#define message(format...) \
-        debug_full_verbose(DEBUG_LEVEL_MESSAGE, __FILE__, __LINE__,__FUNCTION__, format)
-#endif // __SUNPRO_C || __SUNPRO_CC
-
-#else // WSMAN_DEBUG_VERBOSE
-
-#define debug(format...) \
-        debug_full(DEBUG_LEVEL_DEBUG, format)
-
-#define error(format...) \
-        debug_full(DEBUG_LEVEL_ERROR, format)
-
-#define message(format...) \
-        debug_full(DEBUG_LEVEL_MESSAGE, format)
-
-#endif // WSMAN_DEBUG_VERBOSE
-
-#endif // WIN32
-
-
 
 #ifdef __cplusplus
 }
