@@ -1818,10 +1818,12 @@ wsmc_create(const char *hostname,
 void
 wsmc_release(WsManClient * cl)
 {
+#ifndef _WIN32
 	if (cl->client_config_file) {
 		u_free(cl->client_config_file);
 		cl->client_config_file = NULL;
 	}
+#endif
 	if (cl->data.scheme) {
 		u_free(cl->data.scheme);
 		cl->data.scheme = NULL;

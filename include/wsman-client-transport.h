@@ -36,6 +36,10 @@
 #ifndef WSMAN_CLIENT_TRANSPORT_H_
 #define WSMAN_CLIENT_TRANSPORT_H_
 
+#ifdef _WIN32
+#include <windows.h> /* for BOOL */
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
