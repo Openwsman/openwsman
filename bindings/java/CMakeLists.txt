@@ -25,6 +25,7 @@ ADD_CUSTOM_COMMAND (
 )
 
 SET( jar_NAME "openwsman-${PACKAGE_ARCHITECTURE}-${VERSION}.jar" )
+MESSAGE(STATUS "Java archive name: ${jar_NAME}")
 
 ADD_CUSTOM_COMMAND (
    OUTPUT ${jar_NAME}
