@@ -16,8 +16,8 @@
 
 struct __CIM_ComputerSystem {
     char *NameFormat;
-    char *test;
-    char *foo;
+    char *test[2];
+    XmlSerialiseDynamicSizeData foo;
 };
 typedef struct __CIM_ComputerSystem CIM_ComputerSystem;
 
@@ -27,8 +27,8 @@ SER_TYPEINFO_STRING;
 
 SER_START_ITEMS(CIM_ComputerSystem)
 SER_NS_STR(NS, "NameFormat", 1),
-SER_NS_STR(NS, "test", 1),
-SER_NS_STR(NS, "foo", 1),
+SER_NS_STR(NS, "test", 2),
+SER_NS_DYN_ARRAY(NS, "foo", 1, 100, string),
 SER_END_ITEMS(CIM_ComputerSystem);
 
 
