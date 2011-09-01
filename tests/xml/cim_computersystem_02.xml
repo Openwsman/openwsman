@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsen="http://schemas.xmlsoap.org/ws/2004/09/enumeration">
+  <s:Header>
+    <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/enumeration/PullResponse</wsa:Action>
+    <wsa:RelatesTo>uuid:f314d4dc-240b-140b-8004-be0448251100</wsa:RelatesTo>
+    <wsa:MessageID>uuid:f31513fc-240b-140b-8012-be0448251100</wsa:MessageID>
+  </s:Header>
+  <s:Body>
+        <p:CIM_ComputerSystem xmlns:p="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <p:number>42</p:number>
+          <p:NameFormat>IP</p:NameFormat>
+          <p:test>test 1</p:test>
+          <p:test>test 2</p:test>
+          <p:foo>foo 1</p:foo>
+          <p:foo>foo 2</p:foo>
+          <p:foo>foo 3</p:foo>
+          <p:foo>foo 4</p:foo>
+        </p:CIM_ComputerSystem>
+  </s:Body>
+</s:Envelope>
