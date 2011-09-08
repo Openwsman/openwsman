@@ -428,8 +428,6 @@ SET(STDC_HEADERS 1)
 # CONFIGURATION                                                    #
 ####################################################################
 
-SET(CMAKE_VERBOSE_MAKEFILE OFF)
-
 ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 SET(PACKAGE "openwsman")
