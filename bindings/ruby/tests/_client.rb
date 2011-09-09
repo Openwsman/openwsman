@@ -10,10 +10,7 @@ class Client
   @@clients = YAML.load( File.open( File.join(File.dirname(__FILE__),"clients.yml") ) )
   def Client.open( name=nil )
     name = ENV["WSMANCLIENT"] if name.nil?
-    if name.nil?
-      STDERR.puts "Client.open without name (set WSMANCLIENT environment to fix this). Defaulting to 'localhost'"
-      name = "localhost"
-    end
+    name = "localhost" unless name
     client = @@clients[name]
     if client.nil?
       STDERR.puts "Client.open unknown name '#{name}'"
