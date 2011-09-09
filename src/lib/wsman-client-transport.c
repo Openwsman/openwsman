@@ -425,9 +425,9 @@ char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 {
 	switch (err) {
 	case WS_LASTERR_OK:
-		return "Everithing OK";
+		return "Everything OK";
 	case WS_LASTERR_FAILED_INIT:
-		return "Trnasport initailization failed";
+		return "Transport initialization failed";
 	case WS_LASTERR_UNSUPPORTED_PROTOCOL:
 		return "Unsupported protocol";
 	case WS_LASTERR_URL_MALFORMAT:
@@ -451,7 +451,7 @@ char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 	case WS_LASTERR_HTTP_POST_ERROR:
 		return "HTTP POST error";
 	case WS_LASTERR_BAD_DOWNLOAD_RESUME:
-		return "Couldn't resume download";
+		return "Could not resume download";
 	case WS_LASTERR_TOO_MANY_REDIRECTS:
 		return "Catch endless re-direct loop";
 	case WS_LASTERR_SSL_CONNECT_ERROR:
@@ -467,7 +467,7 @@ char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 	case WS_LASTERR_SSL_CACERT:
 		return "Problem with the CA certificate";
 	case WS_LASTERR_SSL_ENGINE_INITFAILED:
-		return " failed to initialise SSL engine";
+		return "Failed to initialise SSL engine";
 	case WS_LASTERR_SEND_ERROR:
 		return "Failed sending network data";
 	case WS_LASTERR_RECV_ERROR:
