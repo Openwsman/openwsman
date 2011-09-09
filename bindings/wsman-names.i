@@ -6,6 +6,8 @@
 
 %include "wsman-names.h"
 
+/* redefine enums here, these aren't recognized as constants by swig */
+
 #define FLAG_NONE                            0x0000
 #define FLAG_ENUMERATION_COUNT_ESTIMATION    0x0001
 #define FLAG_ENUMERATION_OPTIMIZATION        0x0002
@@ -29,3 +31,12 @@
 #define WSMAN_DELIVERY_PUSHWITHACK  1
 #define WSMAN_DELIVERY_EVENTS       2
 #define WSMAN_DELIVERY_PULL         3
+
+#define WS_NO_AUTH            0
+#define WS_BASIC_AUTH         1
+#define WS_DIGEST_AUTH        2
+#define WS_PASS_AUTH          3
+#define WS_NTLM_AUTH          4
+#define WS_GSSNEGOTIATE_AUTH  5
+#define WS_MAX_AUTH           6
+			

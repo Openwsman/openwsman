@@ -21,15 +21,8 @@ typedef struct _WsManTransport {} WsManTransport;
  * as a convenience
  *
  */
-#if defined(SWIGJAVA)
-%rename(NO_AUTH_STR) _WS_NO_AUTH;
-%rename(BASIC_AUTH_STR) _WS_BASIC_AUTH;
-%rename(DIGEST_AUTH_STR) _WS_DIGEST_AUTH;
-%rename(PASS_AUTH_STR) _WS_PASS_AUTH;
-%rename(NTLM_AUTH_STR) _WS_NTLM_AUTH;
-%rename(GSSNEGOTIATE_AUTH_STR) _WS_GSSNEGOTIATE_AUTH;
-#endif
 
+/* rename those as <foo>_STR below */
 %ignore _WS_NO_AUTH;
 %ignore _WS_BASIC_AUTH;
 %ignore _WS_DIGEST_AUTH;
@@ -41,7 +34,7 @@ typedef struct _WsManTransport {} WsManTransport;
 %include "wsman-client-transport.h"
 
 %extend WsManTransport {
-#ifndef SWIGJAVA
+
  %constant int NO_AUTH           = WS_NO_AUTH;
  %constant int BASIC_AUTH        = WS_BASIC_AUTH;
  %constant int DIGEST_AUTH       = WS_DIGEST_AUTH;
@@ -55,7 +48,6 @@ typedef struct _WsManTransport {} WsManTransport;
  %constant char *PASS_AUTH_STR         = _WS_PASS_AUTH;
  %constant char *NTLM_AUTH_STR         = _WS_NTLM_AUTH;
  %constant char *GSSNEGOTIATE_AUTH_STR = _WS_GSSNEGOTIATE_AUTH;
-#endif
 
 #if defined(SWIGRUBY)
   %rename("auth_method?") is_auth_method(int method);
