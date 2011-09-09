@@ -19,7 +19,7 @@ class WsmanTest < Test::Unit::TestCase
     result = client.pull( options, nil, uri, context )
     assert result
 
-    doc = REXML::Document.new result.to_s
+    doc = REXML::Document.new result.to_xml
     assert doc
 #    doc.write( $stdout, 0 )
   end
