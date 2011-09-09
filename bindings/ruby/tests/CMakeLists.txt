@@ -43,7 +43,6 @@ ADD_TEST(bindings_ruby_identify             ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C 
 ADD_TEST(bindings_ruby_invoke               ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} invoke.rb )
 ADD_TEST(bindings_ruby_notepad              ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} notepad.rb )
 ADD_TEST(bindings_ruby_nsconsts             ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} nsconsts.rb )
-ADD_TEST(bindings_ruby_processes            ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} processes.rb )
 ADD_TEST(bindings_ruby_pull                 ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} pull.rb )
 ADD_TEST(bindings_ruby_put                  ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} put.rb )
 ADD_TEST(bindings_ruby_release              ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} release.rb )
