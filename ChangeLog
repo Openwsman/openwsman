@@ -4,6 +4,19 @@
     includes C++ bindings. Move openwsman_client.conf to libwsman1.
   - Performance improvements for Enum (optimized) and Pull requests
     (Srinivas Thirumalaa)
+- Bindings
+  - Fix all tests
+  - Enhance client function documentation
+  - Add max_elements, max_envelope_size, fragment, and timeout
+    to Options
+  - Use optimized enumeration in tests
+- Bugfix (all by Matthias Bolte)
+  - Fix memory leaks in wsmc_action_enumerate_and_pull and wsmc_release
+  - Fix possible corruption in ws_serializer_free_mem
+- Developer
+  - Enable client tests
+  - Improve Windows build (Matthias Bolte)
+  - Reduce libu exposure in the public API (Matthias Bolte)
 
 2.2.6
 - Features
