@@ -122,7 +122,7 @@ Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
 Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
-<Requires:       sblim-sfcc-devel libxml2-devel pam-devel
+Requires:       sblim-sfcc-devel libxml2-devel pam-devel
 
 %description -n libwsman-devel
 Opensource Implementation of WS-Management
