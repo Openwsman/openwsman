@@ -133,6 +133,11 @@
 #include <openwsman.h>
 #if defined(SWIGRUBY)
 #include <ruby/helpers.c>
+
+SWIGEXPORT void Init_openwsman(void);
+SWIGEXPORT void Init__openwsman(void) {
+  Init_openwsman();
+}
 #endif
 #if defined(SWIGPYTHON)
 #include <python/helpers.c>

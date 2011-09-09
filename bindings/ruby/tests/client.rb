@@ -1,9 +1,7 @@
 # test client class
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
+require '_loadpath'
 require 'openwsman'
 
 class ClientTest < Test::Unit::TestCase

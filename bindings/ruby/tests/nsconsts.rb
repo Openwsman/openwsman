@@ -1,9 +1,7 @@
 # nsconsts.rb
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
+require '_loadpath'
 require 'openwsman'
 
 class NsConstsTest < Test::Unit::TestCase

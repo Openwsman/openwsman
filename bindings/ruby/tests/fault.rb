@@ -3,12 +3,9 @@
 # Test WsManFault bindings
 #
 
-$:.unshift File.join(File.dirname(__FILE__), "..","..","..","build","bindings","ruby")
-$:.unshift File.join(File.dirname(__FILE__), "..",".libs")
-$:.unshift File.join(File.dirname(__FILE__), "..")
-
 require 'test/unit'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 
 class WsmanTest < Test::Unit::TestCase
   def test_fault

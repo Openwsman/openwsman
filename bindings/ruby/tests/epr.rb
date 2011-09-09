@@ -2,10 +2,8 @@
 # test end point reference
 #
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
+require '_loadpath'
 require 'openwsman'
 
 class LoadTest < Test::Unit::TestCase

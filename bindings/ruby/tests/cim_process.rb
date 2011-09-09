@@ -3,13 +3,10 @@
 #
 #
 
-$:.unshift File.join(File.dirname(__FILE__), "../../../bindings/ruby")
-$:.unshift File.join(File.dirname(__FILE__), "../../../build/bindings/ruby")
-$:.unshift File.join(File.dirname(__FILE__), "../.libs")
-
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 require File.join(File.dirname(__FILE__), '_client')
 
 class WsmanTest < Test::Unit::TestCase

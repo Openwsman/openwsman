@@ -1,9 +1,7 @@
 # test XmlNode class
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
+require '_loadpath'
 require 'openwsman'
 
 class XmlNodeTest < Test::Unit::TestCase

@@ -1,13 +1,10 @@
 # subscribe.rb
 # generate listing 9 of http://www.ibm.com/developerworks/webservices/library/ws-CIM/index.html
 
-$:.unshift "../../../bindings/ruby"
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 require 'auth-callback'
 
 class WsmanTest < Test::Unit::TestCase

@@ -1,11 +1,8 @@
 # test defined constants
 
-$:.unshift ".."
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 
 class ConstantTest < Test::Unit::TestCase
   def test_constants

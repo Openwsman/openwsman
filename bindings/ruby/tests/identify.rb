@@ -1,11 +1,8 @@
 # test identify action
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-$:.unshift ".."
-
 require 'test/unit'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify

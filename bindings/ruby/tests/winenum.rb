@@ -3,12 +3,9 @@
 #
 #
 
-$:.unshift "../../../bindings/ruby"
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'rexml/document'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 require '_client'
 
 

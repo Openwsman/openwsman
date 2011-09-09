@@ -3,13 +3,10 @@
 # Test Linux_OperatingSystem.execCmd of sblim-cmpi-base
 #
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-$:.unshift ".."
-
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 require '_client'
 
 

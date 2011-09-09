@@ -5,13 +5,10 @@
 #
 #
 
-$:.unshift "../../../bindings/ruby"
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
 require 'rexml/document'
-require 'openwsman/openwsman'
+require '_loadpath'
+require 'openwsman'
 require '_client'
 
 class WsmanTest < Test::Unit::TestCase

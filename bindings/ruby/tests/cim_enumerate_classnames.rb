@@ -1,11 +1,9 @@
 # cim_enumerate_classnames.rb
 #  test EnumerateClassnames CIM extension
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
 require 'rexml/document'
+require '_loadpath'
 require 'openwsman'
 require '_client'
 

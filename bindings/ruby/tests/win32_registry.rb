@@ -11,11 +11,9 @@
 #     http://msdn.microsoft.com/en-us/library/aa390387(v=vs.85).aspx
 #
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
 require 'rexml/document'
+require '_loadpath'
 require 'openwsman'
 require '_client'
 

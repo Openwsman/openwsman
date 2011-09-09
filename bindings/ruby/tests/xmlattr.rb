@@ -1,9 +1,7 @@
 # test XmlAttr class
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
+require '_loadpath'
 require 'openwsman'
 
 class XmlAttrTest < Test::Unit::TestCase

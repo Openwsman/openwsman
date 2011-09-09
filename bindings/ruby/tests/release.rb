@@ -1,10 +1,8 @@
 # release.rb
 
-$:.unshift "../../../build/bindings/ruby"
-$:.unshift "../.libs"
-
 require 'test/unit'
 require 'rexml/document'
+require '_loadpath'
 require 'openwsman'
 require '_client'
 
