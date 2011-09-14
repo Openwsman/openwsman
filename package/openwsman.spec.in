@@ -314,21 +314,22 @@ rm -rf $RPM_BUILD_ROOT
 %post server
 /sbin/ldconfig
 %if 0%{?suse_version}
-%{fillup_and_insserv openwsmand}
+%fillup_and_insserv openwsmand
 %else
 # FIXME: chkconfig?!
 %endif
 
 %preun server
 %if 0%{?suse_version}
-%{stop_on_removal openwsmand}
+%stop_on_removal openwsmand
 %else
 # FIXME: chkconfig?!
 %endif
 
 %postun server
 %if 0%{?suse_version}
-%{insserv_cleanup openwsmand}
+%restart_on_update openwsmand
+%insserv_cleanup openwsmand
 %else
 # FIXME: chkconfig?!
 %endif
