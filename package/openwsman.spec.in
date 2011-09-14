@@ -139,7 +139,7 @@ Authors:
 License:        BSD3c(or similar)
 Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
-Provides:       openwsman-client
+Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
 %description client-c++
 An implementation of the WsmanClient interface using C++
