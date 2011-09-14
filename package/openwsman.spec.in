@@ -135,14 +135,33 @@ Authors:
     Vadim Revyakin <vadim.revyakin@intel.com>
     Denis Sadykov <denis.sadykov@intel.com>
 
-%package client-c++
+%package -n libwsman_clientpp1
 License:        BSD3c(or similar)
 Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
 Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
-%description client-c++
+
+%description -n libwsman_clientpp1
 An implementation of the WsmanClient interface using C++
+
+
+
+Authors:
+--------
+    Anas Nashif <anas.nashif@intel.com>
+    Vadim Revyakin <vadim.revyakin@intel.com>
+    Denis Sadykov <denis.sadykov@intel.com>
+
+%package -n libwsman_clientpp-devel
+License:        BSD3c(or similar)
+Group:          System/Management
+Summary:        C++ bindings to Openwsman Client libraries
+Requires:       libwsman_clientpp1 = %{version}
+Requires:       libwsman-devel = %{version}
+
+%description -n libwsman_clientpp-devel
+Development files for C++ interface to OpenWSMAN client library.
 
 
 
@@ -314,31 +333,31 @@ rm -rf $RPM_BUILD_ROOT
 %post server
 /sbin/ldconfig
 %if 0%{?suse_version}
-%fillup_and_insserv openwsmand
+%{fillup_and_insserv openwsmand}
 %else
 # FIXME: chkconfig?!
 %endif
 
 %preun server
 %if 0%{?suse_version}
-%stop_on_removal openwsmand
+%{stop_on_removal openwsmand}
 %else
 # FIXME: chkconfig?!
 %endif
 
 %postun server
 %if 0%{?suse_version}
-%restart_on_update openwsmand
-%insserv_cleanup openwsmand
+%{restart_on_update openwsmand}
+%{insserv_cleanup openwsmand}
 %else
 # FIXME: chkconfig?!
 %endif
 rm -f /var/log/wsmand.log
 /sbin/ldconfig
 
-%post client-c++ -p /sbin/ldconfig
+%post -n libwsman_clientpp1 -p /sbin/ldconfig
 
-%postun client-c++ -p /sbin/ldconfig
+%postun -n libwsman_clientpp1 -p /sbin/ldconfig
 
 %files -n libwsman1
 %defattr(-,root,root)
@@ -410,8 +429,14 @@ rm -f /var/log/wsmand.log
 %{_sbindir}/rcopenwsmand
 %{_libdir}/libwsman_server.so.*
 
-%files client-c++
+%files -n libwsman_clientpp1
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so.*
+
+%files -n libwsman_clientpp-devel
+%defattr(-,root,root)
+%{_libdir}/libwsman_clientpp.so
+%dir %{_includedir}/openwsman/cpp
+%{_includedir}/openwsman/cpp/*.h
 
 %changelog
