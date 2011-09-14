@@ -1,7 +1,8 @@
 2.2.7
 - Features
-  - Rename openwsman-client to openwsman-client-c++ since it only
-    includes C++ bindings. Move openwsman_client.conf to libwsman1.
+  - Rename openwsman-client to libwsman_clientpp since it only
+    includes C++ bindings. Split off libwsman_clientpp-devel.
+    Move openwsman_client.conf to libwsman1.
   - Performance improvements for Enum (optimized) and Pull requests
     (Srinivas Thirumalaa)
 - Bindings
