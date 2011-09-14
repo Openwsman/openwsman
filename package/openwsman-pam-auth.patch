@@ -10,7 +10,7 @@ Index: openwsman.conf
 +#basic_password_file = /etc/openwsman/simple_auth.passwd
  
  min_threads = 4
- max_threads = 10
+ max_threads = 0
 @@ -15,8 +15,8 @@
  # Authentication backend for BASIC authentication. Default is to read a configuration file defined with 'basic_password_file'
  #
