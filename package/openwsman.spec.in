@@ -64,7 +64,7 @@ BuildRequires:  pkgconfig ruby
 
 %endif
 
-Requires(Pre):  sed coreutils grep /bin/hostname
+Requires(pre):  sed coreutils grep /bin/hostname
 Version:        @VERSION@
 Release:        1
 # Mandriva:
@@ -155,9 +155,9 @@ Authors:
 %package server
 License:        BSD3c(or similar)
 Group:          System/Management
-Requires(Pre):  sed coreutils grep diffutils /bin/hostname
+Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
-Requires(Pre):  fillup
+Requires(pre):  fillup
 %endif
 Summary:        Openwsman Server and service libraries
 
