@@ -11,9 +11,13 @@
   - Add max_elements, max_envelope_size, fragment, and timeout
     to Options
   - Use optimized enumeration in tests
-- Bugfix (all by Matthias Bolte)
+- Bugfixes
   - Fix memory leaks in wsmc_action_enumerate_and_pull and wsmc_release
+    (Matthias Bolte)
   - Fix possible corruption in ws_serializer_free_mem
+    (Matthias Bolte)
+  - Fix recognition of ntlm and gss-negotiate auth methods when checking
+    server-requested vs. client-offered methods.
 - Developer
   - Enable client tests
   - Improve Windows build (Matthias Bolte)
