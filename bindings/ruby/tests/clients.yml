@@ -5,7 +5,15 @@ microsoft:
   path: /wsman
   username: 
   password: 
-  
+
+windows8:
+  scheme: https
+  host: 10.10.103.88
+  port: 5985
+  path: /wsman
+  username: wsman
+  password: secret
+
 xp:
   scheme: http
   host: 10.10.100.66
