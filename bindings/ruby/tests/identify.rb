@@ -1,14 +1,17 @@
 # test identify action
 
+$: << File.dirname(__FILE__)
 require 'test/unit'
 require '_loadpath'
 require 'openwsman'
+require 'auth-callback'
+require '_client'
 
 class IdentifyTest < Test::Unit::TestCase
   def test_identify
     Openwsman::debug = 1
     
-    client = Openwsman::Client.new( "http://wsman:secret@localhost:5985/wsman" )
+    client = Client.open
     assert client
     client.transport.auth_method = Openwsman::BASIC_AUTH_STR
     options = Openwsman::ClientOptions.new
