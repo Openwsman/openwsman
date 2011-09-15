@@ -105,8 +105,8 @@ reauthenticate(WsManClient *cl,
 		goto REQUEST_PASSWORD;
 	}
 
-	debug("Client does not support authentication type "
-			" acceptable by server\n");
+	debug("Client does not support authentication type 0x%04x"
+			" acceptable by server\n", auth_avail);
 	return 0;
 
 
