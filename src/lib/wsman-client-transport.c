@@ -51,12 +51,12 @@
 #include "wsman-client.h"
 
 static char *auth_methods[] = {
-	"noauth",
-	"basic",
-	"digest",
-	"pass",
-	"ntlm",
-	"gss",
+  _WS_NO_AUTH,
+  _WS_BASIC_AUTH,
+  _WS_DIGEST_AUTH,
+  _WS_PASS_AUTH,
+  _WS_NTLM_AUTH,
+  _WS_GSSNEGOTIATE_AUTH,
 	NULL,
 };
 
