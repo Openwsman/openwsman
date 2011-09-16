@@ -380,19 +380,15 @@ rm -f /var/log/wsmand.log
 
 %files ruby
 %defattr(-,root,root)
-%if 0%{?suse_version}
-%{ruby_sitearch}/openwsman.so
-%dir %{ruby_sitelib}/openwsman
-%{ruby_sitelib}/openwsman/*.rb
-%endif
 %if 0%{?mandriva_version}
-%{ruby_sitearchdir}/openwsman.so
+%{ruby_sitearchdir}/_openwsman.so
 %dir %{ruby_sitelibdir}/openwsman
+%{ruby_sitelibdir}/openwsman.rb
 %{ruby_sitelibdir}/openwsman/*.rb
-%endif
-%if 0%{?fedora} > 0 || 0%{?rhel_version} > 0
-%{ruby_sitearch}/openwsman.so
+%else
+%{ruby_sitearch}/_openwsman.so
 %dir %{ruby_sitelib}/openwsman
+%{ruby_sitelib}/openwsman.rb
 %{ruby_sitelib}/openwsman/*.rb
 %endif
 
