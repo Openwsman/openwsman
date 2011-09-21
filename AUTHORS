@@ -1,19 +1,25 @@
-
 Maintainer:
-	Anas Nashif, Intel Corp.
+	Klaus Kaempf, SUSE, <kkaempf@suse.com>
 
 Developers:
-	Anas Nashif, Intel Corp.
+	Anas Nashif, Intel Corp., <anas.nashif@intel.com>
 	Hou Liang, Intel Corp.
-        Vadim Revyakin, Intel Corp.
-        Denis Sadykov, Intel Corp.
+        Vadim Revyakin, Intel Corp., <vadim.revyakin@intel.com>
+        Denis Sadykov, Intel Corp., <denis.sadykov@intel.com>
 
 Code originally from:
 	Eugene Yarmosh, Intel Corp.
 
 Contributions and Patches by:
-	Viktor Mihajlovski, IBM
-	Klaus Kaempf, Novell
-
+	Jan Blunck, Novell, <jblunck@suse.de>
+	Matthias Bolte <matthias.bolte@googlemail.com>
+	Vitezslav Crhonek, Redhat, <vcrhonek@redhat.com>
+	Klaus Kaempf, Novell, <kkaempf@novell.com>
+	Viktor Mihajlovski, IBM, <MIHAJLOV@de.ibm.com>	
+	Praveen Paladugu, Dell, <Praveen_Paladugu@Dell.com>
+	Chris Poblete, Dell, <Chris_Poblete@Dell.com>
+	Till Steinbach <till.steinbach@informatik.haw-hamburg.de>
+	Suresh Sundriyal, VMware, <ssundriy@vmware.com>
+	Srinivas Thirumalaa
 
 If you think you name should be here and I forgot it, please let me know.

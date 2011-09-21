@@ -37,7 +37,6 @@ BuildRequires: perl-devel
 %endif
 
 %if 0%{?suse_version} > 0
-
 # No jni_md.h on SLE10 :-/
 #%if 0%{?suse_version} < 1100
 #BuildRequires:  java-1_5_0-ibm-devel
@@ -46,12 +45,12 @@ BuildRequires: perl-devel
 #%endif
 
 %if 0%{?suse_version} > 1010
-BuildRequires:  fdupes libopenssl-devel 
-BuildRequires:  libcurl-devel 
+BuildRequires:  fdupes libopenssl-devel
+BuildRequires:  libcurl-devel
 %else
 # SLE10
-BuildRequires:  libidn-devel openssl-devel 
-BuildRequires:  curl-devel 
+BuildRequires:  libidn-devel openssl-devel
+BuildRequires:  curl-devel
 %endif
 
 %if 0%{?suse_version} > 910
@@ -86,15 +85,8 @@ Patch0:         %{name}-pam-auth.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-Opensource Implementation of WS-Management
+Opensource Implementation of WS-Management protocol stack
 
-
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
 
 %package -n libwsman1
 License:        BSD3c(or similar)
@@ -104,15 +96,8 @@ Provides:       openwsman = %{version}
 Obsoletes:      openwsman < %{version}
 
 %description -n libwsman1
-Opensource Implementation of WS-Management
-
-
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
+Opensource Implementation of WS-Management protocol stack
+(Common libraries)
 
 %package -n libwsman-devel
 License:        BSD3c(or similar)
@@ -125,15 +110,8 @@ Requires:       %{name}-server = %{version}
 Requires:       sblim-sfcc-devel libxml2-devel pam-devel
 
 %description -n libwsman-devel
-Opensource Implementation of WS-Management
-
-
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
+Opensource Implementation of WS-Management stack
+(Development files)
 
 %package -n libwsman_clientpp1
 License:        BSD3c(or similar)
@@ -146,13 +124,6 @@ Obsoletes:      openwsman-client < %{version}
 An implementation of the WsmanClient interface using C++
 
 
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
-
 %package -n libwsman_clientpp-devel
 License:        BSD3c(or similar)
 Group:          System/Management
@@ -163,13 +134,6 @@ Requires:       libwsman-devel = %{version}
 %description -n libwsman_clientpp-devel
 Development files for C++ interface to OpenWSMAN client library.
 
-
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
 
 %package server
 License:        BSD3c(or similar)
@@ -182,14 +146,6 @@ Summary:        Openwsman Server and service libraries
 
 %description server
 Openwsman Server and service libraries
-
-
-
-Authors:
---------
-    Anas Nashif <anas.nashif@intel.com>
-    Vadim Revyakin <vadim.revyakin@intel.com>
-    Denis Sadykov <denis.sadykov@intel.com>
 
 
 %package python
@@ -205,11 +161,6 @@ Summary:        Python bindings for openwsman client API
 This package provides Python bindings to access the openwsman client
 API.
 
-
-
-Authors:
---------
-    Klaus Kaempf <kkaempf@suse.de>
 
 %package ruby
 License:        BSD3c(or similar)
@@ -231,11 +182,6 @@ Summary:        Ruby bindings for openwsman client API
 This package provides Ruby bindings to access the openwsman client API.
 
 
-
-Authors:
---------
-    Klaus Kaempf <kkaempf@suse.de>
-
 %package perl
 License:        BSD3c(or similar)
 Group:          System/Management
@@ -250,11 +196,6 @@ Summary:        Perl bindings for openwsman client API
 This package provides Perl bindings to access the openwsman client API.
 
 
-
-Authors:
---------
-    Klaus Kaempf <kkaempf@suse.de>
-
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 %package java
 License:        BSD3c(or similar)
@@ -267,10 +208,6 @@ Summary:        Java bindings for openwsman client API
 This package provides Java bindings to access the openwsman client API.
 
 
-
-Authors:
---------
-    Klaus Kaempf <kkaempf@suse.de>
 %endif
 
 %prep
@@ -322,9 +259,6 @@ ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %post -n libwsman1 -p /sbin/ldconfig
 
