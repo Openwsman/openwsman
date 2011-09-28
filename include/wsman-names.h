@@ -438,7 +438,7 @@
 #define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_DIGEST     \
 	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual/digest"
 #define WSMAN_SECURITY_PROFILE_HTTPS_SPNEGO_KERBEROS     \
-	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/httpsspnego-kerberos"
+	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/spnego-kerberos"
 #define WSMAN_SECURITY_PROFILE_HTTPS_MUTUAL_SPNEGO_KERBEROS     \
 	"http://schemas.dmtf.org/wbem/wsman/1/wsman/secprofile/https/mutual/spnego-kerberos"
 #define WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS     \
