@@ -136,6 +136,7 @@ void wsmc_transport_set_auth_request_func(WsManClient * cl,
 
 void wsman_transport_set_agent(WsManClient * cl, const char *arg)
 {
+	u_free(cl->user_agent);
 	cl->user_agent = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -150,6 +151,7 @@ char *wsman_transport_get_agent(WsManClient * cl)
 
 void wsman_transport_set_proxy(WsManClient * cl, const char *arg)
 {
+	u_free(cl->proxy_data.proxy);
 	cl->proxy_data.proxy = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -160,20 +162,23 @@ char *wsman_transport_get_proxy(WsManClient *cl)
 
 void wsman_transport_set_userName(WsManClient * cl, char *arg)
 {
-	if(arg) {
+	if (arg) {
+		u_free(cl->data.user);
 		cl->data.user = u_strdup(arg);
 	}
 }
 
 void wsman_transport_set_password(WsManClient * cl, char *arg)
 {
-	if(arg) {
+	if (arg) {
+		u_free(cl->data.pwd);
 		cl->data.pwd = u_strdup(arg);
 	}
 }
 
 void wsman_transport_set_proxyauth(WsManClient * cl, const char *arg)
 {
+	u_free(cl->proxy_data.proxy_auth);
 	cl->proxy_data.proxy_auth = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -201,6 +206,7 @@ char *wsman_transport_get_auth_method(WsManClient * cl)
 
 void wsman_transport_set_auth_method(WsManClient * cl, const char *arg)
 {
+	u_free(cl->authentication.method);
 	cl->authentication.method = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -282,6 +288,7 @@ char *wsman_transport_get_crlfile(WsManClient *cl)
 
 void wsman_transport_set_cainfo(WsManClient * cl, const char *arg)
 {
+	u_free(cl->authentication.cainfo);
 	cl->authentication.cainfo = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -350,12 +357,12 @@ void wsman_transport_set_certhumbprint(WsManClient *cl, const char *arg)
 
 char *wsman_transport_get_certhumbprint(WsManClient *cl)
 {
-
 	return raw2hexadecimal(cl->authentication.certificatethumbprint, 20);
 }
 
 void wsman_transport_set_capath(WsManClient *cl, const char *arg)
 {
+	u_free(cl->authentication.capath);
 	cl->authentication.capath = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -367,6 +374,7 @@ char *wsman_transport_get_capath(WsManClient *cl)
 
 void wsman_transport_set_caoid(WsManClient *cl, const char *arg)
 {
+	u_free(cl->authentication.caoid);
 	cl->authentication.caoid = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -401,6 +409,7 @@ void wsman_transport_set_proxy_password(WsManClient *cl, char *proxy_password )
 
 void wsman_transport_set_cert(WsManClient * cl, const char *arg)
 {
+	u_free(cl->authentication.sslcert);
 	cl->authentication.sslcert = arg ? u_strdup( arg ) : NULL;
 }
 
@@ -412,6 +421,7 @@ char *wsman_transport_get_cert(WsManClient *cl)
 
 void wsman_transport_set_key(WsManClient *cl, const char *key)
 {
+	u_free(cl->authentication.sslkey);
 	cl->authentication.sslkey = key ? u_strdup( key ) : NULL;
 }
 
