@@ -181,11 +181,11 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 		string payload = ExtractItems(doc);
 		if (payload.length() > 0)
 			enumRes.push_back(payload);
-		u_free(enumContext);
+		wsmc_free_enum_context(enumContext);
 		enumContext = wsmc_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
 	}
-	u_free(enumContext);
+	wsmc_free_enum_context(enumContext);
 	wsmc_options_destroy(options);
 }
 
@@ -239,11 +239,11 @@ void OpenWsmanClient::Enumerate(const string & resourceUri, WsmanFilter & filter
 		string payload = ExtractItems(doc);
 		if (payload.length() > 0)
 			enumRes.push_back(payload);
-		u_free(enumContext);
+		wsmc_free_enum_context(enumContext);
 		enumContext = wsmc_get_enum_context(doc);    
 		ws_xml_destroy_doc(doc);
 	}
-	u_free(enumContext);
+	wsmc_free_enum_context(enumContext);
 	wsmc_options_destroy(options);
 }
 
