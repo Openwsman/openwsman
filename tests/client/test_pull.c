@@ -261,6 +261,7 @@ int main(int argc, char** argv)
                     u_free(xp);
 			    }
 		}
+		wsmc_free_enum_context(enumContext);
 		enumContext = wsmc_get_enum_context(enum_response);
 		ws_xml_destroy_doc(enum_response);
 
@@ -273,6 +274,7 @@ int main(int argc, char** argv)
                 goto CONTINUE;
             }
 			wsman_output(docp);
+			wsmc_free_enum_context(enumContext);
 			enumContext = wsmc_get_enum_context(docp);
 			ws_xml_destroy_doc(docp);
 		}

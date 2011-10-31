@@ -112,10 +112,12 @@ int main(int argc, char** argv)
 		if (!doc) {
 			printf("\t\t\033[22;31mUNRESOLVED\033[m\n");
 			wsmc_options_destroy(options);
+			wsmc_free_enum_context(enumContext);
 			wsmc_release(cl);
 			return -1;
 		}
 		wsman_output(doc);
+		wsmc_free_enum_context(enumContext);
 		enumContext = wsmc_get_enum_context(doc);
 	}
 	if (doc)
