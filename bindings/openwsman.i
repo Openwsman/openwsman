@@ -117,6 +117,10 @@
 #if defined(SWIGPERL)
 /* filter_t is defined in Perls CORE/perl.h */
 #define filter_t filter_type
+
+/* undef Perl's die and warn macros as libu is going to reuse this names */
+#undef die
+#undef warn
 #endif
 
 #include <u/libu.h>
