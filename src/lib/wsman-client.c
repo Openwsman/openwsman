@@ -1670,6 +1670,7 @@ wsmc_create_from_uri(const char* endpoint)
 int
 wsmc_set_encoding(WsManClient *cl, const char *encoding)
 {
+	u_free(cl->content_encoding);
 	cl->content_encoding = u_strdup(encoding);
 	return 0;
 }
@@ -1677,6 +1678,7 @@ wsmc_set_encoding(WsManClient *cl, const char *encoding)
 int
 wsmc_set_namespace(WsManClient *cl, const char *ns)
 {
+	u_free(cl->cim_ns);
 	cl->cim_ns = u_strdup(ns);
 	return 0;
 }
