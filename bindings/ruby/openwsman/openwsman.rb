@@ -11,3 +11,14 @@ require 'openwsman/xmlnode'
 
 # this extends Openwsman::XmlDoc with method_missing
 require 'openwsman/xmldoc'
+
+module Openwsman
+  class Transport
+    # called when authentication credentials missing or wrong
+    def Transport.auth_request_callback client, auth_type
+      # override in client code
+      # return Array of [ username, password ]
+      # return nil to abort authentication
+    end
+  end
+end
