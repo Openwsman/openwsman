@@ -1671,7 +1671,7 @@ int
 wsmc_set_encoding(WsManClient *cl, const char *encoding)
 {
 	u_free(cl->content_encoding);
-	cl->content_encoding = u_strdup(encoding);
+	cl->content_encoding = encoding ? u_strdup(encoding) : NULL;
 	return 0;
 }
 
@@ -1679,7 +1679,7 @@ int
 wsmc_set_namespace(WsManClient *cl, const char *ns)
 {
 	u_free(cl->cim_ns);
-	cl->cim_ns = u_strdup(ns);
+	cl->cim_ns = ns ? u_strdup(ns) : NULL;
 	return 0;
 }
 
