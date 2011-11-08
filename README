@@ -170,9 +170,9 @@ Application Options
 
 To create a password file, use the htpasswd and htdigest utilities from the apache distribution.
 
-You can connect to the server with the following command, which is part of the DMTF WS-Management specification (Draft)
+You can connect to the server with the following command, which is part of the DMTF WS-Management specification
 
-wsman identify    -h <hostname> --port 8889 -u wsman --password secret
+wsman identify -h <hostname> --port 5988 -u wsman --password secret
 
 
 The above command should give the following result:
