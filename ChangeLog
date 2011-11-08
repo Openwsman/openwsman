@@ -1,6 +1,7 @@
 2.2.8
 - Bindings
   - Ruby: Provide a default implementation of auth_request_callback
+  - Ruby: Support Ruby 1.9
 
 2.2.7
 - Features
