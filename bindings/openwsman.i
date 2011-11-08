@@ -88,17 +88,28 @@
 %module openwsman
 
 %{
-#include <rubyio.h>
 #include <ruby.h>
+#if HAVE_RUBY_IO_H
+#include <ruby/io.h> /* Ruby 1.9 style */
+#else
+#include <rubyio.h>
+#endif
 %}
 
 %typemap(in) FILE* {
+#if RUBY_VERSION > 18
+  struct rb_io_t *fptr;
+#else
   struct OpenFile *fptr;
-
+#endif
   Check_Type($input, T_FILE);
   GetOpenFile($input, fptr);
   /*rb_io_check_writable(fptr);*/
+#if RUBY_VERSION > 18
+  $1 = rb_io_stdio_file(fptr);
+#else
   $1 = GetReadFile(fptr);
+#endif
 }
 #endif
 
