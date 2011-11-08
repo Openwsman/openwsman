@@ -47,19 +47,25 @@ makestring( const char *s )
 }
 
 
-/* convert symbol or string VALUE to char* */
+/* convert VALUE to char* */
 static const char *
 as_string( VALUE v )
 {
-    const char *s;
-    if ( SYMBOL_P( v ) ) {
-	ID id = SYM2ID( v );
-	s = rb_id2name( id );
-    }
-    else {
-	s = StringValuePtr( v );
-    }
-    return s;
+  const char *str;
+  if (SYMBOL_P(v)) {
+    str = rb_id2name(SYM2ID(v));
+  }
+  else if (TYPE(v) == T_STRING) {
+    str = StringValuePtr(v);
+  }
+  else if (v == Qnil) {
+    str = NULL;
+  }
+  else {
+    VALUE v_s = rb_funcall(v, rb_intern("to_s"), 0 );
+    str = StringValuePtr(v_s);
+  }
+  return str;
 }
 
 
@@ -147,17 +153,11 @@ auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username
     VALUE result = rb_funcall( TRANSPORT_CLASS.klass, rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
 
     if (CLASS_OF( result ) == rb_cArray) {
-	if (RARRAY(result)->len == 2 ) {
-	    VALUE first = rb_ary_entry( result, 0 );
-	    VALUE second = rb_ary_entry( result, 1 );
-	    if ((TYPE( first ) == T_STRING)
-		&& (TYPE( second ) == T_STRING) )
-	    {
-		*username = strdup(StringValuePtr( first ));
-		*password= strdup(StringValuePtr( second ));
-		return;
-	    }
-	}
+      if (RARRAY_LEN(result) == 2 ) {
+	*username = strdup(as_string( rb_ary_entry( result, 0 ) ));
+	*password= strdup(as_string( rb_ary_entry( result, 1 ) ));
+	return;
+      }
     }
 
     *username = NULL;		/* abort authentication */

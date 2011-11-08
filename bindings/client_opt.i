@@ -177,10 +177,8 @@ typedef struct {} client_opt_t;
 #if defined(SWIGRUBY)
   void add_selector(VALUE k, VALUE v)
   {
-    VALUE k_s = rb_funcall(k, rb_intern("to_s"), 0 );
-    VALUE v_s = rb_funcall(v, rb_intern("to_s"), 0 );
-    const char *key = StringValuePtr(k_s);
-    const char *value = StringValuePtr(v_s);
+    const char *key = as_string(k);
+    const char *value = as_string(v);
 #else
   void add_selector(const char *key, const char *value)
   {
@@ -210,10 +208,8 @@ typedef struct {} client_opt_t;
 #if defined(SWIGRUBY)
   void add_property(VALUE k, VALUE v)
   {
-    VALUE k_s = rb_funcall(k, rb_intern("to_s"), 0 );
-    VALUE v_s = rb_funcall(v, rb_intern("to_s"), 0 );
-    const char *key = StringValuePtr(k_s);
-    const char *value = StringValuePtr(v_s);
+    const char *key = as_string(k);
+    const char *value = as_string(v);
 #else
   void add_property(const char *key, const char *value)
   {
