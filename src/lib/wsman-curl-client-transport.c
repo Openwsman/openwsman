@@ -271,7 +271,6 @@ init_curl_transport(WsManClient *cl)
 	curl = curl_easy_init();
 	if (curl == NULL) {
 		r = CURLE_FAILED_INIT;
-		curl_global_cleanup();
 		debug("Could not init easy curl");
 		goto DONE;
 	}
