@@ -63,6 +63,12 @@ BuildRequires:  pkgconfig ruby
 
 %endif
 
+%if 0%{?suse_version} > 1140
+BuildRequires: systemd
+%{?systemd_requires}
+%endif
+
+
 Requires(pre):  sed coreutils grep /bin/hostname
 Version:        @VERSION@
 Release:        1
@@ -83,6 +89,7 @@ Source2:        %{name}.pam
 Source3:        %{name}.SuSEfirewall2
 Patch0:         %{name}-pam-auth.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Source4:        %{name}.service
 
 %description
 Opensource Implementation of WS-Management protocol stack
@@ -259,6 +266,9 @@ ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
+%endif
 
 %post -n libwsman1 -p /sbin/ldconfig
 
@@ -268,8 +278,18 @@ install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d
 /sbin/ldconfig
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
+%if 0%{?suse_version} >= 1140
+%service_add_post %{name}.service
+%endif
 %else
 # FIXME: chkconfig?!
+%endif
+
+# follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
+
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%pre server
+%service_add_pre %{name}.service
 %endif
 
 %preun server
@@ -277,6 +297,9 @@ install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d
 %{stop_on_removal openwsmand}
 %else
 # FIXME: chkconfig?!
+%endif
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%service_del_preun %{name}.service
 %endif
 
 %postun server
@@ -288,6 +311,9 @@ install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d
 %endif
 rm -f /var/log/wsmand.log
 /sbin/ldconfig
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%service_del_postun %{name}.service
+%endif
 
 %post -n libwsman_clientpp1 -p /sbin/ldconfig
 
@@ -358,6 +384,9 @@ rm -f /var/log/wsmand.log
 %{_sbindir}/openwsmand
 %{_sbindir}/rcopenwsmand
 %{_libdir}/libwsman_server.so.*
+%if 0%{?suse_version} >= 1210
+%{_unitdir}/%{name}.service
+%endif
 
 %files -n libwsman_clientpp1
 %defattr(-,root,root)

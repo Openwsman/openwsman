@@ -1,0 +1,9 @@
+[Unit]
+Description=Openwsman WS-Management Service
+After=syslog.target
+
+[Service]
+ExecStart=@prefix@/sbin/openwsmand
+
+[Install]
+WantedBy=multi-user.target
