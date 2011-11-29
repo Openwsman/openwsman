@@ -141,7 +141,7 @@ typedef struct {} client_opt_t;
   %rename( "fragment=" ) set_fragment(char *fragment);
 #endif
   void set_fragment(char *fragment) {
-    $self->fragment = fragment;
+    wsmc_set_fragment(fragment, $self);
   }
 
 #if defined(SWIGRUBY)
@@ -160,7 +160,7 @@ typedef struct {} client_opt_t;
   %rename( "cim_namespace=" ) set_cim_namespace(char *cim_namespace);
 #endif
   void set_cim_namespace(char *cim_namespace) {
-    $self->cim_ns = cim_namespace;
+    wsmc_set_cim_ns(cim_namespace, $self);
   }
 
 #if defined(SWIGRUBY)
@@ -168,6 +168,25 @@ typedef struct {} client_opt_t;
 #endif
   const char *get_cim_namespace() {
     return $self->cim_ns;
+  }
+   
+  /*
+   * Reference
+   * (XML string)
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "reference=" ) set_reference(const char *reference);
+#endif
+  void set_reference(const char *reference) {
+    wsmc_set_reference(reference, $self);
+  }
+
+#if defined(SWIGRUBY)
+  %rename( "reference" ) get_reference();
+#endif
+  const char *get_reference() {
+    return $self->reference;
   }
    
   /*
