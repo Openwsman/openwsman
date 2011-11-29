@@ -431,7 +431,25 @@ wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 void
 wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options)
 {
-	options->delivery_uri = u_strdup(delivery_uri);
+  options->delivery_uri = delivery_uri ? u_strdup(delivery_uri) : NULL;
+}
+
+void
+wsmc_set_cim_ns(const char *ns, client_opt_t * options)
+{
+  options->cim_ns = ns ? u_strdup(ns) : NULL;
+}
+
+void
+wsmc_set_fragment(const char *fragment, client_opt_t * options)
+{
+  options->fragment = fragment ? u_strdup(fragment) : NULL;
+}
+
+void
+wsmc_set_reference(const char *reference, client_opt_t * options)
+{
+  options->reference = reference ? u_strdup(reference) : NULL;
 }
 
 void
