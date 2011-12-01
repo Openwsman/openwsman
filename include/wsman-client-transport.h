@@ -83,7 +83,9 @@ extern void   wsman_transport_set_agent(WsManClient *cl, const char *agent);
 extern char * wsman_transport_get_agent (WsManClient *cl);
 
 extern void wsman_transport_set_userName(WsManClient *cl, const char *user_name);
+extern char *wsman_transport_get_userName(WsManClient *cl);
 extern void wsman_transport_set_password(WsManClient *cl, const char *password);
+extern char *wsman_transport_get_password(WsManClient *cl);
 
 extern void wsman_transport_set_proxy_username(WsManClient *cl, const char *proxy_username );
 extern char *wsman_transport_get_proxy_username(WsManClient *cl );
@@ -93,7 +95,7 @@ extern char *wsman_transport_get_proxy_password(WsManClient *cl );
 extern void   wsman_transport_set_auth_method(WsManClient *cl, const char *am);
 extern char * wsman_transport_get_auth_method (WsManClient *cl);
 
-extern char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
+extern const char *wsmc_transport_get_auth_name(wsman_auth_type_t auth);
 
 extern  wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient *cl);
 

@@ -107,7 +107,7 @@ long long get_transfer_time()
 #endif
 
 
-char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
+const char *wsmc_transport_get_auth_name(wsman_auth_type_t auth)
 {
 	switch (auth) {
 	case WS_NO_AUTH:
@@ -166,10 +166,20 @@ void wsman_transport_set_userName(WsManClient * cl, const char *arg)
 	cl->data.user = arg ? u_strdup(arg) : NULL;
 }
 
+char *wsman_transport_get_userName(WsManClient * cl)
+{
+	return cl->data.user ? u_strdup(cl->data.user) : NULL;
+}
+
 void wsman_transport_set_password(WsManClient * cl, const char *arg)
 {
 	u_free(cl->data.pwd);
 	cl->data.pwd = arg ? u_strdup(arg) : NULL;
+}
+
+char *wsman_transport_get_password(WsManClient * cl)
+{
+	return cl->data.pwd ? u_strdup(cl->data.pwd) : NULL;
 }
 
 void wsman_transport_set_proxyauth(WsManClient * cl, const char *arg)
