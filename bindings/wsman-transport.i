@@ -66,8 +66,17 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_agent(const char *agent) {
     wsman_transport_set_agent((WsManClient *)$self, agent);
   }
+  %newobject agent;
   char *agent() {
     return wsman_transport_get_agent ((WsManClient *)$self);
+  }
+
+#if defined(SWIGRUBY)
+  %rename("username") get_username();
+#endif
+  %newobject get_username;
+  char *get_username() {
+    return wsman_transport_get_userName((WsManClient *)$self);
   }
 
 #if defined(SWIGRUBY)
@@ -78,6 +87,14 @@ typedef struct _WsManTransport {} WsManTransport;
   }
 
 #if defined(SWIGRUBY)
+  %rename("password") get_password();
+#endif
+  %newobject get_password;
+  char *get_password() {
+    return wsman_transport_get_password((WsManClient *)$self);
+  }
+
+#if defined(SWIGRUBY)
   %rename("password=") set_password(char *password);
 #endif
   void set_password(char *password) {
@@ -85,10 +102,26 @@ typedef struct _WsManTransport {} WsManTransport;
   }
 
 #if defined(SWIGRUBY)
+  %rename("proxy_username") get_proxy_username();
+#endif
+  %newobject get_proxy_username;
+  char *get_proxy_username() {
+    return wsman_transport_get_proxy_username((WsManClient *)$self );
+  }
+
+#if defined(SWIGRUBY)
   %rename("proxy_username=") set_proxy_username(char *proxy_username);
 #endif
   void set_proxy_username(char *proxy_username) {
     wsman_transport_set_proxy_username((WsManClient *)$self, proxy_username );
+  }
+
+#if defined(SWIGRUBY)
+  %rename("proxy_password") get_proxy_password();
+#endif
+  %newobject get_proxy_password;
+  char *get_proxy_password() {
+    return wsman_transport_get_proxy_password((WsManClient *)$self );
   }
 
 #if defined(SWIGRUBY)
@@ -104,11 +137,12 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_auth_method( const char *am) {
     wsman_transport_set_auth_method((WsManClient *)$self, am);
   }
+  %newobject auth_method;
   char *auth_method() {
     return wsman_transport_get_auth_method ((WsManClient *)$self);
   }
 
-  static char *auth_name(int auth) {
+  static const char *auth_name(int auth) {
     return wsmc_transport_get_auth_name(auth);
   }
   int auth_value() {
@@ -154,6 +188,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_proxy(const char *proxy) {
     wsman_transport_set_proxy((WsManClient *)$self, proxy);
   }
+  %newobject proxy;
   char *proxy() {
     return wsman_transport_get_proxy((WsManClient *)$self);
   }
@@ -164,6 +199,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_proxyauth(const char *pauth) {
     wsman_transport_set_proxyauth((WsManClient *)$self, pauth);
   }
+  %newobject proxyauth;
   char *proxyauth(){
     return wsman_transport_get_proxyauth((WsManClient *)$self);
   }
@@ -174,6 +210,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_cainfo(const char *cainfo) {
     wsman_transport_set_cainfo((WsManClient *)$self, cainfo);
   }
+  %newobject cainfo;
   char *cainfo() {
     return wsman_transport_get_cainfo((WsManClient *)$self);
   }
@@ -184,6 +221,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_certhumbprint(const char *arg) {
     wsman_transport_set_certhumbprint((WsManClient *)$self, arg);
   }
+  %newobject certhumbprint;
   char *certhumbprint() {
     return wsman_transport_get_certhumbprint((WsManClient *)$self);
   }
@@ -194,6 +232,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_capath(const char *capath) {
     wsman_transport_set_capath((WsManClient *)$self, capath);
   }
+  %newobject capath;
   char *capath() {
     return wsman_transport_get_capath((WsManClient *)$self);
   }
@@ -204,6 +243,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_caoid(const char *oid) {
     wsman_transport_set_caoid((WsManClient *)$self, oid);
   }
+  %newobject caoid;
   char *caoid() {
     return wsman_transport_get_caoid((WsManClient *)$self);
   }
@@ -226,7 +266,8 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_cert(const char *cert) {
     wsman_transport_set_cert((WsManClient *)$self, cert);
   }
-  const char *cert() {
+  %newobject cert;
+  char *cert() {
     return wsman_transport_get_cert((WsManClient *)$self);
   }
   
@@ -236,6 +277,7 @@ typedef struct _WsManTransport {} WsManTransport;
   void set_key(const char *key) {
     wsman_transport_set_key((WsManClient *)$self, key);
   }
+  %newobject key;
   char *key() {
     return wsman_transport_get_key((WsManClient *)$self);
   }
