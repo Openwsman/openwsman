@@ -1,7 +1,7 @@
 # test XmlDoc class
 
 require 'test/unit'
-require '_loadpath'
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 
 class XmlDocTest < Test::Unit::TestCase

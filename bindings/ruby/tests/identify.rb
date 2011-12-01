@@ -2,7 +2,7 @@
 
 $: << File.dirname(__FILE__)
 require 'test/unit'
-require '_loadpath'
+File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require 'auth-callback'
 require '_client'

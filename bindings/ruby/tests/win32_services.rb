@@ -7,7 +7,7 @@
 
 require 'test/unit'
 require 'rexml/document'
-require '_loadpath'
+File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require '_client'
 require 'auth-callback'

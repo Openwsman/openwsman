@@ -1,5 +1,5 @@
 module Openwsman
-  require '_loadpath'
+  File.join(File.dirname(__FILE__),'_loadpath')
   require 'openwsman'
   include Openwsman
 end

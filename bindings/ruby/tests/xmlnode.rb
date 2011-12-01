@@ -1,7 +1,7 @@
 # test XmlNode class
 
 require 'test/unit'
-require '_loadpath'
+File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 
 class XmlNodeTest < Test::Unit::TestCase

@@ -1,7 +1,7 @@
 # nsconsts.rb
 
 require 'test/unit'
-require '_loadpath'
+File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 
 class NsConstsTest < Test::Unit::TestCase

@@ -3,7 +3,7 @@ require 'test/unit'
 
 class LoadTest < Test::Unit::TestCase
   def test_loading
-    require '_loadpath'
+    File.join(File.dirname(__FILE__),'_loadpath')
     require 'openwsman'
     Openwsman.constants.sort.each do |c|
       next if c == c.upcase

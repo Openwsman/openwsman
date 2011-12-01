@@ -4,7 +4,7 @@
 #
 
 require 'rexml/document'
-require '_loadpath'
+File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require '_client'
 
@@ -48,13 +48,16 @@ def enum_properties client, opt, classname, *properties
     result = client.pull( options, nil, uri, context )
     break unless result
 
-    body = result.body
     if result.fault?
-	puts "Got fault"
+        fault = Openwsman::Fault.new result
+	puts "Fault code #{fault.code}, subcode #{fault.subcode}"
+	puts "\treason #{fault.reason}"
+	puts "\tdetail #{fault.detail}"
 	faults += 1
 	break
     end
 
+    body = result.body
     items = body.PullResponse.Items.send classname
     next unless items
     results += 1
