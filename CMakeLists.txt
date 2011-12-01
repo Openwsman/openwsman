@@ -154,7 +154,7 @@ IF( RUBY_VERSION_MAJOR EQUAL 2)
   MESSAGE(ERROR "Ruby 2.x not supported yet")
 ENDIF( RUBY_VERSION_MAJOR EQUAL 2 )
   IF( RUBY_VERSION VERSION_LESS "1.9.0" )
-    EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print Config::CONFIG['sitearchdir']"
+    EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitearchdir']"
       OUTPUT_VARIABLE RUBY_SITEARCH_DIR)
   ELSE( RUBY_VERSION VERSION_LESS "1.9.0" )
     EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitearchdir']"
