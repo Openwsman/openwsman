@@ -143,7 +143,7 @@ void wsman_transport_set_agent(WsManClient * cl, const char *arg)
 char *wsman_transport_get_agent(WsManClient * cl)
 {
 	if (cl->user_agent)
-		return cl->user_agent;
+		return u_strdup(cl->user_agent);
 	else
 		return DEFAULT_USER_AGENT;
 }
@@ -197,7 +197,7 @@ void wsman_transport_set_timeout(WsManClient * cl, unsigned long arg)
 
 char *wsman_transport_get_auth_method(WsManClient * cl)
 {
-	return cl->authentication.method;
+  return cl->authentication.method ? u_strdup(cl->authentication.method) : NULL;
 }
 
 void wsman_transport_set_auth_method(WsManClient * cl, const char *arg)
@@ -276,7 +276,7 @@ void wsman_transport_set_crlfile(WsManClient * cl, const char *arg)
 
 char *wsman_transport_get_crlfile(WsManClient *cl)
 {
-        return cl->authentication.crl_file; 
+  return cl->authentication.crl_file ? u_strdup(cl->authentication.crl_file) : NULL; 
 }
 #endif
 
