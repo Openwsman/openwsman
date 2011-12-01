@@ -160,13 +160,13 @@ char *wsman_transport_get_proxy(WsManClient *cl)
 	return cl->proxy_data.proxy ? u_strdup( cl->proxy_data.proxy ) : NULL;
 }
 
-void wsman_transport_set_userName(WsManClient * cl, char *arg)
+void wsman_transport_set_userName(WsManClient * cl, const char *arg)
 {
 	u_free(cl->data.user);
 	cl->data.user = arg ? u_strdup(arg) : NULL;
 }
 
-void wsman_transport_set_password(WsManClient * cl, char *arg)
+void wsman_transport_set_password(WsManClient * cl, const char *arg)
 {
 	u_free(cl->data.pwd);
 	cl->data.pwd = arg ? u_strdup(arg) : NULL;
@@ -392,13 +392,26 @@ BOOL wsman_transport_get_calocal(WsManClient *cl)
 }
 #endif
 
-void wsman_transport_set_proxy_username(WsManClient *cl, char *proxy_username )
+char *wsman_transport_get_proxy_username(WsManClient *cl)
 {
-        cl->proxy_data.proxy_username = proxy_username;
+  return cl->proxy_data.proxy_username ? u_strdup(cl->proxy_data.proxy_username) : NULL;
 }
-void wsman_transport_set_proxy_password(WsManClient *cl, char *proxy_password )
+
+void wsman_transport_set_proxy_username(WsManClient *cl, const char *proxy_username )
 {
-        cl->proxy_data.proxy_password = proxy_password;
+  u_free(cl->proxy_data.proxy_username);
+  cl->proxy_data.proxy_username = proxy_username ? u_strdup(proxy_username) : NULL;
+}
+
+char *wsman_transport_get_proxy_password(WsManClient *cl)
+{
+  return cl->proxy_data.proxy_password ? u_strdup(cl->proxy_data.proxy_password) : NULL;
+}
+
+void wsman_transport_set_proxy_password(WsManClient *cl, const char *proxy_password )
+{
+  u_free(cl->proxy_data.proxy_password);
+  cl->proxy_data.proxy_password = proxy_password ? u_strdup(proxy_password) : NULL;
 }
 
 
