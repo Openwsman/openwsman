@@ -284,7 +284,7 @@ TargetCall(WsXmlDocH doc, VALUE instance, const char* opname, int nargs, ...)
 	  return 1;
 	}
   
-      len = RARRAY(resulta)->len;
+      len = RARRAY_LEN(RARRAY(resulta));
       if (len > 0) 
 	{
 	  VALUE code = rb_ary_entry(resulta, 0);
@@ -375,24 +375,24 @@ TargetEndpoints( void *self, void *data )
     if (NIL_P(ary)) {
       rb_raise( rb_eArgError, "namespaces is not array", klass);
     }
-    int len = RARRAY(ary)->len;
+    int len = RARRAY_LEN(RARRAY(ary));
     if (len <= 0) {
       rb_raise( rb_eArgError, "namespaces returned array with %d elements", klass, len);
     }
     int i;
     for (i = 0; i < len; ++i) {
       lnode_t *node;
-      VALUE elem = RARRAY(ary)->ptr[i];
+      VALUE elem = RARRAY_PTR(RARRAY(ary))[i];
       VALUE pair = rb_check_array_type( elem );
       if (NIL_P(pair)) {
 	rb_raise( rb_eArgError, "namespaces must return array of arrays", klass);
       }
-      if (RARRAY(pair)->len != 2) {
+      if (RARRAY_LEN(RARRAY(pair)) != 2) {
 	rb_raise( rb_eArgError, "namespaces must return array of ['<namespace>','<class_prefix>']", klass);
       }
       WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
-      ns->ns = StringValuePtr( RARRAY(pair)->ptr[0] );
-      ns->class_prefix = StringValuePtr( RARRAY(pair)->ptr[1] );
+      ns->ns = StringValuePtr( RARRAY_PTR(RARRAY(pair))[0] );
+      ns->class_prefix = StringValuePtr( RARRAY_PTR(RARRAY(pair))[1] );
       node = lnode_create(ns);
       list_append(namespaces, node);
     }
