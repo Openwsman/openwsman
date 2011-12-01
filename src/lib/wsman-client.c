@@ -425,30 +425,38 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 void
 wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 {
-	options->selectors = get_selectors_from_uri(resource_uri);
+  if (options->selectors) {
+    hash_free_nodes(options->selectors);
+    hash_destroy(options->selectors);
+  }
+  options->selectors = get_selectors_from_uri(resource_uri);
 }
 
 void
 wsmc_set_delivery_uri(const char *delivery_uri, client_opt_t * options)
 {
+  u_free(options->delivery_uri);
   options->delivery_uri = delivery_uri ? u_strdup(delivery_uri) : NULL;
 }
 
 void
 wsmc_set_cim_ns(const char *ns, client_opt_t * options)
 {
+  u_free(options->cim_ns);
   options->cim_ns = ns ? u_strdup(ns) : NULL;
 }
 
 void
 wsmc_set_fragment(const char *fragment, client_opt_t * options)
 {
+  u_free(options->fragment);
   options->fragment = fragment ? u_strdup(fragment) : NULL;
 }
 
 void
 wsmc_set_reference(const char *reference, client_opt_t * options)
 {
+  u_free(options->reference);
   options->reference = reference ? u_strdup(reference) : NULL;
 }
 
