@@ -1,7 +1,10 @@
 2.2.8
 - Features
   - openSUSE: support systemd
-
+  - provider getter functions for all client and client option string
+    values
+- Bugfixes
+  - Fix memleaks in client and client option string setters
 - Bindings
   - Ruby: Provide a default implementation of auth_request_callback
   - Ruby: Support Ruby 1.9
