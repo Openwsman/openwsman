@@ -75,7 +75,7 @@ WsManListenerH *wsman_dispatch_list_new()
 static int wsman_server_verify_plugin(WsDispatchInterfaceInfo *ifcinfo)
 {
 	debug("Plugin '%s', version: %s", (ifcinfo->displayName), (ifcinfo->version) );
-	if (strcmp (PACKAGE_VERSION, ifcinfo->version) == 0) {
+	if (strcmp (OPENWSMAN_PLUGIN_API_VERSION, ifcinfo->version) == 0) {
 		return 1;
 	}
 	return 0;

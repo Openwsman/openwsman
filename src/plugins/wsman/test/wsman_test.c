@@ -77,7 +77,7 @@ void get_endpoints(void *self, void **data)
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
-    ifc->version = PACKAGE_VERSION;
+    ifc->version = OPENWSMAN_PLUGIN_API_VERSION;
     ifc->vendor = "Openwsman Project";
     ifc->displayName = "Test";
     ifc->notes = "Test Plugin";

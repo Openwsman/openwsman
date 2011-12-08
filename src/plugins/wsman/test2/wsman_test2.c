@@ -87,7 +87,7 @@ void get_endpoints(GModule *self, void **data)
     WsDispatchInterfaceInfo *ifc = 	(WsDispatchInterfaceInfo *)data;	
     ifc->flags = 0;
     ifc->actionUriBase = XML_NS_WS_MAN;
-    ifc->version = PACKAGE_VERSION;
+    ifc->version = OPENWSMAN_PLUGIN_API_VERSION;
     ifc->vendor = "Intel Corp.";
     ifc->displayName = "Test2";
     ifc->notes = "Test2 Plugin";

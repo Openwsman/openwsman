@@ -357,6 +357,9 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION @PACKAGE_VERSION@
 
+/* Define to the API version of the server plugin interface. */
+#define OPENWSMAN_PLUGIN_API_VERSION @OPENWSMAN_PLUGIN_API_VERSION@
+
 /* Define to the built timestamp of this package. */
 #define PACKAGE_BUILDTS "@PACKAGE_BUILDTS@"
 

@@ -125,7 +125,7 @@ get_endpoints( void *self,
   WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *)data;
   ifc->flags = 0;
   ifc->actionUriBase = NULL;
-  ifc->version = PACKAGE_VERSION;
+  ifc->version = OPENWSMAN_PLUGIN_API_VERSION;
   ifc->config_id = "cim";
   ifc->vendor = "Openwsman Project";
   ifc->displayName = "CIM Resource";

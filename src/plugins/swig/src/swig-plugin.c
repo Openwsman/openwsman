@@ -425,9 +425,9 @@ get_endpoints(void *self, void *data_ifc)
     }
     ifc->flags = 0;
     ifc->actionUriBase = NULL;
-    ifc->version = PACKAGE_VERSION;
+    ifc->version = OPENWSMAN_PLUGIN_API_VERSION;
     ifc->config_id = "swig";
-    ifc->vendor = "Novell, Inc.";
+    ifc->vendor = "SUSE Linux Products GmbH";
     ifc->displayName = PLUGIN_FILE;
 #if defined(SWIGPYTHON)
     ifc->notes = "Python plugin";
