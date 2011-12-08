@@ -173,7 +173,7 @@ int wsman_clean_subsrepository(SoapH soap, SubsRepositoryEntryH entry)
 			}
 			else {
 				wsman_set_expiretime(node, &expire, &fault_code);
-				if(fault_code == WSMAN_DETAIL_OK) {
+				if(fault_code == WSMAN_RC_OK) {
 					if(time_expired(expire)) {
 						debug("subscription %s deleted from the repository", entry->uuid);
 						soap->subscriptionOpSet->delete_subscription(soap->uri_subsRepository, entry->uuid+5);
