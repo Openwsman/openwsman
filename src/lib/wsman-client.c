@@ -1906,7 +1906,23 @@ wsmc_release(WsManClient * cl)
 		u_free(cl->authentication.method);
 		cl->authentication.method = NULL;
 	}
-	 
+        if (cl->authentication.cainfo != NULL) {	 
+          u_free(cl->authentication.cainfo);
+          cl->authentication.cainfo = NULL;
+        }
+        if (cl->authentication.caoid != NULL) {
+          u_free(cl->authentication.caoid);
+          cl->authentication.caoid = NULL;
+        }
+        if (cl->proxy_data.proxy_username != NULL) {
+          u_free(cl->proxy_data.proxy_username);
+          cl->proxy_data.proxy_username = NULL;
+        }
+        if (cl->proxy_data.proxy_password != NULL) {
+          u_free(cl->proxy_data.proxy_password);
+          cl->proxy_data.proxy_password = NULL;
+        }
+  
 	wsman_transport_close_transport(cl);
 
 	u_free(cl);
