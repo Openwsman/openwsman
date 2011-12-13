@@ -5,7 +5,7 @@
 
 require 'test/unit'
 require 'rexml/document'
-File.join(File.dirname(__FILE__),'_loadpath')
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require '_client'
 

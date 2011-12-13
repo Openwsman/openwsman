@@ -1,7 +1,7 @@
 # test client class
 
 require 'test/unit'
-File.join(File.dirname(__FILE__),'_loadpath')
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 
 class ClientTest < Test::Unit::TestCase

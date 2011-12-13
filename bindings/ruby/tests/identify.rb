@@ -1,8 +1,7 @@
 # test identify action
 
-$: << File.dirname(__FILE__)
 require 'test/unit'
-File.join(File.dirname(__FILE__),'_loadpath')
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require 'auth-callback'
 require '_client'
@@ -19,6 +18,10 @@ class IdentifyTest < Test::Unit::TestCase
     options.set_dump_request
 
     doc = client.identify( options )
+    unless doc
+      puts "identify failed with #{client.last_error}:#{client.fault_string}"
+      raise
+    end
     assert doc
     puts "Error!" if doc.fault?
     root = doc.root

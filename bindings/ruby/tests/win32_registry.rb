@@ -13,7 +13,7 @@
 
 require 'test/unit'
 require 'rexml/document'
-File.join(File.dirname(__FILE__),'_loadpath')
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require '_client'
 
@@ -65,7 +65,9 @@ class WsmanTest < Test::Unit::TestCase
     assert result
 
     puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
-    puts "#{result}"
+    result.sNames.each do |node|
+      puts "#{node.to_xml}"
+    end
   end
 end
 

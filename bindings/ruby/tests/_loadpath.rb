@@ -1,3 +1,5 @@
+$: << File.dirname(__FILE__)
+
 # Autotools binary
 $:.unshift "../.libs"
 

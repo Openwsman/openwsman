@@ -2,7 +2,7 @@
 # Test WsmanStatus
 
 require 'test/unit'
-File.join(File.dirname(__FILE__),'_loadpath')
+require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 
 class WsmanTest < Test::Unit::TestCase
