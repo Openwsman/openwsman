@@ -63,10 +63,8 @@ class WsmanTest < Test::Unit::TestCase
     method = "EnumKey"
     result = client.invoke( options, uri, method )
     assert result
-
-    puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
-    result.sNames.each do |node|
-      puts "#{node.to_xml}"
+    result.sNames.parent.each do |node|
+      puts "#{node.name} #{node.text}"
     end
   end
 end
