@@ -332,6 +332,8 @@ rm -f /var/log/wsmand.log
 %{_includedir}/*
 %{_libdir}/pkgconfig/*
 %{_libdir}/*.so
+%exclude %{_includedir}/openwsman/cpp/*.h
+%exclude %{_libdir}/libwsman_clientpp.so
 
 %files python
 %defattr(-,root,root)
