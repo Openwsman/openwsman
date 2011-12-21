@@ -17,14 +17,17 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
+#    options.max_envelope_size =  4294967295
 #    options.set_dump_request
+#    Openwsman.debug = -1
 #    puts "Flags = #{options.flags}"
 
 #
 # see http://msdn2.microsoft.com/en-us/library/aa386179.aspx for a list of CIM classes
 #   the Win32 classes are derived from
 #
-    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_OperatingSystem"
+    klass = "Win32_OperatingSystem"
+    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/" + klass
 
     result = client.enumerate( options, nil, uri )
     assert result
@@ -45,6 +48,7 @@ loop do
     body = result.body
     if result.fault?
 	puts "Got fault"
+        puts result.to_xml
 	faults += 1
 	break
     end
@@ -56,7 +60,7 @@ loop do
 #    name = node.child( 0, uri, "Name" ).text;
 #    state = node.child( 0, uri, "State" ).text;
 
-    node = body.PullResponse.Items.Win32_OperatingSystem
+    node = body.PullResponse.Items.send klass.to_sym
     
     name = node.Name
     puts name
