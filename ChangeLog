@@ -1,13 +1,18 @@
-2.2.8
+2.3.0
 - Features
   - openSUSE: support systemd
   - provider getter functions for all client and client option string
     values
 - Bugfixes
   - Fix memleaks in client and client option string setters
+  - All string value getters (for client and client_opt) return
+    copies now
+  - Define and use PLUGIN_API_VERSION for the server-side plugins
 - Bindings
   - Ruby: Provide a default implementation of auth_request_callback
   - Ruby: Support Ruby 1.9
+  - Expose Openwsman version as OPENWSMAN_VERSION, OPENWSMAN_MAJOR,
+    OPENWSMAN_MINOR, OPENWSMAN_PATCH
 
 2.2.7
 - Features
