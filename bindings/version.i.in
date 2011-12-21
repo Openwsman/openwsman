@@ -1,0 +1,11 @@
+/*
+ * version.i
+ * version definitions for openwsman swig bindings
+ *
+ */
+
+#define OPENWSMAN_MAJOR @OPENWSMAN_MAJOR@
+#define OPENWSMAN_MINOR @OPENWSMAN_MINOR@
+#define OPENWSMAN_PATCH @OPENWSMAN_PATCH@
+#define OPENWSMAN_VERSION "@OPENWSMAN_MAJOR@.@OPENWSMAN_MINOR@.@OPENWSMAN_PATCH@"
+			

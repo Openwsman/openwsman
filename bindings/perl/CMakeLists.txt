@@ -25,7 +25,6 @@ MESSAGE(STATUS "Perl vendor arch dir: ${PERL_VENDOR_ARCH}")
 MESSAGE(STATUS "Perl vendor lib dir: ${PERL_VENDOR_LIB}")
 
 SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
-SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.i" )
 
 ADD_DEFINITIONS( ${PERL_CCFLAGS} -Wno-unused -Wno-error -Wno-nonnull)
 LINK_DIRECTORIES( ${PERL_CORE_DIR} )
@@ -33,7 +32,7 @@ LINK_DIRECTORIES( ${PERL_CORE_DIR} )
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Perl ..."
-   COMMAND ${SWIG_EXECUTABLE} -perl -features autodoc -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
+   COMMAND ${SWIG_EXECUTABLE} -perl -features autodoc -I${CMAKE_BINARY_DIR}/bindings -I${CMAKE_SOURCE_DIR}/bindings -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i

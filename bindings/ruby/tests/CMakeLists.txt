@@ -9,6 +9,9 @@ ADD_TEST(bindings_ruby_loading    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CU
 	# predefined stuff
 ADD_TEST(bindings_ruby_constants  ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} constants.rb )
 
+	# version
+ADD_TEST(bindings_ruby_version    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} version.rb )
+
         # Xml bindings
 ADD_TEST(bindings_ruby_xmldoc     ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmldoc.rb )
 ADD_TEST(bindings_ruby_xmlnode    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmlnode.rb )

@@ -1,7 +1,10 @@
 # This is openwsman/openwsman
-# use it with
-#  require 'openwsman/openwsman'
+# do NOT require this file, but do a simple
+#  require 'openwsman'
+# instead
 #
+
+require 'openwsman/version'
 
 # this loads the binary .so file
 require '_openwsman'

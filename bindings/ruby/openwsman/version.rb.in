@@ -1,0 +1,10 @@
+# openwsman/version.rb
+
+module Openwsman
+  require 'rbconfig'
+  OPENWSMAN_RUBY_VERSION = "@_RUBY_VERSION_SHORT@"
+  SYSTEM_RUBY_VERSION = "#{RbConfig::CONFIG['MAJOR']}.#{RbConfig::CONFIG['MINOR']}"
+  if SYSTEM_RUBY_VERSION != OPENWSMAN_RUBY_VERSION
+    STDERR.puts "** Warning: Ruby version mismatch: Openwsman Ruby #{OPENWSMAN_RUBY_VERSION}, Runtime Ruby #{SYSTEM_RUBY_VERSION}"
+  end
+end

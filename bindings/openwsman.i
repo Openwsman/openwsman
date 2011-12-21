@@ -238,6 +238,8 @@ static WsXmlDocH create_soap_envelope() {
 
 #endif
 
+%include "version.i"
+
 /* start with wsman-xml to get the __WsXmlFoo -> XmlFoo renames right */
 %include "wsman-xml.i"
 

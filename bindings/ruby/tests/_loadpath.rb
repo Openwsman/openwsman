@@ -1,10 +1,12 @@
-$: << File.dirname(__FILE__)
+DIR = File.dirname(__FILE__)
+
+$: << DIR
 
 # Autotools binary
-$:.unshift "../.libs"
+$:.unshift File.expand_path(File.join(DIR,"../.libs"))
 
 # cmake binary
-$:.unshift "../../../build/bindings/ruby"
+$:.unshift File.expand_path(File.join(DIR,"../../../build/bindings/ruby"))
 
 # cmake local for openwsman.rb
-$:.unshift ".."
+$:.unshift File.expand_path(File.join(DIR,".."))

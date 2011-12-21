@@ -1,6 +1,11 @@
 #
 # CMakeLists.txt for openwsman/bindings
 #
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.i.in ${CMAKE_CURRENT_BINARY_DIR}/version.i)
+
+SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.i" )
+
 include_directories(${CMAKE_BINARY_DIR})
 
 IF( BUILD_PYTHON )
