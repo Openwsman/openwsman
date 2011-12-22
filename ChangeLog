@@ -13,6 +13,8 @@
   - Ruby: Support Ruby 1.9
   - Expose Openwsman version as OPENWSMAN_VERSION, OPENWSMAN_MAJOR,
     OPENWSMAN_MINOR, OPENWSMAN_PATCH
+  - Ruby: expand XmlNode#each to iterate over multiple children of
+    same name
 
 2.2.7
 - Features

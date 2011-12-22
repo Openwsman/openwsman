@@ -426,8 +426,28 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #if defined(SWIGRUBY)
   void each(const char *name = NULL, const char *ns = NULL) {
     int i = 0;
-    while ( i < ws_xml_get_child_count_by_qname( $self, ns, name ) ) {
-      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child($self, i, ns, name), SWIGTYPE_p___WsXmlNode, 0));
+    WsXmlNodeH node = $self;
+    int count = ws_xml_get_child_count_by_qname( node, ns, name );
+    if (count == 0) {
+      /* no children of current node found
+       *   try to find $self->name within $self->parent
+       * this supports array-like constructs, e.g
+       *  <parent>
+       *    <child>..
+       *    <child>..
+       *    <child>..
+       *    <otherchild>..
+       *    <otherchild>..
+       *    <otherchild>..
+       * Now one can do parent.child.each in Ruby and will only get
+       * the <child> entries
+       */
+      name = ws_xml_get_node_local_name( node );
+      node = ws_xml_get_node_parent( node );
+      count = ws_xml_get_child_count_by_qname( node, ns, name );
+    }
+    while ( i < count ) {
+      rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child(node, i, ns, name), SWIGTYPE_p___WsXmlNode, 0));
       ++i;
     }
   }
