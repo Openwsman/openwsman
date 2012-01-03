@@ -9,6 +9,8 @@
     copies now
   - Define and use PLUGIN_API_VERSION for the server-side plugins
 - Bindings
+  - Add Openwsman#create_doc_from_file to read xml files
+  - Add XmlNode#next to iterate over children with identical name
   - Ruby: Provide a default implementation of auth_request_callback
   - Ruby: Support Ruby 1.9
   - Expose Openwsman version as OPENWSMAN_VERSION, OPENWSMAN_MAJOR,

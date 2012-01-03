@@ -385,6 +385,28 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   }
 				 
   /*
+   * find next similar node
+   * call with node returned from find() to iterate over
+   *  <foo>
+   *    <bar>...     # get here with node = find("bar")
+   *    <bar>...     # node.next
+   *    <bar>...     # ...
+   *    <bar>...
+   *  </foo>
+   */
+  WsXmlNodeH next() {
+    WsXmlNodeH next_node = xml_parser_get_next_child($self);
+    if (next_node) {
+      const char *ns_uri = ws_xml_get_node_name_ns($self);
+      const char *name = ws_xml_get_node_local_name($self);
+      if (ws_xml_is_node_qname(next_node, ns_uri, name)) {
+        return next_node;
+      }
+    }
+    return NULL;
+  }
+				 
+  /*
    * count node children
    * if name given, count children with this name
    * if name + ns given, count children with this namespace and name
