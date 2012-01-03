@@ -26,7 +26,7 @@ class XmlDocTest < Test::Unit::TestCase
     root.add("namespace", "tag")
     root.add("ns", "foo", "bar")
     root.add(nil, "baz", "faz")
-    puts "#{doc}"
+    puts doc.to_xml
   end
   def test_doc_accessors
     doc = Openwsman::create_soap_envelope
