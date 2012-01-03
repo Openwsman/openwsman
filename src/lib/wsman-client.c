@@ -1922,7 +1922,8 @@ wsmc_release(WsManClient * cl)
           u_free(cl->proxy_data.proxy_password);
           cl->proxy_data.proxy_password = NULL;
         }
-  
+        pthread_mutex_destroy(&cl->mutex);
+
 	wsman_transport_close_transport(cl);
 
 	u_free(cl);
