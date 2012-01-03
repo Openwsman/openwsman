@@ -197,6 +197,12 @@ static WsXmlDocH create_soap_envelope() {
   return ws_xml_create_soap_envelope();
 }
 
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding);
+
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding) {
+  return xml_parser_file_to_doc( filename, encoding, 0);                 
+}
+
 %}
 
 /*
@@ -284,3 +290,7 @@ static int get_debug();
  */
 static WsXmlDocH create_soap_envelope();
 
+/*
+ * Read XmlDoc from file
+ */
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding = "UTF-8");
