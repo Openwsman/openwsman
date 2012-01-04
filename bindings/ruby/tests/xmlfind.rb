@@ -26,9 +26,10 @@ class XmlFindTest < Test::Unit::TestCase
   def test_count
     node = @doc.sNames
     assert node
-    count = 1
-    while node = node.next do
-      count += 1
+    count = 0
+    while node do
+     node = node.next
+     count += 1
     end
     assert_equal 26, count
   end
