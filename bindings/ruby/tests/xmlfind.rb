@@ -26,12 +26,39 @@ class XmlFindTest < Test::Unit::TestCase
   def test_count
     node = @doc.sNames
     assert node
+    #
+    # iterate over sNames
+    #
     count = 0
     while node do
      node = node.next
      count += 1
     end
     assert_equal 26, count
+    #
+    # iterate over all children
+    count = 0
+    @doc.EnumKey_OUTPUT.each do
+      count += 1
+    end
+    # one more, because ReturnValue is the last child
+    assert_equal 27, count
+    #
+    # now limit to sNames
+    #
+    count = 0
+    @doc.EnumKey_OUTPUT.each("sNames") do
+      count += 1
+    end
+    assert_equal 26, count
+    #
+    # now limit to ReturnValue
+    #
+    count = 0
+    @doc.EnumKey_OUTPUT.each("ReturnValue") do
+      count += 1
+    end
+    assert_equal 1, count
   end
 end
 
