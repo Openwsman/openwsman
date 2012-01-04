@@ -43,6 +43,7 @@ class XmlFindTest < Test::Unit::TestCase
     end
     # one more, because ReturnValue is the last child
     assert_equal 27, count
+    assert_equal count, @doc.EnumKey_OUTPUT.size
     #
     # now limit to sNames
     #
@@ -51,6 +52,7 @@ class XmlFindTest < Test::Unit::TestCase
       count += 1
     end
     assert_equal 26, count
+    assert_equal count, @doc.EnumKey_OUTPUT.size("sNames")
     #
     # now limit to ReturnValue
     #
