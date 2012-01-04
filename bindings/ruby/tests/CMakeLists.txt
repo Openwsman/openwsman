@@ -16,6 +16,7 @@ ADD_TEST(bindings_ruby_version    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CU
 ADD_TEST(bindings_ruby_xmldoc     ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmldoc.rb )
 ADD_TEST(bindings_ruby_xmlnode    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmlnode.rb )
 ADD_TEST(bindings_ruby_xmlattr    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmlattr.rb )
+ADD_TEST(bindings_ruby_xmlfind    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} xmlfind.rb )
 	
 	# Client
 ADD_TEST(bindings_ruby_client     ${CMAKE_CURRENT_SOURCE_DIR}/ruby -C ${CMAKE_CURRENT_SOURCE_DIR} client.rb )
