@@ -46,6 +46,7 @@
 
 
 #include "wsman-xml.h"
+#include "wsman-xml-binding.h"
 #include "wsman-client-api.h"
 #include "wsman-soap.h"
 #include "wsman-soap-envelope.h"
@@ -64,6 +65,17 @@ typedef struct _sfcc_enumcontext {
 	CimClientInfo *ecClient;
 	CMPIEnumeration *ecEnumeration;
 } sfcc_enumcontext;
+
+static int cim_getEprObjAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
+		    WsXmlNodeH itemsNode);
+
+static int cim_getEprAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
+		 WsXmlNodeH itemsNode);
+
+static int cim_getElementAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
+		     WsXmlNodeH itemsNode);
+
+
 
 static char *
 cim_find_namespace_for_class(CimClientInfo * client,
@@ -1226,7 +1238,13 @@ cleanup:
 	return;
 }
 
-int
+
+/*
+ * Get enumeration item as element at enumInfo->index and append it to itemsNode
+ * return 1 on success
+ */
+
+static int
 cim_getElementAt(CimClientInfo * client,
 		WsEnumerateInfo * enumInfo, WsXmlNodeH itemsNode)
 {
@@ -1241,7 +1259,7 @@ cim_getElementAt(CimClientInfo * client,
 	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
+	if ((enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE ) &&
 			(strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
@@ -1261,14 +1279,16 @@ cim_getElementAt(CimClientInfo * client,
 }
 
 
+/*
+ * Get enumeration item as WS end point reference at enumInfo->index and append it to itemsNode
+ * return 1 on success
+ * 
+ */
 
-
-
-int
+static int
 cim_getEprAt(CimClientInfo * client,
 		WsEnumerateInfo * enumInfo, WsXmlNodeH itemsNode)
 {
-
 	int retval = 1;
 	char *uri = NULL;
 	CMPIArray *results = (CMPIArray *) enumInfo->enumResults;
@@ -1279,7 +1299,7 @@ cim_getEprAt(CimClientInfo * client,
 	CMPIObjectPath *objectpath = instance->ft->getObjectPath(instance, NULL);
 	CMPIString *classname = objectpath->ft->getClassName(objectpath, NULL);
 
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE)
+	if ((enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE)
 			&& (strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
@@ -1296,7 +1316,14 @@ cim_getEprAt(CimClientInfo * client,
 	return retval;
 }
 
-int
+
+/*
+ * Get enumeration item as WS end point reference object at enumInfo->index and append it to itemsNode
+ * return 1 on success
+ * 
+ */
+
+static int
 cim_getEprObjAt(CimClientInfo * client,
 		WsEnumerateInfo * enumInfo, WsXmlNodeH itemsNode)
 {
@@ -1312,7 +1339,7 @@ cim_getEprObjAt(CimClientInfo * client,
 	CMPIString *classname =
 		objectpath->ft->getClassName(objectpath, NULL);
 
-	if (enumInfo && (enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE) &&
+	if ((enumInfo->flags & WSMAN_ENUMINFO_POLY_NONE) &&
 			(strcmp(CMGetCharPtr(classname), client->requested_class) != 0)) {
 		retval = 0;
 	}
@@ -1320,8 +1347,8 @@ cim_getEprObjAt(CimClientInfo * client,
 
 	if (retval) {
 		WsXmlNodeH item =
-			ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM,
-					NULL);
+                        ws_xml_add_child(itemsNode, XML_NS_WS_MAN, WSM_ITEM,
+                                        NULL);
 		instance2xml(client, instance, NULL, item, enumInfo);
 		cim_add_epr(client, item, uri, objectpath);
 	}
@@ -2806,7 +2833,8 @@ cim_get_enum_items(CimClientInfo * client,
 {
 	WsXmlNodeH itemsNode;
 	WsXmlDocH outdoc = NULL;
-	int c = 0;
+        int c;
+        int count = 0;
 	if (node == NULL)
 		return;
 
@@ -2815,10 +2843,11 @@ cim_get_enum_items(CimClientInfo * client,
 	debug("enum flags: %lu", enumInfo->flags );
 
 	outdoc = ws_xml_get_node_doc(node);
-	if(enumInfo->totalItems == 0) {
-		/* nothing */
-	} else if (maxelements> 0) {
-		while (maxelements> 0 && enumInfo->index >= 0 &&
+	if (enumInfo->totalItems > 0) {
+                if (maxelements <= 0) {
+                        maxelements = -1; /* don't check maxelements */
+                }
+		while (enumInfo->index >= 0 &&
 				enumInfo->index < enumInfo->totalItems) {
 			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
 				c = cim_getEprAt(client, enumInfo, itemsNode);
@@ -2827,29 +2856,32 @@ cim_get_enum_items(CimClientInfo * client,
 			} else {
 				c = cim_getElementAt(client, enumInfo, itemsNode);
 			}
+                        if (!c) {
+                                /* cim_getE... failed */
+                                break;
+                        }
 			if (check_envelope_size(outdoc, maxsize, enumInfo->encoding)) {
+                                /* last item added to itemsNode exceeded the envelope size */
+                                if (count > 0) {
+                                        /* if there's already a partial result,
+                                         * remove last child from itemsNode
+                                         * and return partial result */
+                                        WsXmlNodeH item = xml_parser_node_get(itemsNode, XML_LAST_CHILD);
+                                        xml_parser_node_remove(item);
+                                }
+                                /* if the first item already exceeds the envelope size, leave it
+                                 * and let the SOAP report an EncodingLimit fault.
+                                 */
 				break;
 			}
 			enumInfo->index++;
+                        count++;
 			maxelements--;
+                        if (maxelements == 0) {
+                                break;
+                        }
 		}
-		enumInfo->index--;
-	} else {
-		while (enumInfo->index >= 0
-				&& enumInfo->index < enumInfo->totalItems) {
-			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
-				c = cim_getEprAt(client, enumInfo, itemsNode);
-			} else if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
-				c = cim_getEprObjAt(client, enumInfo, itemsNode);
-			} else {
-				c = cim_getElementAt(client, enumInfo, itemsNode);
-			}
-			if (check_envelope_size(outdoc, enumInfo->maxsize, enumInfo->encoding)) {
-				break;
-			}
-			enumInfo->index++;
-		}
-		enumInfo->index--;
+		enumInfo->index--; /* callee (wsman-soap.c) increments it again */
 	}
 	enumInfo->pullResultPtr = outdoc;
 }

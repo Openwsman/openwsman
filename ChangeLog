@@ -4,6 +4,7 @@
   - provider getter functions for all client and client option string
     values
 - Bugfixes
+  - Enum/Pull: Fix envelope maxsize handling, return partial result
   - Fix memleaks in client and client option string setters
   - All string value getters (for client and client_opt) return
     copies now
