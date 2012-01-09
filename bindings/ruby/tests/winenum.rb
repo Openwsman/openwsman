@@ -1,13 +1,19 @@
 # winenum.rb
-#  enumerate/pull/release for Win32_SoftwareElement
+#  enumerate any WMI class in any namespace
 #
+# Usage
+#   winenum [--debug] [--namespace <namespace>] <classname> [ <property> ... ]
+#
+# Example
+# 1. Enumerate namespaces
+#   ruby winenum.rb -r -n root __NAMESPACE
 #
 
 require 'rexml/document'
 require File.join(File.dirname(__FILE__),'_loadpath')
 require 'openwsman'
 require '_client'
-
+require 'getoptlong'
 
 WIDTH = 25
 
@@ -26,11 +32,30 @@ def get_reference_from node
   [uri,selectors]
 end
 
-def enum_properties client, opt, classname, *properties
+def show_fault result
+  fault = Openwsman::Fault.new result
+  puts "Fault code #{fault.code}, subcode #{fault.subcode}"
+  puts "\treason #{fault.reason}"
+  puts "\tdetail #{fault.detail}"
+end
+
+def enum_properties client, parms, *properties
   options = Openwsman::ClientOptions.new
-  uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/#{classname}"
+  namespace = parms[:namespace] || "root/cimv2"
+  classname = parms[:classname]
+  faults = 0
+
+#  Openwsman::debug = -1  
+#  Openwsman.debug = -1  
+#  options.max_envelope_size = 1024 * 1024 * 1024
+#  puts "max_envelope_size #{options.max_envelope_size}"
+  options.set_dump_request if parms[:debug]
+
+  uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/#{namespace}/#{classname}"
   result = client.enumerate( options, nil, uri )
-#  puts result if opt.include? :raw
+  show_fault result if result.fault?
+
+  puts "client.enumerate => #{result.to_xml}" if parms[:debug]
   puts classname
   unless properties.empty?
     printf "%-#{WIDTH}s" * properties.size, *properties
@@ -38,7 +63,6 @@ def enum_properties client, opt, classname, *properties
     puts "-" * WIDTH * properties.size
   end
   results = 0
-  faults = 0
   context = nil
  
   loop do
@@ -47,12 +71,10 @@ def enum_properties client, opt, classname, *properties
 
     result = client.pull( options, nil, uri, context )
     break unless result
+    puts "client.pull #{result.to_xml}" if parms[:debug]
 
     if result.fault?
-        fault = Openwsman::Fault.new result
-	puts "Fault code #{fault.code}, subcode #{fault.subcode}"
-	puts "\treason #{fault.reason}"
-	puts "\tdetail #{fault.detail}"
+        show_fault result
 	faults += 1
 	break
     end
@@ -61,7 +83,7 @@ def enum_properties client, opt, classname, *properties
     items = body.PullResponse.Items.send classname
     next unless items
     results += 1
-    puts items if opt.include? :raw
+    puts items.to_xml if parms[:debug]
     node = items.send classname
     if properties.empty?
 #      puts node.string
@@ -76,23 +98,33 @@ def enum_properties client, opt, classname, *properties
       printf "%-#{WIDTH}s" * values.size, *values
       puts
     end
-
+    puts
   end
 
   client.release( options, uri, context ) if context
   puts "#{results} results, #{faults} faults"
 end
 
+#
+# --- main ---
+#
+#
+
 client = Client.open
 
-classname = ""
-opts = []
-loop do
-  classname = ARGV.shift
-  break unless classname
-  break unless classname[0,1] == "-"
-  opts << classname[2..-1].to_sym
-end
+parms = {}
 
-enum_properties client, opts, classname, *ARGV
+opts = GetoptLong.new(
+  [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
+)
+opts.each do |opt,arg|
+  case opt
+  when "--namespace" then parms[:namespace] = arg
+  when "--debug" then parms[:debug] = true
+  end
+end  
 
+parms[:classname] = ARGV.shift
+
+enum_properties client, parms, *ARGV
