@@ -762,6 +762,7 @@ wsman_identify_stub(SoapOpH op,
 		ws_serialize(cntx->serializercntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			WSMID_IDENTIFY_RESPONSE, (char *) info->data, NULL, 1);
 		ws_serializer_free_mem(cntx->serializercntx, data, typeInfo);
+                u_free(data);
 	}
 
 	if (doc) {
