@@ -108,9 +108,9 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
 		elog(E_FATAL, NULL, "SSL_CTX_new error");
         else if (wsmand_options_get_ssl_cert_file() && SSL_CTX_use_certificate_file(CTX, wsmand_options_get_ssl_cert_file(),SSL_FILETYPE_PEM) == 0)
-		elog(E_FATAL, NULL, "cannot open %s", pem);
+		elog(E_FATAL, NULL, "cannot open %s : %s", pem, strerror(errno));
 	else if (wsmand_options_get_ssl_key_file() && SSL_CTX_use_PrivateKey_file(CTX, wsmand_options_get_ssl_key_file(), SSL_FILETYPE_PEM) == 0)
-		elog(E_FATAL, NULL, "cannot open %s", pem);
+		elog(E_FATAL, NULL, "cannot open %s : %s", pem, strerror(errno));
 	ctx->ssl_ctx = CTX;
 }
 #endif /* NO_SSL */
