@@ -40,3 +40,4 @@ dist-hook:
 CLEANFILES= $(GENERATED) *.java *.class
 
 
+EXTRA_DIST = helpers.h

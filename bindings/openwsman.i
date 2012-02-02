@@ -147,7 +147,7 @@
 #include <wsman-soap-envelope.h>
 #include <openwsman.h>
 #if defined(SWIGRUBY)
-#include <ruby/helpers.c>
+#include <ruby/helpers.h>
 
 SWIGEXPORT void Init_openwsman(void);
 SWIGEXPORT void Init__openwsman(void) {
@@ -155,13 +155,13 @@ SWIGEXPORT void Init__openwsman(void) {
 }
 #endif
 #if defined(SWIGPYTHON)
-#include <python/helpers.c>
+#include <python/helpers.h>
 #endif
 #if defined(SWIGJAVA)
-#include <java/helpers.c>
+#include <java/helpers.h>
 #endif
 #if defined(SWIGPERL)
-#include <perl/helpers.c>
+#include <perl/helpers.h>
 #endif
 
 /* Provide WsManTransport definition so it can be used as
