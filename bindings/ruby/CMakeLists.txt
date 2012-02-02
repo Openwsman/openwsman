@@ -84,5 +84,34 @@ ADD_CUSTOM_TARGET(ruby_rdoc ALL DEPENDS "${rdoc_dir}")
 ADD_DEPENDENCIES(ruby_rdoc rbwsman)
 
 #
+# Ruby GEM
+#
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.rb.in ${CMAKE_CURRENT_BINARY_DIR}/version.rb)
+
+SET(GEM_NAME "openwsman-${VERSION}.gem")
+ADD_CUSTOM_TARGET(ruby_gem ALL DEPENDS ${GEM_NAME})
+ADD_DEPENDENCIES(ruby_gem ${SWIG_OUTPUT})
+ADD_CUSTOM_COMMAND (
+   OUTPUT  ${GEM_NAME}
+   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+   COMMAND "gem" "build" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.gemspec"
+   DEPENDS ${rdoc_dir}
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.gemspec
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb.in
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/*.c
+   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/version.rb
+)
+
+
+#
 # Leave this to %doc in the .spec file
 #INSTALL(DIRECTORY "${rdoc_dir}" DESTINATION ${DOC_INSTALL_DIR})
+
+#
+#
+SET_DIRECTORY_PROPERTIES( PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "ext;lib;openwsman")
