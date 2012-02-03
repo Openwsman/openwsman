@@ -30,4 +30,4 @@ find_header 'libxml/parser.h', '/usr/include/libxml2'
 
 $CPPFLAGS = "-I/usr/include/openwsman -I.."
 
-create_makefile('openwsman')
+create_makefile('_openwsman')

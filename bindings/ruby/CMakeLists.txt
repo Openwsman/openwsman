@@ -87,26 +87,51 @@ ADD_DEPENDENCIES(ruby_rdoc rbwsman)
 # Ruby GEM
 #
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.rb.in ${CMAKE_CURRENT_BINARY_DIR}/version.rb)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openwsman.gemspec.in ${CMAKE_CURRENT_BINARY_DIR}/openwsman.gemspec)
 
 SET(GEM_NAME "openwsman-${VERSION}.gem")
 ADD_CUSTOM_TARGET(ruby_gem ALL DEPENDS ${GEM_NAME})
 ADD_DEPENDENCIES(ruby_gem ${SWIG_OUTPUT})
+
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${GEM_NAME}
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-   COMMAND "gem" "build" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.gemspec"
+   COMMAND "gem" "build" "${CMAKE_CURRENT_BINARY_DIR}/openwsman.gemspec"
+   DEPENDS "ext"
    DEPENDS ${rdoc_dir}
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.gemspec
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb.in
-   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/*.c
-   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/version.rb
+   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/openwsman.gemspec
 )
 
+#
+# Prep GEM files
+# gemspec needs _relative_ pathes
+# so create ext and lib here and copy files
+#
+ADD_CUSTOM_COMMAND (
+  OUTPUT "ext"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND "rm" "-rf" "lib"
+  COMMAND "rm" "-rf" "ext"
+  COMMAND "mkdir" "-p" "ext/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c" "ext/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.h" "ext/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb" "ext/openwsman"
+  COMMAND "cp" "*.c" "ext/openwsman"
+  COMMAND "mkdir" "-p" "ext/ruby"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/helpers.h" "ext/ruby"
+
+  COMMAND "mkdir" "-p" "lib/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb" "lib"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb" "lib/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_BINARY_DIR}/openwsman/*.rb" "lib/openwsman"
+
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb.in
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/*.c
+)
 
 #
 # Leave this to %doc in the .spec file
