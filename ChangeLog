@@ -6,10 +6,22 @@
 - Bugfixes
   - Enum/Pull: Fix envelope maxsize handling, return partial result
   - Fix memleaks in client and client option string setters
+    (Matthias Bolte)
   - All string value getters (for client and client_opt) return
     copies now
+    (found by Matthias Bolte)
   - Define and use PLUGIN_API_VERSION for the server-side plugins
+  - Handle optional arguments propertly during client endpoint URI
+    creation (Matthias Bolte)
+  - Make calls to 'identify' repeatable
+  - Destroy serializer lock and client mutex at exit (Bing Liu)
+  - Fix leak in wsmc_release (Sanjeev Putta)
+  - Allow to reset transport credentials to NULL (Matthias Bolte)
+  - Plug memory leaks in wsman-client-transport (Found by Suneet
+    Chandok, improved by Matthias Bolte)
 - Bindings
+  - Provide Ruby bindings also as GEM
+    (-> https://rubygems.org/gems/openwsman)
   - Add Openwsman#create_doc_from_file to read xml files
   - Add XmlNode#next to iterate over children with identical name
   - Ruby: Provide a default implementation of auth_request_callback
@@ -18,6 +30,8 @@
     OPENWSMAN_MINOR, OPENWSMAN_PATCH
   - Ruby: expand XmlNode#each to iterate over multiple children of
     same name
+  - new test tool: winenum.rb, to enumerate WINRM instances
+  - update documentation: Add note about escaping selector values
 
 2.2.7
 - Features
