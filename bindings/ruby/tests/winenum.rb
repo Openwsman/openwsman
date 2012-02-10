@@ -96,7 +96,7 @@ def enum_properties client, parms, *properties
     end
     next unless items
     results += 1
-    puts items.to_xml if parms[:debug]
+#    puts items.to_xml if parms[:debug]
     puts "-------" if results > 1
     if classname == "*"
       node = items.first
