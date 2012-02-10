@@ -105,6 +105,14 @@ def enum_properties client, parms, *properties
   puts "#{results} results, #{faults} faults"
 end
 
+def usage msg=nil
+  STDERR.puts msg if msg
+  STDERR.puts "Usage:"
+  STDERR.puts "winenum [-n <namespace>] [-d] <class>"
+  STDERR.puts "\nand remember to set WSMANCLIENT"
+  exit 1
+end
+  
 #
 # --- main ---
 #
@@ -114,16 +122,20 @@ client = Client.open
 
 parms = {}
 
-opts = GetoptLong.new(
-  [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
-  [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
-)
-opts.each do |opt,arg|
-  case opt
-  when "--namespace" then parms[:namespace] = arg
-  when "--debug" then parms[:debug] = true
+begin
+  opts = GetoptLong.new(
+           [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
+         )
+  opts.each do |opt,arg|
+    case opt
+    when "--namespace" then parms[:namespace] = arg
+    when "--debug" then parms[:debug] = true
+    end
   end
-end  
+rescue GetoptLong::InvalidOption
+  usage "invalid option passed"
+end
 
 parms[:classname] = ARGV.shift
 
