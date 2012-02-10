@@ -5,8 +5,12 @@
 #   winenum [--debug] [--namespace <namespace>] <classname> [ <property> ... ]
 #
 # Example
-# 1. Enumerate namespaces
-#   ruby winenum.rb -r -n root __NAMESPACE
+# 1. Enumerate namespaces (call recursively!)
+#   ruby winenum.rb -n root __NAMESPACE
+# 2. Enumerate classnames
+#   ruby winenum.rb -n root/cimv2 -q "select * from meta_class"
+# 3. Get class properties
+#   ruby winenum.rb -n root/cimv2 -q "select * from meta_class where __Class = \"Win32_LogicalDisk\""
 #
 
 require 'rexml/document'
