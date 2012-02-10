@@ -43,6 +43,7 @@ def enum_properties client, parms, *properties
   options = Openwsman::ClientOptions.new
   namespace = parms[:namespace] || "root/cimv2"
   classname = parms[:classname]
+  limit = parms[:limit].to_i rescue 0
   faults = 0
 
   filter = nil
@@ -51,6 +52,8 @@ def enum_properties client, parms, *properties
     filter.wql parms[:query]
     classname = "*"
   end
+
+
 #  Openwsman::debug = -1  
 #  Openwsman.debug = -1  
 #  options.max_envelope_size = 1024 * 1024 * 1024
@@ -94,12 +97,13 @@ def enum_properties client, parms, *properties
     next unless items
     results += 1
     puts items.to_xml if parms[:debug]
+    puts "-------" if results > 1
     if classname == "*"
       node = items.first
+      puts node.name
     else
       node = items.send classname
     end
-    puts "-------" if results > 1
     if properties.empty?
 #      puts node.string
       node.each do |c|
@@ -113,6 +117,9 @@ def enum_properties client, parms, *properties
       printf "%-#{WIDTH}s" * values.size, *values
       puts
     end
+    limit -= 1
+    break if limit == 0
+
     puts
   end
 
@@ -123,7 +130,8 @@ end
 def usage msg=nil
   STDERR.puts msg if msg
   STDERR.puts "Usage:"
-  STDERR.puts "winenum [-n <namespace>] [-q <wql-query>] [-d] <class>"
+  STDERR.puts "winenum [-n <namespace>] [-q <wql-query>] [-l <limit>] [-d] <class>"
+  STDERR.puts "\twith -q <query>, <class> is discarded"
   STDERR.puts "\nand remember to set WSMANCLIENT"
   exit 1
 end
@@ -140,12 +148,14 @@ parms = {}
 begin
   opts = GetoptLong.new(
            [ "--query", "-q", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--limit", "-l", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
          )
   opts.each do |opt,arg|
     case opt
     when "--query" then parms[:query] = arg
+    when "--limit" then parms[:limit] = arg
     when "--namespace" then parms[:namespace] = arg
     when "--debug" then parms[:debug] = true
     end
