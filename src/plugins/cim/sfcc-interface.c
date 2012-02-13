@@ -1679,8 +1679,11 @@ invoke_enumerate_class_names(CimClientInfo *client, WsXmlNodeH body, CMPIStatus 
 {
 	CMPIObjectPath *op = newCMPIObjectPath(client->cim_namespace, "", NULL);
 	CMCIClient *cc = (CMCIClient *)client->cc;
-	CMPIEnumeration *classnames = cc->ft->enumClassNames(cc, op, client->flags | CMPI_FLAG_DeepInheritance, rc);
-  
+        unsigned long flags = client->flags;
+        if (client->selectors && hash_lookup(client->selectors, (char *) "DeepInheritance"))
+                flags |= CMPI_FLAG_DeepInheritance;
+	CMPIEnumeration *classnames = cc->ft->enumClassNames(cc, op, flags, rc);
+
         debug("invoke_enumerate_class_names");
   
 	if (classnames) {

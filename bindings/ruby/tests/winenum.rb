@@ -5,13 +5,26 @@
 #   winenum [--debug] [--namespace <namespace>] <classname> [ <property> ... ]
 #
 # Example
+# (-> http://www.codeproject.com/Articles/46390/WMI-Query-Language-by-Example)
 # 1. Enumerate namespaces (call recursively!)
 #   ruby winenum.rb -n root __NAMESPACE
 # 2. Enumerate classnames
 #   ruby winenum.rb -n root/cimv2 -q "select * from meta_class"
 # 3. Get class properties
 #   ruby winenum.rb -n root/cimv2 -q "select * from meta_class where __Class = \"Win32_LogicalDisk\""
+# 4. Get all base classes
+#   ruby winenum.rb -n root/cimv2  -q "select * from meta_class where __SuperClass Is Null"
+# 5. Get immediate children of a class
+#   ruby winenum.rb -n root/cimv2  -q "select * from meta_class where __SuperClass = \"CIM_Setting\""
+# 6. Get the dynasty of children starting at a class
+#   ruby winenum.rb -n root/cimv2  -q "select * from meta_class where __Dynasty = \"CIM_Setting\""
 #
+# Additional WQL parameters
+# - limit to specific names
+#  Where __Class Like "Win32%"
+# - limit to specific origins ("is a")
+#  Where __This Isa "__Event"
+
 
 require 'rexml/document'
 require File.join(File.dirname(__FILE__),'_loadpath')
