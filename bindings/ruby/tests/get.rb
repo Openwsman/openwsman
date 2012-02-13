@@ -20,7 +20,7 @@ class WsmanTest < Test::Unit::TestCase
     result = client.get( options, uri )
     assert result
 
-    puts result
+    puts result.to_xml
   end
 end
 
