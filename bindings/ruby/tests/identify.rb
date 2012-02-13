@@ -12,7 +12,6 @@ class IdentifyTest < Test::Unit::TestCase
     
     client = Client.open
     assert client
-    client.transport.auth_method = Openwsman::BASIC_AUTH_STR
     options = Openwsman::ClientOptions.new
     assert options
     options.set_dump_request
