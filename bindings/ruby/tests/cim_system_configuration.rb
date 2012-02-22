@@ -13,11 +13,8 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-#    options.set_dump_request
-    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_SystemConfiguration"
-#    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_HostedService"
-#    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_CommMechanismForManager"
-#    uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ManagedElement"
+    classname = "CIM_ManagedElement"
+    uri = "#{Openwsman.epr_prefix_for(classname)}/#{classname}"
     result = client.enumerate( options, nil, uri )
     assert result
 #    puts result
@@ -27,10 +24,13 @@ class WsmanTest < Test::Unit::TestCase
     while (context)
       count += 1
       result = client.pull( options, nil, uri, context )
-      puts "Response ##{count}"
-#      puts "### #{result}"
-      result.body.PullResponse.Items.each_child do |child|
-	puts "\t#{child.name} = #{child.text}"
+#      puts "Response ##{count}"
+#      puts "### #{result.to_xml}"
+      result.body.PullResponse.Items.each do |child|
+	puts "#{child.name}"
+        child.each do |prop|
+          puts "\t#{prop.name} = #{prop.text}"
+        end
       end
       context = result.context
     end
