@@ -40,7 +40,6 @@ class Client
     else
       raise "Unknown auth_scheme #{@auth_scheme.inspect}"
     end
-    puts "wsmc.transport.auth_method #{wsmc.transport.auth_method.inspect}"
     
     if client["scheme"] == "https"
       wsmc.transport.key = "serverkey.pem"
