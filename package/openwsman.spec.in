@@ -55,6 +55,7 @@ BuildRequires:  curl-devel
 
 %if 0%{?suse_version} > 910
 BuildRequires:  ruby-devel
+BuildRequires:  rubygems
 BuildRequires:  pkg-config
 %else
 # SLE9
@@ -75,7 +76,7 @@ Release:        1
 # Mandriva:
 # Release %mkrel 1
 Url:            http://www.openwsman.org/
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Source:         %{name}-%{version}.tar.bz2
@@ -96,7 +97,7 @@ Opensource Implementation of WS-Management protocol stack
 
 
 %package -n libwsman1
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
 Provides:       openwsman = %{version}
@@ -107,7 +108,7 @@ Opensource Implementation of WS-Management protocol stack
 (Common libraries)
 
 %package -n libwsman-devel
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          Development/Libraries/C and C++
 Summary:        Opensource Implementation of WS-Management
 Provides:       openwsman-devel = %{version}
@@ -121,7 +122,7 @@ Opensource Implementation of WS-Management stack
 (Development files)
 
 %package -n libwsman_clientpp1
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
 Provides:       openwsman-client = %{version}
@@ -132,7 +133,7 @@ An implementation of the WsmanClient interface using C++
 
 
 %package -n libwsman_clientpp-devel
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
 Requires:       libwsman_clientpp1 = %{version}
@@ -143,7 +144,7 @@ Development files for C++ interface to OpenWSMAN client library.
 
 
 %package server
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
@@ -156,7 +157,7 @@ Openwsman Server and service libraries
 
 
 %package python
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -170,7 +171,7 @@ API.
 
 
 %package ruby
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Requires:       ruby
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
@@ -190,7 +191,7 @@ This package provides Ruby bindings to access the openwsman client API.
 
 
 %package perl
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 %if 0%{?fedora}
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
@@ -205,7 +206,7 @@ This package provides Perl bindings to access the openwsman client API.
 
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 %package java
-License:        BSD3c(or similar)
+License:        BSD-3-Clause
 Group:          System/Management
 Requires:       java
 Requires:       libwsman1 = %{version}
@@ -256,13 +257,15 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 [ -d $RPM_BUILD_ROOT%{ruby_sitelib} ] && rm -f $RPM_BUILD_ROOT%{ruby_sitelib}/openwsmanplugin.rb
 [ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
+%if 0%{?suse_version} <= 1210
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
+install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
+ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
+%endif
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
-ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
@@ -276,6 +279,11 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 
 %post server
 /sbin/ldconfig
+# follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%pre server
+%service_add_pre %{name}.service
+%else
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
 %if 0%{?suse_version} >= 1140
@@ -284,35 +292,31 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %else
 # FIXME: chkconfig?!
 %endif
-
-# follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
-
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
-%pre server
-%service_add_pre %{name}.service
 %endif
 
 %preun server
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%service_del_preun %{name}.service
+%else
 %if 0%{?suse_version}
 %{stop_on_removal openwsmand}
 %else
 # FIXME: chkconfig?!
 %endif
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
-%service_del_preun %{name}.service
 %endif
 
 %postun server
+rm -f /var/log/wsmand.log
+/sbin/ldconfig
+%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%service_del_postun %{name}.service
+%else
 %if 0%{?suse_version}
 %{restart_on_update openwsmand}
 %{insserv_cleanup openwsmand}
 %else
 # FIXME: chkconfig?!
 %endif
-rm -f /var/log/wsmand.log
-/sbin/ldconfig
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
-%service_del_postun %{name}.service
 %endif
 
 %post -n libwsman_clientpp1 -p /sbin/ldconfig
@@ -321,7 +325,7 @@ rm -f /var/log/wsmand.log
 
 %files -n libwsman1
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README TODO
+%doc AUTHORS COPYING ChangeLog README.md TODO
 %{_libdir}/libwsman.so.*
 %{_libdir}/libwsman_client.so.*
 %{_libdir}/libwsman_curl_client_transport.so.*
@@ -375,7 +379,10 @@ rm -f /var/log/wsmand.log
 %if 0%{?suse_version} > 1010
 %config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
+%if 0%{?suse_version} <= 1210
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
+%{_sbindir}/rcopenwsmand
+%endif
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/authenticators
 %{_libdir}/openwsman/authenticators/*.so
@@ -384,7 +391,6 @@ rm -f /var/log/wsmand.log
 %{_libdir}/openwsman/plugins/*.so
 %{_libdir}/openwsman/plugins/*.so.*
 %{_sbindir}/openwsmand
-%{_sbindir}/rcopenwsmand
 %{_libdir}/libwsman_server.so.*
 %if 0%{?suse_version} >= 1210
 %{_unitdir}/%{name}.service
