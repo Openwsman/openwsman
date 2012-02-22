@@ -77,7 +77,8 @@ def enum_properties client, parms, *properties
 #  puts "max_envelope_size #{options.max_envelope_size}"
   options.set_dump_request if parms[:debug]
 
-  uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/#{namespace}/#{classname}"
+  uri = "#{Openwsman.epr_prefix_for(classname,namespace)}/#{classname}"
+  STDERR.puts "URI <#{uri}>"
   result = client.enumerate( options, filter, uri )
   show_fault result if result.fault?
 

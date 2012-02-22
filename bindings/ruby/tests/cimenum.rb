@@ -17,6 +17,7 @@ def show_fault result
 end
 
 debug = nil
+namespace = nil
 classname = nil
 
 loop do
@@ -24,6 +25,7 @@ loop do
   break unless opt
   case opt
   when "-d" then debug = true
+  when "-n" then namespace = ARGV.shift
   else
     classname = opt
   end
@@ -32,7 +34,7 @@ end
 client = Client.open
 options = Openwsman::ClientOptions.new
 
-uri = "#{Openwsman.epr_prefix_for(classname)}/#{classname}"
+uri = "#{Openwsman.epr_prefix_for(classname,namespace)}/#{classname}"
 result = client.enumerate( options, nil, uri )
 STDERR.puts result.to_xml if debug
 
