@@ -75,10 +75,11 @@ ADD_CUSTOM_COMMAND (
    OUTPUT ${rdoc_dir}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating rdoc documentation ..."
    COMMAND rm -rf ${rdoc_dir}
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rdoc -o ${rdoc_dir} openwsman.i *.i
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rdoc -o ${rdoc_dir} openwsman.i *.i ruby/openwsman/*.rb
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings
    DEPENDS ${CMAKE_SOURCE_DIR}/bindings/*.i
+   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
 )
 ADD_CUSTOM_TARGET(ruby_rdoc ALL DEPENDS "${rdoc_dir}")
 ADD_DEPENDENCIES(ruby_rdoc rbwsman)
