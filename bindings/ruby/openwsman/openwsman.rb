@@ -25,7 +25,14 @@ module Openwsman
     end
   end
   #
-  # return EPR prefix for given classname (<schema>_<classname>)
+  # return endpoint-reference (EPR) prefix for given classname and namespace
+  #
+  # * +classname+ - classname (using the <schema>_<name> format)
+  # * +namespace+ - optional namespace, required for Windows WMI which embeds the namespace in the EPR
+  #
+  # ==== Examples
+  #   prefix = Openwsman.epr_prefix_for "CIM_Managed_Element"
+  #   prefix = Openwsman.epr_prefix_for "Win32_Foo", "root/cimv2"
   #
   def self.epr_prefix_for classname, namespace = nil
     schema = classname.split("_")[0] rescue nil
