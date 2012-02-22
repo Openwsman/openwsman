@@ -24,6 +24,8 @@
     (-> https://rubygems.org/gems/openwsman)
   - Add Openwsman#create_doc_from_file to read xml files
   - Add XmlNode#next to iterate over children with identical name
+  - Add Openwsman#erb_prefix_for to return EPR uri prefixes for
+    different CIM schema
   - Ruby: Provide a default implementation of auth_request_callback
   - Ruby: Support Ruby 1.9
   - Expose Openwsman version as OPENWSMAN_VERSION, OPENWSMAN_MAJOR,
