@@ -1827,7 +1827,7 @@ wsmc_create(const char *hostname,
 	wsc->session_handle = 0;
 #endif
 	wsc->data.endpoint = u_strdup_printf("%s://%s:%d%s",
-			scheme, hostname, port, path);
+			wsc->data.scheme, wsc->data.hostname, wsc->data.port, wsc->data.path);
 	debug("Endpoint: %s", wsc->data.endpoint);
 	wsc->authentication.verify_host = 1; //verify CN in server certicates by default
 	wsc->authentication.verify_peer = 1; //validate server certificates by default
@@ -1922,7 +1922,8 @@ wsmc_release(WsManClient * cl)
           u_free(cl->proxy_data.proxy_password);
           cl->proxy_data.proxy_password = NULL;
         }
-  
+        pthread_mutex_destroy(&cl->mutex);
+
 	wsman_transport_close_transport(cl);
 
 	u_free(cl);

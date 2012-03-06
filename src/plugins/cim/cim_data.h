@@ -110,4 +110,7 @@ char *get_cim_host(void);
 char *get_cim_port(void);
 char *get_server_port(void);
 int get_omit_schema_optional(void);
+int get_cim_ssl(void);
+int get_cim_verify(void);
+char *get_cim_trust_store(void);
 #endif // __CIM_DATA_H__

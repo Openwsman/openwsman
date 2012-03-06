@@ -39,14 +39,13 @@ class WsmanTest < Test::Unit::TestCase
 #    puts "Context #{context} retrieved"
 
     result = client.pull( options, nil, uri, context )
-    break unless result
+    raise "client.pull returned nil" unless result
 
     results += 1
 
     if result.fault?
 	puts "Got fault"
 	faults += 1
-	break
     end
 
     node = result.body.PullResponse.Items.child

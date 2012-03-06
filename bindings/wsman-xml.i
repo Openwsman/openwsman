@@ -385,6 +385,59 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   }
 				 
   /*
+   * iterate over siblings
+   *
+   * finds next sibling with same namespace and name
+   *
+   * See also XmlNode#each
+   *
+   * XmlNode#each iterates over children, XmlNode#next over siblings
+   *
+   * Example:
+   *    <Foo>
+   *      <Bar>...
+   *      <Bar>...
+   *      <Bar>...
+   *      <Bar>...
+   *      <Other>...
+   *      <Other>...
+   *    </Foo>
+   *
+   * node = root.Foo # points to <Foo> node
+   *
+   *   bar = node.Bar
+   *   while bar do
+   *     bar = bar.next
+   *   end
+   *
+   * will give you four iterations (all <Bar> nodes)
+   *
+   *   child = node.Bar
+   *   while child do
+   *     child = child.next(1)
+   *   end
+   *
+   * will give you six iterations (all children of <Foo>)
+   * The latter example is equal to
+   *
+   *   node.each do |child|
+   *     ...
+   *   end
+   *
+   */
+  WsXmlNodeH next(int all = 0) {
+    WsXmlNodeH next_node = xml_parser_get_next_child($self);
+    if (next_node && !all) {
+      const char *ns_uri = ws_xml_get_node_name_ns($self);
+      const char *name = ws_xml_get_node_local_name($self);
+      if (ws_xml_is_node_qname(next_node, ns_uri, name) == 0) {
+        next_node = NULL;
+      }
+    }
+    return next_node;
+  }
+				 
+  /*
    * count node children
    * if name given, count children with this name
    * if name + ns given, count children with this namespace and name
@@ -418,34 +471,41 @@ typedef struct __WsXmlNode* WsXmlNodeH;
     return $self;
   }
   
+#if defined(SWIGRUBY)
   /*
-   * iterate children
+   * iterate over children
+   *
+   * See also XmlNode#next
+   *
+   * XmlNode#each iterates over children, XmlNode#next over siblings
+   *
    * can be limited to children with specific name (and specific namespace)
+   *
+   * for array-like constructs, e.g
+   *  <Parent>
+   *    <Child>..
+   *    <Child>..
+   *    <Child>..
+   *    <OtherChild>..
+   *    <OtherChild>..
+   *    <OtherChild>..
+   *
+   *   doc.Parent.each do |child|
+   *     ... iterates over all 6 children ...
+   *   end
+   *
+   * use XmlNode#next as in
+   *   node = doc.OtherChild
+   *   while node do
+   *     ... do something with node ...
+   *    node = node.next
+   *   end
    */
 
-#if defined(SWIGRUBY)
   void each(const char *name = NULL, const char *ns = NULL) {
     int i = 0;
     WsXmlNodeH node = $self;
     int count = ws_xml_get_child_count_by_qname( node, ns, name );
-    if (count == 0) {
-      /* no children of current node found
-       *   try to find $self->name within $self->parent
-       * this supports array-like constructs, e.g
-       *  <parent>
-       *    <child>..
-       *    <child>..
-       *    <child>..
-       *    <otherchild>..
-       *    <otherchild>..
-       *    <otherchild>..
-       * Now one can do parent.child.each in Ruby and will only get
-       * the <child> entries
-       */
-      name = ws_xml_get_node_local_name( node );
-      node = ws_xml_get_node_parent( node );
-      count = ws_xml_get_child_count_by_qname( node, ns, name );
-    }
     while ( i < count ) {
       rb_yield( SWIG_NewPointerObj((void*) ws_xml_get_child(node, i, ns, name), SWIGTYPE_p___WsXmlNode, 0));
       ++i;
@@ -454,6 +514,10 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #endif
 
 #if defined(SWIGPYTHON)
+  /*
+   * iterate over children
+   *
+   */
   %pythoncode %{
     def __iter__(self):
       r = range(0,self.size())

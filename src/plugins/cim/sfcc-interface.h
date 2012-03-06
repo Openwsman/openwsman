@@ -111,15 +111,6 @@ void cim_add_epr(CimClientInfo * client, WsXmlNodeH resource,
 void cim_add_epr_details(CimClientInfo * client, WsXmlNodeH resource,
 			 char *resourceUri, CMPIObjectPath * objectpath);
 
-int cim_getEprObjAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
-		    WsXmlNodeH itemsNode);
-
-int cim_getEprAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
-		 WsXmlNodeH itemsNode);
-
-int cim_getElementAt(CimClientInfo * client, WsEnumerateInfo * enumInfo,
-		     WsXmlNodeH itemsNode);
-
 CMPIInstance *
 cim_get_instance_from_selectors(CimClientInfo * client,
 		 WsContextH cntx, WsmanStatus * status);

@@ -162,6 +162,11 @@ typedef struct _WsManTransport {} WsManTransport;
     return wsman_transport_get_timeout((WsManClient *)$self);
   }
 
+/*
+ * verify the peer in SSL communication ?
+ * no: == 0
+ * yes: != 0
+ */
 #if defined(SWIGRUBY)
   %rename("verify_peer=") set_verify_peer( unsigned int value );
 #endif
@@ -172,6 +177,11 @@ typedef struct _WsManTransport {} WsManTransport;
     return wsman_transport_get_verify_peer((WsManClient *)$self);
   }
 
+/*
+ * verify the host in SSL communication ?
+ * no: == 0
+ * yes: != 0
+ */
 #if defined(SWIGRUBY)
   %rename("verify_host=") set_verify_host(unsigned int value);
 #endif

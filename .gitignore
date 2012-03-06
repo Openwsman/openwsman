@@ -45,6 +45,7 @@ bindings/python/openwsman_wrap.c
 bindings/python/pywsman.py
 bindings/ruby/openwsman_wrap.c
 bindings/ruby/html
+bindings/ruby/mkmf.log
 bindings/java/openwsman_wrap.c
 bindings/java/*.java
 etc/init/openwsmand.sh

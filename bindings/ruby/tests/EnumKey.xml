@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:x="http://schemas.xmlsoap.org/ws/2004/09/transfer" xmlns:w="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd" xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wsman.xsd" xml:lang="en-US">
+  <s:Header>
+    <a:Action>http://schemas.microsoft.com/wbem/wsman/1/wmi/root/default/StdRegProv/EnumKeyResponse</a:Action>
+    <a:MessageID>uuid:39F0214C-6B6A-4EFC-B971-CC0BC34D8DA4</a:MessageID>
+    <a:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:To>
+    <a:RelatesTo>uuid:357dee93-b5a1-15a1-8004-4b73f7201300</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <p:EnumKey_OUTPUT xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://schemas.microsoft.com/wbem/wsman/1/wmi/root/default/StdRegProv" xmlns:cim="http://schemas.dmtf.org/wbem/wscim/1/common">
+      <p:sNames>AddressBook</p:sNames>
+      <p:sNames>Branding</p:sNames>
+      <p:sNames>Connection Manager</p:sNames>
+      <p:sNames>DirectAnimation</p:sNames>
+      <p:sNames>DirectDrawEx</p:sNames>
+      <p:sNames>DXM_Runtime</p:sNames>
+      <p:sNames>Fontcore</p:sNames>
+      <p:sNames>ICW</p:sNames>
+      <p:sNames>IE40</p:sNames>
+      <p:sNames>IE4Data</p:sNames>
+      <p:sNames>IE5BAKEX</p:sNames>
+      <p:sNames>IEData</p:sNames>
+      <p:sNames>InstallShield Uninstall Information</p:sNames>
+      <p:sNames>InstallShield_{F8FBDC28-C265-4F0D-8B91-6E92913E19F6}</p:sNames>
+      <p:sNames>KB968930</p:sNames>
+      <p:sNames>MobileOptionPack</p:sNames>
+      <p:sNames>Mozilla Firefox 9.0.1 (x86 en-US)</p:sNames>
+      <p:sNames>MPlayer2</p:sNames>
+      <p:sNames>NetMeeting</p:sNames>
+      <p:sNames>OutlookExpress</p:sNames>
+      <p:sNames>PCHealth</p:sNames>
+      <p:sNames>SchedulingAgent</p:sNames>
+      <p:sNames>Windows Server 2003 Service Pack</p:sNames>
+      <p:sNames>{25A13826-8E4A-4FBF-AD2B-776447FE9646}</p:sNames>
+      <p:sNames>{B508B3F1-A24A-32C0-B310-85786919EF28}</p:sNames>
+      <p:sNames>{F8FBDC28-C265-4F0D-8B91-6E92913E19F6}</p:sNames>
+      <p:ReturnValue>0</p:ReturnValue>
+    </p:EnumKey_OUTPUT>
+  </s:Body>
+</s:Envelope>

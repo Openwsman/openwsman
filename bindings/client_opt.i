@@ -192,6 +192,9 @@ typedef struct {} client_opt_t;
   /*
    * Add a selector as key/value pair
    *
+   * NOTE: the value must be properly escaped (replace & with &amp;, etc.)
+   *       in Ruby use CGI::escapeHTML()
+   *
    */
 #if defined(SWIGRUBY)
   void add_selector(VALUE k, VALUE v)
@@ -212,6 +215,10 @@ typedef struct {} client_opt_t;
 #if defined(SWIGRUBY)
   /*
    * Set selectors from Hash
+   *
+   * NOTE: the values must be properly escaped (replace & with &amp;, etc.)
+   *       in Ruby use CGI::escapeHTML()
+   *
    */
   %rename( "selectors=" ) set_selectors(VALUE hash);
   void set_selectors(VALUE hash)

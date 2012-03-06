@@ -54,6 +54,9 @@ char *cim_host = "localhost";
 char *cim_port = DEFAULT_HTTP_CIMOM_PORT;
 char *server_port = "5985";
 char *cim_client_frontend = "XML";
+static int cim_ssl = 1; /* https connection to CIMOM */
+static int cim_verify = 1; /* verify ssl cert */
+static char *cim_trust_store = "/etc/ssl/certs"; /* path to cert trust store */
 int omit_schema_optional = 0;
 char *indication_profile_implementation_ns = NULL;
 
@@ -159,6 +162,9 @@ void set_config( void *self, dictionary *config )
     cim_client_frontend = iniparser_getstring(config, "cim:cim_client_frontend", "XML");
     cim_port = iniparser_getstring(config, "cim:port", DEFAULT_HTTP_CIMOM_PORT);
     server_port = iniparser_getstring(config, "server:port", server_port);
+    cim_ssl = iniparser_getboolean(config, "cim:ssl", 0);
+    cim_trust_store = iniparser_getstring(config, "cim:trust_store", "/etc/ssl/certs");
+    cim_verify = iniparser_getboolean(config, "cim:verify_cert", 0);
     omit_schema_optional = iniparser_getboolean(config, "cim:omit_schema_optional", 0);
     indication_profile_implementation_ns = iniparser_getstring(config, "cim:indication_profile_implementation_ns", "root/interop");
     debug("vendor namespaces: %s", namespaces);
@@ -206,7 +212,8 @@ get_cim_port()
     return cim_port;
 }
 
-char *get_server_port(void)
+char *
+get_server_port(void)
 {
    return server_port;
 }
@@ -224,4 +231,25 @@ char *
 get_indication_profile_implementation_ns()
 {
     return indication_profile_implementation_ns;
+}
+
+/* use SSL to connect to CIMOM ? */
+int
+get_cim_ssl()
+{
+    return cim_ssl;
+}
+
+/* verify ssl cert ? */
+int
+get_cim_verify()
+{
+    return cim_verify;
+}
+
+/* path to cert trust store */
+char *
+get_cim_trust_store()
+{
+    return cim_trust_store;
 }

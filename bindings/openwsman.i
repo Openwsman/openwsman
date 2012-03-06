@@ -26,6 +26,35 @@
  */
  
 
+#if defined(SWIGRUBY)
+%module Openwsman
+
+%{
+#include <ruby.h>
+#if HAVE_RUBY_IO_H
+#include <ruby/io.h> /* Ruby 1.9 style */
+#else
+#include <rubyio.h>
+#endif
+%}
+
+%typemap(in) FILE* {
+#if RUBY_VERSION > 18
+  struct rb_io_t *fptr;
+#else
+  struct OpenFile *fptr;
+#endif
+  Check_Type($input, T_FILE);
+  GetOpenFile($input, fptr);
+  /*rb_io_check_writable(fptr);*/
+#if RUBY_VERSION > 18
+  $1 = rb_io_stdio_file(fptr);
+#else
+  $1 = GetReadFile(fptr);
+#endif
+}
+#endif
+
 #if defined(SWIGJAVA)
 %module OpenWSMan
 
@@ -84,35 +113,6 @@
 %module pywsman
 #endif
 
-#if defined(SWIGRUBY)
-%module openwsman
-
-%{
-#include <ruby.h>
-#if HAVE_RUBY_IO_H
-#include <ruby/io.h> /* Ruby 1.9 style */
-#else
-#include <rubyio.h>
-#endif
-%}
-
-%typemap(in) FILE* {
-#if RUBY_VERSION > 18
-  struct rb_io_t *fptr;
-#else
-  struct OpenFile *fptr;
-#endif
-  Check_Type($input, T_FILE);
-  GetOpenFile($input, fptr);
-  /*rb_io_check_writable(fptr);*/
-#if RUBY_VERSION > 18
-  $1 = rb_io_stdio_file(fptr);
-#else
-  $1 = GetReadFile(fptr);
-#endif
-}
-#endif
-
 #if defined(SWIGPERL)
 %module openwsman
 
@@ -147,21 +147,24 @@
 #include <wsman-soap-envelope.h>
 #include <openwsman.h>
 #if defined(SWIGRUBY)
-#include <ruby/helpers.c>
+#include <ruby/helpers.h>
 
-SWIGEXPORT void Init_openwsman(void);
+/* Init_ for the %module, defined by Swig */
+SWIGEXPORT void Init_Openwsman(void);
+
+/* Init_ for the .so lib, called by Ruby */
 SWIGEXPORT void Init__openwsman(void) {
-  Init_openwsman();
+  Init_Openwsman();
 }
 #endif
 #if defined(SWIGPYTHON)
-#include <python/helpers.c>
+#include <python/helpers.h>
 #endif
 #if defined(SWIGJAVA)
-#include <java/helpers.c>
+#include <java/helpers.h>
 #endif
 #if defined(SWIGPERL)
-#include <perl/helpers.c>
+#include <perl/helpers.h>
 #endif
 
 /* Provide WsManTransport definition so it can be used as
@@ -195,6 +198,12 @@ static int get_debug(void) {
 static WsXmlDocH create_soap_envelope(void);
 static WsXmlDocH create_soap_envelope() {
   return ws_xml_create_soap_envelope();
+}
+
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding);
+
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding) {
+  return xml_parser_file_to_doc( filename, encoding, 0);                 
 }
 
 %}
@@ -284,3 +293,7 @@ static int get_debug();
  */
 static WsXmlDocH create_soap_envelope();
 
+/*
+ * Read XmlDoc from file
+ */
+static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding = "UTF-8");

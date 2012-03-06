@@ -70,6 +70,7 @@ static long long transfer_time = 0;
 
 int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 {
+        int ret = 0;
 #ifdef BENCHMARK
 	struct timeval tv0, tv1;
 	long long t0, t1;
@@ -86,7 +87,10 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 #endif
 
 	wsmc_handler(cl, request, NULL);
-
+        if (cl->last_error != WS_LASTERR_OK) {
+          warning("Couldn't send request to client: %s\n", cl->fault_string);
+          ret = 1;
+        }
 #ifdef BENCHMARK
 	gettimeofday(&tv1, NULL);
 	t0 = tv0.tv_sec * 10000000 + tv0.tv_usec;
@@ -94,7 +98,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 	transfer_time += t1 - t0;
 #endif
 	wsmc_unlock(cl);
-	return 0;
+	return ret;
 }
 
 #ifdef BENCHMARK

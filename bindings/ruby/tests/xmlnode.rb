@@ -51,6 +51,6 @@ class XmlNodeTest < Test::Unit::TestCase
     assert root.size == 4
     assert root[1] != node # its a dup
     assert root[0].name == root[1].name
-    puts doc
+    puts doc.to_xml
   end
 end

@@ -1,5 +1,7 @@
+#ifndef PYTHON_HELPERS_H
+#define PYTHON_HELPERS_H
 /*
- * helpers.c
+ * helpers.h
  *
  * helper functions for Python
  * 
@@ -114,3 +116,5 @@ cleanup:
  
     return;
 }
+
+#endif /* PYTHON_HELPERS_H */

@@ -1,3 +1,6 @@
+#ifndef RUBY_HELPERS_H
+#define RUBY_HELPERS_H
+
 /*
  * openwsman-ruby.c
  *
@@ -163,3 +166,5 @@ auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username
     *username = NULL;		/* abort authentication */
     return;
 }
+
+#endif /* RUBY_HELPERS_H */

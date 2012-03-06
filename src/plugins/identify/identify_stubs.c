@@ -56,7 +56,8 @@ wsmid_identify g_wsmid_identify = { XML_NS_WS_MAN, "Openwsman Project" ,  PACKAG
 
 wsmid_identify* wsmid_identify_Identify_EP(WsContextH cntx)
 {
-
-    return &g_wsmid_identify;
+  wsmid_identify *buf = u_malloc(sizeof(wsmid_identify));
+  memcpy(buf, &g_wsmid_identify, sizeof(wsmid_identify));
+  return buf;
 }
 

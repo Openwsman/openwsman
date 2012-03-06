@@ -762,6 +762,7 @@ wsman_identify_stub(SoapOpH op,
 		ws_serialize(cntx->serializercntx, ws_xml_get_soap_body(doc), data, typeInfo,
 			WSMID_IDENTIFY_RESPONSE, (char *) info->data, NULL, 1);
 		ws_serializer_free_mem(cntx->serializercntx, data, typeInfo);
+                u_free(data);
 	}
 
 	if (doc) {
@@ -2104,7 +2105,10 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	else { //WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS_TYPE
 	}
 	wsmc_transport_init(notificationSender, NULL);
-	wsman_send_request(notificationSender, outdoc);
+	if (wsman_send_request(notificationSender, outdoc)) {
+                warning("wse_send_notification: wsman_send_request fails for endpoint %s", subsInfo->epr_notifyto);
+                /* FIXME: retVal */
+        }
 	if(acked) {
 		retVal = WSE_NOTIFICATION_NOACK;
 		WsXmlDocH ackdoc = wsmc_build_envelope_from_response(notificationSender);
@@ -2141,7 +2145,7 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 	WsEventThreadContextH threadcntx = (WsEventThreadContextH)thrdcntx;
 	WsSubscribeInfo * subsInfo = threadcntx->subsInfo;
 	if(flag == 1)
-		debug("wse_notification_sender for %s stated", subsInfo->subsId);
+		debug("wse_notification_sender for %s started", subsInfo->subsId);
 	else
 		debug("wse_heartbeat_sender for %s started", subsInfo->subsId);
 	WsXmlDocH notificationDoc = NULL;

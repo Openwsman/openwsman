@@ -56,4 +56,4 @@ dist-hook:
 	rm -f $(distdir)/openwsman_wrap.c
 	rm -f $(distdir)/openwsman.pm
 
-EXTRA_DIST = helpers.c
+EXTRA_DIST = helpers.h

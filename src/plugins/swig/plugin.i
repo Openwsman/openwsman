@@ -165,13 +165,13 @@ typedef SV * Target_Type;
 #include <wsman-client-transport.h>
 
 #if defined(SWIGRUBY)
-#include <ruby/helpers.c>
+#include <ruby/helpers.h>
 #endif
 #if defined(SWIGPYTHON)
-#include <python/helpers.c>
+#include <python/helpers.h>
 #endif
 #if defined(SWIGJAVA)
-#include <java/helpers.c>
+#include <java/helpers.h>
 #endif
 
 /* fool swig into aliasing WsManClient and WsManTransport */

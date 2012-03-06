@@ -89,6 +89,7 @@ WsSerializerContextH ws_serializer_init()
 int ws_serializer_cleanup(WsSerializerContextH serctx)
 {
 	if(serctx && serctx->WsSerializerAllocList) {
+                u_destroy_lock(serctx);
 		ws_serializer_free_all(serctx);
 		list_destroy(serctx->WsSerializerAllocList);
 		u_free(serctx);
