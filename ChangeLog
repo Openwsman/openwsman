@@ -23,6 +23,7 @@
   - Allow to reset transport credentials to NULL (Matthias Bolte)
   - Plug memory leaks in wsman-client-transport (Found by Suneet
     Chandok, improved by Matthias Bolte)
+  - print warning if event delivery fails
 - Bindings
   - Provide Ruby bindings also as GEM
     (-> https://rubygems.org/gems/openwsman)
