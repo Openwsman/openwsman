@@ -46,7 +46,12 @@ class WsmanTest < Test::Unit::TestCase
     result = client.enumerate( options, nil, uri )
     assert result
     if result.fault?
+      fault = Openwsman::Fault.new result
       puts "Enumerate returned fault"
+      puts "Fault code #{fault.code}, subcode #{fault.subcode}"
+      puts "\treason #{fault.reason}"
+      puts "\tdetail #{fault.detail}"
+            
       exit 1
     end
 
