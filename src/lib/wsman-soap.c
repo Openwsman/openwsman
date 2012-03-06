@@ -2105,7 +2105,10 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	else { //WSMAN_SECURITY_PROFILE_HTTP_SPNEGO_KERBEROS_TYPE
 	}
 	wsmc_transport_init(notificationSender, NULL);
-	wsman_send_request(notificationSender, outdoc);
+	if (wsman_send_request(notificationSender, outdoc)) {
+                warning("wse_send_notification: wsman_send_request fails for endpoint %s", subsInfo->epr_notifyto);
+                /* FIXME: retVal */
+        }
 	if(acked) {
 		retVal = WSE_NOTIFICATION_NOACK;
 		WsXmlDocH ackdoc = wsmc_build_envelope_from_response(notificationSender);
