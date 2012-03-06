@@ -17,6 +17,11 @@
 
 # norootforbuild
 
+%if 0%{?suse_version} > 1140 || 0%{?fedora_version} > 14
+%define has_systemd 1
+%else
+%define has_systemd 0
+%endif
 
 Name:           openwsman
 BuildRequires:  gcc-c++ swig >= 1.3.30
@@ -32,7 +37,7 @@ BuildRequires:  -vim
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel ruby-rdoc
 %if 0%{?fedora} > 0 || 0%{?rhel_version} >= 600  || 0%{?centos_version} >= 600
-BuildRequires: perl-devel
+BuildRequires:  perl-devel
 %endif
 %endif
 
@@ -64,8 +69,8 @@ BuildRequires:  pkgconfig ruby
 
 %endif
 
-%if 0%{?suse_version} > 1140
-BuildRequires: systemd
+%if 0%{?has_systemd}
+BuildRequires:  systemd
 %{?systemd_requires}
 %endif
 
@@ -180,8 +185,15 @@ Requires:       ruby(abi) = 1.8
 Requires:       ruby(abi) = 1.8
 %endif
 %if 0%{?ruby_sitelib} == 0
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
+# Fedora, RHEL and CentOS don't have vendor lib
+# CMAKE checks for "ruby -r vendor-specific" and fails
+%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'print(Config::CONFIG["sitelibdir"])')}
+%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'print(Config::CONFIG["sitearchdir"])')}
+%else
 %{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'vd = Config::CONFIG["vendorlibdir"]; print(vd ? vd : Config::CONFIG["sitelibdir"])')}
 %{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'vad = Config::CONFIG["vendorarchdir"]; print(vad ? vad : Config::CONFIG["sitearchdir"])')}
+%endif
 %endif
 Summary:        Ruby bindings for openwsman client API
 
@@ -270,7 +282,7 @@ install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%if 0%{?has_systemd}
 install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %endif
 
@@ -281,11 +293,13 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %post server
 /sbin/ldconfig
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%if 0%{?has_systemd}
 
 %pre server
 %service_add_pre %{name}.service
+
 %else
+
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
 %if 0%{?suse_version} >= 1140
@@ -294,10 +308,11 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %else
 # FIXME: chkconfig?!
 %endif
+
 %endif
 
 %preun server
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%if 0%{?has_systemd}
 %service_del_preun %{name}.service
 %else
 %if 0%{?suse_version}
@@ -310,7 +325,7 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %postun server
 rm -f /var/log/wsmand.log
 /sbin/ldconfig
-%if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+%if 0%{?has_systemd}
 %service_del_postun %{name}.service
 %else
 %if 0%{?suse_version}
@@ -395,7 +410,7 @@ rm -f /var/log/wsmand.log
 %{_libdir}/openwsman/plugins/*.so.*
 %{_sbindir}/openwsmand
 %{_libdir}/libwsman_server.so.*
-%if 0%{?suse_version} >= 1210
+%if 0%{?has_systemd}
 %{_unitdir}/%{name}.service
 %endif
 
