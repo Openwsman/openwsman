@@ -149,9 +149,12 @@
 #if defined(SWIGRUBY)
 #include <ruby/helpers.h>
 
-SWIGEXPORT void Init_openwsman(void);
+/* Init_ for the %module, defined by Swig */
+SWIGEXPORT void Init_Openwsman(void);
+
+/* Init_ for the .so lib, called by Ruby */
 SWIGEXPORT void Init__openwsman(void) {
-  Init_openwsman();
+  Init_Openwsman();
 }
 #endif
 #if defined(SWIGPYTHON)
