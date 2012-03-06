@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman
 #
-# Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -31,7 +31,7 @@ BuildRequires:  -vim
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel ruby-rdoc
-%if 0%{?fedora} > 0
+%if 0%{?fedora} > 0 || 0%{?rhel_version} >= 600  || 0%{?centos_version} >= 600
 BuildRequires: perl-devel
 %endif
 %endif
@@ -68,7 +68,6 @@ BuildRequires:  pkgconfig ruby
 BuildRequires: systemd
 %{?systemd_requires}
 %endif
-
 
 Requires(pre):  sed coreutils grep /bin/hostname
 Version:        @VERSION@
@@ -205,6 +204,7 @@ This package provides Perl bindings to access the openwsman client API.
 
 
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
+
 %package java
 License:        BSD-3-Clause
 Group:          System/Management
@@ -244,6 +244,7 @@ cmake \
   -DCMAKE_SKIP_RPATH=1 \
   -DPACKAGE_ARCHITECTURE=`uname -m` \
   -DLIB=%{_lib} \
+  -DBUILD_RUBY_GEM=no \
   ..
 
 make CFLAGS="-DSSL_LIB='\"$SSL_LIB\"'"
@@ -281,6 +282,7 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 /sbin/ldconfig
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?suse_version} >= 1140 || 0%{?fedora_version} > 14
+
 %pre server
 %service_add_pre %{name}.service
 %else
@@ -364,6 +366,7 @@ rm -f /var/log/wsmand.log
 %{perl_vendorlib}/openwsman.pm
 
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
+
 %files java
 %defattr(-,root,root)
 %{_javadir}/*jar
