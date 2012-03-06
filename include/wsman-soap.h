@@ -224,7 +224,9 @@ typedef int     (*WsEndPointPut) (WsContextH, void *, void **, WsmanStatus *, vo
 
 typedef void   *(*WsEndPointGet) (WsContextH, WsmanStatus *, void *);
 
-#define WSE_NOTIFICATION_DRAOPEVENTS 1
+/* return values from wse_send_notification() */
+#define WSE_NOTIFICATION_DROPEVENTS 1
+#define WSE_NOTIFICATION_DRAOPEVENTS WSE_NOTIFICATION_DROPEVENTS /* sic! */
 #define WSE_NOTIFICATION_HEARTBEAT 2
 #define WSE_NOTIFICATION_NOACK 3
 #define WSE_NOTIFICATION_EVENTS_PENDING 4
