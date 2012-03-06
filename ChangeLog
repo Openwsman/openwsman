@@ -3,6 +3,10 @@
   - openSUSE: support systemd
   - provider getter functions for all client and client option string
     values
+  - Add ssl-related config options in [cim] section, see openwsman.conf
+    ssl = yes/no
+    verify_cert = yes/no
+    trust_store = /etc/ssl/certs
 - Bugfixes
   - Enum/Pull: Fix envelope maxsize handling, return partial result
   - Fix memleaks in client and client option string setters
