@@ -2142,7 +2142,7 @@ static void * wse_event_sender(void * thrdcntx, unsigned char flag)
 	WsEventThreadContextH threadcntx = (WsEventThreadContextH)thrdcntx;
 	WsSubscribeInfo * subsInfo = threadcntx->subsInfo;
 	if(flag == 1)
-		debug("wse_notification_sender for %s stated", subsInfo->subsId);
+		debug("wse_notification_sender for %s started", subsInfo->subsId);
 	else
 		debug("wse_heartbeat_sender for %s started", subsInfo->subsId);
 	WsXmlDocH notificationDoc = NULL;
