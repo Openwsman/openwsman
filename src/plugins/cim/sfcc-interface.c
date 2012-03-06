@@ -1610,12 +1610,22 @@ cim_connect_to_cimom(char *cim_host,
 {
 	CMPIStatus rc;
         memset(&rc, 0, sizeof(CMPIStatus)); /* workaround for sfcb bug #2844812 */
-	if (strcmp(frontend, "SfcbLocal") != 0)
-		frontend = "http";
+	if (strcmp(frontend, "SfcbLocal") != 0) {
+          if (get_cim_ssl())
+            frontend = "https";
+          else
+            frontend = "http";
+        }
 
-	CMCIClient *cimclient = cmciConnect(cim_host, frontend , cim_port,
+	CMCIClient *cimclient = cmciConnect2(cim_host, frontend, cim_port,
 			cim_host_userid,
-			cim_host_passwd, &rc);
+			cim_host_passwd,
+                        get_cim_verify(),
+                        get_cim_trust_store(),
+                        NULL, /* certFile */
+                        NULL, /* keyFile */
+                        &rc);
+fprintf(stderr, "cmciConnect2(%s,%s,%s,%s,%s,%d,%s,...) => %p\n", cim_host, frontend, cim_port,cim_host_userid,cim_host_passwd,get_cim_verify(),get_cim_trust_store(),cimclient);
 
 	if (cimclient == NULL) {
 	        debug( "*** Connection to CIMOM %s://%s:%s failed with %d:%s", frontend, cim_host, cim_port, rc.rc, rc.msg ? CMGetCharPtr(rc.msg) : "?");
