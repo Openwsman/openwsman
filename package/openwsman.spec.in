@@ -60,7 +60,12 @@ BuildRequires:  curl-devel
 
 %if 0%{?suse_version} > 910
 BuildRequires:  ruby-devel
+%if 0%{?suse_version} < 1120
+# SLE 10 has Ruby 1.8.6 and runs into http://help.rubygems.org/discussions/problems/859-trying-to-install-rubygems
+BuildRequires:  rubygems <= 1.3.7
+%else
 BuildRequires:  rubygems
+%endif
 BuildRequires:  pkg-config
 %else
 # SLE9
