@@ -295,25 +295,25 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 
 %postun -n libwsman1 -p /sbin/ldconfig
 
-%post server
-/sbin/ldconfig
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
 
 %pre server
+if [-f /var/lib/systemd/migrated/%{name}]; then
 %service_add_pre %{name}.service
+fi
+%endif
 
+%post server
+/sbin/ldconfig
+%if 0%{?has_systemd}
+%service_add_post %{name}.service
 %else
-
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
-%if 0%{?suse_version} >= 1140
-%service_add_post %{name}.service
-%endif
 %else
 # FIXME: chkconfig?!
 %endif
-
 %endif
 
 %preun server
