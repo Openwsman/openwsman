@@ -36,16 +36,13 @@ module Openwsman
   #
   def self.epr_prefix_for classname, namespace = nil
     schema = classname.split("_")[0] rescue nil
-    return case schema
+    prefix = case schema
     # dmtf CIM
     when "CIM" then "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
     # dmtf reserved
     when "PRS" then "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
     # Microsoft WMI
-    when "Win32"
-      prefix = "http://schemas.microsoft.com/wbem/wsman/1/wmi"
-      prefix += "/#{namespace}" if namespace
-      prefix
+    when "Win32" then "http://schemas.microsoft.com/wbem/wsman/1/wmi"
     # openwbem.org
     when "OpenWBEM" then "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2"
     # sblim
@@ -61,5 +58,14 @@ module Openwsman
     else
       raise "Unsupported schema #{schema.inspect} of class #{classname.inspect}"
     end
+    prefix += "/#{namespace}" if namespace
+    prefix
+  end
+  
+  # create full endpoint reference URI for namespace and classname
+  def self.epr_uri_for namespace, classname
+    raise "Namespace must not be nil" unless namespace
+    raise "Classname must not be nil" unless classname
+    "#{self.epr_prefix_for(classname)}/#{namespace}/#{classname}"
   end
 end
