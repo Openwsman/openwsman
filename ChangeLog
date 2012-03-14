@@ -1,3 +1,12 @@
+2.3.1
+- Features
+  - switch default CIMOM connection to https on port 5989
+    with PAM authentication (this now reflects the default sfcb config)
+- Bindings
+  - Ruby: Add Openwsman#epr_uri_for
+- Bugfixes
+  - Fix build issues in .spec file
+
 2.3.0
 - Features
   - openSUSE: support systemd
