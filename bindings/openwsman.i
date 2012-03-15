@@ -240,7 +240,7 @@ static const char *uri_prefix(const char *classname) {
     /* openwbem.org */
     { 8, "OpenWBEM", "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2" },
     /* sblim */
-    { 6, "Linux", "http://sblim.sf.net/wbem/wscim/1/cim-schema/2" },
+    { 5, "Linux", "http://sblim.sf.net/wbem/wscim/1/cim-schema/2" },
     /* omc-project */
     { 3, "OMC", "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2" },
     /* pegasus.org */

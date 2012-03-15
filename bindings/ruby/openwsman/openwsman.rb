@@ -35,29 +35,7 @@ module Openwsman
   #   prefix = Openwsman.epr_prefix_for "Win32_Foo", "root/cimv2"
   #
   def self.epr_prefix_for classname, namespace = nil
-    schema = classname.split("_")[0] rescue nil
-    prefix = case schema
-    # dmtf CIM
-    when "CIM" then "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
-    # dmtf reserved
-    when "PRS" then "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
-    # Microsoft WMI
-    when "Win32" then "http://schemas.microsoft.com/wbem/wsman/1/wmi"
-    # openwbem.org
-    when "OpenWBEM" then "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2"
-    # sblim
-    when "Linux" then "http://sblim.sf.net/wbem/wscim/1/cim-schema/2"
-    # omc-project
-    when "OMC" then "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2"
-    # pegasus.org
-    when "PG" then "http://schema.openpegasus.org/wbem/wscim/1/cim-schema/2"
-    # Intel AMT
-    when "AMT" then "#http://intel.com/wbem/wscim/1/amt-schema/1"
-    # Intel
-    when "IPS" then "#http://intel.com/wbem/wscim/1/ips-schema/1"
-    else
-      raise "Unsupported schema #{schema.inspect} of class #{classname.inspect}"
-    end
+    prefix = Openwsman::uri_prefix classname
     prefix += "/#{namespace}" if namespace
     prefix
   end

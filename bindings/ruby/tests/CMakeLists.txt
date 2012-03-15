@@ -12,6 +12,9 @@ ADD_TEST(bindings_ruby_constants  ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAK
 	# version
 ADD_TEST(bindings_ruby_version    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} version.rb )
 
+	# EPR uri
+ADD_TEST(bindings_ruby_uri_prefix ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} uri_prefix.rb )
+
         # Xml bindings
 ADD_TEST(bindings_ruby_xmldoc     ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} xmldoc.rb )
 ADD_TEST(bindings_ruby_xmlnode    ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} xmlnode.rb )
