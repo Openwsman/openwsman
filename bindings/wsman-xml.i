@@ -557,10 +557,28 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #endif
   }
 
+#if defined(SWIGRUBY)
+  /* get node attribute by index or name */
+  WsXmlAttrH attr(VALUE index = Qnil, VALUE namespace = Qnil) {
+    if (NIL_P(index)) { /* nil */
+      return ws_xml_get_node_attr( $self, 0 );
+    } else if (FIXNUM_P(index)) { /* numeric */
+      return ws_xml_get_node_attr( $self, FIX2INT(index) );      
+    } else { /* convert to string */
+      const char *ns = NULL;
+      const char *name = as_string(index);
+      if (!NIL_P(namespace)) {
+        ns = as_string(namespace);
+      }
+      return ws_xml_find_node_attr( $self, ns, name );
+    }
+  }
+#else
   /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
     return ws_xml_get_node_attr( $self, index );
   }
+#endif
   /* count node attribute */
   int attr_count() {
     return ws_xml_get_node_attr_count( $self );

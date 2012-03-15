@@ -68,4 +68,10 @@ module Openwsman
     raise "Classname must not be nil" unless classname
     "#{self.epr_prefix_for(classname)}/#{namespace}/#{classname}"
   end
+  
+  class EndPointReference
+    def method_missing name, *args
+      selector(name)
+    end
+  end
 end

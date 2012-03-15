@@ -206,6 +206,91 @@ static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding
   return xml_parser_file_to_doc( filename, encoding, 0);                 
 }
 
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding);
+
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding) {
+  return xml_parser_memory_to_doc( buf, strlen(buf), encoding, 0);
+}
+
+static char *uri_classname(const char *uri);
+/* get classname from resource URI */
+static char *uri_classname(const char *uri) {
+  const char *lastslash = strrchr(uri,'/');
+  if (lastslash) {
+    return strdup(lastslash+1);
+  }
+  return NULL;
+}
+
+
+static const char *uri_prefix(const char *classname);
+/* get resource URI prefix for a specific classname (resp class schema) */
+static const char *uri_prefix(const char *classname) {
+  static struct map {
+    int len;
+    const char *schema;
+    const char *prefix;
+  } mapping[] = {
+    /* dmtf CIM */
+    { 3, "CIM", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2" },
+    /* dmtf reserved */
+    { 3, "PRS", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2" },
+    /* Microsoft WMI */
+    { 5, "Win32", "http://schemas.microsoft.com/wbem/wsman/1/wmi" },
+    /* openwbem.org */
+    { 8, "OpenWBEM", "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2" },
+    /* sblim */
+    { 6, "Linux", "http://sblim.sf.net/wbem/wscim/1/cim-schema/2" },
+    /* omc-project */
+    { 3, "OMC", "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2" },
+    /* pegasus.org */
+    { 2, "PG", "http://schema.openpegasus.org/wbem/wscim/1/cim-schema/2" },
+    /* Intel AMT */
+    { 3, "AMT", "http://intel.com/wbem/wscim/1/amt-schema/1" },
+    /* Intel */
+    { 3, "IPS", "http://intel.com/wbem/wscim/1/ips-schema/1" },
+    { 0, NULL, NULL }
+  };
+  const char *schema_end;
+  struct map *map;
+  int len;
+  if (classname == NULL)
+    return NULL;
+  schema_end = strchr(classname, '_');
+  if (schema_end == NULL)
+    return NULL; /* Bad class name */
+  len = schema_end - classname;
+  map = mapping;
+  while (map->len > 0) {
+    if ((len == map->len)
+        && (strncmp(classname, map->schema, map->len) == 0)) {
+      return map->prefix;
+    }
+    ++map;
+  }
+  return NULL;
+}
+
+
+
+static char *epr_prefix(const char *uri);
+/* Get prefix from a EPR uri */
+static char *epr_prefix(const char *uri) {
+  char *classname = uri_classname(uri);
+  const char *prefix = uri_prefix(classname);
+  if (prefix) {
+    const char *lastslash;
+    if (strncmp(uri, prefix, strlen(prefix)) == 0) {
+      return strdup(prefix);
+    }
+    lastslash = strrchr(uri, '/');
+    if (lastslash) {
+      return strndup(uri, lastslash-uri);
+    }
+  }
+  return strdup(uri);
+}
+
 %}
 
 /*
@@ -297,3 +382,13 @@ static WsXmlDocH create_soap_envelope();
  * Read XmlDoc from file
  */
 static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding = "UTF-8");
+
+/*
+ * Read XmlDoc from string
+ */
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding = "UTF-8");
+
+/*
+ * Map classname (class schema) to resource uri prefix
+ */
+static const char *uri_prefix(const char* classname);
