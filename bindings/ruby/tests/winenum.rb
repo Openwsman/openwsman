@@ -27,7 +27,7 @@
 
 
 require 'rexml/document'
-require File.join(File.dirname(__FILE__),'_loadpath')
+require File.expand_path(File.join(File.dirname(__FILE__),'_loadpath'))
 require 'openwsman'
 require '_client'
 require 'getoptlong'
@@ -77,8 +77,14 @@ def enum_properties client, parms, *properties
 #  puts "max_envelope_size #{options.max_envelope_size}"
   options.set_dump_request if parms[:debug]
 
+#  options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
+#  options.max_elements = 999
+  
+  # return endpoint references (instead of instances)
+  options.flags = Openwsman::FLAG_ENUMERATION_ENUM_EPR if parms[:epr]
+
   uri = Openwsman.epr_uri_for namespace, classname
-  STDERR.puts "URI <#{uri}>"
+#  STDERR.puts "URI <#{uri}>"
   result = client.enumerate( options, filter, uri )
   show_fault result if result.fault?
 
@@ -107,13 +113,16 @@ def enum_properties client, parms, *properties
     end
 
     body = result.body
-    if classname == "*"
-      items = body.PullResponse.Items
-    else
-      items = body.PullResponse.Items.send classname
+    items = body.PullResponse.Items
+    results += 1
+    if parms[:epr]
+      epr = Openwsman::EndPointReference.new(items)
+      puts epr
+      next
+    elsif classname != "*"
+      items = items.send classname
     end
     next unless items
-    results += 1
 #    puts items.to_xml if parms[:debug]
     puts "-------" if results > 1
     if classname == "*"
@@ -168,6 +177,7 @@ begin
            [ "--query", "-q", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--limit", "-l", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--epr", "-e", GetoptLong::NO_ARGUMENT ],
            [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
          )
   opts.each do |opt,arg|
@@ -176,6 +186,7 @@ begin
     when "--limit" then parms[:limit] = arg
     when "--namespace" then parms[:namespace] = arg
     when "--debug" then parms[:debug] = true
+    when "--epr" then parms[:epr] = true
     end
   end
 rescue GetoptLong::InvalidOption
