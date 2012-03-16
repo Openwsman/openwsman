@@ -36,7 +36,7 @@ module Openwsman
   #
   def self.epr_prefix_for classname, namespace = nil
     prefix = Openwsman::uri_prefix classname
-    prefix += "/#{namespace}" if namespace
+    prefix += "/#{namespace}" if namespace && !namespace.empty?
     prefix
   end
   
@@ -44,7 +44,9 @@ module Openwsman
   def self.epr_uri_for namespace, classname
     raise "Namespace must not be nil" unless namespace
     raise "Classname must not be nil" unless classname
-    "#{self.epr_prefix_for(classname)}/#{namespace}/#{classname}"
+    epr = "#{self.epr_prefix_for(classname)}"
+    epr << "/#{namespace}" unless namespace.empty?
+    epr << "/#{classname}"
   end
   
   class EndPointReference
