@@ -67,9 +67,12 @@ class EprTest < Test::Unit::TestCase
     assert_equal "Microsoft", epr1.selector("Vendor")
     assert_equal "Microsoft", epr1.selector(:Vendor)
 
+    # Check selector_names
+    expected = { "Name" => "Windows", "Vendor" => "Microsoft" }
+    assert_equal expected.keys.sort, epr1.selector_names.sort
+
     # Check iterator
     count = 0
-    expected = { "Name" => "Windows", "Vendor" => "Microsoft" }
     epr1.each do |k,v|
       count += 1;
       expected.delete(k) if expected[k] == v

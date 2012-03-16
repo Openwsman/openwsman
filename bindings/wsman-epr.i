@@ -68,6 +68,14 @@ typedef struct {} epr_t;
     epr_destroy( $self );
   }
 
+#if defined(SWIGRUBY)
+  %newobject clone;
+  /* clone the EndPointReference instance */
+  epr_t *clone(epr_t *epr) {
+    return epr_copy(epr);
+  }
+#endif
+
   /*
    * Add selector as key/value pair
    *
@@ -143,6 +151,22 @@ typedef struct {} epr_t;
 #endif
     return wsman_epr_selector_by_name($self, name);
   }
+
+  /*
+   * Return list of selector names
+   */
+#if defined(SWIGRUBY)
+  VALUE selector_names(void) {
+    int i;
+    VALUE ary = rb_ary_new2($self->refparams.selectorset.count);
+    Selector *p = $self->refparams.selectorset.selectors;
+    for (i = 0; i < $self->refparams.selectorset.count; i++) {
+      rb_ary_store(ary, i, SWIG_FromCharPtr(p->name));
+      ++p;
+    }
+    return ary;
+  }
+#endif
 
 #if defined(SWIGRUBY)
   /* enumerate over selectors as key,value pairs */
