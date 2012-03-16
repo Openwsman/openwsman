@@ -274,7 +274,6 @@ static const char *uri_prefix(const char *classname) {
 
 static epr_t *my_epr_deserialize(WsXmlNodeH node);
 static epr_t *my_epr_deserialize(WsXmlNodeH node) {
-  fprintf(stderr, "my_epr_deserialize(%s)\n", ws_xml_get_node_local_name(node));
   if (strcmp(WSA_EPR, ws_xml_get_node_local_name(node)) == 0) {
     /* Use node as-is if its already a WSA_EPR */
     return epr_deserialize(node, NULL, NULL, 1);
