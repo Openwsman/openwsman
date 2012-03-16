@@ -56,6 +56,11 @@ def show_fault result
   puts "\tdetail #{fault.detail}"
 end
 
+def show_error client
+  puts "Client failed"
+  puts "\tResult code #{@client.response_code}, Fault: #{@client.fault_string}"
+end
+
 def enum_properties client, parms, *properties
   options = Openwsman::ClientOptions.new
   namespace = parms[:namespace] || "root/cimv2"
@@ -77,8 +82,8 @@ def enum_properties client, parms, *properties
 #  puts "max_envelope_size #{options.max_envelope_size}"
   options.set_dump_request if parms[:debug]
 
-#  options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
-#  options.max_elements = 999
+  options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
+  options.max_elements = 999
   
   # return endpoint references (instead of instances)
   options.flags = Openwsman::FLAG_ENUMERATION_ENUM_EPR if parms[:epr]
@@ -86,9 +91,7 @@ def enum_properties client, parms, *properties
   uri = Openwsman.epr_uri_for namespace, classname
 #  STDERR.puts "URI <#{uri}>"
   result = client.enumerate( options, filter, uri )
-  show_fault result if result.fault?
 
-  puts "client.enumerate => #{result.to_xml}" if parms[:debug]
   puts classname
   unless properties.empty?
     printf "%-#{WIDTH}s" * properties.size, *properties
@@ -99,53 +102,51 @@ def enum_properties client, parms, *properties
   context = nil
  
   loop do
-    context = result.context
-    break unless context
+    show_error client unless result
+    show_fault result if result.fault?
+    puts "result #{result.to_xml}" if parms[:debug]
 
-    result = client.pull( options, nil, uri, context )
-    break unless result
-    puts "client.pull #{result.to_xml}" if parms[:debug]
-
-    if result.fault?
-        show_fault result
-	faults += 1
-	break
-    end
-
-    body = result.body
-    items = body.PullResponse.Items
+    items = result.Items
     results += 1
     if parms[:epr]
-      epr = Openwsman::EndPointReference.new(items)
-      puts epr
-      next
+      if items
+        items.each do |item|
+          epr = Openwsman::EndPointReference.new(item)
+          puts epr
+        end
+      end
     elsif classname != "*"
       items = items.send classname
-    end
-    next unless items
-#    puts items.to_xml if parms[:debug]
-    puts "-------" if results > 1
-    if classname == "*"
-      node = items.first
-      puts node.name
-    else
-      node = items.send classname
-    end
-    if properties.empty?
-#      puts node.string
-      node.each do |c|
-	puts "  #{c.name}: #{c.text}"
+      if items
+      #    puts items.to_xml if parms[:debug]
+        puts "-------" if results > 1
+        if classname == "*"
+          node = items.first
+          puts node.name
+        else
+          node = items.send classname
+        end
+        if properties.empty?
+          #      puts node.string
+          node.each do |c|
+            puts "  #{c.name}: #{c.text}"
+          end
+        else
+          values = []
+          properties.each do |p|
+            values << node.send(p)
+          end
+          printf "%-#{WIDTH}s" * values.size, *values
+          puts
+        end
       end
-    else
-      values = []
-      properties.each do |p|
-	values << node.send(p)
-      end
-      printf "%-#{WIDTH}s" * values.size, *values
-      puts
     end
     limit -= 1
     break if limit == 0
+
+    context = result.context
+    break unless context
+    result = client.pull( options, nil, uri, context )
 
     puts
   end
