@@ -58,6 +58,8 @@ class EprTest < Test::Unit::TestCase
   
   def test_epr_compare
     epr1 = Openwsman::EndPointReference.new "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service?Name=Windows&Vendor=Microsoft"
+    assert epr1
+puts "EPR1 #{epr1}"
     # check namespace
     assert_equal "root/cimv2", epr1.namespace
 
@@ -87,8 +89,11 @@ class EprTest < Test::Unit::TestCase
     # convert epr1 to xml-string and parse this string
     doc = Openwsman::create_doc_from_string epr1.to_xml
     # generate epr2 from parsed xml
+    puts "DOC #{doc.to_xml}"
     epr2 = Openwsman::EndPointReference.new doc
-    
+    assert epr2
+puts "EPR2 #{epr2}"
+
     # must be true
     assert epr1.cmp(epr2)
   end

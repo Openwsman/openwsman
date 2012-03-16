@@ -43,7 +43,7 @@ typedef struct {} epr_t;
     else if (CLASS_OF(uri) == SwigClassXmlNode.klass) {
       WsXmlNodeH node;
       SWIG_ConvertPtr(uri, (void **)&node, SWIGTYPE_p___WsXmlNode, 0);
-      return epr_deserialize(node, XML_NS_ADDRESSING, WSA_EPR, 1);
+      return my_epr_deserialize(node);
     }
     else if (CLASS_OF(uri) == SwigClassXmlDoc.klass) {
       WsXmlDocH doc;
@@ -52,7 +52,7 @@ typedef struct {} epr_t;
       node = ws_xml_get_soap_body(doc);
       if (node == NULL)
         node = ws_xml_get_doc_root(doc);
-      return epr_deserialize(node, NULL, NULL, 1);
+      return my_epr_deserialize(node);
     }
     else {
       return epr_from_string(as_string(uri));
@@ -102,6 +102,7 @@ typedef struct {} epr_t;
     "$result = ($1 == 0) ? Qtrue : Qfalse;";
 #endif
   int cmp(epr_t *epr2) {
+    fprintf(stderr, "%p.cmp(%p)\n", $self, epr2);
     return epr_cmp($self, epr2);
   }
   
