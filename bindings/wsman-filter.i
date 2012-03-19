@@ -30,15 +30,16 @@ typedef struct {
  *
  */
 %extend filter_t {
+  /*
+   * Create empty filter
+   *
+   */
   filter_t() {
     return filter_initialize();
   }
   ~filter_t() {
     filter_destroy( $self );
   }
-  /*
-   * Set associators filter
-   */
 #if defined(SWIGJAVA)
   %typemap(in) (char **resultProp, const int propNum) {
 	  int i = 0;
@@ -67,6 +68,12 @@ typedef struct {
   %typemap(jstype) (char **resultProp, const int propNum) "String[]"
   %typemap(javain) (char **resultProp, const int propNum) "$javainput"
 #endif
+  /*
+   * Set associators filter
+   * call-seq:
+   *   filter.associators(end_point_reference, assoc_class_name, result_class_name, role, result_role, result_prop[], prop_num)
+   *
+   */
   int associators( epr_t *epr, const char *assocClass, const char *resultClass,
         const char *role, const char *resultRole, char **resultProp, const int propNum)
   {
@@ -74,6 +81,9 @@ typedef struct {
   }
   /*
    * Set references filter
+   * call-seq:
+   *   filter.references(end_point_reference, assoc_class_name, result_class_name, role, result_role, result_prop[], prop_num)
+   *
    */
   int references( epr_t *epr, const char *assocClass,
     const char *resultClass, const char *role, const char *resultRole, char **resultProp, const int propNum)
@@ -83,24 +93,36 @@ typedef struct {
 
   /*
    * Set simple dialect/query filter
+   * call-seq:
+   *   filter.simple(dialect, query)
+   *
    */
   int simple(const char *dialect, const char *query) {
     return filter_set_simple($self, dialect, query );
   }
   /*
    * Set XPath filter
+   * call-seq:
+   *   filter.xpath(query)
+   *
    */
   int xpath(const char *query) {
     return filter_set_simple($self, WSM_XPATH_FILTER_DIALECT, query );
   }
   /*
    * Set CQL (CIM query language) filter
+   * call-seq:
+   *   filter.cql(query)
+   *
    */
   int cql(const char *query) {
     return filter_set_simple($self, WSM_CQL_FILTER_DIALECT, query );
   }
   /*
    * Set WQL (WS-Management query language) filter
+   * call-seq:
+   *   filter.wql(query)
+   *
    */
   int wql(const char *query) {
     return filter_set_simple($self, WSM_WQL_FILTER_DIALECT, query );
