@@ -393,8 +393,10 @@ char *epr_to_string(epr_t *epr)
       len += (strlen(p->value) + 1); /* =value */
     else {
       char *value = epr_to_string((epr_t *)p->value);
-      len += (strlen(value) + 1); /* =value */
-      u_free(value);
+      if (value) {
+        len += (strlen(value) + 1); /* =value */
+        u_free(value);
+      }
     }
     p++;
   }
@@ -415,9 +417,11 @@ char *epr_to_string(epr_t *epr)
       ptr += strlen(p->value);
     } else {
       char *value = epr_to_string((epr_t *)p->value);
-      strcpy(ptr, value);
-      ptr += strlen(value);
-      u_free(value);
+      if (value) {
+        strcpy(ptr, value);
+        ptr += strlen(value);
+        u_free(value);
+      }
     }
     p++;
   }
