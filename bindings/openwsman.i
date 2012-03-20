@@ -250,6 +250,8 @@ static const char *uri_prefix(const char *classname) {
     { 3, "AMT", "http://intel.com/wbem/wscim/1/amt-schema/1" },
     /* Intel */
     { 3, "IPS", "http://intel.com/wbem/wscim/1/ips-schema/1" },
+    /* Sun */
+    { 3, "Sun","http://schemas.sun.com/wbem/wscim/1/cim-schema/2" },
     { 0, NULL, NULL }
   };
   const char *schema_end;
@@ -264,7 +266,7 @@ static const char *uri_prefix(const char *classname) {
   map = mapping;
   while (map->len > 0) {
     if ((len == map->len)
-        && (strncmp(classname, map->schema, map->len) == 0)) {
+        && (strncasecmp(classname, map->schema, map->len) == 0)) {
       return map->prefix;
     }
     ++map;
