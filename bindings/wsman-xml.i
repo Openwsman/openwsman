@@ -143,12 +143,21 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   }
   /*
    * get enumeration context as string
+   * return nil if context not present or empty
+   *
    * call-seq:
    *  doc.context -> String
    *
    */
+  %newobject context;
   const char *context() {
-    return wsmc_get_enum_context( $self );
+    char *c = wsmc_get_enum_context( $self );
+    if (c) {
+      if (*c)
+        return c;
+      u_free(c);
+    }
+    return NULL;
   }
   /*
    * Generate fault document based on given status
