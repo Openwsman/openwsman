@@ -53,6 +53,7 @@
   $1 = GetReadFile(fptr);
 #endif
 }
+
 #endif
 
 #if defined(SWIGJAVA)
@@ -323,7 +324,7 @@ static char *epr_prefix(const char *uri) {
 }
 
 %typemap(in) hash_t * {
- $input = value2hash(NULL, $1);
+ $input = value2hash(NULL, $1, 0);
 }
 
 %ignore __undefined;

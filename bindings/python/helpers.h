@@ -52,7 +52,7 @@ hash2value( hash_t *hash )
 #if 0 /* currently unused */
 /* create hash (h == NULL) or add to hash (h != NULL) from hash PyObject */
 static hash_t *
-value2hash( hash_t *h, PyObject *v )
+value2hash( hash_t *h, PyObject *v, int valuetype )
 {
   return h;
 }

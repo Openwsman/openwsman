@@ -250,7 +250,7 @@ typedef struct {} client_opt_t;
   %rename( "selectors=" ) set_selectors(VALUE hash);
   void set_selectors(VALUE hash)
   {
-    $self->selectors = value2hash(NULL, hash);
+    $self->selectors = value2hash(NULL, hash, 0);
   }
 #endif
 
@@ -281,7 +281,7 @@ typedef struct {} client_opt_t;
   %rename( "properties=" ) set_properties(VALUE hash);
   void set_properties(VALUE hash)
   {
-    $self->properties = value2hash(NULL, hash);
+    $self->properties = value2hash(NULL, hash, 0);
   }
 #endif
 

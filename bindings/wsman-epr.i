@@ -24,21 +24,23 @@ typedef struct {} epr_t;
  *
  */
 %extend epr_t {
-  /* Create EndPointReference
+#if defined(SWIGRUBY)
+  /*
+   * Create EndPointReference from URI (String) or XML (XmlNode or XmlDoc)
    *
+   * call-seq:
    *   EndPointReference.new(uri, address, { key=>value, ...})
    *   EndPointReference.new(uri)
    *   EndPointReference.new(xml)
    *
    */
-#if defined(SWIGRUBY)
   epr_t( VALUE uri, VALUE address = Qnil, VALUE selectors = Qnil) {
     extern swig_class SwigClassXmlNode;
     extern swig_class SwigClassXmlDoc;
-    if (!NIL_P(address)) {
+    if (!NIL_P(address) || !NIL_P(selectors)) {
       const char *uri_s = as_string(uri);
-      const char *address_s = as_string(uri);
-      return epr_create(uri_s, value2hash(NULL,selectors), address_s);
+      const char *address_s = as_string(address);
+      return epr_create(uri_s, value2hash(NULL,selectors,1), address_s);
     }
     else if (CLASS_OF(uri) == SwigClassXmlNode.klass) {
       WsXmlNodeH node;
@@ -70,7 +72,10 @@ typedef struct {} epr_t;
 
 #if defined(SWIGRUBY)
   %newobject clone;
-  /* clone the EndPointReference instance */
+  /*
+   * clone the EndPointReference instance
+   *
+   */
   epr_t *clone(epr_t *epr) {
     return epr_copy(epr);
   }
@@ -87,20 +92,22 @@ typedef struct {} epr_t;
   /*
    * Serialization
    *
+   * XML-serialize EndPointReference as child (with namespace and name) of node
+   *
    */
   int serialize( WsXmlNodeH node, const char *ns, const char *epr_node_name, int embedded) {
     return epr_serialize(node, ns, epr_node_name, $self, embedded);
   }
   
-  /*
-   * Compare two EndPointReferences
-   *
-   */
 #if defined(SWIGRUBY)
   %alias cmp "==";
   %typemap(out) int cmp
     "$result = ($1 == 0) ? Qtrue : Qfalse;";
 #endif
+  /*
+   * Compare two EndPointReferences
+   *
+   */
   int cmp(epr_t *epr2) {
     fprintf(stderr, "%p.cmp(%p)\n", $self, epr2);
     return epr_cmp($self, epr2);
@@ -121,6 +128,10 @@ typedef struct {} epr_t;
   %rename("to_s") string();
 #endif
   %newobject string;
+  /*
+   * String representation (<uri>?<selector>,<selector>,...)
+   *
+   */
   char *string() {
     return epr_to_string($self);
   }
@@ -140,23 +151,27 @@ typedef struct {} epr_t;
     return epr_get_resource_uri($self);
   }
   
+#if defined(SWIGRUBY)
   /*
    * get value of selector by name
    *
    */
-#if defined(SWIGRUBY)
   char *selector(VALUE v) {
     const char *name = as_string(v);
 #else
+  /*
+   * get value of selector by name
+   *
+   */
   char *selector(const char* name) {
 #endif
     return wsman_epr_selector_by_name($self, name);
   }
 
+#if defined(SWIGRUBY)
   /*
    * Return list of selector names
    */
-#if defined(SWIGRUBY)
   VALUE selector_names(void) {
     int i;
     VALUE ary = rb_ary_new2($self->refparams.selectorset.count);
@@ -170,7 +185,13 @@ typedef struct {} epr_t;
 #endif
 
 #if defined(SWIGRUBY)
-  /* enumerate over selectors as key,value pairs */
+  /*
+   * enumerate over selectors as key,value pairs
+   *
+   * call-seq:
+   *   epr.each { |key,value| ... }
+   *
+   */
   void each() {
     int i;
     Selector *p = NULL;
@@ -193,18 +214,18 @@ typedef struct {} epr_t;
   }
 #endif
 
+  %newobject classname;
   /*
    * Classname of EPR
    */
-  %newobject classname;
   char *classname(void) {
     return uri_classname($self->refparams.uri);
   }
  
+  %newobject namespace;
   /*
    * Namespace of EPR
    */
-  %newobject namespace;
   char *namespace(void) {
     char *classname;
     int classnamelen, namespacelen;
@@ -235,10 +256,10 @@ typedef struct {} epr_t;
     return strndup(uri + strlen(prefix) + 1, namespacelen);
   }
   
+  %newobject prefix;
   /*
    * Prefix of EPR
    */
-  %newobject prefix;
   char *prefix(void) {
     return epr_prefix($self->refparams.uri);
   }
