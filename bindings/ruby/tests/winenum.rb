@@ -299,13 +299,14 @@ parms = {}
 
 begin
   opts = GetoptLong.new(
-           [ "--query", "-q", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--associators", "-a", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--debug", "-d", GetoptLong::NO_ARGUMENT ],
+           [ "--epr", "-e", GetoptLong::NO_ARGUMENT ],
            [ "--limit", "-l", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
-           [ "--epr", "-e", GetoptLong::NO_ARGUMENT ],
-           [ "--associators", "-a", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--query", "-q", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--references", "-r", GetoptLong::REQUIRED_ARGUMENT ],
-           [ "--debug", "-d", GetoptLong::NO_ARGUMENT ]
+           [ "--timeout", "-t", GetoptLong::REQUIRED_ARGUMENT ]
          )
   opts.each do |opt,arg|
     case opt
@@ -316,6 +317,7 @@ begin
     when "--epr" then parms[:epr] = true
     when "--associators" then parms[:associators] = arg
     when "--references" then parms[:references] = arg
+    when "--timeout" then parms[:timeout] = arg
     end
   end
 rescue GetoptLong::InvalidOption
