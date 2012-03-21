@@ -199,12 +199,18 @@ def enum_properties client, parms, *properties
     classname = "*"
   end
 
+  start_time = Time.new
 
 #  Openwsman::debug = -1  
 #  Openwsman.debug = -1  
 #  options.max_envelope_size = 1024 * 1024 * 1024
 #  puts "max_envelope_size #{options.max_envelope_size}"
   options.set_dump_request if parms[:debug]
+
+  # timeout
+  if parms[:timeout]
+    options.timeout = parms[:timeout].to_i * 1000 # parms is in sec, timeout in msec
+  end
 
   options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
   options.max_elements = 999
@@ -256,7 +262,7 @@ def enum_properties client, parms, *properties
         results += 1
       else
       #    puts items.to_xml if parms[:debug]
-        puts "-------" if results > 1
+        puts "-------" if results > 0
         unless classname == "*"
           next unless item.name == classname
         end
@@ -276,7 +282,8 @@ def enum_properties client, parms, *properties
   end
 
   client.release( options, uri, context ) if context
-  puts "#{results} results, #{faults} faults"
+  duration = Time.new - start_time
+  printf "%d results, %d faults in %3.2f seconds\n" % [results, faults, duration]
 end
 
 def usage msg=nil
