@@ -67,7 +67,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 #endif
   %newobject string;
   /*
-   * generic string representation of the XmlDoc
+   * generic (indented) string representation of the XmlDoc
    */
   char *string() {
     int size;
@@ -80,6 +80,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 
   /*
    * encode document as string with specific encoding
+   * (non-indented representation)
    *
    * encoding defaults to 'utf-8'
    *
