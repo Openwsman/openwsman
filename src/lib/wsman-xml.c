@@ -363,7 +363,7 @@ int ws_xml_utf8_strlen(char *buf)
 }
 
 /**
- * Dump XML docuemnt contents into a Text buffer
+ * Dump XML document contents into a Text buffer
  * @param doc XML document
  * @param buf The target buffer
  * @param ptrSize the size of the buffer
