@@ -259,6 +259,9 @@ static const char *uri_prefix(const char *classname) {
   int len;
   if (classname == NULL)
     return NULL;
+  if (strcmp(classname, "*") == 0) {
+    return "http://schemas.dmtf.org/wbem/wscim/1";
+  }
   schema_end = strchr(classname, '_');
   if (schema_end == NULL)
     return NULL; /* Bad class name */
