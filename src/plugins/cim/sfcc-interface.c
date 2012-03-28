@@ -1215,6 +1215,7 @@ cim_enum_instances(CimClientInfo * client,
 			CMPIData d = enumArr->ft->getElementAt(enumArr, idx, NULL);
 			if (filter_instance(d.value.inst, enumInfo)) {
 				fenumArr->ft->setElementAt(fenumArr, fidx, &d.value, d.type);
+				fidx++;
 			}
 		}
 	} else {
