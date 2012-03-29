@@ -336,6 +336,13 @@ wsmc_set_action_option(client_opt_t * options, unsigned int flag)
 }
 
 
+unsigned int
+wsmc_get_action_option(client_opt_t * options)
+{
+	return options->flags;
+}
+
+
 void
 wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
 {

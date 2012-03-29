@@ -67,17 +67,20 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 #endif
   %newobject string;
   /*
-   * generic string representation of the XmlDoc
+   * generic (indented) string representation of the XmlDoc
    */
   char *string() {
     int size;
     char *buf;
-    ws_xml_dump_memory_node_tree( ws_xml_get_doc_root($self), &buf, &size );
+    /* don't use ws_xml_dump_memory_node_tree() as it keeps the encoding
+     * and winrm uses utf-16 :-/ */
+    ws_xml_dump_memory_enc( $self, &buf, &size, "UTF-8" );
     return buf;
   }
 
   /*
    * encode document as string with specific encoding
+   * (non-indented representation)
    *
    * encoding defaults to 'utf-8'
    *
@@ -141,12 +144,21 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   }
   /*
    * get enumeration context as string
+   * return nil if context not present or empty
+   *
    * call-seq:
    *  doc.context -> String
    *
    */
+  %newobject context;
   const char *context() {
-    return wsmc_get_enum_context( $self );
+    char *c = wsmc_get_enum_context( $self );
+    if (c) {
+      if (*c)
+        return c;
+      u_free(c);
+    }
+    return NULL;
   }
   /*
    * Generate fault document based on given status
@@ -557,10 +569,28 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #endif
   }
 
+#if defined(SWIGRUBY)
+  /* get node attribute by index or name */
+  WsXmlAttrH attr(VALUE index = Qnil, VALUE namespace = Qnil) {
+    if (NIL_P(index)) { /* nil */
+      return ws_xml_get_node_attr( $self, 0 );
+    } else if (FIXNUM_P(index)) { /* numeric */
+      return ws_xml_get_node_attr( $self, FIX2INT(index) );      
+    } else { /* convert to string */
+      const char *ns = NULL;
+      const char *name = as_string(index);
+      if (!NIL_P(namespace)) {
+        ns = as_string(namespace);
+      }
+      return ws_xml_find_node_attr( $self, ns, name );
+    }
+  }
+#else
   /* get node attribute */
   WsXmlAttrH attr(int index = 0) {
     return ws_xml_get_node_attr( $self, index );
   }
+#endif
   /* count node attribute */
   int attr_count() {
     return ws_xml_get_node_attr_count( $self );

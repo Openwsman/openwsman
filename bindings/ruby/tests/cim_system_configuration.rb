@@ -1,4 +1,4 @@
-# cim_computer_system.rb
+# cim_system_configuration.rb
 #  enumerate/pull/release for CIM_SystemConfiguration
 
 require 'test/unit'
@@ -13,8 +13,8 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
-    classname = "CIM_ManagedElement"
-    uri = "#{Openwsman.epr_prefix_for(classname)}/#{classname}"
+    classname = "CIM_SystemConfiguration"
+    uri = Openwsman.epr_uri_for "root/cimv2", classname
     result = client.enumerate( options, nil, uri )
     assert result
 #    puts result

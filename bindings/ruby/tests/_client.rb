@@ -42,8 +42,6 @@ class Client
     end
     
     if client["scheme"] == "https"
-      wsmc.transport.key = "serverkey.pem"
-      wsmc.transport.cert = "servercert.pem"
       wsmc.transport.verify_peer = 0
       wsmc.transport.verify_host = 0
     end

@@ -10,9 +10,12 @@
 
 #define FLAG_NONE                            0x0000
 #define FLAG_ENUMERATION_COUNT_ESTIMATION    0x0001
+/* Optimize enumeration, return actual data instead of context */
 #define FLAG_ENUMERATION_OPTIMIZATION        0x0002
+/* Return endpoint references in enumeration */
 #define FLAG_ENUMERATION_ENUM_EPR            0x0004
 #define FLAG_ENUMERATION_ENUM_OBJ_AND_EPR    0x0008
+/* Dump the request XML to stderr (debug) */
 #define FLAG_DUMP_REQUEST                    0x0010
 #define FLAG_INCLUDESUBCLASSPROPERTIES       0x0020
 #define FLAG_EXCLUDESUBCLASSPROPERTIES       0x0040
@@ -27,10 +30,14 @@
 #define FLAG_EVENT_SENDBOOKMARK		     0X8000
 #define FLAG_CIM_SCHEMA_OPT		    0X10000
 
+/* Indication delivery modes */
+
 #define	WSMAN_DELIVERY_PUSH         0
 #define WSMAN_DELIVERY_PUSHWITHACK  1
 #define WSMAN_DELIVERY_EVENTS       2
 #define WSMAN_DELIVERY_PULL         3
+
+/* Authentication methods */
 
 #define WS_NO_AUTH            0
 #define WS_BASIC_AUTH         1

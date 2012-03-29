@@ -194,6 +194,18 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
  */
 char *get_cimnamespace_from_selectorset(SelectorSet *selectorset);
 
+/**
+ * Create a string representation from an epr
+ * @param epr_t
+ * @return A string in a format of "Resource_uri?name1=value1&name2=value2"
+ */
+char *epr_to_string(epr_t* epr);
+
+/**
+ * Create an XML representation of epr_t enclosed in <ns:epr_node_name>
+ * @return created XML as string
+ */
+
 char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name);
 
 #ifdef __cplusplus

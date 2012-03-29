@@ -92,17 +92,16 @@ hash2value( hash_t *hash )
 }
 
 
-/* add key,value VALUE pair to hash_t*
+/* add key,value VALUE pair to hash_t* as char*
  *  (used as callback for value2hash)
  */
 static int
-add_i( VALUE key, VALUE value, hash_t *h )
+_add_str( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
 	const char *k = as_string( key );
-        const char *v = as_string( value );
-
 	if (!hash_lookup( h, k ) ) {
+            const char *v = as_string( value );
 	    if ( !hash_alloc_insert( h, k, v ) ) {
 		rb_raise( rb_eException, "hash_alloc_insert failed" );
             }
@@ -112,9 +111,39 @@ add_i( VALUE key, VALUE value, hash_t *h )
 }
 
 
-/* create hash (h == NULL) or add to hash (h != NULL) from hash VALUE */
+/* add key,value VALUE pair to hash_t* as selector_entry*
+ *  (used as callback for value2hash)
+ */
+static int
+_add_selector( VALUE key, VALUE value, hash_t *h )
+{
+    if (key != Qundef) {
+	const char *k = as_string( key );
+	if (!hash_lookup( h, k ) ) {
+            selector_entry *entry = u_malloc(sizeof(selector_entry));
+            entry->type = 0;
+	    entry->entry.text = strdup(as_string( value ));
+	    if ( !hash_alloc_insert( h, k, entry ) ) {
+		rb_raise( rb_eException, "hash_alloc_insert failed" );
+            }
+	}
+    }
+    return 0;
+}
+
+
+/*
+ * Convert Ruby Hash to hash_t
+ * 
+ * create hash (h == NULL) or add to hash (h != NULL) from hash VALUE
+ *
+ * valuetype - type of hash values
+ *   0 - values are string (char *)
+ *   1 - values are selector_entry *
+ * 
+ */
 static hash_t *
-value2hash( hash_t *h, VALUE v )
+value2hash( hash_t *h, VALUE v, int valuetype )
 {
     if (NIL_P(v)) return NULL;
   
@@ -122,7 +151,7 @@ value2hash( hash_t *h, VALUE v )
 
     if (!h) h = hash_create(HASHCOUNT_T_MAX, 0, 0);
 
-    rb_hash_foreach( v, add_i, (unsigned long)h );
+    rb_hash_foreach( v, (valuetype==0)?_add_str:_add_selector, (unsigned long)h );
 
     return h;
 }
@@ -166,5 +195,9 @@ auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username
     *username = NULL;		/* abort authentication */
     return;
 }
+
+static int associators_references( void *filter, int type, VALUE epr_v,
+  VALUE assocClass_v, VALUE resultClass_v, VALUE role_v, VALUE resultRole_v,
+  VALUE resultProp_v, VALUE propNum_v);
 
 #endif /* RUBY_HELPERS_H */

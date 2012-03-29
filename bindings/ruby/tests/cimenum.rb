@@ -17,7 +17,7 @@ def show_fault result
 end
 
 debug = nil
-namespace = nil
+namespace = "root/cimv2"
 classname = nil
 
 loop do
@@ -31,11 +31,15 @@ loop do
   end
 end
 
+raise "No classname given" unless classname
 client = Client.open
 options = Openwsman::ClientOptions.new
 
-uri = "#{Openwsman.epr_prefix_for(classname,namespace)}/#{classname}"
+uri = Openwsman.epr_uri_for namespace, classname
 result = client.enumerate( options, nil, uri )
+
+raise "Connection failed" unless result
+
 STDERR.puts result.to_xml if debug
 
 show_fault result

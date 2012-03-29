@@ -60,7 +60,12 @@ BuildRequires:  curl-devel
 
 %if 0%{?suse_version} > 910
 BuildRequires:  ruby-devel
+%if 0%{?suse_version} < 1120
+# SLE 10 has Ruby 1.8.6 and runs into http://help.rubygems.org/discussions/problems/859-trying-to-install-rubygems
+BuildRequires:  rubygems <= 1.3.7
+%else
 BuildRequires:  rubygems
+%endif
 BuildRequires:  pkg-config
 %else
 # SLE9
@@ -290,25 +295,25 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 
 %postun -n libwsman1 -p /sbin/ldconfig
 
-%post server
-/sbin/ldconfig
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
 
 %pre server
+if [-f /var/lib/systemd/migrated/%{name}]; then
 %service_add_pre %{name}.service
+fi
+%endif
 
+%post server
+/sbin/ldconfig
+%if 0%{?has_systemd}
+%service_add_post %{name}.service
 %else
-
 %if 0%{?suse_version}
 %{fillup_and_insserv openwsmand}
-%if 0%{?suse_version} >= 1140
-%service_add_post %{name}.service
-%endif
 %else
 # FIXME: chkconfig?!
 %endif
-
 %endif
 
 %preun server

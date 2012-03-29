@@ -1,7 +1,7 @@
 # test identify action
 
 require 'test/unit'
-require File.join(File.dirname(__FILE__),'_loadpath')
+require File.expand_path(File.join(File.dirname(__FILE__),'_loadpath'))
 require 'openwsman'
 require 'auth-callback'
 require '_client'
