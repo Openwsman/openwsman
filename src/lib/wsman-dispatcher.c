@@ -781,7 +781,13 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 	WsXmlDocH in_doc = wsman_build_inbound_envelope( msg);
 	SoapDispatchH dispatch = NULL;
 	debug("Inbound call...");
-
+#if 0
+        /* debug incoming message */
+        int size;
+        char *buf;
+        ws_xml_dump_memory_enc( in_doc, &buf, &size, "UTF-8" );
+	debug(buf);
+#endif
 	if (wsman_fault_occured(msg)) {
 		error("document is null");
 		goto DONE;

@@ -60,6 +60,8 @@ typedef struct {} client_opt_t;
 
   /*
    * set option flag(s)
+   * 
+   * adds new flag(s) to options
    *
    */
 #if defined(SWIGRUBY)
@@ -70,11 +72,36 @@ typedef struct {} client_opt_t;
   }
 
   /*
+   * get option flag(s)
+   * 
+   * return current flags bitmask
+   *
+   */
+#if defined(SWIGRUBY)
+  %rename( "flags" ) get_flags();
+#endif
+  unsigned int get_flags() {
+    return wsmc_get_action_option($self);
+  }
+
+  /*
    * clear option flag(s)
+   * 
+   * clears specific flag(s) from options
    *
    */
   void clear_flags(int flags) {
     wsmc_clear_action_option($self, flags);
+  }
+
+  /*
+   * reset option flags
+   * 
+   * sets option flags bitmask to FLAG_NONE
+   *
+   */
+  void reset_flags() {
+    wsmc_clear_action_option($self, ~FLAG_NONE);
   }
 
   /*
@@ -223,7 +250,7 @@ typedef struct {} client_opt_t;
   %rename( "selectors=" ) set_selectors(VALUE hash);
   void set_selectors(VALUE hash)
   {
-    $self->selectors = value2hash(NULL, hash);
+    $self->selectors = value2hash(NULL, hash, 0);
   }
 #endif
 
@@ -254,7 +281,7 @@ typedef struct {} client_opt_t;
   %rename( "properties=" ) set_properties(VALUE hash);
   void set_properties(VALUE hash)
   {
-    $self->properties = value2hash(NULL, hash);
+    $self->properties = value2hash(NULL, hash, 0);
   }
 #endif
 

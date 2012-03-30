@@ -53,6 +53,7 @@
   $1 = GetReadFile(fptr);
 #endif
 }
+
 #endif
 
 #if defined(SWIGJAVA)
@@ -206,6 +207,106 @@ static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding
   return xml_parser_file_to_doc( filename, encoding, 0);                 
 }
 
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding);
+
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding) {
+  return xml_parser_memory_to_doc( buf, strlen(buf), encoding, 0);
+}
+
+static char *uri_classname(const char *uri);
+/* get classname from resource URI */
+static char *uri_classname(const char *uri) {
+  const char *lastslash = strrchr(uri,'/');
+  if (lastslash) {
+    return strdup(lastslash+1);
+  }
+  return NULL;
+}
+
+
+static const char *uri_prefix(const char *classname);
+/* get resource URI prefix for a specific classname (resp class schema) */
+static const char *uri_prefix(const char *classname) {
+  static struct map {
+    int len;
+    const char *schema;
+    const char *prefix;
+  } mapping[] = {
+    /* dmtf CIM */
+    { 3, "CIM", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2" },
+    /* dmtf reserved */
+    { 3, "PRS", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2" },
+    /* Microsoft WMI */
+    { 5, "Win32", "http://schemas.microsoft.com/wbem/wsman/1/wmi" },
+    /* openwbem.org */
+    { 8, "OpenWBEM", "http://schema.openwbem.org/wbem/wscim/1/cim-schema/2" },
+    /* sblim */
+    { 5, "Linux", "http://sblim.sf.net/wbem/wscim/1/cim-schema/2" },
+    /* omc-project */
+    { 3, "OMC", "http://schema.omc-project.org/wbem/wscim/1/cim-schema/2" },
+    /* pegasus.org */
+    { 2, "PG", "http://schema.openpegasus.org/wbem/wscim/1/cim-schema/2" },
+    /* Intel AMT */
+    { 3, "AMT", "http://intel.com/wbem/wscim/1/amt-schema/1" },
+    /* Intel */
+    { 3, "IPS", "http://intel.com/wbem/wscim/1/ips-schema/1" },
+    /* Sun */
+    { 3, "Sun","http://schemas.sun.com/wbem/wscim/1/cim-schema/2" },
+    { 0, NULL, NULL }
+  };
+  const char *schema_end;
+  struct map *map;
+  int len;
+  if (classname == NULL)
+    return NULL;
+  if (strcmp(classname, "*") == 0) {
+    return "http://schemas.dmtf.org/wbem/wscim/1";
+  }
+  schema_end = strchr(classname, '_');
+  if (schema_end == NULL)
+    return NULL; /* Bad class name */
+  len = schema_end - classname;
+  map = mapping;
+  while (map->len > 0) {
+    if ((len == map->len)
+        && (strncasecmp(classname, map->schema, map->len) == 0)) {
+      return map->prefix;
+    }
+    ++map;
+  }
+  return NULL;
+}
+
+
+static epr_t *my_epr_deserialize(WsXmlNodeH node);
+static epr_t *my_epr_deserialize(WsXmlNodeH node) {
+  if (strcmp(WSA_EPR, ws_xml_get_node_local_name(node)) == 0) {
+    /* Use node as-is if its already a WSA_EPR */
+    return epr_deserialize(node, NULL, NULL, 1);
+  }
+  /* else search the WSA_EPR node */
+  return epr_deserialize(node, XML_NS_ADDRESSING, WSA_EPR, 1);
+}
+
+
+static char *epr_prefix(const char *uri);
+/* Get prefix from a EPR uri */
+static char *epr_prefix(const char *uri) {
+  char *classname = uri_classname(uri);
+  const char *prefix = uri_prefix(classname);
+  if (prefix) {
+    const char *lastslash;
+    if (strncmp(uri, prefix, strlen(prefix)) == 0) {
+      return strdup(prefix);
+    }
+    lastslash = strrchr(uri, '/');
+    if (lastslash) {
+      return strndup(uri, lastslash-uri);
+    }
+  }
+  return strdup(uri);
+}
+
 %}
 
 /*
@@ -228,7 +329,7 @@ static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding
 }
 
 %typemap(in) hash_t * {
- $input = value2hash(NULL, $1);
+ $input = value2hash(NULL, $1, 0);
 }
 
 %ignore __undefined;
@@ -297,3 +398,13 @@ static WsXmlDocH create_soap_envelope();
  * Read XmlDoc from file
  */
 static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding = "UTF-8");
+
+/*
+ * Read XmlDoc from string
+ */
+static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding = "UTF-8");
+
+/*
+ * Map classname (class schema) to resource uri prefix
+ */
+static const char *uri_prefix(const char* classname);

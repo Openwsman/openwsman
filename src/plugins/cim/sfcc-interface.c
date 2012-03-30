@@ -1625,7 +1625,6 @@ cim_connect_to_cimom(char *cim_host,
                         NULL, /* certFile */
                         NULL, /* keyFile */
                         &rc);
-fprintf(stderr, "cmciConnect2(%s,%s,%s,%s,%s,%d,%s,...) => %p\n", cim_host, frontend, cim_port,cim_host_userid,cim_host_passwd,get_cim_verify(),get_cim_trust_store(),cimclient);
 
 	if (cimclient == NULL) {
 	        debug( "*** Connection to CIMOM %s://%s:%s failed with %d:%s", frontend, cim_host, cim_port, rc.rc, rc.msg ? CMGetCharPtr(rc.msg) : "?");

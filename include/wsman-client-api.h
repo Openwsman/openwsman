@@ -744,6 +744,8 @@ typedef enum {
 	void wsmc_set_action_option(client_opt_t * options,
 				     unsigned int);
 
+	unsigned int wsmc_get_action_option(client_opt_t * options);
+
 	void wsmc_clear_action_option(client_opt_t * options,
 				     unsigned int);
 

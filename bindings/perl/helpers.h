@@ -48,7 +48,7 @@ hash2value( hash_t *hash )
 
 /* create hash (h == NULL) or add to hash (h != NULL) from SV* */
 static hash_t *
-value2hash( hash_t *h, SV *v )
+value2hash( hash_t *h, SV *v, int valuetype )
 {
     return h;
 }

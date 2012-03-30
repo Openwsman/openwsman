@@ -157,29 +157,35 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
  {
  	char *p;
 	char *uri;
-	hash_t *selectors;
-	hash_t *selectors_new;
+	hash_t *selectors = NULL;
+	hash_t *selectors_new = NULL;
 	hnode_t        *hn;
 	hscan_t         hs;
 	selector_entry *entry;
 	epr_t *epr;
 
 	p = strchr(str, '?');
-	uri = u_strndup(str, p - str);
-	selectors = u_parse_query(p + 1);
-	selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
-
-	hash_scan_begin(&hs, selectors);
-	while ((hn = hash_scan_next(&hs))) {
+        if (p) {
+          uri = u_strndup(str, p - str);
+          selectors = u_parse_query(p + 1);
+          selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
+	  hash_scan_begin(&hs, selectors);
+	  while ((hn = hash_scan_next(&hs))) {
 		entry = u_malloc(sizeof(selector_entry));
 		entry->type = 0;
 		entry->entry.text = (char *)hnode_get(hn);
 		hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
-	}
+	  }
+        }
+        else {
+          uri = u_strdup(str);
+        }
 
 	epr = epr_create(uri, selectors_new, NULL);
-	hash_free(selectors_new);
-	hash_free(selectors);
+        if (selectors_new) {
+	  hash_free(selectors_new);
+          hash_free(selectors);
+        }
 	u_free(uri);
 	return epr;
  }
@@ -368,6 +374,61 @@ epr_t *epr_copy(epr_t *epr)
 	else
 		return 1;
 }
+
+char *epr_to_string(epr_t *epr)
+{
+  int i, len;
+  char *buf, *ptr;
+
+  Selector *p = NULL;
+  if (epr == NULL) return NULL;
+
+  /* calculate buffer size */
+  len = strlen(epr->refparams.uri);
+
+  p = epr->refparams.selectorset.selectors;
+  for(i = 0; i < epr->refparams.selectorset.count; i++) {
+    len += (strlen(p->name) + 1); /* (?|&)key */
+    if (p->type == 0)
+      len += (strlen(p->value) + 1); /* =value */
+    else {
+      char *value = epr_to_string((epr_t *)p->value);
+      if (value) {
+        len += (strlen(value) + 1); /* =value */
+        u_free(value);
+      }
+    }
+    p++;
+  }
+  buf = u_malloc(len + 1);
+  strcpy(buf, epr->refparams.uri);
+  ptr = buf + strlen(buf);
+  p = epr->refparams.selectorset.selectors;
+  for(i = 0; i < epr->refparams.selectorset.count; i++) {
+    if (i == 0)
+      *ptr++ = '?';
+    else
+      *ptr++ = '&';
+    strcpy(ptr, p->name);
+    ptr += strlen(p->name);
+    *ptr++ = '=';
+    if (p->type == 0) {
+      strcpy(ptr, p->value);
+      ptr += strlen(p->value);
+    } else {
+      char *value = epr_to_string((epr_t *)p->value);
+      if (value) {
+        strcpy(ptr, value);
+        ptr += strlen(value);
+        u_free(value);
+      }
+    }
+    p++;
+  }
+  *ptr++ = 0;
+  return buf;
+}
+
 
 char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
 {
