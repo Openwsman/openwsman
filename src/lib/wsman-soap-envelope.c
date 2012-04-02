@@ -501,19 +501,32 @@ wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 	return doc;
 }
 
+/*
+ * Interpret query as XPath
+ * 
+ */
+
 static int interpretxpath(char **xpath)
 {
-	return 1;
+	return 0;
 }
 
+/*
+ * Parse enumeration request
+ * @return: 0 for error, set WsmanStatus accordingly
+ * 
+ */
 int wsman_parse_enum_request(WsContextH cntx,
-		WsEnumerateInfo * enumInfo)
+		WsEnumerateInfo * enumInfo, WsmanStatus *status)
 {
 	filter_t *filter = NULL;
 	WsXmlNodeH node;
 	WsXmlDocH doc = cntx->indoc;
-	if (!doc)
+	if (!doc) {
+                status->fault_code = WSMAN_INVALID_PARAMETER;
+                status->fault_detail_code = WSMAN_DETAIL_INVALID_VALUE;
 		return 0;
+        }
 
 	node = ws_xml_get_soap_body(doc);
 	if (node && (node = ws_xml_get_child(node, 0,
@@ -580,7 +593,7 @@ int wsman_parse_enum_request(WsContextH cntx,
 				else
 					enumInfo->flags |= WSMAN_ENUMINFO_REF;
 			}
-			else if(strcmp(filter->dialect, WSM_CQL_FILTER_DIALECT) ==0)
+			else if(strcmp(filter->dialect, WSM_CQL_FILTER_DIALECT) == 0)
 				enumInfo->flags |= WSMAN_ENUMINFO_CQL;
 			else if(strcmp(filter->dialect, WSM_WQL_FILTER_DIALECT) == 0)
 				enumInfo->flags |= WSMAN_ENUMINFO_WQL;
@@ -588,9 +601,12 @@ int wsman_parse_enum_request(WsContextH cntx,
 				enumInfo->flags |= WSMAN_ENUMINFO_SELECTOR;
 			else {
 				if(interpretxpath(&filter->query))
-					enumInfo->flags |= WSMAN_ENUMINFO_WQL;
-				else
+					enumInfo->flags |= WSMAN_ENUMINFO_XPATH;
+				else {
+                                        status->fault_code = WSEN_CANNOT_PROCESS_FILTER;
+                                        status->fault_detail_code = WSMAN_DETAIL_NOT_SUPPORTED;
 					return 0;
+                                }
 
 			}
 		}

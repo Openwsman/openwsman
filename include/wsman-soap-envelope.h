@@ -126,7 +126,7 @@ void wsman_add_fragement_for_header(WsXmlDocH indoc, WsXmlDocH outdoc);
 
 char *wsman_get_option_set(WsContextH cntx, WsXmlDocH doc, const char *op);
 
-int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo);
+int wsman_parse_enum_request(WsContextH cntx, WsEnumerateInfo * enumInfo, WsmanStatus *status);
 
 int wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo, WsmanFaultCodeType *faultcode,
 	WsmanFaultDetailType *detailcode);
