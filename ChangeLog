@@ -1,4 +1,6 @@
 2.3.2
+- Bugfixes
+  - Assume 'XPath' as default filter dialect, not 'WQL' (Zoltan Micskei)
 - Bindings
   - Add ClientOptions#flags() (read) and ClientOptions#reset_flags()
   - Add Openwsman#uri_prefix
