@@ -335,7 +335,9 @@ if parms[:associators] && parms[:references]
   usage "Enumeration of Associators and References not supported"
 end
 
-parms[:classname], parms[:selectors] = parse_classname(ARGV.shift)
+unless parms[:query]
+  parms[:classname], parms[:selectors] = parse_classname(ARGV.shift)
+end
 
 #puts "Classname(#{parms[:classname]}) Selectors(#{parms[:selectors].inspect})"
 enum_properties client, parms, *ARGV
