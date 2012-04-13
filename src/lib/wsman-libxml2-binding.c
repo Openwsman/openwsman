@@ -823,6 +823,14 @@ void xml_parser_doc_dump_memory(WsXmlDocH doc, char **buf, int *ptrSize)
 	return;
 }
 
+void xml_parser_doc_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize, const char *encoding)
+{
+
+	xmlDocPtr d = (xmlDocPtr) doc->parserDoc;
+        xmlDocDumpFormatMemoryEnc(d, (xmlChar **) buf, ptrSize, encoding?encoding:"UTF-8", 1);
+	return;
+}
+
 static void
 register_namespaces(xmlXPathContextPtr ctxt, WsXmlDocH doc,
 		WsXmlNodeH node)
