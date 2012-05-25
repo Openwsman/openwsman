@@ -6,6 +6,30 @@ require 'yaml'
 
 require File.join(File.dirname(__FILE__),'auth-callback')
 
+def show_fault result
+  fault = Openwsman::Fault.new result
+  STDERR.puts "Fault code #{fault.code}, subcode #{fault.subcode}"
+  STDERR.puts "\treason #{fault.reason}"
+  STDERR.puts "\tdetail #{fault.detail}"
+end
+
+def show_error client
+  STDERR.puts "Client failed"
+  STDERR.puts "\tResult code #{client.response_code}, Fault: #{client.fault_string.inspect}"
+end
+
+def fault? client, result
+  if result
+    if result.fault?
+      show_fault result
+      true
+    end
+  else
+    show_error client
+    true
+  end
+end
+
 class Client
   @wsmcs = YAML.load( File.open( File.join(File.dirname(__FILE__),"clients.yml") ) )
   def Client.open( name=nil )
