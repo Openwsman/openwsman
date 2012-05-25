@@ -281,7 +281,7 @@ static const char *uri_prefix(const char *classname) {
   return NULL;
 }
 
-
+#if defined(SWIGRUBY)
 static epr_t *my_epr_deserialize(WsXmlNodeH node);
 static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   if (strcmp(WSA_EPR, ws_xml_get_node_local_name(node)) == 0) {
@@ -291,7 +291,7 @@ static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   /* else search the WSA_EPR node */
   return epr_deserialize(node, XML_NS_ADDRESSING, WSA_EPR, 1);
 }
-
+#endif
 
 static char *epr_prefix(const char *uri);
 /* Get prefix from a EPR uri */
