@@ -21,8 +21,6 @@ typedef struct {
    */
   static int associators_references( void *filter, int type, VALUE epr_v, VALUE assocClass_v, VALUE resultClass_v, VALUE role_v, VALUE resultRole_v, VALUE resultProp_v, VALUE propNum_v)
   {
-    extern swig_class SwigClassEndPointReference;
-
     epr_t *epr = NULL;
     const char *assocClass = as_string(assocClass_v);
     const char *resultClass = as_string(resultClass_v);
@@ -31,8 +29,9 @@ typedef struct {
     char **resultProp = NULL;
     int propNum = 0;
     int res;
+    KLASS_DECL(SwigClassEndPointReference,SWIGTYPE_p_epr_t);
 
-    if (CLASS_OF(epr_v) == SwigClassEndPointReference.klass) {
+    if (CLASS_OF(epr_v) == KLASS_OF(SwigClassEndPointReference)) {
       SWIG_ConvertPtr(epr_v, (void **)&epr, SWIGTYPE_p_epr_t, 0);
     }
     else {
