@@ -1,3 +1,15 @@
+2.3.3
+- Bugfixes
+  - Assume 'XPath' as default filter dialect, not 'WQL' (Zoltan Micskei)
+  - Fixed enumeration with selector filter returning only one instance. (Zoltan Micskei)
+  - mark XPath filtering as not supported (in sfcc)
+- Bindings
+  - Adapt to Ruby 1.9
+  - Disable RDoc for Ruby 1.9
+  - WsXmlDoc.to_xml - enforce utf-8 encoding
+  - Properly create AssociationInstances(CIM References) /
+    AssociatedInstances(CIM Associations) filter
+  
 2.3.2
 - Bugfixes
   - Assume 'XPath' as default filter dialect, not 'WQL' (Zoltan Micskei)
