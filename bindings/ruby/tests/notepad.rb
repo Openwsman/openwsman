@@ -14,18 +14,41 @@ class WsmanTest < Test::Unit::TestCase
     assert options
     options.set_dump_request
 
-    uri = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Process"
+    uri_prefix = "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/"
+    klass = "Win32_ProcessStartup"
+    uri = uri_prefix + klass
+    
+    # instance values
+    instance = { "Title" => "Notepad" }
+
+    data = Openwsman::XmlDoc.new(klass, uri)
+    root = data.root
+    instance.each do |key,value|
+      root.add uri, key, value
+    end
+
+    s = data.to_xml
+
+#    puts "Creating #{klass} with #{s}"
+#
+#    result = client.create( options, uri, s, s.size, "utf-8" )
+#    if fault? client, result
+#      exit 1
+#    end
+
+    puts "Starting notepad"
+
+    uri = uri_prefix + "Win32_Process"
 
     options.add_selector( "CommandLine", "notepad.exe")
     options.add_selector( "CurrentDirectory", "C:\\" )
+    options.add_selector( "ProcessStartupInformation", s )
 
     method = "Create"
 #    method = "StopService"
     result = client.invoke( options, uri, method )
-    assert result
+    fault? client, result
 
-    puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
-    puts "#{result}"
   end
 end
 
