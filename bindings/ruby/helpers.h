@@ -48,7 +48,7 @@
  */
 
 #if SWIGVERSION > 0x020004
-#define KLASS_DECL(k,t) swig_class *k = (swig_class *)(t)
+#define KLASS_DECL(k,t) swig_class *k = (swig_class *)(t->clientdata)
 #define KLASS_OF(x) x->klass
 #else
 #define KLASS_DECL(k,t) extern swig_class k
@@ -178,7 +178,7 @@ value2hash( hash_t *h, VALUE v, int valuetype )
 static void
 auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username, char **password )
 {
-    KLASS_DECL(SwigClassTransport,SwigClassTransport);
+    KLASS_DECL(SwigClassTransport,SWIGTYPE_p__WsManTransport);
 
     VALUE c = SWIG_NewPointerObj((void*) client, SWIGTYPE_p__WsManClient, 0);
 
