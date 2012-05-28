@@ -109,7 +109,6 @@ typedef struct {} epr_t;
    *
    */
   int cmp(epr_t *epr2) {
-    fprintf(stderr, "%p.cmp(%p)\n", $self, epr2);
     return epr_cmp($self, epr2);
   }
   
