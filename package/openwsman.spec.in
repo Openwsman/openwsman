@@ -182,12 +182,16 @@ API.
 License:        BSD-3-Clause
 Group:          System/Management
 Requires:       ruby
+%{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
+
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-Requires:       ruby(abi) = 1.8
+Requires:       ruby(abi) = %{ruby_version}
 %endif
+
 %if 0%{?suse_version} > 1120
-Requires:       ruby(abi) = 1.8
+Requires:       ruby(abi) = %{ruby_version}
 %endif
+
 %if 0%{?ruby_sitelib} == 0
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 # Fedora, RHEL and CentOS don't have vendor lib
