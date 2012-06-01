@@ -95,11 +95,17 @@ typedef int (*WsXmlNsEnumCallback) (WsXmlNodeH, WsXmlNsH, void *);
 	// Dumping
 void ws_xml_dump_node_tree(FILE * f, WsXmlNodeH node);
 
+/* indented, using doc encoding */
 void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
 				  int *ptrSize);
 
+/* indented, using given encoding (default: utf-8) */
+void ws_xml_dump_memory_node_tree_enc(WsXmlNodeH node, char **buf,
+                                      int *ptrSize, const char *encoding);
+
 void ws_xml_dump_doc(FILE * f, WsXmlDocH doc);
 
+/* non-indented, using given encoding */
 void ws_xml_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize,
 			    const char *encoding);
 

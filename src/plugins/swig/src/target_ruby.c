@@ -373,11 +373,11 @@ TargetEndpoints( void *self, void *data )
     debug("TargetEndpoints(Ruby), called namespaces: %p", rbnamespaces);
     ary = rb_check_array_type( rbnamespaces );
     if (NIL_P(ary)) {
-      rb_raise( rb_eArgError, "namespaces is not array", klass);
+      rb_raise( rb_eArgError, "namespaces is not array");
     }
     int len = RARRAY_LEN(RARRAY(ary));
     if (len <= 0) {
-      rb_raise( rb_eArgError, "namespaces returned array with %d elements", klass, len);
+      rb_raise( rb_eArgError, "namespaces returned array with %d elements", len);
     }
     int i;
     for (i = 0; i < len; ++i) {
@@ -385,10 +385,10 @@ TargetEndpoints( void *self, void *data )
       VALUE elem = RARRAY_PTR(RARRAY(ary))[i];
       VALUE pair = rb_check_array_type( elem );
       if (NIL_P(pair)) {
-	rb_raise( rb_eArgError, "namespaces must return array of arrays", klass);
+	rb_raise( rb_eArgError, "namespaces must return array of arrays");
       }
       if (RARRAY_LEN(RARRAY(pair)) != 2) {
-	rb_raise( rb_eArgError, "namespaces must return array of ['<namespace>','<class_prefix>']", klass);
+	rb_raise( rb_eArgError, "namespaces must return array of ['<namespace>','<class_prefix>']");
       }
       WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
       ns->ns = StringValuePtr( RARRAY_PTR(RARRAY(pair))[0] );

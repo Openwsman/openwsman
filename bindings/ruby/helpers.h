@@ -40,7 +40,21 @@
 * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
- 
+
+
+/*
+ * Get access to Ruby klass pointers
+ * 
+ */
+
+#if SWIGVERSION > 0x020004
+#define KLASS_DECL(k,t) swig_class *k = (swig_class *)(t->clientdata)
+#define KLASS_OF(x) x->klass
+#else
+#define KLASS_DECL(k,t) extern swig_class k
+#define KLASS_OF(x) x.klass
+#endif
+
 /* convert char* to string VALUE */
 static VALUE
 makestring( const char *s )
@@ -164,25 +178,12 @@ value2hash( hash_t *h, VALUE v, int valuetype )
 static void
 auth_request_callback( WsManClient *client, wsman_auth_type_t t, char **username, char **password )
 {
+    KLASS_DECL(SwigClassTransport,SWIGTYPE_p__WsManTransport);
 
-/*
- * Uhm, swig 1.3.40 (or earlier) renamed its internal class variables from
- * cFoo to SwigClassFoo
- * 1.3.36 certainly used cFoo
- *
- */
-
-#if SWIG_VERSION < 0x010340
-#define TRANSPORT_CLASS cTransport
-#else
-#define TRANSPORT_CLASS SwigClassTransport
-#endif
-  
-    extern swig_class TRANSPORT_CLASS;
     VALUE c = SWIG_NewPointerObj((void*) client, SWIGTYPE_p__WsManClient, 0);
 
     /* ruby callback */
-    VALUE result = rb_funcall( TRANSPORT_CLASS.klass, rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
+    VALUE result = rb_funcall( KLASS_OF(SwigClassTransport), rb_intern( "auth_request_callback" ), 2, c, INT2NUM( t ) );
 
     if (CLASS_OF( result ) == rb_cArray) {
       if (RARRAY_LEN(result) == 2 ) {

@@ -22,18 +22,10 @@ class WsmanTest < Test::Unit::TestCase
     method = "StartService"
 #    method = "StopService"
     result = client.invoke( options, uri, method )
-    assert result
+    unless fault? client, result
 
-    bodychild = result.body.child
-    if result.fault?
-      fault = result.fault
-      puts "Error!"
-#      puts "Code #{fault.code}"
-#      puts "Subcode #{fault.subcode}"
-#      puts "Reason #{fault.reason}"
-#      puts "Detail #{fault.detail}" 
+      bodychild = result.body.child
     end
-    puts "Result code #{client.response_code}, Fault: #{client.fault_string}"
   end
 end
 

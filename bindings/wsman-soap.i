@@ -340,7 +340,10 @@ typedef struct _WS_CONTEXT* WsContextH;
     return wsman_get_option_set($self, doc, op);
   }
   int parse_enum_request(WsEnumerateInfo *enumInfo) {
-    return wsman_parse_enum_request( $self, enumInfo);
+    WsmanStatus status;
+    wsman_status_init(&status);
+    return wsman_parse_enum_request( $self, enumInfo, &status);
+    /* FIXME: return status */
   }
   
 }

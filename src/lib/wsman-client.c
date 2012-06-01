@@ -174,6 +174,7 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 				options->flags & FLAG_MUND_MAX_ESIZE);
 	}
 	if (options->fragment) {
+          /* FIXME: mu set but unused */
 		int mu = 0;
 		if ((options->flags & FLAG_MUND_FRAGMENT) ==
 				FLAG_MUND_FRAGMENT)

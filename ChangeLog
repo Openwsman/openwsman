@@ -1,4 +1,28 @@
+2.3.5
+- Bugfixes
+  - Release serializer lock only after use (Satya Chittidi)
+
+2.3.4
+- Bugfixes
+  - Adapt to Swig 2.0.5 bugfix for renamed construtors/destructors.
+- Bindings
+  - SwigClass.. variables are static now
+
+2.3.3
+- Bugfixes
+  - Assume 'XPath' as default filter dialect, not 'WQL' (Zoltan Micskei)
+  - Fixed enumeration with selector filter returning only one instance. (Zoltan Micskei)
+  - mark XPath filtering as not supported (in sfcc)
+- Bindings
+  - Adapt to Ruby 1.9
+  - Disable RDoc for Ruby 1.9
+  - WsXmlDoc.to_xml - enforce utf-8 encoding
+  - Properly create AssociationInstances(CIM References) /
+    AssociatedInstances(CIM Associations) filter
+  
 2.3.2
+- Bugfixes
+  - Assume 'XPath' as default filter dialect, not 'WQL' (Zoltan Micskei)
 - Bindings
   - Add ClientOptions#flags() (read) and ClientOptions#reset_flags()
   - Add Openwsman#uri_prefix

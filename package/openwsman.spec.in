@@ -97,7 +97,6 @@ Patch1:         openwsman-initscript.patch
 Source2:        %{name}.pam
 %endif
 Source3:        %{name}.SuSEfirewall2
-Patch0:         %{name}-pam-auth.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source4:        %{name}.service
 
@@ -183,21 +182,25 @@ API.
 License:        BSD-3-Clause
 Group:          System/Management
 Requires:       ruby
+%{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
+
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-Requires:       ruby(abi) = 1.8
+Requires:       ruby(abi) = %{ruby_version}
 %endif
+
 %if 0%{?suse_version} > 1120
-Requires:       ruby(abi) = 1.8
+Requires:       ruby(abi) = %{ruby_version}
 %endif
+
 %if 0%{?ruby_sitelib} == 0
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 # Fedora, RHEL and CentOS don't have vendor lib
 # CMAKE checks for "ruby -r vendor-specific" and fails
-%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'print(Config::CONFIG["sitelibdir"])')}
-%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'print(Config::CONFIG["sitearchdir"])')}
+%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["sitelibdir"])')}
+%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["sitearchdir"])')}
 %else
-%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'vd = Config::CONFIG["vendorlibdir"]; print(vd ? vd : Config::CONFIG["sitelibdir"])')}
-%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'vad = Config::CONFIG["vendorarchdir"]; print(vad ? vad : Config::CONFIG["sitearchdir"])')}
+%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'vd = RbConfig::CONFIG["vendorlibdir"]; print(vd ? vd : RbConfig::CONFIG["sitelibdir"])')}
+%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'vad = RbConfig::CONFIG["vendorarchdir"]; print(vad ? vad : RbConfig::CONFIG["sitearchdir"])')}
 %endif
 %endif
 Summary:        Ruby bindings for openwsman client API
@@ -210,7 +213,9 @@ This package provides Ruby bindings to access the openwsman client API.
 License:        BSD-3-Clause
 Group:          System/Management
 %if 0%{?fedora}
-Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+%define perl_version %(eval "`%{__perl} -V:version`"; echo $version)
+%define perl_requires perl(:MODULE_COMPAT_%{perl_version})
+Requires:       %{perl_version}
 %else
 Requires:       perl = %{perl_version}
 %endif
@@ -237,7 +242,6 @@ This package provides Java bindings to access the openwsman client API.
 
 %prep
 %setup -q
-%patch0
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 %patch1 -p1
 %endif

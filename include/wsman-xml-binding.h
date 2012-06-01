@@ -106,6 +106,8 @@ void xml_parser_doc_dump(FILE * f, WsXmlDocH doc);
 
 void xml_parser_doc_dump_memory(WsXmlDocH doc, char **buf, int *ptrSize);
 
+void xml_parser_doc_dump_memory_enc(WsXmlDocH doc, char **buf, int *ptrSize, const char *encoding);
+
 void xml_parser_element_dump(FILE * f, WsXmlDocH doc, WsXmlNodeH node);
 
 int xml_parser_check_xpath(WsXmlDocH doc, const char *xpath_expr);

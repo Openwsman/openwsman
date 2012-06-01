@@ -72,9 +72,8 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   char *string() {
     int size;
     char *buf;
-    /* don't use ws_xml_dump_memory_node_tree() as it keeps the encoding
-     * and winrm uses utf-16 :-/ */
-    ws_xml_dump_memory_enc( $self, &buf, &size, "UTF-8" );
+    /* force utf-8 encoding since e.g. winrm sends utf-16 */
+    ws_xml_dump_memory_node_tree_enc( ws_xml_get_doc_root($self), &buf, &size, "UTF-8" );
     return buf;
   }
 

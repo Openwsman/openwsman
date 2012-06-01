@@ -35,19 +35,19 @@ typedef struct {} epr_t;
    *
    */
   epr_t( VALUE uri, VALUE address = Qnil, VALUE selectors = Qnil) {
-    extern swig_class SwigClassXmlNode;
-    extern swig_class SwigClassXmlDoc;
+    KLASS_DECL(SwigClassXmlNode,SWIGTYPE_p___WsXmlNode);
+    KLASS_DECL(SwigClassXmlDoc,SWIGTYPE_p__WsXmlDoc);
     if (!NIL_P(address) || !NIL_P(selectors)) {
       const char *uri_s = as_string(uri);
       const char *address_s = as_string(address);
       return epr_create(uri_s, value2hash(NULL,selectors,1), address_s);
     }
-    else if (CLASS_OF(uri) == SwigClassXmlNode.klass) {
+    else if (CLASS_OF(uri) == KLASS_OF(SwigClassXmlNode)) {
       WsXmlNodeH node;
       SWIG_ConvertPtr(uri, (void **)&node, SWIGTYPE_p___WsXmlNode, 0);
       return my_epr_deserialize(node);
     }
-    else if (CLASS_OF(uri) == SwigClassXmlDoc.klass) {
+    else if (CLASS_OF(uri) == KLASS_OF(SwigClassXmlDoc)) {
       WsXmlDocH doc;
       WsXmlNodeH node;
       SWIG_ConvertPtr(uri, (void **)&doc, SWIGTYPE_p__WsXmlDoc, 0);
@@ -109,7 +109,6 @@ typedef struct {} epr_t;
    *
    */
   int cmp(epr_t *epr2) {
-    fprintf(stderr, "%p.cmp(%p)\n", $self, epr2);
     return epr_cmp($self, epr2);
   }
   

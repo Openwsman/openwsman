@@ -920,6 +920,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 #ifdef ENABLE_EVENTING_SUPPORT
 	WsXmlNodeH nodedoc = NULL;
 #endif
+  /* FIXME: resUriMatch set but not used */
 	int i, resUriMatch = 0;
 	char *ns = NULL;
 

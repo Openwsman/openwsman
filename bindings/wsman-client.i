@@ -16,7 +16,7 @@ typedef struct _WsManClient {
  *
  */
  
-%extend WsManClient {
+%extend _WsManClient {
   /*
    * Create a client connection.
    *
@@ -31,14 +31,14 @@ typedef struct _WsManClient {
    *  Client.new("host.domain.com", 1234, "/path", "http", "user", "pass")
    *
    */
-  WsManClient( const char *uri ) {
+  _WsManClient( const char *uri ) {
     return wsmc_create_from_uri( uri );
   }
 
   /*
    * :nodoc:
    */
-  WsManClient(const char *hostname,
+  _WsManClient(const char *hostname,
               const int port, const char *path,
               const char *scheme,
               const char *username,
@@ -47,7 +47,7 @@ typedef struct _WsManClient {
   }
 
   /* destructor */
-  ~WsManClient() {
+  ~_WsManClient() {
     wsmc_release( $self );
   }
 

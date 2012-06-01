@@ -1426,6 +1426,14 @@ void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
 	return;
 }
 
+void ws_xml_dump_memory_node_tree_enc(WsXmlNodeH node, char **buf,
+				  int *ptrSize, const char *encoding)
+{
+	WsXmlDocH doc = xml_parser_get_doc(node);
+	xml_parser_doc_dump_memory_enc(doc, buf, ptrSize, encoding);
+	return;
+}
+
 void ws_xml_dump_doc(FILE * f, WsXmlDocH doc)
 {
 	xml_parser_doc_dump(f, doc);

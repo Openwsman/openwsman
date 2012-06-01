@@ -1182,6 +1182,10 @@ cim_enum_instances(CimClientInfo * client,
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "WQL", &rc);
 	} else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
+	} else if (( enumInfo->flags & WSMAN_ENUMINFO_XPATH )) { /* XPath unsupported in Sfcc */
+                status->fault_code = WSEN_CANNOT_PROCESS_FILTER;
+                status->fault_detail_code = WSMAN_DETAIL_NOT_SUPPORTED;
+                goto cleanup;
 	} else {
 		enumeration = cc->ft->enumInstances(cc, objectpath,
 				CMPI_FLAG_DeepInheritance,
@@ -1211,6 +1215,7 @@ cim_enum_instances(CimClientInfo * client,
 			CMPIData d = enumArr->ft->getElementAt(enumArr, idx, NULL);
 			if (filter_instance(d.value.inst, enumInfo)) {
 				fenumArr->ft->setElementAt(fenumArr, fidx, &d.value, d.type);
+				fidx++;
 			}
 		}
 	} else {

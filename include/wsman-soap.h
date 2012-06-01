@@ -249,9 +249,9 @@ typedef int (*WsEndPointSubscriptionCancel) (WsEventThreadContextH);
 #define WSMAN_ENUMINFO_REF          	  0x040000
 #define WSMAN_ENUMINFO_CQL          	  0x080000
 #define WSMAN_ENUMINFO_WQL          	  0x100000
-#define WSMAN_ENUMINFO_SELECTOR		0x200000
-#define WSMAN_ENUMINFO_CIM_CONTEXT_CLEANUP	0x400000
-
+#define WSMAN_ENUMINFO_SELECTOR		  0x200000
+#define WSMAN_ENUMINFO_CIM_CONTEXT_CLEANUP 0x400000
+#define WSMAN_ENUMINFO_XPATH              0x800000
 
 struct __WsEnumerateInfo {
 	unsigned long flags;
