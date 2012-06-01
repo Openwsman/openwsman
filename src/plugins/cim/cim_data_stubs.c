@@ -439,7 +439,10 @@ CimResource_Enumerate_EP( WsContextH cntx,
 		goto cleanup;
 	}
 
-	wsman_parse_enum_request(cntx, enumInfo);
+	if (!wsman_parse_enum_request(cntx, enumInfo, status)) {
+          retval = 1;
+          goto cleanup;
+        }
 	cim_enum_instances(cimclient, enumInfo, status);
 
 	if (status && status->fault_code != 0) {

@@ -130,30 +130,6 @@ def extract_filter_arguments arg
   [a,b,c,d]
 end
 
-def show_fault result
-  fault = Openwsman::Fault.new result
-  STDERR.puts "Fault code #{fault.code}, subcode #{fault.subcode}"
-  STDERR.puts "\treason #{fault.reason}"
-  STDERR.puts "\tdetail #{fault.detail}"
-end
-
-def show_error client
-  STDERR.puts "Client failed"
-  STDERR.puts "\tResult code #{client.response_code}, Fault: #{client.fault_string}"
-end
-
-def fault? client, result
-  if result
-    if result.fault?
-      show_fault result
-      true
-    end
-  else
-    show_error client
-    true
-  end
-end
-
 def print_item indent, item, properties = []
   indentation = "  "*indent
   if properties.empty?
@@ -161,8 +137,8 @@ def print_item indent, item, properties = []
     item.each do |c|
       if c.size == 0
         attrs = ""
-        c.each_attr { |a| attrs << " #{a.value}" }
-        puts "#{indentation}#{c.name}:#{attrs} #{c.text}"
+        c.each_attr { |a| attrs << " #{a.name}=#{a.value}" }
+        puts "#{indentation}#{c.name}(#{attrs}): #{c.text}"
       else
         print_item indent+1, c
       end
@@ -194,9 +170,14 @@ def enum_properties client, parms, *properties
 
   filter = nil
   if parms[:query]
+    q = parms[:query]
     filter = Openwsman::Filter.new
-    filter.wql parms[:query]
+    filter.wql q
     classname = "*"
+    if q =~ /.*from(\s+)(([\w_])+)/i
+      uri = Openwsman.epr_prefix_for $2, namespace
+      uri << "/*"
+    end
   end
 
   start_time = Time.new
@@ -218,7 +199,7 @@ def enum_properties client, parms, *properties
   # return endpoint references (instead of instances)
   options.flags = Openwsman::FLAG_ENUMERATION_ENUM_EPR if parms[:epr]
 
-  uri = Openwsman.epr_uri_for namespace, classname
+  uri ||= Openwsman.epr_uri_for namespace, classname
 
   # enumerate Associators
   if parms[:associators] || parms[:references]
@@ -335,7 +316,9 @@ if parms[:associators] && parms[:references]
   usage "Enumeration of Associators and References not supported"
 end
 
-parms[:classname], parms[:selectors] = parse_classname(ARGV.shift)
+unless parms[:query]
+  parms[:classname], parms[:selectors] = parse_classname(ARGV.shift)
+end
 
 #puts "Classname(#{parms[:classname]}) Selectors(#{parms[:selectors].inspect})"
 enum_properties client, parms, *ARGV
