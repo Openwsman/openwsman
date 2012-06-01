@@ -1,4 +1,7 @@
 2.3.6
+- Features
+  - Plugins: Ability to redirect requests to a different WS-Management
+    server
 - Bindings
   - Ruby: fix crash in Options destructor
 
