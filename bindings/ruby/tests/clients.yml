@@ -1,3 +1,12 @@
+server2003sp2:
+  scheme: http
+  host: 10.10.4.227
+  port: 5985
+  path: /wsman
+  username: wsman
+  password: secret
+  auth: basic
+
 microsoft:
   scheme: http
   host: wsman.msft.net
