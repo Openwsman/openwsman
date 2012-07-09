@@ -192,9 +192,16 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 		wsmc_add_selector_from_options(doc, options);
 
 		if (options->cim_ns) {
-			wsman_add_selector(header,
-					CIM_NAMESPACE_SELECTOR, options->cim_ns);
-		}
+                  /* don't add CIM_NAMESPACE_SELECTOR twice */
+                  if (options->selectors && hash_count(options->selectors) > 0) {
+                    if (!hash_lookup(options->selectors, CIM_NAMESPACE_SELECTOR)) {
+                      wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, options->cim_ns);
+                    }
+                  }
+                  else {
+                    wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, options->cim_ns);
+                  }
+                }
 	}
 	return doc;
 }
