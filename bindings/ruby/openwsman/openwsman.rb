@@ -44,9 +44,7 @@ module Openwsman
   def self.epr_uri_for namespace, classname
     raise "Namespace must not be nil" unless namespace
     raise "Classname must not be nil" unless classname
-    epr = "#{self.epr_prefix_for(classname)}"
-    epr << "/#{namespace}" unless namespace.empty?
-    epr << "/#{classname}"
+    epr = epr_prefix_for(classname,namespace) + "/#{classname}"
   end
   
   class EndPointReference
