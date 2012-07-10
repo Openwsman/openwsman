@@ -1,3 +1,7 @@
+2.3.6
+- Bindings
+  - Ruby: fix crash in Options destructor
+
 2.3.5
 - Bugfixes
   - Release serializer lock only after use (Satya Chittidi)
