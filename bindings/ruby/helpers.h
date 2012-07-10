@@ -113,9 +113,9 @@ static int
 _add_str( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
-	const char *k = as_string( key );
+	const char *k = strdup( as_string( key ) );
 	if (!hash_lookup( h, k ) ) {
-            const char *v = as_string( value );
+            const char *v = strdup( as_string( value ) );
 	    if ( !hash_alloc_insert( h, k, v ) ) {
 		rb_raise( rb_eException, "hash_alloc_insert failed" );
             }
@@ -132,7 +132,7 @@ static int
 _add_selector( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
-	const char *k = as_string( key );
+	const char *k = strdup( as_string( key ) );
 	if (!hash_lookup( h, k ) ) {
             selector_entry *entry = u_malloc(sizeof(selector_entry));
             entry->type = 0;
@@ -163,7 +163,7 @@ value2hash( hash_t *h, VALUE v, int valuetype )
   
     Check_Type( v, T_HASH );
 
-    if (!h) h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+    if (!h) h = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 
     rb_hash_foreach( v, (valuetype==0)?_add_str:_add_selector, (unsigned long)h );
 
