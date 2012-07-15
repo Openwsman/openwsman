@@ -136,7 +136,12 @@ _add_selector( VALUE key, VALUE value, hash_t *h )
 	if (!hash_lookup( h, k ) ) {
             selector_entry *entry = u_malloc(sizeof(selector_entry));
             entry->type = 0;
-	    entry->entry.text = strdup(as_string( value ));
+            if (TYPE(value) == T_ARRAY) {
+              rb_raise( rb_eException, "Passing array parameter via invoke() still unsupported" );
+            }
+            else {
+              entry->entry.text = strdup(as_string( value ));
+            }
 	    if ( !hash_alloc_insert( h, k, entry ) ) {
 		rb_raise( rb_eException, "hash_alloc_insert failed" );
             }
