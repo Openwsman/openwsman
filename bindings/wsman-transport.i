@@ -152,6 +152,10 @@ typedef struct _WsManTransport {} WsManTransport;
     return wsman_transport_get_last_error_string(err);
   }
 
+/*
+ * transport timeout in seconds
+ *
+ */
 #if defined(SWIGRUBY)
   %rename("timeout=") set_timeout(unsigned long timeout);
 #endif
