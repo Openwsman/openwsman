@@ -141,7 +141,7 @@ typedef struct {} client_opt_t;
   }
 
   /*
-   * Operation timeout in miliseconds
+   * Operation timeout in milliseconds
    * See Openwsman::Transport.timeout for transport timeout
    *
    */
