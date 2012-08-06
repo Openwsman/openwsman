@@ -805,7 +805,7 @@ int wsman_get_max_elements(WsContextH cntx, WsXmlDocH doc)
 
 		if (node && (node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
 					 WSENUM_PULL))) {
-			node = ws_xml_get_child(node, 0, XML_NS_WS_MAN,
+			node = ws_xml_get_child(node, 0, XML_NS_ENUMERATION,
 					     WSENUM_MAX_ELEMENTS);
 			if (node) {
 				char *text = ws_xml_get_node_text(node);
