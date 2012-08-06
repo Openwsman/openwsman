@@ -785,7 +785,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
         /* debug incoming message */
         int size;
         char *buf;
-        ws_xml_dump_memory_enc( in_doc, &buf, &size, "UTF-8" );
+        ws_xml_dump_memory_node_tree_enc( ws_xml_get_soap_body(in_doc), &buf, &size, "UTF-8" );  
 	debug(buf);
 #endif
 	if (wsman_fault_occured(msg)) {
