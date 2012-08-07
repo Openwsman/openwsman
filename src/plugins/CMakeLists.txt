@@ -5,6 +5,7 @@ enable_testing()
 
 add_subdirectory(identify)
 add_subdirectory(wsman)
+add_subdirectory(redirect)
 
 if(BUILD_LIBCIM)
 add_subdirectory(cim)
