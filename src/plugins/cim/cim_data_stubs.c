@@ -180,10 +180,12 @@ verify_class_namespace(CimClientInfo *client)
 	        return 1;
 	}
   
-        /* Ok if class contains CIM, uri contains XML_NS_CIM_CLASS, and method is not 'Create' */
+        /* Ok if class schema is CIM, uri starts with XML_NS_CIM_CLASS
+         * and method is not 'Create' (CIM_ is abstract, cannot be created)
+         */
 	if (client->requested_class && client->resource_uri && client->method
-            && (strstr(client->requested_class, "CIM") != NULL )
-	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) != NULL )
+            && (strncmp(client->requested_class, "CIM_") == 0 )
+	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) == client->resource_uri )
 	    && (strcmp(client->method, TRANSFER_CREATE) != 0)) {
 		return 1;
 	}
