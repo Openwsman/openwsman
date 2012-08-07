@@ -1,0 +1,14 @@
+#
+# CMakeLists.txt for openwsman/src/plugins/redirect
+#
+
+# Disable below debug flags later
+SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g " )
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
+SET(redirect_SOURCES redirect.c redirect.h redirect_stubs.c)
+
+ADD_LIBRARY( redirect SHARED ${redirect_SOURCES} )
+
+SET_TARGET_PROPERTIES(redirect PROPERTIES VERSION 1.0.0 SOVERSION 1)
+INSTALL(TARGETS redirect DESTINATION ${PACKAGE_PLUGIN_DIR})
