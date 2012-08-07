@@ -184,7 +184,7 @@ verify_class_namespace(CimClientInfo *client)
          * and method is not 'Create' (CIM_ is abstract, cannot be created)
          */
 	if (client->requested_class && client->resource_uri && client->method
-            && (strncmp(client->requested_class, "CIM_") == 0 )
+            && (strncmp(client->requested_class, "CIM_", 4) == 0 )
 	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) == client->resource_uri )
 	    && (strcmp(client->method, TRANSFER_CREATE) != 0)) {
 		return 1;
