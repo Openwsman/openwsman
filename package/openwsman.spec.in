@@ -24,18 +24,28 @@
 %endif
 
 Name:           openwsman
-BuildRequires:  gcc-c++ swig >= 1.3.30
-BuildRequires:  libxml2-devel pam-devel sblim-sfcc-devel
+BuildRequires:  gcc-c++
+BuildRequires:  swig >= 1.3.30
+BuildRequires:  libxml2-devel
+BuildRequires:  pam-devel
+BuildRequires:  sblim-sfcc-devel
 BuildRequires:  cmake
 
-BuildRequires:  java-devel perl python-devel
+BuildRequires:  java-devel
+BuildRequires:  perl
+BuildRequires:  python-devel
 
 %if 0%{?rhel_version} > 0
 BuildRequires:  -vim
 %endif
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-BuildRequires:  curl-devel openssl-devel pkgconfig ruby ruby-devel ruby-rdoc
+BuildRequires:  curl-devel
+BuildRequires:  openssl-devel
+BuildRequires:  pkgconfig
+BuildRequires:  ruby
+BuildRequires:  ruby-devel
+BuildRequires:  ruby-rdoc
 %if 0%{?fedora} > 0 || 0%{?rhel_version} >= 600  || 0%{?centos_version} >= 600
 BuildRequires:  perl-devel
 %endif
@@ -50,11 +60,13 @@ BuildRequires:  perl-devel
 #%endif
 
 %if 0%{?suse_version} > 1010
-BuildRequires:  fdupes libopenssl-devel
+BuildRequires:  fdupes
+BuildRequires:  libopenssl-devel
 BuildRequires:  libcurl-devel
 %else
 # SLE10
-BuildRequires:  libidn-devel openssl-devel
+BuildRequires:  libidn-devel
+BuildRequires:  openssl-devel
 BuildRequires:  curl-devel
 %endif
 
@@ -69,7 +81,8 @@ BuildRequires:  rubygems
 BuildRequires:  pkg-config
 %else
 # SLE9
-BuildRequires:  pkgconfig ruby
+BuildRequires:  pkgconfig
+BuildRequires:  ruby
 %endif
 
 %endif
