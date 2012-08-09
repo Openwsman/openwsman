@@ -55,14 +55,21 @@ BuildRequires:  java-devel
 BuildRequires:  openssl-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
+
+%if 0%{?rhel_version} != 600
 BuildRequires:  ruby-devel
+%if 0%{?fedora} != 17
 BuildRequires:  ruby-rdoc
+%endif
+%endif
+
 %if 0%{?fedora} > 0 || 0%{?rhel_version} >= 600  || 0%{?centos_version} >= 600
 BuildRequires:  perl-devel
 %endif
 %endif
 
 %if 0%{?suse_version} > 0
+BuildRequires:  java-devel
 # No jni_md.h on SLE10 :-/
 #%if 0%{?suse_version} < 1100
 #BuildRequires:  java-1_5_0-ibm-devel
@@ -217,8 +224,8 @@ Requires:       ruby(abi) = %{ruby_version}
 %endif
 
 %if 0%{?ruby_sitelib} == 0
-%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-# Fedora, RHEL and CentOS don't have vendor lib
+%if (0%{?fedora} && 0%{?fedora} < 16) || (0%{?centos_version} && 0%{?centos_version}<600) || (0%{?rhel_version} && 0%{?rhel_version}<500)
+# Fedora15, RHEL-5 and CentOS-5 don't have vendor lib
 # CMAKE checks for "ruby -r vendor-specific" and fails
 %{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["sitelibdir"])')}
 %{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["sitearchdir"])')}
@@ -392,7 +399,7 @@ rm -f /var/log/wsmand.log
 %files python
 %defattr(-,root,root)
 %{python_sitearch}/*.so
-%{python_sitearch}/*.py
+%{python_sitearch}/*.py*
 
 %files ruby
 %defattr(-,root,root)
