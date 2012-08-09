@@ -53,10 +53,4 @@ etc/owsmangencert.sh
 src/server/openwsmand
 CMakeFiles
 CMakeCache.txt
-*.cmake
-!VERSION.cmake
-!cmake/modules/FindPythonLinkLibs.cmake
-!etc/init/openwsmand.sh.cmake
-!etc/owsmangencert.sh.cmake
-!wsman_config.h.cmake
 DartConfiguration.tcl
