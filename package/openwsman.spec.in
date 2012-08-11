@@ -24,14 +24,13 @@
 %endif
 
 Name:           openwsman
+BuildRequires:  cmake
 BuildRequires:  gcc-c++
-BuildRequires:  swig >= 1.3.30
 BuildRequires:  libxml2-devel
 BuildRequires:  pam-devel
 BuildRequires:  sblim-sfcc-devel
-BuildRequires:  cmake
+BuildRequires:  swig >= 1.3.30
 
-BuildRequires:  java-devel
 BuildRequires:  perl
 BuildRequires:  python-devel
 
@@ -56,6 +55,7 @@ BuildRequires:  openssl-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
 
+# RHEL6 is missing ruby-devel in OBS
 %if 0%{?rhel_version} != 600
 BuildRequires:  ruby-devel
 %if 0%{?fedora} != 17
@@ -79,13 +79,13 @@ BuildRequires:  java-devel
 
 %if 0%{?suse_version} > 1010
 BuildRequires:  fdupes
-BuildRequires:  libopenssl-devel
 BuildRequires:  libcurl-devel
+BuildRequires:  libopenssl-devel
 %else
 # SLE10
+BuildRequires:  curl-devel
 BuildRequires:  libidn-devel
 BuildRequires:  openssl-devel
-BuildRequires:  curl-devel
 %endif
 
 %if 0%{?suse_version} > 910
@@ -154,7 +154,9 @@ Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
 Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
-Requires:       sblim-sfcc-devel libxml2-devel pam-devel
+Requires:       libxml2-devel
+Requires:       pam-devel
+Requires:       sblim-sfcc-devel
 
 %description -n libwsman-devel
 Opensource Implementation of WS-Management stack
@@ -223,6 +225,11 @@ Requires:       ruby(abi) = %{ruby_version}
 Requires:       ruby(abi) = %{ruby_version}
 %endif
 
+%if 0%{?suse_version} == 1010
+%{!?ruby_sitelib: %global ruby_sitelib %(ruby -r rbconfig -e 'vd = RbConfig::CONFIG["vendorlibdir"]; print(vd ? vd : RbConfig::CONFIG["sitelibdir"])')}
+%{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'vad = RbConfig::CONFIG["vendorarchdir"]; print(vad ? vad : RbConfig::CONFIG["sitearchdir"])')}
+%else
+# SLES 10 can't parse this :-/
 %if 0%{?ruby_sitelib} == 0
 %if (0%{?fedora} && 0%{?fedora} < 16) || (0%{?centos_version} && 0%{?centos_version}<600) || (0%{?rhel_version} && 0%{?rhel_version}<500)
 # Fedora15, RHEL-5 and CentOS-5 don't have vendor lib
@@ -234,6 +241,8 @@ Requires:       ruby(abi) = %{ruby_version}
 %{!?ruby_sitearch: %global ruby_sitearch %(ruby -r rbconfig -e 'vad = RbConfig::CONFIG["vendorarchdir"]; print(vad ? vad : RbConfig::CONFIG["sitearchdir"])')}
 %endif
 %endif
+%endif
+
 Summary:        Ruby bindings for openwsman client API
 
 %description ruby
@@ -285,6 +294,11 @@ mkdir build
 # CURLOPT_SSL_CTX_FUNCTION is defined, but does not work on e.g. Fedora
 export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DNO_SSL_CALLBACK"
 %endif
+# SLES 10 needs explicit java bytecode target
+%if 0%{?suse_version} == 1010
+export EXPLICIT_TARGET=1.5
+%endif
+
 export SSL_LIB=`readlink %{_libdir}/libssl.so`
 cd build
 cmake \
@@ -295,6 +309,7 @@ cmake \
   -DCMAKE_CXX_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS" \
   -DCMAKE_SKIP_RPATH=1 \
   -DPACKAGE_ARCHITECTURE=`uname -m` \
+  -DEXPLICIT_TARGET="$EXPLICIT_TARGET" \
   -DLIB=%{_lib} \
   -DBUILD_RUBY_GEM=no \
   ..
@@ -401,6 +416,9 @@ rm -f /var/log/wsmand.log
 %{python_sitearch}/*.so
 %{python_sitearch}/*.py*
 
+# RHEL6 is missing ruby-devel in OBS
+%if 0%{?rhel_version} != 600
+
 %files ruby
 %defattr(-,root,root)
 %if 0%{?mandriva_version}
@@ -413,6 +431,8 @@ rm -f /var/log/wsmand.log
 %dir %{ruby_sitelib}/openwsman
 %{ruby_sitelib}/openwsman.rb
 %{ruby_sitelib}/openwsman/*.rb
+%endif
+
 %endif
 
 %files perl
