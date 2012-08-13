@@ -1081,6 +1081,8 @@ wsenum_release_stub(SoapOpH op,
 	enumInfo = get_locked_enuminfo(soapCntx, _doc,
 		op, WSENUM_RELEASE, &status);
 
+        ws_set_context_xml_doc_val(soapCntx, WSFW_INDOC, _doc);
+
 	if (enumInfo == NULL) {
 		doc = wsman_generate_fault( _doc,
 			status.fault_code, status.fault_detail_code, NULL);

@@ -1,3 +1,9 @@
+/*
+ *  Copyright (c) 2006 Dell, Inc.
+ *  by Praveen K Paladugu <praveen_paladugu@dell.com>
+ *  Licensed under the GNU General Public license, version 2.
+ */
+
 
 #include "wsman_config.h"
 
@@ -12,53 +18,57 @@
 #include "wsman-soap.h"
 #include "wsman-xml-serializer.h"
 #include "wsman-dispatcher.h"
+#include "wsman-client-api.h"
 
 #include "redirect.h"
 
 
-char *server; 
-char *username;
-char *password;
-char  *url_path= "/wsman";
-char  *authentication_method="basic";
-char  *cim_namespace="root/cimv2";
-char *cainfo=NULL, *sslkey=NULL, *cl_cert=NULL;
-char *namespace;
-int noverifypeer, noverifyhost;
+struct __Redirect_Data
+{
+    char *server; 
+    char *username;
+    char *password;
+    char *url_path;
+    char *authentication_method;
+    char *cim_namespace;
+    char *cainfo, *sslkey, *cl_cert;
+    char *namespace;
+    int noverifypeer, noverifyhost;
+    int server_port;
 
-int server_port=5895;
+};
+
+static struct __Redirect_Data *redirect_data;
 
 SER_START_ITEMS(Redirect)
 SER_END_ITEMS(Redirect);
 
 //As the data value in endPoints is not used, setting it to NULL for now
 START_END_POINTS(Redirect)
-    END_POINT_TRANSFER_GET(Redirect, NULL),
+    END_POINT_TRANSFER_DIRECT_GET(Redirect, NULL),
+    END_POINT_TRANSFER_DIRECT_PUT(Redirect, NULL),
     END_POINT_ENUMERATE(Redirect, NULL),
     END_POINT_DIRECT_PULL(Redirect, NULL),
     END_POINT_PULL(Redirect, NULL),
     END_POINT_RELEASE(Redirect, NULL),
-    END_POINT_TRANSFER_PUT(Redirect, NULL),
 FINISH_END_POINTS(Redirect);
 
-
-//START_NAMESPACES(Redirect)
-//    ADD_NAMESPACE( XML_REDIRECT_NS, NULL ),
-//FINISH_NAMESPACES(Redirect);
 
 static list_t *
 set_namespaces(void) 
 {
 
-  int i;
+    int i;
 
     list_t *l = list_create(LISTCOUNT_T_MAX);
-    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
+    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(
+			sizeof(WsSupportedNamespaces));
+
     ns->class_prefix = NULL;
-    ns->ns = namespace;
+    ns->ns = redirect_data->namespace;
     lnode_t *node = lnode_create(ns);
     list_append(l, node);
-  return l;
+    return l;
 }
 
 
@@ -81,16 +91,25 @@ void get_endpoints(void *self, void **data)
 
 int init( void *self, void **data )
 {
-  char* filename;
-  dictionary *ini;
-        filename = (char *) wsmand_options_get_config_file();
-        ini = iniparser_new(filename);
+    char* filename;
+    dictionary *ini;
+    filename = (char *) wsmand_options_get_config_file();
+    ini = iniparser_new(filename);
+
+    redirect_data =  malloc (sizeof(struct __Redirect_Data));
+    if (redirect_data == NULL){
+	error("Failed while allocating memory for redirect_data");	
+	return 0;
+    }
+
+    //Check if the conf file has the required fields populated.
     if ( iniparser_getstring(ini, "redirect:server", NULL) ==NULL ||
          iniparser_getstring(ini, "redirect:namespace", NULL) ==NULL
 	){
-	error("The required inputs are not provided in the config file");
-	return 0;
-   }
+
+	    error("The required inputs are not provided in the config file");
+	    return 0;
+	}
     	
     return 1;
 }
@@ -98,90 +117,160 @@ int init( void *self, void **data )
 void
 cleanup( void  *self, void *data )
 {
-//TODO:Free up the memory allocated for the global vars
-	return;
+    free(redirect_data);
+    return;
 }
 void set_config( void *self, dictionary *config )
 {
-    debug("Reading the redirection info from config file");
+
+    
+
     if (config) {
-     server = iniparser_getstr (config, "redirect:server");
-     namespace = iniparser_getstr (config, "redirect:namespace");
+    redirect_data->server = iniparser_getstr (config, "redirect:server");
+    redirect_data->namespace = iniparser_getstr (config, "redirect:namespace");
 
-     username = iniparser_getstring (config, "redirect:username",NULL);
-     password = iniparser_getstring (config, "redirect:password",NULL);
-     url_path = iniparser_getstring (config, "redirect:url_path","/wsman");
-     authentication_method = iniparser_getstring (config, "redirect:authentication_method", "basic");
-     cim_namespace = iniparser_getstring (config, "redirect:cim_namespace","root/cimv2");
-     cainfo = iniparser_getstring (config, "redirect:cacert",NULL);
-     server_port = iniparser_getint (config, "redirect:port",5895);
-     noverifypeer = iniparser_getint (config, "redirect:noverifypeer", 0);
-     noverifyhost = iniparser_getint (config, "redirect:noverifyhost", 0);	     sslkey = iniparser_getstring (config, "redirect:sslkey", NULL);
-     cl_cert = iniparser_getstring (config, "redirect:cl_cert", NULL);		
-    }		
+    redirect_data->username = iniparser_getstring (config, "redirect:username",NULL);
+    redirect_data->password = iniparser_getstring (config, "redirect:password",NULL);
+    redirect_data->url_path = iniparser_getstring (config, "redirect:url_path","/wsman");
+    redirect_data->authentication_method = iniparser_getstring (config, "redirect:authentication_method", "basic");
+    redirect_data->cim_namespace = iniparser_getstring (config, "redirect:cim_namespace","root/cimv2");
+    redirect_data->cainfo = iniparser_getstring (config, "redirect:cacert",NULL);
+    redirect_data->server_port = iniparser_getint (config, "redirect:port",5895);
+    redirect_data->noverifypeer = iniparser_getint (config, "redirect:noverifypeer", 0);
+    redirect_data->noverifyhost = iniparser_getint (config, "redirect:noverifyhost", 0);
+    redirect_data->sslkey = iniparser_getstring (config, "redirect:sslkey", NULL);
+    redirect_data->cl_cert = iniparser_getstring (config, "redirect:cl_cert", NULL);		
+    }	
+
+	
 }
 
-char *get_remote_cl_cert()
+static char *get_remote_cl_cert()
 {
-	return cl_cert;
+	return redirect_data->cl_cert;
 }
-char *get_remote_sslkey()
+static char *get_remote_sslkey()
 {
-	return sslkey;
-}
-
-char* get_remote_server()
-{
-	return server;
-
-}
-int get_remote_noverifypeer()
-{
-	return noverifypeer;
-}
-int get_remote_noverifyhost()
-{
-	return noverifyhost;
-}
-char* get_remote_username()
-{
-	return username;
+	return redirect_data->sslkey;
 }
 
-char* get_remote_password()
+static char* get_remote_server()
 {
-	return password;
+	return redirect_data->server;
+
+}
+static int get_remote_noverifypeer()
+{
+	return redirect_data->noverifypeer;
+}
+static int get_remote_noverifyhost()
+{
+	return redirect_data->noverifyhost;
+}
+static char* get_remote_username()
+{
+	return redirect_data->username;
+}
+
+static char* get_remote_password()
+{
+	return redirect_data->password;
 
 }
 
-char* get_remote_url_path()
+static char* get_remote_url_path()
 {
-	return url_path;
+	return redirect_data->url_path;
 }
 
-char* get_remote_namespace()
+static char* get_remote_namespace()
 {
-	return namespace;
+	return redirect_data->namespace;
 }
 
 
-char* get_remote_authentication_method()
+static char* get_remote_authentication_method()
 {
-	return authentication_method;
+	return redirect_data->authentication_method;
 }
 
-char* get_remote_cim_namespace()
+static char* get_remote_cim_namespace()
 {
-	return cim_namespace;
+	return redirect_data->cim_namespace;
 }
 
-char* get_remote_cainfo()
+static char* get_remote_cainfo()
 {
-	return cainfo;
+	return redirect_data->cainfo;
 }
 
-int get_remote_server_port()
+static int get_remote_server_port()
 {
-	return server_port;
+	return redirect_data->server_port;
+}
+
+
+WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_password)
+{
+	
+    WsManClient *cl = malloc(sizeof(cl));
+
+    if (cl == NULL){
+	error("Error while allocating memory for client in redirect plugin");
+	return NULL;	
+    }
+
+	
+	cl = wsmc_create(
+		get_remote_server() ,
+                get_remote_server_port() ,
+                get_remote_url_path(),
+                get_remote_cainfo() ? "https" : "http",
+                get_remote_username() ? get_remote_username() : strdup(ws_username),
+                get_remote_password() ? get_remote_password() : strdup(ws_password) 
+         );
+
+
+	wsman_transport_set_auth_method(cl, get_remote_authentication_method());
+
+        if ( get_remote_cainfo() ) {
+                wsman_transport_set_cainfo(cl, get_remote_cainfo() );
+        }
+
+	if (get_remote_cl_cert()){
+		wsman_transport_set_cert(cl, get_remote_cert());
+		if (!get_remote_cainfo())
+                        debug("Warning: cainfo not set to enable SSL operation in Redirect Plugin\n");
+
+	}
+
+        if ( get_remote_sslkey())
+        {
+		wsman_transport_set_cert(cl, get_remote_sslkey());
+		if (!get_remote_cainfo())
+		{
+			debug("Warning: cainfo not set to enable SSL operation in Redirect Plugin\n");
+		}
+	}
+
+
+        wsman_transport_set_verify_peer(cl, get_remote_cainfo()? !get_remote_noverifypeer() : 0);
+        wsman_transport_set_verify_host(cl, get_remote_cainfo() ? !get_remote_noverifyhost(): 0 );
+
+
+// No need for client options
+//        cl_options = wsmc_options_init();
+  //      cl_options->properties = hash_create(HASHCOUNT_T_MAX, 0, 0) ; //properties are only valid for put, get & create.. so skippping
+    //    cl_options->cim_ns = get_remote_cim_namespace() ;
+
+//Pass this option to request the Estimated Total num of Items in the response.
+      //  cl_options->flags |= FLAG_ENUMERATION_COUNT_ESTIMATION; 
+       // cl_options->max_elements = wsman_get_max_elements(cntx,NULL);
+                       
+       // cl_options->max_envelope_size = wsman_get_max_envelope_size(cntx,NULL);
+       // cl_options->timeout= wsman_get_operation_timeout(cntx, NULL) * 1000;
+
+
+    return cl; 
 }
 
