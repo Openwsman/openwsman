@@ -76,44 +76,74 @@ int Redirect_Enumerate_EP(WsContextH cntx,
 			WsmanStatus *status, void *opaqueData)
 {
 
-    WsXmlDocH doc=NULL, header=NULL, node=NULL, body=NULL;
+    WsXmlDocH  r_header=NULL, r_node=NULL, r_body=NULL, r_response=NULL, r_opt=NULL;
     char *resource_uri, *remote_enumContext;
     int op; 
     WsManClient *cl=NULL;
 
 //The redirected Enumeration request must have RequestTotalItemsCountEstimate enabled
 
-    header = ws_xml_get_soap_header(cntx->indoc);
-    if ( (node = ws_xml_get_child(header,0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL )) == NULL )
-	    ws_xml_add_child(header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);     
+    r_header = ws_xml_get_soap_header(cntx->indoc);
+    if ( (r_node = ws_xml_get_child(r_header,0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL )) == NULL )
+	    ws_xml_add_child(r_header, XML_NS_WS_MAN, WSM_REQUEST_TOTAL, NULL);     
 
 
     cl = setup_redirect_client(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password);
 
 
+//Set the enumInfo flags based on the indoc. This is required while handling the response in wsenum_eunmerate_stub
+    r_body=ws_xml_get_soap_body(cntx->indoc);
+    if ( ( r_node = ws_xml_get_child(r_body ,0, XML_NS_ENUMERATION, WSENUM_ENUMERATE )) != NULL )
+    {
+	    if ( (r_opt = ws_xml_get_child(r_node,0,XML_NS_WS_MAN,WSM_OPTIMIZE_ENUM )) != NULL )
+		    enumInfo->flags |= WSMAN_ENUMINFO_OPT ;
 
+    }
     wsman_send_request(cl,cntx->indoc);
 
-    enumInfo->pullResultPtr = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
-    wsmc_release(cl);
 
-
-
-//Set the context of the current enumeration to that of the remote host.
-    remote_enumContext = wsmc_get_enum_context(enumInfo->pullResultPtr);
-    strncpy(enumInfo->enumId, remote_enumContext, strlen(remote_enumContext)+1);
+    r_response = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
 
 
 //Get the Estimated Total No.of Items from the response.
-    header=ws_xml_get_soap_header(enumInfo->pullResultPtr);
-    node=ws_xml_get_child(header,0,XML_NS_WS_MAN, WSM_TOTAL_ESTIMATE );
-    enumInfo->totalItems=(!node) ? 0: atoi(ws_xml_get_node_text(node));
+    r_header=ws_xml_get_soap_header(r_response);
+    r_node=ws_xml_get_child(r_header,0,XML_NS_WS_MAN, WSM_TOTAL_ESTIMATE );
+    enumInfo->totalItems=(!r_node) ? 0: atoi(ws_xml_get_node_text(r_node));
 
+
+//Get the remote context
+    remote_enumContext = wsmc_get_enum_context(r_response);
+
+
+
+//Set the pullResultPtr only if some Enum Items are returned, in optimized mode.
+    r_body= ws_xml_get_soap_header(r_response);
+ 
+    if ((r_node = ws_xml_get_child(r_body,0,XML_NS_WS_MAN, WSENUM_ITEMS )) != NULL ){
+
+	enumInfo->pullResultPtr = r_response; 
+
+	if( strlen(remote_enumContext) != 0 )
+	    strncpy(enumInfo->enumId, remote_enumContext, strlen(remote_enumContext)+1);
+    
+	else  // If all the instances are returned, the context will be NULL
+	    enumInfo->enumId[0]='\0';
+	    
+    
+    }
+    else{
+	    
+	    strncpy(enumInfo->enumId, remote_enumContext, strlen(remote_enumContext)+1);
+	    ws_xml_destroy_doc(r_response);
+	
+    }
+    
+    wsmc_release(cl);
 
 
     debug ("The context on the remote host=%s", remote_enumContext);
-
-return 0;
+    
+    return 0;
 
 }
 
@@ -141,9 +171,10 @@ int Redirect_Release_EP(WsContextH cntx,
     return check_response_code(cl, response);
 }
 
-int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
+int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
+			WsmanStatus *status, void *opaqueData)
 {
-    WsXmlDocH doc=NULL;
+    WsXmlDocH doc=NULL,response=NULL;
     WsManClient *cl=NULL;
 
 
@@ -154,9 +185,18 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo)
 
     wsman_send_request(cl,cntx->indoc);
 
-    
 
-    enumInfo->pullResultPtr = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
+    response = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
+    
+   
+     if ( ! wsman_is_fault_envelope(response))
+	enumInfo->pullResultPtr = response;
+    
+    else{
+	enumInfo->pullResultPtr = NULL;
+	wsman_get_fault_status_from_doc (response, status);
+    }
+
     wsmc_release(cl);
 
 
