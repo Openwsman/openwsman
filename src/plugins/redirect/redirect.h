@@ -25,7 +25,8 @@ int Redirect_Enumerate_EP(WsContextH cntx,
                         WsmanStatus *status, void *opaqueData);
 
 
-int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo);
+int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, 
+		    WsmanStatus *status, void *opaqueData);
 
 int Redirect_Put_EP(WsContextH cntx);
 
