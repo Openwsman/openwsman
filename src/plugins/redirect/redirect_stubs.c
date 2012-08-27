@@ -30,8 +30,8 @@
 #include "redirect.h"
 
 
-int wsman_get_transport_timeout(WsContextH cntx, WsXmlDocH doc);
-int check_response_code(WsManClient *cl, WsXmlDocH doc);
+WsXmlDocH redirect_generate_fault( WsXmlDocH in_doc, WsManClient *cl);
+char* redirect_fault_msg (char * last_error_string);
 
 //DEBUG
 static void xml_print( WsXmlDocH doc);
@@ -40,15 +40,17 @@ static void xml_print( WsXmlDocH doc);
 
 int Redirect_Get_EP( SoapOpH op,
                 void* appData,
-                void *opaqueData )
+                void *opaqueData)
 
 {
-			
+//Direct EP, bypassed the transfer_get_stub
+
     WsmanMessage *msg = wsman_get_msg_from_op(op);
     SoapH soap = soap_get_op_soap(op);
     WsXmlDocH in_doc = soap_get_op_doc(op, 1);	
     WsContextH cntx = ws_create_ep_context(soap, in_doc);
-    WsManClient *cl=NULL; 
+    WsManClient *cl=NULL;
+    WsXmlDocH response=NULL;
 
 
 
@@ -57,12 +59,24 @@ int Redirect_Get_EP( SoapOpH op,
 
     wsman_send_request(cl,cntx->indoc);
 
+    if (wsmc_get_last_error(cl) != WS_LASTERR_OK ){
+	//CURL/ HTTP errors	
+	soap_set_op_doc(op, 
+	    redirect_generate_fault( cntx->indoc , cl), 
+	    0);
+
+	    return 1;
+    }
+
+
+    response = wsmc_build_envelope_from_response(cl);
+   
     soap_set_op_doc(op, 
-		ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl)), 
-		0);
+		ws_xml_duplicate_doc(response), 0);
+
     wsmc_release(cl);
 
-return 0;
+    return 0;
 }
 
 int Redirect_Put_EP(WsContextH cntx)
@@ -76,12 +90,14 @@ int Redirect_Enumerate_EP(WsContextH cntx,
 			WsmanStatus *status, void *opaqueData)
 {
 
-    WsXmlDocH  r_header=NULL, r_node=NULL, r_body=NULL, r_response=NULL, r_opt=NULL;
+    WsXmlNodeH r_header=NULL, r_node=NULL, r_body=NULL, r_opt=NULL;
+    WsXmlDocH r_response=NULL;
     char *resource_uri, *remote_enumContext;
     int op; 
     WsManClient *cl=NULL;
 
-//The redirected Enumeration request must have RequestTotalItemsCountEstimate enabled
+
+    //The redirected Enumeration request must have RequestTotalItemsCountEstimate enabled
 
     r_header = ws_xml_get_soap_header(cntx->indoc);
     if ( (r_node = ws_xml_get_child(r_header,0,XML_NS_WS_MAN, WSM_REQUEST_TOTAL )) == NULL )
@@ -91,7 +107,7 @@ int Redirect_Enumerate_EP(WsContextH cntx,
     cl = setup_redirect_client(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password);
 
 
-//Set the enumInfo flags based on the indoc. This is required while handling the response in wsenum_eunmerate_stub
+    //Set the enumInfo flags based on the indoc. This is required while handling the response in wsenum_eunmerate_stub
     r_body=ws_xml_get_soap_body(cntx->indoc);
     if ( ( r_node = ws_xml_get_child(r_body ,0, XML_NS_ENUMERATION, WSENUM_ENUMERATE )) != NULL )
     {
@@ -99,27 +115,51 @@ int Redirect_Enumerate_EP(WsContextH cntx,
 		    enumInfo->flags |= WSMAN_ENUMINFO_OPT ;
 
     }
+
+
     wsman_send_request(cl,cntx->indoc);
+
+    if (wsmc_get_last_error(cl) != WS_LASTERR_OK ){
+	//CURL or HTTP errors
+	enumInfo->pullResultPtr = NULL;
+	status->fault_code = WSMAN_INTERNAL_ERROR;
+	status->fault_detail_code = 0;
+	status->fault_msg = redirect_fault_msg( wsman_transport_get_last_error_string(  wsmc_get_last_error(cl) )  );
+            return 1;
+    }
+
+
 
 
     r_response = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
 
+ 
+    if (  wsman_is_fault_envelope(r_response)){
+        enumInfo->pullResultPtr = NULL;
+        wsman_get_fault_status_from_doc(r_response, status);
+	return 1;
+    }
+ 
 
-//Get the Estimated Total No.of Items from the response.
+
+    //Get the Estimated Total No.of Items from the response.
     r_header=ws_xml_get_soap_header(r_response);
     r_node=ws_xml_get_child(r_header,0,XML_NS_WS_MAN, WSM_TOTAL_ESTIMATE );
     enumInfo->totalItems=(!r_node) ? 0: atoi(ws_xml_get_node_text(r_node));
 
 
-//Get the remote context
+    //Get the remote context
     remote_enumContext = wsmc_get_enum_context(r_response);
 
 
 
-//Set the pullResultPtr only if some Enum Items are returned, in optimized mode.
-    r_body= ws_xml_get_soap_header(r_response);
- 
-    if ((r_node = ws_xml_get_child(r_body,0,XML_NS_WS_MAN, WSENUM_ITEMS )) != NULL ){
+    //Set the pullResultPtr only if some Enum Items are returned, in optimized mode.
+    r_body= ws_xml_get_soap_body(r_response);
+
+    if (  (r_node = ws_xml_get_child(r_body,0,XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP )) != NULL && 
+			( ws_xml_get_child(r_node,0,XML_NS_WS_MAN,WSENUM_ITEMS) != NULL)  )
+    
+    {
 
 	enumInfo->pullResultPtr = r_response; 
 
@@ -129,10 +169,10 @@ int Redirect_Enumerate_EP(WsContextH cntx,
 	else  // If all the instances are returned, the context will be NULL
 	    enumInfo->enumId[0]='\0';
 	    
-    
     }
+    
     else{
-	    
+	    //If not items are returned, set the context and return. 
 	    strncpy(enumInfo->enumId, remote_enumContext, strlen(remote_enumContext)+1);
 	    ws_xml_destroy_doc(r_response);
 	
@@ -140,8 +180,6 @@ int Redirect_Enumerate_EP(WsContextH cntx,
     
     wsmc_release(cl);
 
-
-    debug ("The context on the remote host=%s", remote_enumContext);
     
     return 0;
 
@@ -161,14 +199,15 @@ int Redirect_Release_EP(WsContextH cntx,
     cl = setup_redirect_client(cntx,  enumInfo->auth_data.username, enumInfo->auth_data.password);
     
     wsman_send_request(cl,cntx->indoc);
-    debug ("***Release:: request sent:::");
-    xml_print(cntx->indoc);
+    if (wsmc_get_last_error(cl) != WS_LASTERR_OK ){
+	//just return for now, as the release_stub is not handling the status codes.			
+	return 1;
+    }	
 
     response=wsmc_build_envelope_from_response(cl);
-    debug ("*****Release: response received::");
-    xml_print(response);
 
-    return check_response_code(cl, response);
+    //The status value is not used in the release stub. So, just return, if fault or not.
+    return wsman_is_fault_envelope(response);
 }
 
 int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
@@ -176,6 +215,7 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
 {
     WsXmlDocH doc=NULL,response=NULL;
     WsManClient *cl=NULL;
+    int retVal=0;
 
 
 
@@ -185,22 +225,32 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
 
     wsman_send_request(cl,cntx->indoc);
 
+    if (wsmc_get_last_error(cl) != WS_LASTERR_OK ){
+        //CURL or HTTP errors
+        enumInfo->pullResultPtr = NULL;
+        status->fault_code = WSMAN_INTERNAL_ERROR;
+        status->fault_detail_code = 0;
+        status->fault_msg = redirect_fault_msg( wsman_transport_get_last_error_string(  wsmc_get_last_error(cl) )  );
+            return 1;
+    }
+
 
     response = ws_xml_duplicate_doc(wsmc_build_envelope_from_response(cl));
-    
+
    
-     if ( ! wsman_is_fault_envelope(response))
-	enumInfo->pullResultPtr = response;
+    if ( ! wsman_is_fault_envelope(response) )
+	    enumInfo->pullResultPtr = response;
     
     else{
-	enumInfo->pullResultPtr = NULL;
-	wsman_get_fault_status_from_doc (response, status);
+	    //If there a fault, return the status code.
+	    enumInfo->pullResultPtr = NULL;
+	    wsman_get_fault_status_from_doc (response, status);
+	    retVal=1;
     }
 
     wsmc_release(cl);
 
-
-    return 0;
+    return retVal;
 }
 
 
@@ -209,40 +259,34 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
 
 static void xml_print( WsXmlDocH doc)
 {
-        char *filename="/tmp/tmp";
-        FILE *f;
 
-
-        if (filename) {
-                f = fopen(filename, "w");
-                if (f == NULL) {
-                        error("Could not open file for writing");
-                        return;
-                }
-        }
         ws_xml_dump_node_tree(stdout, ws_xml_get_doc_root(doc));
-                fclose(f);
         return;
 
 }
 
-int check_response_code(WsManClient *cl, WsXmlDocH doc)
+WsXmlDocH redirect_generate_fault( WsXmlDocH in_doc, WsManClient *cl)
 {
-
-	//Check the http response codes and also for Wsman Faults.     
-                   if (wsmc_get_response_code(cl) != 200
-                                        && wsmc_get_response_code(cl) != 400
-                                        && wsmc_get_response_code(cl) != 500) {
-                                return 1;
-                        }
-
-		if (doc != NULL)
-		{
-			WsXmlNodeH body = ws_xml_get_soap_body(doc);
-			if (body && ws_xml_get_child(body, 0, XML_NS_SOAP_1_2, SOAP_FAULT))
-				return 1;
-		}
+    
+    WS_LASTERR_Code last_error =wsmc_get_last_error(cl);
+    char *last_error_string = wsman_transport_get_last_error_string(last_error);
+    
+     
+    return wsman_generate_fault(in_doc, WSMAN_INTERNAL_ERROR, 0,
+	redirect_fault_msg(last_error_string) );
 
 
-	return 0;
-}	
+}
+
+char* redirect_fault_msg (char * last_error_string)
+{
+    char *prepend_string = "Redirect Plugin: ";
+    char* fault_msg =calloc(1,strlen(prepend_string)+strlen(last_error_string)+2);
+
+    strncpy(fault_msg, prepend_string, strlen(prepend_string));
+    strncat(fault_msg, last_error_string, strlen(last_error_string));
+
+    return fault_msg;
+
+}
+	
