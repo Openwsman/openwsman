@@ -31,6 +31,10 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
 
 int Redirect_Get_EP( SoapOpH op, void* appData, void *opaqueData );
 
+int Redirect_Create_EP( SoapOpH op, void* appData, void *opaqueData );
+
+int Redirect_Delete_EP( SoapOpH op, void* appData, void *opaqueData );
+
 int Redirect_Put_EP( SoapOpH op, void* appData, void *opaqueData );
 
 int Redirect_Custom_EP( SoapOpH op, void* appData, void *opaqueData );

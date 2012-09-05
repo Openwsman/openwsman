@@ -83,10 +83,29 @@ int Redirect_Get_EP( SoapOpH op,
                 void *opaqueData)
 
 {
-//Direct EP, bypassed the transfer_get_stub
 	return Redirect_transfer_action(op,appData, opaqueData);
 
 }
+
+int Redirect_Create_EP( SoapOpH op,
+                void* appData,
+                void *opaqueData)
+
+{
+	return Redirect_transfer_action(op,appData, opaqueData);
+
+}
+
+int Redirect_Delete_EP( SoapOpH op,
+                void* appData,
+                void *opaqueData)
+
+{
+	return Redirect_transfer_action(op,appData, opaqueData);
+
+}
+
+
 
 int Redirect_Put_EP( SoapOpH op,
                 void* appData,
