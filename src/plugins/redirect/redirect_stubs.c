@@ -26,6 +26,7 @@
 
 #include "wsman-soap-envelope.h"
 #include "wsman-soap-message.h"
+#include "wsman-dispatcher.h"
 
 #include "redirect.h"
 
@@ -36,15 +37,11 @@ char* redirect_fault_msg (char * last_error_string);
 //DEBUG
 static void xml_print( WsXmlDocH doc);
 
-
-
-int Redirect_Get_EP( SoapOpH op,
+int Redirect_transfer_action ( SoapOpH op,
                 void* appData,
                 void *opaqueData)
-
 {
-//Direct EP, bypassed the transfer_get_stub
-
+    //Same function to be called for Get, Put, Create, Delete Actions
     WsmanMessage *msg = wsman_get_msg_from_op(op);
     SoapH soap = soap_get_op_soap(op);
     WsXmlDocH in_doc = soap_get_op_doc(op, 1);	
@@ -70,7 +67,8 @@ int Redirect_Get_EP( SoapOpH op,
 
 
     response = wsmc_build_envelope_from_response(cl);
-   
+  
+    xml_print(response); 
     soap_set_op_doc(op, 
 		ws_xml_duplicate_doc(response), 0);
 
@@ -79,9 +77,22 @@ int Redirect_Get_EP( SoapOpH op,
     return 0;
 }
 
-int Redirect_Put_EP(WsContextH cntx)
+
+int Redirect_Get_EP( SoapOpH op,
+                void* appData,
+                void *opaqueData)
+
 {
-    debug( "Put Endpoint Called"); 
+//Direct EP, bypassed the transfer_get_stub
+	return Redirect_transfer_action(op,appData, opaqueData);
+
+}
+
+int Redirect_Put_EP( SoapOpH op,
+                void* appData,
+                void *opaqueData)
+{
+	return Redirect_transfer_action(op,appData, opaqueData);
 }
 
 
@@ -255,6 +266,19 @@ int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo,
 
 
 
+int Redirect_Custom_EP( SoapOpH op,
+		void* appData,
+		void *opaqueData )
+{
+
+    //By passing the stubs. Called from process_inbound_operation
+   
+    //Fix the wsa:To element in the forwarded request?? Nothing is verifying the URL in this element anyway. 
+	return Redirect_transfer_action(op,appData, opaqueData);
+
+    
+    
+}
 
 
 static void xml_print( WsXmlDocH doc)
