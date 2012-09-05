@@ -28,13 +28,19 @@ int Redirect_Enumerate_EP(WsContextH cntx,
 int Redirect_Pull_EP(WsContextH cntx, WsEnumerateInfo* enumInfo, 
 		    WsmanStatus *status, void *opaqueData);
 
-int Redirect_Put_EP(WsContextH cntx);
 
 int Redirect_Get_EP( SoapOpH op, void* appData, void *opaqueData );
+
+int Redirect_Put_EP( SoapOpH op, void* appData, void *opaqueData );
+
+int Redirect_Custom_EP( SoapOpH op, void* appData, void *opaqueData );
+
+int Redirect_transfer_action ( SoapOpH op, void* appData, void *opaqueData);
 
 int Redirect_Release_EP(WsContextH cntx,
                         WsEnumerateInfo* enumInfo,
                         WsmanStatus *status, void *opaqueData);
+
 /*int Redirect_Subscribe_EP(WsContextH cntx,
 		WsSubscribeInfo* subsInfo,
 		WsmanStatus *status,

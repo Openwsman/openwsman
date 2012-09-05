@@ -51,6 +51,7 @@ START_END_POINTS(Redirect)
     END_POINT_DIRECT_PULL(Redirect, NULL),
     END_POINT_PULL(Redirect, NULL),
     END_POINT_RELEASE(Redirect, NULL),
+    END_POINT_CUSTOM_METHOD(Redirect, NULL),
 FINISH_END_POINTS(Redirect);
 
 
