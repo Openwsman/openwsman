@@ -2505,26 +2505,26 @@ cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subs
 	value.ref = handler;
 	CMAddKey(objectpath, "Handler",
 			&value, CMPI_ref);
+        instance = newCMPIInstance(objectpath, NULL);
 	//set OnFatalErrorPolicy to "Ignore"
 	value.uint16 = 2;
-	CMAddKey(objectpath, "OnFatalErrorPolicy",
+        CMSetProperty(instance, "OnFatalErrorPolicy",
 			&value, CMPI_uint16);
 	//enable subscription
 	value.uint16 = 2;
-	CMAddKey(objectpath, "SubscriptionState",
+        CMSetProperty(instance, "SubscriptionState",
 			&value, CMPI_uint16);
 	if(subsInfo->expires) {
 		struct timeval  tv;
 		gettimeofday(&tv, NULL);
 		value.uint64 = subsInfo->expires - tv.tv_sec;
-		CMAddKey(objectpath, "subscriptionDuration",
+                CMSetProperty(instance, "SubscriptionDuration",
 				&value, CMPI_uint64);
 	}
 	//set RepeatNotificationPolicy to None
 	value.uint16 = 2;
-	CMAddKey(objectpath, "RepeatNotificationPolicy",
+        CMSetProperty(instance, "RepeatNotificationPolicy",
 			&value, CMPI_uint16);
-	instance = newCMPIInstance(objectpath, NULL);
 	instance_r = cc->ft->createInstance(cc, objectpath, instance, &rc);
 
 	/* Print the results */
