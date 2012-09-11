@@ -26,11 +26,15 @@ ADD_CUSTOM_COMMAND (
 SET( jar_NAME "openwsman-${PACKAGE_ARCHITECTURE}-${VERSION}.jar" )
 MESSAGE(STATUS "Java archive name: ${jar_NAME}")
 
+IF(EXPLICIT_TARGET)
+  SET( java_TARGET "-target")
+ENDIF(EXPLICIT_TARGET)
+  
 ADD_CUSTOM_COMMAND (
    OUTPUT ${jar_NAME}
    POST_BUILD
    COMMAND ${CMAKE_COMMAND} -E echo_append "Compiling Java files ..."
-   COMMAND ${JAVA_COMPILE} -target 1.5 -d . *.java
+   COMMAND ${JAVA_COMPILE} ${java_TARGET} ${EXPLICIT_TARGET} -d . *.java
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
    COMMAND ${JAVA_ARCHIVE} cvf ${jar_NAME} *.so org/*
    DEPENDS ${SWIG_OUTPUT}
