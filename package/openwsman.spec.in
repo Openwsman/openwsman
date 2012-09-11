@@ -295,7 +295,7 @@ mkdir build
 export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DNO_SSL_CALLBACK"
 %endif
 # SLES 10 needs explicit java bytecode target
-%if 0%{?suse_version} == 1010
+%if 0%{?suse_version} == 1010 || 0%{?suse_version} == 1110 
 export EXPLICIT_TARGET=1.5
 %endif
 
