@@ -56,6 +56,7 @@ int Redirect_transfer_action ( SoapOpH op,
 
     wsman_send_request(cl,cntx->indoc);
 
+
     if (wsmc_get_last_error(cl) != WS_LASTERR_OK ){
 	//CURL/ HTTP errors	
 	soap_set_op_doc(op, 
@@ -68,7 +69,6 @@ int Redirect_transfer_action ( SoapOpH op,
 
     response = wsmc_build_envelope_from_response(cl);
   
-    xml_print(response); 
     soap_set_op_doc(op, 
 		ws_xml_duplicate_doc(response), 0);
 
