@@ -487,7 +487,7 @@ xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
 						BAD_CAST prefix);
 			    //since the xml name is predefined, the above function will return a NULL when the prefix=xml && uri = XML_XML_NAMESPACE
 			    // So returning a valid NS
-			    if ( strcmp(prefix,"xml") == 0 && 
+			    if ( xmlNs == NULL && strcmp(prefix,"xml") == 0 && 
 					strcmp(uri,XML_XML_NAMESPACE)== 0 ){
 
 				    xmlNs = (xmlNsPtr) xmlMalloc(sizeof(xmlNs));
@@ -498,12 +498,9 @@ xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
 				    memset(xmlNs, 0, sizeof(xmlNs));
 				    xmlNs->type = XML_LOCAL_NAMESPACE;
 
-				    if (uri != NULL)
 					xmlNs->href = xmlStrdup(uri);
-				    if (prefix != NULL)
 					xmlNs->prefix = xmlStrdup(prefix);
 
-					
 			    }    
 		}
 	}
