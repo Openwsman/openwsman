@@ -325,8 +325,7 @@ int xml_parser_node_set(WsXmlNodeH node, int what, const char *str)
 		break;
 
 	case XML_NS_URI:
-		if ((xmlNs =
-					(xmlNsPtr) xml_parser_ns_find(node, str, NULL, 1,
+		if ((xmlNs = (xmlNsPtr) xml_parser_ns_find(node, str, NULL, 1,
 						1)) != NULL) {
 			xmlNode->ns = xmlNs;
 			retVal = 0;
@@ -397,6 +396,9 @@ WsXmlNodeH xml_parser_node_get(WsXmlNodeH node, int which)
 	return (WsXmlNodeH) xmlNode;
 }
 
+/* check if namespace is defined (at document root)
+ * and evtl. (bAddAtRootIfNotFound!=0) add it to the root node
+ */
 
 WsXmlNsH
 xml_parser_ns_find(WsXmlNodeH node,
@@ -470,38 +472,33 @@ xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
 {
 	xmlNsPtr xmlNs = NULL;
 	if (node && uri) {
-		if ((xmlNs =
-					(xmlNsPtr) xml_parser_ns_find(node, uri, NULL, 0,
-						0)) != NULL) {
+		if ((xmlNs = (xmlNsPtr) xml_parser_ns_find(node, uri, NULL, 0, 0)) != NULL) {
+                        /* namespace is known */
 			if (xmlNs->prefix != NULL) {
 				xmlFree((char *) xmlNs->prefix);
 				xmlNs->prefix = NULL;
 			}
-
 			if (prefix != NULL) {
 				xmlNs->prefix = xmlStrdup(BAD_CAST prefix);
 			}
 		} else {
-			xmlNs =
-				xmlNewNs((xmlNodePtr) node, BAD_CAST uri,
-						BAD_CAST prefix);
-			    //since the xml name is predefined, the above function will return a NULL when the prefix=xml && uri = XML_XML_NAMESPACE
-			    // So returning a valid NS
-			    if ( xmlNs == NULL && strcmp(prefix,"xml") == 0 && 
-					strcmp(uri,XML_XML_NAMESPACE)== 0 ){
-
-				    xmlNs = (xmlNsPtr) xmlMalloc(sizeof(xmlNs));
-				    if (xmlNs == NULL) {
+                        /* create new namespace entry */
+			xmlNs =	xmlNewNs((xmlNodePtr) node, BAD_CAST uri, BAD_CAST prefix);
+			/* since the 'xml:' name is supposed to be predefined, the above
+                         * function will return NULL when prefix == xml && uri == XML_XML_NAMESPACE.
+                         * Compensate for this here.
+                         */
+			if (xmlNs == NULL && strcmp(prefix,"xml") == 0
+                            && strcmp(uri,XML_XML_NAMESPACE)== 0) {
+				xmlNs = (xmlNsPtr) u_zalloc(sizeof(xmlNs));
+				if (xmlNs == NULL) {
 					error("Couldn't create a new Namespace structure");	
 					return(NULL);
-				    }
-				    memset(xmlNs, 0, sizeof(xmlNs));
-				    xmlNs->type = XML_LOCAL_NAMESPACE;
-
-					xmlNs->href = xmlStrdup(uri);
-					xmlNs->prefix = xmlStrdup(prefix);
-
-			    }    
+				}
+				xmlNs->type = XML_LOCAL_NAMESPACE;
+				xmlNs->href = xmlStrdup(uri);
+				xmlNs->prefix = xmlStrdup(prefix);
+			}
 		}
 	}
 	return (WsXmlNsH) xmlNs;
