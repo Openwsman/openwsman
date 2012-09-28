@@ -1,9 +1,17 @@
 2.3.6
 - Features
   - Plugins: Ability to redirect requests to a different WS-Management
-    server
+    server (Praveen Paladugu)
+- Bugfixes
+  - Fix xml namespace in Fault message (Praveen Paladugu)
+  - Pass correct key values when creating a Cim_IndicationSubscription
+    (Santosh Bidaralli)
+  - verify_class_namespace: properly check for 'CIM' class schema
+    (Mayur Bhosle)
+  - Fix MaxElements namespace in Pull context (Praveen Paladugu)
 - Bindings
   - Ruby: fix crash in Options destructor
+  - Ruby: mark passing arrays via invoke as unsupported
 
 2.3.5
 - Bugfixes
