@@ -2,7 +2,9 @@
 # CMakeLists.txt for openwsman/src/lib
 #
 
+IF ( BUILD_TESTS )
 ADD_SUBDIRECTORY(test)
+ENDIF ( BUILD_TESTS )
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
 
