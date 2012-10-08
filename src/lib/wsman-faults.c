@@ -603,31 +603,28 @@ wsman_fault_occured(WsmanMessage *msg)
 }
 
 
- wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
+void
+wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
 {
-    int i;
-    char *subcode_value=ws_xml_get_xpath_value(doc, FAULT_SUBCODE_VALUE_XPATH);
-    char *subcode_value_msg =calloc(1,strlen(subcode_value));
-    char *start_pos = strchr(subcode_value,':');
-    int copy_len = strlen (subcode_value) - (int)(start_pos - subcode_value);
-    strcpy(subcode_value_msg, start_pos+1); 
-    if (strlen(subcode_value)== 0 ) return ;
+  int i;
+  char *subcode_value=ws_xml_get_xpath_value(doc, FAULT_SUBCODE_VALUE_XPATH);
+  char *subcode_value_msg =calloc(1,strlen(subcode_value));
+  char *start_pos = strchr(subcode_value,':');
+  int copy_len = strlen (subcode_value) - (int)(start_pos - subcode_value);
+  strcpy(subcode_value_msg, start_pos+1); 
+  if (strlen(subcode_value)== 0 ) return ;
  
-    int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
-    for (i = 0; i < nfaults; i++) {
-    
-	if( strcmp (subcode_value_msg , fault_code_table[i].subCode) == 0 )
-	{
-	    status->fault_code = fault_code_table[i].fault_code;
-	    //some default values
-	    status->fault_detail_code = 0;
-	    status->fault_msg='\0';
-	    return;
-	}
-	    
+  int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
+  for (i = 0; i < nfaults; i++) {
+    if (strcmp (subcode_value_msg , fault_code_table[i].subCode) == 0) {
+      status->fault_code = fault_code_table[i].fault_code;
+      //some default values
+      status->fault_detail_code = 0;
+      status->fault_msg='\0';
+      return;
     }
 
-    
-return;
+  }
+  return;
 }
 
