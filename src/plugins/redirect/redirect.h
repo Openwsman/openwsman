@@ -11,8 +11,6 @@
 #define XML_REDIRECT_NS    "http://dummy.com/wbem/wscim/1/cim-schema/2"
 
 
-#define ENABLE_EVENTING_SUPPORT 0 
-
 struct  __RedirectResult
 {
 	int result;
