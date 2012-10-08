@@ -119,6 +119,8 @@ OPTION( DISABLE_SERVER "Do not build server component" NO )
 OPTION( ENABLE_EVENTING_SUPPORT "WS-Eventing wanted" YES )
 OPTION( WSMAN_DEBUG_VERBOSE "Verbose debug logging" NO )
 OPTION( ENABLE_IPV6 "Enable IPv6 support" YES )
+OPTION( BUILD_TESTS "Build tests" YES )
+
 
 IF (ENABLE_EVENTING_SUPPORT)
   SET(ENABLE_EVENTING_SUPPORT 1)
@@ -473,8 +475,10 @@ add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(doc)
 add_subdirectory(etc)
-add_subdirectory(tests)
 
+IF ( BUILD_TESTS )
+add_subdirectory(tests)
+ENDIF ( BUILD_TESTS )
 
 IF ( BUILD_EXAMPLES )
 add_subdirectory(examples)
