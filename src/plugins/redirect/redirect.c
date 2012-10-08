@@ -22,6 +22,7 @@
 
 #include "redirect.h"
 
+#include "../../server/wsmand-daemon.h"
 
 struct __Redirect_Data
 {
