@@ -12,7 +12,10 @@
 - Bindings
   - Ruby: fix crash in Options destructor
   - Ruby: mark passing arrays via invoke as unsupported
-
+- Building
+  - new cmake option: BUILD_BINDINGS (defaults to yes)
+  - honor BUILD_TESTS for all test directories 
+          
 2.3.5
 - Bugfixes
   - Release serializer lock only after use (Satya Chittidi)
