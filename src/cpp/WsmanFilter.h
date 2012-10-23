@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <malloc.h>
+#include <cstdlib>
 #include "WsmanEPR.h"
 #include "wsman-filter.h"
 
