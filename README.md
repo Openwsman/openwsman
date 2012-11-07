@@ -29,7 +29,7 @@ server can run as a daemon, which would require root access; But it
 can be run in the foreground with debugging messages printed to stdout
 as well. This the help output when you run:
 
-    /usr/local/sbin/openwsmand --help
+    /usr/sbin/openwsmand --help
     Usage:
     openwsmand [OPTION...] WS-Management Server
 
