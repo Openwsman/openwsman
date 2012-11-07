@@ -15,6 +15,7 @@
 - Building
   - new cmake option: BUILD_BINDINGS (defaults to yes)
   - honor BUILD_TESTS for all test directories 
+  - fix MaxcOS build (Dan Villiom Podlaski Christiansen)
           
 2.3.5
 - Bugfixes
