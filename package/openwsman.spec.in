@@ -15,7 +15,6 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
-# norootforbuild
 
 %if 0%{?suse_version} > 1140 || 0%{?fedora_version} > 14
 %define has_systemd 1
@@ -90,7 +89,7 @@ BuildRequires:  openssl-devel
 
 %if 0%{?suse_version} > 910
 BuildRequires:  ruby-devel
-%if 0%{?suse_version} < 1120
+%if 0%{?suse_version} < 1110
 # SLE 10 has Ruby 1.8.6 and runs into http://help.rubygems.org/discussions/problems/859-trying-to-install-rubygems
 BuildRequires:  rubygems <= 1.3.7
 %else
@@ -112,13 +111,13 @@ BuildRequires:  systemd
 
 Requires(pre):  sed coreutils grep /bin/hostname
 Version:        @VERSION@
-Release:        1
+Release:        0
 # Mandriva:
 # Release %mkrel 1
 Url:            http://www.openwsman.org/
+Summary:        Opensource Implementation of WS-Management
 License:        BSD-3-Clause
 Group:          System/Management
-Summary:        Opensource Implementation of WS-Management
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
@@ -136,9 +135,8 @@ Opensource Implementation of WS-Management protocol stack
 
 
 %package -n libwsman1
-License:        BSD-3-Clause
-Group:          System/Management
 Summary:        Opensource Implementation of WS-Management
+Group:          System/Management
 Provides:       openwsman = %{version}
 Obsoletes:      openwsman < %{version}
 
@@ -147,13 +145,12 @@ Opensource Implementation of WS-Management protocol stack
 (Common libraries)
 
 %package -n libwsman-devel
-License:        BSD-3-Clause
-Group:          Development/Libraries/C and C++
 Summary:        Opensource Implementation of WS-Management
+Group:          Development/Libraries/C and C++
 Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
-Requires:       libwsman1 = %{version}
 Requires:       %{name}-server = %{version}
+Requires:       libwsman1 = %{version}
 Requires:       libxml2-devel
 Requires:       pam-devel
 Requires:       sblim-sfcc-devel
@@ -163,9 +160,8 @@ Opensource Implementation of WS-Management stack
 (Development files)
 
 %package -n libwsman_clientpp1
-License:        BSD-3-Clause
-Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
+Group:          System/Management
 Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
 
@@ -174,33 +170,30 @@ An implementation of the WsmanClient interface using C++
 
 
 %package -n libwsman_clientpp-devel
-License:        BSD-3-Clause
-Group:          System/Management
 Summary:        C++ bindings to Openwsman Client libraries
-Requires:       libwsman_clientpp1 = %{version}
+Group:          System/Management
 Requires:       libwsman-devel = %{version}
+Requires:       libwsman_clientpp1 = %{version}
 
 %description -n libwsman_clientpp-devel
 Development files for C++ interface to OpenWSMAN client library.
 
 
 %package server
-License:        BSD-3-Clause
-Group:          System/Management
 Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
 Requires(pre):  fillup
 %endif
 Summary:        Openwsman Server and service libraries
+Group:          System/Management
 
 %description server
 Openwsman Server and service libraries
 
 
 %package python
-License:        BSD-3-Clause
-Group:          Development/Libraries/Python
 Summary:        Python bindings for openwsman client API
+Group:          Development/Libraries/Python
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?py_requires: %define py_requires Requires: python}
@@ -212,8 +205,6 @@ API.
 
 
 %package ruby
-License:        BSD-3-Clause
-Group:          System/Management
 Requires:       ruby
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
 
@@ -244,14 +235,13 @@ Requires:       ruby(abi) = %{ruby_version}
 %endif
 
 Summary:        Ruby bindings for openwsman client API
+Group:          System/Management
 
 %description ruby
 This package provides Ruby bindings to access the openwsman client API.
 
 
 %package perl
-License:        BSD-3-Clause
-Group:          System/Management
 %if 0%{?fedora}
 %define perl_version %(eval "`%{__perl} -V:version`"; echo $version)
 %define perl_requires perl(:MODULE_COMPAT_%{perl_version})
@@ -260,6 +250,7 @@ Requires:       %{perl_version}
 Requires:       perl = %{perl_version}
 %endif
 Summary:        Perl bindings for openwsman client API
+Group:          System/Management
 
 %description perl
 This package provides Perl bindings to access the openwsman client API.
@@ -268,11 +259,10 @@ This package provides Perl bindings to access the openwsman client API.
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 
 %package java
-License:        BSD-3-Clause
-Group:          System/Management
 Requires:       java
 Requires:       libwsman1 = %{version}
 Summary:        Java bindings for openwsman client API
+Group:          System/Management
 
 %description java
 This package provides Java bindings to access the openwsman client API.
@@ -343,11 +333,12 @@ install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 
 %post -n libwsman1 -p /sbin/ldconfig
 
-%postun -n libwsman1 -p /sbin/ldconfig
+%postun -n libwsman1
+/sbin/ldconfig
+exit 0
 
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
-
 %pre server
 if [-f /var/lib/systemd/migrated/%{name}]; then
 %service_add_pre %{name}.service
