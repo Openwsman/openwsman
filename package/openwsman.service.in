@@ -3,6 +3,7 @@ Description=Openwsman WS-Management Service
 After=syslog.target
 
 [Service]
+Type=forking
 ExecStart=@prefix@/sbin/openwsmand
 
 [Install]
