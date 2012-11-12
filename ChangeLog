@@ -1,3 +1,7 @@
+2.3.7
+- Bugfixes
+  - Generate pkgconfig (.pc) files correctly
+
 2.3.6
 - Features
   - Plugins: Ability to redirect requests to a different WS-Management
