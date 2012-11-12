@@ -465,8 +465,11 @@ SET(PACKAGE_TARNAME "\"openwsman-${VERSION}.tar.bz2\"")
 SET("prefix" ${CMAKE_INSTALL_PREFIX})
 SET("includedir" ${CMAKE_INSTALL_PREFIX}/include)
 SET("libdir" ${LIB_INSTALL_DIR})
+# Library names !
 SET(WSMAN_PKG wsman)
+SET(WSMAN_SERVER_PKG wsman_server)
 SET(WSMAN_CLIENT_PKG wsman_client)
+SET(WSMAN_CLIENTPP_PKG wsman_clientpp)
 SET(WSMAN_CLIENT_TRANSPORT_PKG wsman_curl_client_transport)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/wsman_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/wsman_config.h)
