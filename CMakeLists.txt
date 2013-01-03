@@ -230,19 +230,17 @@ IF( BUILD_BINDINGS )
   FIND_PACKAGE(SWIG)
   IF( NOT SWIG_EXECUTABLE)
     FIND_PROGRAM(SWIG_EXECUTABLE
-      NAMES swig-1.3 swig
+      NAMES swig
       PATHS ${SWIG_DIR} ${SWIG_DIR}/.. ${SWIG_DIR}/../../bin /usr/bin /usr/local/bin ${CMAKE_INSTALL_PREFIX}/bin
     )
     SET(SWIG_VERSION "(unknown version)")
   ELSE ( NOT SWIG_EXECUTABLE)
     # FIND_PACKAGE(SWIG) succeeded, now check the version
-    # swig 2.0.4 is known to be broken
+    # swig 2.0.4 and lower is known to be broken
     IF (SWIG_VERSION)
-      IF(${SWIG_VERSION} VERSION_GREATER "2.0.0")
-        IF(${SWIG_VERSION} VERSION_LESS "2.0.5")
-          MESSAGE( FATAL "Found SWIG version ${SWIG_VERSION}, please upgrade SWIG to 2.0.5 or later" )
-        ENDIF(${SWIG_VERSION} VERSION_LESS "2.0.5")
-      ENDIF(${SWIG_VERSION} VERSION_GREATER "2.0.0")
+      IF(${SWIG_VERSION} VERSION_LESS "2.0.5")
+        MESSAGE( FATAL_ERROR "Found SWIG version ${SWIG_VERSION}, please upgrade SWIG to 2.0.5 or later" )
+      ENDIF(${SWIG_VERSION} VERSION_LESS "2.0.5")
     ENDIF (SWIG_VERSION)
   ENDIF( NOT SWIG_EXECUTABLE)
 ENDIF( BUILD_BINDINGS )

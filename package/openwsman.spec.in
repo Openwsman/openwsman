@@ -28,7 +28,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  libxml2-devel
 BuildRequires:  pam-devel
 BuildRequires:  sblim-sfcc-devel
-BuildRequires:  swig >= 1.3.30
+BuildRequires:  swig >= 2.0.5
 
 BuildRequires:  perl
 BuildRequires:  python-devel
