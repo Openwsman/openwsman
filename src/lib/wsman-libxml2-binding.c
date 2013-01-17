@@ -817,7 +817,7 @@ void xml_parser_element_dump(FILE * f, WsXmlDocH doc, WsXmlNodeH node)
 {
 
 	xmlNodePtr n = (xmlNodePtr) node;
-	xmlDocPtr d = (xmlDocPtr) doc;
+	xmlDocPtr d = (xmlDocPtr) doc->parserDoc;
 	xmlElemDump(f, d, n);
 }
 
