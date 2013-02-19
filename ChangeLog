@@ -1,6 +1,7 @@
 2.3.7
 - Bugfixes
   - Generate pkgconfig (.pc) files correctly
+  - Require SWIG > 2.0.4 for building
 
 2.3.6
 - Features
