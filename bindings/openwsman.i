@@ -313,6 +313,83 @@ static char *epr_prefix(const char *uri) {
 
 %}
 
+#if RUBY_VERSION > 18
+%{
+  typedef struct {
+    WsManClient *client;
+    client_opt_t *options;
+    filter_t *filter;
+    const char *resource_uri;
+    epr_t *epr;
+    const char *context;
+    const char *identifier;
+    const char *data;
+    size_t size;
+    const char *encoding;
+    const char *method;
+    WsXmlDocH method_args;
+  } wsmc_action_args_t;
+
+  WsXmlDocH
+  ruby_enumerate_thread(wsmc_action_args_t *args) {
+    return wsmc_action_enumerate(args->client, args->resource_uri, args->options, args->filter);
+  }
+  WsXmlDocH
+  ruby_identify_thread(wsmc_action_args_t *args) {
+    return wsmc_action_identify(args->client, args->options);
+  }
+  WsXmlDocH
+  ruby_get_from_epr_thread(wsmc_action_args_t *args) {
+    return wsmc_action_get_from_epr(args->client, args->epr, args->options);
+  }
+  WsXmlDocH
+  ruby_delete_from_epr_thread(wsmc_action_args_t *args) {
+    return wsmc_action_delete_from_epr(args->client, args->epr, args->options);
+  }
+  WsXmlDocH
+  ruby_pull_thread(wsmc_action_args_t *args) {
+    return wsmc_action_pull(args->client, args->resource_uri, args->options, args->filter, args->context);
+  }
+  WsXmlDocH
+  ruby_create_fromtext_thread(wsmc_action_args_t *args) {
+    return wsmc_action_create_fromtext(args->client, args->resource_uri, args->options, args->data, args->size, args->encoding);
+  }
+  WsXmlDocH
+  ruby_put_fromtext_thread(wsmc_action_args_t *args) {
+    return wsmc_action_put_fromtext(args->client, args->resource_uri, args->options, args->data, args->size, args->encoding);
+  }
+  WsXmlDocH
+  ruby_release_thread(wsmc_action_args_t *args) {
+    return wsmc_action_release(args->client, args->resource_uri, args->options, args->context);
+  }
+  WsXmlDocH
+  ruby_get_thread(wsmc_action_args_t *args) {
+    return wsmc_action_get(args->client, args->resource_uri, args->options);
+  }
+  WsXmlDocH
+  ruby_delete_thread(wsmc_action_args_t *args) {
+    return wsmc_action_delete(args->client, args->resource_uri, args->options);
+  }
+  WsXmlDocH
+  ruby_invoke_thread(wsmc_action_args_t *args) { 
+    return wsmc_action_invoke(args->client, args->resource_uri, args->options, args->method, args->method_args);
+  }
+  WsXmlDocH
+  ruby_subscribe_thread(wsmc_action_args_t *args) {
+    return wsmc_action_subscribe(args->client, args->resource_uri, args->options, args->filter);
+  }
+  WsXmlDocH
+  ruby_unsubscribe_thread(wsmc_action_args_t *args) {
+    return wsmc_action_unsubscribe(args->client, args->resource_uri, args->options, args->identifier);
+  }
+  WsXmlDocH
+  ruby_renew_thread(wsmc_action_args_t *args) {
+    return wsmc_action_renew(args->client, args->resource_uri, args->options, args->identifier);
+  }
+%}
+#endif
+
+
 /*
  * hash_t typemaps
  */

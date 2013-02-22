@@ -179,7 +179,14 @@ typedef struct _WsManClient {
    *
    */
   WsXmlDocH identify( client_opt_t *options ) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_identify_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_identify( $self, options );
+#endif
   }
   
   /*
@@ -189,7 +196,15 @@ typedef struct _WsManClient {
    *
    */
   WsXmlDocH get_from_epr( client_opt_t *options , epr_t *epr) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.epr = epr;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_get_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_get_from_epr( $self, epr, options);
+#endif
   }
 
   /*
@@ -199,7 +214,15 @@ typedef struct _WsManClient {
    *
    */
   WsXmlDocH delete_from_epr( client_opt_t *options , epr_t *epr) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.epr = epr;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_delete_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_delete_from_epr( $self, epr, options);
+#endif
   }
 
   /*
@@ -222,7 +245,16 @@ typedef struct _WsManClient {
    *
    */
   WsXmlDocH enumerate( client_opt_t *options , filter_t *filter, char *resource_uri) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.filter = filter;
+    args.resource_uri = resource_uri;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_enumerate_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_enumerate( $self, resource_uri, options, filter);
+#endif
   }
 
   /*
@@ -234,8 +266,18 @@ typedef struct _WsManClient {
    *   result = client.pull(options, filter, uri, context)
    *
    */
-  WsXmlDocH pull( client_opt_t *options , filter_t *filter, char *resource_uri, char *enum_ctx) {
-    return wsmc_action_pull( $self, resource_uri, options, filter, enum_ctx);
+  WsXmlDocH pull( client_opt_t *options , filter_t *filter, const char *resource_uri, const char *context) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.filter = filter;
+    args.resource_uri = resource_uri;
+    args.context = context;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_pull_thread, &args, RUBY_UBF_IO, 0);
+#else
+    return wsmc_action_pull( $self, resource_uri, options, filter, context);
+#endif
   }
 
   /*
@@ -247,8 +289,19 @@ typedef struct _WsManClient {
    *   result = client.get(options, uri, xml, xml.size, "utf-8")
    *
    */
-  WsXmlDocH create( client_opt_t *options, char *resource_uri, char *data, size_t size, char *encoding = "utf-8") {
+  WsXmlDocH create( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    args.data = data;
+    args.size = size;
+    args.encoding = encoding;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_create_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_create_fromtext( $self, resource_uri, options, data, size, encoding);
+#endif
   }
 
   /*
@@ -260,8 +313,19 @@ typedef struct _WsManClient {
    *   result = client.get(options, uri, xml, xml.size, "utf-8")
    *
    */
-  WsXmlDocH put( client_opt_t *options , char *resource_uri,  char *data, size_t size, char *encoding = "utf-8") {
+  WsXmlDocH put( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    args.data = data;
+    args.size = size;
+    args.encoding = encoding;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_put_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_put_fromtext( $self, resource_uri, options, data, size, encoding);
+#endif
   }
 
   /*
@@ -273,8 +337,17 @@ typedef struct _WsManClient {
    *   result = client.release(options, uri, context)
    *
    */
-  WsXmlDocH release( client_opt_t *options , char *resource_uri, char *enum_ctx) {
-    return wsmc_action_release( $self, resource_uri, options, enum_ctx);
+  WsXmlDocH release( client_opt_t *options, const char *resource_uri, const char *context) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    args.context = context;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_release_thread, &args, RUBY_UBF_IO, 0);
+#else
+    return wsmc_action_release( $self, resource_uri, options, context);
+#endif
   }
 
   /*
@@ -286,8 +359,16 @@ typedef struct _WsManClient {
    *   result = client.get(options, uri)
    *
    */
-  WsXmlDocH get( client_opt_t *options , char *resource_uri) {
+  WsXmlDocH get( client_opt_t *options, const char *resource_uri) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_get_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_get( $self, resource_uri, options);
+#endif
   }
 
   /*
@@ -299,8 +380,16 @@ typedef struct _WsManClient {
    *   result = client.delete(options, uri)
    *
    */
-  WsXmlDocH delete( client_opt_t *options , char *resource_uri) {
+  WsXmlDocH delete( client_opt_t *options, const char *resource_uri) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_delete_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_delete( $self, resource_uri, options);
+#endif
   }
 
   /*
@@ -313,8 +402,18 @@ typedef struct _WsManClient {
    *   result = client.invoke(options, uri, "method-name", xml_doc)
    *
    */
-  WsXmlDocH invoke( client_opt_t *options , char *resource_uri, char *method, WsXmlDocH data = NULL) {
+  WsXmlDocH invoke( client_opt_t *options, const char *resource_uri, const char *method, WsXmlDocH data = NULL) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    args.method = method;
+    args.method_args = data;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_invoke_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_invoke( $self, resource_uri, options, method, data);
+#endif
   }
 
   /*
@@ -326,8 +425,17 @@ typedef struct _WsManClient {
    *   result = client.subscribe(options, filter, uri)
    *
    */
-  WsXmlDocH subscribe(client_opt_t *options , filter_t *filter, char *resource_uri) {
+  WsXmlDocH subscribe(client_opt_t *options, filter_t *filter, const char *resource_uri) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.filter = filter;
+    args.resource_uri = resource_uri;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_subscribe_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_subscribe($self,  resource_uri, options, filter);
+#endif
   }
 
   /*
@@ -339,8 +447,18 @@ typedef struct _WsManClient {
    *   result = client.unsubscribe(options, filter, uri, identifier)
    *
    */
-  WsXmlDocH unsubscribe(client_opt_t *options , filter_t *filter, char *resource_uri, char *identifier) {
+  WsXmlDocH unsubscribe(client_opt_t *options, filter_t *filter, const char *resource_uri, const char *identifier) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.filter = filter;
+    args.resource_uri = resource_uri;
+    args.identifier = identifier;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_unsubscribe_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_unsubscribe($self, resource_uri, options, identifier);
+#endif
   }
 
   /*
@@ -353,7 +471,16 @@ typedef struct _WsManClient {
    *
    */
   WsXmlDocH renew(client_opt_t *options , char *resource_uri, char *identifier) {
+#if RUBY_VERSION > 18 /* YARV */
+    wsmc_action_args_t args;
+    args.client = $self;
+    args.options = options;
+    args.resource_uri = resource_uri;
+    args.identifier = identifier;
+    return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_renew_thread, &args, RUBY_UBF_IO, 0);
+#else
     return wsmc_action_renew($self, resource_uri, options, identifier);
+#endif
   }
 
   /*
