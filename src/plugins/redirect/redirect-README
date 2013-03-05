@@ -1,0 +1,68 @@
+While configuring the details for redirection, the following formats are to be used:
+
+
+i) in openwsman.conf file (the main configuration file) you can have a section like the following:
+
+[redirect]
+#server field is mandatory
+server='a.b.c.d'   
+#namespace field is mandatory
+namespace='http://schemas.example.com/wbem/wscim/1/cim-schema/2'
+
+#the remaining fields below are optional. If not provides, these fields will be imported from main wsman command or defaults
+
+# username and password will be imported from the main wsman request
+username='user1'
+password='password'
+
+
+#default for url_path is '/wsman'
+url_path='/wsman'
+
+#default for authentication_method is basic
+authentication_method='basic'
+
+#default for cim_namespace is root/cimv2
+cim_namespace='root/cimv2'
+
+#Default value of cacert is NULL. While talking to a remote WSMAN server over SSL, this has to be assigned some value. If not assigned some value, the redirection will fail.
+cacert='/etc/dummy.cert'
+
+#default of 5985 is used.
+port='5985'
+
+#Default vaule is 0
+noverifypeer=0
+
+#default value is 0
+noverifyhost=0
+
+#default value is NULL
+sslkey=NULL
+
+#default value is NULL
+cl_cert=NULL
+
+
+ii)In order to hide the sensitive username and password details better, you can include a new file to the openwsman.conf as follows
+
+[redirect]
+include='/etc/openwsman/redirect.conf'
+
+You can make the new conf file, only root read-only and hide the sensitive info better. The new redirect.conf file will capture the details in the following format:
+
+
+username='user1'
+password='password'
+url_path='/wsman'
+authentication_method='basic'
+cim_namespace='root/cimv2'
+cacert='/etc/dummy.cert'
+port='5985'
+noverifypeer=0
+noverifyhost=0
+sslkey=NULL
+cl_cert=NULL
+
+
+All the above options are simila to the corresponding options provided to wsman program (in wsmancli package). Please refer to documentation in wsmancli for more details on each option.

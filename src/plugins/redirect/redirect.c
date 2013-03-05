@@ -96,7 +96,7 @@ void get_endpoints(void *self, void **data)
 int init( void *self, void **data )
 {
     char* filename;
-    dictionary *ini;
+    dictionary *ini, *inc_ini;
     filename = (char *) wsmand_options_get_config_file();
     ini = iniparser_new(filename);
 
@@ -110,8 +110,21 @@ int init( void *self, void **data )
     if ( iniparser_getstring(ini, "redirect:server", NULL) ==NULL ||
          iniparser_getstring(ini, "redirect:namespace", NULL) ==NULL
 	){
+	    //if the redirection details are not provided in the core config file, check for an include tag, and check file in the include tag
 
-	    error("The required inputs are not provided in the config file");
+	    filename=iniparser_getstring(ini,"redirect:include",NULL);
+	    if (filename == NULL) goto err_out;
+
+	    inc_ini=iniparser_new(filename);
+	    if (inc_ini == NULL) goto err_out;
+
+
+	    if ( iniparser_getstring(inc_ini, ":server",NULL) != NULL &&
+		 iniparser_getstring(inc_ini,":namespace",NULL) != NULL )
+		return 1; //the inputs are fine 	
+
+	    err_out:
+	    error("Redirect Plugin: The required inputs are not provided in the config file");
 	    return 0;
 	}
     	
@@ -126,10 +139,37 @@ cleanup( void  *self, void *data )
 }
 void set_config( void *self, dictionary *config )
 {
+    if (config == NULL)
+	return;
+    char *inc_filename;
+    dictionary *inc_ini;
+
+//Check for include tag first, if exists, only use the included file
+
+     if ( (inc_filename=iniparser_getstring(config,"redirect:include",NULL)) == NULL )
+	    goto no_inc_file;
+      	
+    inc_ini = iniparser_new(inc_filename);
+    redirect_data->server = iniparser_getstr (inc_ini, ":server");
+    redirect_data->namespace = iniparser_getstr (inc_ini, ":namespace");
+
+    redirect_data->username = iniparser_getstring (inc_ini, ":username",NULL);
+    redirect_data->password = iniparser_getstring (inc_ini, ":password",NULL);
+    redirect_data->url_path = iniparser_getstring (inc_ini, ":url_path","/wsman");
+    redirect_data->authentication_method = iniparser_getstring (inc_ini, ":authentication_method", "basic");
+    redirect_data->cim_namespace = iniparser_getstring (inc_ini, ":cim_namespace","root/cimv2");
+    redirect_data->cainfo = iniparser_getstring (inc_ini, ":cacert",NULL);
+    redirect_data->server_port = iniparser_getint (inc_ini, ":port",5895);
+    redirect_data->noverifypeer = iniparser_getint (inc_ini, ":noverifypeer", 0);
+    redirect_data->noverifyhost = iniparser_getint (inc_ini, ":noverifyhost", 0);
+    redirect_data->sslkey = iniparser_getstring (inc_ini, ":sslkey", NULL);
+    redirect_data->cl_cert = iniparser_getstring (inc_ini, ":cl_cert", NULL);		
+    return;
 
     
 
-    if (config) {
+    no_inc_file:
+//No Include file 
     redirect_data->server = iniparser_getstr (config, "redirect:server");
     redirect_data->namespace = iniparser_getstr (config, "redirect:namespace");
 
@@ -144,7 +184,6 @@ void set_config( void *self, dictionary *config )
     redirect_data->noverifyhost = iniparser_getint (config, "redirect:noverifyhost", 0);
     redirect_data->sslkey = iniparser_getstring (config, "redirect:sslkey", NULL);
     redirect_data->cl_cert = iniparser_getstring (config, "redirect:cl_cert", NULL);		
-    }	
 
 	
 }
