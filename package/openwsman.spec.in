@@ -388,7 +388,7 @@ rm -f /var/log/wsmand.log
 
 %files -n libwsman1
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README.md TODO
+%doc AUTHORS COPYING ChangeLog README.md TODO src/plugins/redirect/redirect-README
 %{_libdir}/libwsman.so.*
 %{_libdir}/libwsman_client.so.*
 %{_libdir}/libwsman_curl_client_transport.so.*
