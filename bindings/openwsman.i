@@ -252,6 +252,8 @@ static const char *uri_prefix(const char *classname) {
     { 3, "IPS", "http://intel.com/wbem/wscim/1/ips-schema/1" },
     /* Sun */
     { 3, "Sun","http://schemas.sun.com/wbem/wscim/1/cim-schema/2" },
+    /* Microsoft HyperV */
+    { 4, "Msvm", "http://schemas.microsoft.com/wbem/wsman/1/wmi" },
     { 0, NULL, NULL }
   };
   const char *schema_end;
