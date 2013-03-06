@@ -138,7 +138,8 @@ def print_item indent, item, properties = []
       if c.size == 0
         attrs = ""
         c.each_attr { |a| attrs << " #{a.name}=#{a.value}" }
-        puts "#{indentation}#{c.name}(#{attrs}): #{c.text}"
+        attrs = "<"+attrs+">" unless attrs.empty?
+        puts "#{indentation}#{c.name}#{attrs}: #{c.text}"
       else
         print_item indent+1, c
       end
