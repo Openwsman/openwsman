@@ -41,7 +41,7 @@ class Client
       raise "Check WSMANCLIENT environment variable against clients.yml"
     end
     wsmc = Openwsman::Client.new( client["host"], client["port"], client["path"], client["scheme"], client["username"], client["password"] )
-    wsmc.transport.timeout = 5
+    wsmc.transport.timeout = 120
     #
     # Allow to enforce auth scheme
     # e.g. required for Windows which offers BASIC|GSS and Openwsman chooses the strongest (GSS) but non-working
