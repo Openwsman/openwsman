@@ -6,8 +6,8 @@ i) in openwsman.conf file (the main configuration file) you can have a section l
 [redirect]
 #server field is mandatory
 server='a.b.c.d'   
-#namespace field is mandatory
-namespace='http://schemas.example.com/wbem/wscim/1/cim-schema/2'
+#resource field is mandatory
+resource='http://schemas.example.com/wbem/wscim/1/cim-schema/2'
 
 #the remaining fields below are optional. If not provides, these fields will be imported from main wsman command or defaults
 
@@ -29,7 +29,7 @@ cim_namespace='root/cimv2'
 cacert='/etc/dummy.cert'
 
 #default of 5985 is used.
-port='5985'
+port=5985
 
 #Default vaule is 0
 noverifypeer=0
@@ -51,6 +51,8 @@ include='/etc/openwsman/redirect.conf'
 
 You can make the new conf file, only root read-only and hide the sensitive info better. The new redirect.conf file will capture the details in the following format:
 
+server='a.b.c.d'
+resource='http://schemas.example.com/wbem/wscim/1/cim-schema/2'
 
 username='user1'
 password='password'
@@ -58,7 +60,7 @@ url_path='/wsman'
 authentication_method='basic'
 cim_namespace='root/cimv2'
 cacert='/etc/dummy.cert'
-port='5985'
+port=5985
 noverifypeer=0
 noverifyhost=0
 sslkey=NULL
