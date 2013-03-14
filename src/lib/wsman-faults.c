@@ -610,7 +610,6 @@ wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
   char *subcode_value=ws_xml_get_xpath_value(doc, FAULT_SUBCODE_VALUE_XPATH);
   char *subcode_value_msg =calloc(1,strlen(subcode_value));
   char *start_pos = strchr(subcode_value,':');
-  int copy_len = strlen (subcode_value) - (int)(start_pos - subcode_value);
   strcpy(subcode_value_msg, start_pos+1); 
   if (strlen(subcode_value)== 0 ) return ;
  

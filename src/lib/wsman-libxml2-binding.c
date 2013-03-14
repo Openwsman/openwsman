@@ -489,15 +489,15 @@ xml_parser_ns_add(WsXmlNodeH node, const char *uri, const char *prefix)
                          * Compensate for this here.
                          */
 			if (xmlNs == NULL && strcmp(prefix,"xml") == 0
-                            && strcmp(uri,XML_XML_NAMESPACE)== 0) {
+                            && strcmp(uri, (const char *)XML_XML_NAMESPACE) == 0) {
 				xmlNs = (xmlNsPtr) u_zalloc(sizeof(xmlNs));
 				if (xmlNs == NULL) {
 					error("Couldn't create a new Namespace structure");	
 					return(NULL);
 				}
 				xmlNs->type = XML_LOCAL_NAMESPACE;
-				xmlNs->href = xmlStrdup(uri);
-				xmlNs->prefix = xmlStrdup(prefix);
+				xmlNs->href = xmlStrdup((const xmlChar *)uri);
+				xmlNs->prefix = xmlStrdup((const xmlChar *)prefix);
 			}
 		}
 	}
