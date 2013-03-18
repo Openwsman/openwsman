@@ -254,6 +254,8 @@ static const char *uri_prefix(const char *classname) {
     { 3, "Sun","http://schemas.sun.com/wbem/wscim/1/cim-schema/2" },
     /* Microsoft HyperV */
     { 4, "Msvm", "http://schemas.microsoft.com/wbem/wsman/1/wmi" },
+    /* Dell DRAC */
+    { 4, "DCIM", "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2" },
     { 0, NULL, NULL }
   };
   const char *schema_end;
