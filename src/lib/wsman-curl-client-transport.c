@@ -412,12 +412,11 @@ wsmc_handler( WsManClient *cl,
 	}
 	if (cl->transport == NULL) {
 		cl->transport = init_curl_transport(cl);
+                if (cl->transport == NULL) {
+                        return;
+                }
 	}
 	curl = (CURL *)cl->transport;
-	if (curl == NULL) {
-		cl->last_error = WS_LASTERR_FAILED_INIT;
-		return;
-	}
 
 	r = curl_easy_setopt(curl, CURLOPT_URL, cl->data.endpoint);
 	if (r != CURLE_OK) {
