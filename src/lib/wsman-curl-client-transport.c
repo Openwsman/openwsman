@@ -278,14 +278,14 @@ init_curl_transport(WsManClient *cl)
 	}
 	debug("cl->authentication.verify_peer: %d", cl->authentication.verify_peer );
 	// verify peer
-	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, cl->authentication.verify_peer);
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, wsman_transport_get_verify_peer(cl)?1:0);
 	if (r != 0) {
 		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed");
 		goto DONE;
 	}
 
 	// verify host
-	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, cl->authentication.verify_host);
+	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, wsman_transport_get_verify_host(cl)?2:0);
 	if (r != 0) {
 		curl_err("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed");
 		goto DONE;
