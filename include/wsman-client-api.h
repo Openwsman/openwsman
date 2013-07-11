@@ -105,6 +105,7 @@ typedef enum {
 		// accepted and we failed to login
 
 		WS_LASTERR_BAD_CRL_FILE, //bad CRL file provided (Format, Path or permission)
+		WS_LASTERR_CURL_BAD_FUNCTION_ARG, // bad function arg calling curl
 		WS_LASTERR_LAST	// never use!
 	} WS_LASTERR_Code;
 

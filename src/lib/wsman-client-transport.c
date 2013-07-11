@@ -509,6 +509,8 @@ char *wsman_transport_get_last_error_string(WS_LASTERR_Code err)
 		return "Unrecognized transfer encoding";
 	case WS_LASTERR_LOGIN_DENIED:
 		return "User, password or similar was not accepted";
+	case WS_LASTERR_CURL_BAD_FUNCTION_ARG:
+		return "Internal error: Wrong function argument in call to CURL";
 	default:
 		return "Unrecognized error";
 	}
