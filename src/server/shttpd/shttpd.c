@@ -777,11 +777,11 @@ shttpd_add_socket(struct shttpd_ctx *ctx, int sock, int is_ssl)
 		if (wsmand_options_get_use_ipv6()) {
 			char str[INET6_ADDRSTRLEN];
 			inet_ntop( AF_INET6,&sa.u.sin6.sin6_addr, str, sizeof(str));
-			DBG(("%s:%hu connected (socket %d)",  str , ntohs(sa.u.sin6.sin6_port), sock));
+			DBG(("%s:%hu connected IPv6 (socket %d)",  str , ntohs(sa.u.sin6.sin6_port), sock));
 		}
 		else {
 #endif
-			DBG(("%s:%hu connected (socket %d)",
+			DBG(("%s:%hu connected IPv4 (socket %d)",
 			     inet_ntoa(* (struct in_addr *) &sa.u.sin.sin_addr.s_addr),
 			     ntohs(sa.u.sin.sin_port), sock));
 #ifdef ENABLE_IPV6
