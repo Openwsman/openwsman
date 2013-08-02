@@ -192,6 +192,7 @@ typedef enum {
 		unsigned int timeout;
 		unsigned int max_envelope_size;
 		unsigned int max_elements;
+		hash_t *options; /* for WSM_OPTION_SET */
 	} client_opt_t;
 
 
@@ -754,6 +755,9 @@ typedef enum {
 					client_opt_t * options);
 
 	void wsmc_set_filter(filter_t *filter, client_opt_t * options);
+
+        void wsmc_add_option(client_opt_t * options,
+			     const char *key, const char *value);
 
 	void wsmc_add_selector(client_opt_t * options,
 				       const char *key, const char *value);

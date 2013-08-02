@@ -27,6 +27,7 @@ typedef struct {} client_opt_t;
     client_opt_t *options = wsmc_options_init();
 #if defined(SWIGJAVA)
     if (options) {
+	    options->options = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 	    options->selectors = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 	    options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
     }
@@ -216,6 +217,44 @@ typedef struct {} client_opt_t;
     return $self->reference;
   }
    
+  /*
+   * Add an option as key/value pair
+   *
+   * NOTE: the value must be properly escaped (replace & with &amp;, etc.)
+   *       in Ruby use CGI::escapeHTML()
+   *
+   */
+#if defined(SWIGRUBY)
+  void add_option(VALUE k, VALUE v)
+  {
+    const char *key = as_string(k);
+    const char *value = as_string(v);
+#else
+  void add_option(const char *key, const char *value)
+  {
+#endif
+#if defined(SWIGJAVA)
+    key = strdup(key);
+    value = strdup(value);
+#endif
+    wsmc_add_option($self, key, value);
+  }
+
+#if defined(SWIGRUBY)
+  /*
+   * Set options from Hash
+   *
+   * NOTE: the values must be properly escaped (replace & with &amp;, etc.)
+   *       in Ruby use CGI::escapeHTML()
+   *
+   */
+  %rename( "options=" ) set_options(VALUE hash);
+  void set_options(VALUE hash)
+  {
+    $self->options = value2hash(NULL, hash, 0);
+  }
+#endif
+
   /*
    * Add a selector as key/value pair
    *
