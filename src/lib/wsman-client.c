@@ -432,7 +432,7 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 	while ((hn = hash_scan_next(&hs))) {
 		wsman_add_selector(header,
 				(char *) hnode_getkey(hn), (char *) hnode_get(hn));
-		debug("key = %s value=%s",
+		debug("key=%s value=%s",
 				(char *) hnode_getkey(hn), (char *) hnode_get(hn));
 	}
 }

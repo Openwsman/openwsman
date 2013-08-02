@@ -135,13 +135,13 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 			if(entry->type == 0) {
 				p->type = 0;
 				p->value = u_strdup(entry->entry.text);
-				debug("key = %s value=%s",
+				debug("key=%s value=%s",
 					(char *) hnode_getkey(hn), p->value);
 			}
 			else {
 				p->type = 1;
 				p->value = (char *)epr_copy(entry->entry.eprp);
-				debug("key = %s value=%p(nested epr)",
+				debug("key=%s value=%p(nested epr)",
 					(char *) hnode_getkey(hn), p->value);
 			}
 			p++;

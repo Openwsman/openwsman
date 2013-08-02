@@ -94,12 +94,12 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 			if(entry->type == 1) {
 				p->type = 1;
 				p->value = (char *)epr_copy(entry->entry.eprp);
-				debug("key = %s value=%p(nested epr)",
+				debug("key=%s value=%p(nested epr)",
 					(char *) hnode_getkey(hn), p->value);
 			} else {
 				p->type = 0;
 				p->value = u_strdup(entry->entry.text);
-				debug("key = %s value=%s",
+				debug("key=%s value=%s",
 					(char *) hnode_getkey(hn), p->value);
 			}
 			p++;
