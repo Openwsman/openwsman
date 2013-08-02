@@ -56,7 +56,6 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   }
   %typemap(newfree) char * "free($1);";
 #if defined(SWIGRUBY)
-  %alias string "to_s";
   %alias string "to_xml";
 #endif
 #if defined(SWIGPYTHON)
@@ -67,7 +66,14 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 #endif
   %newobject string;
   /*
-   * generic (indented) string representation of the XmlDoc
+   * generic (indented) string representation of the XmlDoc UTF-8 encoded.
+   * see encode() for setting the encoding.
+   *
+   * alias: to_xml
+   *
+   * call-seq:
+   *  doc.string -> String
+   *  doc.to_xml -> String
    */
   char *string() {
     int size;
@@ -77,11 +83,21 @@ typedef struct _WsXmlDoc* WsXmlDocH;
     return buf;
   }
 
+#if defined(SWIGRUBY)
+  %alias encode "to_s";
+#endif
   /*
    * encode document as string with specific encoding
    * (non-indented representation)
    *
    * encoding defaults to 'utf-8'
+   *
+   * alias: to_s
+   *
+   * call-seq:
+   *  doc.encode -> String
+   *  doc.encode("UTF-16") -> String
+   *  doc.to_s -> string
    *
    */
   %newobject encode;
@@ -93,6 +109,9 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   }
   /*
    * dump document to file
+   *
+   * call-seq:
+   *   doc.dump(IO) -> nil
    */
   void dump_file(FILE *fp) {
     ws_xml_dump_doc( fp, $self );
