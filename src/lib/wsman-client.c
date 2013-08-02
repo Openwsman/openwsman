@@ -321,6 +321,9 @@ wsmc_options_init(void)
 void
 wsmc_options_destroy(client_opt_t * op)
 {
+	if (op->options) {
+		hash_free(op->options);
+	}
 	if (op->selectors) {
 		hash_free(op->selectors);
 	}
@@ -373,6 +376,27 @@ wsmc_add_property(client_opt_t * options,
 		}
 	} else {
 		error("duplicate not added to hash");
+	}
+}
+
+/*
+ * add key/value pair to WSM_OPTION_SET
+ *
+ */
+void
+wsmc_add_option(client_opt_t * options,
+		const char *key,
+		const char *value)
+{
+	if (options->options == NULL)
+		options->options = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	if (!hash_lookup(options->options, key)) {
+		if (!hash_alloc_insert(options->options,
+					(char *)key, (char *)value)) {
+			error( "hash_alloc_insert failed");
+		}
+	} else {
+		error( "duplicate not added to hash");
 	}
 }
 
@@ -857,9 +881,13 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	if (!body  || !header )
 		return NULL;
 	/*
-	 * flags to be passed as <w:OptionSet ...> <w:Option Name="..." ...> > */
-	if (options && (options->flags & (FLAG_CIM_EXTENSIONS|FLAG_EXCLUDE_NIL_PROPS))) {
-		WsXmlNodeH opset = ws_xml_add_child(header,
+	 * flags to be passed as <w:OptionSet ...> <w:Option Name="..." ...> >
+	 */
+	if (options) {
+	  WsXmlNodeH opset = NULL;
+	  if (options->flags & (FLAG_CIM_EXTENSIONS|FLAG_EXCLUDE_NIL_PROPS)) {
+	    /* need WSM_OPTION_SET */
+		opset = ws_xml_add_child(header,
 				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
 		if ((options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
 			WsXmlNodeH op = ws_xml_add_child(opset,
@@ -872,6 +900,22 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 				XML_NS_OPENWSMAN, WSM_OPTION, NULL);
 			ws_xml_add_node_attr(op, NULL, WSM_NAME, WSMB_EXCLUDE_NIL_PROPS);
 		}
+	  }
+	  if (options->options && hash_count(options->options) > 0) {
+	    hnode_t *hn;
+	    hscan_t hs;
+	    hash_scan_begin(&hs, options->options);
+	    if (!opset) {
+	      opset = ws_xml_add_child(header,
+				       XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
+	    }
+	    while ((hn = hash_scan_next(&hs))) {
+	      WsXmlNodeH op = ws_xml_add_child(opset,
+					       XML_NS_WS_MAN, WSM_OPTION, NULL);
+	      ws_xml_add_node_attr(op, NULL, WSM_NAME, (char *) hnode_getkey(hn));
+	      ws_xml_set_node_text(op, (char *) hnode_get(hn));
+	    }
+	  }
 	}
 
 
