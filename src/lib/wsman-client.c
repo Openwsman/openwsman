@@ -859,9 +859,10 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 		request = ws_xml_create_envelope();
 	} else {
 		if (method) {
+		        /* WSA_ACTION is a URI */
 			if (strchr(method, '/'))
 				_action = u_strdup(method);
-			else
+			else /* 'invoke' action */
 				_action = wsman_make_action((char *)resource_uri, method);
 		} else {
 			_action = wsmc_create_action_str(action);
