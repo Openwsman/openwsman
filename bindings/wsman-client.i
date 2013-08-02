@@ -286,7 +286,7 @@ typedef struct _WsManClient {
    * create: Create a resource
    *
    * call-seq:
-   *   result = client.get(options, uri, xml, xml.size, "utf-8")
+   *   result = client.create(options, uri, xml, xml.size, "utf-8")
    *
    */
   WsXmlDocH create( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
@@ -310,7 +310,7 @@ typedef struct _WsManClient {
    * put: Change a resource
    *
    * call-seq:
-   *   result = client.get(options, uri, xml, xml.size, "utf-8")
+   *   result = client.put(options, uri, xml, xml.size, "utf-8")
    *
    */
   WsXmlDocH put( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
