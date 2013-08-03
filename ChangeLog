@@ -15,6 +15,7 @@
     - ClientOptions#options
     - ClientOptions#properties
     - ClientOptions#selectors
+  - Define security delivery modes (WSMAN_DELIVERY_SEC_*)
   - Improved bindings documentation
   - Windows Remote Shell client implementation (in ruby/tests)
 - Bugfixes

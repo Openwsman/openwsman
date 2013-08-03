@@ -46,4 +46,16 @@
 #define WS_NTLM_AUTH          4
 #define WS_GSSNEGOTIATE_AUTH  5
 #define WS_MAX_AUTH           6
-			
+
+/* delivery security mode */
+#define	WSMAN_DELIVERY_SEC_AUTO                          0
+#define	WSMAN_DELIVERY_SEC_HTTP_BASIC                    1
+#define	WSMAN_DELIVERY_SEC_HTTP_DIGEST                   2
+#define	WSMAN_DELIVERY_SEC_HTTPS_BASIC                   3
+#define	WSMAN_DELIVERY_SEC_HTTPS_DIGEST                  4
+#define	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL                  5
+#define	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_BASIC            6
+#define	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_DIGEST           7
+#define	WSMAN_DELIVERY_SEC_HTTPS_SPNEGO_KERBEROS         8
+#define	WSMAN_DELIVERY_SEC_HTTPS_MUTUAL_SPNEGO_KERBEROS  9
+#define	WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS         10
