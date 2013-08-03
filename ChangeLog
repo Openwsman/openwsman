@@ -1,4 +1,22 @@
-2.3.8
+2.4.0
+- Features
+  - Add support for OptionSet in SOAP header (breaks ABI)
+  - Increase soversion of libwsman_client to 2.0.0
+  - new function wsmc_add_option
+  - Redirect plugin: Added facilities to import the redirection
+    details from an included file (Praveen K Paladugu)
+- Bindings
+  - Ruby: Fix Ruby 1.9 threading locks for wsmc_action_* functions
+  - Support for OptionSet
+    - ClientOptions#add_option
+    - ClientOptions#options= (Ruby)
+  - XmlDoc#to_s returns non-indented xml representation
+  - Ruby: Accessors for OptionSet, Selectors, and Properties
+    - ClientOptions#options
+    - ClientOptions#properties
+    - ClientOptions#selectors
+  - Improved bindings documentation
+  - Windows Remote Shell client implementation (in ruby/tests)
 - Bugfixes
   - wsman_transport_set_verify_host passed wrong values to CURL
   - recognize 'Msvc' (Hyper V) and 'DCIM' (Dell Drac) CIM schemata
