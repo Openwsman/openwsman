@@ -7,11 +7,30 @@
 require 'rexml/document'
 require 'openwsman'
 
-def handle_fault result
+def handle_fault client, result
+  unless result
+    if client.last_error != 0
+      STDERR.puts "Client connection to #{client.scheme}://#{client.user}:#{client.password}@#{client.host}:#{client.port}/#{client.path} failed with #{client.last_error}, Fault: #{client.fault_string}"
+      exit 1
+    end
+    if client.response_code != 200
+      STDERR.puts "Client requested result #{client.response_code}, Fault: #{client.fault_string}"
+      exit 1
+    end
+    STDERR.puts "Client action failed for unknown reason"
+    exit 1
+  end
+  if result.fault?
+    fault = Openwsman::Fault.new result
+    STDERR.puts "Fault code #{fault.code}, subcode #{fault.subcode}"
+    STDERR.puts "\treason #{fault.reason}"
+    STDERR.puts "\tdetail #{fault.detail}"
+    exit 1
+  end
 end
 
 #  client = Openwsman::Client.new( "10.120.5.37", 5985, "/wsman", "http", "wsman", "secret")
-  client = Openwsman::Client.new( "192.168.1.57", 5985, "/wsman", "http", "wsman", "secret")
+  client = Openwsman::Client.new( "192.168.1.74", 5985, "/wsman", "http", "wsman", "secret")
   client.transport.timeout = 120
   client.transport.auth_method = Openwsman::BASIC_AUTH_STR
   # https
@@ -19,15 +38,16 @@ end
   # client.transport.verify_host = 0
 
   options = Openwsman::ClientOptions.new
-  options.set_dump_request
-  Openwsman::debug = -1
+#  options.set_dump_request
+#  Openwsman::debug = -1
   options.timeout = 60 * 1000 # 60 seconds
   uri = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/cmd"
 
   service = "Themes"
   options.add_selector( "Name", service )
     
-  options.options = { "WINRS_NOPROFILE" => "FALSE", "WINRS_CODEPAGE" => 437 }
+  options.add_option "WINRS_NOPROFILE","FALSE"
+  options.add_option "WINRS_CODEPAGE", 437
     
   # instance values
   instance = { "InputStreams" => "stdin", "OutputStreams" => "stdout stderr" }
@@ -53,12 +73,13 @@ end
   #      </a:ReferenceParameters>
   #    </x:ResourceCreated>
   #  </s:Body>
-  handle_fault result if result.fault?
+  handle_fault client, result
 
   shell_id = result.find(nil, "Selector")
   raise "No shell id returned" unless shell_id
-  puts "Shell ID: #{shell_id}"
-  
+#  puts "Shell ID: #{shell_id}"
+  command_id = nil
+
   loop do
     print "WinRS> "
     STDOUT.flush
@@ -74,7 +95,8 @@ end
     root = data.root
     root.add namespace, "Command", cmd
     result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Command", data)
-    handle_fault result if result.fault?
+    handle_fault client, result
+
     command_id = result.find(namespace, "CommandId")
     raise "No command id returned" unless command_id
     command_id = command_id.text
@@ -88,7 +110,8 @@ end
     node = root.add namespace, "DesiredStream", "stdout stderr"
     node.attr_add nil, "CommandId", command_id
     result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive", data)
-    handle_fault result if result.fault?
+    handle_fault client, result
+
     response = result.find(namespace, "ReceiveResponse")
     unless response
       STDERR.puts "***Err: No ReceiveResponse in: #{result.to_xml}"
@@ -144,7 +167,25 @@ end
     end # response.each
   end
 
-  puts "terminate"
+  if shell_id
+    options.options = { }
+    options.selectors = { "ShellId" => shell_id }
+    if command_id
+      # terminate shell command
+      data = Openwsman::XmlDoc.new("Signal", namespace)
+      root = data.root
+      root.attr_add nil, "CommandId", command_id
+      root.add namespace, "Code", "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/signal/terminate"
+      result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Signal", data)
+      handle_fault client, result
   
-  puts "destroy"
-  
+      response = result.find(namespace, "SignalResponse")
+      unless response
+	STDERR.puts "***Err: No SignalResponse in: #{result.to_xml}"
+      end
+    end
+
+    # delete resource
+    result = client.invoke( options, uri, "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete", nil)
+    handle_fault client, result
+  end
