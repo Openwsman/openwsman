@@ -1316,10 +1316,12 @@ wsmc_action_invoke(WsManClient * cl,
                             (char *) hnode_get(hn));
                 }
             }
-        } else {
+        } else if (!strchr(method, '/')) { /* non-custom method without parameters */
             ws_xml_add_empty_child_format(body,
                     (char *)resource_uri, "%s_INPUT", method);
-        }
+        } else {
+	  /* empty body */
+	}
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));
 	}
