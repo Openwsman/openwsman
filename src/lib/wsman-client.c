@@ -461,6 +461,7 @@ wsmc_add_selector_from_options(WsXmlDocH doc, client_opt_t *options)
 	}
 }
 
+/* Err: should be wsmc_set_selectors_from_uri() */
 void
 wsmc_set_options_from_uri(const char *resource_uri, client_opt_t * options)
 {
