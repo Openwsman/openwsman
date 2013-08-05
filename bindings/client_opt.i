@@ -340,7 +340,7 @@ typedef struct {} client_opt_t;
    *   options.options -> Hash
    */
   %rename( "options" ) get_options(void);
-  void get_options(void)
+  VALUE get_options(void)
   {
     return hash2value($self->options);
   }
@@ -394,7 +394,7 @@ typedef struct {} client_opt_t;
    *   options.selectors -> Hash
    */
   %rename( "selectors" ) get_selectors(void);
-  void get_selectors(void)
+  VALUE get_selectors(void)
   {
     return hash2value($self->selectors);
   }
@@ -443,7 +443,7 @@ typedef struct {} client_opt_t;
    *   options.properties -> Hash
    */
   %rename( "properties" ) get_properties(void);
-  void get_properties(void)
+  VALUE get_properties(void)
   {
     return hash2value($self->properties);
   }
