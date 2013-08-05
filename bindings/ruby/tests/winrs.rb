@@ -1,7 +1,9 @@
-# create_shell.rb
-
+# winrs.rb
 #
-# Create a remote window shell
+# Windows Remote Shell
+#
+# See http://msdn.microsoft.com/en-us/library/cc251731.aspx (Remote Shell Examples)
+# for details on the SOAP protocol
 #
 
 require 'rexml/document'
@@ -29,8 +31,7 @@ def handle_fault client, result
   end
 end
 
-#  client = Openwsman::Client.new( "10.120.5.37", 5985, "/wsman", "http", "wsman", "secret")
-  client = Openwsman::Client.new( "192.168.1.74", 5985, "/wsman", "http", "wsman", "secret")
+  client = Openwsman::Client.new( "10.120.64.112", 80, "/wsman", "http", "wsman", "secret")
   client.transport.timeout = 120
   client.transport.auth_method = Openwsman::BASIC_AUTH_STR
   # https
@@ -151,13 +152,19 @@ end
 	  STDERR.puts "***Err: CommandState node has no State attribute: #{node.to_xml}"
 	  next
 	end
-	if state.value == "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done"
+        case state.value
+        when "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done"
 	  exit_code = node.get "ExitCode"
 	  if exit_code
 	    puts "Exit code: #{exit_code.text}"
 	  else
 	    STDERR.puts "***Err: No exit code for 'done' command: #{node.to_xml}"
 	  end
+        when "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Running"
+          # unclear how to handle this
+        when "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Pending"
+          # no-op
+          # WinRM 1.1 sends this with ExitCode:0
 	else
 	  STDERR.puts "***Err: Unknown command state: #{state.value}"
 	end
@@ -165,25 +172,25 @@ end
 	STDERR.puts "***Err: Unknown receive response: #{node.to_xml}"
       end
     end # response.each
+
+    # terminate shell command
+    # not strictly needed for WinRM 2.0, but WinRM 1.1 requires this
+    data = Openwsman::XmlDoc.new("Signal", namespace)
+    root = data.root
+    root.attr_add nil, "CommandId", command_id
+    root.add namespace, "Code", "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/signal/terminate"
+    result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Signal", data)
+    handle_fault client, result
+
+    response = result.find(namespace, "SignalResponse")
+    unless response
+      STDERR.puts "***Err: No SignalResponse in: #{result.to_xml}"
+    end
   end
 
   if shell_id
     options.options = { }
     options.selectors = { "ShellId" => shell_id }
-    if command_id
-      # terminate shell command
-      data = Openwsman::XmlDoc.new("Signal", namespace)
-      root = data.root
-      root.attr_add nil, "CommandId", command_id
-      root.add namespace, "Code", "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/signal/terminate"
-      result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Signal", data)
-      handle_fault client, result
-  
-      response = result.find(namespace, "SignalResponse")
-      unless response
-	STDERR.puts "***Err: No SignalResponse in: #{result.to_xml}"
-      end
-    end
 
     # delete resource
     result = client.invoke( options, uri, "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete", nil)
