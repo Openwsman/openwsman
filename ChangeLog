@@ -21,7 +21,7 @@
 - Bugfixes
   - wsman_transport_set_verify_host passed wrong values to CURL
   - recognize 'Msvc' (Hyper V) and 'DCIM' (Dell Drac) CIM schemata
-
+  - xml_parser_element_dump: fix pointer (github issue #8)
 2.3.7
 - Bugfixes
   - Generate pkgconfig (.pc) files correctly
