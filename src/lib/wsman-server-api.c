@@ -94,7 +94,14 @@ void wsman_server_read_plugin_config(void *arg, char *config_file)
 	}
 }
 
-void *wsman_server_create_config(char *config_file)
+/*
+ * Create server config (from ini-style config file)
+ *
+ * call wsman_server_destroy_config() to de-allocate the returned pointer
+ *
+ */
+
+ServerConfig *wsman_server_create_config(char *config_file)
 {
 	SoapH soap = NULL;
 	dictionary *ini;
@@ -115,7 +122,24 @@ void *wsman_server_create_config(char *config_file)
 			soap->listener = (WsManListenerH *)listener;
 	}
 	//debug_add_handler (debug_message_handler, DEBUG_LEVEL_ALWAYS, NULL);
-	return (void *) soap;
+	return (ServerConfig *)soap;
+}
+
+
+void wsman_server_destroy_config(ServerConfig *config)
+{
+  SoapH soap = (SoapH)config;
+  if (soap == NULL)
+    return;
+  if (soap->listener) {
+#if 0
+    if (soap->listener->config) {
+      iniparser_free(soap->listener->config);
+    }
+#endif
+    u_free(soap->listener);
+  }
+  soap_destroy(soap);
 }
 
 
