@@ -22,7 +22,7 @@ SET( SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/openwsman_wrap.c" )
 ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Ruby..."
-   COMMAND ${SWIG_EXECUTABLE} -ruby -autorename -DRUBY_VERSION=${RUBY_VERSION_MAJOR}${RUBY_VERSION_MINOR} -features autodoc -I${CMAKE_BINARY_DIR}/bindings -I${CMAKE_SOURCE_DIR}/bindings -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
+   COMMAND ${SWIG_EXECUTABLE} -ruby -autorename -DRUBY_VERSION=${RUBY_VERSION_MAJOR}${RUBY_VERSION_MINOR} -I${CMAKE_BINARY_DIR}/bindings -I${CMAKE_SOURCE_DIR}/bindings -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
 
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -64,26 +64,22 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/openwsman DESTINATION ${RUBY_WSMAN
 
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb DESTINATION ${RUBY_WSMAN_LIB_DIR})
 
-IF(${RUBY_VERSION_MAJOR} EQUAL 1)
-  IF (${RUBY_VERSION_MINOR} LESS 9)
-
 # rdoc
 SET(rdoc_dir "${CMAKE_CURRENT_BINARY_DIR}/html")
 ADD_CUSTOM_COMMAND (
    OUTPUT ${rdoc_dir}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating rdoc documentation ..."
    COMMAND rm -rf ${rdoc_dir}
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rdoc -o ${rdoc_dir} openwsman.i *.i ruby/openwsman/*.rb
+   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rdoc${RUBY_VERSION_MAJOR}.${RUBY_VERSION_MINOR} -o ${rdoc_dir} openwsman.i *.i ruby/openwsman/*.rb
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings
    DEPENDS ${CMAKE_SOURCE_DIR}/bindings/*.i
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
 )
+
 ADD_CUSTOM_TARGET(ruby_rdoc ALL DEPENDS "${rdoc_dir}")
 ADD_DEPENDENCIES(ruby_rdoc rbwsman)
 
-  ENDIF (${RUBY_VERSION_MINOR} LESS 9)
-ENDIF(${RUBY_VERSION_MAJOR} EQUAL 1)
 
 
 IF( BUILD_RUBY_GEM )
