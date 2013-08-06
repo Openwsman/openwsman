@@ -33,7 +33,7 @@ typedef struct _WsManTransport {} WsManTransport;
 %include "u/libu.h"
 %include "wsman-client-transport.h"
 
-%extend WsManTransport {
+%extend _WsManTransport {
 
  %constant int NO_AUTH           = WS_NO_AUTH;
  %constant int BASIC_AUTH        = WS_BASIC_AUTH;
