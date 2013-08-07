@@ -113,6 +113,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
     @known_classes = RDoc::KNOWN_CLASSES.dup
     @content = handle_tab_width handle_ifdefs_in(@content)
+    @renames = {} # maps old_name => [ new_name, args ]
+    @aliases = {} # maps name => [ alias_name, args ]
     @classes = {}
     @singleton_classes = {}
     @file_dir = File.dirname(@file_name)
@@ -122,31 +124,27 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Scans #content for %alias
 
   def do_aliases
-    @content.scan(/rb_define_alias\s*\(
-                   \s*(\w+),
-                   \s*"(.+?)",
-                   \s*"(.+?)"
-                   \s*\)/xm) do |var_name, new_name, old_name|
-      class_name = @known_classes[var_name]
-
-      unless class_name then
-        warn "Enclosing class/module %p for alias %s %s not known" % [
-          var_name, new_name, old_name]
-        next
-      end
-
-      class_obj = find_class var_name, class_name
+    @content.scan(/%alias\s+(\w+)\s+"([^"]+)";/) do |old_name, new_name| # "
+#      class_name = @known_classes[var_name]
+#
+#      unless class_name then
+#        warn "Enclosing class/module %p for alias %s %s not known" % [
+#          var_name, new_name, old_name]
+#        next
+#      end
+#
+#      class_obj = find_class var_name, class_name
 
       al = RDoc::Alias.new '', old_name, new_name, ''
-      al.singleton = @singleton_classes.key? var_name
+#      al.singleton = @singleton_classes.key? var_name
 
-      comment = find_alias_comment var_name, new_name, old_name
-      comment = strip_stars comment
-      al.comment = comment
+#      comment = find_alias_comment var_name, new_name, old_name
+#      comment = strip_stars comment
+#      al.comment = comment
 
       al.record_location @top_level
 
-      class_obj.add_alias al
+#      class_obj.add_alias al
       @stats.add_alias al
     end
   end
@@ -175,100 +173,65 @@ class RDoc::Parser::SWIG < RDoc::Parser
   end
 
   ##
+  # Scans #content for %rename
+
+  def do_renames
+    @content.scan(/\s*%rename\s*\(\s*"?([\w_=]+)"?\s*\)\s*([\w_]+)\s*\(?([\w_,\s]+)?\s*\)?;/) do
+      |new_name, old_name, args|
+      @renames[old_name] = [new_name, args]
+    end
+  end
+
+  ##
+  # Scans #content for first(!) %module
+
+  def do_modules    
+    @content.scan(/%module\s+(\w+)/) do |match_data|
+      module_name = match_data[0]
+      @module = handle_class_module(nil, "module", module_name, @toplevel)
+      break # first %module only
+    end
+    @@module ||= @module
+    @module = @@module
+  end
+
+  ##
   # Scans #content for %extend
 
-  def do_classes
-    @content.scan(/(\w+)\s* = \s*rb_define_module\s*\(\s*"(\w+)"\s*\)/mx) do
-      |var_name, class_name|
-      handle_class_module(var_name, "module", class_name, nil, nil)
+  def do_classes content
+    found = false
+    content.scan(/%extend\s+([\w_]+)\s*\{(.*)\}/m) do |class_name, content|
+      real_name = @renames[class_name][0] rescue nil
+      klass = handle_class_module(class_name, "class", real_name, @module)
+      # now check if we have multiple %extend, the regexp above is greedy and will match all of them
+      while content =~ /%extend/
+        do_classes $& + $' # ' add the %extend back in
+        content = $` # real content is everything before the embedded %extend
+      end
+      do_methods klass, class_name, content
+      found = true
     end
-
-    # The '.' lets us handle SWIG-generated files
-    @content.scan(/([\w\.]+)\s* = \s*rb_define_class\s*
-              \(
-                 \s*"(\w+)",
-                 \s*(\w+)\s*
-              \)/mx) do |var_name, class_name, parent|
-      handle_class_module(var_name, "class", class_name, parent, nil)
-    end
-
-    @content.scan(/(\w+)\s*=\s*boot_defclass\s*\(\s*"(\w+?)",\s*(\w+?)\s*\)/) do
-      |var_name, class_name, parent|
-      parent = nil if parent == "0"
-      handle_class_module(var_name, "class", class_name, parent, nil)
-    end
-
-    @content.scan(/(\w+)\s* = \s*rb_define_module_under\s*
-              \(
-                 \s*(\w+),
-                 \s*"(\w+)"
-              \s*\)/mx) do |var_name, in_module, class_name|
-      handle_class_module(var_name, "module", class_name, nil, in_module)
-    end
-
-    @content.scan(/([\w\.]+)\s* =                  # var_name
-                   \s*rb_define_class_under\s*
-                   \(
-                     \s* (\w+),                    # under
-                     \s* "(\w+)",                  # class_name
-                     \s*
-                     (?:
-                       ([\w\*\s\(\)\.\->]+) |      # parent_name
-                       rb_path2class\("([\w:]+)"\) # path
-                     )
-                     \s*
-                   \)
-                  /mx) do |var_name, under, class_name, parent_name, path|
-      parent = path || parent_name
-
-      handle_class_module var_name, 'class', class_name, parent, under
-    end
-
-    @content.scan(/([\w\.]+)\s* = \s*rb_singleton_class\s*
-                  \(
-                    \s*(\w+)
-                  \s*\)/mx) do |sclass_var, class_var|
-      handle_singleton sclass_var, class_var
-    end
+    found
   end
 
   ##
-  # Scans #content for rb_define_variable, rb_define_readonly_variable,
-  # rb_define_const and rb_define_global_const
+  # Scans #content for #define and %constant
 
   def do_constants
-    @content.scan(%r%\Wrb_define_
-                   ( variable          |
-                     readonly_variable |
-                     const             |
-                     global_const        )
-               \s*\(
-                 (?:\s*(\w+),)?
-                 \s*"(\w+)",
-                 \s*(.*?)\s*\)\s*;
-                 %xm) do |type, var_name, const_name, definition|
-      var_name = "rb_cObject" if !var_name or var_name == "rb_mKernel"
-      handle_constants type, var_name, const_name, definition
+    @content.scan(/#define\s+([\w_]+)\s+([^\s\n]+)/) do |const_name, definition|
+      handle_constants "const", const_name, definition
     end
 
-    @content.scan(%r%
-                  \Wrb_curses_define_const
-                  \s*\(
-                    \s*
-                    (\w+)
-                    \s*
-                  \)
-                  \s*;%xm) do |consts|
-      const = consts.first
-      handle_constants 'const', 'mCurses', const, "UINT2NUM(#{const})"
+    @content.scan(/%constant\s+\w+\s+([\w_]+)\s*=\s*([\w_]+)/) do |const_name, definition|
+      handle_constants "const", const_name, definition
     end
   end
 
   ##
-  # Scans #content for rb_include_module
+  # Scans #content for %mixin
 
   def do_includes
-    @content.scan(/rb_include_module\s*\(\s*(\w+?),\s*(\w+?)\s*\)/) do |c,m|
+    @content.scan(/%mixin/) do |c,m|
       if cls = @classes[c]
         m = @known_classes[m] || m
         incl = cls.add_include RDoc::Include.new(m, "")
@@ -278,34 +241,33 @@ class RDoc::Parser::SWIG < RDoc::Parser
   end
 
   ##
-  # Scans #content for rb_define_method, rb_define_singleton_method,
-  # rb_define_module_function, rb_define_private_method,
-  # rb_define_global_function and define_filetest_function
+  # Scans content for methods
+  # klass is a RDoc::NormalClass
+  # name is the 'C' (type) name
+  # content is what's enclosed in %extend <name> { ... }
 
-  def do_methods
-    @content.scan(%r%rb_define_
-                   (
-                      singleton_method |
-                      method           |
-                      module_function  |
-                      private_method
-                   )
-                   \s*\(\s*([\w\.]+),
-                     \s*"([^"]+)",
-                     \s*(?:RUBY_METHOD_FUNC\(|VALUEFUNC\()?(\w+)\)?,
-                     \s*(-?\w+)\s*\)
-                   (?:;\s*/[*/]\s+in\s+(\w+?\.(?:cpp|c|y)))?
-                 %xm) do |type, var_name, meth_name, function, param_count, source_file|
-
-      # Ignore top-object and weird struct.c dynamic stuff
-      next if var_name == "ruby_top_self"
-      next if var_name == "nstr"
-
-      var_name = "rb_cObject" if var_name == "rb_mKernel"
-      handle_method(type, var_name, meth_name, function, param_count,
-                    source_file)
+  def do_methods klass, name, content
+    # Find class constructor as 'new'
+    content.scan(/^\s+#{name}\s*\(([^\)]*)\)\s*\{/m) do |args|
+      handle_method("method", klass.name, "initialize", nil, (args.to_s.split(",")||[]).size, content)
     end
-
+      content.scan(%r{static\s+((const\s+)?\w+)([\s\*]+)(\w+)\s*\(([^\)]*)\)\s*;}) do
+        |const,type,pointer,meth_name,args|
+#	puts "\n\t-> const #{const}:type #{type}:pointer #{pointer}:name #{meth_name} (args  #{args} )\n#{$&}\n\n"
+        handle_method("method", klass.name, meth_name, nil, (args.split(",")||[]).size, content)
+      end
+      content.scan(/((const\s+)?\w+)  # <const>? <type>
+			([ \t\*]+)    # <pointer>?
+			(\w+)	      # <meth>
+			\s*\(([^\)]*)\) # args
+			\s*\{/xm) do  # function def start
+        |const,type,pointer,meth_name,args|
+	next unless meth_name
+	next if meth_name =~ /~/
+	type = "string" if type =~ /char/ && pointer =~ /\*/
+#	puts "-> const #{const}:type #{type}:pointer #{pointer}:name #{meth_name.inspect} (args  #{args} )\n#{$&}\n\n" if meth_name == "if"
+        handle_method("method", klass.name, meth_name, nil, (args.split(",")||[]).size, content)
+      end
     @content.scan(%r%rb_define_global_function\s*\(
                              \s*"([^"]+)",
                              \s*(?:RUBY_METHOD_FUNC\(|VALUEFUNC\()?(\w+)\)?,
@@ -380,10 +342,11 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Find the C code corresponding to a Ruby method
 
   def find_body class_name, meth_name, meth_obj, file_content, quiet = false
+
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
-            ((?:(?:static|SWIGINTERN)\s+)?
-             (?:intern\s+)?VALUE\s+#{meth_name}
+            ((?:(?:static)\s+)?
+             (VALUE|[\w_]+)\s+#{meth_name}
              \s*(\([^)]*\))([^;]|$))%xm then
       comment = $1
       body = $2
@@ -642,7 +605,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
     comment = find_attr_comment var_name, attr_name
     comment = strip_stars comment
 
-    name = attr_name.gsub(/rb_intern\("([^"]+)"\)/, '\1')
+    name = attr_name.gsub(/rb_intern\("([^"]+)"\)/, '\1') # "
 
     attr = RDoc::Attr.new '', name, rw, comment
 
@@ -655,25 +618,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Creates a new RDoc::NormalClass or RDoc::NormalModule based on +type+
   # named +class_name+ in +parent+ which was assigned to the C +var_name+.
 
-  def handle_class_module(var_name, type, class_name, parent, in_module)
-    parent_name = @known_classes[parent] || parent
-
-    if in_module then
-      enclosure = @classes[in_module] || @@enclosure_classes[in_module]
-
-      if enclosure.nil? and enclosure = @known_classes[in_module] then
-        enc_type = /^rb_m/ =~ in_module ? "module" : "class"
-        handle_class_module in_module, enc_type, enclosure, nil, nil
-        enclosure = @classes[in_module]
-      end
-
-      unless enclosure then
-        warn "Enclosing class/module '#{in_module}' for #{type} #{class_name} not known"
-        return
-      end
-    else
-      enclosure = @top_level
-    end
+  def handle_class_module(type_name, type, class_name, enclosure)
+    enclosure ||= @top_level
 
     if type == "class" then
       full_name = if RDoc::ClassModule === enclosure then
@@ -702,9 +648,10 @@ class RDoc::Parser::SWIG < RDoc::Parser
       @stats.add_module cm
     end
 
-    @classes[var_name] = cm
-    @@enclosure_classes[var_name] = cm
-    @known_classes[var_name] = cm.full_name
+    @classes[type_name] = cm
+    @@enclosure_classes[class_name] = cm
+    @known_classes[class_name] = cm.full_name
+    cm
   end
 
   ##
@@ -717,17 +664,15 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Will override <tt>INT2FIX(300)</tt> with the value +300+ in the output
   # RDoc.  Values may include quotes and escaped colons (\:).
 
-  def handle_constants(type, var_name, const_name, definition)
-    class_name = @known_classes[var_name]
-
-    return unless class_name
-
-    class_obj = find_class var_name, class_name
+  def handle_constants(type, const_name, definition)
+    class_obj = @module
 
     unless class_obj then
       warn "Enclosing class/module #{const_name.inspect} not known"
       return
     end
+
+    class_name = class_obj.name
 
     comment = find_const_comment type, const_name, class_name
     comment = strip_stars comment
@@ -774,7 +719,11 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Removes #ifdefs that would otherwise confuse us
 
   def handle_ifdefs_in(body)
-    body.gsub(/^#ifdef HAVE_PROTOTYPES.*?#else.*?\n(.*?)#endif.*?\n/m, '\1')
+    b = body.gsub(/^#if defined(SWIGRUBY)(.*?)#else.*?\n.*?#endif.*?\n/m, '\1')
+    b = b.gsub(/^#if defined(SWIGJAVA).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
+    b = b.gsub(/^#if defined(SWIGPYTHON).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
+    b = b.gsub(/^#if defined(SWIGPERL).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
+    b
   end
 
   ##
@@ -782,14 +731,17 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # to +var_name+.  +type+ is the type of method definition function used.
   # +singleton_method+ and +module_function+ create a singleton method.
 
-  def handle_method(type, var_name, meth_name, function, param_count,
+  def handle_method(type, klass_name, meth_name, function, param_count, content = nil,
                     source_file = nil)
-    class_name = @known_classes[var_name]
-    singleton  = @singleton_classes.key? var_name
+    function ||= meth_name
+
+    meth_name = (@renames[meth_name][0] rescue nil) || meth_name
+    class_name = @known_classes[klass_name]
+    singleton  = @singleton_classes.key? klass_name
 
     return unless class_name
 
-    class_obj = find_class var_name, class_name
+    class_obj = find_class klass_name, class_name
 
     if class_obj then
       if meth_name == 'initialize' then
@@ -814,7 +766,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
           warn "unknown source #{source_file} for #{meth_name} in #{@file_name}"
         end
       else
-        file_content = @content
+        file_content = content || @content
       end
 
       body = find_body class_name, function, meth_obj, file_content
@@ -973,14 +925,6 @@ class RDoc::Parser::SWIG < RDoc::Parser
   end
 
   ##
-  # Removes lines that are commented out that might otherwise get picked up
-  # when scanning for classes and methods
-
-  def remove_commented_out_lines
-    @content.gsub!(%r%//.*rb_define_%, '//')
-  end
-
-  ##
   # Removes private comments from +comment+
 
   def remove_private_comments(comment)
@@ -990,16 +934,17 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   ##
   # Extracts the classes, modules, methods, attributes, constants and aliases
-  # from a C file and returns an RDoc::TopLevel for this file
+  # from a SWIG file and returns an RDoc::TopLevel for this file
 
   def scan
-    remove_commented_out_lines
-    do_classes
-    do_constants
-    do_methods
-    do_includes
+    do_modules
+    do_renames
     do_aliases
-    do_attrs
+    do_constants
+    have_classes = do_classes @content # -> do_methods
+    do_methods @module, @module.name, @content unless have_classes # file without %extend
+#    do_includes
+#    do_attrs
     @top_level
   end
 
