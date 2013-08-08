@@ -249,11 +249,10 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def do_methods klass, name, content
     # Find class constructor as 'new'
     content.scan(/^\s+#{name}\s*\(([^\)]*)\)\s*\{/m) do |args|
-      handle_method("method", klass.name, "initialize", nil, (args.to_s.split(",")||[]).size, content)
+      handle_method("method", klass.name, name, name, (args.to_s.split(",")||[]).size, content)
     end
       content.scan(%r{static\s+((const\s+)?\w+)([\s\*]+)(\w+)\s*\(([^\)]*)\)\s*;}) do
         |const,type,pointer,meth_name,args|
-#	puts "\n\t-> const #{const}:type #{type}:pointer #{pointer}:name #{meth_name} (args  #{args} )\n#{$&}\n\n"
         handle_method("method", klass.name, meth_name, nil, (args.split(",")||[]).size, content)
       end
       content.scan(/((const\s+)?\w+)  # <const>? <type>
@@ -265,28 +264,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
 	next unless meth_name
 	next if meth_name =~ /~/
 	type = "string" if type =~ /char/ && pointer =~ /\*/
-#	puts "-> const #{const}:type #{type}:pointer #{pointer}:name #{meth_name.inspect} (args  #{args} )\n#{$&}\n\n" if meth_name == "if"
         handle_method("method", klass.name, meth_name, nil, (args.split(",")||[]).size, content)
       end
-    @content.scan(%r%rb_define_global_function\s*\(
-                             \s*"([^"]+)",
-                             \s*(?:RUBY_METHOD_FUNC\(|VALUEFUNC\()?(\w+)\)?,
-                             \s*(-?\w+)\s*\)
-                (?:;\s*/[*/]\s+in\s+(\w+?\.[cy]))?
-                %xm) do |meth_name, function, param_count, source_file|
-      handle_method("method", "rb_mKernel", meth_name, function, param_count,
-                    source_file)
-    end
-
-    @content.scan(/define_filetest_function\s*\(
-                     \s*"([^"]+)",
-                     \s*(?:RUBY_METHOD_FUNC\(|VALUEFUNC\()?(\w+)\)?,
-                     \s*(-?\w+)\s*\)/xm) do |meth_name, function, param_count|
-
-      handle_method("method", "rb_mFileTest", meth_name, function, param_count)
-      handle_method("singleton_method", "rb_cFile", meth_name, function,
-                    param_count)
-    end
   end
 
   ##
@@ -342,11 +321,11 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Find the C code corresponding to a Ruby method
 
   def find_body class_name, meth_name, meth_obj, file_content, quiet = false
-
+# puts "\n\tfind_body #{meth_name} ?"
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
             ((?:(?:static)\s+)?
-             (VALUE|[\w_]+)\s+#{meth_name}
+             (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_name}
              \s*(\([^)]*\))([^;]|$))%xm then
       comment = $1
       body = $2
@@ -357,6 +336,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       # try to find the whole body
       body = $& if /#{Regexp.escape body}[^(]*?\{.*?^\}/m =~ file_content
 
+# puts "\n\tfind_body #{meth_name} -> #{body}"
       # The comment block may have been overridden with a 'Document-method'
       # block. This happens in the interpreter when multiple methods are
       # vectored through to the same C method but those methods are logically
@@ -733,9 +713,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def handle_method(type, klass_name, meth_name, function, param_count, content = nil,
                     source_file = nil)
-    function ||= meth_name
-
-    meth_name = (@renames[meth_name][0] rescue nil) || meth_name
+    ruby_name = (@renames[meth_name][0] rescue nil) || meth_name
+ puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args"
     class_name = @known_classes[klass_name]
     singleton  = @singleton_classes.key? klass_name
 
@@ -744,12 +723,13 @@ class RDoc::Parser::SWIG < RDoc::Parser
     class_obj = find_class klass_name, class_name
 
     if class_obj then
-      if meth_name == 'initialize' then
+      if meth_name == function then
         meth_name = 'new'
         singleton = true
         type = 'method' # force public
       end
 
+      function ||= meth_name
       meth_obj = RDoc::AnyMethod.new '', meth_name
       meth_obj.c_function = function
       meth_obj.singleton =
@@ -770,7 +750,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       end
 
       body = find_body class_name, function, meth_obj, file_content
-
+puts "\n\tfind_body #{meth_name} -> #{body}"
       if body and meth_obj.document_self then
         meth_obj.params = if p_count < -1 then # -2 is Array
                             '(*args)'
