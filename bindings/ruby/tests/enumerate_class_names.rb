@@ -17,6 +17,8 @@ class WsmanTest < Test::Unit::TestCase
     options.set_dump_request
     
 #    options.selectors = { Openwsman::CIM_NAMESPACE_SELECTOR => "cimv2/interop" }
+    # enable this line to get *all* (child) classes
+#    options.add_selector "DeepInheritance", 1
     
     method = Openwsman::CIM_ACTION_ENUMERATE_CLASS_NAMES
     uri = Openwsman::XML_NS_CIM_INTRINSIC
