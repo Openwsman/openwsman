@@ -177,6 +177,9 @@ typedef struct _WsManTransport WsManTransport;
 
 static void set_debug(int dbg);
 
+/*
+ * Set openwsman debug level.
+ */
 static void set_debug(int dbg) {
   static int init = 0;
 
@@ -192,6 +195,9 @@ static void set_debug(int dbg) {
 
 static int get_debug(void);
 
+/*
+ * Return openwsman debug level.
+ */
 static int get_debug(void) {
   return (int)wsman_debug_get_level();
 }
@@ -459,18 +465,12 @@ static char *epr_prefix(const char *uri) {
   %rename("debug=") set_debug(int debug);
 #endif
 
-/*
- * Return openwsman debug level.
- */
 static void set_debug(int dbg);
 
 #if defined(SWIGRUBY)
   %rename("debug") get_debug();
 #endif
 
-/*
- * Set openwsman debug level.
- */
 static int get_debug();
 
 /*
