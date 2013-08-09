@@ -324,11 +324,12 @@ class RDoc::Parser::SWIG < RDoc::Parser
 # puts "\n\tfind_body #{meth_name} ?"
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
-            ((?:(?:static)\s+)?
+            ((?:(?:static)(?:\s+const)?\s+)?
              (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_obj.c_function}
              \s*(\([^)]*\))([^;]|$))%xm then
 # puts "  found! [#{$1},#{$2},#{$3},#{$4}]"
       comment = $1
+      return false if comment.include? "INTERNAL"
       body = $2
       # type = $3
       return false if $3 == "define" # filter out SWIG_Exception
@@ -450,18 +451,15 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def find_class_comment(class_name, class_mod)
     comment = nil
 
-    if @content =~ %r%
+    if @content =~ %r%Document-(?:class|module):\s+#{class_name}\s*?
+                         (?:<\s+[:,\w]+)?\n((?>.*?\*/))%xm then
+      comment = $1
+    elsif @content =~ %r%
         ((?>/\*.*?\*/\s+))
         (static\s+)?
         void\s+
         Init_#{class_name}\s*(?:_\(\s*)?\(\s*(?:void\s*)?\)%xmi then
       comment = $1.sub(%r%Document-(?:class|module):\s+#{class_name}%, '')
-    elsif @content =~ %r%Document-(?:class|module):\s+#{class_name}\s*?
-                         (?:<\s+[:,\w]+)?\n((?>.*?\*/))%xm then
-      comment = $1
-    elsif @content =~ %r%((?>/\*.*?\*/\s+))
-                         ([\w\.\s]+\s* = \s+)?rb_define_(class|module).*?"(#{class_name})"%xm then
-      comment = $1
     end
 
     return unless comment
