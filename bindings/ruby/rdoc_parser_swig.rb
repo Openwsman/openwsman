@@ -325,10 +325,14 @@ class RDoc::Parser::SWIG < RDoc::Parser
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
             ((?:(?:static)\s+)?
-             (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_name}
+             (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_obj.c_function}
              \s*(\([^)]*\))([^;]|$))%xm then
+# puts "  found! [#{$1},#{$2},#{$3},#{$4}]"
       comment = $1
       body = $2
+      # type = $3
+      return false if $3 == "define" # filter out SWIG_Exception
+      # ptr = $4
       offset = $~.offset(2).first
 
       remove_private_comments comment if comment
@@ -723,14 +727,14 @@ class RDoc::Parser::SWIG < RDoc::Parser
     class_obj = find_class klass_name, class_name
 
     if class_obj then
-      if meth_name == function then
+      if meth_name == function then # 'initialize'
         meth_name = 'new'
         singleton = true
         type = 'method' # force public
       end
 
       function ||= meth_name
-      meth_obj = RDoc::AnyMethod.new '', meth_name
+      meth_obj = RDoc::AnyMethod.new '', ruby_name
       meth_obj.c_function = function
       meth_obj.singleton =
         singleton || %w[singleton_method module_function].include?(type)
@@ -750,7 +754,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       end
 
       body = find_body class_name, function, meth_obj, file_content
-puts "\n\tfind_body #{meth_name} -> #{body}"
+#puts "\n\tfind_body #{meth_name} -> #{body}"
       if body and meth_obj.document_self then
         meth_obj.params = if p_count < -1 then # -2 is Array
                             '(*args)'
