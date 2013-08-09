@@ -249,7 +249,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def do_methods klass, name, content
     # Find class constructor as 'new'
     content.scan(/^\s+#{name}\s*\(([^\)]*)\)\s*\{/m) do |args|
-      handle_method("method", klass.name, name, name, (args.to_s.split(",")||[]).size, content)
+      handle_method("method", klass.name, "initialize", name, (args.to_s.split(",")||[]).size, content)
     end
       content.scan(%r{static\s+((const\s+)?\w+)([\s\*]+)(\w+)\s*\(([^\)]*)\)\s*;}) do
         |const,type,pointer,meth_name,args|
@@ -325,13 +325,14 @@ class RDoc::Parser::SWIG < RDoc::Parser
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
             ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?\s+)?
-             (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_obj.c_function}
+             (VALUE|[\w_]+)?((\s*\*\s*)|\s+)#{meth_obj.c_function}
              \s*(\([^)]*\))([^;]|$))%xm then
-# puts "  found! [#{$1},#{$2},#{$3},#{$4}]"
+# puts "\n  found! [#{$1},#{$2},#{$3},#{$4}]"
       comment = $1
       body = $2
       # type = $3
       return false if $3 == "define" # filter out SWIG_Exception
+      return false if $3.nil? && meth_name != "initialize" # constructor has no type
       # ptr = $4
       offset = $~.offset(2).first
 
@@ -724,8 +725,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
     class_obj = find_class klass_name, class_name
 
     if class_obj then
-      if meth_name == function then # 'initialize'
-        meth_name = 'new'
+      if meth_name == "initialize" then
+        ruby_name = 'new'
         singleton = true
         type = 'method' # force public
       end
@@ -733,8 +734,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       function ||= meth_name
       meth_obj = RDoc::AnyMethod.new '', ruby_name
       meth_obj.c_function = function
-      meth_obj.singleton =
-        singleton || %w[singleton_method module_function].include?(type)
+      meth_obj.singleton = singleton
 
       p_count = Integer(param_count) rescue -1
 
@@ -751,7 +751,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       end
 
       body = find_body class_name, function, meth_obj, file_content
-#puts "\n\tfind_body #{meth_name} -> #{body}"
+# puts "\n\tfind_body #{meth_name}[#{function}] -> #{body}"
       if body and meth_obj.document_self then
         meth_obj.params = if p_count < -1 then # -2 is Array
                             '(*args)'
