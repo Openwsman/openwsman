@@ -324,7 +324,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
 # puts "\n\tfind_body #{meth_name} ?"
     case file_content
     when %r%((?>/\*.*?\*/\s*)?)
-            ((?:(?:static)(?:\s+const)?\s+)?
+            ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?\s+)?
              (VALUE|[\w_]+)((\s*\*\s*)|\s+)#{meth_obj.c_function}
              \s*(\([^)]*\))([^;]|$))%xm then
 # puts "  found! [#{$1},#{$2},#{$3},#{$4}]"
