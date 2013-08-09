@@ -621,7 +621,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
     cm.record_location enclosure.top_level
 
-    find_class_comment cm.full_name, cm
+    find_class_comment class_name, cm
 
     case cm
     when RDoc::NormalClass
