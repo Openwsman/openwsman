@@ -103,6 +103,7 @@
 /* get the java environment so we can throw exceptions */
 %{
     static JNIEnv *jenv;
+    /*INTERNAL*/
     jint JNI_OnLoad(JavaVM *vm, void *reserved) {
       (*vm)->AttachCurrentThread(vm, (void **)&jenv, NULL);
       return JNI_VERSION_1_2;
@@ -150,11 +151,17 @@
 #if defined(SWIGRUBY)
 #include <ruby/helpers.h>
 
-/* Init_ for the %module, defined by Swig */
-SWIGEXPORT void Init_Openwsman(void);
+SWIGEXPORT
+/* Init_ for the %module, defined by Swig
+ * INTERNAL
+ */
+void Init_Openwsman(void);
 
-/* Init_ for the .so lib, called by Ruby */
-SWIGEXPORT void Init__openwsman(void) {
+SWIGEXPORT
+/* Init_ for the .so lib, called by Ruby
+ * INTERNAL
+ */
+void Init__openwsman(void) {
   Init_Openwsman();
 }
 #endif
@@ -179,6 +186,8 @@ static void set_debug(int dbg);
 
 /*
  * Set openwsman debug level.
+ * call-seq:
+ *   Openwsman::debug = -1 # full debug
  */
 static void set_debug(int dbg) {
   static int init = 0;
@@ -197,30 +206,54 @@ static int get_debug(void);
 
 /*
  * Return openwsman debug level.
+ * call-seq:
+ *   Openwsman::debug -> Integer
  */
 static int get_debug(void) {
   return (int)wsman_debug_get_level();
 }
 
 static WsXmlDocH create_soap_envelope(void);
+/*
+ * Create empty SOAP envelope (XmlDoc)
+ * call-seq:
+ *   Openwsman::create_soap_envelope -> XmlDoc
+ */
 static WsXmlDocH create_soap_envelope() {
   return ws_xml_create_soap_envelope();
 }
 
 static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding);
 
+/*
+ * Read XmlDoc from file
+ * call-seq:
+ *   Openwsman::create_doc_from_file("/path/to/file", "utf-8")
+ *
+ */
 static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding) {
   return xml_parser_file_to_doc( filename, encoding, 0);                 
 }
 
 static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding);
 
+/*
+ * Read XmlDoc from string
+ * call-seq:
+ *   Openwsman::create_doc_from_string("<xml ...>", "utf-8")
+ *
+ */
 static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding) {
   return xml_parser_memory_to_doc( buf, strlen(buf), encoding, 0);
 }
 
 static char *uri_classname(const char *uri);
-/* get classname from resource URI */
+/*
+ * get classname from resource URI
+ * call-seq:
+ *   Openwsman::uri_classname("http://sblim.sf.net/wbem/wscim/1/cim-schema/2/Linux_OperatingSystem") -> "Linux_OperatingSystem"
+ *
+ */
 static char *uri_classname(const char *uri) {
   const char *lastslash = strrchr(uri,'/');
   if (lastslash) {
@@ -229,9 +262,14 @@ static char *uri_classname(const char *uri) {
   return NULL;
 }
 
-
 static const char *uri_prefix(const char *classname);
-/* get resource URI prefix for a specific classname (resp class schema) */
+/*
+ * Map classname (class schema) to resource uri prefix
+ * call-seq:
+ *   Openwsman::uri_prefix("Linux") -> "http://sblim.sf.net/wbem/wscim/1/cim-schema/2"
+ *   Openwsman::uri_prefix("Win32") -> "http://schemas.microsoft.com/wbem/wsman/1/wmi"
+ *
+ */
 static const char *uri_prefix(const char *classname) {
   static struct map {
     int len;
@@ -293,6 +331,7 @@ static const char *uri_prefix(const char *classname) {
 
 #if defined(SWIGRUBY)
 static epr_t *my_epr_deserialize(WsXmlNodeH node);
+/*INTERNAL*/
 static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   if (strcmp(WSA_EPR, ws_xml_get_node_local_name(node)) == 0) {
     /* Use node as-is if its already a WSA_EPR */
@@ -304,7 +343,9 @@ static epr_t *my_epr_deserialize(WsXmlNodeH node) {
 #endif
 
 static char *epr_prefix(const char *uri);
-/* Get prefix from a EPR uri */
+/* Get prefix from a EPR uri
+ * INTERNAL
+ */
 static char *epr_prefix(const char *uri) {
   char *classname = uri_classname(uri);
   const char *prefix = uri_prefix(classname);
@@ -464,32 +505,12 @@ static char *epr_prefix(const char *uri) {
 #if defined(SWIGRUBY)
   %rename("debug=") set_debug(int debug);
 #endif
-
 static void set_debug(int dbg);
-
 #if defined(SWIGRUBY)
   %rename("debug") get_debug();
 #endif
-
 static int get_debug();
-
-/*
- * Create empty SOAP envelope (XmlDoc)
- * 
- */
 static WsXmlDocH create_soap_envelope();
-
-/*
- * Read XmlDoc from file
- */
 static WsXmlDocH create_doc_from_file(const char *filename, const char *encoding = "UTF-8");
-
-/*
- * Read XmlDoc from string
- */
 static WsXmlDocH create_doc_from_string(const char *buf, const char *encoding = "UTF-8");
-
-/*
- * Map classname (class schema) to resource uri prefix
- */
 static const char *uri_prefix(const char* classname);
