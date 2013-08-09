@@ -11,6 +11,8 @@ typedef struct _WsManClient {
 } WsManClient;
 
 /*
+ * Document-class: Client
+ *
  * Instances of Client represent a connection to a client used for
  * sending WS-Management operation requests.
  *
