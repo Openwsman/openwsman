@@ -12,6 +12,8 @@ typedef struct {} client_opt_t;
 
 
 /*
+ * Document-class: ClientOptions
+ *
  * ClientOptions control the behaviour of the Client connection
  *
  * The primary use of ClientOptions in normal operations is adding
@@ -67,6 +69,9 @@ typedef struct {} client_opt_t;
     wsmc_clear_action_option($self, FLAG_DUMP_REQUEST );
   }
 
+#if defined(SWIGRUBY)
+  %rename( "flags=" ) set_flags(int flags);
+#endif
   /*
    * set option flag(s)
    * 
@@ -75,13 +80,13 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
    */
-#if defined(SWIGRUBY)
-  %rename( "flags=" ) set_flags(int flags);
-#endif
   void set_flags(int flags) {
     wsmc_set_action_option($self, flags);
   }
 
+#if defined(SWIGRUBY)
+  %rename( "flags" ) get_flags();
+#endif
   /*
    * get option flag(s)
    * 
@@ -90,9 +95,6 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   optins.flags -> Integer
    */
-#if defined(SWIGRUBY)
-  %rename( "flags" ) get_flags();
-#endif
   unsigned int get_flags() {
     return wsmc_get_action_option($self);
   }
@@ -122,58 +124,61 @@ typedef struct {} client_opt_t;
     wsmc_clear_action_option($self, ~FLAG_NONE);
   }
 
+#if defined(SWIGRUBY)
+  %rename( "max_envelope_size=" ) set_max_envelope_size(unsigned long size);
+#endif
   /*
    * Limit size of result document
    *
    * call-seq:
    *   options.max_envelope_size = 10240
    */
-#if defined(SWIGRUBY)
-  %rename( "max_envelope_size=" ) set_max_envelope_size(unsigned long size);
-#endif
   void set_max_envelope_size(unsigned long size) {
     $self->max_envelope_size = size;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "max_envelope_size" ) get_max_envelope_size();
+#endif
   /*
    * Return size limit of result document
    *
    * call-seq:
    *   options.max_envelope_size -> Integer
    */
-#if defined(SWIGRUBY)
-  %rename( "max_envelope_size" ) get_max_envelope_size();
-#endif
   unsigned long get_max_envelope_size() {
     return $self->max_envelope_size;
   }
    
+#if defined(SWIGRUBY)
+  %rename( "max_elements=" ) set_max_elements(int elements);
+#endif
   /*
    * Limit number of elements returned by enumeration
    *
    * call-seq:
    *   options.max_elements = 42
    */
-#if defined(SWIGRUBY)
-  %rename( "max_elements=" ) set_max_elements(int elements);
-#endif
   void set_max_elements(int elements) {
     $self->max_elements = elements;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "max_elements" ) get_max_elements();
+#endif
   /*
    * Return enumeration elements limit
    *
    * call-seq:
    *   options.max_elements -> Integer
    */
-#if defined(SWIGRUBY)
-  %rename( "max_elements" ) get_max_elements();
-#endif
   int get_max_elements() {
     return $self->max_elements;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "timeout=" ) set_timeout(unsigned long timeout);
+#endif
   /*
    * Operation timeout in milliseconds
    * See Openwsman::Transport.timeout for transport timeout
@@ -181,13 +186,13 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.timeout = 60*1000 # 60 seconds
    */
-#if defined(SWIGRUBY)
-  %rename( "timeout=" ) set_timeout(unsigned long timeout);
-#endif
   void set_timeout(unsigned long timeout) {
     $self->timeout = timeout;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "timeout" ) get_timeout();
+#endif
   /*
    * Return operation timeout in milliseconds
    * See Openwsman::Transport.timeout for transport timeout
@@ -195,13 +200,13 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.timeout -> Integer
    */
-#if defined(SWIGRUBY)
-  %rename( "timeout" ) get_timeout();
-#endif
   unsigned long get_timeout() {
     return $self->timeout;
   }
    
+#if defined(SWIGRUBY)
+  %rename( "fragment=" ) set_fragment(char *fragment);
+#endif
   /*
    * Set fragment filter
    * See DSP0226, section 7.7.
@@ -210,13 +215,13 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.fragment = "xpath/expression"
    */
-#if defined(SWIGRUBY)
-  %rename( "fragment=" ) set_fragment(char *fragment);
-#endif
   void set_fragment(char *fragment) {
     wsmc_set_fragment(fragment, $self);
   }
 
+#if defined(SWIGRUBY)
+  %rename( "fragment" ) get_fragment();
+#endif
   /*
    * Get fragment filter
    * See DSP0226, section 7.7.
@@ -224,46 +229,50 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.fragment -> String
    */
-#if defined(SWIGRUBY)
-  %rename( "fragment" ) get_fragment();
-#endif
   const char *get_fragment() {
     return $self->fragment;
   }
    
+#if defined(SWIGRUBY)
+  %rename( "cim_namespace=" ) set_cim_namespace(char *cim_namespace);
+#endif
   /*
    * Set CIM Namespace for Openwsman
    * (default is root/cimv2)
-   * Note: Microsoft WinRM set the resource namespace by attaching it
-   *       to the resource URI
+   * Note:
+   * Microsoft WinRM set the resource namespace by attaching it
+   * to the resource URI
+   *
    * See also: Openwsman.epr_prefix_for
    *
    * call-seq:
    *   options.cim_namespace = "root/interop"
    */
-#if defined(SWIGRUBY)
-  %rename( "cim_namespace=" ) set_cim_namespace(char *cim_namespace);
-#endif
   void set_cim_namespace(char *cim_namespace) {
     wsmc_set_cim_ns(cim_namespace, $self);
   }
 
+#if defined(SWIGRUBY)
+  %rename( "cim_namespace" ) get_cim_namespace();
+#endif
   /*
    * Get CIM Namespace for Openwsman
-   * Note: Microsoft WinRM set the resource namespace by attaching it
-   *       to the resource URI
+   * Note:
+   * Microsoft WinRM set the resource namespace by attaching it
+   * to the resource URI
+   *
    * See also: Openwsman.epr_prefix_for
    *
    * call-seq:
    *   options.cim_namespace -> String
    */
-#if defined(SWIGRUBY)
-  %rename( "cim_namespace" ) get_cim_namespace();
-#endif
   const char *get_cim_namespace() {
     return $self->cim_ns;
   }
-   
+
+#if defined(SWIGRUBY)
+  %rename( "reference=" ) set_reference(const char *reference);
+#endif
   /*
    * Set WS-Addressing reference properties
    * Argument must the string representation of a valid XML document
@@ -271,13 +280,13 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.reference = "<xml ...>"
    */
-#if defined(SWIGRUBY)
-  %rename( "reference=" ) set_reference(const char *reference);
-#endif
   void set_reference(const char *reference) {
     wsmc_set_reference(reference, $self);
   }
 
+#if defined(SWIGRUBY)
+  %rename( "reference" ) get_reference();
+#endif
   /*
    * Get WS-Addressing reference properties
    * Returns the string representation of a valid XML document
@@ -285,23 +294,21 @@ typedef struct {} client_opt_t;
    * call-seq:
    *   options.reference -> String
    */
-#if defined(SWIGRUBY)
-  %rename( "reference" ) get_reference();
-#endif
   const char *get_reference() {
     return $self->reference;
   }
    
+#if defined(SWIGRUBY)
   /*
    * Add an option (for OptionSet) as key/value pair
    *
-   * NOTE: the value must be properly escaped (replace & with &amp;, etc.)
-   *       in Ruby use CGI::escapeHTML()
+   * NOTE:
+   * the value must be properly escaped (replace & with &amp;, etc.)
+   * in Ruby use CGI::escapeHTML()
    *
    * call-seq:
    *   options.add_option "Name", "Value"
    */
-#if defined(SWIGRUBY)
   void add_option(VALUE k, VALUE v)
   {
     const char *key = as_string(k);
@@ -318,44 +325,46 @@ typedef struct {} client_opt_t;
   }
 
 #if defined(SWIGRUBY)
+  %rename( "options=" ) set_options(VALUE hash);
   /*
    * Set options (for OptionSet) from Hash
    *
-   * NOTE: the values must be properly escaped (replace & with &amp;, etc.)
-   *       in Ruby use CGI::escapeHTML()
+   * NOTE:
+   * the values must be properly escaped (replace & with &amp;, etc.)
+   * in Ruby use CGI::escapeHTML()
    *
    * call-seq:
    *   options.options = { "Name" => "Value", ... }
    */
-  %rename( "options=" ) set_options(VALUE hash);
   void set_options(VALUE hash)
   {
     $self->options = value2hash(NULL, hash, 0);
   }
 
+  %rename( "options" ) get_options(void);
   /*
    * Get options (for OptionSet) as Hash
    *
    * call-seq:
    *   options.options -> Hash
    */
-  %rename( "options" ) get_options(void);
   VALUE get_options(void)
   {
     return hash2value($self->options);
   }
 #endif
 
+#if defined(SWIGRUBY)
   /*
    * Add a selector as key/value pair
    *
-   * NOTE: the value must be properly escaped (replace & with &amp;, etc.)
-   *       in Ruby use CGI::escapeHTML()
+   * NOTE:
+   * the value must be properly escaped (replace & with &amp;, etc.)
+   * in Ruby use CGI::escapeHTML()
    *
    * call-seq:
    *   options.add_selector "Key", "Value"
    */
-#if defined(SWIGRUBY)
   void add_selector(VALUE k, VALUE v)
   {
     const char *key = as_string(k);
@@ -372,41 +381,42 @@ typedef struct {} client_opt_t;
   }
 
 #if defined(SWIGRUBY)
+  %rename( "selectors=" ) set_selectors(VALUE hash);
   /*
    * Set selectors from Hash
    *
-   * NOTE: the values must be properly escaped (replace & with &amp;, etc.)
-   *       in Ruby use CGI::escapeHTML()
+   * NOTE:
+   * the values must be properly escaped (replace & with &amp;, etc.)
+   * in Ruby use CGI::escapeHTML()
    *
    * call-seq:
    *   options.selectors = { "Key" => "Value", ... }
    */
-  %rename( "selectors=" ) set_selectors(VALUE hash);
   void set_selectors(VALUE hash)
   {
     $self->selectors = value2hash(NULL, hash, 0);
   }
 
+  %rename( "selectors" ) get_selectors(void);
   /*
    * Get selectors as Hash
    *
    * call-seq:
    *   options.selectors -> Hash
    */
-  %rename( "selectors" ) get_selectors(void);
   VALUE get_selectors(void)
   {
     return hash2value($self->selectors);
   }
 #endif
 
+#if defined(SWIGRUBY)
   /*
    * Add a property as key/value pair
    *
    * call-seq:
    *   options.add_property "Key", "Value"
    */
-#if defined(SWIGRUBY)
   void add_property(VALUE k, VALUE v)
   {
     const char *key = as_string(k);
@@ -423,41 +433,40 @@ typedef struct {} client_opt_t;
   }
   
 #if defined(SWIGRUBY)
+  %rename( "properties=" ) set_properties(VALUE hash);
   /*
    * Set properties from Hash
    *
    * call-seq:
    *   options.properties = { "Key" => "Value", ...}
    */
-  %rename( "properties=" ) set_properties(VALUE hash);
   void set_properties(VALUE hash)
   {
     $self->properties = value2hash(NULL, hash, 0);
   }
 
-
+  %rename( "properties" ) get_properties(void);
   /*
    * Get properties as Hash
    *
    * call-seq:
    *   options.properties -> Hash
    */
-  %rename( "properties" ) get_properties(void);
   VALUE get_properties(void)
   {
     return hash2value($self->properties);
   }
 #endif
 
+#if defined(SWIGRUBY)
+  %rename( "delivery_uri=" ) set_delivery_uri(const char *delivery_uri);
+#endif
   /*
    * Set delivery uri
    *
    * call-seq:
    *   options.delivery_uri = "http://..."
    */
-#if defined(SWIGRUBY)
-  %rename( "delivery_uri=" ) set_delivery_uri(const char *delivery_uri);
-#endif
   void set_delivery_uri( const char *delivery_uri ) {
     wsmc_set_delivery_uri(delivery_uri, $self);
   }
@@ -472,15 +481,15 @@ typedef struct {} client_opt_t;
     return $self->delivery_uri;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "sub_expiry=" ) set_sub_expiry(unsigned int event_subscription_expire);
+#endif
   /*
    * Set subscription expiry timeout (in seconds)
    *
    * call-seq:
    *   options.sub_expiry = 600 # 10 mins
    */
-#if defined(SWIGRUBY)
-  %rename( "sub_expiry=" ) set_sub_expiry(unsigned int event_subscription_expire);
-#endif
   void set_sub_expiry(unsigned int event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
   }
@@ -495,15 +504,15 @@ typedef struct {} client_opt_t;
     return $self->expires;
   }
 
+#if defined(SWIGRUBY)
+  %rename("heartbeat_interval=") set_heartbeat_interval(unsigned int heartbeat_interval);
+#endif
   /*
    * Set subscription heartbeat interval (in seconds)
    *
    * call-seq:
    *   options.heartbeat_interval = 60 # every minute
    */
-#if defined(SWIGRUBY)
-  %rename("heartbeat_interval=") set_heartbeat_interval(unsigned int heartbeat_interval);
-#endif
   void set_heartbeat_interval(unsigned int heartbeat_interval) {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
   }
@@ -518,15 +527,15 @@ typedef struct {} client_opt_t;
     return $self->heartbeat_interval;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "delivery_mode=" ) set_delivery_mode(unsigned int delivery_mode);
+#endif
   /*
    * Set subscription delivery mode (push, pushwithack,events,pull)
    *
    * call-seq:
    *   options.delivery_mode = Openwsman::WSMAN_DELIVERY_PUSH
    */
-#if defined(SWIGRUBY)
-  %rename( "delivery_mode=" ) set_delivery_mode(unsigned int delivery_mode);
-#endif
   void set_delivery_mode(unsigned int delivery_mode) {
     if (delivery_mode > WSMAN_DELIVERY_PULL)
       SWIG_exception( SWIG_ValueError, "Bad delivery mode" );
@@ -548,19 +557,20 @@ typedef struct {} client_opt_t;
     return $self->delivery_mode;
   }
 
+#if defined(SWIGRUBY)
+  %rename( "delivery_security_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
+#endif
   /*
    * Set subscription delivery security mode
-   *   (auto, http basic, http digest, https basic, https digest,
-   *    https mutual, https mutual basic, https mutual digest,
-   *    http spnego kerberos, https spnego kerberos,
-   *    https mutual spnego kerberos)
+   *
+   * (auto, http basic, http digest, https basic, https digest,
+   * https mutual, https mutual basic, https mutual digest,
+   * http spnego kerberos, https spnego kerberos,
+   * https mutual spnego kerberos)
    *
    * call-seq:
    *   options.delivery_security_mode = Openwsman::WSMAN_DELIVERY_SEC_HTTPS_BASIC
    */
-#if defined(SWIGRUBY)
-  %rename( "delivery_security_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
-#endif
   void set_delivery_security_mode(unsigned int delivery_sec_mode) {
     if (delivery_sec_mode > WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS)
       SWIG_exception( SWIG_ValueError, "Bad delivery security mode" );
