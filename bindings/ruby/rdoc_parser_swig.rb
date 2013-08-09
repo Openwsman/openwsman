@@ -329,7 +329,6 @@ class RDoc::Parser::SWIG < RDoc::Parser
              \s*(\([^)]*\))([^;]|$))%xm then
 # puts "  found! [#{$1},#{$2},#{$3},#{$4}]"
       comment = $1
-      return false if comment.include? "INTERNAL"
       body = $2
       # type = $3
       return false if $3 == "define" # filter out SWIG_Exception
@@ -716,7 +715,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def handle_method(type, klass_name, meth_name, function, param_count, content = nil,
                     source_file = nil)
     ruby_name = (@renames[meth_name][0] rescue nil) || meth_name
- puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args"
+# puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args"
     class_name = @known_classes[klass_name]
     singleton  = @singleton_classes.key? klass_name
 

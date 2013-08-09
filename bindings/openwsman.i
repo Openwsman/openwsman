@@ -103,7 +103,7 @@
 /* get the java environment so we can throw exceptions */
 %{
     static JNIEnv *jenv;
-    /*INTERNAL*/
+    /*:nodoc:*/
     jint JNI_OnLoad(JavaVM *vm, void *reserved) {
       (*vm)->AttachCurrentThread(vm, (void **)&jenv, NULL);
       return JNI_VERSION_1_2;
@@ -153,13 +153,13 @@
 
 SWIGEXPORT
 /* Init_ for the %module, defined by Swig
- * INTERNAL
+ * :nodoc:
  */
 void Init_Openwsman(void);
 
 SWIGEXPORT
 /* Init_ for the .so lib, called by Ruby
- * INTERNAL
+ * :nodoc:
  */
 void Init__openwsman(void) {
   Init_Openwsman();
@@ -177,7 +177,7 @@ void Init__openwsman(void) {
 
 /* Provide WsManTransport definition so it can be used as
  * dedicated datatype in bindings.
- * Internally, its aliased to WsManClient
+ * :nodoc:ly, its aliased to WsManClient
  */
 struct _WsManTransport { };
 typedef struct _WsManTransport WsManTransport;
@@ -331,7 +331,7 @@ static const char *uri_prefix(const char *classname) {
 
 #if defined(SWIGRUBY)
 static epr_t *my_epr_deserialize(WsXmlNodeH node);
-/*INTERNAL*/
+/*:nodoc:*/
 static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   if (strcmp(WSA_EPR, ws_xml_get_node_local_name(node)) == 0) {
     /* Use node as-is if its already a WSA_EPR */
@@ -344,7 +344,7 @@ static epr_t *my_epr_deserialize(WsXmlNodeH node) {
 
 static char *epr_prefix(const char *uri);
 /* Get prefix from a EPR uri
- * INTERNAL
+ * :nodoc:
  */
 static char *epr_prefix(const char *uri) {
   char *classname = uri_classname(uri);
