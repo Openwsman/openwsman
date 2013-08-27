@@ -53,7 +53,7 @@ while($context) {
 
     # Get nodes.
     # soap body -> PullResponse -> items
-    my $nodes = $result->body()->find($openwsman::NS_ENUMERATION, "Items")->child();
+    my $nodes = $result->body()->find($openwsman::XML_NS_ENUMERATION, "Items")->child();
     next unless($nodes);
 
     # Get items.
