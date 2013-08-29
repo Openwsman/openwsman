@@ -32,7 +32,9 @@ module Openwsman
   #
   # ==== Examples
   #   prefix = Openwsman.epr_prefix_for "CIM_Managed_Element"
+  #   => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2"
   #   prefix = Openwsman.epr_prefix_for "Win32_Foo", "root/cimv2"
+  #   => "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2"
   #
   def self.epr_prefix_for classname, namespace = nil
     prefix = Openwsman::uri_prefix classname
@@ -41,6 +43,13 @@ module Openwsman
   end
   
   # create full endpoint reference URI for namespace and classname
+  #
+  # * +classname+ - classname (using the <schema>_<name> format)
+  # * +namespace+ - optional namespace, required for Windows WMI which embeds the namespace in the EPR
+  #
+  # ==== Examples
+  #   Openwsman.epr_uri_for "root/cimv2", "Win32_Foo"
+  #   => "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Foo"
   def self.epr_uri_for namespace, classname
     raise "Namespace must not be nil" unless namespace
     raise "Classname must not be nil" unless classname

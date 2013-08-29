@@ -5,7 +5,7 @@
  */
 
 /*
- * XmlNs
+ * Document-class: XmlNs
  * Xml namespace
  */
  
@@ -15,7 +15,7 @@ struct __WsXmlNs {}; /* without empty struct, the %rename isn't executed. */
 typedef struct __WsXmlNs* WsXmlNsH;
 
 /*
- * class XmlDoc
+ * XmlDoc
  *
  * Implementation advice
  *  DONT do a %newobject on functions returning WsXmlDoc. Swig will

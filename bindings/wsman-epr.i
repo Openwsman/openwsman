@@ -14,7 +14,7 @@
 typedef struct {} epr_t;
 
 /*
- * EndPointReference
+ * Document-class: EndPointReference
  *
  * The EndPointReference is a stub to proxy server-side operations
  *

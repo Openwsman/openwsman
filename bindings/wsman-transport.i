@@ -9,6 +9,8 @@
 typedef struct _WsManTransport {} WsManTransport;
 
 /*
+ * Document-class: Transport
+ *
  * Transport is no separate struct in openwsman but part of WsManClient
  *
  * However, accessing transport in e.g. Ruby as
