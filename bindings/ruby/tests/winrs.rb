@@ -8,6 +8,22 @@
 
 require 'rexml/document'
 require 'openwsman'
+require 'getoptlong'
+
+def usage msg=nil
+  if msg
+    STDERR.puts "Error: #{msg}"
+    STDERR.puts
+  end
+  STDERR.puts "Usage:"
+  STDERR.puts
+  STDERR.puts "winrs [-U|--url <host-url>] [<cmd>]"
+  STDERR.puts "winrs [-s|--scheme http|https] [-h|--host <host>] [-u|--user <user>] [-p|--password <password>] [-P|--port port] [<cmd>]"
+  STDERR.puts
+  STDERR.puts "If <cmd> is given as a command line argument, winrs exists after executing <cmd>."
+  STDERR.puts "Else winrs runs interactively, accepting and executing command until Ctrl-D is pressed."
+  exit 1
+end
 
 def handle_fault client, result
   unless result
@@ -31,7 +47,59 @@ def handle_fault client, result
   end
 end
 
-  client = Openwsman::Client.new( "10.120.64.112", 80, "/wsman", "http", "wsman", "secret")
+  #
+  # Argument parsing
+  #
+
+  opts = GetoptLong.new(
+           [ "-U", "--url", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-h", "--host", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-u", "--user", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-p", "--password", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-P", "--port", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-s", "--scheme", GetoptLong::REQUIRED_ARGUMENT ]
+  )
+
+  options = {}
+  url = nil
+  opts.each do |opt,arg|
+    case opt
+    when "-U"
+      usage "-U|--url invalid, --host|--user|--password|--port already given" unless options.empty?
+      url = arg
+    when "-h"
+      usage "-h|--host invalid, --url already given" unless url.nil?
+      options[:host] = arg
+    when "-u"
+      usage "-u|--user invalid, --url already given" unless url.nil?
+      options[:user] = arg
+    when "-p"
+      usage "-p|--password invalid, --url already given" unless url.nil?
+      options[:password] = arg
+    when "-P"
+      usage "-P|--port invalid, --url already given" unless url.nil?
+      options[:port] = arg.to_i
+    when "-s"
+      usage "-s|--scheme invalid, --url already given" unless url.nil?
+      options[:scheme] = arg
+    end
+  end
+  
+  commands = ARGV.empty? ? nil : ARGV
+
+
+  client = if url
+    Openwsman::Client.new url
+  elsif options.empty?
+    usage
+  else
+    Openwsman::Client.new(options[:host], options[:port]||5985, "/wsman", options[:scheme]||"http", options[:user], options[:password])
+  end
+
+  #
+  # Client connection
+  #
+
   client.transport.timeout = 120
   client.transport.auth_method = Openwsman::BASIC_AUTH_STR
   # https
@@ -43,6 +111,10 @@ end
 #  Openwsman::debug = -1
   options.timeout = 60 * 1000 # 60 seconds
   uri = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/cmd"
+
+  #
+  # Start shell
+  #
 
   service = "Themes"
   options.add_selector( "Name", service )
@@ -81,14 +153,23 @@ end
 #  puts "Shell ID: #{shell_id}"
   command_id = nil
 
+  #
+  # Run command(s)
+  #
+  
   loop do
-    print "WinRS> "
-    STDOUT.flush
-    cmd = gets
-    break if cmd.nil?
-    cmd.chomp!
-    next if cmd.empty?
-    
+    if commands
+      break if commands.empty?
+      cmd = commands.shift
+    else
+      print "WinRS> "
+      STDOUT.flush
+      cmd = gets
+      break if cmd.nil?
+      cmd.chomp!
+      next if cmd.empty?
+    end
+
     # issue command
     options.options = { "WINRS_CONSOLEMODE_STDIN" => "TRUE", "WINRS_SKIP_CMD_SHELL" => "FALSE" }
     options.selectors = { "ShellId" => shell_id }
@@ -103,7 +184,10 @@ end
     command_id = command_id.text
 #    puts "Command ID: #{command_id}"
 
-    # receive stdout/stderr
+    #
+    # Request stdout/stderr
+    #
+  
     options.options = { }
     # keep ShellId selector
     data = Openwsman::XmlDoc.new("Receive", namespace)
@@ -113,6 +197,10 @@ end
     result = client.invoke( options, uri, "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive", data)
     handle_fault client, result
 
+    #
+    # Receive response
+    #
+  
     response = result.find(namespace, "ReceiveResponse")
     unless response
       STDERR.puts "***Err: No ReceiveResponse in: #{result.to_xml}"
@@ -173,8 +261,11 @@ end
       end
     end # response.each
 
+    #
     # terminate shell command
+    #
     # not strictly needed for WinRM 2.0, but WinRM 1.1 requires this
+    #
     data = Openwsman::XmlDoc.new("Signal", namespace)
     root = data.root
     root.attr_add nil, "CommandId", command_id
@@ -188,11 +279,14 @@ end
     end
   end
 
+  #
+  # delete shell resource
+  #
+
   if shell_id
     options.options = { }
     options.selectors = { "ShellId" => shell_id }
 
-    # delete resource
     result = client.invoke( options, uri, "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete", nil)
     handle_fault client, result
   end
