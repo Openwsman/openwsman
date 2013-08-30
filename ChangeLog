@@ -5,6 +5,10 @@
   - new function wsmc_add_option
   - Redirect plugin: Added facilities to import the redirection
     details from an included file (Praveen K Paladugu)
+- Bugfixes
+  - wsman_transport_set_verify_host passed wrong values to CURL
+  - recognize 'Msvc' (Hyper V) and 'DCIM' (Dell Drac) CIM schemata
+  - xml_parser_element_dump: fix pointer (github issue #8)
 - Bindings
   - Ruby: Fix Ruby 1.9 threading locks for wsmc_action_* functions
   - Support for OptionSet
@@ -17,11 +21,9 @@
     - ClientOptions#selectors
   - Define security delivery modes (WSMAN_DELIVERY_SEC_*)
   - Improved bindings documentation
+  - Generate documenation with rdoc 1.9
   - Windows Remote Shell client implementation (in ruby/tests)
-- Bugfixes
-  - wsman_transport_set_verify_host passed wrong values to CURL
-  - recognize 'Msvc' (Hyper V) and 'DCIM' (Dell Drac) CIM schemata
-  - xml_parser_element_dump: fix pointer (github issue #8)
+
 2.3.7
 - Bugfixes
   - Generate pkgconfig (.pc) files correctly
