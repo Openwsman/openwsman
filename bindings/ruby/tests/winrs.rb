@@ -93,7 +93,7 @@ end
   elsif options.empty?
     usage
   else
-    Openwsman::Client.new(options[:host], options[:port]||5985, "/wsman", options[:scheme]||"http", options[:user], options[:password])
+    Openwsman::Client.new(options[:host], options[:port]||5985, "wsman", options[:scheme]||"http", options[:user], options[:password])
   end
 
   #
