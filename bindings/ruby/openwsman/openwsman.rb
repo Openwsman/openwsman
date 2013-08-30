@@ -15,6 +15,28 @@ require 'openwsman/xmlnode'
 # this extends Openwsman::XmlDoc with method_missing
 require 'openwsman/xmldoc'
 
+# = About openwsman
+# Openwsman (http://www.openwsman.org) is a project intended to provide an open-source
+# implementation of the Web Services Management specification
+# (WS-Management) and to expose system management information on the
+# Linux operating system using the WS-Management protocol. WS-Management
+# is based on a suite of web services specifications and usage
+# requirements that exposes a set of operations focused on and covers
+# all system management aspects. 
+#
+# = Using the bindings
+# The bindings provide access to the client-side API of openwsman.
+# You start by creating a Client instance and set up ClientOptions
+# to control the communication.
+#
+# The Client instance now provides the WS-Management operations, like
+# enumerate, get, invoke, etc.
+#
+# All client operations return a XmlDoc representing the SOAP response
+# from the system.
+# # You can then use XmlDoc methods to extract SOAP elements from the
+# response and dig down through its XmlNode and XmlAttr objects.
+
 module Openwsman
   class Transport
     # called when authentication credentials missing or wrong
