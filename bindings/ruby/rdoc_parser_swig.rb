@@ -322,12 +322,13 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def find_body class_name, meth_name, meth_obj, file_content, quiet = false
 # puts "\n\tfind_body #{meth_obj.c_function.inspect}[#{meth_name.inspect}]" if meth_obj.name == "new"
-# puts "\n\tfind_body #{meth_name} ?"
+# puts "\n\tfind_body #{meth_obj.c_function} ?"
+# puts "\n\t#{file_content}"
     case file_content
 #    when %r%(/\*.*\*/\s*#{meth_obj.c_function})%xm
     when %r%((?>/\*.*?\*/\s+)?)
             ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?\s+)?
-             (VALUE|[\w_]+)(\*|\s)\s*#{meth_obj.c_function}
+             (VALUE|[\w_]+)\s*(\*|\s)?\s*#{meth_obj.c_function}
              \s*(\([^)]*\))([^;]|$))%xm,
          %r%(/\*.*?\*/\s+)
              #{meth_obj.c_function}
@@ -722,14 +723,14 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def handle_method(type, klass_name, meth_name, function, param_count, content = nil,
                     source_file = nil)
     ruby_name = (@renames[meth_name][0] rescue nil) || meth_name
-# puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args" if meth_name == "initialize"
+# puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args" # if meth_name == "initialize"
     class_name = @known_classes[klass_name]
     singleton  = @singleton_classes.key? klass_name
 
     return unless class_name
 
     class_obj = find_class klass_name, class_name
-# puts "\n\tclass_obj #{class_obj.inspect}" if meth_name == "initialize"
+# puts "\n\tclass_obj #{class_obj.inspect}" #if meth_name == "initialize"
 
     if class_obj then
       if meth_name == "initialize" then
@@ -758,6 +759,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
       end
 
       body = find_body class_name, function, meth_obj, file_content
+#      puts "find_body #{class_name}##{function} -> #{body}"
       if body and meth_obj.document_self then
         meth_obj.params = if p_count < -1 then # -2 is Array
                             '(*args)'
