@@ -327,7 +327,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
     case file_content
 #    when %r%(/\*.*\*/\s*#{meth_obj.c_function})%xm
     when %r%((?>/\*.*?\*/\s+)?)
-            ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?\s+)?
+            ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?(?:\s*struct)?\s+)?
              (VALUE|[\w_]+)(\s+\*|\*\s+|\s+)#{meth_name}
              \s*(\([^)]*\))([^;]|$))%xm,
          %r%(/\*.*?\*/\s+)
