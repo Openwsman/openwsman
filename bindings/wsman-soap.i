@@ -492,13 +492,21 @@ typedef struct _WsmanStatus WsmanStatus;
 /*
  * Document-class: Status
  *
+ * Status represents the detailed status of a (failed) WS-Management
+ * operation.
+ *
+ * Its primarily used implementing server-side plugins to report a Fault
+ * back to the calling client.
  */
 %extend _WsmanStatus {
   /*
-   * Create an empty status
+   * Create a new Status object
    *
-   * optionally pass
-   *  int code, int code_detail, string message
+   * call-seq:
+   *   Openwsman::Status.new # create 'good' status
+   *   Openwsman::Status.new error_code
+   *   Openwsman::Status.new error_code, error_detail
+   *   Openwsman::Status.new error_code, error_detail, "Error message"
    */
   _WsmanStatus(int code = 0, int detail = 0, const char *msg = NULL) {
     WsmanStatus *s = (WsmanStatus *)malloc(sizeof(WsmanStatus));
@@ -525,6 +533,8 @@ typedef struct _WsmanStatus WsmanStatus;
   }
   /*
    * String representation (returns the fault message)
+   * call-seq:
+   *   status.to_s -> String
    */
   const char *to_s() {
     return $self->fault_msg;
@@ -602,9 +612,9 @@ typedef struct _WsmanStatus WsmanStatus;
 
   %typemap(newfree) WsXmlDocH "ws_xml_destroy_doc($1);";
   /*
-   * Create a new fault XmlDoc
+   * Create a new fault XmlDoc based on Status information
    * call-seq:
-   *   status.generate_fault(xml_doc) -> Openwsman::XmlDoc
+   *   status.generate_fault(xml_doc) -> XmlDoc
    */
   WsXmlDocH generate_fault(WsXmlDocH doc) {
     return wsman_generate_fault( doc, $self->fault_code, $self->fault_detail_code, $self->fault_msg);
