@@ -176,7 +176,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Scans #content for %rename
 
   def do_renames
-    @content.scan(/\s*%rename\s*\(\s*"?([\w_=]+)"?\s*\)\s*([\w_]+)\s*\(?([\w_,\s]+)?\s*\)?;/) do
+    @content.scan(/\s*%rename\s*\(\s*"?([\w_=]+)"?\s*\)\s*([\w_]+)\s*\(?([\w_,\*\s]+)?\s*\)?;/) do
       |new_name, old_name, args|
       @renames[old_name] = [new_name, args]
     end
@@ -322,18 +322,18 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def find_body class_name, meth_name, meth_obj, file_content, quiet = false
 # puts "\n\tfind_body #{meth_obj.c_function.inspect}[#{meth_name.inspect}]" if meth_obj.name == "new"
-# puts "\n\tfind_body #{meth_obj.c_function} ?"
+# puts "\n\tfind_body #{meth_name}[#{meth_obj.name}] ?"
 # puts "\n\t#{file_content}"
     case file_content
 #    when %r%(/\*.*\*/\s*#{meth_obj.c_function})%xm
     when %r%((?>/\*.*?\*/\s+)?)
             ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?\s+)?
-             (VALUE|[\w_]+)\s*(\*|\s)?\s*#{meth_obj.c_function}
+             (VALUE|[\w_]+)(\s+\*|\*\s+|\s+)#{meth_name}
              \s*(\([^)]*\))([^;]|$))%xm,
          %r%(/\*.*?\*/\s+)
-             #{meth_obj.c_function}
+             #{meth_name}
              \s*(\([^)]*\))([^;]|$)%xm then
-# puts "\n  found! [#{$1.inspect},#{$2.inspect},#{$3.inspect},#{$4.inspect},#{$5.inspect},#{$6.inspect}]" if meth_obj.name == "new"
+# puts "\n  found! [1:#{$1.inspect},2:#{$2.inspect},3:#{$3.inspect},#{$4.inspect},#{$5.inspect},#{$6.inspect}]" if meth_obj.name == "delivery_mode"
 
       comment = $1
       body = $2
