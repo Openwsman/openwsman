@@ -558,7 +558,7 @@ typedef struct {} client_opt_t;
   }
 
 #if defined(SWIGRUBY)
-  %rename( "delivery_security_mode=" ) set_delivery_sec_mode(unsigned int delivery_mode);
+  %rename( "delivery_security_mode=" ) set_delivery_security_mode(unsigned int delivery_mode);
 #endif
   /*
    * Set subscription delivery security mode
