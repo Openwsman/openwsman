@@ -81,7 +81,10 @@ typedef struct _WsManClient {
   }
 
   /*
-   * String representation of the transport scheme ('http', 'https')
+   * String representation of the transport scheme
+   *
+   * call-seq:
+   *   client.scheme -> String
    */
   char *scheme() {
     return wsmc_get_scheme( $self );
