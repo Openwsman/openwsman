@@ -79,7 +79,7 @@ module Openwsman
   end
   
   class EndPointReference
-    def method_missing name, *args
+    def method_missing name, *args # :nodoc:
       selector(name)
     end
   end

@@ -152,8 +152,16 @@ typedef struct {} epr_t;
   
 #if defined(SWIGRUBY)
   /*
-   * get value of selector by name
+   * Get value of selector by name
+   * epr#selector converts any value passed to String
    *
+   * ==== Shortcut
+   * epr.selector("name") can also be abbreviated as epr.name
+   *
+   * ==== Examples
+   *   epr.selector("name")
+   *   epr.selector(value)
+   *   epr.name
    */
   char *selector(VALUE v) {
     const char *name = as_string(v);
