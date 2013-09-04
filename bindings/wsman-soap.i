@@ -129,22 +129,6 @@ struct __WsEnumerateInfo {};
     $self->totalItems = i;
   }
 
-#if defined(SWIGRUBY)
-  VALUE enum_results() {
-    return (VALUE)$self->enumResults;
-  }
-  %rename("enum_results=") set_enum_results(VALUE result);
-  void set_enum_results(VALUE result) {
-    $self->enumResults = (void *)result;
-  }
-  VALUE enum_context() {
-    return (VALUE)$self->appEnumContext;
-  }
-  %rename("enum_context=") set_enum_context(VALUE context);
-  void set_enum_context(VALUE context) {
-    $self->appEnumContext = (void *)context;
-  }
-#endif
   /*
    * XmlDoc representing the result pulled last
    * call-seq:
