@@ -11,6 +11,9 @@
   - xml_parser_element_dump: fix pointer (github issue #8)
 - Bindings
   - Ruby: Fix Ruby 1.9 threading locks for wsmc_action_* functions
+  - Ruby: API change: Transport.verify_{host,peer}? return Boolean now
+      Transport.verify_peer -> Transport.verify_peer?
+      Transport.verify_host -> Transport.verify_host?
   - Support for OptionSet
     - ClientOptions#add_option
     - ClientOptions#options= (Ruby)
@@ -20,9 +23,9 @@
     - ClientOptions#properties
     - ClientOptions#selectors
   - Define security delivery modes (WSMAN_DELIVERY_SEC_*)
-  - Improved bindings documentation
+  - Vastly improved bindings documentation
   - Generate documenation with rdoc 1.9
-  - Windows Remote Shell client implementation (in ruby/tests)
+  - Windows Remote Shell client implementation (see ruby/tests/winrs.rb)
 
 2.3.7
 - Bugfixes
