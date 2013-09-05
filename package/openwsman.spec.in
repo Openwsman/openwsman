@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman
 #
-# Copyright (c) 2012 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -88,7 +88,6 @@ BuildRequires:  openssl-devel
 %endif
 
 %if 0%{?suse_version} > 910
-BuildRequires:  ruby-devel
 %if 0%{?suse_version} < 1110
 # SLE 10 has Ruby 1.8.6 and runs into http://help.rubygems.org/discussions/problems/859-trying-to-install-rubygems
 BuildRequires:  rubygems <= 1.3.7
@@ -96,6 +95,7 @@ BuildRequires:  rubygems <= 1.3.7
 BuildRequires:  rubygems
 %endif
 BuildRequires:  pkg-config
+BuildRequires:  ruby-devel
 %else
 # SLE9
 BuildRequires:  pkgconfig
@@ -340,7 +340,7 @@ exit 0
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
 %pre server
-if [-f /var/lib/systemd/migrated/%{name}]; then
+if [ -f /var/lib/systemd/migrated/%{name}]; then
 %service_add_pre %{name}.service
 fi
 %endif
