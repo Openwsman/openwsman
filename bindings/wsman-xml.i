@@ -86,6 +86,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
 #if defined(SWIGRUBY)
   %alias encode "to_s";
 #endif
+  %newobject encode;
   /*
    * encode document as string with specific encoding
    * (non-indented representation)
@@ -100,7 +101,6 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *  doc.to_s -> string
    *
    */
-  %newobject encode;
   char *encode(const char *encoding="utf-8") {
     int size;
     char *buf;
@@ -163,6 +163,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   WsXmlNodeH element(const char *name) {
     return ws_xml_get_soap_element( $self, name );
   }
+  %newobject context;
   /*
    * get enumeration context as string
    * return nil if context not present or empty
@@ -171,7 +172,6 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *  doc.context -> String
    *
    */
-  %newobject context;
   const char *context() {
     char *c = wsmc_get_enum_context( $self );
     if (c) {
@@ -217,6 +217,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
     return wsmc_check_for_fault( $self );
   }
   
+  %newobject fault;
   /*
    * retrieve fault data
    *
@@ -224,7 +225,6 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *  doc.fault(XmlDoc) -> Openwsman::Fault
    *  doc.fault(XmlDoc) -> nil # if XmlDoc is not a fault
    */
-  %newobject fault;
   WsManFault *fault() {
     WsManFault *f = NULL;
     if (wsmc_check_for_fault($self)) {
