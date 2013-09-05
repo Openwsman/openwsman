@@ -200,7 +200,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def do_classes content
     found = false
-    content.scan(/%extend\s+([\w_]+)\s*\{(.*)\}/m) do |class_name, content|
+#    puts "do_classes #{content.inspect}"
+    content.scan(/%extend\s+([\w_]+)(.*)/m) do |class_name, content|
       real_name = @renames[class_name][0] rescue nil
       klass = handle_class_module(class_name, "class", real_name, @module)
       # now check if we have multiple %extend, the regexp above is greedy and will match all of them
@@ -208,6 +209,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
         do_classes $& + $' # ' add the %extend back in
         content = $` # real content is everything before the embedded %extend
       end
+#      puts "%extend #{class_name}: #{content.inspect}"
       do_methods klass, class_name, content
       found = true
     end
@@ -218,12 +220,11 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Scans #content for #define and %constant
 
   def do_constants
-    @content.scan(/#define\s+([\w_]+)\s+([^\s\n]+)/) do |const_name, definition|
-      handle_constants "const", const_name, definition
-    end
+    # %constant <type>[*] <name> = <c-constant>;
 
-    @content.scan(/%constant\s+\w+\s+([\w_]+)\s*=\s*([\w_]+)/) do |const_name, definition|
-      handle_constants "const", const_name, definition
+    @content.scan(/(\/\*.*?\*\/)?\s*%constant\s+([\w_]+)([\s\*]+)([\w_]+)\s*=\s*([\w_]+);/) do |comment, type, pointer, const_name, definition|
+#      puts "\nConst #{const_name} : #{comment.inspect}"
+      handle_constants comment, const_name, definition
     end
   end
 
@@ -261,6 +262,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
 			\s*\(([^\)]*)\) # args
 			\s*\{/xm) do  # function def start
         |const,type,pointer,meth_name,args|
+#          puts "do_methods klass #{klass}, name #{name}: const #{const.inspect}, type #{type.inspect}, pointer #{pointer.inspect}, meth_name #{meth_name.inspect}"
 	next unless meth_name
 	next if meth_name =~ /~/
 	type = "string" if type =~ /char/ && pointer =~ /\*/
@@ -333,7 +335,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
          %r%(/\*.*?\*/\s+)
              #{meth_name}
              \s*(\([^)]*\))([^;]|$)%xm then
-# puts "\n  found! [1:#{$1.inspect},2:#{$2.inspect},3:#{$3.inspect},#{$4.inspect},#{$5.inspect},#{$6.inspect}]" if meth_obj.name == "delivery_mode"
+# puts "\n  found! [1:#{$1.inspect},2:#{$2.inspect},3:#{$3.inspect},#{$4.inspect},#{$5.inspect},#{$6.inspect}]" if meth_obj.name == "detail"
 
       comment = $1
       body = $2
@@ -479,29 +481,6 @@ class RDoc::Parser::SWIG < RDoc::Parser
   end
 
   ##
-  # Finds a comment matching +type+ and +const_name+ either above the
-  # comment or in the matching Document- section.
-
-  def find_const_comment(type, const_name, class_name = nil)
-    if @content =~ %r%((?>^\s*/\*.*?\*/\s+))
-                   rb_define_#{type}\((?:\s*(\w+),)?\s*
-                                      "#{const_name}"\s*,
-                                      .*?\)\s*;%xmi then
-      $1
-    elsif class_name and
-          @content =~ %r%Document-(?:const|global|variable):\s
-                         #{class_name}::#{const_name}
-                         \s*?\n((?>.*?\*/))%xm then
-      $1
-    elsif @content =~ %r%Document-(?:const|global|variable):\s#{const_name}
-                         \s*?\n((?>.*?\*/))%xm then
-      $1
-    else
-      ''
-    end
-  end
-
-  ##
   # Handles modifiers in +comment+ and updates +meth_obj+ as appropriate.
   #
   # If <tt>:nodoc:</tt> is found, documentation on +meth_obj+ is suppressed.
@@ -644,16 +623,10 @@ class RDoc::Parser::SWIG < RDoc::Parser
   end
 
   ##
-  # Adds constants.  By providing some_value: at the start of the comment you
-  # can override the C value of the comment to give a friendly definition.
+  # Adds constants.
   #
-  #   /* 300: The perfect score in bowling */
-  #   rb_define_const(cFoo, "PERFECT", INT2FIX(300);
-  #
-  # Will override <tt>INT2FIX(300)</tt> with the value +300+ in the output
-  # RDoc.  Values may include quotes and escaped colons (\:).
 
-  def handle_constants(type, const_name, definition)
+  def handle_constants(comment, const_name, definition)
     class_obj = @module
 
     unless class_obj then
@@ -663,42 +636,14 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
     class_name = class_obj.name
 
-    comment = find_const_comment type, const_name, class_name
-    comment = strip_stars comment
-    comment = normalize_comment comment
-
-    # In the case of rb_define_const, the definition and comment are in
-    # "/* definition: comment */" form.  The literal ':' and '\' characters
-    # can be escaped with a backslash.
-    if type.downcase == 'const' then
-      elements = comment.split ':'
-
-      if elements.nil? or elements.empty? then
-        con = RDoc::Constant.new const_name, definition, comment
-      else
-        new_definition = elements[0..-2].join(':')
-
-        if new_definition.empty? then # Default to literal C definition
-          new_definition = definition
-        else
-          new_definition.gsub!("\:", ":")
-          new_definition.gsub!("\\", '\\')
-        end
-
-        new_definition.sub!(/\A(\s+)/, '')
-
-        new_comment = if $1.nil? then
-                        elements.last.lstrip
-                      else
-                        "#{$1}#{elements.last.lstrip}"
-                      end
-
-        con = RDoc::Constant.new const_name, new_definition, new_comment
-      end
+    if comment
+      comment = strip_stars comment
+      comment = normalize_comment comment
     else
-      con = RDoc::Constant.new const_name, definition, comment
+      comment = ""
     end
 
+    con = RDoc::Constant.new const_name, definition, comment
     con.record_location @top_level
     @stats.add_constant con
     class_obj.add_constant con
