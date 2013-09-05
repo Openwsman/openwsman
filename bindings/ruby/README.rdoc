@@ -1,0 +1,61 @@
+= \Openwsman - WS-Management for all
+
+home :: http://openwsman.github.io
+wiki :: https://github.com/Openwsman/openwsman/wiki
+mailing list :: openwsman-devel@lists.sourceforge.net
+source :: https://github.com/Openwsman/openwsman
+rdoc :: http://www.suse.de/~kkaempf/openwsman
+bugs :: https://github.com/Openwsman/openwsman/issues
+code climate :: {<img src="https://codeclimate.com/github/Openwsman/openwsman.png">}[https://codeclimate.com/github/Openwsman/openwsman]
+
+== Description
+
+Openwsman is an open source implementation of WS-Management; enabling
+the in-band management of Linux/uni*/Windows platforms.
+Openwsman supports the generic WS-Management protocol as well as
+specific protocol extensions for the <a
+href="http://www.dmtf.org/standards/cim">Common Information Model</a> (CIM)
+
+Openwsman provides 'C' language API by default and a 'C++' API in an
+'alpha' state. For other languages, see the bindings.
+
+== About the bindings
+
+The bindings provide the simplest way to perform WS-Management
+operations with Openwsman.
+
+Bindings exist for
+{Ruby}[https://github.com/Openwsman/openwsman/tree/master/bindings/ruby],
+{Python}[https://github.com/Openwsman/openwsman/tree/master/bindings/python],
+{Perl}[https://github.com/Openwsman/openwsman/tree/master/bindings/perl], and
+{Java}[https://github.com/Openwsman/openwsman/tree/master/bindings/java].
+with plenty of examples in the respective 'tests' directories.
+
+The Ruby bindings are fully maintained an considered 'production'
+quality.
+
+== Bugs
+
+If you have problems using Openwsman, report to the <a
+href="mailto:openwsman-devel@lists.sourceforge.net">mailing list</a>
+first.
+
+If you are sure to have found a bug, please report it via the <a
+href="https://github.com/Openwsman/openwsman/issues">Github issue
+tracker</a>.
+
+== License
+
+Openwsman is copyright (C) 2004-2006 by Intel Corp, 2006-2013 by SUSE
+Linux Products GmbH.
+
+Openwsman is free software, and may be redistributed under the terms
+of the <a
+href="https://github.com/Openwsman/openwsman/blob/master/COPYING">BSD-3-Clause</a>
+license.
+
+== Warranty
+
+This software is provided "as is" and without any express or implied
+warranties, including, without limitation, the implied warranties of
+merchantability and fitness for a particular purpose.
