@@ -294,19 +294,37 @@ typedef struct _WsManTransport {} WsManTransport;
   }
 
 #if defined(SWIGRUBY)
-  %rename("verify_peer=") set_verify_peer( unsigned int value );
-#endif
+  %rename("verify_peer=") set_verify_peer( VALUE rvalue );
+ /*
+  * verify the peer in SSL communication ?
+  *
+  * If passed +false+, +nil+, or 0: disable peer verification
+  * else: enable peer verification
+  */
+  void set_verify_peer( VALUE rvalue ) {
+    unsigned int value;
+    if ((rvalue == Qfalse) || (rvalue == Qnil)) {
+      value = 0;
+    }
+    else if ((TYPE(rvalue) == T_FIXNUM) && (FIX2INT(rvalue) == 0)) {
+      value = 0;
+    }
+    else {
+      value = 1;
+    }
+#else
  /*
   * verify the peer in SSL communication ?
   * no: == 0
   * yes: != 0
   */
   void set_verify_peer( unsigned int value ) {
+#endif
     wsman_transport_set_verify_peer((WsManClient *)$self, value);
   }
 #if defined(SWIGRUBY)
   %rename("verify_peer?") verify_peer();
-  %typemap(out) int verify_peer
+  %typemap(out) unsigned int verify_peer
     "$result = ($1 != 0) ? Qtrue : Qfalse;";
 #endif
   /*
@@ -319,19 +337,37 @@ typedef struct _WsManTransport {} WsManTransport;
   }
 
 #if defined(SWIGRUBY)
-  %rename("verify_host=") set_verify_host(unsigned int value);
-#endif
+  %rename("verify_host=") set_verify_host(VALUE rvalue);
+  /*
+  * verify the host in SSL communication ?
+  *
+  * If passed +false+, +nil+, or 0: disable peer verification
+  * else: enable peer verification
+  */
+  void set_verify_host( VALUE rvalue ) {
+    unsigned int value;
+    if ((rvalue == Qfalse) || (rvalue == Qnil)) {
+      value = 0;
+    }
+    else if ((TYPE(rvalue) == T_FIXNUM) && (FIX2INT(rvalue) == 0)) {
+      value = 0;
+    }
+    else {
+      value = 1;
+    }
+#else
   /*
   * verify the host in SSL communication ?
   * no: == 0
   * yes: != 0
   */
   void set_verify_host(unsigned int value) {
+#endif
     wsman_transport_set_verify_host((WsManClient *)$self, value);
   }
 #if defined(SWIGRUBY)
   %rename("verify_host?") verify_host();
-  %typemap(out) int verify_host
+  %typemap(out) unsigned int verify_host
     "$result = ($1 != 0) ? Qtrue : Qfalse;";
 #endif
   /*
