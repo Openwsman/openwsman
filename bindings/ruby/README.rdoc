@@ -13,8 +13,8 @@ code climate :: {<img src="https://codeclimate.com/github/Openwsman/openwsman.pn
 Openwsman is an open source implementation of WS-Management; enabling
 the in-band management of Linux/uni*/Windows platforms.
 Openwsman supports the generic WS-Management protocol as well as
-specific protocol extensions for the <a
-href="http://www.dmtf.org/standards/cim">Common Information Model</a> (CIM)
+specific protocol extensions for the 
+{Common Information Model}[http://www.dmtf.org/standards/cim] (CIM)
 
 Openwsman provides 'C' language API by default and a 'C++' API in an
 'alpha' state. For other languages, see the bindings.
@@ -36,13 +36,12 @@ quality.
 
 == Bugs
 
-If you have problems using Openwsman, report to the <a
-href="mailto:openwsman-devel@lists.sourceforge.net">mailing list</a>
+If you have problems using Openwsman, report to the
+{mailing list}[mailto:openwsman-devel@lists.sourceforge.net]
 first.
 
-If you are sure to have found a bug, please report it via the <a
-href="https://github.com/Openwsman/openwsman/issues">Github issue
-tracker</a>.
+If you are sure to have found a bug, please report it via the
+{Github issue tracker}[https://github.com/Openwsman/openwsman/issues]
 
 == License
 
@@ -50,8 +49,8 @@ Openwsman is copyright (C) 2004-2006 by Intel Corp, 2006-2013 by SUSE
 Linux Products GmbH.
 
 Openwsman is free software, and may be redistributed under the terms
-of the <a
-href="https://github.com/Openwsman/openwsman/blob/master/COPYING">BSD-3-Clause</a>
+of the
+{BSD-3-Clause}[https://github.com/Openwsman/openwsman/blob/master/COPYING]
 license.
 
 == Warranty
