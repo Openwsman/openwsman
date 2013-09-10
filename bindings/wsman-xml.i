@@ -67,7 +67,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   %newobject string;
   /*
    * generic (indented) string representation of the XmlDoc UTF-8 encoded.
-   * see encode() for setting the encoding.
+   * see encode for setting the encoding.
    *
    * alias: to_xml
    *
@@ -101,12 +101,13 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *  doc.to_s -> string
    *
    */
-  char *encode(const char *encoding="utf-8") {
+  char *encode(const char *encoding = "utf-8") {
     int size;
     char *buf;
     ws_xml_dump_memory_enc( $self, &buf, &size, encoding );
     return buf;
   }
+
   /*
    * dump document to file
    *
@@ -436,10 +437,10 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
   }
+
 #if defined(SWIGRUBY)
   %rename("ns=") set_ns( const char *nsuri );
 #endif
-
   /*
    * set namespace of node
    *
@@ -460,15 +461,15 @@ typedef struct __WsXmlNode* WsXmlNodeH;
     return ws_xml_get_node_name_ns_prefix($self);
   }
 
+#if defined(SWIGRUBY)
+  %rename("lang=") set_lang(const char *lang);
+#endif
   /*
    * set language
    *
    * call-seq:
    *  node.lang = String
    */
-#if defined(SWIGRUBY)
-  %rename("lang=") set_lang(const char *lang);
-#endif
   void set_lang(const char *lang) {
     ws_xml_set_node_lang($self, lang);
   }
