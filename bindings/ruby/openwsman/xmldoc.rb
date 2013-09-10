@@ -3,7 +3,7 @@ module Openwsman
     #
     # Assume XmlDoc.foo means XmlDoc.body.foo
     #
-    def method_missing method, *args
+    def method_missing method, *args :nodoc:
       self.body.send method,*args
     end
   end
