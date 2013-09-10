@@ -657,19 +657,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *  node.get("name", "namespace") -> XmlNode
    */
   WsXmlNodeH get(const char *name, const char *ns = NULL) {
-#if 1
     return ws_xml_get_child($self, 0, ns, name);
-#else
-    /* Hmm, why is this code so complicated ? */
-    int i = 0;
-    while ( i < ws_xml_get_child_count_by_qname($self, ns, name)) {
-      WsXmlNodeH child = ws_xml_get_child($self, i, ns, name);
-      if (!strcmp(ws_xml_get_node_local_name(child), name))
-        return child;
-      ++i;
-    }
-    return NULL;
-#endif
   }
 
 #if defined(SWIGRUBY)
