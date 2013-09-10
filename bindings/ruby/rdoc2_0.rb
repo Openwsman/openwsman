@@ -1,0 +1,1 @@
+/usr/bin/rdoc2.0

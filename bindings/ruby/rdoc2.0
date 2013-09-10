@@ -7,5 +7,4 @@ require 'rdoc/parser'
 # Simple must come first
 require 'rdoc/parser/simple'
 require File.join(File.dirname(__FILE__),'rdoc_parser_swig')
-
-require "/usr/bin/rdoc2.0"
+require File.join(File.dirname(__FILE__),'rdoc2_0')
