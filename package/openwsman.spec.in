@@ -171,7 +171,7 @@ An implementation of the WsmanClient interface using C++
 
 %package -n libwsman_clientpp-devel
 Summary:        C++ bindings to Openwsman Client libraries
-Group:          System/Management
+Group:          Development/Libraries/C and C++
 Requires:       libwsman-devel = %{version}
 Requires:       libwsman_clientpp1 = %{version}
 
@@ -239,6 +239,14 @@ Group:          System/Management
 
 %description ruby
 This package provides Ruby bindings to access the openwsman client API.
+
+%package ruby-docs
+Summary:        HTML documentation for Opendwsman Ruby bindings
+Group:          Documentation/HTML
+
+%description ruby-docs
+This package provides HTML documentation for the Openwsman Ruby
+bindings.
 
 
 %package perl
@@ -309,6 +317,8 @@ make CFLAGS="-DSSL_LIB='\"$SSL_LIB\"'"
 %install
 cd build
 make DESTDIR=$RPM_BUILD_ROOT install
+mkdir -p $RPM_BUILD_ROOT%{_docdir}
+cp -a bindings/ruby/html $RPM_BUILD_ROOT%{_docdir}/openwsman-ruby-docs
 cd ..
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
@@ -340,7 +350,7 @@ exit 0
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
 %pre server
-if [ -f /var/lib/systemd/migrated/%{name}]; then
+if [ -f /var/lib/systemd/migrated/%{name} ]; then
 %service_add_pre %{name}.service
 fi
 %endif
@@ -425,6 +435,11 @@ rm -f /var/log/wsmand.log
 %endif
 
 %endif
+
+%files ruby-docs
+%defattr(-,root,root)
+%dir %{_docdir}/openwsman-ruby-docs
+%{_docdir}/openwsman-ruby-docs
 
 %files perl
 %defattr(-,root,root)
