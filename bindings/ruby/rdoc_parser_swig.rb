@@ -653,11 +653,43 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Removes #ifdefs that would otherwise confuse us
 
   def handle_ifdefs_in(body)
-    b = body.gsub(/^#if defined(SWIGRUBY)(.*?)#else.*?\n.*?#endif.*?\n/m, '\1')
-    b = b.gsub(/^#if defined(SWIGJAVA).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
-    b = b.gsub(/^#if defined(SWIGPYTHON).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
-    b = b.gsub(/^#if defined(SWIGPERL).*?#else(.*?)\n.*?#endif.*?\n/m, '\1')
-    b
+    result = ""
+    loop do
+      body.match(/^#if ((\s*\|\|\s*)?defined\(SWIG([\w]+)\))+/) do
+        result << $` # copy everything before #if
+        after = $' #'
+        if $1 =~ /RUBY/ # if defined(SWIGRUBY)
+          raise "Unmatched #if SWIGRUBY\n#{after}" unless after.match /^#(if|else|endif)/
+          result << $` # copy everything between SWIGRUBY and #if/else/endif
+          case $1
+          when "if"
+            result << handle_ifdefs_in($& + $') #'
+          when "else"
+            after = $' #'
+            raise "Unclosed #else" unless after.match /^#endif/
+            result << handle_ifdefs_in($') #'
+          when "endif"
+            result << handle_ifdefs_in($') #'
+          end
+        else # if defined(SWIG...)
+          # throw away everything between SIWG... and #if/else/endif
+          raise "Unmatched #if" unless after.match /^#(if|else|endif)/
+          case $1
+          when "if"
+            result << handle_ifdefs_in($& + $') #'
+          when "else"
+            after = $' #'
+            raise "Unclosed #else" unless after.match /^#endif/
+            result << $` # copy everything between #else and #endif
+            result << handle_ifdefs_in($') #'
+          when "endif"
+            result << handle_ifdefs_in($') #'
+          end
+        end
+      end
+      break
+    end
+    result.empty? ? body : result
   end
 
   ##
