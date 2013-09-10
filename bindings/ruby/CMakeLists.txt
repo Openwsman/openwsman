@@ -23,7 +23,6 @@ ADD_CUSTOM_COMMAND (
    OUTPUT  ${SWIG_OUTPUT}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for Ruby..."
    COMMAND ${SWIG_EXECUTABLE} -ruby -autorename -DRUBY_VERSION=${RUBY_VERSION_MAJOR}${RUBY_VERSION_MINOR} -I${CMAKE_BINARY_DIR}/bindings -I${CMAKE_SOURCE_DIR}/bindings -I${CMAKE_SOURCE_DIR}/include -o ${SWIG_OUTPUT} ${SWIG_INPUT}
-
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
@@ -70,9 +69,9 @@ ADD_CUSTOM_COMMAND (
    OUTPUT ${rdoc_dir}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating rdoc documentation ..."
    COMMAND rm -rf ${rdoc_dir}
-   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rdoc${RUBY_VERSION_MAJOR}.${RUBY_VERSION_MINOR} -o ${rdoc_dir} -t "Openwsman - WS-Management for all" -m README ruby/README.rdoc openwsman.i *.i ruby/openwsman/*.rb
+   COMMAND ./rdoc${RUBY_VERSION_MAJOR}.${RUBY_VERSION_MINOR} -o ${rdoc_dir} -t "Openwsman - WS-Management for all" -m README.rdoc README.rdoc ../openwsman.i ../*.i openwsman/*.rb
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
-   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    DEPENDS ${CMAKE_SOURCE_DIR}/bindings/*.i
    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
 )
