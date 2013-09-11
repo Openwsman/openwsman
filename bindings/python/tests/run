@@ -4,4 +4,6 @@
 #
 # Usage: run <dir> <file>
 #
-(cd $1; python $2)
+(cd $1;
+ f=`dirname $0`;
+ LD_LIBRARY_PATH=$f/../../../build/src/lib python $2)
