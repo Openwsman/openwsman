@@ -62,6 +62,10 @@ BuildRequires:  ruby-rdoc
 %endif
 %endif
 
+%if 0%{?fedora} == 19
+BuildRequires:  rubypick
+%endif
+
 %if 0%{?fedora} > 0 || 0%{?rhel_version} >= 600  || 0%{?centos_version} >= 600
 BuildRequires:  perl-devel
 %endif
@@ -206,7 +210,13 @@ API.
 
 %package ruby
 Requires:       ruby
+
+# RbConfig::CONFIG["ruby_version"] is empty in Fedora 19 !?
+%if 0%{?fedora} == 19
+%{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["RUBY_PROGRAM_VERSION"])')}
+%else
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
+%endif
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 Requires:       ruby(abi) = %{ruby_version}
