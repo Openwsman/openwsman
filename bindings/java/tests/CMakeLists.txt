@@ -28,7 +28,8 @@ ADD_TEST(bindings_java_loading     ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DI
 
         # Identify
 ADD_TEST(bindings_java_identify_compile ${JAVA_COMPILE} -d ${CMAKE_CURRENT_BINARY_DIR} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/identify.java )
-ADD_TEST(bindings_java_identify    ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME}:${CMAKE_CURRENT_BINARY_DIR} identify )
+#ADD_TEST(bindings_java_identify     ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME}:${CMAKE_CURRENT_BINARY_DIR} identify )
+ADD_TEST(bindings_java_identify     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_BINARY_DIR} ${jar_NAME} identify )
 
 	# data types
 # ADD_TEST(bindings_java_fault      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} fault )
