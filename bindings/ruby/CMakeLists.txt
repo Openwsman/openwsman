@@ -122,6 +122,7 @@ ADD_CUSTOM_COMMAND (
   COMMAND "mkdir" "-p" "lib/openwsman"
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb" "lib"
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb" "lib/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_BINARY_DIR}/openwsman/version.rb" "lib/openwsman"
 
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman.rb
