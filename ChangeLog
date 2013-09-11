@@ -1,3 +1,11 @@
+2.4.1
+- Build fixes
+  - Builds now on SLES11 (cmake 2.4), Fedora 18
+  - Fedora 19
+    - needs rubypick package
+    - has empty ruby_version in CONFIG
+  - fix Ruby gem, include version.rb
+
 2.4.0
 - Features
   - Add support for OptionSet in SOAP header (breaks ABI)
