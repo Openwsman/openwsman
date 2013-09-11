@@ -1,1 +1,1 @@
-/usr/bin/rdoc1.9
+/usr/bin/rdoc
