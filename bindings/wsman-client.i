@@ -147,6 +147,17 @@ typedef struct _WsManClient {
   }
 
   /*
+   * Build envelope from response
+   *
+   * call-seq:
+   *   result = client.build_envelope_from_response()
+   *
+   */
+  WsXmlDocH build_envelope_from_response() {
+    return wsmc_build_envelope_from_response($self);
+  }
+
+  /*
    * Get client encoding
    *
    * call-seq:
