@@ -139,7 +139,7 @@ typedef struct _WsManClient {
    * Send a (raw) SOAP request to the client
    *
    * call-seq:
-   *   result = client.send_request(XmlDoc.new("<xml ...>...</xml>"))
+   *   client.send_request(XmlDoc.new("<xml ...>...</xml>")) -> Integer
    *
    */
   int send_request(WsXmlDocH request) {
@@ -150,7 +150,7 @@ typedef struct _WsManClient {
    * Build envelope from response
    *
    * call-seq:
-   *   result = client.build_envelope_from_response()
+   *   client.build_envelope_from_response() -> XmlDoc
    *
    */
   WsXmlDocH build_envelope_from_response() {
@@ -191,7 +191,7 @@ typedef struct _WsManClient {
    * identify: Sends an identify request
    *
    * call-seq:
-   *   result = client.identify(options)
+   *   client.identify(options) -> XmlDoc
    *
    */
   WsXmlDocH identify( client_opt_t *options ) {
@@ -210,6 +210,9 @@ typedef struct _WsManClient {
    *
    * get_from_epr: Get a resource via an endpoint reference
    *
+   * call-seq:
+   *   client.get_from_epr(options, end_point_reference) -> XmlDoc
+   *
    */
   WsXmlDocH get_from_epr( client_opt_t *options , epr_t *epr) {
 #if RUBY_VERSION > 18 /* YARV */
@@ -227,6 +230,9 @@ typedef struct _WsManClient {
    * WS-Delete
    *
    * delete_from_epr: Remove a resource via an endpoint reference
+   *
+   * call-seq:
+   *   client.delete_from_epr(options, end_point_reference) -> XmlDoc
    *
    */
   WsXmlDocH delete_from_epr( client_opt_t *options , epr_t *epr) {
@@ -257,7 +263,7 @@ typedef struct _WsManClient {
    * affecting performance.
    *
    * call-seq:
-   *   result = client.enumerate(options, filter, uri)
+   *   client.enumerate(options, filter, uri) -> XmlDoc
    *
    */
   WsXmlDocH enumerate( client_opt_t *options , filter_t *filter, char *resource_uri) {
@@ -279,7 +285,7 @@ typedef struct _WsManClient {
    * pull: Get resources from enumeration context
    *
    * call-seq:
-   *   result = client.pull(options, filter, uri, context)
+   *   client.pull(options, filter, uri, context) -> XmlDoc
    *
    */
   WsXmlDocH pull( client_opt_t *options , filter_t *filter, const char *resource_uri, const char *context) {
@@ -302,7 +308,7 @@ typedef struct _WsManClient {
    * create: Create a resource
    *
    * call-seq:
-   *   result = client.create(options, uri, xml, xml.size, "utf-8")
+   *   client.create(options, uri, xml, xml.size, "utf-8") -> XmlDoc
    *
    */
   WsXmlDocH create( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
@@ -326,7 +332,7 @@ typedef struct _WsManClient {
    * put: Change a resource
    *
    * call-seq:
-   *   result = client.put(options, uri, xml, xml.size, "utf-8")
+   *   client.put(options, uri, xml, xml.size, "utf-8") -> XmlDoc
    *
    */
   WsXmlDocH put( client_opt_t *options, const char *resource_uri, const char *data, size_t size, const char *encoding = "utf-8") {
@@ -350,7 +356,7 @@ typedef struct _WsManClient {
    * release: Release enumeration context
    *
    * call-seq:
-   *   result = client.release(options, uri, context)
+   *   client.release(options, uri, context) -> XmlDoc
    *
    */
   WsXmlDocH release( client_opt_t *options, const char *resource_uri, const char *context) {
@@ -372,7 +378,7 @@ typedef struct _WsManClient {
    * get: Get a resource
    *
    * call-seq:
-   *   result = client.get(options, uri)
+   *   client.get(options, uri) -> XmlDoc
    *
    */
   WsXmlDocH get( client_opt_t *options, const char *resource_uri) {
@@ -393,7 +399,7 @@ typedef struct _WsManClient {
    * delete: Delete a resource
    *
    * call-seq:
-   *   result = client.delete(options, uri)
+   *   client.delete(options, uri) -> XmlDoc
    *
    */
   WsXmlDocH delete( client_opt_t *options, const char *resource_uri) {
@@ -414,8 +420,8 @@ typedef struct _WsManClient {
    * invoke: Invoke a resource function
    *
    * call-seq:
-   *   result = client.invoke(options, uri, "method-name")
-   *   result = client.invoke(options, uri, "method-name", xml_doc)
+   *   client.invoke(options, uri, "method-name") -> XmlDoc
+   *   client.invoke(options, uri, "method-name", xml_doc) -> XmlDoc
    *
    */
   WsXmlDocH invoke( client_opt_t *options, const char *resource_uri, const char *method, WsXmlDocH data = NULL) {
@@ -438,7 +444,7 @@ typedef struct _WsManClient {
    * subscribe: Subscribe a listener to events
    *
    * call-seq:
-   *   result = client.subscribe(options, filter, uri)
+   *   client.subscribe(options, filter, uri) -> XmlDoc
    *
    */
   WsXmlDocH subscribe(client_opt_t *options, filter_t *filter, const char *resource_uri) {
@@ -460,7 +466,7 @@ typedef struct _WsManClient {
    * unsubscribe: Remove a listener from events
    *
    * call-seq:
-   *   result = client.unsubscribe(options, filter, uri, identifier)
+   *   client.unsubscribe(options, filter, uri, identifier) -> XmlDoc
    *
    */
   WsXmlDocH unsubscribe(client_opt_t *options, filter_t *filter, const char *resource_uri, const char *identifier) {
@@ -483,7 +489,7 @@ typedef struct _WsManClient {
    * renew: Renew a subscription
    *
    * call-seq:
-   *   result = client.renew(options, uri, identifier)
+   *   client.renew(options, uri, identifier) -> XmlDoc
    *
    */
   WsXmlDocH renew(client_opt_t *options , char *resource_uri, char *identifier) {
@@ -503,7 +509,7 @@ typedef struct _WsManClient {
    * Get a string representation of the last fault
    *
    * call-seq:
-   *   client.fault_string
+   *   client.fault_string -> String
    *
    */
   char *fault_string() {
@@ -514,7 +520,7 @@ typedef struct _WsManClient {
    * Get a numeric representation of the last fault
    *
    * call-seq:
-   *   client.last_error
+   *   client.last_error -> Integer
    *
    */
    int last_error() {
