@@ -187,6 +187,7 @@ Development files for C++ interface to OpenWSMAN client library.
 Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
 Requires(pre):  fillup
+Requires:       pam-modules # for pam_unix2 and pam_pwcheck
 %endif
 Summary:        Openwsman Server and service libraries
 Group:          System/Management
