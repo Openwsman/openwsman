@@ -280,7 +280,7 @@ WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_
         }
 
 	if (get_remote_cl_cert()){
-		wsman_transport_set_cert(cl, get_remote_cert());
+		wsman_transport_set_cert(cl, get_remote_cl_cert());
 		if (!get_remote_cainfo())
                         debug("Warning: cainfo not set to enable SSL operation in Redirect Plugin\n");
 
