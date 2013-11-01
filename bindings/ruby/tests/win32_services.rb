@@ -18,6 +18,7 @@ class WsmanTest < Test::Unit::TestCase
     assert client
     options = Openwsman::ClientOptions.new
     assert options
+    options.timeout = 30
 #    options.set_dump_request
 
 #
@@ -59,10 +60,12 @@ loop do
 #    state = node.child( 0, uri, "State" ).text;
 
     node = result.body.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Win32_Service" )
+#    puts node.to_xml
     name = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Name" )
+    caption = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "Caption" )
     state = node.find( "http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service", "State" )
 
-    puts "#{name} is #{state}"
+    puts "#{name} (#{caption}) is #{state}"
 end
 
     client.release( options, uri, context ) if context
