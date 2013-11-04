@@ -34,7 +34,10 @@ typedef struct _WsManClient {
    *
    */
   _WsManClient( const char *uri ) {
-    return wsmc_create_from_uri( uri );
+    struct _WsManClient *client = wsmc_create_from_uri( uri );
+    if (client == NULL)
+      SWIG_exception( SWIG_ValueError, "Can't create Openwsman::Client from given value" );
+    return client;
   }
 
   /*
@@ -45,7 +48,10 @@ typedef struct _WsManClient {
               const char *scheme,
               const char *username,
               const char *password) {
-    return wsmc_create( hostname, port, path, scheme, username, password );
+    struct _WsManClient *client = wsmc_create( hostname, port, path, scheme, username, password );
+    if (client == NULL)
+      SWIG_exception( SWIG_ValueError, "Can't create Openwsman::Client from given values" );
+    return client;
   }
 
   /* destructor */
