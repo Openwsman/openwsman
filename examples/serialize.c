@@ -184,7 +184,7 @@ static void example1(void)
 	}
 	
 
-	retval = memcmp(cs, &servie, sizeof(&servie));
+	retval = memcmp(cs, &servie, sizeof(servie));
 	if (retval) {
 		printf("Not compared (%d)   -    FAILED\n", retval);
 		printf("%d   :  %d\n", servie.AcceptPause, cs->AcceptPause);
