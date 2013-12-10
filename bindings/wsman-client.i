@@ -36,7 +36,10 @@ typedef struct _WsManClient {
   _WsManClient( const char *uri ) {
     struct _WsManClient *client = wsmc_create_from_uri( uri );
     if (client == NULL)
-      SWIG_exception( SWIG_ValueError, "Can't create Openwsman::Client from given value" );
+      SWIG_exception( SWIG_ValueError, "Can't create Openwsman::Client from given URI" );
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
+    fail:
+#endif
     return client;
   }
 
@@ -51,6 +54,9 @@ typedef struct _WsManClient {
     struct _WsManClient *client = wsmc_create( hostname, port, path, scheme, username, password );
     if (client == NULL)
       SWIG_exception( SWIG_ValueError, "Can't create Openwsman::Client from given values" );
+#if defined(SWIGPYTHON) || defined(SWIGPERL) || defined(SWIGJAVA)
+    fail:
+#endif
     return client;
   }
 
