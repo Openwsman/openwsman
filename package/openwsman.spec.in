@@ -187,7 +187,8 @@ Development files for C++ interface to OpenWSMAN client library.
 Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
 Requires(pre):  fillup
-Requires:       pam-modules # for pam_unix2 and pam_pwcheck
+# for pam_unix2 and pam_pwcheck
+Requires:       pam-modules
 %endif
 Summary:        Openwsman Server and service libraries
 Group:          System/Management
@@ -305,6 +306,7 @@ export RPM_OPT_FLAGS="$RPM_OPT_FLAGS -DNO_SSL_CALLBACK"
 %endif
 # SLES 10 needs explicit java bytecode target
 %if 0%{?suse_version} == 1010 || 0%{?suse_version} == 1110 
+export EXPLICIT_SOURCE=1.5
 export EXPLICIT_TARGET=1.5
 %endif
 
@@ -318,6 +320,7 @@ cmake \
   -DCMAKE_CXX_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS" \
   -DCMAKE_SKIP_RPATH=1 \
   -DPACKAGE_ARCHITECTURE=`uname -m` \
+  -DEXPLICIT_SOURCE="$EXPLICIT_SOURCE" \
   -DEXPLICIT_TARGET="$EXPLICIT_TARGET" \
   -DLIB=%{_lib} \
   -DBUILD_RUBY_GEM=no \
