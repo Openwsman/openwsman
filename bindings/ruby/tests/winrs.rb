@@ -60,7 +60,7 @@ end
            [ "-s", "--scheme", GetoptLong::REQUIRED_ARGUMENT ]
   )
 
-  options = {}
+  options = { :port => 5985, :scheme => "http" }
   url = nil
   opts.each do |opt,arg|
     case opt
@@ -93,7 +93,7 @@ end
   elsif options.empty?
     usage
   else
-    Openwsman::Client.new(options[:host], options[:port]||5985, "wsman", options[:scheme]||"http", options[:user], options[:password])
+    Openwsman::Client.new(options[:host], options[:port], "wsman", options[:scheme], options[:user], options[:password])
   end
 
   #
