@@ -1,7 +1,14 @@
+2.4.3
+- Bugfixes
+  - Fix bindings for Java 1.5
+  - Raise exception if client creation fails (bindings)
+
 2.4.2
-  - Fix crash in redirect module (typo)
+- Standards compliance
   - Honor WS-Management 1.1.1 standard (line 739)
     Disable multiple MessageID checks
+- Bugfixes
+  - Fix crash in redirect module (typo)
 
 2.4.1
 - Build fixes
