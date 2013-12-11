@@ -54,12 +54,9 @@ BuildRequires:  openssl-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
 
-# RHEL6 is missing ruby-devel in OBS
-%if 0%{?rhel_version} != 600
 BuildRequires:  ruby-devel
 %if 0%{?fedora} == 0
 BuildRequires:  ruby-rdoc
-%endif
 %endif
 
 %if 0%{?fedora} == 19
@@ -431,9 +428,6 @@ rm -f /var/log/wsmand.log
 %{python_sitearch}/*.so
 %{python_sitearch}/*.py*
 
-# RHEL6 is missing ruby-devel in OBS
-%if 0%{?rhel_version} != 600
-
 %files ruby
 %defattr(-,root,root)
 %if 0%{?mandriva_version}
@@ -446,8 +440,6 @@ rm -f /var/log/wsmand.log
 %dir %{ruby_sitelib}/openwsman
 %{ruby_sitelib}/openwsman.rb
 %{ruby_sitelib}/openwsman/*.rb
-%endif
-
 %endif
 
 %files ruby-docs
