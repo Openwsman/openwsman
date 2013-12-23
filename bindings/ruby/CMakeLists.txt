@@ -6,11 +6,14 @@ enable_testing()
 
 add_subdirectory(tests)
 
+EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['ruby_version']" OUTPUT_VARIABLE RUBY_VERSION)
+
 # prefer vendor dirs
 SET(RUBY_WSMAN_LIB_DIR ${RUBY_VENDORLIB_DIR})
 SET(RUBY_WSMAN_ARCH_DIR ${RUBY_VENDORARCH_DIR})
 
 MESSAGE(STATUS "Ruby executable: ${RUBY_EXECUTABLE}")
+MESSAGE(STATUS "Ruby version: ${RUBY_VERSION}")
 MESSAGE(STATUS "Ruby dir: ${RUBY_WSMAN_LIB_DIR}")
 MESSAGE(STATUS "Ruby arch dir: ${RUBY_WSMAN_ARCH_DIR}")
 MESSAGE(STATUS "Ruby include path: ${RUBY_INCLUDE_PATH}")
