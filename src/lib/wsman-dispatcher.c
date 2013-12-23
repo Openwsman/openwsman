@@ -312,6 +312,7 @@ check_unsupported_features(op_t * op)
 
 	n = ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_FAULT_TO);
 	if (n != NULL) {
+		debug("wsa:FaultTo is not supported");
 		retVal = 1;
 		generate_op_fault(op, WSMAN_UNSUPPORTED_FEATURE,
 					WSMAN_DETAIL_ADDRESSING_MODE);
