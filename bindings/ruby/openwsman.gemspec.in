@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Klaus Kämpf"]
   s.email       = ["kkaempf@suse.de"]
-  s.homepage    = "http://www.github.com/openwsman/openwsman"
+  s.homepage    = "http://openwsman.github.io"
   s.summary = "Ruby client bindings for Openwsman"
   s.description = "The openwsman gem provides a Ruby API to manage
 systems using the WS-Management protocol."
