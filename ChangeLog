@@ -10,6 +10,9 @@
   - Unchecked memory allocation in dictionary_new(), d, d->val, d->key, d->hash
   - Unchecked memory allocation in u_error_new(), *error
   - sighup_handler() in wsmand.c uses unsafe functions in a signal handler
+- Features
+  - add rcopenwsman command to systemd environments
+  - add rcopenwsmand command for backwards compatibility
 - Bindings
   - support rdoc 2.1 in Ruby bindings
   - cmake: use PYTHON_INCLUDE_DIRS

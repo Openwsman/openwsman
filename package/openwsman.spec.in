@@ -54,9 +54,12 @@ BuildRequires:  openssl-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
 
+# RHEL6 is missing ruby-devel in OBS
+%if 0%{?rhel_version} != 700
 BuildRequires:  ruby-devel
 %if 0%{?fedora} == 0
 BuildRequires:  ruby-rdoc
+%endif
 %endif
 
 %if 0%{?fedora} == 19
@@ -340,6 +343,10 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
+%else
+# rcopenwsmand for systemd
+ln -sf %{_sbindir}/service $RPM_BUILD_ROOT%{_sbindir}/rcopenwsman
+ln -sf %{_sbindir}/rcopenwsman $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 %endif
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
@@ -471,8 +478,11 @@ rm -f /var/log/wsmand.log
 %endif
 %if 0%{?suse_version} <= 1210
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
-%{_sbindir}/rcopenwsmand
+%else
+%{_sbindir}/rcopenwsman
 %endif
+# backwards compatibility
+%{_sbindir}/rcopenwsmand
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/authenticators
 %{_libdir}/openwsman/authenticators/*.so
