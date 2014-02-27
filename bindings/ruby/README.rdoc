@@ -2,9 +2,9 @@
 
 home :: http://openwsman.github.io
 wiki :: https://github.com/Openwsman/openwsman/wiki
-mailing list :: openwsman-devel@lists.sourceforge.net
+mailing list :: mailto:openwsman-devel@lists.sourceforge.net
 source :: https://github.com/Openwsman/openwsman
-rdoc :: http://www.suse.de/~kkaempf/openwsman
+rdoc :: http://openwsman.github.io/rdoc
 bugs :: https://github.com/Openwsman/openwsman/issues
 code climate :: {<img src="https://codeclimate.com/github/Openwsman/openwsman.png">}[https://codeclimate.com/github/Openwsman/openwsman]
 
