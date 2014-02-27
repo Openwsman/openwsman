@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'rdoc'
+
+require 'rdoc/encoding'
+require 'rdoc/parser'
+
+# Simple must come first
+require 'rdoc/parser/simple'
+require File.join(File.dirname(__FILE__),'rdoc_parser_swig')
+require File.join(File.dirname(__FILE__),'rdoc2_1')
