@@ -44,6 +44,10 @@ void u_error_new(u_error_t **error, int code, const char *format, ...)
 		return;
 
 	*error = u_malloc(sizeof(u_error_t));
+        if (*error == NULL) {
+          fprintf(stderr, "u_error_new: memory allocation failure\n");
+          return;
+        }
 	(*error)->code = code;
 	va_start(args, format);
 	(*error)->message = u_strdup_vprintf(format, args);
