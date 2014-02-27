@@ -104,7 +104,7 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **
 	subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	fp = fopen(subs_path, "r");
 	if (fp == NULL) {
-          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+          error("Can't open %s: %s", subs_path, strerror(errno));
           u_free(subs_path);
           return -1;
         }
@@ -136,7 +136,7 @@ int LocalSubscriptionOpSearch(char * uri_repository, char * uuid)
 	subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	fp = fopen(subs_path, "r");
 	if (fp == NULL) {
-          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+          error("Can't open %s: %s", subs_path, strerror(errno));
           u_free(subs_path);
           return -1;
         }
@@ -173,7 +173,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			subs_path = u_strdup_printf ("%s/%s", uri_repository, namelist[n]->d_name);
 			subs = fopen(subs_path, "r");
                         if (subs == NULL) {
-                          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+                          error("Can't open %s: %s", subs_path, strerror(errno));
                           u_free(subs_path);
                           return -1;
                         }
@@ -217,7 +217,7 @@ int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *
 	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
 	subsfile = fopen(buf, "w");
 	if (subsfile == NULL) {
-          fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
+          error("Can't open %s: %s", buf, strerror(errno));
           return -1;
         }
 	fprintf(subsfile, "%s", subscriptionDoc);
@@ -245,7 +245,7 @@ int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 		ws_xml_dump_memory_enc(doc, &temp, &len, "UTF-8");
 		subsfile = fopen(buf, "w");
                 if (subsfile == NULL) {
-                  fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
+                  error("Can't open %s: %s", buf, strerror(errno));
                   return -1;
                 }
 		fprintf(subsfile, "%s", temp);
