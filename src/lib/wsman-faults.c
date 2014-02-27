@@ -607,22 +607,37 @@ void
 wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
 {
   int i;
-  char *subcode_value=ws_xml_get_xpath_value(doc, FAULT_SUBCODE_VALUE_XPATH);
-  char *subcode_value_msg =calloc(1,strlen(subcode_value));
-  char *start_pos = strchr(subcode_value,':');
-  strcpy(subcode_value_msg, start_pos+1); 
-  if (strlen(subcode_value)== 0 ) return ;
- 
-  int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
-  for (i = 0; i < nfaults; i++) {
-    if (strcmp (subcode_value_msg , fault_code_table[i].subCode) == 0) {
-      status->fault_code = fault_code_table[i].fault_code;
-      //some default values
-      status->fault_detail_code = 0;
-      status->fault_msg='\0';
-      return;
-    }
+  char *subcode_value = ws_xml_get_xpath_value(doc, FAULT_SUBCODE_VALUE_XPATH);
+  char *subcode_value_msg;
+  char *start_pos;
 
+  if (strlen(subcode_value) == 0)
+    return;
+
+  subcode_value_msg = calloc(1, strlen(subcode_value));
+  if (subcode_value_msg == NULL) {
+    error("Out of memory");
+    status->fault_code = WSMAN_INTERNAL_ERROR;
+    /* some default values */
+    status->fault_detail_code = OWSMAN_SYSTEM_ERROR;
+    status->fault_msg = NULL;
+    return;
+  }
+
+  start_pos = strchr(subcode_value, ':');
+  if (start_pos != NULL) {
+    strcpy(subcode_value_msg, start_pos+1); 
+ 
+    int nfaults = sizeof (fault_code_table) / sizeof (fault_code_table[0]);
+    for (i = 0; i < nfaults; i++) {
+      if (strcmp (subcode_value_msg , fault_code_table[i].subCode) == 0) {
+        status->fault_code = fault_code_table[i].fault_code;
+        /* some default values */
+        status->fault_detail_code = 0;
+        status->fault_msg = NULL;
+        return;
+      }
+    }
   }
   return;
 }
