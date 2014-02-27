@@ -1,5 +1,17 @@
 2.4.4
-- Bugfixes
+- Security update
+  - ws_xml_make_default_prefix() can overflow buf parameter via sprintf()
+  - ws_xml_make_default_prefix() can overflow buf parameter via sprintf()
+  - wsmc_create_request() potential buf[20] overflow via WSMAN_ACTION_RENEW
+  - LocalSubscriptionOpUpdate() unchecked fopen()
+  - Incorrect order of sanity guards in wsman_get_fault_status_from_doc()
+  - Unchecked memory allocation in wsman_init_plugins(), p->ifc
+  - Unchecked memory allocation in mem_double(), newptr
+  - Unchecked memory allocation in dictionary_new(), d, d->val, d->key, d->hash
+  - Unchecked memory allocation in u_error_new(), *error
+  - sighup_handler() in wsmand.c uses unsafe functions in a signal handler
+- Bindings
+  - support rdoc 2.1 in Ruby bindings
   - cmake: use PYTHON_INCLUDE_DIRS
 
 2.4.3
