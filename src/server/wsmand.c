@@ -141,8 +141,6 @@ static void signal_handler(int sig_num)
 
 static void sighup_handler(int sig_num)
 {
-	debug("SIGHUP received; reloading data");
-
 	if (wsmand_options_get_debug_level() == 0) {
 		int fd;
 
