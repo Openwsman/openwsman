@@ -49,16 +49,25 @@
 #include "wsman-xml-binding.h"
 
 int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData);
-int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData);
-int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char **subscriptionDoc, int *len);
-int LocalSubscriptionOpSearch(char * uri_repository, char * uuid);
+int LocalSubscriptionOpFinalize (char * uri_repository, void *opaqueData);
+int LocalSubscriptionOpGet (char * uri_repository, char * uuid, unsigned char **subscriptionDoc, int *len);
+int LocalSubscriptionOpSearch (char * uri_repository, char * uuid);
 int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list);
 int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *subscriptionDoc);
-int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire);
+int LocalSubscriptionOpUpdate (char * uri_repository, char * uuid, char *expire);
 int LocalSubscriptionOpDelete (char * uri_repository, char * uuid);
 
 
-struct __SubsRepositoryOpSet subscription_repository_op_set = {LocalSubscriptionOpInit, LocalSubscriptionOpFinalize, LocalSubscriptionOpLoad, LocalSubscriptionOpGet, LocalSubscriptionOpSearch, LocalSubscriptionOpSave, LocalSubscriptionOpUpdate, LocalSubscriptionOpDelete};
+struct __SubsRepositoryOpSet subscription_repository_op_set = { 
+  LocalSubscriptionOpInit,
+  LocalSubscriptionOpFinalize,
+  LocalSubscriptionOpLoad,
+  LocalSubscriptionOpGet,
+  LocalSubscriptionOpSearch,
+  LocalSubscriptionOpSave,
+  LocalSubscriptionOpUpdate,
+  LocalSubscriptionOpDelete
+};
 
 static int LocalSubscriptionInitFlag = 0;
 
@@ -76,8 +85,7 @@ int LocalSubscriptionOpInit (char * uri_repository, void *opaqueData)
 
 int LocalSubscriptionOpFinalize(char * uri_repository, void *opaqueData)
 {
-	if(LocalSubscriptionInitFlag == 0) return -1;
-	return 0;
+        return (LocalSubscriptionInitFlag == 0) ? -1 : 0;
 }
 
 int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **subscriptionDoc, int *len)
@@ -86,28 +94,32 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **
 	unsigned char *buf = NULL;
 	int count,m;
 	int pre_count;
+        char *subs_path;
+        FILE *fp;
+
 	count = m = 0;
 	*subscriptionDoc = NULL;
-	if(LocalSubscriptionInitFlag == 0) return -1;
-	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
-	FILE *fp = fopen(subs_path, "r");
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
+	subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
+	fp = fopen(subs_path, "r");
 	if (fp == NULL) {
           fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
           u_free(subs_path);
           return -1;
         }
 	u_free(subs_path);
-	while(!feof(fp)) {
-				memset(block, 0, 512);
-				m = fread(block, 1, 511, fp);
-				if(m > 0) {
-					debug("read [%s] from file, len = %d",block, m);
-					pre_count = count;
-					count += m;
-					debug("buf = %0x, count = %d", buf, count);
-					buf = u_realloc(buf, count);
-					memcpy(buf+pre_count, block, m);
-				}
+	while (!feof(fp)) {
+          memset(block, 0, 512);
+          m = fread(block, 1, 511, fp);
+          if (m > 0) {
+            debug("read [%s] from file, len = %d",block, m);
+            pre_count = count;
+            count += m;
+            debug("buf = %0x, count = %d", buf, count);
+            buf = u_realloc(buf, count);
+            memcpy(buf+pre_count, block, m);
+          }
 	}
 	fclose(fp);
 	*subscriptionDoc = buf;
@@ -117,9 +129,12 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **
 
 int LocalSubscriptionOpSearch(char * uri_repository, char * uuid)
 {
-	if(LocalSubscriptionInitFlag == 0) return -1;
-	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
-	FILE *fp = fopen(subs_path, "r");
+  char *subs_path;
+  FILE *fp;
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
+	subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
+	fp = fopen(subs_path, "r");
 	if (fp == NULL) {
           fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
           u_free(subs_path);
@@ -137,22 +152,26 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 	int pre_count;
 	char block[512];
 	unsigned char *buf = NULL;
-	if(LocalSubscriptionInitFlag == 0) return -1;
-	if(subscription_list == NULL)
-		return -1;
-	if (0 > (n = scandir (uri_repository, &namelist, 0, alphasort)))
-    	{
-       	 return -1;
-    	} else {
-        	while (n--)
-        	{
+
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
+	if (subscription_list == NULL)
+          return -1;
+	if (0 > (n = scandir (uri_repository, &namelist, 0, alphasort))) {
+       	  return -1;
+    	}
+        else {
+        	while (n--) {
+                        char *subs_path;
+                        FILE *subs;
         		lnode_t *node;
-			if(strstr(namelist[n]->d_name,"uuid") == NULL || strlen(namelist[n]->d_name) < 41) {
+
+			if (strstr(namelist[n]->d_name,"uuid") == NULL || strlen(namelist[n]->d_name) < 41) {
 				u_free(namelist[n]);
 				continue;
 			}
-			char *subs_path = u_strdup_printf ("%s/%s", uri_repository, namelist[n]->d_name);
-			FILE *subs = fopen(subs_path, "r");
+			subs_path = u_strdup_printf ("%s/%s", uri_repository, namelist[n]->d_name);
+			subs = fopen(subs_path, "r");
                         if (subs == NULL) {
                           fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
                           u_free(subs_path);
@@ -161,10 +180,10 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			u_free(subs_path);
 			count = 0;
 			buf = NULL;
-			while(!feof(subs)) {
+			while (!feof(subs)) {
 				memset(block, 0, 512);
 				m = fread(block, 1, 511, subs);
-				if(m > 0) {
+				if (m > 0) {
 					pre_count = count;
 					count += m;
 					buf = u_realloc(buf, count);
@@ -173,7 +192,7 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			}
 			fclose(subs);
 			SubsRepositoryEntryH entry = u_malloc(sizeof(*entry));
-			if(entry) {
+			if (entry) {
 				entry->strdoc = buf;
 				entry->len = count;
 				entry->uuid = u_strdup(namelist[n]->d_name);
@@ -183,16 +202,20 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			}
             		u_free(namelist[n]);
         	}
-       	 u_free(namelist);
+                u_free(namelist);
     	}
 	return 0;
 }
+
 int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *subscriptionDoc)
 {
 	char buf[U_NAME_MAX];
-	if(LocalSubscriptionInitFlag == 0) return -1;
+        FILE *subsfile;
+
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
 	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
-	FILE *subsfile = fopen(buf, "w");
+	subsfile = fopen(buf, "w");
 	if (subsfile == NULL) {
           fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
           return -1;
@@ -201,22 +224,26 @@ int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *
 	fclose(subsfile);
 	return 0;
 }
+
 int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 {
 	char buf[U_NAME_MAX];
-	if(LocalSubscriptionInitFlag == 0) return -1;
-	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
 	WsXmlDocH doc= NULL;
 	char *temp;
 	int len = 0;
+
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
+	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
 	doc = xml_parser_file_to_doc( buf, "UTF-8", 0);
-	if(doc) {
+	if (doc) {
+		FILE *subsfile;
 		WsXmlNodeH node = ws_xml_get_child(ws_xml_get_soap_body(doc),
 			0, XML_NS_EVENTING, WSEVENT_SUBSCRIBE);
 		node = ws_xml_get_child(node, 0, XML_NS_EVENTING, WSEVENT_EXPIRES);
 		ws_xml_set_node_text(node, expire);
 		ws_xml_dump_memory_enc(doc, &temp, &len, "UTF-8");
-		FILE *subsfile = fopen(buf, "w");
+		subsfile = fopen(buf, "w");
                 if (subsfile == NULL) {
                   fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
                   return -1;
@@ -228,13 +255,15 @@ int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 	}
 	return 0;
 }
+
 int LocalSubscriptionOpDelete (char * uri_repository, char * uuid)
 {
 	char buf[U_NAME_MAX];
-	if(LocalSubscriptionInitFlag == 0) return -1;
+
+	if (LocalSubscriptionInitFlag == 0)
+          return -1;
 	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
-	int r = unlink(buf);
-	if(r) {
+	if (unlink(buf)) {
 		debug("unlink %s failed! %s", buf, strerror(errno));
 	}
 	return 0;
