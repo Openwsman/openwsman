@@ -674,21 +674,21 @@ WsManListenerH *wsmand_start_server(dictionary * ini)
 	WsManListenerH *listener = wsman_dispatch_list_new();
 	listener->config = ini;
 	WsContextH cntx = wsman_init_plugins(listener);
-        int num_threads=0;
-        int max_threads=wsmand_options_get_max_threads();
+        int num_threads = 0;
+        int max_threads = wsmand_options_get_max_threads();
         int max_connections_per_thread = wsmand_options_get_max_connections_per_thread();
-        if(max_threads && !max_connections_per_thread){
+        if (max_threads && !max_connections_per_thread) {
                 error("max_threads: %d and max_connections_per_thread : %d", max_threads, max_connections_per_thread);
                 return listener;
         }
 
+	if (cntx == NULL) {
+		return listener;
+	}
 #ifdef ENABLE_EVENTING_SUPPORT
 	wsman_event_init(cntx->soap);
 #endif
 
-	if (cntx == NULL) {
-		return listener;
-	}
 #ifndef HAVE_SSL
 	if (use_ssl) {
 		error("Server configured without SSL support");

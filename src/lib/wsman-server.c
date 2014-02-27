@@ -102,6 +102,10 @@ WsContextH wsman_init_plugins(WsManListenerH * listener)
 	      
                 p->ifc = (WsDispatchInterfaceInfo *)
                           malloc(sizeof(WsDispatchInterfaceInfo));
+                if (p->ifc == NULL) {
+                  error("Memory allocation error while loading plugin");
+                  return NULL;
+                }
 		ifcinfo = p->ifc;
 	        ifcinfo->extraData = p->data;
 		p->set_config = dlsym(p->p_handle, "set_config");
