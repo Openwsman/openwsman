@@ -91,8 +91,12 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	FILE *fp = fopen(subs_path, "r");
+	if (fp == NULL) {
+          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+          u_free(subs_path);
+          return -1;
+        }
 	u_free(subs_path);
-	if(fp == NULL) return -1;
 	while(!feof(fp)) {
 				memset(block, 0, 512);
 				m = fread(block, 1, 511, fp);
@@ -116,8 +120,12 @@ int LocalSubscriptionOpSearch(char * uri_repository, char * uuid)
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	char *subs_path = u_strdup_printf ("%s/uuid:%s", uri_repository, uuid);
 	FILE *fp = fopen(subs_path, "r");
+	if (fp == NULL) {
+          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+          u_free(subs_path);
+          return -1;
+        }
 	u_free(subs_path);
-	if(fp == NULL) return -1;
 	fclose(fp);
 	return 0;
 }
@@ -145,6 +153,11 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 			}
 			char *subs_path = u_strdup_printf ("%s/%s", uri_repository, namelist[n]->d_name);
 			FILE *subs = fopen(subs_path, "r");
+                        if (subs == NULL) {
+                          fprintf(stderr, "Can't open %s: %s", subs_path, strerror(errno));
+                          u_free(subs_path);
+                          return -1;
+                        }
 			u_free(subs_path);
 			count = 0;
 			buf = NULL;
@@ -180,7 +193,10 @@ int LocalSubscriptionOpSave (char * uri_repository, char * uuid, unsigned char *
 	if(LocalSubscriptionInitFlag == 0) return -1;
 	snprintf(buf, U_NAME_MAX, "%s/uuid:%s", uri_repository, uuid);
 	FILE *subsfile = fopen(buf, "w");
-	if(subsfile == NULL) return -1;
+	if (subsfile == NULL) {
+          fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
+          return -1;
+        }
 	fprintf(subsfile, "%s", subscriptionDoc);
 	fclose(subsfile);
 	return 0;
@@ -201,6 +217,10 @@ int LocalSubscriptionOpUpdate(char * uri_repository, char * uuid, char *expire)
 		ws_xml_set_node_text(node, expire);
 		ws_xml_dump_memory_enc(doc, &temp, &len, "UTF-8");
 		FILE *subsfile = fopen(buf, "w");
+                if (subsfile == NULL) {
+                  fprintf(stderr, "Can't open %s: %s", buf, strerror(errno));
+                  return -1;
+                }
 		fprintf(subsfile, "%s", temp);
 		fclose(subsfile);
 		ws_xml_free_memory(temp);
