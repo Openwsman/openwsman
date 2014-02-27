@@ -855,7 +855,6 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	WsXmlNodeH      header;
 	WsXmlNodeH      node;
 	char           *_action = NULL;
-	char            buf[20];
 	if (action == WSMAN_ACTION_IDENTIFY) {
 		request = ws_xml_create_envelope();
 	} else {
@@ -964,14 +963,18 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 		}
 		break;
 	case WSMAN_ACTION_RENEW:
+          {
+                char buf[20];
 		node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_RENEW, NULL);
-		sprintf(buf, "PT%fS", options->expires);
+                /* %f default precision is 6 -> [-]ddd.ddd */
+		snprintf(buf, 20, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
 			if(((char *)data)[0] != 0)
 				add_subscription_context(ws_xml_get_soap_header(request), (char *)data);
 		}
+          }
 		break;
 	case WSMAN_ACTION_NONE:
 	case WSMAN_ACTION_TRANSFER_CREATE:
