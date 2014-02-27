@@ -152,6 +152,10 @@ static void * mem_double(void * ptr, int size)
     void *newptr;
 
     newptr = calloc(2*size, 1);
+    if (newptr == NULL) {
+      fprintf(stderr, "mem_double: allocation failed\n");
+      return NULL;
+    }
     memcpy(newptr, ptr, size);
     free(ptr);
     return newptr ;
@@ -346,8 +350,14 @@ static void dictionary_set(dictionary * d, char * key, char * val)
 
         /* Reached maximum size: reallocate blackboard */
         d->val  = (char **)mem_double(d->val,  d->size * sizeof(char*)) ;
+        if (d->val == NULL)
+          exit(1);
         d->key  = (char **)mem_double(d->key,  d->size * sizeof(char*)) ;
+        if (d->key == NULL)
+          exit(1);
         d->hash = (unsigned int *)mem_double(d->hash, d->size * sizeof(unsigned)) ;
+        if (d->hash == NULL)
+          exit(1);
 
         /* Double size */
         d->size *= 2 ;
