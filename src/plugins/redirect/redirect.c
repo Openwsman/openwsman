@@ -99,7 +99,10 @@ int init( void *self, void **data )
     dictionary *ini, *inc_ini;
     filename = (char *) wsmand_options_get_config_file();
     ini = iniparser_new(filename);
-
+    if (ini == NULL) {
+      error("redirect: iniparser_new failed");
+      return 0;
+    }
     redirect_data =  malloc (sizeof(struct __Redirect_Data));
     if (redirect_data == NULL){
 	error("Failed while allocating memory for redirect_data");	
