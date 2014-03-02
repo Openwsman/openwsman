@@ -268,6 +268,8 @@ init_curl_transport(WsManClient *cl)
 {
 	CURL *curl;
 	CURLcode r = CURLE_OK;
+        char *sslhack;
+        long sslversion;
 #define curl_err(str)  debug("Error = %d (%s); %s", \
 		r, curl_easy_strerror(r), str);
 	curl = curl_easy_init();
@@ -376,7 +378,33 @@ init_curl_transport(WsManClient *cl)
 		goto DONE;
 	}
 
-
+        /* enforce specific ssl version if requested */
+        sslhack = getenv("OPENWSMAN_CURL_TRANSPORT_SSLVERSION");
+        if (sslhack == NULL) {
+          sslversion = CURL_SSLVERSION_DEFAULT;
+        } else if (!strcmp(sslhack,"tlsv1")) {
+          sslversion = CURL_SSLVERSION_TLSv1;
+        } else if (!strcmp(sslhack,"sslv2")) {
+          sslversion = CURL_SSLVERSION_SSLv2;
+        } else if (!strcmp(sslhack,"sslv3")) {
+          sslversion = CURL_SSLVERSION_SSLv3;
+#if LIBCURL_VERSION_NUM >= 0x072200
+        } else if (!strcmp(sslhack,"tlsv1.0")) {
+          sslversion = CURL_SSLVERSION_TLSv1_0;
+        } else if (!strcmp(sslhack,"tlsv1.1")) {
+          sslversion = CURL_SSLVERSION_TLSv1_1;
+        } else if (!strcmp(sslhack,"tlsv1.2")) {
+          sslversion = CURL_SSLVERSION_TLSv1_2;
+#endif
+        }
+        else {
+          sslversion = CURL_SSLVERSION_DEFAULT;
+        }
+        r = curl_easy_setopt(curl, CURLOPT_SSLVERSION, sslversion );
+        if (r != 0) {
+          curl_err("Could not curl_easy_setopt(curl, CURLOPT_SSLVERSION, ..)");
+          goto DONE;
+        }
 
 	return (void *)curl;
  DONE:
