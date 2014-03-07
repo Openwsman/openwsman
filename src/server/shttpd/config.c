@@ -91,12 +91,19 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 	arg = NULL;	/* Unused */
 
 	/* Load SSL library dynamically */
-	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL)
+	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL) {
 		elog(E_FATAL, NULL, "set_ssl: cannot load %s", SSL_LIB);
+                ctx->ssl_ctx = NULL;
+                return;
+        }
 
-	for (fp = ssl_sw; fp->name != NULL; fp++)
-		if ((fp->ptr.v_void = dlsym(lib, fp->name)) == NULL)
-			elog(E_FATAL, NULL,"set_ssl: cannot find %s", fp->name);
+	for (fp = ssl_sw; fp->name != NULL; fp++) {
+		if ((fp->ptr.v_void = dlsym(lib, fp->name)) == NULL) {
+                        elog(E_FATAL, NULL,"set_ssl: cannot find %s", fp->name);
+                  ctx->ssl_ctx = NULL;
+                  return;
+                }
+        }
 
 	/* Initialize SSL crap */
 	static int ssl_library_initialized = 0;
@@ -105,12 +112,19 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
 		SSL_library_init();
 		ssl_library_initialized = 1;
 	}
-	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
+	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL) {
 		elog(E_FATAL, NULL, "SSL_CTX_new error");
-        else if (wsmand_options_get_ssl_cert_file() && SSL_CTX_use_certificate_file(CTX, wsmand_options_get_ssl_cert_file(),SSL_FILETYPE_PEM) == 0)
+        }
+        else if (wsmand_options_get_ssl_cert_file() && SSL_CTX_use_certificate_file(CTX, wsmand_options_get_ssl_cert_file(),SSL_FILETYPE_PEM) == 0) {
 		elog(E_FATAL, NULL, "cannot open %s : %s", pem, strerror(errno));
-	else if (wsmand_options_get_ssl_key_file() && SSL_CTX_use_PrivateKey_file(CTX, wsmand_options_get_ssl_key_file(), SSL_FILETYPE_PEM) == 0)
+                SSL_CTX_free(CTX);
+                CTX = NULL;
+        }
+	else if (wsmand_options_get_ssl_key_file() && SSL_CTX_use_PrivateKey_file(CTX, wsmand_options_get_ssl_key_file(), SSL_FILETYPE_PEM) == 0) {
 		elog(E_FATAL, NULL, "cannot open %s : %s", pem, strerror(errno));
+                SSL_CTX_free(CTX);
+                CTX = NULL;
+        }
 	ctx->ssl_ctx = CTX;
 }
 #endif /* NO_SSL */
