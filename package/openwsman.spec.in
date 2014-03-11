@@ -62,7 +62,7 @@ BuildRequires:  ruby-rdoc
 %endif
 %endif
 
-%if 0%{?fedora} == 19
+%if 0%{?fedora} > 20
 BuildRequires:  rubypick
 %endif
 
@@ -213,8 +213,8 @@ API.
 %package ruby
 Requires:       ruby
 
-# RbConfig::CONFIG["ruby_version"] is empty in Fedora 19 !?
-%if 0%{?fedora} == 19
+# RbConfig::CONFIG["ruby_version"] is empty in Fedora > 18 !?
+%if 0%{?fedora} > 18
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["RUBY_PROGRAM_VERSION"])')}
 %else
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
