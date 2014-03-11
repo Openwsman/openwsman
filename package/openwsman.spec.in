@@ -339,7 +339,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 [ -d $RPM_BUILD_ROOT%{ruby_sitelib} ] && rm -f $RPM_BUILD_ROOT%{ruby_sitelib}/openwsmanplugin.rb
 [ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
-%if 0%{?suse_version} <= 1210
+%if 0%{?suse_version} <= 1220
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
