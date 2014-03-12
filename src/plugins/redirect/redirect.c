@@ -65,7 +65,7 @@ set_namespaces(void)
     int i;
 
     list_t *l = list_create(LISTCOUNT_T_MAX);
-    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_malloc(
+    WsSupportedNamespaces *ns = (WsSupportedNamespaces *)u_zalloc(
 			sizeof(WsSupportedNamespaces));
 
     ns->class_prefix = NULL;
@@ -96,14 +96,14 @@ void get_endpoints(void *self, void **data)
 int init( void *self, void **data )
 {
     char* filename;
-    dictionary *ini, *inc_ini;
+    dictionary *ini=NULL, *inc_ini=NULL;
     filename = (char *) wsmand_options_get_config_file();
     ini = iniparser_new(filename);
     if (ini == NULL) {
       error("redirect: iniparser_new failed");
       return 0;
     }
-    redirect_data =  malloc (sizeof(struct __Redirect_Data));
+    redirect_data =  u_zalloc (sizeof(struct __Redirect_Data));
     if (redirect_data == NULL){
 	error("Failed while allocating memory for redirect_data");	
 	return 0;
@@ -130,7 +130,12 @@ int init( void *self, void **data )
 	    error("Redirect Plugin: The required inputs are not provided in the config file");
 	    return 0;
 	}
-    	
+    if (ini != NULL)
+	iniparser_free(ini);
+
+    if (inc_ini != NULL)
+	iniparser_free (inc_ini);	
+
     return 1;
 }
 
@@ -258,7 +263,7 @@ static int get_remote_server_port()
 WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_password)
 {
 	
-    WsManClient *cl = malloc(sizeof(cl));
+    WsManClient *cl = u_zalloc(sizeof(cl));
 
     if (cl == NULL){
 	error("Error while allocating memory for client in redirect plugin");
@@ -271,8 +276,9 @@ WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_
                 get_remote_server_port() ,
                 get_remote_url_path(),
                 get_remote_cainfo() ? "https" : "http",
-                get_remote_username() ? get_remote_username() : strdup(ws_username),
-                get_remote_password() ? get_remote_password() : strdup(ws_password) 
+		/* wsmc_create duplicates the username/password passed, no need to duplicate again. */
+                get_remote_username() ? get_remote_username() : ws_username,
+                get_remote_password() ? get_remote_password() : ws_password 
          );
 
 
