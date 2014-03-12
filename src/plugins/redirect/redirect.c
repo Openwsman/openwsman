@@ -39,7 +39,7 @@ struct __Redirect_Data
 
 };
 
-static struct __Redirect_Data *redirect_data;
+static struct __Redirect_Data *redirect_data =NULL;
 
 SER_START_ITEMS(Redirect)
 SER_END_ITEMS(Redirect);
@@ -99,13 +99,15 @@ int init( void *self, void **data )
     dictionary *ini=NULL, *inc_ini=NULL;
     filename = (char *) wsmand_options_get_config_file();
     ini = iniparser_new(filename);
+
     if (ini == NULL) {
-      error("redirect: iniparser_new failed");
+      error("Redirect Plugin: iniparser_new failed");
       return 0;
     }
+
     redirect_data =  u_zalloc (sizeof(struct __Redirect_Data));
     if (redirect_data == NULL){
-	error("Failed while allocating memory for redirect_data");	
+	error("Redirect Plugin: Failed while allocating memory for redirect_data");
 	return 0;
     }
 
@@ -263,14 +265,8 @@ static int get_remote_server_port()
 WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_password)
 {
 	
-    WsManClient *cl = u_zalloc(sizeof(cl));
+    WsManClient *cl = NULL;
 
-    if (cl == NULL){
-	error("Error while allocating memory for client in redirect plugin");
-	return NULL;	
-    }
-
-	
 	cl = wsmc_create(
 		get_remote_server() ,
                 get_remote_server_port() ,
@@ -280,6 +276,11 @@ WsManClient* setup_redirect_client(WsContextH cntx, char *ws_username, char *ws_
                 get_remote_username() ? get_remote_username() : ws_username,
                 get_remote_password() ? get_remote_password() : ws_password 
          );
+
+    if (cl == NULL){
+	error("Redirect Plugin: Error while creating the client for redirection");
+	return NULL;
+    }
 
 
 	wsman_transport_set_auth_method(cl, get_remote_authentication_method());
