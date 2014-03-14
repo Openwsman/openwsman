@@ -1,6 +1,14 @@
 2.4.5
 - Features
   - enforce SSL operation in systemd service
+  - Add /usr/sbin/rcopenwsman for systemd environments
+  - New environment variable 'OPENWSMAN_CURL_TRANSPORT_SSLVERSION' to
+    select SSL protocol version. Set it to 'tlsv1.2' for TLS-v1.2
+    (anstein)
+- Bugfixes
+  - Fix memory leaks in redirect plugin (Praveen K Paladugu)
+  - shttpd: Improve error reporting if SSL context fails
+  - Builds on Fedora 20 now
 
 2.4.4
 - Security update
