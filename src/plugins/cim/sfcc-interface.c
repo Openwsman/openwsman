@@ -1141,7 +1141,14 @@ cim_enum_instances(CimClientInfo * client,
 		epr_t *epr;
 		if (filter) {
 			epr = (epr_t *)filter->epr;
-			class = strrchr(epr->refparams.uri, '/') + 1;
+			class = strrchr(epr->refparams.uri, '/');
+                        if (class == NULL) {
+                          /* oops, resource uri has no slash ?! */
+                          status->fault_code = WSA_ENDPOINT_UNAVAILABLE;
+                          status->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
+                          goto cleanup;
+                        }
+                        class++; /* inc behind slash */
 			objectpath = newCMPIObjectPath(client->cim_namespace,
 					class, NULL);
 			wsman_epr_selector_cb(filter->epr,
