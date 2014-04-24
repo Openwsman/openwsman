@@ -272,6 +272,8 @@ static const char *uri_prefix(const char *classname) {
     { 4, "Msvm", "http://schemas.microsoft.com/wbem/wsman/1/wmi" },
     /* Dell DRAC */
     { 4, "DCIM", "http://schemas.dell.com/wbem/wscim/1/cim-schema/2" },
+    /* Unisys */
+    { 4, "SPAR", "http://schema.unisys.com/wbem/wscim/1/cim-schema/2" },
     { 0, NULL, NULL }
   };
   const char *schema_end;
