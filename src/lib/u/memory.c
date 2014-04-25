@@ -38,13 +38,6 @@ void *u_realloc (void *ptr, size_t sz)
     return realloc(ptr, sz);
 }
 
-/** \brief Wrapper for free(3), sanity checks the supplied pointer */
-void u_free (void *ptr)
-{
-    if (ptr)
-        free(ptr);
-}
-
 /**
  *      \}
  */

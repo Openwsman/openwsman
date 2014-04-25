@@ -15,7 +15,8 @@ void *u_malloc(size_t sz);
 void *u_zalloc(size_t sz);
 void *u_calloc(size_t cnt, size_t sz);
 void *u_realloc(void *ptr, size_t sz);
-void u_free(void *ptr);
+//Freeing the pointer(ptr) and making it NULL
+#define u_free(ptr) if(ptr){free(ptr);ptr=NULL;}
 
 #ifdef __cplusplus
 }
