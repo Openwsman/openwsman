@@ -339,14 +339,17 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 [ -d $RPM_BUILD_ROOT%{ruby_sitelib} ] && rm -f $RPM_BUILD_ROOT%{ruby_sitelib}/openwsmanplugin.rb
 [ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
-%if 0%{?suse_version} <= 1220
+%if 0%{?has_systemd}
+install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
+# alias openwsman and openwsmand
+ln -s %{_unitdir}/%{name}.service $RPM_BUILD_ROOT%{_unitdir}/%{name}d.service
+# rcopenwsman, rcopenwsmand
+ln -sf %{_sbindir}/service $RPM_BUILD_ROOT%{_sbindir}/rc%{name}
+ln -sf %{_sbindir}/rcopenwsman $RPM_BUILD_ROOT%{_sbindir}/rc%{name}d
+%else
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
 ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
-%else
-# rcopenwsmand for systemd
-ln -sf %{_sbindir}/service $RPM_BUILD_ROOT%{_sbindir}/rcopenwsman
-ln -sf %{_sbindir}/rcopenwsman $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 %endif
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
@@ -354,9 +357,6 @@ install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
-%endif
-%if 0%{?has_systemd}
-install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
 %endif
 
 %post -n libwsman1 -p /sbin/ldconfig
@@ -476,10 +476,13 @@ rm -f /var/log/wsmand.log
 %if 0%{?suse_version} > 1010
 %config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
-%if 0%{?suse_version} <= 1210
-%attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
+%if 0%{?has_systemd}
+%{_unitdir}/%{name}.service
+%{_unitdir}/%{name}d.service
+%{_sbindir}/rc%{name}
+%{_sbindir}/rc%{name}d
 %else
-%{_sbindir}/rcopenwsman
+%attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
 %endif
 # backwards compatibility
 %{_sbindir}/rcopenwsmand
@@ -492,9 +495,6 @@ rm -f /var/log/wsmand.log
 %{_libdir}/openwsman/plugins/*.so.*
 %{_sbindir}/openwsmand
 %{_libdir}/libwsman_server.so.*
-%if 0%{?has_systemd}
-%{_unitdir}/%{name}.service
-%endif
 
 %files -n libwsman_clientpp1
 %defattr(-,root,root)
