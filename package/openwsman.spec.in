@@ -197,6 +197,16 @@ Group:          System/Management
 Openwsman Server and service libraries
 
 
+%package server-plugin-ruby
+Requires:       openwsman-server
+Summary:        Openwsman Server Plugin for Ruby extensions
+Group:          System/Management
+
+%description server-plugin-ruby
+This package provides a Openwsman server plugin to write a
+WS-Management resource handler in Ruby
+
+
 %package python
 Summary:        Python bindings for openwsman client API
 Group:          Development/Libraries/Python
@@ -493,8 +503,13 @@ rm -f /var/log/wsmand.log
 %dir %{_libdir}/openwsman/plugins
 %{_libdir}/openwsman/plugins/*.so
 %{_libdir}/openwsman/plugins/*.so.*
+%exclude %{_libdir}/openwsman/plugins/*ruby*.so*
 %{_sbindir}/openwsmand
 %{_libdir}/libwsman_server.so.*
+
+%files server-plugin-ruby
+%defattr(-,root,root)
+%{_libdir}/openwsman/plugins/*ruby*.so
 
 %files -n libwsman_clientpp1
 %defattr(-,root,root)
