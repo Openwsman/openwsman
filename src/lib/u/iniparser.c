@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif
@@ -320,10 +321,12 @@ static char * dictionary_get(dictionary * d, char * key, char * def)
   content to NULL is equivalent to deleting the variable from the
   dictionary. It is not possible (in this implementation) to have a key in
   the dictionary without value.
+
+  return 0 on success, non-zero on failure.
  */
 /*--------------------------------------------------------------------------*/
 
-static void dictionary_set(dictionary * d, char * key, char * val)
+static int dictionary_set(dictionary * d, char * key, char * val)
 {
     int         i ;
     unsigned    hash ;
@@ -355,14 +358,20 @@ static void dictionary_set(dictionary * d, char * key, char * val)
 
         /* Reached maximum size: reallocate blackboard */
         d->val  = (char **)mem_double(d->val,  d->size * sizeof(char*)) ;
-        if (d->val == NULL)
-          exit(1);
+        if (d->val == NULL) {
+          errno = -ENOMEM;
+          return 1;
+        }
         d->key  = (char **)mem_double(d->key,  d->size * sizeof(char*)) ;
-        if (d->key == NULL)
-          exit(1);
+        if (d->key == NULL) {
+          errno = -ENOMEM;
+          return 1;
+        }
         d->hash = (unsigned int *)mem_double(d->hash, d->size * sizeof(unsigned)) ;
-        if (d->hash == NULL)
-          exit(1);
+        if (d->hash == NULL) {
+          errno = -ENOMEM;
+          return 1;
+        }
 
         /* Double size */
         d->size *= 2 ;
@@ -377,10 +386,21 @@ static void dictionary_set(dictionary * d, char * key, char * val)
     }
     /* Copy key */
     d->key[i]  = strdup(key);
-    d->val[i]  = val ? strdup(val) : NULL ;
+    if (d->key[i] == NULL) {
+      return 1;
+    }
+    if (val) {
+      d->val[i] = strdup(val);
+      if (d->val[i] == NULL) {
+        return 1;
+      }
+    }
+    else {
+      d->val[i] = NULL;
+    }
     d->hash[i] = hash;
     d->n ++ ;
-    return ;
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -466,8 +486,10 @@ static void dictionary_dump(dictionary *d, FILE *f)
 #define ASCIILINESZ         1024
 #define INI_INVALID_KEY     ((char*)-1)
 
-/* Private: add an entry to the dictionary */
-static void iniparser_add_entry(
+/* Private: add an entry to the dictionary
+   return 0 on success, non-zero on error
+ */
+static int iniparser_add_entry(
     dictionary * d,
     char * sec,
     char * key,
@@ -483,8 +505,7 @@ static void iniparser_add_entry(
     }
 
     /* Add (key,val) to dictionary */
-    dictionary_set(d, longkey, val);
-    return ;
+    return dictionary_set(d, longkey, val);
 }
 
 
@@ -833,8 +854,7 @@ int iniparser_find_entry(
 
 int iniparser_setstr(dictionary * ini, char * entry, char * val)
 {
-    dictionary_set(ini, strlwc(entry), val);
-    return 0 ;
+    return dictionary_set(ini, strlwc(entry), val);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -901,7 +921,9 @@ dictionary * iniparser_new(char *ininame)
             if (sscanf(where, "[%[^]]", sec)==1) {
                 /* Valid section name */
                 strcpy(sec, strlwc(sec));
-                iniparser_add_entry(d, sec, NULL, NULL);
+                if (iniparser_add_entry(d, sec, NULL, NULL) != 0) {
+                  return NULL;
+                }
             } else if (sscanf (where, "%[^=] = \"%[^\"]\"", key, val) == 2
                    ||  sscanf (where, "%[^=] = '%[^\']'",   key, val) == 2
                    ||  sscanf (where, "%[^=] = %[^;#]",     key, val) == 2) {
@@ -915,7 +937,9 @@ dictionary * iniparser_new(char *ininame)
                 } else {
                     strcpy(val, strcrop(val));
                 }
-                iniparser_add_entry(d, sec, key, val);
+                if (iniparser_add_entry(d, sec, key, val) != 0) {
+                  return NULL;
+                }
             }
         }
     }
