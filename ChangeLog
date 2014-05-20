@@ -1,3 +1,16 @@
+2.4.6
+- Features
+  - Support large hashes (like SHA512) in file authentication
+  - use constant-time password compare to prevent brute-force attacks
+  - Create server-plugin-ruby as separate RPM
+  - Add Unisys namespace and CIM class prefix 'SPAR'
+  - Alias openwsman and openwsmand systemd services
+  - Also create respective rc-commands: rcopenwsman, rcopenwsmand
+    (SUSE only)
+- Bugfixes
+  - Fix crash on invalide resource URI  
+  - Fix resource namespace for DCIM_ classes
+
 2.4.5
 - Features
   - enforce SSL operation in systemd service
