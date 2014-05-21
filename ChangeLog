@@ -1,3 +1,8 @@
+2.4.7
+- Bugfixes
+  - file authenticator: allow password hash of up to 128 characters
+  - libu: don't exit() on malloc errors
+
 2.4.6
 - Features
   - Support large hashes (like SHA512) in file authentication
