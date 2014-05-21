@@ -199,8 +199,6 @@ static void print_short_help(u_option_context_t *ctx)
 
 	print_help_buf(&help_buf);
 	free_help_buf(&help_buf);
-
-	exit (0);
 }
 
 static void print_long_help(u_option_context_t *ctx, char *hoption)
@@ -260,8 +258,6 @@ static void print_long_help(u_option_context_t *ctx, char *hoption)
 
 	print_help_buf(&help_buf);
 	free_help_buf(&help_buf);
-
-	exit (0);
 }
 
 static unsigned int context_get_number_entries(u_option_context_t *ctx)
@@ -418,6 +414,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 	if (!strncmp(option, "help", strlen("help")) ) {
 		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
 			print_long_help(ctx, option);
+                  return NULL;
 		}
 	}
 
@@ -455,6 +452,7 @@ static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 	if (option == '?') {
 		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
 			print_short_help(ctx);
+                  return NULL;
 		}
 	}
 
