@@ -114,7 +114,7 @@ authorize(char *username, const char *password)
         }
 
         while (fgets(l, sizeof(l), fp) != NULL) {
-                if (sscanf(l, "%64[^:]:%64s", u, passwd) != 2)
+                if (sscanf(l, "%64[^:]:%128s", u, passwd) != 2)
                     continue;       /* Ignore malformed lines */
                 debug( "user: %s,  passwd: XXXX", u);
                 min_len = strlen(u);
