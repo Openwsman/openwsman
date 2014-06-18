@@ -368,11 +368,14 @@ wsmc_add_property(client_opt_t * options,
 		const char *value)
 {
 	if (options->properties == NULL)
-		options->properties = hash_create(HASHCOUNT_T_MAX, 0, 0);
+		options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 	if (!hash_lookup(options->properties, key)) {
-		if (!hash_alloc_insert(options->properties,
-					(char *)key, (char *)value)) {
+          char *k = u_strdup(key);
+          char *v = u_strdup(value);
+		if (!hash_alloc_insert(options->properties, k, v)) {
 			error("hash_alloc_insert failed");
+                  u_free(v);
+                  u_free(k);
 		}
 	} else {
 		error("duplicate not added to hash");
@@ -389,11 +392,14 @@ wsmc_add_option(client_opt_t * options,
 		const char *value)
 {
 	if (options->options == NULL)
-		options->options = hash_create(HASHCOUNT_T_MAX, 0, 0);
+		options->options = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 	if (!hash_lookup(options->options, key)) {
-		if (!hash_alloc_insert(options->options,
-					(char *)key, (char *)value)) {
+          char *k = u_strdup(key);
+          char *v = u_strdup(value);
+		if (!hash_alloc_insert(options->options, k, v)) {
 			error( "hash_alloc_insert failed");
+                  u_free(v);
+                  u_free(k);
 		}
 	} else {
 		error( "duplicate not added to hash");
@@ -406,11 +412,14 @@ wsmc_add_selector(client_opt_t * options,
 		const char *value)
 {
 	if (options->selectors == NULL)
-		options->selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
+		options->selectors = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 	if (!hash_lookup(options->selectors, key)) {
-		if (!hash_alloc_insert(options->selectors,
-					(char *)key, (char *)value)) {
+          char *k = u_strdup(key);
+          char *v = u_strdup(value);
+		if (!hash_alloc_insert(options->selectors, k, v)) {
 			error( "hash_alloc_insert failed");
+                  u_free(v);
+                  u_free(k);
 		}
 	} else {
 		error( "duplicate not added to hash");
@@ -423,6 +432,7 @@ wsmc_add_selectors_from_str(client_opt_t * options,
 {
 	if (query_string) {
 		hash_t *query = u_parse_query(query_string);
+                /* u_parse_query returns a hash with u_strdup'ed key/val */
 		if (query) {
 			options->selectors = query;
 		}
