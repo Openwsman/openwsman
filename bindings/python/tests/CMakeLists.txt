@@ -38,6 +38,8 @@ ADD_TEST(bindings_python_identify   ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURR
 # ADD_TEST(bindings_python_create               ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} create.py )
 # ADD_TEST(bindings_python_each_child           ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} each_child.py )
 ADD_TEST(bindings_python_enumerate            ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} enumerate.py )
+ADD_TEST(bindings_python_add_selector         ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} add_selector.py )
+ADD_TEST(bindings_python_add_selector2        ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} add_selector2.py )
 # ADD_TEST(bindings_python_get                  ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} get.py )
 # ADD_TEST(bindings_python_identify             ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} identify.py )
 # ADD_TEST(bindings_python_invoke               ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} invoke.py )
