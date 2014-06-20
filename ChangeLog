@@ -3,6 +3,7 @@
   - Add Fujitsu namespace, cim schema SVS
 - Bugfixes
   - client: copy key/value data for options, selectors, and properties
+  - fix .spec file for RHEL/Fedora builds
 
 2.4.7
 - Bugfixes
