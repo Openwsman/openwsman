@@ -54,15 +54,19 @@ BuildRequires:  openssl-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
 
-# RHEL6 is missing ruby-devel in OBS
-%if 0%{?rhel_version} != 700
+%if 0%{?fedora} + 0%{?rhel_version} + 0%{?centos_version}  > 0
+
 BuildRequires:  ruby-devel
-%if 0%{?fedora} == 0
-BuildRequires:  ruby-rdoc
-%endif
+BuildRequires:  ruby-libs
+
 %endif
 
-%if 0%{?fedora} > 20
+%if (0%{?rhel_version} >= 500 && 0%{?rhel_version} < 600) || 0%{?centos_version} >= 500 || 0%{?fedora} < 17
+# rdoc is separate from rhel5 on
+BuildRequires:  ruby-rdoc
+%endif
+
+%if 0%{?fedora} > 18
 BuildRequires:  rubypick
 %endif
 
