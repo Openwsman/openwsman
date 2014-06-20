@@ -50,11 +50,11 @@ ADD_TEST(bindings_ruby_identify             ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I.
 ADD_TEST(bindings_ruby_invoke               ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} invoke.rb )
 ADD_TEST(bindings_ruby_notepad              ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} notepad.rb )
 ADD_TEST(bindings_ruby_nsconsts             ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} nsconsts.rb )
-ADD_TEST(bindings_ruby_pull                 ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} pull.rb )
-ADD_TEST(bindings_ruby_put                  ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} put.rb )
-ADD_TEST(bindings_ruby_release              ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} release.rb )
+#ADD_TEST(bindings_ruby_pull                 ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} pull.rb )
+#ADD_TEST(bindings_ruby_put                  ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} put.rb )
+#ADD_TEST(bindings_ruby_release              ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} release.rb )
 
 	# needs WinRM system
-ADD_TEST(bindings_ruby_win32_operatingsystem ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_operatingsystem.rb )
-ADD_TEST(bindings_ruby_win32_process         ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_process.rb )
-ADD_TEST(bindings_ruby_win32_services        ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_services.rb )
+#ADD_TEST(bindings_ruby_win32_operatingsystem ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_operatingsystem.rb )
+#ADD_TEST(bindings_ruby_win32_process         ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_process.rb )
+#ADD_TEST(bindings_ruby_win32_services        ${CMAKE_CURRENT_SOURCE_DIR}/ruby -I. -C ${CMAKE_CURRENT_SOURCE_DIR} win32_services.rb )
