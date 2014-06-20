@@ -317,10 +317,6 @@ typedef struct {} client_opt_t;
   void add_option(const char *key, const char *value)
   {
 #endif
-#if defined(SWIGJAVA)
-    key = strdup(key);
-    value = strdup(value);
-#endif
     wsmc_add_option($self, key, value);
   }
 
@@ -373,10 +369,6 @@ typedef struct {} client_opt_t;
   void add_selector(const char *key, const char *value)
   {
 #endif
-#if defined(SWIGJAVA)
-    key = strdup(key);
-    value = strdup(value);
-#endif
     wsmc_add_selector($self, key, value);
   }
 
@@ -424,10 +416,6 @@ typedef struct {} client_opt_t;
 #else
   void add_property(const char *key, const char *value)
   {
-#endif
-#if defined(SWIGJAVA)
-    key = strdup(key);
-    value = strdup(value);
 #endif
     wsmc_add_property($self, key, value);
   }
