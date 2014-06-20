@@ -193,8 +193,7 @@ static int check_for_duplicate_selectors(op_t * op)
 			break;
 		}
 	}
-	hash_free_nodes(h);
-	hash_destroy(h);
+	hash_free(h);
 	return retval;
 }
 
