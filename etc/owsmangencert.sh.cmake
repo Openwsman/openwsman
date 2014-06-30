@@ -16,7 +16,7 @@ if [ "$1" = "--force" ]; then
 fi
 
 echo
-echo creating selfsingned certificate
+echo creating selfsigned certificate
 echo "replace it with one signed by a certification authority (CA)"
 echo
 echo enter your ServerName at the Common Name prompt
