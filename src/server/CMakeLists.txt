@@ -13,7 +13,13 @@ SET(openwsmand_SOURCES ${openwsmand_SOURCES} shttpd/compat_unix.h shttpd/compat_
 SET(openwsmand_SOURCES ${openwsmand_SOURCES} wsmand-listener.h wsmand-daemon.c wsmand-daemon.h wsmand-listener.c)
 SET(openwsmand_SOURCES ${openwsmand_SOURCES} gss.c wsmand.c)
 
+EXECUTE_PROCESS(COMMAND "/usr/bin/readlink" "${LIB_INSTALL_DIR}/libssl.so" OUTPUT_VARIABLE SSL_LIB_OUT)
+STRING(REPLACE "\n" "" SSL_LIB "${SSL_LIB_OUT}")
+
+MESSAGE(STATUS "SSL_LIB is at >${SSL_LIB}<")
+
 ADD_DEFINITIONS(-DEMBEDDED -DNO_CGI -DNO_SSI )
+ADD_DEFINITIONS(-DSSL_LIB="\\\"${SSL_LIB}\\\"")
 ADD_DEFINITIONS(-DPACKAGE_PLUGIN_DIR="\\\"${PACKAGE_PLUGIN_DIR}\\\"")
 ADD_DEFINITIONS(-DPACKAGE_AUTH_DIR="\\\"${PACKAGE_AUTH_DIR}\\\"")
 ADD_DEFINITIONS(-DPACKAGE_SUBSCRIPTION_DIR="\\\"${PACKAGE_SUBSCRIPTION_DIR}\\\"")

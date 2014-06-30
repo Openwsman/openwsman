@@ -1,3 +1,7 @@
+2.4.9
+- Bugfixes
+  - make finding libssl.so.* more robust
+
 2.4.8
 - Features
   - Add Fujitsu namespace, cim schema SVS

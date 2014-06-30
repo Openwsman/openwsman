@@ -324,7 +324,6 @@ export EXPLICIT_SOURCE=1.5
 export EXPLICIT_TARGET=1.5
 %endif
 
-export SSL_LIB=`readlink %{_libdir}/libssl.so`
 cd build
 cmake \
   -DCMAKE_INSTALL_PREFIX=/usr \
@@ -340,7 +339,7 @@ cmake \
   -DBUILD_RUBY_GEM=no \
   ..
 
-make CFLAGS="-DSSL_LIB='\"$SSL_LIB\"'"
+make
 
 %install
 cd build
