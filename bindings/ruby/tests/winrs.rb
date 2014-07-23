@@ -57,13 +57,17 @@ end
            [ "-u", "--user", GetoptLong::REQUIRED_ARGUMENT ],
            [ "-p", "--password", GetoptLong::REQUIRED_ARGUMENT ],
            [ "-P", "--port", GetoptLong::REQUIRED_ARGUMENT ],
-           [ "-s", "--scheme", GetoptLong::REQUIRED_ARGUMENT ]
+           [ "-s", "--scheme", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "-?", "--help", GetoptLong::NO_ARGUMENT ]
   )
 
-  options = { :port => 5985, :scheme => "http" }
+  options = { }
   url = nil
   opts.each do |opt,arg|
     case opt
+    when "-?"
+      usage
+      exit 0
     when "-U"
       usage "-U|--url invalid, --host|--user|--password|--port already given" unless options.empty?
       url = arg
@@ -85,6 +89,8 @@ end
     end
   end
   
+  options = { :port => 5985, :scheme => "http" }.merge(options)
+
   commands = ARGV.empty? ? nil : ARGV
 
 
