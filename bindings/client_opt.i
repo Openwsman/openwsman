@@ -405,6 +405,7 @@ typedef struct {} client_opt_t;
 #if defined(SWIGRUBY)
   /*
    * Add a property as key/value pair
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.add_property "Key", "Value"
@@ -424,6 +425,7 @@ typedef struct {} client_opt_t;
   %rename( "properties=" ) set_properties(VALUE hash);
   /*
    * Set properties from Hash
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.properties = { "Key" => "Value", ...}
@@ -436,6 +438,7 @@ typedef struct {} client_opt_t;
   %rename( "properties" ) get_properties(void);
   /*
    * Get properties as Hash
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.properties -> Hash
