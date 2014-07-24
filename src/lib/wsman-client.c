@@ -49,6 +49,17 @@
 #include "wsman-faults.h"
 #include "wsman-client.h"
 
+/*
+ * Since the options->properties can only handle pointers,
+ * we need to flag somehow that the value is not a char pointer
+ * but a epr_t pointer.
+ * We do this by prefixing the name with "<epr>". Since neither
+ * '<' nor '>' are valid property names, this should not conflict
+ * with normal options.
+ */
+#define EPR_KEY_PREFIX "<epr>"
+#define EPR_KEY_PREFIX_LEN 5
+
 static hash_t *
 get_selectors_from_uri(const char *resource_uri)
 {
@@ -362,13 +373,36 @@ wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
 }
 
 
+/*
+ * free a properties hash entry
+ * take care of epr_t vs 'normal' hash data
+ */
+static void
+properties_hnode_free(hnode_t *node, void *context)
+{
+  const char *key = node->hash_key;
+  if (*key == '<'
+      && strncmp(key, EPR_KEY_PREFIX, EPR_KEY_PREFIX_LEN) == 0) {
+    epr_destroy((epr_t *)node->hash_data);
+  }
+  else {
+    u_free((void *)node->hash_data);
+  }
+  u_free((void *)node->hash_key);
+  free(node);
+}
+
+
 void
 wsmc_add_property(client_opt_t * options,
 		const char *key,
 		const char *value)
 {
-	if (options->properties == NULL)
+	if (options->properties == NULL) {
 		options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
+                hash_set_allocator(options->properties, (hnode_alloc_t)NULL,
+                                   properties_hnode_free, NULL);
+        }
 	if (!hash_lookup(options->properties, key)) {
           char *k = u_strdup(key);
           char *v = u_strdup(value);
@@ -380,6 +414,49 @@ wsmc_add_property(client_opt_t * options,
 	} else {
 		error("duplicate not added to hash");
 	}
+}
+
+
+/*
+ * add an EndpointReference as property
+ *
+ * Since the options->properties can only handle pointers,
+ * we need to flag somehow that the value is not a char pointer
+ * but a epr_t pointer.
+ * We do this by prefixing the name with "<epr>". Since neither
+ * '<' nor '>' are valid property names, this should not conflict
+ * with normal options.
+ */
+
+void
+wsmc_add_property_epr(client_opt_t * options,
+		const char *key,
+		epr_t *value)
+{
+  if (options->properties == NULL) {
+    options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
+    hash_set_allocator(options->properties, (hnode_alloc_t)NULL,
+                       properties_hnode_free, NULL);
+  }
+  if (!hash_lookup(options->properties, key)) { /* does 'key' exist */
+    char *epr_key = alloca(EPR_KEY_PREFIX_LEN + strlen(key) + 1);
+    sprintf(epr_key, "%s%s", EPR_KEY_PREFIX, key);
+    if (!hash_lookup(options->properties, epr_key)) { /* does '<epr>key' exist ? */
+      char *k = u_strdup(epr_key);
+      epr_t *v = epr_copy(value);
+      if (!hash_alloc_insert(options->properties, k, (char *)v)) {
+        error("hash_alloc_insert failed");
+        epr_destroy(v);
+        u_free(k);
+      }
+    }
+    else {
+      error("duplicate not added to hash");
+    }
+  }
+  else {
+    error("duplicate not added to hash");
+  }
 }
 
 /*
@@ -1324,10 +1401,20 @@ wsmc_action_invoke(WsManClient * cl,
                         (char *)resource_uri, "%s_INPUT", method);
                 hash_scan_begin(&hs, options->properties);
                 while ((hn = hash_scan_next(&hs))) {
+                  const char *key = hnode_getkey(hn);
+                  if (*key == '<'
+                      && strncmp(key, EPR_KEY_PREFIX, EPR_KEY_PREFIX_LEN) == 0) {
+                    epr_t *val;
+                    key = key + EPR_KEY_PREFIX_LEN;
+                    val = (epr_t *)hnode_get(hn);                    
+                  }
+                  else {
+                    const char *val = hnode_get(hn);
                     ws_xml_add_child(node,
                             (char *)resource_uri,
                             (char *) hnode_getkey(hn),
                             (char *) hnode_get(hn));
+                  }
                 }
             }
         } else if (!strchr(method, '/')) { /* non-custom method without parameters */
