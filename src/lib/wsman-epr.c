@@ -56,7 +56,7 @@
 
 #include "wsman-epr.h"
 
-char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
+char *wsman_epr_selector_by_name(const epr_t *epr, const char* name)
 {
 	int i;
 	char *value = NULL;
@@ -77,7 +77,7 @@ char *wsman_epr_selector_by_name(epr_t *epr, const char* name)
 }
 
 
-void wsman_epr_selector_cb(epr_t *epr, selector_callback cb, void *cb_data)
+void wsman_epr_selector_cb(const epr_t *epr, selector_callback cb, void *cb_data)
 {
 	int i;
 	Selector *ss = (Selector *) epr->refparams.selectorset.selectors;
@@ -220,7 +220,7 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	return 0;
  }
 
-int epr_selector_count(epr_t *epr) {
+int epr_selector_count(const epr_t *epr) {
 	if(epr == NULL) return 0;
 	return epr->refparams.selectorset.count;
 }
@@ -303,7 +303,7 @@ void epr_destroy(epr_t *epr)
 
 }
 
-epr_t *epr_copy(epr_t *epr)
+epr_t *epr_copy(const epr_t *epr)
 {
 	int i;
 	Selector *p1;
@@ -336,7 +336,7 @@ epr_t *epr_copy(epr_t *epr)
 	return cpy_epr;
 }
 
- int epr_cmp(epr_t *epr1, epr_t *epr2)
+ int epr_cmp(const epr_t *epr1, const epr_t *epr2)
  {
  	int i, j;
  	int matches = 0;
@@ -375,7 +375,7 @@ epr_t *epr_copy(epr_t *epr)
 		return 1;
 }
 
-char *epr_to_string(epr_t *epr)
+char *epr_to_string(const epr_t *epr)
 {
   int i, len;
   char *buf, *ptr;
@@ -430,7 +430,7 @@ char *epr_to_string(epr_t *epr)
 }
 
 
-char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
+char *epr_to_txt(const epr_t *epr, const char *ns, const char*epr_node_name)
 {
 	char *buf = NULL;
 	int len;
@@ -446,7 +446,7 @@ char *epr_to_txt(epr_t *epr, const char *ns, const char*epr_node_name)
 }
 
 
-char *epr_get_resource_uri(epr_t *epr) {
+char *epr_get_resource_uri(const epr_t *epr) {
 	if (epr)
 		return epr->refparams.uri;
 	else
@@ -454,7 +454,7 @@ char *epr_get_resource_uri(epr_t *epr) {
 }
 
 int epr_serialize(WsXmlNodeH node, const char *ns,
-		const char *epr_node_name, epr_t *epr, int embedded)
+		const char *epr_node_name, const epr_t *epr, int embedded)
 {
 	int i;
 	WsXmlNodeH eprnode = NULL;

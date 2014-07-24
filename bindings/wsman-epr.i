@@ -76,7 +76,7 @@ typedef struct {} epr_t;
    * clone the EndPointReference instance
    *
    */
-  epr_t *clone(epr_t *epr) {
+  epr_t *clone(const epr_t *epr) {
     return epr_copy(epr);
   }
 #endif
@@ -108,7 +108,7 @@ typedef struct {} epr_t;
    * Compare two EndPointReferences
    *
    */
-  int cmp(epr_t *epr2) {
+  int cmp(const epr_t *epr2) {
     return epr_cmp($self, epr2);
   }
   
@@ -210,7 +210,7 @@ typedef struct {} epr_t;
       if (p->type == 0) {
         value = SWIG_FromCharPtr(p->value);
       } else {
-        char *epr_value = epr_to_string((epr_t *)p->value);
+        char *epr_value = epr_to_string((const epr_t *)p->value);
         value = SWIG_FromCharPtr(epr_value);
         u_free(epr_value);
       }

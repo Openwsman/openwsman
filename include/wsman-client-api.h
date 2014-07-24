@@ -766,7 +766,7 @@ typedef enum {
 				       const char *key, const char *value);
 
         void wsmc_add_property_epr(client_opt_t * options,
-                                   const char *key, epr_t *value);
+                                   const char *key, const epr_t *value);
 
         void wsmc_set_cim_ns(const char *delivery_uri, client_opt_t * options);
   

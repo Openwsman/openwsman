@@ -431,7 +431,7 @@ wsmc_add_property(client_opt_t * options,
 void
 wsmc_add_property_epr(client_opt_t * options,
 		const char *key,
-		epr_t *value)
+		const epr_t *value)
 {
   if (options->properties == NULL) {
     options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
@@ -1406,7 +1406,8 @@ wsmc_action_invoke(WsManClient * cl,
                       && strncmp(key, EPR_KEY_PREFIX, EPR_KEY_PREFIX_LEN) == 0) {
                     epr_t *val;
                     key = key + EPR_KEY_PREFIX_LEN;
-                    val = (epr_t *)hnode_get(hn);                    
+                    val = (epr_t *)hnode_get(hn);
+                    epr_serialize(node, (char *)resource_uri, key, val, 1); /* add epr as embedded */
                   }
                   else {
                     const char *val = hnode_get(hn);
