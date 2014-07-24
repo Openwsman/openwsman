@@ -423,10 +423,27 @@ typedef struct {} client_opt_t;
   {
     wsmc_add_property($self, key, value);
   }
+#if defined(SWIGJAVA)
+  /*
+   * *Java*
+   *
+   * Add a EndpointReference property
+   *   Pass an EndpointReference as input parameter to an 'invoke'd methods
+   *
+   * call-seq:
+   *   options.add_property_epr "Key", endpoint_reference
+   */
+
+  void add_property_epr(const char *key, const epr_t *epr)
+  {
+    wsmc_add_property_epr($self, key, epr);
+  }
+#else
   void add_property(const char *key, const epr_t *epr)
   {
     wsmc_add_property_epr($self, key, epr);
   }
+#endif
 #endif
   
 #if defined(SWIGRUBY)
