@@ -471,7 +471,7 @@ static char *epr_prefix(const char *uri) {
 
 %include "wsman-transport.i"
 
-%include "client_opt.i"
+%include "wsman-client_opt.i"
 
 %include "wsman-client.i"
 
