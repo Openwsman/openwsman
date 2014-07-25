@@ -41,7 +41,7 @@ public class hyperv_invoke {
     epr4.add_selector("Name", "0ED00E8D-56B8-4255-9DCD-5420D16439E4");
     epr4.add_selector("creationclassname", "Msvm_PlannedComputerSystem");
 
-    options.add_property_epr( "PlannedSystem", epr4 );
+    options.add_property( "PlannedSystem", epr4 );
 
     XmlDoc result1 = client.get_from_epr( options, epr4 );
 

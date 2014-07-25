@@ -419,31 +419,29 @@ typedef struct {} client_opt_t;
     }
   }
 #else
+  /*
+   * Add a string property as key/value pair
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   *
+   * call-seq:
+   *   options.add_property( "Key", "Value" )
+   */
   void add_property(const char *key, const char *value)
   {
     wsmc_add_property($self, key, value);
   }
-#if defined(SWIGJAVA)
+
   /*
-   * *Java*
-   *
-   * Add a EndpointReference property
-   *   Pass an EndpointReference as input parameter to an 'invoke'd methods
+   * Add an EndPointReference property as key/value pair
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
-   *   options.add_property_epr "Key", endpoint_reference
+   *   options.add_property( String, EndPointReference )
    */
-
-  void add_property_epr(const char *key, const epr_t *epr)
-  {
-    wsmc_add_property_epr($self, key, epr);
-  }
-#else
   void add_property(const char *key, const epr_t *epr)
   {
     wsmc_add_property_epr($self, key, epr);
   }
-#endif
 #endif
   
 #if defined(SWIGRUBY)
