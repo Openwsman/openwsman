@@ -31,6 +31,10 @@ ADD_TEST(bindings_java_identify_compile ${JAVA_COMPILE} -d ${CMAKE_CURRENT_BINAR
 #ADD_TEST(bindings_java_identify     ${JAVA_RUNTIME} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME}:${CMAKE_CURRENT_BINARY_DIR} identify )
 ADD_TEST(bindings_java_identify     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_BINARY_DIR} ${jar_NAME} identify )
 
+        # Invoke
+ADD_TEST(bindings_java_invoke_compile ${JAVA_COMPILE} -d ${CMAKE_CURRENT_BINARY_DIR} -cp ${CMAKE_CURRENT_BINARY_DIR}/../${jar_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/hyperv_invoke.java )
+ADD_TEST(bindings_java_invoke     ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_BINARY_DIR} ${jar_NAME} hyperv_invoke )
+
 	# data types
 # ADD_TEST(bindings_java_fault      ${CMAKE_CURRENT_SOURCE_DIR}/run ${CMAKE_CURRENT_SOURCE_DIR} fault )
 

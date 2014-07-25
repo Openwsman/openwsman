@@ -27,13 +27,6 @@ typedef struct {} client_opt_t;
 %extend client_opt_t {
   client_opt_t() {
     client_opt_t *options = wsmc_options_init();
-#if defined(SWIGJAVA)
-    if (options) {
-	    options->options = hash_create3(HASHCOUNT_T_MAX, 0, 0);
-	    options->selectors = hash_create3(HASHCOUNT_T_MAX, 0, 0);
-	    options->properties = hash_create3(HASHCOUNT_T_MAX, 0, 0);
-    }
-#endif
     return options;
   }
 
@@ -413,13 +406,43 @@ typedef struct {} client_opt_t;
   void add_property(VALUE k, VALUE v)
   {
     const char *key = as_string(k);
-    const char *value = as_string(v);
+    KLASS_DECL(SwigClassEndPointReference,SWIGTYPE_p_epr_t);
+
+    if (CLASS_OF(v) == KLASS_OF(SwigClassEndPointReference)) {
+      const epr_t *epr;
+      SWIG_ConvertPtr(v, (void **)&epr, SWIGTYPE_p_epr_t, 0);
+      wsmc_add_property_epr($self, key, epr);
+    }
+    else {
+      const char *value = as_string(v);
+      wsmc_add_property($self, key, value);
+    }
+  }
 #else
+  /*
+   * Add a string property as key/value pair
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   *
+   * call-seq:
+   *   options.add_property( "Key", "Value" )
+   */
   void add_property(const char *key, const char *value)
   {
-#endif
     wsmc_add_property($self, key, value);
   }
+
+  /*
+   * Add an EndPointReference property as key/value pair
+   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   *
+   * call-seq:
+   *   options.add_property( String, EndPointReference )
+   */
+  void add_property(const char *key, const epr_t *epr)
+  {
+    wsmc_add_property_epr($self, key, epr);
+  }
+#endif
   
 #if defined(SWIGRUBY)
   %rename( "properties=" ) set_properties(VALUE hash);
