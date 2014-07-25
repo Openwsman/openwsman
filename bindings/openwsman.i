@@ -150,6 +150,7 @@ void Init__openwsman(void) {
 /* Provide WsManTransport definition so it can be used as
  * dedicated datatype in bindings.
  * :nodoc:ly, its aliased to WsManClient
+ *
  */
 struct _WsManTransport { };
 typedef struct _WsManTransport WsManTransport;
@@ -160,6 +161,7 @@ static void set_debug(int dbg);
  * Set openwsman debug level.
  * call-seq:
  *   Openwsman::debug = -1 # full debug
+ *
  */
 static void set_debug(int dbg) {
   static int init = 0;
@@ -180,16 +182,19 @@ static int get_debug(void);
  * Return openwsman debug level.
  * call-seq:
  *   Openwsman::debug -> Integer
+ *
  */
 static int get_debug(void) {
   return (int)wsman_debug_get_level();
 }
 
 static WsXmlDocH create_soap_envelope(void);
+
 /*
  * Create empty SOAP envelope
  * call-seq:
  *   Openwsman::create_soap_envelope -> XmlDoc
+ *
  */
 static WsXmlDocH create_soap_envelope() {
   return ws_xml_create_soap_envelope();

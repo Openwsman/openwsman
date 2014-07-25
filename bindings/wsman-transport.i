@@ -62,8 +62,10 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Check if the passed method id is valid for authentication
+   *
    * call-seq:
    *   transport.auth_method?(Integer) -> Boolean
+   *
    */
   int is_auth_method(int method) {
     return wsman_is_auth_method((WsManClient *)$self, method);
@@ -71,6 +73,7 @@ typedef struct _WsManTransport {} WsManTransport;
 
   /*
    * Close the transport. No further communication possible.
+   *
    */
   void close() {
     wsman_transport_close_transport((WsManClient *)$self);
@@ -84,8 +87,10 @@ typedef struct _WsManTransport {} WsManTransport;
    *
    * This is how the client will show up in the servers http log.
    * Defaults to "Openwsman"
+   *
    * call-seq:
    *   transport.agent = "Client identifier"
+   *
    */
   void set_agent(const char *agent) {
     wsman_transport_set_agent((WsManClient *)$self, agent);
@@ -93,8 +98,10 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject agent;
   /*
    * Get the HTTP agent identifier string
+   *
    * call-seq:
    *   transport.agent -> String
+   *
    */
   char *agent() {
     return wsman_transport_get_agent ((WsManClient *)$self);
@@ -106,9 +113,12 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject get_username;
   /*
    * Server credentials
+   *
    * Get the username part of the http transport credentials
+   *
    * call-seq:
    *   transport.username -> String
+   *
    */
   char *get_username() {
     return wsman_transport_get_userName((WsManClient *)$self);
@@ -119,9 +129,12 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Server credentials
+   *
    * Set the username part of the http transport credentials
+   *
    * call-seq:
    *   transport.username = "Username"
+   *
    */
   void set_username(char *user_name) {
     wsman_transport_set_userName((WsManClient *)$self, user_name);
@@ -133,9 +146,12 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject get_password;
   /*
    * Server credentials
+   *
    * Get the password part of the http transport credentials
+   *
    * call-seq:
    *   transport.password -> String
+   *
    */
   char *get_password() {
     return wsman_transport_get_password((WsManClient *)$self);
@@ -146,9 +162,12 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Server credentials
+   *
    * Set the password part of the http transport credentials
+   *
    * call-seq:
    *   transport.password = "Password"
+   *
    */
   void set_password(char *password) {
     wsman_transport_set_password((WsManClient *)$self, password);
@@ -162,8 +181,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows clients: HTTP proxy credentials
    *
    * Get the username part of the http proxy credentials
+   *
    * call-seq:
    *   transport.proxy_username -> String
+   *
    */
   char *get_proxy_username() {
     return wsman_transport_get_proxy_username((WsManClient *)$self );
@@ -176,8 +197,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows clients: HTTP proxy credentials
    *
    * Set the username part of the http proxy credentials
+   *
    * call-seq:
    *   transport.proxy_username = "proxy_username"
+   *
    */
   void set_proxy_username(char *proxy_username) {
     wsman_transport_set_proxy_username((WsManClient *)$self, proxy_username );
@@ -191,8 +214,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows clients: HTTP proxy credentials
    *
    * Get the password part of the http proxy credentials
+   *
    * call-seq:
    *   transport.proxy_password -> String
+   *
    */
   char *get_proxy_password() {
     return wsman_transport_get_proxy_password((WsManClient *)$self );
@@ -205,8 +230,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows clients: HTTP proxy credentials
    *
    * Set the password part of the http proxy credentials
+   *
    * call-seq:
    *   transport.proxy_password = "proxy_password"
+   *
    */
   void set_proxy_password(char *proxy_password) {
     wsman_transport_set_proxy_password((WsManClient *)$self, proxy_password );
@@ -217,13 +244,15 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the authentication method
+   *
    * Value must be one of:
-   *   +Openwsman::NO_AUTH_STR+
-   *   +Openwsman::BASIC_AUTH_STR+
-   *   +Openwsman::DIGEST_AUTH_STR+
-   *   +Openwsman::PASS_AUTH_STR+
-   *   +Openwsman::NTLM_AUTH_STR+
-   *   +Openwsman::GSSNEGOTIATE_AUTH_STR+
+   * * Openwsman::NO_AUTH_STR
+   * * Openwsman::BASIC_AUTH_STR
+   * * Openwsman::DIGEST_AUTH_STR
+   * * Openwsman::PASS_AUTH_STR
+   * * Openwsman::NTLM_AUTH_STR
+   * * Openwsman::GSSNEGOTIATE_AUTH_STR
+   *
    */
   void set_auth_method(const char *am) {
     wsman_transport_set_auth_method((WsManClient *)$self, am);
@@ -231,8 +260,10 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject auth_method;
   /*
    * Set the authentication method
+   *
    * call-seq:
    *   transport.auth_method -> String
+   *
    */
   char *auth_method() {
     return wsman_transport_get_auth_method ((WsManClient *)$self);
@@ -243,29 +274,33 @@ typedef struct _WsManTransport {} WsManTransport;
    * auth method id
    *
    * Value must be one of:
-   *   +Openwsman::NO_AUTH+
-   *   +Openwsman::BASIC_AUTH+
-   *   +Openwsman::DIGEST_AUTH+
-   *   +Openwsman::PASS_AUTH+
-   *   +Openwsman::NTLM_AUTH+
-   *   +Openwsman::GSSNEGOTIATE_AUTH+   
+   * * Openwsman::NO_AUTH
+   * * Openwsman::BASIC_AUTH
+   * * Openwsman::DIGEST_AUTH
+   * * Openwsman::PASS_AUTH
+   * * Openwsman::NTLM_AUTH
+   * * Openwsman::GSSNEGOTIATE_AUTH
    *
    * call-seq:
    *   transport.auth_name(Integer) -> String
+   *
    */
   static const char *auth_name(int auth) {
     return wsmc_transport_get_auth_name(auth);
   }
   /*
    * Get the authentication method integer id
+   *
    */
   int auth_value() {
     return wsmc_transport_get_auth_value((WsManClient *)$self);
   }
   /*
    * Get string corresponding to given error code
+   *
    * call-seq:
    *   transport.error_string(Integer) -> String
+   *
    */
   static char *error_string(int err) {
     return wsman_transport_get_last_error_string(err);
@@ -277,17 +312,20 @@ typedef struct _WsManTransport {} WsManTransport;
   /*
    * Set the transport timeout in seconds
    *
-   * ==== Note
+   * ====== Note
    * This is the http layer timeout. Not to be confused with the
    * WS-Management operation timeout set via Openwsman::ClientOptions.timeout
+   *
    */
   void set_timeout(unsigned long timeout) {
     wsman_transport_set_timeout((WsManClient *)$self, timeout);
   }
   /*
    * Get the transport timeout in seconds
+   *
    * call-seq:
    *   transport.timeout -> Integer
+   *
    */
   unsigned long timeout() {
     return wsman_transport_get_timeout((WsManClient *)$self);
@@ -300,6 +338,7 @@ typedef struct _WsManTransport {} WsManTransport;
   *
   * If passed +false+, +nil+, or 0: disable peer verification
   * else: enable peer verification
+  *
   */
   void set_verify_peer( VALUE rvalue ) {
     unsigned int value;
@@ -317,6 +356,7 @@ typedef struct _WsManTransport {} WsManTransport;
   * verify the peer in SSL communication ?
   * no: == 0
   * yes: != 0
+  *
   */
   void set_verify_peer( unsigned int value ) {
 #endif
@@ -329,8 +369,10 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Peer to be verified ?
+   *
    * call-seq:
    *   transport.verify_peer? -> Boolean
+   *
    */
   unsigned int verify_peer() {
     return wsman_transport_get_verify_peer((WsManClient *)$self);
@@ -343,6 +385,7 @@ typedef struct _WsManTransport {} WsManTransport;
   *
   * If passed +false+, +nil+, or 0: disable peer verification
   * else: enable peer verification
+  *
   */
   void set_verify_host( VALUE rvalue ) {
     unsigned int value;
@@ -360,6 +403,7 @@ typedef struct _WsManTransport {} WsManTransport;
   * verify the host in SSL communication ?
   * no: == 0
   * yes: != 0
+  *
   */
   void set_verify_host(unsigned int value) {
 #endif
@@ -372,8 +416,10 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Host to be verified ?
+   *
    * call-seq:
    *   transport.verify_host? -> Boolean
+   *
    */
   unsigned int verify_host() {
     return wsman_transport_get_verify_host((WsManClient *)$self);
@@ -386,8 +432,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Set http proxy URL
    *
    * Pass nil to disable proxy communication
-   * ==== Example
+   *
+   * ====== Example
    *   transport.proxy = "http://your.proxy.com:80"
+   *
    */
   void set_proxy(const char *proxy) {
     wsman_transport_set_proxy((WsManClient *)$self, proxy);
@@ -395,6 +443,7 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject proxy;
   /*
    * Get http proxy URL
+   *
    */
   char *proxy() {
     return wsman_transport_get_proxy((WsManClient *)$self);
@@ -407,8 +456,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Linux clients: HTTP proxy credentials
    *
    * Set the proxy username and password
-   * ==== Example
+   *
+   * ====== Example
    *   transport.proxyauth = "username:password"
+   *
    */
   void set_proxyauth(const char *pauth) {
     wsman_transport_set_proxyauth((WsManClient *)$self, pauth);
@@ -418,8 +469,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Linux clients: HTTP proxy credentials
    *
    * Get the proxy username and password as "username:password"
+   *
    * call-seq:
    *   transport.proxyauth -> String
+   *
    */
   char *proxyauth(){
     return wsman_transport_get_proxyauth((WsManClient *)$self);
@@ -430,6 +483,7 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the certification authority (CAINFO)
+   *
    */
   void set_cainfo(const char *cainfo) {
     wsman_transport_set_cainfo((WsManClient *)$self, cainfo);
@@ -437,8 +491,10 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject cainfo;
   /*
    * Get the certification authority (CAINFO)
+   *
    * call-seq:
    *   transport.cainfo -> String
+   *
    */
   char *cainfo() {
     return wsman_transport_get_cainfo((WsManClient *)$self);
@@ -449,6 +505,7 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the certification thumbprint
+   *
    */
   void set_certhumbprint(const char *arg) {
     wsman_transport_set_certhumbprint((WsManClient *)$self, arg);
@@ -456,8 +513,10 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject certhumbprint;
   /*
    * Set the certification thumbprint
+   *
    * call-seq:
    *   transport.certhumbprint -> String
+   *
    */
   char *certhumbprint() {
     return wsman_transport_get_certhumbprint((WsManClient *)$self);
@@ -468,6 +527,7 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the path to the certification authority (CAINFO) store
+   *
    */
   void set_capath(const char *capath) {
     wsman_transport_set_capath((WsManClient *)$self, capath);
@@ -475,6 +535,7 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject capath;
   /*
    * Get the path to the certification authority (CAINFO) store
+   *
    */
   char *capath() {
     return wsman_transport_get_capath((WsManClient *)$self);
@@ -488,8 +549,9 @@ typedef struct _WsManTransport {} WsManTransport;
    *
    * Set the CA OID
    *
-   * ==== Reference
+   * ====== Reference
    * http://support.microsoft.com/kb/287547
+   *
    */
   void set_caoid(const char *oid) {
     wsman_transport_set_caoid((WsManClient *)$self, oid);
@@ -499,6 +561,7 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows client
    *
    * Get the CA OID
+   *
    */
   char *caoid() {
     return wsman_transport_get_caoid((WsManClient *)$self);
@@ -512,6 +575,7 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows client
    *
    * Use local CA ?
+   *
    */
   void set_calocal(BOOL local) {
     wsman_transport_set_calocal((WsManClient *)$self, local);
@@ -520,8 +584,10 @@ typedef struct _WsManTransport {} WsManTransport;
    * Windows client
    *
    * Use local CA ?
+   *
    * call-seq:
    *   transport.calocal -> Boolean
+   *
    */
   BOOL calocal() {
     return wsman_transport_get_calocal((WsManClient *)$self);
@@ -533,6 +599,7 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the certificate
+   *
    */
   void set_cert(const char *cert) {
     wsman_transport_set_cert((WsManClient *)$self, cert);
@@ -540,6 +607,7 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject cert;
   /*
    * Get the certificate
+   *
    */
   char *cert() {
     return wsman_transport_get_cert((WsManClient *)$self);
@@ -550,6 +618,7 @@ typedef struct _WsManTransport {} WsManTransport;
 #endif
   /*
    * Set the key
+   *
    */
   void set_key(const char *key) {
     wsman_transport_set_key((WsManClient *)$self, key);
@@ -557,6 +626,7 @@ typedef struct _WsManTransport {} WsManTransport;
   %newobject key;
   /*
    * Get the key
+   *
    */
   char *key() {
     return wsman_transport_get_key((WsManClient *)$self);

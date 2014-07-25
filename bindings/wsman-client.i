@@ -97,6 +97,7 @@ typedef struct _WsManClient {
    *
    * call-seq:
    *   client.scheme -> String
+   *
    */
   char *scheme() {
     return wsmc_get_scheme( $self );
@@ -104,6 +105,7 @@ typedef struct _WsManClient {
 
   /*
    * The host part of the client URL
+   *
    */
   char *host() {
     return wsmc_get_hostname( $self );
@@ -111,6 +113,7 @@ typedef struct _WsManClient {
 
   /*
    * The TCP port used in the connection
+   *
    */
   int port() {
     return wsmc_get_port( $self );
@@ -118,6 +121,7 @@ typedef struct _WsManClient {
 
   /*
    * The path of the clien URL
+   *
    */
   char *path() {
     return wsmc_get_path( $self );
@@ -125,6 +129,7 @@ typedef struct _WsManClient {
 
   /*
    * The user name used for authentication
+   *
    */
   char *user() {
     return wsmc_get_user( $self );
@@ -132,6 +137,7 @@ typedef struct _WsManClient {
 
   /*
    * The password used for authentication
+   *
    */
   char *password() {
     return wsmc_get_password( $self );

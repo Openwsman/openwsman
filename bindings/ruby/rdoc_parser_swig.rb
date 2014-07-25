@@ -473,7 +473,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
     return unless comment
 
-    comment = strip_stars comment
+    comment = strip_stars( "/* " + comment )
 
     comment = look_for_directives_in class_mod, comment
 

@@ -43,6 +43,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.set_dump_request
+   *
    */
   void set_dump_request(void) {
     wsmc_set_action_option($self, FLAG_DUMP_REQUEST );
@@ -57,6 +58,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.clear_dump_request
+   *
    */
   void clear_dump_request(void) {
     wsmc_clear_action_option($self, FLAG_DUMP_REQUEST );
@@ -72,6 +74,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
+   *
    */
   void set_flags(int flags) {
     wsmc_set_action_option($self, flags);
@@ -87,6 +90,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   optins.flags -> Integer
+   *
    */
   unsigned int get_flags() {
     return wsmc_get_action_option($self);
@@ -112,6 +116,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.reset_flags
+   *
    */
   void reset_flags() {
     wsmc_clear_action_option($self, ~FLAG_NONE);
@@ -125,6 +130,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.max_envelope_size = 10240
+   *
    */
   void set_max_envelope_size(unsigned long size) {
     $self->max_envelope_size = size;
@@ -138,6 +144,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.max_envelope_size -> Integer
+   *
    */
   unsigned long get_max_envelope_size() {
     return $self->max_envelope_size;
@@ -151,6 +158,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.max_elements = 42
+   *
    */
   void set_max_elements(int elements) {
     $self->max_elements = elements;
@@ -164,6 +172,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.max_elements -> Integer
+   *
    */
   int get_max_elements() {
     return $self->max_elements;
@@ -178,6 +187,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.timeout = 60*1000 # 60 seconds
+   *
    */
   void set_timeout(unsigned long timeout) {
     $self->timeout = timeout;
@@ -192,6 +202,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.timeout -> Integer
+   *
    */
   unsigned long get_timeout() {
     return $self->timeout;
@@ -207,6 +218,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.fragment = "xpath/expression"
+   *
    */
   void set_fragment(char *fragment) {
     wsmc_set_fragment(fragment, $self);
@@ -221,6 +233,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.fragment -> String
+   *
    */
   const char *get_fragment() {
     return $self->fragment;
@@ -240,6 +253,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.cim_namespace = "root/interop"
+   *
    */
   void set_cim_namespace(char *cim_namespace) {
     wsmc_set_cim_ns(cim_namespace, $self);
@@ -258,6 +272,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.cim_namespace -> String
+   *
    */
   const char *get_cim_namespace() {
     return $self->cim_ns;
@@ -272,6 +287,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.reference = "<xml ...>"
+   *
    */
   void set_reference(const char *reference) {
     wsmc_set_reference(reference, $self);
@@ -286,6 +302,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.reference -> String
+   *
    */
   const char *get_reference() {
     return $self->reference;
@@ -301,6 +318,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.add_option "Name", "Value"
+   *
    */
   void add_option(VALUE k, VALUE v)
   {
@@ -324,6 +342,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.options = { "Name" => "Value", ... }
+   *
    */
   void set_options(VALUE hash)
   {
@@ -336,6 +355,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.options -> Hash
+   *
    */
   VALUE get_options(void)
   {
@@ -353,6 +373,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.add_selector "Key", "Value"
+   *
    */
   void add_selector(VALUE k, VALUE v)
   {
@@ -376,6 +397,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.selectors = { "Key" => "Value", ... }
+   *
    */
   void set_selectors(VALUE hash)
   {
@@ -388,6 +410,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.selectors -> Hash
+   *
    */
   VALUE get_selectors(void)
   {
@@ -398,10 +421,14 @@ typedef struct {} client_opt_t;
 #if defined(SWIGRUBY)
   /*
    * Add a property as key/value pair
-   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
+   * * Key is evaluated as String
+   * * Value is evaluated as String or EndPointReference
    *
    * call-seq:
    *   options.add_property "Key", "Value"
+   *   options.add_property "Key", EndPointReference.new(...)
+   *
    */
   void add_property(VALUE k, VALUE v)
   {
@@ -421,10 +448,11 @@ typedef struct {} client_opt_t;
 #else
   /*
    * Add a string property as key/value pair
-   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.add_property( "Key", "Value" )
+   *
    */
   void add_property(const char *key, const char *value)
   {
@@ -437,6 +465,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.add_property( String, EndPointReference )
+   *
    */
   void add_property(const char *key, const epr_t *epr)
   {
@@ -448,10 +477,11 @@ typedef struct {} client_opt_t;
   %rename( "properties=" ) set_properties(VALUE hash);
   /*
    * Set properties from Hash
-   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.properties = { "Key" => "Value", ...}
+   *
    */
   void set_properties(VALUE hash)
   {
@@ -461,10 +491,11 @@ typedef struct {} client_opt_t;
   %rename( "properties" ) get_properties(void);
   /*
    * Get properties as Hash
-   *   Input parameters to 'invoke'd methods are represented as ClientOption properties
+   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
    *
    * call-seq:
    *   options.properties -> Hash
+   *
    */
   VALUE get_properties(void)
   {
@@ -480,6 +511,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_uri = "http://..."
+   *
    */
   void set_delivery_uri( const char *delivery_uri ) {
     wsmc_set_delivery_uri(delivery_uri, $self);
@@ -490,6 +522,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_uri -> String
+   *
    */
   const char *delivery_uri() {
     return $self->delivery_uri;
@@ -503,6 +536,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.sub_expiry = 600 # 10 mins
+   *
    */
   void set_sub_expiry(unsigned int event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
@@ -513,6 +547,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.sub_expiry -> Integer
+   *
    */
   int sub_expiry() {
     return $self->expires;
@@ -526,6 +561,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.heartbeat_interval = 60 # every minute
+   *
    */
   void set_heartbeat_interval(unsigned int heartbeat_interval) {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
@@ -536,6 +572,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.heartbeat_interval -> Integer
+   *
    */
   int heartbeat_interval() {
     return $self->heartbeat_interval;
@@ -549,6 +586,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_mode = Openwsman::WSMAN_DELIVERY_PUSH
+   *
    */
   void set_delivery_mode(unsigned int delivery_mode) {
     if (delivery_mode > WSMAN_DELIVERY_PULL)
@@ -566,6 +604,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_mode -> Integer
+   *
    */
   int delivery_mode() {
     return $self->delivery_mode;
@@ -584,6 +623,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_security_mode = Openwsman::WSMAN_DELIVERY_SEC_HTTPS_BASIC
+   *
    */
   void set_delivery_security_mode(unsigned int delivery_sec_mode) {
     if (delivery_sec_mode > WSMAN_DELIVERY_SEC_HTTP_SPNEGO_KERBEROS)
@@ -600,6 +640,7 @@ typedef struct {} client_opt_t;
    *
    * call-seq:
    *   options.delivery_security_mode -> Integer
+   *
    */
   int delivery_sec_mode() {
     return $self->delivery_sec_mode;

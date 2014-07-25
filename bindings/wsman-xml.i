@@ -1,5 +1,6 @@
 /*
  * wsman-xml.i
+ *
  * xml structure accessors for openwsman swig bindings
  *
  */
@@ -7,6 +8,7 @@
 /*
  * Document-class: XmlNs
  * Xml namespace
+ *
  */
  
 %rename(XmlNs) __WsXmlNs;
@@ -18,8 +20,10 @@ typedef struct __WsXmlNs* WsXmlNsH;
  * XmlDoc
  *
  * Implementation advice
- *  DONT do a %newobject on functions returning WsXmlDoc. Swig will
+ *
+ * DONT do a %newobject on functions returning WsXmlDoc. Swig will
  * free the WsXmlDocH immediately after wrapping !
+ *
  */
 
 %rename(XmlDoc) _WsXmlDoc;
@@ -46,6 +50,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
   /*
    * Create XmlDoc with node name
    * optionally pass namespace as 2nd arg (defaults to NULL)
+   *
    */
   _WsXmlDoc(const char *name, const char *ns = NULL) {
     return ws_xml_create_doc(ns, name);
@@ -74,6 +79,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    * call-seq:
    *  doc.string -> String
    *  doc.to_xml -> String
+   *
    */
   char *string() {
     int size;
@@ -113,6 +119,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *
    * call-seq:
    *   doc.dump(IO) -> nil
+   *
    */
   void dump_file(FILE *fp) {
     ws_xml_dump_doc( fp, $self );
@@ -225,6 +232,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    * call-seq:
    *  doc.fault(XmlDoc) -> Openwsman::Fault
    *  doc.fault(XmlDoc) -> nil # if XmlDoc is not a fault
+   *
    */
   WsManFault *fault() {
     WsManFault *f = NULL;
@@ -259,6 +267,7 @@ typedef struct _WsXmlDoc* WsXmlDocH;
    *
    * call-seq:
    *  doc.is_end_of_sequence() -> Boolean
+   *
    */
   int is_end_of_sequence() {
     return NULL != ws_xml_find_in_tree( ws_xml_get_soap_body( $self ), XML_NS_ENUMERATION, WSENUM_END_OF_SEQUENCE, 1 );
@@ -312,6 +321,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.string(XmlNode) -> String
+   *
    */
   char *string() {
     int size;
@@ -325,6 +335,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.dump_file(IO) -> nil
+   *
    */
   void dump_file(FILE *fp) {
     ws_xml_dump_node_tree( fp, $self );
@@ -345,6 +356,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  XmlNode == XmlNode -> Boolean
+   *
    */
   { return $self == n; }	  
   
@@ -355,6 +367,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.text(XmlNode) -> String
+   *
    */
   char *text() {
     return ws_xml_get_node_text( $self );
@@ -367,6 +380,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.text = String
+   *
    */
   void set_text( const char *text ) {
     ws_xml_set_node_text( $self, text );
@@ -377,6 +391,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.doc -> XmlDoc
+   *
    */
   WsXmlDocH doc() {
     return ws_xml_get_node_doc( $self );
@@ -387,6 +402,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.parent -> XmlNode
+   *
    */
   WsXmlNodeH parent() {
     return ws_xml_get_node_parent( $self );
@@ -400,6 +416,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.child -> XmlNode
+   *
    */
   WsXmlNodeH child() {
     return xml_parser_get_first_child($self);
@@ -410,6 +427,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.name -> String
+   *
    */
   char *name() {
     return ws_xml_get_node_local_name( $self );
@@ -423,6 +441,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.name = String
+   *
    */
   void set_name( const char *name ) {
     ws_xml_set_node_name( $self, ws_xml_get_node_name_ns( $self ), name );
@@ -433,6 +452,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.ns -> String
+   *
    */
   char *ns() {
     return ws_xml_get_node_name_ns( $self );
@@ -446,6 +466,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.ns = String
+   *
    */
   void set_ns( const char *ns ) {
     ws_xml_set_ns( $self, ns, ws_xml_get_node_name_ns_prefix($self) );
@@ -456,6 +477,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.prefix -> String
+   *
    */
   const char *prefix() {
     return ws_xml_get_node_name_ns_prefix($self);
@@ -469,6 +491,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.lang = String
+   *
    */
   void set_lang(const char *lang) {
     ws_xml_set_node_lang($self, lang);
@@ -481,6 +504,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * call-seq:
    *  node.find("namespace", "name") -> String # recursive
    *  node.find("namespace", "name", 0) -> String # non-recursive
+   *
    */
   WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
     return ws_xml_find_in_tree( $self, ns, name, recursive );
@@ -543,6 +567,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * count node children
    * if name given, count children with this name
    * if name + ns given, count children with this namespace and name
+   *
    */
   int size(const char *name = NULL, const char *ns = NULL) {
     return ws_xml_get_child_count_by_qname($self, ns, name);
@@ -550,6 +575,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
   
   /*
    * add child (namespace, name, text) to node
+   *
    */
   WsXmlNodeH add( const char *ns, const char *name, const char *text = NULL ) {
     return ws_xml_add_child( $self, ns, name, text );
@@ -557,6 +583,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 
   /*
    * add child (namespace, name, text) before(!) node
+   *
    */
   WsXmlNodeH add_before( const char *ns, const char *name, const char *text = NULL ) {
     return ws_xml_add_prev_sibling( $self, ns, name, text );
@@ -567,6 +594,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 #endif
   /*
    * add node as child
+   *
    */
   WsXmlNodeH add(WsXmlNodeH node) {
     ws_xml_duplicate_tree( $self, node );
@@ -607,6 +635,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *  node.each { |XmlNode| ... }
    *  node.each("name") { |XmlNode| ... }
    *  node.each("name", "namespace") { |XmlNode| ... }
+   *
    */
 
   void each(const char *name = NULL, const char *ns = NULL) {
@@ -643,6 +672,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *  node.get(42) -> XmlNode
    *  node.get(42, "name") -> XmlNode
    *  node.get(42, "name", "namespace") -> XmlNode
+   *
    */
   WsXmlNodeH get(int i, const char *name = NULL, const char *ns = NULL) {
     if (i < 0 || i >= ws_xml_get_child_count_by_qname($self,ns,name))
@@ -656,6 +686,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * call-seq:
    *  node.get("name") -> XmlNode
    *  node.get("name", "namespace") -> XmlNode
+   *
    */
   WsXmlNodeH get(const char *name, const char *ns = NULL) {
     return ws_xml_get_child($self, 0, ns, name);
@@ -669,6 +700,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *  node.attr(1) -> XmlAttr
    *  node.attr("name") -> XmlAttr
    *  node.attr("name", "namespace") -> XmlAttr
+   *
    */
   WsXmlAttrH attr(VALUE index = Qnil, VALUE namespace = Qnil) {
     if (NIL_P(index)) { /* nil */
@@ -695,6 +727,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.attr_count -> Integer
+   *
    */
   int attr_count() {
     return ws_xml_get_node_attr_count( $self );
@@ -704,6 +737,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.attr_find("namespace", "name") -> XmlAttr
+   *
    */
   WsXmlAttrH attr_find( const char *ns, const char *name ) {
     return ws_xml_find_node_attr( $self, ns, name );
@@ -713,6 +747,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.attr_add("namespace", "name", "value") -> XmlAttr
+   *
    */
   WsXmlAttrH attr_add( const char *ns, const char *name, const char *value ) {
     return ws_xml_add_node_attr( $self, ns, name, value );
@@ -722,6 +757,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *  node.epr("namespace", "epr_node_name", Integer embedded) -> EndPointReference
+   *
    */
   epr_t *epr( const char *ns, const char *epr_node_name, int embedded) {
     return epr_deserialize($self, ns, epr_node_name, embedded);
@@ -734,6 +770,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    *
    * call-seq:
    *   node.each_attr { |XmlAttr| ... }
+   *
    */
   void each_attr() {
     int i = 0;
@@ -748,6 +785,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
 
 /*
  * Document-class: XmlAttr
+ *
  * An XmlAttr is a key/value pair representing an attribute of a node.
  *
  * An attribute has
@@ -774,6 +812,7 @@ typedef struct __WsXmlAttr* WsXmlAttrH;
    *
    * call-seq:
    *   attr.name -> String
+   *
    */
   char *name() {
     return ws_xml_get_attr_name( $self );
@@ -783,6 +822,7 @@ typedef struct __WsXmlAttr* WsXmlAttrH;
    *
    * call-seq:
    *   attr.ns -> String
+   *
    */
   char *ns() {
     return ws_xml_get_attr_ns( $self );
@@ -792,6 +832,7 @@ typedef struct __WsXmlAttr* WsXmlAttrH;
    *
    * call-seq:
    *   attr.value -> String
+   *
    */
   char *value() {
     return ws_xml_get_attr_value( $self );
@@ -801,6 +842,7 @@ typedef struct __WsXmlAttr* WsXmlAttrH;
    *
    * call-seq:
    *   attr.remove -> nil
+   *
    */
   void remove() {
     ws_xml_remove_node_attr( $self );
