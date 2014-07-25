@@ -805,7 +805,7 @@ dispatch_inbound_call(SoapH soap, WsmanMessage * msg, void *opaqueData)
 		wsman_set_fault(msg, WSA_DESTINATION_UNREACHABLE,
 				WSMAN_DETAIL_INVALID_RESOURCEURI, NULL);
 		destroy_dispatch_entry(dispatch);
-		debug("dispatch == NULL");
+		debug("op entry == NULL");
 		goto DONE;
 	}
 	op->in_doc = in_doc;
