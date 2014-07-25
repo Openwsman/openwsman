@@ -1,3 +1,8 @@
+2.4.10
+- Features
+  - Allow to pass EndPointReference instances as invoke() parameters
+    via ClientOptions.add_property
+
 2.4.9
 - Bugfixes
   - make finding libssl.so.* more robust
