@@ -64,6 +64,9 @@ typedef struct {} epr_t;
   epr_t( const char *uri, const char *address) {
     return epr_create( uri, NULL, address);
   }
+  epr_t( const char *uri ) {
+    return epr_from_string( uri );
+  }
 #endif
 
   ~epr_t() {
@@ -175,19 +178,31 @@ typedef struct {} epr_t;
     return wsman_epr_selector_by_name($self, name);
   }
 
-#if defined(SWIGRUBY)
+#if !defined(SWIGJAVA) /* Target_* undefined for Java in openwsman.i */
   /*
    * Return list of selector names
    */
+#if defined(SWIGRUBY)
   VALUE selector_names(void) {
+#endif
+#if defined(SWIGPYTHON)
+  PyObject *selector_names(void) {
+#endif
+#if defined(SWIGPERL)
+  AV *selector_names(void) {
+#endif
     int i;
-    VALUE ary = rb_ary_new2($self->refparams.selectorset.count);
+    Target_Type ary = Target_SizedArray($self->refparams.selectorset.count);
     Selector *p = $self->refparams.selectorset.selectors;
     for (i = 0; i < $self->refparams.selectorset.count; i++) {
-      rb_ary_store(ary, i, SWIG_FromCharPtr(p->name));
+      Target_ListSet(ary, i, SWIG_FromCharPtr(p->name));
       ++p;
     }
+#if defined(SWIGPERL)
+    return (AV *)ary;
+#else
     return ary;
+#endif
   }
 #endif
 
