@@ -212,7 +212,7 @@ hash_t *u_parse_query(const char *query)
 	h = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 
 	/* foreach name=value pair... */
-	for (src = q; (tok = strtok_r(src, "&,", &pp)) != NULL; src = NULL) {
+	for (src = q; (tok = strtok_r(src, "&", &pp)) != NULL; src = NULL) {
 		/* dup the string so we can modify it */
 		key = u_strdup(tok);
 		dbg_err_if(key == NULL);
