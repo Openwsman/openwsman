@@ -1,6 +1,9 @@
+2.4.11
 - Features
   - Bindings: EndPointReference.selector_names() for Python
 - Bugfixes
+  - URI parsing: Disallow comma to separate selectors in resource uri,
+      only ampersand is allowed. (issue #38)
   - Bindings: Fix Ruby doc generation
 
 2.4.10

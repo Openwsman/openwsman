@@ -218,11 +218,15 @@ hash_t *u_parse_query(const char *query)
 		dbg_err_if(key == NULL);
 
 		val = strchr(key, '=');
-		dbg_err_if(val == NULL);
+		if (val == NULL) {
+                  warn("Missing '=' character in query: %s", tok);
+                  goto err;
+                }
 
 		/* zero-term the name part and set the value pointer */
 		*val++ = 0;
 		val = u_strdup(val);
+		dbg_err_if(val == NULL);
 
 		u_trim(key);
 		u_trim(val);
@@ -230,7 +234,7 @@ hash_t *u_parse_query(const char *query)
 		if (u_string_unify(key) || u_string_unify(val)) {
 			u_free(key);
 			u_free(val);
-			dbg("Could not unify query: %s", tok);
+			warn("Could not unify %%nn sequences in query: %s", tok);
 			continue;
 		}
 		if (!hash_lookup(h, key)) {
