@@ -331,7 +331,7 @@ static int dictionary_set(dictionary * d, char * key, char * val)
     int         i ;
     unsigned    hash ;
 
-    if (d==NULL || key==NULL) return ;
+    if (d==NULL || key==NULL) return 1 ;
 
     /* Compute hash for this key */
     hash = dictionary_hash(key) ;
@@ -347,7 +347,7 @@ static int dictionary_set(dictionary * d, char * key, char * val)
                         free(d->val[i]);
                     d->val[i] = val ? strdup(val) : NULL ;
                     /* Value has been modified: return */
-                    return ;
+                    return 0 ;
                 }
             }
         }
