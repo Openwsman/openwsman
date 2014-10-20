@@ -217,7 +217,11 @@ typedef struct _WsManClient {
     wsmc_action_args_t args;
     args.client = $self;
     args.options = options;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_identify_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_identify_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_identify( $self, options );
 #endif
@@ -238,7 +242,11 @@ typedef struct _WsManClient {
     args.client = $self;
     args.options = options;
     args.epr = epr;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_get_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_get_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_get_from_epr( $self, epr, options);
 #endif
@@ -259,7 +267,11 @@ typedef struct _WsManClient {
     args.client = $self;
     args.options = options;
     args.epr = epr;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_delete_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_delete_from_epr_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_delete_from_epr( $self, epr, options);
 #endif
@@ -291,7 +303,11 @@ typedef struct _WsManClient {
     args.options = options;
     args.filter = filter;
     args.resource_uri = resource_uri;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_enumerate_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_enumerate_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_enumerate( $self, resource_uri, options, filter);
 #endif
@@ -314,7 +330,11 @@ typedef struct _WsManClient {
     args.filter = filter;
     args.resource_uri = resource_uri;
     args.context = context;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_pull_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_pull_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_pull( $self, resource_uri, options, filter, context);
 #endif
@@ -338,7 +358,11 @@ typedef struct _WsManClient {
     args.data = data;
     args.size = size;
     args.encoding = encoding;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_create_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_create_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_create_fromtext( $self, resource_uri, options, data, size, encoding);
 #endif
@@ -362,7 +386,11 @@ typedef struct _WsManClient {
     args.data = data;
     args.size = size;
     args.encoding = encoding;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_put_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_put_fromtext_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_put_fromtext( $self, resource_uri, options, data, size, encoding);
 #endif
@@ -384,7 +412,11 @@ typedef struct _WsManClient {
     args.options = options;
     args.resource_uri = resource_uri;
     args.context = context;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_release_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_release_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_release( $self, resource_uri, options, context);
 #endif
@@ -405,7 +437,11 @@ typedef struct _WsManClient {
     args.client = $self;
     args.options = options;
     args.resource_uri = resource_uri;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_get_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_get_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_get( $self, resource_uri, options);
 #endif
@@ -426,7 +462,11 @@ typedef struct _WsManClient {
     args.client = $self;
     args.options = options;
     args.resource_uri = resource_uri;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_delete_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_delete_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_delete( $self, resource_uri, options);
 #endif
@@ -450,7 +490,11 @@ typedef struct _WsManClient {
     args.resource_uri = resource_uri;
     args.method = method;
     args.method_args = data;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_invoke_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_invoke_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_invoke( $self, resource_uri, options, method, data);
 #endif
@@ -472,7 +516,11 @@ typedef struct _WsManClient {
     args.options = options;
     args.filter = filter;
     args.resource_uri = resource_uri;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_subscribe_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_subscribe_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_subscribe($self,  resource_uri, options, filter);
 #endif
@@ -495,7 +543,11 @@ typedef struct _WsManClient {
     args.filter = filter;
     args.resource_uri = resource_uri;
     args.identifier = identifier;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_unsubscribe_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_unsubscribe_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_unsubscribe($self, resource_uri, options, identifier);
 #endif
@@ -517,7 +569,11 @@ typedef struct _WsManClient {
     args.options = options;
     args.resource_uri = resource_uri;
     args.identifier = identifier;
+#if RUBY_VERSION > 20 /* New threading model */
+    return (WsXmlDocH)rb_thread_call_without_gvl((void * (*)(void *))ruby_renew_thread, &args, RUBY_UBF_IO, 0);
+#else
     return (WsXmlDocH)rb_thread_blocking_region((rb_blocking_function_t*)ruby_renew_thread, &args, RUBY_UBF_IO, 0);
+#endif
 #else
     return wsmc_action_renew($self, resource_uri, options, identifier);
 #endif

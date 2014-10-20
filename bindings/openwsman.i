@@ -102,6 +102,9 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 #include <rubyio.h>
 #endif
 
+#if HAVE_RUBY_THREAD_H /* New threading model */
+#include <ruby/thread.h>
+#endif
 %}
 
 %typemap(in) FILE* {
