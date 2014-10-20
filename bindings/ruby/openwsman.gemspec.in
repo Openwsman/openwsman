@@ -15,6 +15,11 @@ systems using the WS-Management protocol."
   s.add_development_dependency("rake-compiler", [">= 0"])
   s.add_development_dependency("mocha", [">= 0.9"])
   s.add_development_dependency("yard", [">= 0.5"])
+  if RUBY_VERSION >= "2.1"
+    # stdlib test/unit deprecated(broken) with Ruby 2.1 and Minitest 5
+    # adding test-unit gem fixes this
+    s.add_development_dependency("test-unit")
+  end
   s.extensions	<< "ext/openwsman/extconf.rb"
 
   s.files        = Dir.glob("lib/*.rb") +
