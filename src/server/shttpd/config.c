@@ -134,8 +134,10 @@ set_ssl(struct shttpd_ctx *ctx, void *arg, const char *pem)
             { "SSLv2", SSL_OP_NO_SSLv2 },
             { "SSLv3", SSL_OP_NO_SSLv3 },
             { "TLSv1", SSL_OP_NO_TLSv1 },
+# if OPENSSL_VERSION_NUMBER >= 0x10001000L
             { "TLSv1_1", SSL_OP_NO_TLSv1_1 },
             { "TLSv1_2", SSL_OP_NO_TLSv1_2 },
+# endif
             { NULL, 0 }
           };
           char *blank_ptr;
