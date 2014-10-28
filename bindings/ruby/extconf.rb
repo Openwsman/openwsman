@@ -28,6 +28,12 @@ unless have_library('xml2', 'xmlNewDoc')
 end
 find_header 'libxml/parser.h', '/usr/include/libxml2'
 
+swig = find_executable("swig")
+raise "SWIG not found" unless swig
+
+major, minor, path = RUBY_VERSION.split(".")
+raise "SWIG failed to run" unless system("#{swig} -ruby -autorename -DRUBY_VERSION=#{major}#{minor} -I. -I/usr/include/openwsman -o openwsman_wrap.c openwsman.i")
+
 $CPPFLAGS = "-I/usr/include/openwsman -I.."
 
 create_makefile('_openwsman')

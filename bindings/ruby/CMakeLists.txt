@@ -118,7 +118,8 @@ ADD_CUSTOM_COMMAND (
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c" "ext/openwsman"
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.h" "ext/openwsman"
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/extconf.rb" "ext/openwsman"
-  COMMAND "cp" "*.c" "ext/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_BINARY_DIR}/../version.i" "ext/openwsman"
+  COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/../*.i" "ext/openwsman"
   COMMAND "mkdir" "-p" "ext/ruby"
   COMMAND "cp" "${CMAKE_CURRENT_SOURCE_DIR}/helpers.h" "ext/ruby"
 
@@ -132,7 +133,8 @@ ADD_CUSTOM_COMMAND (
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/openwsman/*.rb.in
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/*.c
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../*.i
 )
 
 ENDIF( BUILD_RUBY_GEM )
