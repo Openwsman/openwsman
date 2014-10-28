@@ -1,3 +1,12 @@
+2.4.12
+- Features
+  - New config option 'ssl_disable_protocols'. Pre-set to disable
+    SSLv2 and v3 in SSL mode
+  - Ruby: support Ruby 2.1 threading API
+- Bugfixes
+  - Fix memory corruption due to a malloc made with the wrong size
+  - iniparser: dictionary_set' must return a value (David Holm)
+
 2.4.11
 - Features
   - Bindings: EndPointReference.selector_names() for Python
