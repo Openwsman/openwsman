@@ -123,7 +123,7 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 #endif
 }
 
-#endif / SWIGRUBY */
+#endif /* SWIGRUBY */
 
 #if defined(SWIGJAVA)
 %module OpenWSMan
