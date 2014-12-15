@@ -102,6 +102,7 @@ set_vendor_namespaces(void)
           (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
     ns->class_prefix = CimResource_Namespaces[i].class_prefix;
     ns->ns = (char*) CimResource_Namespaces[i].ns;
+    debug("Namespace %s => %s", ns->class_prefix, ns->ns);
     lnode_t *node = lnode_create(ns);
     list_append(l, node);
   }
@@ -113,6 +114,7 @@ set_vendor_namespaces(void)
            (WsSupportedNamespaces *)u_malloc(sizeof(WsSupportedNamespaces));
       ns->class_prefix = (char*)hnode_getkey(hn);
       ns->ns = (char*) hnode_get(hn);
+      debug("Namespace %s => %s", ns->class_prefix, ns->ns);
       lnode_t *node = lnode_create(ns);
       list_append(l, node);
     }
@@ -169,7 +171,7 @@ void set_config( void *self, dictionary *config )
     indication_profile_implementation_ns = iniparser_getstring(config, "cim:indication_profile_implementation_ns", "root/interop");
     debug("vendor namespaces: %s", namespaces);
     if (namespaces) {
-      hash_t * t = u_parse_query(namespaces);
+      hash_t * t = u_parse_list(namespaces);
       if (t) {
         vendor_namespaces = t;
       }
