@@ -279,7 +279,7 @@ bindings.
 %if 0%{?fedora}
 %define perl_version %(eval "`%{__perl} -V:version`"; echo $version)
 %define perl_requires perl(:MODULE_COMPAT_%{perl_version})
-Requires:       %{perl_version}
+Requires:       %{perl_requires}
 %else
 Requires:       perl = %{perl_version}
 %endif
