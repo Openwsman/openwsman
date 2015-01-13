@@ -162,7 +162,7 @@ int ow_list_verify(list_t *);
 #if defined(LIST_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
 #define lnode_pool_isempty(P)	((P)->list_free == 0)
 #define list_count(L)		((L)->list_nodecount)
-#define list_isempty(L)		((L)->list_nodecount == 0)
+#define list_isempty(L)		((L == NULL) || ((L)->list_nodecount == 0))
 #define list_isfull(L)		(LIST_SFX_CHECK(L)->list_nodecount == (L)->list_maxcount)
 #define list_next(L, N)		(LIST_SFX_CHECK(N)->list_next == &(L)->list_nilnode ? NULL : (N)->list_next)
 #define list_prev(L, N)		(LIST_SFX_CHECK(N)->list_prev == &(L)->list_nilnode ? NULL : (N)->list_prev)
