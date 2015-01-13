@@ -13,10 +13,8 @@ enable_testing()
 #
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
-endif(COMMAND cmake_policy)
-
-if(COMMAND cmake_policy)
   cmake_policy(SET CMP0005 OLD)
+  cmake_policy(SET CMP0046 OLD)
 endif(COMMAND cmake_policy)
 	      
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
