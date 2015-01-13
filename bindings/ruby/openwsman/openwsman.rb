@@ -38,6 +38,14 @@ require 'openwsman/xmldoc'
 # response and dig down through its XmlNode and XmlAttr objects.
 
 module Openwsman
+  class ClientOption
+    # assign hash to properties
+    def properties= value
+      value.each do |k,v|
+        self.add_property k.to_s, v.to_s
+      end
+    end
+  end
   class Transport
     # called when authentication credentials missing or wrong
     def Transport.auth_request_callback client, auth_type

@@ -474,20 +474,6 @@ typedef struct {} client_opt_t;
 #endif
   
 #if defined(SWIGRUBY)
-  %rename( "properties=" ) set_properties(VALUE hash);
-  /*
-   * Set properties from Hash
-   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
-   *
-   * call-seq:
-   *   options.properties = { "Key" => "Value", ...}
-   *
-   */
-  void set_properties(VALUE hash)
-  {
-    $self->properties = value2hash(NULL, hash, 0);
-  }
-
   %rename( "properties" ) get_properties(void);
   /*
    * Get properties as Hash
@@ -499,7 +485,22 @@ typedef struct {} client_opt_t;
    */
   VALUE get_properties(void)
   {
-    return hash2value($self->properties);
+    VALUE v = Qnil;
+    if (!list_isempty($self->properties)) {
+      v = rb_hash_new();
+      lnode_t *node = list_first($self->properties);
+      while (node) {
+        client_property_t *property = (client_property_t *)node->list_data;
+        if (property->value.type == 0) {
+	  rb_hash_aset( v, makestring(property->key), makestring(property->value.entry.text));
+        }
+        else {
+          rb_hash_aset( v, makestring(property->key), makestring(epr_to_string(property->value.entry.eprp)));
+        }
+        node = list_next($self->properties, node);
+      }
+    }
+    return v;
   }
 #endif
 
