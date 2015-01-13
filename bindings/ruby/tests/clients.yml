@@ -1,3 +1,20 @@
+x220:
+  scheme: http
+  host: 10.160.65.142
+  port: 16992
+  path: /wsman
+  username: admin
+  password: P4ssw0rd!
+
+server2012:
+  scheme: http
+  host: 10.160.67.78
+  port: 5985
+  path: /wsman
+  username: wsman
+  password: secret
+  auth: basic
+
 server2003sp2:
   scheme: http
   host: 10.10.4.227

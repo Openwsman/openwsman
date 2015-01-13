@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+# This is ./rdoc
+#
+# Call as
+# ./rdoc <version-major>.<version-minor> ...
+#
+
+def usage msg=nil
+  STDERR.puts "*** Error: #{msg}" if msg
+  STDERR.puts "Usage:"
+  STDERR.puts "  rdoc <version-major>.<version-minor> ..."
+  exit 1
+end
+
+home = File.expand_path(File.dirname(__FILE__))
+$:.unshift(home)
+
+version = ARGV.shift
+usage "Called without arguments" unless version
+
+if version =~ /(\d+)\.(\d+)/
+  major = $1.to_i
+  minor = $2.to_i
+else
+  usage "Version argument malformed, must be X.Y"
+end
+
+# can't directly require /usr/bin/rdoc since it does not have a '.rb' extension
+# work around: create temporary symlink
+
+rdoc = "rdoc#{major}_#{minor}.rb"
+new_rdoc = File.join(home, rdoc)
+
+# Symlink ./rdoc.rb to /usr/bin/rdoc
+#
+File.symlink("/usr/bin/rdoc", new_rdoc) unless File.symlink?(new_rdoc)
+
+begin
+  if major == 1 && minor == 8
+    require 'parse_swig.rb' # load the swig parser
+  else
+    require 'rdoc'
+
+    require 'rdoc/encoding'
+    require 'rdoc/parser'
+
+    # Simple must come first
+    require 'rdoc/parser/simple'
+    require File.join(home, 'rdoc_parser_swig')
+  end
+  require "./#{rdoc}" # load the original rdoc
+ensure
+  File.delete new_rdoc # Discard the symlink
+end

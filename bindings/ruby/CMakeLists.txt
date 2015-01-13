@@ -72,7 +72,7 @@ ADD_CUSTOM_COMMAND (
    OUTPUT ${rdoc_dir}
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating rdoc documentation ..."
    COMMAND rm -rf ${rdoc_dir}
-   COMMAND ./rdoc${RUBY_VERSION_MAJOR}.${RUBY_VERSION_MINOR} -o ${rdoc_dir} -t "Openwsman - WS-Management for all" -m README.rdoc README.rdoc ../openwsman.i ../*.i openwsman/*.rb
+   COMMAND ./rdoc ${RUBY_VERSION_MAJOR}.${RUBY_VERSION_MINOR} -o ${rdoc_dir} -t "Openwsman - WS-Management for all" -m README.rdoc README.rdoc ../openwsman.i ../*.i openwsman/*.rb
    COMMAND ${CMAKE_COMMAND} -E echo "Done."
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    DEPENDS ${CMAKE_SOURCE_DIR}/bindings/*.i
