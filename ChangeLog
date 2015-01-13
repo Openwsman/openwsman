@@ -3,6 +3,9 @@
   - Support Ruby 2.2
 - Bugfixes
   - Parsing of vendor namespaces (#48, #38)
+  - Client getters memory leaks (#47)
+  - Keep order of 'invoke' parameters (#49)
+
 2.4.12
 - Features
   - New config option 'ssl_disable_protocols'. Pre-set to disable
