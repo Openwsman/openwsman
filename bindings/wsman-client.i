@@ -92,6 +92,7 @@ typedef struct _WsManClient {
     return wsmc_get_response_code( $self );
   }
 
+  %newobject scheme;
   /*
    * String representation of the transport scheme
    *
@@ -103,6 +104,7 @@ typedef struct _WsManClient {
     return wsmc_get_scheme( $self );
   }
 
+  %newobject host;
   /*
    * The host part of the client URL
    *
@@ -119,6 +121,7 @@ typedef struct _WsManClient {
     return wsmc_get_port( $self );
   }
 
+  %newobject path;
   /*
    * The path of the clien URL
    *
@@ -127,6 +130,7 @@ typedef struct _WsManClient {
     return wsmc_get_path( $self );
   }
 
+  %newobject user;
   /*
    * The user name used for authentication
    *
@@ -135,6 +139,7 @@ typedef struct _WsManClient {
     return wsmc_get_user( $self );
   }
 
+  %newobject password;
   /*
    * The password used for authentication
    *
