@@ -6,7 +6,7 @@ enable_testing()
 
 add_subdirectory(tests)
 
-EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['ruby_version']" OUTPUT_VARIABLE RUBY_VERSION)
+EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print (RbConfig::CONFIG['ruby_version']||RbConfig::CONFIG['RUBY_PROGRAM_VERSION'])" OUTPUT_VARIABLE RUBY_VERSION)
 
 # prefer vendor dirs
 SET(RUBY_WSMAN_LIB_DIR ${RUBY_VENDORLIB_DIR})
