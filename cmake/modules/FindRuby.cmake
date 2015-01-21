@@ -21,7 +21,7 @@ endif (RUBY_LIBRARY AND RUBY_INCLUDE_PATH)
 #   RUBY_LIBDIR=`$RUBY -r rbconfig -e 'printf("%s",RbConfig::CONFIG@<:@"libdir"@:>@)'`
 #   RUBY_LIBRUBYARG=`$RUBY -r rbconfig -e 'printf("%s",RbConfig::CONFIG@<:@"LIBRUBYARG_SHARED"@:>@)'`
 
-FIND_PROGRAM(RUBY_EXECUTABLE NAMES ruby ruby19 ruby1.8 ruby18 )
+FIND_PROGRAM(RUBY_EXECUTABLE NAMES ruby ruby22 ruby21 ruby20 ruby19 ruby1.8 ruby18 )
 
 EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MAJOR']"
    OUTPUT_VARIABLE RUBY_VERSION_MAJOR)
