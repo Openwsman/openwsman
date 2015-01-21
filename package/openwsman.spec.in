@@ -56,7 +56,7 @@ BuildRequires:  ruby
 
 %if 0%{?fedora} + 0%{?rhel_version} + 0%{?centos_version}  > 0
 
-%if 0%{?rhel_version} < 600
+%if 0%{?rhel_version} < 700
 BuildRequires:  ruby-devel
 %endif
 
@@ -64,8 +64,9 @@ BuildRequires:  ruby-libs
 
 %endif
 
-%if (0%{?rhel_version} >= 500 && 0%{?rhel_version} < 600) || (0%{?centos_version} >= 500 && 0%{?centos_version} < 600) || (0%{?fedora} > 0 && 0%{?fedora} < 17)
-# rdoc is separate from rhel5 on
+%if 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700 || 0%{?fedora} > 16
+BuildRequires:  rubygem-rdoc
+%else
 BuildRequires:  ruby-rdoc
 %endif
 
@@ -231,7 +232,7 @@ API.
 Requires:       ruby
 
 # RbConfig::CONFIG["ruby_version"] is empty in Fedora > 18 !?
-%if 0%{?fedora} > 18
+%if 0%{?fedora} > 18 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["RUBY_PROGRAM_VERSION"])')}
 %else
 %{!?ruby_version: %global ruby_version %(ruby -r rbconfig -e 'print(RbConfig::CONFIG["ruby_version"])')}
