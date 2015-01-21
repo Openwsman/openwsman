@@ -1,3 +1,7 @@
+2.4.14
+- Bugfixes
+  - Build fixes for Fedora21, RHEL7, and CentOS7
+
 2.4.13
 - Features
   - Support Ruby 2.2
