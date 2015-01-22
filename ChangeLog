@@ -1,6 +1,7 @@
 2.4.14
 - Bugfixes
   - Build fixes for Fedora21, RHEL7, and CentOS7
+  - option parser accepts '-?' and '--help' as valid
 
 2.4.13
 - Features
