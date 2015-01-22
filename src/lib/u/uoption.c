@@ -634,6 +634,9 @@ void u_option_context_set_help_enabled(u_option_context_t *ctx,
 
 /* ----------------------------------------------------------------------------
 			Parse
+ * return 0 on error
+ * return 1 on ok
+ * return 2 on help
 ----------------------------------------------------------------------------- */
 
 char u_option_context_parse(u_option_context_t *ctx,
@@ -779,7 +782,7 @@ char u_option_context_parse(u_option_context_t *ctx,
 				}
 			}
 			get_tmp_data(tmp_data, nd);
-			retval = 1;
+                        retval = (found == FOUND_HELP) ? 2 : 1;
 		}
 		for (i = 1; i < *argc; i++)
 			u_free(largv[i]);
