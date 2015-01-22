@@ -37,6 +37,7 @@
 
 #include "u/libu.h"
 
+#define FOUND_HELP ((void *)1)
 /* ----------------------------------------------------------------------------
 			Misc
 ----------------------------------------------------------------------------- */
@@ -414,7 +415,7 @@ static u_option_entry_t* find_long_opt(u_option_context_t *ctx, char *option)
 	if (!strncmp(option, "help", strlen("help")) ) {
 		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
 			print_long_help(ctx, option);
-                  return NULL;
+                  return FOUND_HELP;
 		}
 	}
 
@@ -452,7 +453,7 @@ static u_option_entry_t* find_short_opt(u_option_context_t *ctx, char option)
 	if (option == '?') {
 		if (ctx->mode & U_OPTION_CONTEXT_HELP_ENABLED) {
 			print_short_help(ctx);
-                  return NULL;
+                  return FOUND_HELP;
 		}
 	}
 
@@ -694,7 +695,10 @@ char u_option_context_parse(u_option_context_t *ctx,
 		}
 		if (*optptr == '-' && optptr == largv[i] + 1) {
 			found = find_long_opt(ctx, optptr + 1);
-			if (found) {
+                        if (found == FOUND_HELP) {
+                          goto ret;
+                        }
+                        else if (found) {
 				nlen = strlen(found->name);
 				if (strlen(optptr + 1) != nlen) {
 					argptr = optptr + nlen + 2;
@@ -708,7 +712,10 @@ char u_option_context_parse(u_option_context_t *ctx,
 			}
 		} else {
 			found = find_short_opt(ctx, *optptr);
-			if (found) {
+                        if (found == FOUND_HELP) {
+                          goto ret;
+                        }
+			else if (found) {
 				if (arg_ind + i + 1 < *argc) {
 					arg_ind++;
 					argptr = largv[arg_ind + i];
