@@ -68,6 +68,17 @@ namespace WsmanClientNamespace
 		string GetFaultDetail() const throw() {return soapDetail;}
 	};
 
+        // Exception throw if a resource is not found
+        class WsmanResourceNotFound : public WsmanClientException
+        {
+        public:
+                WsmanResourceNotFound(const char *message)
+                    : WsmanClientException(message, WSMAN_RESOURCE_NOT_FOUND)
+                {
+                }
+                virtual ~WsmanResourceNotFound() throw() {}
+        };
+
 	typedef enum {
 		WSMAN_DELIVERY_PUSH = 0,
 		WSMAN_DELIVERY_PUSHWITHACK,

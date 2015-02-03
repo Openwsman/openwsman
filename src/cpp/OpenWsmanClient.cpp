@@ -143,10 +143,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 	try
 	{
 		if(ResourceNotFound(cl, enum_response))
-		{
-			wsmc_options_destroy(options);
-			return;
-		}
+			throw WsmanResourceNotFound(resourceUri.c_str());
 	}
 	catch(WsmanSoapFault& e)
 	{
@@ -201,10 +198,7 @@ void OpenWsmanClient::Enumerate(const string & resourceUri, WsmanFilter & filter
 	try
 	{
 		if(ResourceNotFound(cl, enum_response))
-		{
-			wsmc_options_destroy(options);
-			return;
-		}
+			throw WsmanResourceNotFound(resourceUri.c_str());
 	}
 	catch(WsmanSoapFault& e)
 	{
