@@ -45,6 +45,8 @@ using namespace std;
 #define WSMAN_TCP_ERROR 13
 // failed to connect to server
 #define WSMAN_CONNECT_ERROR 14
+// resource not found
+#define WSMAN_RESOURCE_NOT_FOUND 15
 
 namespace WsmanExceptionNamespace
 {
