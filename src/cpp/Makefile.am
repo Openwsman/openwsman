@@ -16,15 +16,18 @@ wsmaninclude_HEADERS = \
 		       Exception.h \
 			WsmanClient.h \
 			WsmanEPR.h \
-			WsmanFilter.h
+			WsmanFilter.h \
+			WsmanOptions.h
 
 lib_LTLIBRARIES=libwsman_clientpp.la
 
 libwsman_clientpp_la_SOURCES = \
 	OpenWsmanClient.cpp  \
+	WsmanOptions.cpp \
 	OpenWsmanClient.h \
 	WsmanEPR.h \
 	WsmanFilter.h \
+	WsmanOptions.h \
 	Exception.h \
 	WsmanClient.h
 

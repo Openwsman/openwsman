@@ -17,7 +17,6 @@ extern "C" {
 }
 
 #include "wsman-client-transport.h"
-#include "wsman-filter.h"
 
 #define WSMAN_ENCODING		"UTF-8"
 
@@ -74,219 +73,111 @@ OpenWsmanClient::~OpenWsmanClient()
 
 string OpenWsmanClient::Identify() const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH identifyResponse = wsmc_action_identify(cl, 		
-			options
-			);
-	wsmc_options_destroy(options);
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+
+	WsXmlDocH identifyResponse = wsmc_action_identify(cl, options);
 	CheckWsmanResponse(cl, identifyResponse);
 	string xml = ExtractPayload(identifyResponse);
 	ws_xml_destroy_doc(identifyResponse);
-	return xml; 
+	return xml;
 }
 
 string OpenWsmanClient::Create(const string &resourceUri, const string &data) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH createResponse = wsmc_action_create_fromtext(cl, 
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+
+	WsXmlDocH createResponse = wsmc_action_create_fromtext(cl,
 			resourceUri.c_str(),
 			options,
 			data.c_str(), data.length(), WSMAN_ENCODING);
-	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, createResponse);
 	string xml = ExtractPayload(createResponse);
 	ws_xml_destroy_doc(createResponse);
-	return xml; 
+	return xml;
 }
 
 void OpenWsmanClient::Delete(const string &resourceUri, const NameValuePairs *s) const
 {
-	client_opt_t *options;
-	options = SetOptions(cl);
-	if(s)
-	{
-		// Add selectors.
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	WsXmlDocH deleteResponse = wsmc_action_delete(	cl, 
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	WsXmlDocH deleteResponse = wsmc_action_delete(cl,
 			(char *)resourceUri.c_str(),
 			options);
-	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, deleteResponse);
 	ws_xml_destroy_doc(deleteResponse);
 }
 
+void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes, const WsmanOptions &options, const WsmanFilter &filter) const
+{
+	WsXmlDocH doc;
+	char *enumContext;
+	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, filter.getFilter());
+
+	if(ResourceNotFound(cl, enum_response))
+		throw WsmanResourceNotFound(resourceUri.c_str());
+
+	enumContext = wsmc_get_enum_context(enum_response);
+	ws_xml_destroy_doc(enum_response);
+
+	while (enumContext != NULL && enumContext[0] != 0 ) {
+		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, NULL, enumContext);
+		CheckWsmanResponse(cl, doc);
+		string payload = ExtractItems(doc);
+		if (payload.length() > 0)
+			enumRes.push_back(payload);
+		wsmc_free_enum_context(enumContext);
+		enumContext = wsmc_get_enum_context(doc);
+		ws_xml_destroy_doc(doc);
+	}
+	wsmc_free_enum_context(enumContext);
+}
+
 void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumRes, const NameValuePairs *s) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	if(s)
-	{
-		// Add selectors.
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
 
-	WsXmlDocH doc;
-	char *enumContext;
-	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, NULL);
-
-	try
-	{
-		if(ResourceNotFound(cl, enum_response))
-			throw WsmanResourceNotFound(resourceUri.c_str());
-	}
-        catch(WsmanResourceNotFound& e)
-        {
-            wsmc_options_destroy(options);
-            throw e;
-        }
-	catch(WsmanSoapFault& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-	catch(WsmanClientException& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-	catch(exception& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-
-	enumContext = wsmc_get_enum_context(enum_response);
-	ws_xml_destroy_doc(enum_response);
-
-	while (enumContext != NULL && enumContext[0] != 0 ) {
-		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, NULL, enumContext);
-		try
-		{
-			CheckWsmanResponse(cl, doc);
-		}
-		catch(exception& e)
-		{
-			wsmc_options_destroy(options);
-			throw e;
-		}
-		string payload = ExtractItems(doc);
-		if (payload.length() > 0)
-			enumRes.push_back(payload);
-		wsmc_free_enum_context(enumContext);
-		enumContext = wsmc_get_enum_context(doc);    
-		ws_xml_destroy_doc(doc);
-	}
-	wsmc_free_enum_context(enumContext);
-	wsmc_options_destroy(options);
+	Enumerate(resourceUri, enumRes, options, WsmanFilter());
 }
 
-void OpenWsmanClient::Enumerate(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const
+void OpenWsmanClient::Enumerate(const string &resourceUri, WsmanFilter &filter, vector<string> &enumRes) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	
-	WsXmlDocH doc;
-	char *enumContext;
-	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, filter.getfilter());
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
 
-	try
-	{
-		if(ResourceNotFound(cl, enum_response))
-			throw WsmanResourceNotFound(resourceUri.c_str());
-	}
-        catch(WsmanResourceNotFound& e)
-        {
-            wsmc_options_destroy(options);
-            throw e;
-        }
-	catch(WsmanSoapFault& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-	catch(WsmanClientException& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-	catch(exception& e)
-	{
-		wsmc_options_destroy(options);
-		throw e;
-	}
-
-	enumContext = wsmc_get_enum_context(enum_response);
-	ws_xml_destroy_doc(enum_response);
-
-	while (enumContext != NULL && enumContext[0] != 0 ) {
-		doc = wsmc_action_pull(cl, resourceUri.c_str(), options, NULL, enumContext);
-		try
-		{
-			CheckWsmanResponse(cl, doc);
-		}
-		catch(exception& e)
-		{
-			wsmc_options_destroy(options);
-			throw e;
-		}
-		string payload = ExtractItems(doc);
-		if (payload.length() > 0)
-			enumRes.push_back(payload);
-		wsmc_free_enum_context(enumContext);
-		enumContext = wsmc_get_enum_context(doc);    
-		ws_xml_destroy_doc(doc);
-	}
-	wsmc_free_enum_context(enumContext);
-	wsmc_options_destroy(options);
+	Enumerate(resourceUri, enumRes, options, filter);
 }
 
-string OpenWsmanClient::Get(const string &resourceUri, const NameValuePairs *s) const
+string OpenWsmanClient::Get(const string &resourceUri, const WsmanOptions &options) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	// Add selectors.
-	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	doc = wsmc_action_get(cl, (char *)resourceUri.c_str(), options);
-	wsmc_options_destroy(options);
+	WsXmlDocH doc = wsmc_action_get(cl, (char *)resourceUri.c_str(), options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
 
+string OpenWsmanClient::Get(const string &resourceUri, const NameValuePairs *s) const
+{
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	return Get(resourceUri, options);
+}
+
 string OpenWsmanClient::Put(const string &resourceUri, const string &content, const NameValuePairs *s) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	// Add selectors.
-	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	doc = wsmc_action_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
-	wsmc_options_destroy(options);
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	WsXmlDocH doc = wsmc_action_put_fromtext(cl, resourceUri.c_str(), options, content.c_str(), content.length(), WSMAN_ENCODING);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
 	ws_xml_destroy_doc(doc);
@@ -295,23 +186,14 @@ string OpenWsmanClient::Put(const string &resourceUri, const string &content, co
 
 string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	string error;
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
 
-	// Add selectors.
-	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	doc = wsmc_action_invoke_fromtext(cl, resourceUri.c_str(), options,
+	string error;
+	WsXmlDocH doc = wsmc_action_invoke_fromtext(cl, resourceUri.c_str(), options,
 			(char *)methodName.c_str(), content.c_str(),
 			content.length(), WSMAN_ENCODING);
-	wsmc_options_destroy(options);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
 	ws_xml_destroy_doc(doc);
@@ -320,29 +202,21 @@ string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodNa
 
 string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &subsContext) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	options->delivery_mode = (WsmanDeliveryMode)info.delivery_mode;
-	options->delivery_uri = u_strdup(info.delivery_uri.c_str());
-	if(info.dialect !=  "" && info.filter != "") {		
-		filter_create_simple(info.dialect.c_str(), info.filter.c_str());
-	}
-	
-	if(info.refenceParam != "")
-		options->reference = u_strdup(info.refenceParam.c_str());
-		// Add selectors.
-	if (info.selectorset) {
-		for (PairsIterator p = info.selectorset->begin(); p != info.selectorset->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	options->expires = info.expires;
-	options->heartbeat_interval = info.heartbeat_interval;
-	doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options, NULL);
-	wsmc_options_destroy(options);
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.setDeliveryMode(static_cast<WsmanDeliveryMode>(info.delivery_mode));
+	options.setDeliveryURI(info.delivery_uri);
+
+	if (!info.refenceParam.empty())
+		options.setReference(info.refenceParam);
+
+	// Add selectors.
+	options.addSelectors(info.selectorset);
+
+	options.setExpires(info.expires);
+	options.setHeartbeatInterval(info.heartbeat_interval);
+
+	WsXmlDocH doc = wsmc_action_subscribe(cl, (char *)resourceUri.c_str(), options, NULL);
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
 	subsContext = GetSubscribeContext(doc);
@@ -352,39 +226,25 @@ string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo
 
 string OpenWsmanClient::Renew(const string &resourceUri, const string &subsContext, float expire, const NameValuePairs *s) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	options->expires = expire;
-	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	doc = wsmc_action_renew(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
-	wsmc_options_destroy(options);
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.setExpires(expire);
+	options.addSelectors(s);
+
+	WsXmlDocH doc = wsmc_action_renew(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
 	CheckWsmanResponse(cl, doc);
 	string xml = ExtractPayload(doc);
 	ws_xml_destroy_doc(doc);
 	return xml;
 }
-			
+
 void OpenWsmanClient::Unsubscribe(const string &resourceUri, const string &subsContext, const NameValuePairs *s) const
 {
-	client_opt_t *options = NULL;
-	options = SetOptions(cl);
-	WsXmlDocH doc;
-	if (s) {
-		for (PairsIterator p = s->begin(); p != s->end(); ++p) {
-			if(p->second != "")
-				wsmc_add_selector(options, 
-						(char *)p->first.c_str(), (char *)p->second.c_str());
-		}
-	}
-	doc = wsmc_action_unsubscribe(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
-	wsmc_options_destroy(options);
+	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	WsXmlDocH doc = wsmc_action_unsubscribe(cl, (char *)resourceUri.c_str(), options, subsContext.c_str());
 	CheckWsmanResponse(cl, doc);
 	ws_xml_destroy_doc(doc);
 	return;
@@ -453,15 +313,6 @@ string XmlDocToString(WsXmlDocH& doc) {
 	u_free(buf);
 #endif
 	return str;
-}
-
-client_opt_t * SetOptions(WsManClient* cl)
-{
-	client_opt_t *options = wsmc_options_init();
-	char *ns = wsmc_get_namespace(cl);
-	if(ns)
-		options->cim_ns = u_strdup(ns);
-	return options;
 }
 
 bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
@@ -645,3 +496,9 @@ void OpenWsmanClient::SetClientCert(const char *cert, const char *key)
 	}
 }
 #endif
+
+string OpenWsmanClient::GetNamespace() const
+{
+	char *ns = wsmc_get_namespace(cl);
+	return ns ? string(ns) : string();
+}

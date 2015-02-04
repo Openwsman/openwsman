@@ -1,6 +1,7 @@
 #ifndef __H_WSMAN_FILTER_H
 #define __H_WSMAN_FILTER_H
 
+#include <map>
 #include <string>
 #include <vector>
 #include <cstdlib>
@@ -18,7 +19,7 @@ namespace WsmanClientNamespace {
 			filter_t *filter;
 		public:
 			WsmanFilter(WsmanFilter &filter) {
-				this->filter = filter_copy(filter.getfilter());
+				this->filter = filter_copy(filter.getFilter());
 			}
 			WsmanFilter(const string &dialect, const string &query) {
 				filter = filter_create_simple(dialect.c_str(), query.c_str());
@@ -60,7 +61,8 @@ namespace WsmanClientNamespace {
 			int addSelector(const string &name, const string &value) {
 				return filter_add_selector(this->filter, name.c_str(), value.c_str());
 			}
-			filter_t *getfilter() {
+			filter_t *getFilter() const
+                        {
 				return filter;
 			}
 

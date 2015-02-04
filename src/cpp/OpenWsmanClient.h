@@ -12,6 +12,8 @@
 #define __OPEN_WSMAN_CLIENT_H
 
 #include "WsmanClient.h"
+#include "WsmanFilter.h"
+#include "WsmanOptions.h"
 
 struct _WsManClient;
 typedef struct _WsManClient WsManClient; // FW declaration of struct
@@ -70,7 +72,15 @@ namespace WsmanClientNamespace
 
 			void Enumerate(const string & resourceUri, WsmanFilter & filter, vector<string> &enumRes) const;
 
+			void Enumerate(
+				const string &resourceUri,
+				vector<string> &enumRes,
+				const WsmanOptions &options,
+				const WsmanFilter &filter = WsmanFilter()) const;
+
 			// Retrieve a resource.
+			string Get(const string &resourceUri, const WsmanOptions &options) const;
+
 			string Get(const string &resourceUri, const NameValuePairs *s = NULL) const;
 
 			// Update a resource.
@@ -113,6 +123,8 @@ namespace WsmanClientNamespace
 			// Set client certificates params
 			void SetClientCert(const char *cert, const char *key);
 #endif
+
+			string GetNamespace() const;
 	};
 } // namespace WsmanClient
 #endif
