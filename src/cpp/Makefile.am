@@ -23,6 +23,7 @@ lib_LTLIBRARIES=libwsman_clientpp.la
 
 libwsman_clientpp_la_SOURCES = \
 	OpenWsmanClient.cpp  \
+	WsmanFilter.cpp \
 	WsmanOptions.cpp \
 	OpenWsmanClient.h \
 	WsmanEPR.h \

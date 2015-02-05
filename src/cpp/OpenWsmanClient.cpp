@@ -115,7 +115,7 @@ void OpenWsmanClient::Enumerate(const string &resourceUri, vector<string> &enumR
 {
 	WsXmlDocH doc;
 	char *enumContext;
-	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, filter.getFilter());
+	WsXmlDocH enum_response = wsmc_action_enumerate(cl, (char *)resourceUri.c_str(),  options, filter);
 
 	if(ResourceNotFound(cl, enum_response))
 		throw WsmanResourceNotFound(resourceUri.c_str());
