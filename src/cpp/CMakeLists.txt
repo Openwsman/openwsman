@@ -5,7 +5,7 @@
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} )
 
 SET( wsmaninclude_HEADERS OpenWsmanClient.h Exception.h WsmanClient.h WsmanFilter.h WsmanEPR.h WsmanOptions.h )
-SET( wsman_clientpp_LIB_SRCS OpenWsmanClient.cpp WsmanFilter.cpp WsmanOptions.cpp )
+SET( wsman_clientpp_LIB_SRCS OpenWsmanClient.cpp WsmanEPR.cpp WsmanFilter.cpp WsmanOptions.cpp )
 add_library( ${WSMAN_CLIENTPP_PKG} SHARED ${wsman_clientpp_LIB_SRCS})
 
 set_target_properties( ${WSMAN_CLIENTPP_PKG} PROPERTIES VERSION 1.0.0 SOVERSION 1)

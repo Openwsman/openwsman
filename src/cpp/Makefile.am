@@ -12,8 +12,8 @@ LIBS = \
     $(top_builddir)/src/lib/libwsman_client.la 
 
 wsmaninclude_HEADERS = \
-		       OpenWsmanClient.h  \
-		       Exception.h \
+		        OpenWsmanClient.h  \
+		        Exception.h \
 			WsmanClient.h \
 			WsmanEPR.h \
 			WsmanFilter.h \
@@ -23,6 +23,7 @@ lib_LTLIBRARIES=libwsman_clientpp.la
 
 libwsman_clientpp_la_SOURCES = \
 	OpenWsmanClient.cpp  \
+	WsmanEPR.cpp \
 	WsmanFilter.cpp \
 	WsmanOptions.cpp \
 	OpenWsmanClient.h \
