@@ -23,6 +23,8 @@ extern "C" {
 using namespace std;
 
 namespace WsmanClientNamespace {
+	class WsmanEPR;
+
 	class WsmanOptions
 	{
 		private:
@@ -45,6 +47,10 @@ namespace WsmanClientNamespace {
 			void setReference(const string &reference);
 			void setExpires(const float expires);
 			void setHeartbeatInterval(const float heartbeat_interval);
+
+			void addProperty(const char *key, const char *value);
+			void addProperty(const string &key, const string &value);
+			void addProperty(const string &key, const WsmanEPR &epr);
 
 			void addSelector(const char *key, const char *value);
 			void addSelector(const string &key, const string &value);

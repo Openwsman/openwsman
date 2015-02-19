@@ -14,6 +14,7 @@
 extern "C" {
 #include "wsman-client-api.h"
 }
+#include "WsmanEPR.h"
 #include "WsmanOptions.h"
 
 using namespace WsmanClientNamespace;
@@ -82,6 +83,21 @@ void WsmanOptions::setExpires(const float expires)
 void WsmanOptions::setHeartbeatInterval(const float heartbeat_interval)
 {
 	options->heartbeat_interval = heartbeat_interval;
+}
+
+void WsmanOptions::addProperty(const char *key, const char *value)
+{
+	wsmc_add_property(options, key, value);
+}
+
+void WsmanOptions::addProperty(const string &key, const string &value)
+{
+	addProperty(key.c_str(), value.c_str());
+}
+
+void WsmanOptions::addProperty(const string &key, const WsmanEPR &epr)
+{
+	wsmc_add_property_epr(options, key.c_str(), epr);
 }
 
 void WsmanOptions::addSelector(const char *key, const char *value)
