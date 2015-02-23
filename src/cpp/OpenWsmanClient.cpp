@@ -184,20 +184,45 @@ string OpenWsmanClient::Put(const string &resourceUri, const string &content, co
 	return xml;
 }
 
+string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodName, const WsmanOptions &options) const
+{
+	WsXmlDocH doc = wsmc_action_invoke(
+		cl,
+		resourceUri.c_str(),
+		options,
+		methodName.c_str(),
+		NULL);
+
+	CheckWsmanResponse(cl, doc);
+	string xml = ExtractPayload(doc);
+	ws_xml_destroy_doc(doc);
+	return xml;
+}
+
+string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, const WsmanOptions &options) const
+{
+	WsXmlDocH doc = wsmc_action_invoke_fromtext(
+		cl,
+		resourceUri.c_str(),
+		options,
+		const_cast<char*>(methodName.c_str()),
+		content.c_str(),
+		content.length(),
+		WSMAN_ENCODING);
+
+	CheckWsmanResponse(cl, doc);
+	string xml = ExtractPayload(doc);
+	ws_xml_destroy_doc(doc);
+	return xml;
+}
+
 string OpenWsmanClient::Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s) const
 {
 	WsmanOptions options;
 	options.setNamespace(GetNamespace());
 	options.addSelectors(s);
 
-	string error;
-	WsXmlDocH doc = wsmc_action_invoke_fromtext(cl, resourceUri.c_str(), options,
-			(char *)methodName.c_str(), content.c_str(),
-			content.length(), WSMAN_ENCODING);
-	CheckWsmanResponse(cl, doc);
-	string xml = ExtractPayload(doc);
-	ws_xml_destroy_doc(doc);
-	return xml;
+	return Invoke(resourceUri, methodName, content, options);
 }
 
 string OpenWsmanClient::Subscribe(const string &resourceUri, const SubscribeInfo &info, string &subsContext) const

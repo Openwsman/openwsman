@@ -87,6 +87,10 @@ namespace WsmanClientNamespace
 			string Put(const string &resourceUri, const string &content, const NameValuePairs *s = NULL) const;
 
 			// Invokes a method and returns the results of the method call.
+			string Invoke(const string &resourceUri, const string &methodName, const WsmanOptions &options) const;
+
+			string Invoke(const string &resourceUri, const string &methodName, const string &content, const WsmanOptions &options) const;
+
 			string Invoke(const string &resourceUri, const string &methodName, const string &content, const NameValuePairs *s = NULL) const;
 
 			// Submit a subscription
