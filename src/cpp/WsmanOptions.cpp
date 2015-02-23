@@ -4,7 +4,7 @@
 //
 //  File:       WsmanOptions.cpp
 //
-//  License:    BSD
+//  License:    BSD-3-Clause
 //
 //  Contents:   A C++ interface for client_opt_t
 //

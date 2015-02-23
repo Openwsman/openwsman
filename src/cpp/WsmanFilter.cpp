@@ -4,6 +4,8 @@
 //
 //  File:       WsmanFilter.cpp
 //
+//  License:    BSD-3-Clause
+//
 //  Contents:   A C++ interface for filter_t
 //
 //----------------------------------------------------------------------------
