@@ -176,7 +176,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   # Scans #content for %rename
 
   def do_renames
-    @content.scan(/\s*%rename\s*\(\s*"?([\w_=]+)"?\s*\)\s*([\w_]+)\s*\(?([\w_,\*\s]+)?\s*\)?;/) do
+    @content.scan(/\s*%rename\s*\(\s*"?([\w=]+)"?\s*\)\s*(\w+)\s*\(?([\w,\*\s]+)?\s*\)?;/) do
       |new_name, old_name, args|
       @renames[old_name] = [new_name, args]
     end
@@ -188,7 +188,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def do_modules    
     @content.scan(/%module\s+(\w+)/) do |match_data|
       module_name = match_data[0]
-      @module = handle_class_module(nil, "module", module_name, @toplevel)
+      @module = handle_class_module(nil, "module", module_name, @top_level)
       break # first %module only
     end
     @@module ||= @module
@@ -201,16 +201,16 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def do_classes content
     found = false
 #    puts "do_classes #{content.inspect}"
-    content.scan(/%extend\s+([\w_]+)(.*)/m) do |class_name, content|
-      real_name = @renames[class_name][0] rescue nil
+    content.scan(/%extend\s+(\w+)(.*)/m) do |class_name, ext_content|
+      real_name = (@renames[class_name]) ? @renames[class_name][0] : nil
       klass = handle_class_module(class_name, "class", real_name, @module)
       # now check if we have multiple %extend, the regexp above is greedy and will match all of them
-      while content =~ /%extend/
+      while ext_content =~ /%extend/
         do_classes $& + $' # ' add the %extend back in
-        content = $` # real content is everything before the embedded %extend
+        ext_content = $` # real content is everything before the embedded %extend
       end
-#      puts "%extend #{class_name}: #{content.inspect}"
-      do_methods klass, class_name, content
+#      puts "%extend #{class_name}: #{ext_content.inspect}"
+      do_methods klass, class_name, ext_content
       found = true
     end
     found
@@ -222,7 +222,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
   def do_constants
     # %constant <type>[*] <name> = <c-constant>;
 
-    @content.scan(/(\/\*.*?\*\/)?\s*%constant\s+([\w_]+)([\s\*]+)([\w_]+)\s*=\s*([\w_]+);/) do |comment, type, pointer, const_name, definition|
+    @content.scan(/(\/\*.*?\*\/)?\s*%constant\s+(\w+)([\s\*]+)(\w+)\s*=\s*(\w+);/) do |comment, type, pointer, const_name, definition|
 #      puts "\nConst #{const_name} : #{comment.inspect}"
       handle_constants comment, const_name, definition
     end
@@ -249,20 +249,20 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def do_methods klass, name, content
     # Find class constructor as 'new'
-    content.scan(/^\s+#{name}\s*\(([^\)]*)\)\s*\{/m) do |args|
+    content.scan(/^\s+#{name}\s*\(([\w\,\*\s]*)\)\s*\{/m) do |args|
       handle_method("method", klass.name, "initialize", name, (args.to_s.split(",")||[]).size, content)
     end
-      content.scan(%r{static\s+((const\s+)?\w+)([\s\*]+)(\w+)\s*\(([^\)]*)\)\s*;}) do
+      content.scan(%r{static\s+(const\s+)?(\w+)([\s\*]+)(\w+)\s*\(([\w\,\*\s]*)\)\s*;}) do
         |const,type,pointer,meth_name,args|
         handle_method("method", klass.name, meth_name, nil, (args.split(",")||[]).size, content)
       end
-      content.scan(/((const\s+)?\w+)  # <const>? <type>
+      content.scan(/(const\s+)?(\w+)  # <const>? <type>
 			([ \t\*]+)    # <pointer>?
 			(\w+)	      # <meth>
-			\s*\(([^\)]*)\) # args
+			\s*\(([\w\,\*\s]*)\) # args
 			\s*\{/xm) do  # function def start
         |const,type,pointer,meth_name,args|
-#          puts "do_methods klass #{klass}, name #{name}: const #{const.inspect}, type #{type.inspect}, pointer #{pointer.inspect}, meth_name #{meth_name.inspect}"
+#          STDERR.puts "do_methods klass #{klass}, name #{name}: const #{const.inspect}, type #{type.inspect}, pointer #{pointer.inspect}, meth_name #{meth_name.inspect}, args #{args.inspect}"
 	next unless meth_name
 	next if meth_name =~ /~/
 	type = "string" if type =~ /char/ && pointer =~ /\*/
@@ -330,7 +330,7 @@ class RDoc::Parser::SWIG < RDoc::Parser
 #    when %r%(/\*.*\*/\s*#{meth_obj.c_function})%xm
     when %r%((?>/\*.*?\*/\s+)?)
             ((?:(?:static\s*)?(?:\s*const)?(?:\s*unsigned)?(?:\s*struct)?\s+)?
-             (VALUE|[\w_]+)(\s+\*|\*\s+|\s+)#{meth_name}
+             (VALUE|\w+)(\s+\*|\*\s+|\s+)#{meth_name}
              \s*(\([^)]*\))([^;]|$))%xm,
          %r%(/\*.*?\*/\s+)
              #{meth_name}
@@ -634,8 +634,6 @@ class RDoc::Parser::SWIG < RDoc::Parser
       return
     end
 
-    class_name = class_obj.name
-
     if comment
       comment = strip_stars comment
       comment = normalize_comment comment
@@ -659,27 +657,27 @@ class RDoc::Parser::SWIG < RDoc::Parser
         result << $` # copy everything before #if
         after = $' #'
         if $1 =~ /RUBY/ # if defined(SWIGRUBY)
-          raise "Unmatched #if SWIGRUBY\n#{after}" unless after.match /^#(if|else|endif)/
+          raise "Unmatched #if SWIGRUBY\n#{after}" unless after.match(/^#(if|else|endif)/)
           result << $` # copy everything between SWIGRUBY and #if/else/endif
           case $1
           when "if"
             result << handle_ifdefs_in($& + $') #'
           when "else"
             after = $' #'
-            raise "Unclosed #else" unless after.match /^#endif/
+            raise "Unclosed #else" unless after.match(/^#endif/)
             result << handle_ifdefs_in($') #'
           when "endif"
             result << handle_ifdefs_in($') #'
           end
         else # if defined(SWIG...)
           # throw away everything between SIWG... and #if/else/endif
-          raise "Unmatched #if" unless after.match /^#(if|else|endif)/
+          raise "Unmatched #if" unless after.match(/^#(if|else|endif)/)
           case $1
           when "if"
             result << handle_ifdefs_in($& + $') #'
           when "else"
             after = $' #'
-            raise "Unclosed #else" unless after.match /^#endif/
+            raise "Unclosed #else" unless after.match(/^#endif/)
             result << $` # copy everything between #else and #endif
             result << handle_ifdefs_in($') #'
           when "endif"
@@ -699,8 +697,8 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
   def handle_method(type, klass_name, meth_name, function, param_count, content = nil,
                     source_file = nil)
-    ruby_name = (@renames[meth_name][0] rescue nil) || meth_name
-# puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args" # if meth_name == "initialize"
+    ruby_name = (@renames[meth_name]) ? @renames[meth_name][0] : meth_name
+# STDERR.puts "\n\thandle_method #{type},#{klass_name},#{meth_name}[#{ruby_name}],#{function},#{param_count} args" # if meth_name == "initialize"
     class_name = @known_classes[klass_name]
     singleton  = @singleton_classes.key? klass_name
 
