@@ -1,4 +1,6 @@
 2.4.14
+- Features
+  - Improved C++ bindings (Peter Hatina)
 - Bugfixes
   - Build fixes for Fedora21, RHEL7, and CentOS7
   - option parser accepts '-?' and '--help' as valid
