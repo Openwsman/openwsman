@@ -159,7 +159,7 @@ namespace WsmanClientNamespace
 			// Set client certificate params
 			void SetClientCert(
 				const string &caOid = string(),
-				const string *caName = string(),
+				const string &caName = string(),
 				const bool localCert = false);
 #else
 			// Set server certificate params

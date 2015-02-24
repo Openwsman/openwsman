@@ -548,17 +548,17 @@ void OpenWsmanClient::SetProxy(
 
 #ifdef _WIN32
 void OpenWsmanClient::SetClientCert(
-	const string &oid,
-	const string &cert,
-	const bool local)
+	const string &caOid,
+	const string &caName,
+	const bool localCert)
 {
-	if (!cert.empty())
-		wsman_transport_set_cainfo(cl, cert.c_str());
+	if (!caOid.empty())
+		wsman_transport_set_caoid(cl, caOid.c_str());
 
-	if (!oid.empty())
-		wsman_transport_set_caoid(cl, oid.c_str());
+	if (!caName.empty())
+		wsman_transport_set_cainfo(cl, caName.c_str());
 
-	wsman_transport_set_calocal(cl, local);
+	wsman_transport_set_calocal(cl, localCert);
 }
 
 
@@ -582,7 +582,6 @@ void OpenWsmanClient::SetServerCert(
 
 	if (!capath.empty())
 		wsman_transport_set_capath(cl, capath.c_str());
-
 }
 
 // Set client certificates params
