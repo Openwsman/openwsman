@@ -23,7 +23,7 @@ class TestAddSelector(unittest.TestCase):
             assert value_asdf is not None
             print "Calling add_selector(%r, %r)" % (key_asdf, value_asdf)
             options.add_selector(str(key_asdf), str(value_asdf))
-        dummy = client.invoke(options, "http://uri", "method")
+        dummy = client.invoke(options, "http://uri", "method", XmlDoc("dummy doc"))
 
 if __name__ == '__main__':
     unittest.main()
