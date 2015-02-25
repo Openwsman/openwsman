@@ -903,11 +903,9 @@ int xml_parser_check_xpath(WsXmlDocH doc, const char *expression)
 
 			retval = 1;
 		}
-		xmlXPathFreeContext(ctxt);
 		xmlXPathFreeObject(obj);
-	} else {
-		return 0;
 	}
+	xmlXPathFreeContext(ctxt);
 
 	return retval;
 }
@@ -946,11 +944,9 @@ char *xml_parser_get_xpath_value(WsXmlDocH doc, const char *expression)
 					xmlChildrenNode,
 					1);
 
-		xmlXPathFreeContext(ctxt);
 		xmlXPathFreeObject(obj);
-	} else {
-		return NULL;
 	}
+	xmlXPathFreeContext(ctxt);
 
 	return result;
 }
