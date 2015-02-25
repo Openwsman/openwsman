@@ -153,9 +153,9 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 	return epr;
 }
 
- epr_t *epr_from_string(const char* str)
- {
- 	char *p;
+epr_t *epr_from_string(const char* str)
+{
+	char *p;
 	char *uri;
 	hash_t *selectors = NULL;
 	hash_t *selectors_new = NULL;
@@ -191,11 +191,11 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
  }
 
 static int epr_add_selector(epr_t *epr, const char *name, selector_entry *selector)
- {
- 	int i;
- 	Selector *p;
+{
+	int i;
+	Selector *p;
 	if(epr == NULL) return 0;
- 	p = epr->refparams.selectorset.selectors;
+	p = epr->refparams.selectorset.selectors;
 	for(i = 0; i< epr->refparams.selectorset.count; i++) {
 		if(p->name && ( strcmp(name, p->name) == 0 ) ) {
 			return -1;
@@ -336,10 +336,10 @@ epr_t *epr_copy(const epr_t *epr)
 	return cpy_epr;
 }
 
- int epr_cmp(const epr_t *epr1, const epr_t *epr2)
- {
- 	int i, j;
- 	int matches = 0;
+int epr_cmp(const epr_t *epr1, const epr_t *epr2)
+{
+	int i, j;
+	int matches = 0;
 	Selector *p1;
 	Selector *p2;
 	assert(epr1 != NULL && epr2 != NULL);
