@@ -2,8 +2,11 @@
 
 After checking out the project from git, create a build directory
 with
+
     mkdir build
+
 cd into it
+
     cd build
     cmake ..
     make
