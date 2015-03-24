@@ -17,7 +17,7 @@ Most likely you will need to install some of the packages, depending
 on the distribution you are running.
 
 Pre-build (RPM) packages for many distributions are available at
-[[the openSUSE build service|https://build.opensuse.org/project/show?project=Openwsman]]
+[the openSUSE build service](https://build.opensuse.org/project/show?project=Openwsman)
 
 
 ## Packages and other software needed:
@@ -167,7 +167,7 @@ On the client side, which has the following options
      -I, --transport-timeout=<time in sec>           Transport timeout in seconds
 
 To create a password file, use the `htpasswd` and `htdigest` utilities
-from the [[Apache|http://www.apache.org]] distribution.
+from the [Apache](http://www.apache.org) distribution.
 
 You can connect to the server with the following command, which is part of the DMTF WS-Management specification
 
