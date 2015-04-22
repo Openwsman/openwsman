@@ -386,10 +386,10 @@ wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
  * compare two property list entries by key
  */
 static int
-_property_key_compare(const void *node1, const void *node2)
+_property_key_compare(const void *node1, const void *key)
 {
   const char *key1 = ((client_property_t *)node1)->key;
-  const char *key2 = ((client_property_t *)node2)->key;
+  const char *key2 = (const char *)key;
   return strcmp(key1, key2);
 }
 
