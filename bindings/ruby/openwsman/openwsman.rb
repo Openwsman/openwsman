@@ -38,7 +38,7 @@ require 'openwsman/xmldoc'
 # response and dig down through its XmlNode and XmlAttr objects.
 
 module Openwsman
-  class ClientOption
+  class ClientOptions
     # assign hash to properties
     def properties= value
       value.each do |k,v|
