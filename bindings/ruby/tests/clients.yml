@@ -1,6 +1,6 @@
 x220:
   scheme: http
-  host: 10.160.65.142
+  host: 10.160.5.88
   port: 16992
   path: /wsman
   username: admin
