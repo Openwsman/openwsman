@@ -38,6 +38,9 @@ require 'openwsman/xmldoc'
 # response and dig down through its XmlNode and XmlAttr objects.
 
 module Openwsman
+  #
+  # ClientOptions
+  #
   class ClientOptions
     # assign hash to properties
     def properties= value
@@ -46,6 +49,9 @@ module Openwsman
       end
     end
   end
+  #
+  # Transport
+  #
   class Transport
     # called when authentication credentials missing or wrong
     def Transport.auth_request_callback client, auth_type
@@ -85,10 +91,20 @@ module Openwsman
     raise "Classname must not be nil" unless classname
     epr = epr_prefix_for(classname,namespace) + "/#{classname}"
   end
-  
+  #
+  # EndPointReference
+  #
   class EndPointReference
     def method_missing name, *args # :nodoc:
-      selector(name)
+      selector(name.to_s)
+    end
+  end
+  #
+  # Fault
+  #
+  class Fault
+    def to_s
+      "Fault #{code}.#{subcode}: #{detail} - #{reason}"
     end
   end
 end
