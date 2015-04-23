@@ -1188,7 +1188,7 @@ cim_enum_instances(CimClientInfo * client,
 	} else if (( enumInfo->flags & WSMAN_ENUMINFO_WQL )) {
 		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "WQL", &rc);
 	} else if (( enumInfo->flags & WSMAN_ENUMINFO_CQL )) {
-		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, "CQL", &rc);
+		enumeration = cc->ft->execQuery(cc, objectpath, filter->query, get_cim_client_cql(), &rc);
 	} else if (( enumInfo->flags & WSMAN_ENUMINFO_XPATH )) { /* XPath unsupported in Sfcc */
                 status->fault_code = WSEN_CANNOT_PROCESS_FILTER;
                 status->fault_detail_code = WSMAN_DETAIL_NOT_SUPPORTED;
@@ -2396,7 +2396,7 @@ cim_create_indication_filter(CimClientInfo *client, WsSubscribeInfo *subsInfo, W
 				"WQL",CMPI_chars);
 	else if(subsInfo->flags & WSMAN_SUBSCRIPTION_CQL)
 		CMAddKey(objectpath, "QueryLanguage",
-				"CQL",CMPI_chars);
+				get_cim_client_cql(),CMPI_chars);
 	char *indicationns = subsInfo->cim_namespace;
 	if(indicationns)
 		CMAddKey(objectpath, "SourceNamespace",
