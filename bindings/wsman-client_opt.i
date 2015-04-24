@@ -490,12 +490,12 @@ typedef struct {} client_opt_t;
       v = rb_hash_new();
       lnode_t *node = list_first($self->properties);
       while (node) {
-        client_property_t *property = (client_property_t *)node->list_data;
+        client_kv_t *property = (client_kv_t *)node->list_data;
         if (property->value.type == 0) {
-	  rb_hash_aset( v, makestring(property->key), makestring(property->value.entry.text));
+	  rb_hash_aset( v, makestring(property->key), makestring(property->value.value.text));
         }
         else {
-          rb_hash_aset( v, makestring(property->key), makestring(epr_to_string(property->value.entry.eprp)));
+          rb_hash_aset( v, makestring(property->key), makestring(epr_to_string(property->value.value.eprp)));
         }
         node = list_next($self->properties, node);
       }

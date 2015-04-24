@@ -68,6 +68,26 @@ struct __WsXmlNs
 };
 typedef struct __WsXmlNs* WsXmlNsH;
 
+/*-----------------------------------------------*/
+
+typedef struct epr_struct epr_t;
+
+/* value of a key/value pair (-> client_kv_t)
+ * to represent either a value or an epr_t
+ */
+typedef struct {
+  int type; /* 0: char*, else epr_t* */
+  union{
+    char *text;
+    epr_t *eprp;
+  } value;
+} kv_value_t;
+
+/* generic client key/value pair */
+typedef struct {
+  char *key;
+  kv_value_t value; /* either char* or epr_t */
+} client_kv_t;
 
 #ifdef __cplusplus
 }

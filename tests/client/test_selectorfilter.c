@@ -87,12 +87,12 @@ int main(int argc, char** argv)
 	hash_t *selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 	hnode_t        *hn;
 	hscan_t         hs;
-	selector_entry *entry;
+	kv_value_t     *entry;
 	hash_scan_begin(&hs, selectors);
 	while ((hn = hash_scan_next(&hs))) {
-		entry = u_malloc(sizeof(selector_entry));
+		entry = u_malloc(sizeof(kv_value_t));
 		entry->type = 0;
-		entry->entry.text = (char *)hnode_get(hn);
+		entry->value.text = (char *)hnode_get(hn);
 		hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
 	}
 	filter_t *filter = filter_create_selector(selectors_new);

@@ -7,18 +7,18 @@
 static void serialize_filter1(void)
 {
 	hash_t *selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
-	selector_entry *entry1 = NULL;
-	entry1 = u_malloc(sizeof(selector_entry)*5);
+	kv_value_t *entry1 = NULL;
+	entry1 = u_malloc(sizeof(kv_value_t)*5);
 	entry1[0].type = 0;
-	entry1[0].entry.text = "OperatingSystemFilter0";
+	entry1[0].value.text = "OperatingSystemFilter0";
 	entry1[1].type = 0;
-        entry1[1].entry.text = "localhost.localdomain";
+        entry1[1].value.text = "localhost.localdomain";
 	entry1[2].type = 0;
-        entry1[2].entry.text = "CIM_IndicationFilter";
+        entry1[2].value.text = "CIM_IndicationFilter";
 	entry1[3].type = 0;
-        entry1[3].entry.text = "CIM_ComputerSystem";
+        entry1[3].value.text = "CIM_ComputerSystem";
 	entry1[4].type = 0;
-	entry1[4].entry.text = "root/interop";
+	entry1[4].value.text = "root/interop";
 	hash_alloc_insert(selectors, "Name", &entry1[0]);
 	hash_alloc_insert(selectors, "SystemName", &entry1[1]);
 	hash_alloc_insert(selectors, "CreationClassName", &entry1[2]);
@@ -71,16 +71,16 @@ static void serialize_filter2(void)
 static void serialize_filter3(void)
 {
 	hash_t *selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);
-        selector_entry *entry1 = NULL;
-        entry1 = u_malloc(sizeof(selector_entry)*4);
+        kv_value_t *entry1 = NULL;
+        entry1 = u_malloc(sizeof(kv_value_t)*4);
         entry1[0].type = 0;
-        entry1[0].entry.text = "OperatingSystemFilter0";
+        entry1[0].value.text = "OperatingSystemFilter0";
         entry1[1].type = 0;
-        entry1[1].entry.text = "localhost.localdomain";
+        entry1[1].value.text = "localhost.localdomain";
         entry1[2].type = 0;
-        entry1[2].entry.text = "CIM_IndicationFilter";
+        entry1[2].value.text = "CIM_IndicationFilter";
         entry1[3].type = 0;
-        entry1[3].entry.text = "CIM_ComputerSystem";
+        entry1[3].value.text = "CIM_ComputerSystem";
         hash_alloc_insert(selectors, "Name", &entry1[0]);
         hash_alloc_insert(selectors, "SystemName", &entry1[1]);
         hash_alloc_insert(selectors, "CreationClassName", &entry1[2]);

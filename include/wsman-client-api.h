@@ -196,11 +196,6 @@ typedef enum {
 		hash_t *options; /* for WSM_OPTION_SET */
 	} client_opt_t;
 
-        typedef struct {
-          char *key;
-          selector_entry value; /* either char* or epr_t */
-        } client_property_t;
-
 	struct _WsManFault {
 		const char *code;
 		const char *subcode;
@@ -208,7 +203,6 @@ typedef enum {
 		const char *fault_detail;
 	};
 	typedef struct _WsManFault WsManFault;
-
 
 
 	/**

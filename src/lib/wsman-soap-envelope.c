@@ -955,11 +955,11 @@ wsman_free_method_list(list_t *list)
 	debug("wsman_free_method_list:");
 	while (node) {
 		methodarglist_t *node_val = (methodarglist_t *)node->list_data;
-		selector_entry *sentry = (selector_entry *)node_val->data;
+		kv_value_t *sentry = (kv_value_t *)node_val->data;
 		debug("freeing list entry key: %s", node_val->key);
 		switch (sentry->type) {
-			case 0: u_free(sentry->entry.text); break;
-			case 1: u_free(sentry->entry.eprp); break;
+			case 0: u_free(sentry->value.text); break;
+			case 1: u_free(sentry->value.eprp); break;
 		}
 		u_free(sentry);
 		u_free(node_val->key);
@@ -1017,7 +1017,7 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 			lnode_t *argnode;
 			while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
 				char *key = ws_xml_get_node_local_name(arg);
-				selector_entry *sentry = u_malloc(sizeof(*sentry));
+				kv_value_t *sentry = u_malloc(sizeof(*sentry));
 				methodarglist_t *nodeval = u_malloc(sizeof(methodarglist_t));
 				epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
 					WSA_REFERENCE_PARAMETERS);
@@ -1027,12 +1027,12 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 				if (epr) {
 					debug("epr: %s", key);
 					sentry->type = 1;
-					sentry->entry.eprp = epr_deserialize(arg, NULL, NULL, 1); 
+					sentry->value.eprp = epr_deserialize(arg, NULL, NULL, 1); 
 					//wsman_get_epr(cntx, arg, key, XML_NS_CIM_CLASS);
 				} else {
 					debug("text: %s", key);
 					sentry->type = 0;
-					sentry->entry.text = u_strdup(ws_xml_get_node_text(arg));
+					sentry->value.text = u_strdup(ws_xml_get_node_text(arg));
 				}
 				nodeval->data = sentry;
 				list_append(arglist, argnode);
@@ -1060,7 +1060,7 @@ hash_t *
 wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node, epr;
-	selector_entry *sentry;
+	kv_value_t *sentry;
 	int index = 0;
 	hash_t *h = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 
@@ -1087,7 +1087,7 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 			if (epr) {
 				debug("epr: %s", attrVal);
 				sentry->type = 1;
-				sentry->entry.eprp = epr_deserialize(selector, XML_NS_ADDRESSING,
+				sentry->value.eprp = epr_deserialize(selector, XML_NS_ADDRESSING,
 					WSA_EPR, 1);
 				if (!hash_alloc_insert(h, attrVal, sentry)) {
 					error("hash_alloc_insert failed");
@@ -1095,7 +1095,7 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 			} else {
 				debug("text: %s", attrVal);
 				sentry->type = 0;
-				sentry->entry.text = ws_xml_get_node_text(selector);
+				sentry->value.text = ws_xml_get_node_text(selector);
 				if (!hash_alloc_insert(h, attrVal,
 						sentry)) {
 					error("hash_alloc_insert failed");

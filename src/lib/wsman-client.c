@@ -322,19 +322,19 @@ _wsmc_properties_destroy(list_t *properties)
 {
   while (!list_isempty(properties)) {
     lnode_t *node;
-    client_property_t *prop;
+    client_kv_t *prop;
     
     node = list_del_last(properties);
     if (!node)
       break;
-    prop = (client_property_t *)node->list_data;
+    prop = (client_kv_t *)node->list_data;
     lnode_destroy(node);
     u_free(prop->key);
     if (prop->value.type == 0) {
-      u_free(prop->value.entry.text);
+      u_free(prop->value.value.text);
     }
     else {
-      epr_destroy(prop->value.entry.eprp);
+      epr_destroy(prop->value.value.eprp);
     }
     u_free(prop);
   }
@@ -388,7 +388,7 @@ wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
 static int
 _property_key_compare(const void *node1, const void *key)
 {
-  const char *key1 = ((client_property_t *)node1)->key;
+  const char *key1 = ((client_kv_t *)node1)->key;
   const char *key2 = (const char *)key;
   return strcmp(key1, key2);
 }
@@ -406,7 +406,7 @@ _wsmc_add_property(client_opt_t *options,
 		const char *string,
 		const epr_t *epr)
 {
-  client_property_t *prop;
+  client_kv_t *prop;
   lnode_t *lnode;
   if ((string != NULL) && (epr != NULL)) {
     error("Ambiguous call to add_property");
@@ -423,7 +423,7 @@ _wsmc_add_property(client_opt_t *options,
     error("duplicate key not added to properties");
     return;
   }
-  prop = u_malloc(sizeof(client_property_t));
+  prop = u_malloc(sizeof(client_kv_t));
   if (!prop) {
     error("No memory for property");
     return;
@@ -431,10 +431,10 @@ _wsmc_add_property(client_opt_t *options,
   prop->key = u_strdup(key);
   if (string != NULL) {
     prop->value.type = 0;
-    prop->value.entry.text = u_strdup(string);
+    prop->value.value.text = u_strdup(string);
   } else if (epr != NULL) {
     prop->value.type = 1;
-    prop->value.entry.eprp = epr_copy(epr);
+    prop->value.value.eprp = epr_copy(epr);
   } else {
     error("Can't add NULL as property value");
     return;
@@ -918,14 +918,14 @@ wsmc_set_put_prop(WsXmlDocH get_response,
 	if (!list_isempty(options->properties)) {
           lnode_t *node = list_first(options->properties);
           while (node) {
-            client_property_t *property = (client_property_t *)node->list_data;
+            client_kv_t *property = (client_kv_t *)node->list_data;
             WsXmlNodeH n = ws_xml_get_child(resource_node, 0,
                                             ns_uri, property->key);
             if (property->value.type == 0) {
-              ws_xml_set_node_text(n, property->value.entry.text);
+              ws_xml_set_node_text(n, property->value.value.text);
             }
             else {
-              epr_serialize(n, ns_uri, property->key, property->value.entry.eprp, 1);
+              epr_serialize(n, ns_uri, property->key, property->value.value.eprp, 1);
             }
             node = list_next(options->properties, node);
           }
@@ -1431,12 +1431,12 @@ wsmc_action_invoke(WsManClient * cl,
                                   (char *)resource_uri, "%s_INPUT", method);
               lnode_t *lnode = list_first(options->properties);
               while (lnode) {
-                client_property_t *property = (client_property_t *)lnode->list_data;
+                client_kv_t *property = (client_kv_t *)lnode->list_data;
                 if (property->value.type == 0) {
-                  ws_xml_add_child(xnode, (char *)resource_uri, (char *)property->key, (char *)property->value.entry.text);
+                  ws_xml_add_child(xnode, (char *)resource_uri, (char *)property->key, (char *)property->value.value.text);
                 }
                 else {
-                  epr_serialize(xnode, (char *)resource_uri, property->key, property->value.entry.eprp, 1);
+                  epr_serialize(xnode, (char *)resource_uri, property->key, property->value.value.eprp, 1);
                 }
                 lnode = list_next(options->properties, lnode);
               }
