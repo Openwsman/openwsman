@@ -44,6 +44,10 @@ class WsmanTest < Test::Unit::TestCase
     uri = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Process"
 
     result = client.enumerate( options, nil, uri )
+    if result.nil?
+      puts "client.enumerate failed with #{client.response_code}"
+      puts "#{client.last_error}:#{client.fault_string}"
+    end
     assert result
     if result.fault?
       fault = Openwsman::Fault.new result
