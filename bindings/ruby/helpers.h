@@ -125,7 +125,7 @@ _add_str( VALUE key, VALUE value, hash_t *h )
 }
 
 
-/* add key,value VALUE pair to hash_t* as selector_entry*
+/* add key,value VALUE pair to hash_t* as kv_value_t*
  *  (used as callback for value2hash)
  */
 static int
@@ -134,13 +134,13 @@ _add_selector( VALUE key, VALUE value, hash_t *h )
     if (key != Qundef) {
 	const char *k = strdup( as_string( key ) );
 	if (!hash_lookup( h, k ) ) {
-            selector_entry *entry = u_malloc(sizeof(selector_entry));
+            kv_value_t *entry = u_malloc(sizeof(kv_value_t));
             entry->type = 0;
             if (TYPE(value) == T_ARRAY) {
               rb_raise( rb_eException, "Passing array parameter via invoke() still unsupported" );
             }
             else {
-              entry->entry.text = strdup(as_string( value ));
+              entry->value.text = strdup(as_string( value ));
             }
 	    if ( !hash_alloc_insert( h, k, entry ) ) {
 		rb_raise( rb_eException, "hash_alloc_insert failed" );
@@ -158,7 +158,7 @@ _add_selector( VALUE key, VALUE value, hash_t *h )
  *
  * valuetype - type of hash values
  *   0 - values are string (char *)
- *   1 - values are selector_entry *
+ *   1 - values are kv_value_t *
  * 
  */
 static hash_t *

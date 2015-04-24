@@ -81,7 +81,7 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 		hnode_t        *hn;
 		hscan_t         hs;
 		Selector *p;
-		selector_entry *entry;
+		kv_value_t *entry;
 		filter->selectorset.count = hash_count(selectors);
 		filter->selectorset.selectors = u_malloc(sizeof(Selector)*
 			filter->selectorset.count);
@@ -90,15 +90,15 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 		hash_scan_begin(&hs, selectors);
 		while ((hn = hash_scan_next(&hs))) {
 			p->name = u_strdup((char *)hnode_getkey(hn));
-			entry = (selector_entry *)hnode_get(hn);
+			entry = (kv_value_t *)hnode_get(hn);
 			if(entry->type == 1) {
 				p->type = 1;
-				p->value = (char *)epr_copy(entry->entry.eprp);
+				p->value = (char *)epr_copy(entry->value.eprp);
 				debug("key=%s value=%p(nested epr)",
 					(char *) hnode_getkey(hn), p->value);
 			} else {
 				p->type = 0;
-				p->value = u_strdup(entry->entry.text);
+				p->value = u_strdup(entry->value.text);
 				debug("key=%s value=%s",
 					(char *) hnode_getkey(hn), p->value);
 			}

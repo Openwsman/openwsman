@@ -122,7 +122,7 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 		hnode_t        *hn;
 		hscan_t         hs;
 		Selector *p;
-		selector_entry *entry;
+		kv_value_t *entry;
 		epr->refparams.selectorset.count = hash_count(selectors);
 		epr->refparams.selectorset.selectors = u_malloc(sizeof(Selector)*
 			epr->refparams.selectorset.count);
@@ -131,16 +131,16 @@ epr_t *epr_create(const char *uri, hash_t * selectors, const char *address)
 		hash_scan_begin(&hs, selectors);
 		while ((hn = hash_scan_next(&hs))) {
 			p->name = u_strdup((char *)hnode_getkey(hn));
-			entry = (selector_entry *)hnode_get(hn);
+			entry = (kv_value_t *)hnode_get(hn);
 			if(entry->type == 0) {
 				p->type = 0;
-				p->value = u_strdup(entry->entry.text);
+				p->value = u_strdup(entry->value.text);
 				debug("key=%s value=%s",
 					(char *) hnode_getkey(hn), p->value);
 			}
 			else {
 				p->type = 1;
-				p->value = (char *)epr_copy(entry->entry.eprp);
+				p->value = (char *)epr_copy(entry->value.eprp);
 				debug("key=%s value=%p(nested epr)",
 					(char *) hnode_getkey(hn), p->value);
 			}
@@ -161,7 +161,7 @@ epr_t *epr_from_string(const char* str)
 	hash_t *selectors_new = NULL;
 	hnode_t        *hn;
 	hscan_t         hs;
-	selector_entry *entry;
+	kv_value_t *entry;
 	epr_t *epr;
 
 	p = strchr(str, '?');
@@ -171,9 +171,9 @@ epr_t *epr_from_string(const char* str)
           selectors_new = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 	  hash_scan_begin(&hs, selectors);
 	  while ((hn = hash_scan_next(&hs))) {
-		entry = u_malloc(sizeof(selector_entry));
+		entry = u_malloc(sizeof(kv_value_t));
 		entry->type = 0;
-		entry->entry.text = (char *)hnode_get(hn);
+		entry->value.text = (char *)hnode_get(hn);
 		hash_alloc_insert(selectors_new, hnode_getkey(hn), entry);
 	  }
         }
@@ -190,7 +190,7 @@ epr_t *epr_from_string(const char* str)
 	return epr;
  }
 
-static int epr_add_selector(epr_t *epr, const char *name, selector_entry *selector)
+static int epr_add_selector(epr_t *epr, const char *name, kv_value_t *selector)
 {
 	int i;
 	Selector *p;
@@ -208,11 +208,11 @@ static int epr_add_selector(epr_t *epr, const char *name, selector_entry *select
 	p[epr->refparams.selectorset.count].name = u_strdup(name);
 	p[epr->refparams.selectorset.count].type = selector->type;
 	if(selector->type == 0) {
-		if (selector->entry.text) {
-			p[epr->refparams.selectorset.count].value = u_strdup(selector->entry.text);
+		if (selector->value.text) {
+			p[epr->refparams.selectorset.count].value = u_strdup(selector->value.text);
 		}
 	} else {
-		p[epr->refparams.selectorset.count].value = (char *)epr_copy(selector->entry.eprp);
+		p[epr->refparams.selectorset.count].value = (char *)epr_copy(selector->value.eprp);
 	}
 
 	epr->refparams.selectorset.selectors = p;
@@ -228,10 +228,10 @@ int epr_selector_count(const epr_t *epr) {
 int epr_add_selector_text(epr_t *epr, const char *name, const char *text)
 {
 	int r;
-	selector_entry *entry;
-	entry = u_malloc(sizeof(selector_entry));
+	kv_value_t *entry;
+	entry = u_malloc(sizeof(kv_value_t));
 	entry->type = 0;
-	entry->entry.text = (char *)text;
+	entry->value.text = (char *)text;
 	r = epr_add_selector(epr, name, entry);
 	u_free(entry);
 	return r;
@@ -240,10 +240,10 @@ int epr_add_selector_text(epr_t *epr, const char *name, const char *text)
 int epr_add_selector_epr(epr_t *epr, const char *name, epr_t *added_epr)
 {
 	int r;
-	selector_entry *entry;
-	entry = u_malloc(sizeof(selector_entry));
+	kv_value_t *entry;
+	entry = u_malloc(sizeof(kv_value_t));
 	entry->type = 1;
-	entry->entry.eprp = added_epr;
+	entry->value.eprp = added_epr;
 	r = epr_add_selector(epr, name, entry);
 	u_free(entry);
 	return r;

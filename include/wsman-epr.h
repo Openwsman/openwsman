@@ -62,19 +62,11 @@ typedef struct {
 } ReferenceParameters;
 
 
-typedef struct {
+typedef struct epr_struct {
 	char * address;
 	ReferenceParameters refparams;
 	void * additionalParams;
 } epr_t;
-
-typedef struct {
-	int type;
-	union{
-		char *text;
-		epr_t *eprp;
-	} entry;
-} selector_entry;
 
 /* support for array values, all represented with the same key */	
 typedef struct {
