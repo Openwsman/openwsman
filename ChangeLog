@@ -1,3 +1,15 @@
+2.4.15
+- Features
+  - Ruby: Add Fault#to_s
+  - Ruby: Enable ClientOptions#properties=
+  - Cim: New config option "cim_client_cql' to select CQL query
+    identifier ('CQL' - default, 'DMTF:CQL' - standards-compliant)
+- Bugfixes
+  - Fix segfault in wsmc_add_property
+  - Fix memleak in xpath handling
+  - Fix typo in parsing max_connections_per_thread (vcrhonek)
+  - Ruby: ClientOptions#properties=
+
 2.4.14
 - Features
   - Improved C++ bindings (Peter Hatina)
