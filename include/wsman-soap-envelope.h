@@ -102,6 +102,8 @@ hash_t *wsman_get_selector_list_from_filter(WsContextH cntx,
 
 void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val);
 
+void wsman_add_selector_epr(WsXmlNodeH baseNode, const char *name, const epr_t *val);
+
 char *wsman_get_action(WsContextH cntx, WsXmlDocH doc);
 
 char *wsman_get_resource_uri(WsContextH cntx, WsXmlDocH doc);

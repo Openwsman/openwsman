@@ -18,7 +18,7 @@ SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${XML_CFLAGS} -g -DIGNORE_DUPLICATE_ID" )
 
 SET( UTIL_SOURCES u/buf.c u/log.c u/memory.c u/misc.c  u/uri.c  u/uuid.c u/lock.c u/md5.c u/strings.c u/list.c u/hash.c u/base64.c u/iniparser.c u/debug.c u/uerr.c u/uoption.c u/gettimeofday.c u/syslog.c u/pthreadx_win32.c u/os.c )
 
-SET( wsman_SOURCES ${UTIL_SOURCES} wsman-libxml2-binding.c wsman-xml.c wsman-epr.c wsman-filter.c wsman-dispatcher.c wsman-soap.c wsman-faults.c wsman-xml-serialize.c wsman-soap-envelope.c wsman-debug.c wsman-soap-message.c )
+SET( wsman_SOURCES ${UTIL_SOURCES} wsman-libxml2-binding.c wsman-xml.c wsman-epr.c wsman-key-value.c wsman-filter.c wsman-dispatcher.c wsman-soap.c wsman-faults.c wsman-xml-serialize.c wsman-soap-envelope.c wsman-debug.c wsman-soap-message.c)
 
 IF( ENABLE_EVENTING_SUPPORT )
 SET( wsman_SOURCES ${wsman_SOURCES} wsman-subscription-repository.c wsman-event-pool.c wsman-cimindication-processor.c )

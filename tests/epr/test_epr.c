@@ -8,16 +8,16 @@
 static void test_serialize1(void)
 {
 	hash_t *selectors_filter = hash_create(HASHCOUNT_T_MAX, 0, 0);
-	kv_value_t *entry1 = NULL;
-	entry1 = u_malloc(sizeof(kv_value_t)*4);
+	key_value_t *entry1 = NULL;
+	entry1 = u_malloc(sizeof(key_value_t)*4);
 	entry1[0].type = 0;
-	entry1[0].value.text = "OperatingSystemFilter0";
+	entry1[0].v.text = "OperatingSystemFilter0";
 	entry1[1].type = 0;
-        entry1[1].value.text = "localhost.localdomain";
+        entry1[1].v.text = "localhost.localdomain";
 	entry1[2].type = 0;
-        entry1[2].value.text = "CIM_IndicationFilter";
+        entry1[2].v.text = "CIM_IndicationFilter";
 	entry1[3].type = 0;
-        entry1[3].value.text = "CIM_ComputerSystem";
+        entry1[3].v.text = "CIM_ComputerSystem";
 	hash_alloc_insert(selectors_filter, "Name", &entry1[0]);
 	hash_alloc_insert(selectors_filter, "SystemName", &entry1[1]);
 	hash_alloc_insert(selectors_filter, "CreationClassName", &entry1[2]);
@@ -29,15 +29,15 @@ static void test_serialize1(void)
         }
 
 	hash_t *selectors_handler = hash_create(HASHCOUNT_T_MAX, 0, 0);
-	kv_value_t *entry2 = u_malloc(sizeof(kv_value_t)*4);
+	key_value_t *entry2 = u_malloc(sizeof(key_value_t)*4);
 	entry2[0].type = 0;
-        entry2[0].value.text = "OperatingSystemHandler0";
+        entry2[0].v.text = "OperatingSystemHandler0";
         entry2[1].type = 0;
-        entry2[1].value.text = "localhost.localdomain";
+        entry2[1].v.text = "localhost.localdomain";
         entry2[2].type = 0;
-        entry2[2].value.text = "CIM_IndicationHandlerCIMXML";
+        entry2[2].v.text = "CIM_IndicationHandlerCIMXML";
         entry2[3].type = 0;
-        entry2[3].value.text = "CIM_ComputerSystem";
+        entry2[3].v.text = "CIM_ComputerSystem";
 	hash_alloc_insert(selectors_handler, "Name", &entry2[0]);
         hash_alloc_insert(selectors_handler, "SystemName", &entry2[1]);
         hash_alloc_insert(selectors_handler, "CreationClassName", &entry2[2]);
@@ -49,12 +49,12 @@ static void test_serialize1(void)
 	}
 
 	hash_t *selectors_subscription =  hash_create(HASHCOUNT_T_MAX, 0, 0);
-        kv_value_t *entry3 = NULL;
-        entry3 = u_malloc(sizeof(kv_value_t)*2);
+        key_value_t *entry3 = NULL;
+        entry3 = u_malloc(sizeof(key_value_t)*2);
         entry3[0].type = 1;
-        entry3[0].value.eprp = epr_filter;
+        entry3[0].v.epr = epr_filter;
         entry3[1].type = 1;
-        entry3[1].value.eprp = epr_handler;
+        entry3[1].v.epr = epr_handler;
         hash_alloc_insert(selectors_subscription, "Filter", &entry3[1]);
 	hash_alloc_insert(selectors_subscription, "Handler", &entry3[1]);
 	epr_t *epr_subscription = epr_create("http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/CIM_IndicationSubscription", selectors_subscription, NULL);

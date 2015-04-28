@@ -41,17 +41,12 @@ extern "C" {
 #endif				/* __cplusplus */
 
 #include "wsman-types.h"
+#include "wsman-key-value.h"
 #include "u/hash.h"
 
 typedef struct {
-	char *value; //string or nestes epr_t
-	char *name;
-	int type; // type = 0, value is text; Or else, value is a nested epr_t
-} Selector;
-
-typedef struct {
 	unsigned int count;
-	Selector *selectors;
+	key_value_t *selectors;
 } SelectorSet;
 
 
@@ -75,7 +70,7 @@ typedef struct {
 	int arraycount;
 } methodarglist_t;
 
-typedef int (*selector_callback ) (void *, const char*, const char*);
+typedef int (*selector_callback ) (void *data, const key_value_t *kv);
 
 void wsman_epr_selector_cb(const epr_t *epr, selector_callback cb,
 		void *cb_data);
@@ -83,6 +78,9 @@ void wsman_epr_selector_cb(const epr_t *epr, selector_callback cb,
 void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb,
 		void *cb_data);
 
+/* get string value of selector by name
+ * returns NULL if the selector value is an epr_t
+ */
 char *wsman_epr_selector_by_name(const epr_t *epr, const char* name);
 
 int epr_selector_count(const epr_t *epr);

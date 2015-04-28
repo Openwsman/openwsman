@@ -1,6 +1,6 @@
 
 /*******************************************************************************
- * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ * Copyright (C) 2015 SUSE Linux GmbH. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,43 +30,36 @@
  *******************************************************************************/
 
 /**
- * @author Anas Nashif
- * @author Vadim Revyakin
-*/
+ * @author Klaus Kämpf
+ */
 
-#ifndef WSMAN_TYPES_H_
-#define WSMAN_TYPES_H_
+#ifndef WSMAN_TYPES_INTERNAL_H_
+#define WSMAN_TYPES_INTERNAL_H_
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct epr_struct epr_t;
 
-struct _WsXmlDoc;
-typedef struct _WsXmlDoc* WsXmlDocH;
+/* key/value pair
+ * to represent either a value or an epr_t
+ */
+typedef struct {
+  char *key;
+  int type; /* 0: char*, else epr_t* */
+  union {
+    char *text;
+    epr_t *epr;
+  } v;
+} key_value_t;
 
-struct _WS_CONTEXT;
-typedef struct _WS_CONTEXT* WsContextH;
-
-
-struct __WsXmlNode
-{
-    int __undefined;
-};
-typedef struct __WsXmlNode* WsXmlNodeH;
-
-struct __WsXmlAttr
-{
-    int __undefined;
-};
-typedef struct __WsXmlAttr* WsXmlAttrH;
-
-struct __WsXmlNs
-{
-    int __undefined;
-};
-typedef struct __WsXmlNs* WsXmlNsH;
+/* if kv is non-NULL, it's pre-allocated (part of array) */
+key_value_t *key_value_create(const char *key, const char *text, const epr_t *epr, key_value_t *prealloc);
+void key_value_copy(const key_value_t *from, key_value_t *to);
+/* if part_of_array is non-zero, only release key/value, not element itself */
+void key_value_destroy(key_value_t *, int part_of_array);
 
 #ifdef __cplusplus
 }

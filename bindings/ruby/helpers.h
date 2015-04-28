@@ -125,26 +125,34 @@ _add_str( VALUE key, VALUE value, hash_t *h )
 }
 
 
-/* add key,value VALUE pair to hash_t* as kv_value_t*
+/* add key,value VALUE pair to hash_t* as key_value_t*
  *  (used as callback for value2hash)
  */
 static int
-_add_selector( VALUE key, VALUE value, hash_t *h )
+_add_kv( VALUE key, VALUE value, hash_t *h )
 {
     if (key != Qundef) {
-	const char *k = strdup( as_string( key ) );
+	const char *k = as_string( key );
 	if (!hash_lookup( h, k ) ) {
-            kv_value_t *entry = u_malloc(sizeof(kv_value_t));
-            entry->type = 0;
-            if (TYPE(value) == T_ARRAY) {
-              rb_raise( rb_eException, "Passing array parameter via invoke() still unsupported" );
-            }
-            else {
-              entry->value.text = strdup(as_string( value ));
-            }
-	    if ( !hash_alloc_insert( h, k, entry ) ) {
-		rb_raise( rb_eException, "hash_alloc_insert failed" );
-            }
+          epr_t *epr;
+          const char *text;
+          key_value_t *entry;
+          KLASS_DECL(SwigClassEndPointReference,SWIGTYPE_p_epr_t);
+          if (CLASS_OF(value) == KLASS_OF(SwigClassEndPointReference)) {
+            SWIG_ConvertPtr(value, (void **)&epr, SWIGTYPE_p_epr_t, 0);
+            text = NULL;
+          }
+          else if (TYPE(value) == T_ARRAY) {
+            rb_raise( rb_eException, "Passing array parameter via invoke() still unsupported" );
+          }
+          else {
+            text = as_string(value);
+            epr = NULL;
+          }
+          entry = key_value_create(k, text, epr, NULL);
+          if ( !hash_alloc_insert( h, k, entry ) ) {
+            rb_raise( rb_eException, "hash_alloc_insert failed" );
+          }
 	}
     }
     return 0;
@@ -158,7 +166,7 @@ _add_selector( VALUE key, VALUE value, hash_t *h )
  *
  * valuetype - type of hash values
  *   0 - values are string (char *)
- *   1 - values are kv_value_t *
+ *   1 - values are key_value_t *
  * 
  */
 static hash_t *
@@ -170,7 +178,7 @@ value2hash( hash_t *h, VALUE v, int valuetype )
 
     if (!h) h = hash_create3(HASHCOUNT_T_MAX, 0, 0);
 
-    rb_hash_foreach( v, (valuetype==0)?_add_str:_add_selector, (unsigned long)h );
+    rb_hash_foreach( v, (valuetype==0)?_add_str:_add_kv, (unsigned long)h );
 
     return h;
 }

@@ -506,12 +506,12 @@ char *
 cim_get_namespace_selector(hash_t * keys)
 {
 	char *cim_namespace = NULL;
-	kv_value_t *sentry = NULL;
+	key_value_t *sentry = NULL;
 	hnode_t *hn = hash_lookup(keys, (char *) CIM_NAMESPACE_SELECTOR);
 	if (hn) {
-		sentry = (kv_value_t *) hnode_get(hn);
+		sentry = (key_value_t *) hnode_get(hn);
 		if(sentry->type == 1) return NULL;
-		cim_namespace = sentry->value.text;
+		cim_namespace = sentry->v.text;
 		hash_delete(keys, hn);
 		hnode_destroy(hn);
 		u_free(sentry);
@@ -522,15 +522,18 @@ cim_get_namespace_selector(hash_t * keys)
 
 
 static int
-cim_add_keys_from_filter_cb(void *objectpath, const char* key,
-		const char *value)
+cim_add_keys_from_filter_cb(void *objectpath, const key_value_t* kv)
 {
 	CMPIObjectPath *op = (CMPIObjectPath *)objectpath;
-	debug("adding selector %s=%s", key, value );
-	if(strcmp(key, CIM_NAMESPACE_SELECTOR) == 0) //it is __cimnamespace
-		CMSetNameSpace(op, value);
+        if (kv->type != 0) {
+          debug("ERR cim_add_keys_from_filter_cb %s=EPR", kv->key);
+          return -1;
+        }
+	debug("adding selector %s=%s", kv->key, kv->v.text );
+	if(strcmp(kv->key, CIM_NAMESPACE_SELECTOR) == 0) //it is __cimnamespace
+		CMSetNameSpace(op, kv->v.text);
 	else
-		CMAddKey(op, key, value, CMPI_chars);
+		CMAddKey(op, kv->key, kv->v.text, CMPI_chars);
 	return 0;
 }
 
@@ -611,9 +614,9 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 		argnode = list_first(arglist);
 		for (ii = 0; ii < listcount; ii++) {
 			CMPIValue value;
-			kv_value_t *sentry;
+			key_value_t *sentry;
 			node_val = (methodarglist_t *)argnode->list_data;
-			sentry = (kv_value_t *)node_val->data;
+			sentry = (key_value_t *)node_val->data;
 			if (0 < node_val->arraycount) {
 				CMPIArray *arraydata = NULL;
 				lnode_t *t_anode = argnode;
@@ -625,7 +628,7 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 				for (kk = 1; kk < node_val->arraycount; kk++) {
 					t_anode = list_next(arglist, t_anode);
 					if (NULL != t_anode) {
-						kv_value_t *t_sentry = (kv_value_t *)((methodarglist_t *)t_anode->list_data)->data;
+						key_value_t *t_sentry = (key_value_t *)((methodarglist_t *)t_anode->list_data)->data;
 						char *key = ((methodarglist_t *)t_anode->list_data)->key;
 						debug(" %s[0] = %d, %s[%d] = %d", key, sentry->type, key, kk, t_sentry->type);	
 						if (sentry->type != t_sentry->type) {
@@ -642,19 +645,19 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 				for (jj = 0; jj < node_val->arraycount; jj++) {
 					debug("cim_add_args: array %u object: %p", jj, sentry);
 					if (0 != arraytype) {
-						value.ref = cim_epr_to_objectpath(client, sentry->value.eprp);
+						value.ref = cim_epr_to_objectpath(client, sentry->v.epr);
 						if (value.ref == NULL) {
 						        res = 1;
 							goto error;
 						}
 						CMSetArrayElementAt(arraydata, jj, &value, CMPI_ref);
 					} else {
-						value.string = native_new_CMPIString((char *)sentry->value.text, NULL);
+						value.string = native_new_CMPIString((char *)sentry->v.text, NULL);
 						CMSetArrayElementAt(arraydata, jj, &value, CMPI_string);
 					}
 					argnode = list_next(arglist, argnode);
 					if (NULL != argnode)
-						sentry = (kv_value_t *)((methodarglist_t *)argnode->list_data)->data;
+						sentry = (key_value_t *)((methodarglist_t *)argnode->list_data)->data;
 				}
 				value.array = arraydata;
 				if (0 != arraytype)
@@ -665,17 +668,17 @@ cim_add_args(CimClientInfo * client, CMPIObjectPath *op,
 			} else {
 				debug("cim_add_args: single key: %s type: %u", node_val->key, sentry->type);
 				if (0 != sentry->type) {
-					epr_t *eprp = sentry->value.eprp;
-					if (eprp == NULL) {
+					epr_t *epr = sentry->v.epr;
+					if (epr == NULL) {
 						res = 1;
 						break;
 					}
-					debug("epr_t: selectorcount: %u", eprp->refparams.selectorset.count);
-					value.ref = cim_epr_to_objectpath(client, sentry->value.eprp);
+					debug("epr_t: selectorcount: %u", epr->refparams.selectorset.count);
+					value.ref = cim_epr_to_objectpath(client, epr);
 					CMAddArg(argsin, node_val->key, &value, CMPI_ref);
 				} else {
-					debug("text: %s", sentry->value.text);
-					CMAddArg(argsin, node_val->key, sentry->value.text, CMPI_chars);
+					debug("text: %s", sentry->v.text);
+					CMAddArg(argsin, node_val->key, sentry->v.text, CMPI_chars);
 				}
 				argnode = list_next(arglist, argnode);
 			}
@@ -694,20 +697,22 @@ cim_add_keys(CMPIObjectPath * objectpath, hash_t * keys)
 {
 	hscan_t hs;
 	hnode_t *hn;
-	kv_value_t *sentry;
+	key_value_t *sentry;
 	if (keys == NULL) {
 		return;
 	}
 	hash_scan_begin(&hs, keys);
 	while ((hn = hash_scan_next(&hs))) {
-		sentry = (kv_value_t *)hnode_get(hn);
-		debug("in cim_add_keys: key: %s, text: %s", hnode_getkey(hn), sentry->value.text);
-		if(sentry->type == 0)
+		sentry = (key_value_t *)hnode_get(hn);
+		if(sentry->type == 0) {
+                  debug("in cim_add_keys: key: %s, text: %s", hnode_getkey(hn), sentry->v.text);
 			CMAddKey(objectpath, (char *) hnode_getkey(hn),
-					sentry->value.text, CMPI_chars);
+					sentry->v.text, CMPI_chars);
+                }
 		else {
 			CMPIValue value;
-			value.ref = cim_epr_to_objectpath(NULL, sentry->value.eprp);;
+                  debug("in cim_add_keys: key: %s, text: <epr>", hnode_getkey(hn));
+			value.ref = cim_epr_to_objectpath(NULL, sentry->v.epr);;
 			if (NULL != value.ref) {
 				CMAddKey(objectpath, (char *) hnode_getkey(hn),
 					&value, CMPI_ref);
@@ -843,10 +848,10 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 			debug("unexpected selectors");
 			break;
 		}
-		kv_value_t *sentry = (kv_value_t*)hnode_get(hn);
+		key_value_t *sentry = (key_value_t*)hnode_get(hn);
 		if(sentry->type == 0) {
 			cv = value2Chars(data.type, &data.value);
-			if(cv != NULL && strcmp(cv, sentry->value.text) == 0) {
+			if(cv != NULL && strcmp(cv, sentry->v.text) == 0) {
 				statusP->fault_code = WSMAN_RC_OK;
 				statusP->fault_detail_code = WSMAN_DETAIL_OK;
 				u_free(cv);
@@ -854,14 +859,14 @@ cim_verify_keys(CMPIObjectPath * objectpath, hash_t * keys,
 			else {
 				statusP->fault_code = WSA_DESTINATION_UNREACHABLE;
 				statusP->fault_detail_code = WSMAN_DETAIL_INVALID_RESOURCEURI;
-				debug("selector '%s', value: [ %s ] not matched", hnode_getkey(hn), sentry->value.text);
+				debug("selector '%s', value: [ %s ] not matched", hnode_getkey(hn), sentry->v.text);
 			        debug("data.type 0x%04x, cv '%s'", data.type, cv?cv:"<NULL>");
 				u_free(cv);
 				break;
 			}
 		}
 		else {
-			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(NULL, sentry->value.eprp);
+			CMPIObjectPath *objectpath_epr = cim_epr_to_objectpath(NULL, sentry->v.epr);
 			CMPIObjectPath *objectpath_epr2 = CMClone(data.value.ref, NULL);
 			if (cim_opcmp(objectpath_epr2, objectpath_epr) == 0) {
 				statusP->fault_code = WSMAN_RC_OK;
@@ -913,17 +918,17 @@ filter_instance(CMPIInstance * instance, WsEnumerateInfo * enumInfo)
 	filter_t *filter = enumInfo->filter;
 	int i;
 	int matches = 0;
-	Selector *ss = filter->selectorset.selectors;
+	key_value_t *ss = filter->selectorset.selectors;
 	if (ss == NULL) {
 		debug("epr->refparams.selectors == NULL");
 		return 0;
 	}
 	for (i = 0; i < filter->selectorset.count; i++) {
-		Selector *s;
+		key_value_t *s;
 		s = ss + i;
-		CMPIData data = instance->ft->getProperty(instance, s->name, NULL);
+		CMPIData data = instance->ft->getProperty(instance, s->key, NULL);
 		char *valuestr = value2Chars(data.type, &data.value);
-		if (valuestr && strcmp(s->value, valuestr) == 0 ) {
+		if (valuestr && (s->type == 0) && strcmp(s->v.text, valuestr) == 0 ) {
 			matches++;
 		}
 		u_free(valuestr);

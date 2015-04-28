@@ -368,42 +368,36 @@ typedef struct {} client_opt_t;
    * Add a selector as key/value pair
    *
    * NOTE:
-   * the value must be properly escaped (replace & with &amp;, etc.)
+   * the string value must be properly escaped (replace & with &amp;, etc.)
    * in Ruby use CGI::escapeHTML()
    *
    * call-seq:
    *   options.add_selector "Key", "Value"
+   *   options.add_selector "Key", end_point_reference
    *
    */
   void add_selector(VALUE k, VALUE v)
   {
     const char *key = as_string(k);
-    const char *value = as_string(v);
+    KLASS_DECL(SwigClassEndPointReference,SWIGTYPE_p_epr_t);
+    if (CLASS_OF(v) == KLASS_OF(SwigClassEndPointReference)) {
+      epr_t *epr;
+      SWIG_ConvertPtr(v, (void **)&epr, SWIGTYPE_p_epr_t, 0);
+      wsmc_add_selector_epr($self, key, epr);
+    }
+    else {
+      const char *value = as_string(v);
+      wsmc_add_selector($self, key, value);
+    }
+  }
 #else
   void add_selector(const char *key, const char *value)
   {
-#endif
     wsmc_add_selector($self, key, value);
   }
+#endif
 
 #if defined(SWIGRUBY)
-  %rename( "selectors=" ) set_selectors(VALUE hash);
-  /*
-   * Set selectors from Hash
-   *
-   * NOTE:
-   * the values must be properly escaped (replace & with &amp;, etc.)
-   * in Ruby use CGI::escapeHTML()
-   *
-   * call-seq:
-   *   options.selectors = { "Key" => "Value", ... }
-   *
-   */
-  void set_selectors(VALUE hash)
-  {
-    $self->selectors = value2hash(NULL, hash, 0);
-  }
-
   %rename( "selectors" ) get_selectors(void);
   /*
    * Get selectors as Hash
@@ -414,7 +408,7 @@ typedef struct {} client_opt_t;
    */
   VALUE get_selectors(void)
   {
-    return hash2value($self->selectors);
+    return kv_list_to_hash($self->selectors);
   }
 #endif
 
@@ -485,22 +479,7 @@ typedef struct {} client_opt_t;
    */
   VALUE get_properties(void)
   {
-    VALUE v = Qnil;
-    if (!list_isempty($self->properties)) {
-      v = rb_hash_new();
-      lnode_t *node = list_first($self->properties);
-      while (node) {
-        client_kv_t *property = (client_kv_t *)node->list_data;
-        if (property->value.type == 0) {
-	  rb_hash_aset( v, makestring(property->key), makestring(property->value.value.text));
-        }
-        else {
-          rb_hash_aset( v, makestring(property->key), makestring(epr_to_string(property->value.value.eprp)));
-        }
-        node = list_next($self->properties, node);
-      }
-    }
-    return v;
+    return kv_list_to_hash($self->properties);
   }
 #endif
 

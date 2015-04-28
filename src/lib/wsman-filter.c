@@ -80,28 +80,19 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 	} else if(selectors) {
 		hnode_t        *hn;
 		hscan_t         hs;
-		Selector *p;
-		kv_value_t *entry;
+                key_value_t *p;
+		key_value_t *entry;
 		filter->selectorset.count = hash_count(selectors);
-		filter->selectorset.selectors = u_malloc(sizeof(Selector)*
+                filter->selectorset.selectors = u_malloc(sizeof(key_value_t)*
 			filter->selectorset.count);
 
 		p = filter->selectorset.selectors;
 		hash_scan_begin(&hs, selectors);
 		while ((hn = hash_scan_next(&hs))) {
-			p->name = u_strdup((char *)hnode_getkey(hn));
-			entry = (kv_value_t *)hnode_get(hn);
-			if(entry->type == 1) {
-				p->type = 1;
-				p->value = (char *)epr_copy(entry->value.eprp);
-				debug("key=%s value=%p(nested epr)",
-					(char *) hnode_getkey(hn), p->value);
-			} else {
-				p->type = 0;
-				p->value = u_strdup(entry->value.text);
-				debug("key=%s value=%s",
-					(char *) hnode_getkey(hn), p->value);
-			}
+                  entry = (key_value_t *)hnode_get(hn);
+                  key_value_create((char *)hnode_getkey(hn),
+                                   (entry->type == 0)?entry->v.text:NULL,
+                                   (entry->type == 1)?entry->v.epr:NULL, p);
 			p++;
 		}
 	}
@@ -163,23 +154,21 @@ filter_t * filter_create_selector(hash_t *selectors)
 		NULL, NULL, NULL, NULL, NULL, 0);
 }
 
-int filter_add_selector(filter_t *filter, const char* key, const char *value)
+static int
+_filter_add_selector(filter_t *filter, const char* key, const char *value, const epr_t *epr)
 {
 	int i;
-	Selector *entry;
-	if(filter == NULL || key == NULL || value == NULL)
+        key_value_t *entry;
+	if(filter == NULL || key == NULL || ((value == NULL) && (epr == NULL)))
 		return 0;
 	entry = filter->selectorset.selectors;
 	for(i = 0; i < filter->selectorset.count; i++) {
-		if(strcmp(key, entry[i].name) == 0)
+		if(strcmp(key, entry[i].key) == 0)
 			return -1;
 	}
-	entry = u_realloc(entry, (filter->selectorset.count+1) * sizeof(Selector));
+	entry = u_realloc(entry, (filter->selectorset.count+1) * sizeof(key_value_t));
 	if(entry == NULL) return -1;
-
-	entry[filter->selectorset.count].type = 0;
-	entry[filter->selectorset.count].name = u_strdup(key);
-	entry[filter->selectorset.count].value = u_strdup(value);
+        key_value_create(key, value, epr, &(entry[filter->selectorset.count]));
 	filter->selectorset.selectors = entry;
 	filter->selectorset.count++;
 
@@ -187,11 +176,21 @@ int filter_add_selector(filter_t *filter, const char* key, const char *value)
 
 }
 
+int filter_add_selector(filter_t *filter, const char* key, const char *value)
+{
+  return _filter_add_selector(filter, key, value, NULL);
+}
+
+int filter_add_selector_epr(filter_t *filter, const char* key, const epr_t *value)
+{
+  return _filter_add_selector(filter, key, NULL, value);
+}
+
 filter_t * filter_copy(filter_t *filter)
 {
 	filter_t *filter_cpy = NULL;
-	Selector *p1;
-	Selector *p2;
+	key_value_t *p1;
+        key_value_t *p2;
 	int i = 0;
 	if(filter == NULL)
 		return NULL;
@@ -208,17 +207,12 @@ filter_t * filter_copy(filter_t *filter)
 		filter_cpy->query = u_strdup(filter->query);
 
 	filter_cpy->selectorset.count = filter->selectorset.count;
-	filter_cpy->selectorset.selectors = u_malloc(sizeof(Selector) *
+	filter_cpy->selectorset.selectors = u_malloc(sizeof(key_value_t) *
 		filter->selectorset.count);
 	p1 = filter->selectorset.selectors;
 	p2 = filter_cpy->selectorset.selectors;
 	for(i = 0; i < filter_cpy->selectorset.count; i++) {
-		p2->name = u_strdup(p1->name);
-		p2->type = p1->type;
-		if(p1->type == 0)
-			p2->value = u_strdup(p1->value);
-		else
-			p2->value = (char *)epr_copy((epr_t*)p1->value);
+          key_value_copy(p1, p2);
 		p1++;
 		p2++;
 	}
@@ -243,7 +237,7 @@ filter_t * filter_copy(filter_t *filter)
 
 void filter_destroy(filter_t *filter)
 {
-	Selector *p;
+	key_value_t *p;
 	int i;
 	if(filter == NULL)
 		return;
@@ -258,11 +252,7 @@ void filter_destroy(filter_t *filter)
 
 	p = filter->selectorset.selectors;
 	for(i = 0; i< filter->selectorset.count; i++) {
-		u_free(p->name);
-		if(p->type == 0)
-			u_free(p->value);
-		else
-			epr_destroy((epr_t*)p->value);
+          key_value_destroy(p, 1);
 		p++;
 	}
 	u_free(filter->selectorset.selectors);
@@ -328,11 +318,11 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter, const char *ns)
 		while (i < filter->selectorset.count) {
 			if(filter->selectorset.selectors[i].type == 0) {
 				instance_node = ws_xml_add_child(node, XML_NS_WS_MAN, WSM_SELECTOR,
-					filter->selectorset.selectors[i].value);
-				ws_xml_add_node_attr(instance_node, NULL, WSM_NAME, filter->selectorset.selectors[i].name);
+					filter->selectorset.selectors[i].v.text);
+				ws_xml_add_node_attr(instance_node, NULL, WSM_NAME, filter->selectorset.selectors[i].key);
 			}
 			else {
-				epr_serialize(node, NULL, NULL, (epr_t *)filter->selectorset.selectors[i].value, 1);
+				epr_serialize(node, NULL, NULL, (epr_t *)filter->selectorset.selectors[i].v.epr, 1);
 			}
 			i++;
 		}
@@ -412,23 +402,33 @@ filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
 		if(filter_node == NULL)
 			goto CLEANUP;
 		filter->selectorset.count = ws_xml_get_child_count(filter_node);
-		filter->selectorset.selectors = u_malloc(sizeof(Selector) * filter->selectorset.count );
+		filter->selectorset.selectors = u_malloc(sizeof(key_value_t) * filter->selectorset.count );
 		while(i < filter->selectorset.count) {
+                  const char *key;
+                  const char *text;
+                  epr_t *epr;
 			entry_node = ws_xml_get_child(filter_node, i, XML_NS_WS_MAN, WSM_SELECTOR);
 			if(entry_node == NULL) break;
 			attr = ws_xml_find_node_attr(entry_node, NULL, WSM_NAME);
 			if(attr) {
-				filter->selectorset.selectors[i].name = u_strdup(ws_xml_get_attr_value(attr));
+				key = ws_xml_get_attr_value(attr);
 			}
+                  else {                          
+                    key = NULL;
+                  }
 			instance_node = ws_xml_get_child(entry_node, 0, XML_NS_ADDRESSING, WSA_EPR);
 			if(instance_node) {
-				filter->selectorset.selectors[i].type = 1;
-				filter->selectorset.selectors[i].value = (char *)epr_deserialize(instance_node, NULL, NULL, 1);
+				epr = epr_deserialize(instance_node, NULL, NULL, 1);
+                          text = NULL;
 			}
 			else {
-				filter->selectorset.selectors[i].type = 0;
-				filter->selectorset.selectors[i].value = u_strdup(ws_xml_get_node_text(entry_node));
+				text = ws_xml_get_node_text(entry_node);
+                          epr = NULL;
 			}
+                  key_value_create(key, text, epr, filter->selectorset.selectors + i);
+                  if (epr) { /* key_value_create() did a epr_copy */
+                    epr_destroy(epr);
+                  }
 			i++;
 		}
 	}

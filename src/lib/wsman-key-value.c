@@ -1,6 +1,5 @@
-
 /*******************************************************************************
- * Copyright (C) 2004-2006 Intel Corp. All rights reserved.
+ * Copyright (C) SUSE Linux GmbH. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,46 +29,71 @@
  *******************************************************************************/
 
 /**
- * @author Anas Nashif
- * @author Vadim Revyakin
-*/
+ * @author Klaus Kämpf, SUSE Linux
+ */
 
-#ifndef WSMAN_TYPES_H_
-#define WSMAN_TYPES_H_
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-
-struct _WsXmlDoc;
-typedef struct _WsXmlDoc* WsXmlDocH;
-
-struct _WS_CONTEXT;
-typedef struct _WS_CONTEXT* WsContextH;
-
-
-struct __WsXmlNode
-{
-    int __undefined;
-};
-typedef struct __WsXmlNode* WsXmlNodeH;
-
-struct __WsXmlAttr
-{
-    int __undefined;
-};
-typedef struct __WsXmlAttr* WsXmlAttrH;
-
-struct __WsXmlNs
-{
-    int __undefined;
-};
-typedef struct __WsXmlNs* WsXmlNsH;
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
+#ifdef HAVE_CONFIG_H
+#include <wsman_config.h>
 #endif
+
+#define _GNU_SOURCE
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <assert.h>
+
+#include "u/memory.h"
+#include "u/misc.h"
+#include "wsman-types.h"
+#include "wsman-key-value.h"
+#include "wsman-epr.h"
+
+key_value_t *
+key_value_create(const char *key, const char *text, const epr_t *epr, key_value_t *prealloc)
+{
+  if (prealloc == NULL)
+    prealloc = (key_value_t *)u_malloc(sizeof(key_value_t));
+
+  if (key) /* might be NULL if only value is stored */
+    prealloc->key = u_strdup(key);
+  else
+    prealloc->key = NULL;
+  if (text) {
+    prealloc->type = 0;
+    prealloc->v.text = u_strdup(text);
+  }
+  else {
+    prealloc->type = 1;
+    prealloc->v.epr = epr_copy(epr);
+  }
+  return prealloc;
+}
+
+void
+key_value_copy(const key_value_t *from, key_value_t *to)
+{
+  if (from->key)
+    to->key = u_strdup(from->key);
+  else
+    to->key = NULL;
+  to->type = from->type;
+  if (from->type == 0)
+    to->v.text = u_strdup(from->v.text);
+  else
+    to->v.epr = epr_copy(from->v.epr);
+}
+
+void
+key_value_destroy(key_value_t *kv, int part_of_array)
+{
+  u_free(kv->key);
+  if (kv->type == 0)
+    u_free(kv->v.text);
+  else
+    epr_destroy(kv->v.epr);
+
+  if (part_of_array == 0) {
+    u_free(kv);
+  }
+}

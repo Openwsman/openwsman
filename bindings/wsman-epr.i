@@ -193,9 +193,9 @@ typedef struct {} epr_t;
 #endif
     int i;
     Target_Type ary = Target_SizedArray($self->refparams.selectorset.count);
-    Selector *p = $self->refparams.selectorset.selectors;
+    key_value_t *p = $self->refparams.selectorset.selectors;
     for (i = 0; i < $self->refparams.selectorset.count; i++) {
-      Target_ListSet(ary, i, SWIG_FromCharPtr(p->name));
+      Target_ListSet(ary, i, SWIG_FromCharPtr(p->key));
       ++p;
     }
 #if defined(SWIGPERL)
@@ -216,18 +216,16 @@ typedef struct {} epr_t;
    */
   void each() {
     int i;
-    Selector *p = NULL;
+    key_value_t *p = NULL;
     VALUE value, ary;
     p = $self->refparams.selectorset.selectors;
     for (i = 0; i < $self->refparams.selectorset.count; i++) {
       ary = rb_ary_new2(2);
-      rb_ary_store(ary, 0, SWIG_FromCharPtr(p->name));
+      rb_ary_store(ary, 0, SWIG_FromCharPtr(p->key));
       if (p->type == 0) {
-        value = SWIG_FromCharPtr(p->value);
+        value = SWIG_FromCharPtr(p->v.text);
       } else {
-        char *epr_value = epr_to_string((const epr_t *)p->value);
-        value = SWIG_FromCharPtr(epr_value);
-        u_free(epr_value);
+        value = SWIG_NewPointerObj((void*) p->v.epr, SWIGTYPE_p_epr_t, 0);
       }
       rb_ary_store(ary, 1, value);
       rb_yield(ary);

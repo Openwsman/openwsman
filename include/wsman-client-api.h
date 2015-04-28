@@ -188,7 +188,7 @@ typedef enum {
 		char *delivery_certificatethumbprint; // certificate thumbprint of event sink, if it is necessary
 		float heartbeat_interval;
 		float expires;
-		hash_t *selectors;
+		list_t *selectors;
 		list_t *properties; /* keep properties sorted */
 		unsigned int timeout;
 		unsigned int max_envelope_size;
@@ -759,6 +759,9 @@ typedef enum {
 
 	void wsmc_add_selector(client_opt_t * options,
 				       const char *key, const char *value);
+
+	void wsmc_add_selector_epr(client_opt_t * options,
+				       const char *key, const epr_t *value);
 
 	void wsmc_add_property(client_opt_t * options,
 				       const char *key, const char *value);

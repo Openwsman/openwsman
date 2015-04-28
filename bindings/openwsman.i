@@ -419,6 +419,27 @@ static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   /* else search the WSA_EPR node */
   return epr_deserialize(node, XML_NS_ADDRESSING, WSA_EPR, 1);
 }
+
+static VALUE kv_list_to_hash(list_t *list)
+{
+  VALUE v = Qnil;
+  if (!list_isempty(list)) {
+  v = rb_hash_new();
+  lnode_t *node = list_first(list);
+  while (node) {
+    key_value_t *kv = (key_value_t *)node->list_data;
+    if (kv->type == 0) {
+      rb_hash_aset( v, makestring(kv->key), makestring(kv->v.text));
+    }
+    else {
+      VALUE epr = SWIG_NewPointerObj((void*)kv->v.epr, SWIGTYPE_p_epr_t, 0);
+      rb_hash_aset( v, makestring(kv->key), epr);
+    }
+    node = list_next(list, node);
+    }
+  }
+  return v;
+}
 #endif
 
 static char *epr_prefix(const char *uri);

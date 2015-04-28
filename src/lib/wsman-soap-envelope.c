@@ -955,13 +955,9 @@ wsman_free_method_list(list_t *list)
 	debug("wsman_free_method_list:");
 	while (node) {
 		methodarglist_t *node_val = (methodarglist_t *)node->list_data;
-		kv_value_t *sentry = (kv_value_t *)node_val->data;
+		key_value_t *sentry = (key_value_t *)node_val->data;
 		debug("freeing list entry key: %s", node_val->key);
-		switch (sentry->type) {
-			case 0: u_free(sentry->value.text); break;
-			case 1: u_free(sentry->value.eprp); break;
-		}
-		u_free(sentry);
+                key_value_destroy(sentry, 0);
 		u_free(node_val->key);
 		u_free(node_val);
 		node->list_data = NULL; // needed to prevent double free
@@ -1017,7 +1013,8 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 			lnode_t *argnode;
 			while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
 				char *key = ws_xml_get_node_local_name(arg);
-				kv_value_t *sentry = u_malloc(sizeof(*sentry));
+                                epr_t *e;
+                                char *text;
 				methodarglist_t *nodeval = u_malloc(sizeof(methodarglist_t));
 				epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
 					WSA_REFERENCE_PARAMETERS);
@@ -1026,15 +1023,17 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 				argnode = lnode_create(nodeval);
 				if (epr) {
 					debug("epr: %s", key);
-					sentry->type = 1;
-					sentry->value.eprp = epr_deserialize(arg, NULL, NULL, 1); 
+					e = epr_deserialize(arg, NULL, NULL, 1); 
+                                        text = NULL;
 					//wsman_get_epr(cntx, arg, key, XML_NS_CIM_CLASS);
 				} else {
 					debug("text: %s", key);
-					sentry->type = 0;
-					sentry->value.text = u_strdup(ws_xml_get_node_text(arg));
+					text = ws_xml_get_node_text(arg);
+                                        e = NULL;
 				}
-				nodeval->data = sentry;
+				nodeval->data = key_value_create(NULL, text, e, NULL);
+                                if (e)
+                                  epr_destroy(e);
 				list_append(arglist, argnode);
 			}
 			if (!hash_alloc_insert(h, METHOD_ARGS_KEY, arglist)) {
@@ -1060,7 +1059,7 @@ hash_t *
 wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 {
 	WsXmlNodeH selector, node, epr;
-	kv_value_t *sentry;
+	key_value_t *sentry;
 	int index = 0;
 	hash_t *h = hash_create2(HASHCOUNT_T_MAX, 0, 0);
 
@@ -1085,22 +1084,18 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 			epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
 					WSA_EPR);
 			if (epr) {
-				debug("epr: %s", attrVal);
-				sentry->type = 1;
-				sentry->value.eprp = epr_deserialize(selector, XML_NS_ADDRESSING,
-					WSA_EPR, 1);
-				if (!hash_alloc_insert(h, attrVal, sentry)) {
-					error("hash_alloc_insert failed");
-				}
-			} else {
-				debug("text: %s", attrVal);
-				sentry->type = 0;
-				sentry->value.text = ws_xml_get_node_text(selector);
-				if (!hash_alloc_insert(h, attrVal,
-						sentry)) {
-					error("hash_alloc_insert failed");
-				}
-			}
+                          epr_t *e = epr_deserialize(selector, XML_NS_ADDRESSING, WSA_EPR, 1);
+                          debug("epr: %s", attrVal);
+                          sentry = key_value_create(NULL, NULL, e, NULL);
+                          epr_destroy(e);
+                        }
+                        else {
+                          debug("text: %s", attrVal);
+                          sentry = key_value_create(NULL, ws_xml_get_node_text(selector), NULL, NULL);
+                        }
+                        if (!hash_alloc_insert(h, attrVal, sentry)) {
+                          error("hash_alloc_insert failed");
+                        }
 		}
 	}
 
@@ -1231,38 +1226,55 @@ char *wsman_get_action(WsContextH cntx, WsXmlDocH doc)
 
 
 
-void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
+static void
+_wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val, const epr_t *epr)
 {
 	WsXmlNodeH selector = NULL;
-	WsXmlDocH epr = NULL;
+	WsXmlDocH epr_doc = NULL;
 	WsXmlNodeH set = ws_xml_get_child(baseNode, 0, XML_NS_WS_MAN,
 			WSM_SELECTOR_SET);
 
-	if (val && strstr(val, WSA_EPR)) {
-		epr = ws_xml_read_memory(val, strlen(val), NULL, 0);
+	if (val) {
+          if (strstr(val, WSA_EPR)) {
+            epr_doc = ws_xml_read_memory(val, strlen(val), NULL, 0);
+          }
+          epr = NULL;
 	}
 
-	if (set || (set = ws_xml_add_child(baseNode,
-				XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL))) {
-		if (epr) {
-			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
-							NULL))) {
-				ws_xml_duplicate_tree(selector, ws_xml_get_doc_root(epr));
-				ws_xml_add_node_attr(selector, NULL, WSM_NAME,
-						name);
-			}
-		} else {
-			if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR,
-							val))) {
-				ws_xml_add_node_attr(selector, NULL, WSM_NAME,
-						name);
-			}
-		}
+	if (set ||
+            (set = ws_xml_add_child(baseNode, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL))) {
+          if (epr) {
+            if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, NULL))) {
+              ws_xml_add_node_attr(selector, NULL, WSM_NAME, name);
+              epr_serialize(selector, NULL, NULL, epr, 1);
+            }
+          }
+          else {
+            if (epr_doc) {
+              if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, NULL))) {
+                ws_xml_duplicate_tree(selector, ws_xml_get_doc_root(epr_doc));
+                ws_xml_add_node_attr(selector, NULL, WSM_NAME, name);
+              }
+            } else {
+              if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, val))) {
+                ws_xml_add_node_attr(selector, NULL, WSM_NAME, name);
+              }
+            }
+          }
 	}
 	return;
 }
 
 
+void wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val)
+{
+  _wsman_add_selector(baseNode, name, val, NULL);
+}
+
+void wsman_add_selector_epr(WsXmlNodeH baseNode, const char *name, const epr_t *val)
+{
+  _wsman_add_selector(baseNode, name, NULL, val);
+}
 
 void
 wsman_set_estimated_total(WsXmlDocH in_doc,

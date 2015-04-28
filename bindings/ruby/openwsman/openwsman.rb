@@ -45,7 +45,13 @@ module Openwsman
     # assign hash to properties
     def properties= value
       value.each do |k,v|
-        self.add_property k.to_s, v.to_s
+        self.add_property k.to_s, v
+      end
+    end
+    # assign hash to selectors
+    def selectors= value
+      value.each do |k,v|
+        self.add_selector k.to_s, v
       end
     end
   end
