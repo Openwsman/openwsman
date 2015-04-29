@@ -1246,7 +1246,7 @@ _wsman_add_selector(WsXmlNodeH baseNode, const char *name, const char *val, cons
           if (epr) {
             if ((selector = ws_xml_add_child(set, XML_NS_WS_MAN, WSM_SELECTOR, NULL))) {
               ws_xml_add_node_attr(selector, NULL, WSM_NAME, name);
-              epr_serialize(selector, NULL, NULL, epr, 1);
+              epr_serialize(selector, XML_NS_ADDRESSING, WSA_EPR, epr, 1);
             }
           }
           else {
