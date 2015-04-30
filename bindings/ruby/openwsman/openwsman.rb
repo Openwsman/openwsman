@@ -108,7 +108,7 @@ module Openwsman
       s = "#{self.resource_uri}"
       first = true
       self.each do |k,v|
-        s << (first)?"?":"&"
+        s << ((first)?"?":"&")
         first = false
         s << "#{k}=#{v}"
       end
