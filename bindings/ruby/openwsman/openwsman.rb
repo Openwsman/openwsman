@@ -104,6 +104,16 @@ module Openwsman
     def method_missing name, *args # :nodoc:
       selector(name.to_s)
     end
+    def to_s
+      s = "#{self.resource_uri}"
+      first = true
+      self.each do |k,v|
+        s << (first)?"?":"&"
+        first = false
+        s << "#{k}=#{v}"
+      end
+      s
+    end
   end
   #
   # Fault
