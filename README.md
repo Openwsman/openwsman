@@ -58,7 +58,6 @@ following syntax:
     basic_password_file = /etc/openwsman/simple_auth.passwd
     enum_idle_timeout = 5000
 
-    min_threads = 1
     max_threads = 1
 
     #use_digest is OBSOLETED, see below.
