@@ -105,12 +105,12 @@ module Openwsman
       selector(name.to_s)
     end
     def to_s
-      s = "#{self.resource_uri}"
+      s = "#{classname}"
       first = true
       self.each do |k,v|
         s << ((first)?"?":"&")
         first = false
-        s << "#{k}=#{v}"
+        s << "#{k}=#{v.inspect}"
       end
       s
     end
