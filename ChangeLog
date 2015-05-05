@@ -1,3 +1,7 @@
+2.5.2
+- Cleanup
+  - remove (unused) 'min_threads' config option (Vitezslav Crhonek)
+
 2.5.1
 - Features
   - Allow ';' as separator for URI selectors

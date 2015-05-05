@@ -95,7 +95,6 @@ static char *custom_identify_file = NULL;
 static char *basic_authenticator_arg = NULL;
 static char *basic_authenticator = DEFAULT_BASIC_AUTH;
 static int max_threads = 1;
-static int min_threads = 4;
 static unsigned long enumIdleTimeout = 100;
 static char *thread_stack_size="0";
 static int max_connections_per_thread=20;
@@ -201,7 +200,6 @@ int wsmand_read_config(dictionary * ini)
 	basic_authenticator_arg =
 	    iniparser_getstr(ini, "server:basic_authenticator_arg");
 	log_location = iniparser_getstr(ini, "server:log_location");
-	min_threads = iniparser_getint(ini, "server:min_threads", 1);
 	max_threads = iniparser_getint(ini, "server:max_threads", 0);
 	uri_subscription_repository = iniparser_getstring(ini, "server:subs_repository", DEFAULT_SUBSCRIPTION_REPOSITORY);
         max_connections_per_thread = iniparser_getint(ini, "server:max_connections_per_thread", iniparser_getint(ini, "server:max_connextions_per_thread", 20));
@@ -353,11 +351,6 @@ char *wsmand_options_get_ssl_disabled_protocols(void)
 int wsmand_options_get_digest(void)
 {
 	return use_digest;
-}
-
-int wsmand_options_get_min_threads(void)
-{
-	return min_threads;
 }
 
 
