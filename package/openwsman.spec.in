@@ -171,13 +171,13 @@ Requires:       sblim-sfcc-devel
 Opensource Implementation of WS-Management stack
 (Development files)
 
-%package -n libwsman_clientpp3
+%package -n libwsman_clientpp1
 Summary:        C++ bindings to Openwsman Client libraries
 Group:          System/Management
 Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
 
-%description -n libwsman_clientpp3
+%description -n libwsman_clientpp1
 An implementation of the WsmanClient interface using C++
 
 
@@ -185,7 +185,7 @@ An implementation of the WsmanClient interface using C++
 Summary:        C++ bindings to Openwsman Client libraries
 Group:          Development/Libraries/C and C++
 Requires:       libwsman-devel = %{version}
-Requires:       libwsman_clientpp3 = %{version}
+Requires:       libwsman_clientpp1 = %{version}
 
 %description -n libwsman_clientpp-devel
 Development files for C++ interface to OpenWSMAN client library.
@@ -358,11 +358,8 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
 [ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
 %if 0%{?has_systemd}
 install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
-# alias openwsman and openwsmand
-ln -s %{_unitdir}/%{name}.service $RPM_BUILD_ROOT%{_unitdir}/%{name}d.service
-# rcopenwsman, rcopenwsmand
+# rcopenwsman
 ln -sf %{_sbindir}/service $RPM_BUILD_ROOT%{_sbindir}/rc%{name}
-ln -sf %{_sbindir}/rcopenwsman $RPM_BUILD_ROOT%{_sbindir}/rc%{name}d
 %else
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
 install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
@@ -427,9 +424,9 @@ rm -f /var/log/wsmand.log
 %endif
 %endif
 
-%post -n libwsman_clientpp3 -p /sbin/ldconfig
+%post -n libwsman_clientpp1 -p /sbin/ldconfig
 
-%postun -n libwsman_clientpp3 -p /sbin/ldconfig
+%postun -n libwsman_clientpp1 -p /sbin/ldconfig
 
 %files -n libwsman3
 %defattr(-,root,root)
@@ -495,14 +492,10 @@ rm -f /var/log/wsmand.log
 %endif
 %if 0%{?has_systemd}
 %{_unitdir}/%{name}.service
-%{_unitdir}/%{name}d.service
 %{_sbindir}/rc%{name}
-%{_sbindir}/rc%{name}d
 %else
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
 %endif
-# backwards compatibility
-%{_sbindir}/rcopenwsmand
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/authenticators
 %{_libdir}/openwsman/authenticators/*.so
@@ -518,7 +511,7 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %{_libdir}/openwsman/plugins/*ruby*.so
 
-%files -n libwsman_clientpp3
+%files -n libwsman_clientpp1
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so.*
 
