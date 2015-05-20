@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman
 #
-# Copyright (c) 2014 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2015 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -146,13 +146,13 @@ Source4:        %{name}.service
 Opensource Implementation of WS-Management protocol stack
 
 
-%package -n libwsman1
+%package -n libwsman3
 Summary:        Opensource Implementation of WS-Management
 Group:          System/Management
 Provides:       openwsman = %{version}
 Obsoletes:      openwsman < %{version}
 
-%description -n libwsman1
+%description -n libwsman3
 Opensource Implementation of WS-Management protocol stack
 (Common libraries)
 
@@ -162,7 +162,7 @@ Group:          Development/Libraries/C and C++
 Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
 Requires:       %{name}-server = %{version}
-Requires:       libwsman1 = %{version}
+Requires:       libwsman3 = %{version}
 Requires:       libxml2-devel
 Requires:       pam-devel
 Requires:       sblim-sfcc-devel
@@ -171,13 +171,13 @@ Requires:       sblim-sfcc-devel
 Opensource Implementation of WS-Management stack
 (Development files)
 
-%package -n libwsman_clientpp1
+%package -n libwsman_clientpp3
 Summary:        C++ bindings to Openwsman Client libraries
 Group:          System/Management
 Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
 
-%description -n libwsman_clientpp1
+%description -n libwsman_clientpp3
 An implementation of the WsmanClient interface using C++
 
 
@@ -185,7 +185,7 @@ An implementation of the WsmanClient interface using C++
 Summary:        C++ bindings to Openwsman Client libraries
 Group:          Development/Libraries/C and C++
 Requires:       libwsman-devel = %{version}
-Requires:       libwsman_clientpp1 = %{version}
+Requires:       libwsman_clientpp3 = %{version}
 
 %description -n libwsman_clientpp-devel
 Development files for C++ interface to OpenWSMAN client library.
@@ -298,7 +298,7 @@ This package provides Perl bindings to access the openwsman client API.
 
 %package java
 Requires:       java
-Requires:       libwsman1 = %{version}
+Requires:       libwsman3 = %{version}
 Summary:        Java bindings for openwsman client API
 Group:          System/Management
 
@@ -376,9 +376,9 @@ install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 
-%post -n libwsman1 -p /sbin/ldconfig
+%post -n libwsman3 -p /sbin/ldconfig
 
-%postun -n libwsman1
+%postun -n libwsman3
 /sbin/ldconfig
 exit 0
 
@@ -427,11 +427,11 @@ rm -f /var/log/wsmand.log
 %endif
 %endif
 
-%post -n libwsman_clientpp1 -p /sbin/ldconfig
+%post -n libwsman_clientpp3 -p /sbin/ldconfig
 
-%postun -n libwsman_clientpp1 -p /sbin/ldconfig
+%postun -n libwsman_clientpp3 -p /sbin/ldconfig
 
-%files -n libwsman1
+%files -n libwsman3
 %defattr(-,root,root)
 %doc AUTHORS COPYING ChangeLog README.md TODO src/plugins/redirect/redirect-README
 %{_libdir}/libwsman.so.*
@@ -518,7 +518,7 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %{_libdir}/openwsman/plugins/*ruby*.so
 
-%files -n libwsman_clientpp1
+%files -n libwsman_clientpp3
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so.*
 
