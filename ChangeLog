@@ -1,3 +1,13 @@
+2.5.0
+- Features
+  - Rewrite selector and property handling to keep
+    them in order (#49)
+    Selectors and properties can now handle EndpointReferences
+    as values. This increases compatibility with Intel AMT 7.0
+    and later.
+  - ABI change, .so version 3
+  - Ruby: Add EndPointReference#to_s
+
 2.4.15
 - Features
   - Ruby: Add Fault#to_s
