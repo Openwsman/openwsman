@@ -19,7 +19,7 @@ Openwsman provides 'C' language API by default and a 'C++' API in an 'alpha' sta
 About this Python package
 =========================
 
-This folder allows one to build and/or install a Python package of the openwsman bindings. It has been tested on Ubuntu 14.04 (Trusty) with libopenwsman v2.4.3.
+This folder allows one to build and/or install a Python package of the openwsman bindings. It has been tested on Ubuntu 14.04 (Trusty) with libopenwsman v2.4.15.
 
 Building a source distribution
 ------------------------------
