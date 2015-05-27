@@ -33,8 +33,11 @@ def get_build_info():
     except subprocess.CalledProcessError as e:
         if e.returncode == 1:
             errprint('No version.i.in file found -- Building from sdist.')
+            in_openwsman = False
         else:
             raise
+    except OSError:
+        errprint('Failed to run cmake - is it installed? I will assume we are building from an sdist, but I may be wrong!')
         in_openwsman = False
     else:
         errprint('version.i.in file found -- Building from openwsman source.')
