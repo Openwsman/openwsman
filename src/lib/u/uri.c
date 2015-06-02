@@ -232,6 +232,17 @@ _u_parse(const char *query, const char *separator)
 
 		u_trim(key);
 		u_trim(val);
+          /* if we parse a URI (& separator) and the value contains
+           * ',' and '=', then the query probably has wrong syntax
+           * and uses ',' instead of '&'
+           */
+          if (*separator == '&') {
+            if (strchr(val, ',')) {
+              if (strchr(val, '=')) {
+                fprintf(stderr, "Maybe wrong use of ',' separator in URI, should be '&'\n");
+              }
+            }
+          }
 		u_trim_quotes(val);
 		if (u_string_unify(key) || u_string_unify(val)) {
 			u_free(key);
@@ -259,10 +270,17 @@ err:
 	return NULL;
 }
 
+/*
+ * parse query according to
+ * http://en.wikipedia.org/wiki/URI_scheme#Generic_syntax
+ * and  RFC 1866 section 8.2.1 : by Tim Berners-Lee in 1995 encourages CGI authors to support ';' in addition to '&'.
+ *
+ */
+
 hash_t *
 u_parse_query(const char *query)
 {
-  return _u_parse(query, "&");
+  return _u_parse(query, "&;");
 }
 
 hash_t *
