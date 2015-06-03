@@ -1,4 +1,6 @@
 2.5.2
+- Features
+  - build native Python package (Ahmad Jagot)
 - Cleanup
   - remove (unused) 'min_threads' config option (Vitezslav Crhonek)
 
