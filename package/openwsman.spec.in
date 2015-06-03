@@ -82,11 +82,11 @@ BuildRequires:  perl-devel
 %if 0%{?suse_version} > 0
 BuildRequires:  java-devel
 # No jni_md.h on SLE10 :-/
-#%if 0%{?suse_version} < 1100
+#%%if 0%{?suse_version} < 1100
 #BuildRequires:  java-1_5_0-ibm-devel
 #BuildRequires:  libgcj-devel
 #BuildRequires:  update-alternatives
-#%endif
+#%%endif
 
 %if 0%{?suse_version} > 1010
 BuildRequires:  fdupes
@@ -125,7 +125,7 @@ Requires(pre):  sed coreutils grep /bin/hostname
 Version:        @VERSION@
 Release:        0
 # Mandriva:
-# Release %mkrel 1
+# Release %%mkrel 1
 Url:            http://www.openwsman.org/
 Summary:        Opensource Implementation of WS-Management
 License:        BSD-3-Clause
