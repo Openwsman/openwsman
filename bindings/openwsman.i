@@ -182,6 +182,9 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 
 #if defined(SWIGPYTHON)
 %module pywsman
+/* Wrap file operations, as Python's native ones are incompatible */
+FILE *fopen(char *, char *);
+void fclose(FILE *f);
 #endif
 
 #if defined(SWIGPERL)
