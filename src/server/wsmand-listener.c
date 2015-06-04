@@ -308,7 +308,7 @@ void server_callback(struct shttpd_arg *arg)
 		cim_error = cimxml_msg->status.fault_msg;
 		if (cim_error) {
 			shttpd_printf(arg, "HTTP/1.1 %d %s\r\n", status, fault_reason);
-			shttpd_printf(arg, "CIMError: %s\r\n", cim_error);
+			shttpd_printf(arg, "CIMError:%d:%s\r\n", cim_error_code, cim_error);
 			cimxml_message_destroy(cimxml_msg);
 			goto CONTINUE;
 		}
