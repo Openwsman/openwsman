@@ -2749,10 +2749,8 @@ cim_release_enum_context(WsEnumerateInfo * enumInfo)
 	debug("releasing enumInfo->appEnumContext");
 	sfcc_enumcontext *enumcontext = enumInfo->appEnumContext;
 	CMPIEnumeration *enumeration;
-	CimClientInfo *client;
 
 	enumeration = enumcontext->ecEnumeration;
-	client = enumcontext->ecClient;
 
 	if (enumeration) {
 		debug("released enumeration");
