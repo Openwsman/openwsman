@@ -121,7 +121,7 @@ authorize(char *username, const char *password)
                 if (username_l < min_len) {
                   min_len = username_l;
                 }
-                if (!safe_cmp(username, u, min_len)) {
+                if (!safe_cmp((unsigned char *)username, (unsigned char *)u, min_len)) {
                         size_t newpw_l;
                         min_len = strlen(passwd);
                         newpw = crypt(password, passwd);
@@ -130,7 +130,7 @@ authorize(char *username, const char *password)
                           min_len = newpw_l;
                         }
                         debug( "user: %s,  passwd: XXXXX", u );
-                        authorized = ( safe_cmp (newpw, passwd, min_len) == 0 );
+                        authorized = ( safe_cmp ((unsigned char *)newpw, (unsigned char *)passwd, min_len) == 0 );
                     break;
                 }
        }
