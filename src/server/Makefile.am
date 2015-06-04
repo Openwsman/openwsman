@@ -1,4 +1,4 @@
-INCLUDES =  \
+AM_CFLAGS =  \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/src/server/shttpd \
@@ -11,14 +11,15 @@ INCLUDES =  \
 LIBS = \
        $(OPENSSL_LIBS) \
        $(top_builddir)/src/lib/libwsman.la \
-       $(top_builddir)/src/lib/libwsman_server.la 
+       $(top_builddir)/src/lib/libwsman_server.la \
+	-ldl
 
 if ENABLE_EVENTING_SUPPORT
 LIBS +=  $(top_builddir)/src/lib/libwsman_client.la
 endif
 
 if USE_OPENSSL
-INCLUDES += -DHAVE_OPENSSL $(OPENSSL_CFLAGS) 
+AM_CFLAGS += -DHAVE_OPENSSL $(OPENSSL_CFLAGS) 
 LIBS += -lssl
 endif
 

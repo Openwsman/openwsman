@@ -6,7 +6,7 @@ SUBDIRS = tests
 
 javadir = @libdir@/java
 
-INCLUDES =  -I$(top_srcdir) \
+AM_CFLAGS =  -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/bindings \
 	    $(OPENSSL_CFLAGS) \

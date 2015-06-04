@@ -6,7 +6,7 @@ libwsman_test_la_SOURCES = \
 	wsman_test_stubs.c \
 	wsman_test.h
 
-INCLUDES = -I$(top_srcdir)/include 
+AM_CFLAGS = -I$(top_srcdir)/include 
 
 LIBS = \
     $(XML_LIBS)

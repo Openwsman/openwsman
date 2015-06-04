@@ -29,7 +29,8 @@ libwsman_la_SOURCES = \
 	wsman-xml-serialize.c \
 	wsman-soap-envelope.c \
 	wsman-debug.c \
-	wsman-soap-message.c 
+	wsman-soap-message.c \
+	wsman-key-value.c
 
 if ENABLE_EVENTING_SUPPORT
 libwsman_la_SOURCES +=  \
@@ -46,7 +47,7 @@ libwsman_curl_client_transport_la_SOURCES = \
 libwsman_client_la_SOURCES = \
 	wsman-client.c 
 
-INCLUDES = -I$(top_srcdir) \
+AM_CFLAGS += -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   $(XML_CFLAGS) 
 

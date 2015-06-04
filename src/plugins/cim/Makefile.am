@@ -7,7 +7,7 @@ libwsman_cim_plugin_la_SOURCES = \
 	cim_data_stubs.c \
 	cim_data.h
 
-INCLUDES = -I$(top_srcdir)/include \
+AM_CFLAGS= -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/include/cim \
 	   $(SFCC_INCLUDES) 
 

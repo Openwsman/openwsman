@@ -3,7 +3,7 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT(openwsman, 2.4.4)
+AC_INIT([openwsman], [2.4.4])
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AC_CANONICAL_HOST
 AC_CONFIG_MACRO_DIR([m4])
@@ -19,7 +19,7 @@ OPENWSMAN_PLUGIN_API_MAJOR=2
 OPENWSMAN_PLUGIN_API_MINOR=2
 OPENWSMAN_PLUGIN_API_VERSION=${OPENWSMAN_PLUGIN_API_MAJOR}.${OPENWSMAN_PLUGIN_API_MINOR}
 
-AM_INIT_AUTOMAKE(${PACKAGE}, ${OPENWSMAN_VERSION})
+AM_INIT_AUTOMAKE([subdir-objects])
 
 AM_CONFIG_HEADER(wsman_config.h)
 AM_MAINTAINER_MODE
@@ -515,7 +515,8 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-Wall -Wstrict-prototypes -Wmissing-declarations \
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-                -Wunused -Werror"
+                -Wunused "
+#-Werror"
 fi
 
 

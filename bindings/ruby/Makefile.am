@@ -8,7 +8,7 @@ rubyarchdir = $(shell ruby -r rbconfig -e "vad = Config::CONFIG['vendorarchdir']
 rubydir = $(shell ruby -r rbconfig -e "vd = Config::CONFIG['vendorlibdir']; print(vd ? vd : Config::CONFIG['sitelibdir'])")
 rubyincdir = $(shell ruby -r rbconfig -e "print(Config::CONFIG['archdir'])")
 
-INCLUDES =  \
+AM_CFLAGS =  \
            -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	   -I$(top_srcdir)/bindings \

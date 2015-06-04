@@ -5,7 +5,7 @@ LIBS = $(top_builddir)/src/lib/libwsman.la
 libwsman_file_auth_la_SOURCES = \
 	file_auth.c
 
-INCLUDES = -I$(top_srcdir)/include
+AM_CFLAGS = -I$(top_srcdir)/include
 
 libwsman_file_auth_la_LIBADD = $(CRYPT_LIBS)
 

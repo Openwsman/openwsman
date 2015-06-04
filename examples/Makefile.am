@@ -1,5 +1,4 @@
-AM_CFLAGS = 
-INCLUDES = \
+AM_CFLAGS = \
 	   $(XML_CFLAGS) \
 	   -I$(top_srcdir) \
 		-I$(top_srcdir)/include

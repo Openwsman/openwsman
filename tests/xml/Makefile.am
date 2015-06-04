@@ -1,5 +1,5 @@
 
-INCLUDES = \
+AM_CFLAGS = \
 	   $(XML_CFLAGS) \
 	   $(LIBXSLT_CFLAGS) \
 	   $(SOUP_CFLAGS) \

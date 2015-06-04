@@ -1,7 +1,7 @@
 
 wsmanincludedir = $(includedir)/openwsman/cpp
 
-INCLUDES =  \
+AM_CPPFLAGS =  \
 	   -I$(top_srcdir) \
 	   -I$(top_srcdir)/include \
 	    $(OPENSSL_CFLAGS)
@@ -34,7 +34,8 @@ libwsman_clientpp_la_SOURCES = \
 	WsmanClient.h
 
 
-libwsman_clientpp_la_CPPFLAGS = 
+libwsman_clientpp_la_CPPFLAGS = \
+		-I$(top_srcdir)/include
 
 
 
