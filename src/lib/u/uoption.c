@@ -653,7 +653,7 @@ char u_option_context_parse(u_option_context_t *ctx,
 	int		i,	j;
 	char		retval = 0;
 
-	u_option_entry_t	*found;
+	u_option_entry_t	*found=NULL;
 	struct tmp_buf		*tmp_data;
 
 	if (!ctx)
