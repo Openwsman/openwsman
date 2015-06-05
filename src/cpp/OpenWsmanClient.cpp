@@ -498,6 +498,10 @@ void OpenWsmanClient::SetAuth(const string &auth_method)
 		wsman_transport_set_auth_method(cl, "digest");
 	}
 }
+void OpenWsmanClient::SetTimeout(unsigned long mtime)
+{
+	wsman_transport_set_timeout(cl,mtime);
+}
 
 void OpenWsmanClient::SetUserName(const string &user_name)
 {

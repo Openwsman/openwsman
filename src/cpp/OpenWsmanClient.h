@@ -137,7 +137,9 @@ namespace WsmanClientNamespace
 
 			// Set auth method
 			void SetAuth(const string &auth_method = string("digest"));
-
+			
+			// Set timeout method
+			void SetTimeout(unsigned long mtime);
 			// Set user name
 			void SetUserName(const string &user_name);
 
