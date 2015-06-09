@@ -194,6 +194,11 @@ def enum_properties client, parms, *properties
     options.timeout = parms[:timeout].to_i * 1000 # parms is in sec, timeout in msec
   end
 
+  # locale
+  if parms[:locale]
+    options.locale = parms[:locale]
+  end
+
   options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
   options.max_elements = 999
   
@@ -295,7 +300,8 @@ begin
            [ "--namespace", "-n", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--query", "-q", GetoptLong::REQUIRED_ARGUMENT ],
            [ "--references", "-r", GetoptLong::REQUIRED_ARGUMENT ],
-           [ "--timeout", "-t", GetoptLong::REQUIRED_ARGUMENT ]
+           [ "--timeout", "-t", GetoptLong::REQUIRED_ARGUMENT ],
+           [ "--locale", "-L", GetoptLong::REQUIRED_ARGUMENT ]
          )
   opts.each do |opt,arg|
     case opt
@@ -307,6 +313,7 @@ begin
     when "--associators" then parms[:associators] = arg
     when "--references" then parms[:references] = arg
     when "--timeout" then parms[:timeout] = arg
+    when "--locale" then parms[:locale] = arg
     end
   end
 rescue GetoptLong::InvalidOption

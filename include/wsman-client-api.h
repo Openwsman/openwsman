@@ -194,6 +194,8 @@ typedef enum {
 		unsigned int max_envelope_size;
 		unsigned int max_elements;
 		hash_t *options; /* for WSM_OPTION_SET */
+                char *locale; /* Sect. 6.3: wsman:Locale */
+          char *__reserved[16]; /* reserved for future extensions */
 	} client_opt_t;
 
 	struct _WsManFault {
@@ -775,6 +777,10 @@ typedef enum {
 
         void wsmc_set_reference(const char *reference, client_opt_t * options);
 
+  /* getter/setter for request locale, Section 6.3 of DSP0226 */
+  void wsmc_set_locale(client_opt_t * options, const char *locale);
+  char *wsmc_get_locale(client_opt_t * options);
+
 	/* Misc */
 
 	/* Place holder */
@@ -821,7 +827,6 @@ typedef enum {
 
 	void
 	wsmc_set_delivery_security_mode(WsManDeliverySecurityMode delivery_sec_mode, client_opt_t * options);
-
 
 /** @} */
 

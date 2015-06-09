@@ -175,6 +175,11 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 				XML_NS_WS_MAN, WSM_FRAGMENT_TRANSFER,
 				1);
 	}
+	if (options->locale) {
+          node = ws_xml_add_child(header, XML_NS_WS_MAN, WSM_LOCALE, NULL);
+          ws_xml_set_node_lang(node, options->locale);
+          ws_xml_add_node_attr(node, XML_NS_SOAP_1_2, SOAP_MUST_UNDERSTAND, "false");
+	}
 
 	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);
@@ -614,6 +619,19 @@ void
 wsmc_set_delivery_security_mode(WsManDeliverySecurityMode delivery_sec_mode, client_opt_t * options)
 {
         options->delivery_sec_mode = delivery_sec_mode;
+}
+
+void
+wsmc_set_locale(client_opt_t * options, const char *locale)
+{
+  u_free(options->locale);
+  options->locale = locale ? u_strdup(locale) : NULL;
+}
+
+char *
+wsmc_get_locale(client_opt_t * options)
+{
+  return options->locale;
 }
 
 void

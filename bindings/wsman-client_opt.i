@@ -626,4 +626,29 @@ typedef struct {} client_opt_t;
     return $self->delivery_sec_mode;
   }
 
+#if defined(SWIGRUBY)
+  %rename("locale=") set_locale(const char *locale);
+#endif
+  /*
+   * Set request locale
+   *
+   * call-seq:
+   *   options.locale = "en_us"
+   *
+   */
+  void set_locale(const char *locale) {
+	wsmc_set_locale($self, locale);
+  }
+
+  /*
+   * Get locales
+   *
+   * call-seq:
+   *   options.locale -> String
+   *
+   */
+  const char *locale() {
+    return $self->locale;
+  }
+
 }
