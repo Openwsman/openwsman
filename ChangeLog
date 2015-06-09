@@ -1,3 +1,10 @@
+2.6.0
+- Features
+  - Implement DSP 0226 Section 6.3 wsman:Locale
+    (wsmc_set_locale, wsmc_get_locale)
+  - set transport timeout for c++ binding (prabhakar_pujeri@dell.com)
+  - print CIMError code in HTTP header (prabhakar_pujeri@dell.com)
+
 2.5.2
 - Features
   - build native Python package (Ahmad Jagot)
