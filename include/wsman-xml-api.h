@@ -84,6 +84,7 @@ extern "C" {
 
 #define PROCESSED_MSG_ID_MAX_SIZE            200
 #define WSMAN_MINIMAL_ENVELOPE_SIZE_REQUEST  8192
+#define WSMAN_MAX_ENVELOPE_SIZE 32767
 
 
 void ws_xml_free_memory(void *ptr);
