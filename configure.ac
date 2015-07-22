@@ -515,8 +515,7 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 	CFLAGS="$CFLAGS \
 		-Wall -Wstrict-prototypes -Wmissing-declarations \
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-                -Wunused "
-#-Werror"
+                -Wunused -Werror"
 fi
 
 

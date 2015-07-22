@@ -1,8 +1,9 @@
 
-AM_CFLAGS = \
+AM_CPPFLAGS = \
 	   $(XML_CFLAGS) \
 	   -I$(top_srcdir) \
-	   -I$(top_srcdir)/include
+	   -I$(top_srcdir)/include \
+	   -I$(top_srcdir)/src/cpp
 
 LIBS = \
        $(XML_LIBS) \
