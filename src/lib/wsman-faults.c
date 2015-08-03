@@ -635,10 +635,12 @@ wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
         /* some default values */
         status->fault_detail_code = 0;
         status->fault_msg = NULL;
+        free(subcode_value_msg);
         return;
       }
     }
   }
+  free(subcode_value_msg);
   return;
 }
 

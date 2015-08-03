@@ -199,6 +199,8 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 				node = lnode_create(entry);
             			list_append(subscription_list, node);
             			debug("subscription file found: %s", namelist[n]->d_name );
+			} else {
+				u_free(buf);
 			}
             		u_free(namelist[n]);
         	}

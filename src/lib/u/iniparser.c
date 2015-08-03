@@ -227,6 +227,10 @@ static dictionary * dictionary_new(int size)
     }
     if ((d == NULL) || (d->val == NULL) || (d->key == NULL) || (d->hash == NULL)) {
       fprintf(stderr, "dictionary_new: memory allocation failure\n");
+      free(d->val);
+      free(d->key);
+      free(d->hash);
+      free(d);
       d = NULL;
     }
     return d;
@@ -909,8 +913,10 @@ dictionary * iniparser_new(char *ininame)
      * Initialize a new dictionary entry
      */
     d = dictionary_new(0);
-    if (d == NULL)
+    if (d == NULL) {
+      fclose(ini);
       return d;
+    }
     lineno = 0 ;
     while (fgets(lin, ASCIILINESZ, ini)!=NULL) {
         lineno++ ;
@@ -922,6 +928,8 @@ dictionary * iniparser_new(char *ininame)
                 /* Valid section name */
                 strcpy(sec, strlwc(sec));
                 if (iniparser_add_entry(d, sec, NULL, NULL) != 0) {
+                  dictionary_del(d);
+                  fclose(ini);
                   return NULL;
                 }
             } else if (sscanf (where, "%[^=] = \"%[^\"]\"", key, val) == 2
@@ -938,6 +946,8 @@ dictionary * iniparser_new(char *ininame)
                     strcpy(val, strcrop(val));
                 }
                 if (iniparser_add_entry(d, sec, key, val) != 0) {
+                  dictionary_del(d);
+                  fclose(ini);
                   return NULL;
                 }
             }

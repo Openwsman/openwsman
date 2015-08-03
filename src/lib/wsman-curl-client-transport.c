@@ -435,6 +435,7 @@ wsmc_handler( WsManClient *cl,
 	char *_user = NULL, *_pass = NULL;
 	u_buf_t *response = NULL;
 	//char *soapaction;
+	char *tmp_str = NULL;
 
 	if (!cl->initialized && wsmc_transport_init(cl, NULL)) {
 		cl->last_error = WS_LASTERR_FAILED_INIT;
@@ -471,7 +472,8 @@ wsmc_handler( WsManClient *cl,
 	char content_type[64];
 	snprintf(content_type, 64, "Content-Type: application/soap+xml;charset=%s", cl->content_encoding);
 	headers = curl_slist_append(headers, content_type);
-	usag = malloc(12 + strlen(wsman_transport_get_agent(cl)) + 1);
+	tmp_str = wsman_transport_get_agent(cl);
+	usag = malloc(12 + strlen(tmp_str) + 1);
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
 		cl->fault_string = u_strdup("Could not malloc memory");
@@ -479,7 +481,8 @@ wsmc_handler( WsManClient *cl,
 		goto DONE;
 	}
 
-	sprintf(usag, "User-Agent: %s", wsman_transport_get_agent(cl));
+	sprintf(usag, "User-Agent: %s", tmp_str);
+	free(tmp_str);
 	headers = curl_slist_append(headers, usag);
 
 #if 0

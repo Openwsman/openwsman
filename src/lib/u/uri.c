@@ -267,6 +267,7 @@ _u_parse(const char *query, const char *separator)
 err:
 	u_free(q);
 	u_free(key);
+	hash_free(h);
 	return NULL;
 }
 
