@@ -96,6 +96,8 @@ epr.add_selector("Name", "8FF5E6F3-A141-465B-83ED-3BFC0F59F7EF")
 # puts "EPR:\n#{epr.to_xml}"
 
 options.add_property("PlannedSystem", epr)
+options.add_property("Two", "two")
+options.add_property("One", "one")
 
 result = client.invoke( options, uri, method )
 fault? client, result
