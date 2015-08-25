@@ -1986,6 +1986,10 @@ wsmc_create(const char *hostname,
 		const char *password)
 {
 	WsManClient *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
+        if (wsc == NULL) {
+          error("Can't alloc WsManClient");
+          return NULL;
+        }
 	wsc->hdl = &wsc->data;
 
 	if (pthread_mutex_init(&wsc->mutex, NULL)) {
