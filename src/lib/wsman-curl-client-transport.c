@@ -280,6 +280,15 @@ init_curl_transport(WsManClient *cl)
 		debug("Could not init easy curl");
 		goto DONE;
 	}
+        // client:curlopt_nosignal
+        if (ini) {
+          int nosignal = iniparser_getint(ini, "client:curlopt_nosignal", 0);
+          r = curl_easy_setopt(curl, CURLOPT_NOSIGNAL, nosignal);
+          if (r != 0) {
+            curl_err("curl_easy_setopt(CURLOPT_NOSIGNAL) failed");
+            goto DONE;
+          }
+        }
 	debug("cl->authentication.verify_peer: %d", cl->authentication.verify_peer );
 	// verify peer
 	r = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, wsman_transport_get_verify_peer(cl)?1:0);
