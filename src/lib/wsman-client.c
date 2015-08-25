@@ -1985,6 +1985,9 @@ wsmc_create(const char *hostname,
 		const char *username,
 		const char *password)
 {
+#ifndef _WIN32
+        dictionary *ini;
+#endif
 	WsManClient *wsc = (WsManClient *) calloc(1, sizeof(WsManClient));
         if (wsc == NULL) {
           error("Can't alloc WsManClient");
@@ -1998,6 +2001,14 @@ wsmc_create(const char *hostname,
 	}
 #ifndef _WIN32
 	wsmc_set_conffile(wsc, DEFAULT_CLIENT_CONFIG_FILE);
+        ini = iniparser_new(wsmc_get_conffile(wsc));
+        if (ini) {
+          char *user_agent = iniparser_getstr(ini, "client:agent");
+          if (user_agent) {
+            wsman_transport_set_agent(wsc, user_agent);
+          }
+          iniparser_free(ini);
+        }
 #endif
 	wsc->serctx = ws_serializer_init();
 	wsc->dumpfile = stdout;
