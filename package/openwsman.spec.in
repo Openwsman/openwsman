@@ -434,6 +434,7 @@ rm -f /var/log/wsmand.log
 %{_libdir}/libwsman.so.*
 %{_libdir}/libwsman_client.so.*
 %{_libdir}/libwsman_curl_client_transport.so.*
+%dir %{_sysconfdir}/openwsman
 %config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
 
 %files -n libwsman-devel
@@ -482,7 +483,6 @@ rm -f /var/log/wsmand.log
 
 %files server
 %defattr(-,root,root)
-%dir %{_sysconfdir}/openwsman
 %config(noreplace) %{_sysconfdir}/openwsman/openwsman.conf
 %config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
 %attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
