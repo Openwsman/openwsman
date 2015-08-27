@@ -99,7 +99,7 @@ end
   elsif options.empty?
     usage
   else
-    Openwsman::Client.new(options[:host], options[:port], "wsman", options[:scheme], options[:user], options[:password])
+    Openwsman::Client.new(options[:host], options[:port], "/wsman", options[:scheme], options[:user], options[:password])
   end
 
   #
@@ -194,6 +194,9 @@ end
     # Request stdout/stderr
     #
   
+    cmddone = false
+    loop do
+    break if cmddone
     options.options = { }
     # keep ShellId selector
     data = Openwsman::XmlDoc.new("Receive", namespace)
@@ -234,7 +237,7 @@ end
 	str = node.text.unpack('m')[0]
 	case stream_name
 	when "stdout"
-	  puts str
+	  print str
 	when "stderr"
 	  STDERR.puts str
 	else
@@ -248,6 +251,7 @@ end
 	end
         case state.value
         when "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done"
+          cmddone = true
 	  exit_code = node.get "ExitCode"
 	  if exit_code
 	    puts "Exit code: #{exit_code.text}"
@@ -265,6 +269,7 @@ end
       else
 	STDERR.puts "***Err: Unknown receive response: #{node.to_xml}"
       end
+    end
     end # response.each
 
     #
