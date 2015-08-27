@@ -1,5 +1,9 @@
 #!/bin/sh 
 
+echo "*** Autoconf/automake is deprecated for Openwsman"
+echo "*** and might not fully work."
+echo "*** Use cmake instead !"
+
 UNAME=`uname`
 
 mkdir -p m4
