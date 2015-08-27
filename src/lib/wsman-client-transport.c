@@ -149,7 +149,7 @@ char *wsman_transport_get_agent(WsManClient * cl)
 	if (cl->user_agent)
 		return u_strdup(cl->user_agent);
 	else
-		return DEFAULT_USER_AGENT;
+		return u_strdup(DEFAULT_USER_AGENT);
 }
 
 
