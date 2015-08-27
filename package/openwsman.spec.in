@@ -150,6 +150,7 @@ Opensource Implementation of WS-Management protocol stack
 Summary:        Opensource Implementation of WS-Management
 Group:          System/Management
 Provides:       openwsman = %{version}
+Obsoletes:      libwsman1 < %{version}
 Obsoletes:      openwsman < %{version}
 
 %description -n libwsman3
