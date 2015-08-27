@@ -1,3 +1,14 @@
+2.6.1
+- Features
+  - Add curlopt_nosignal option to openwsman_client.conf to prevent
+    CURL crashes in multithreaded client applications
+  - Limit EnvelopeSize to 32767 if wsman:MaxEnvelopeSize not set in
+    request (WS-Man 1.2 compatibility) (Prabhakar Pujeri)
+- Bugfixes
+  - fix memory leaks (Vitezslav Crhonek)
+  - honor client:agent from openwsman_client.conf
+  - fix possible crash in dictionary_get()
+
 2.6.0
 - Features
   - Implement DSP 0226 Section 6.3 wsman:Locale
