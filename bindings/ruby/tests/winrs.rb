@@ -252,7 +252,7 @@ end
           cmddone = true
 	  exit_code = node.get "ExitCode"
 	  if exit_code
-	    puts "Exit code: #{exit_code.text}"
+	    STDERR.puts "Exit code: #{exit_code.text}"
 	  else
 	    STDERR.puts "***Err: No exit code for 'done' command: #{node.to_xml}"
 	  end
