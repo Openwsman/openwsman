@@ -1,3 +1,4 @@
+#!/bin/ruby
 # winrs.rb
 #
 # Windows Remote Shell
