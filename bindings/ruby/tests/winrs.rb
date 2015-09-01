@@ -122,9 +122,6 @@ end
   # Start shell
   #
 
-  service = "Themes"
-  options.add_selector( "Name", service )
-    
   options.add_option "WINRS_NOPROFILE","FALSE"
   options.add_option "WINRS_CODEPAGE", 437
     
