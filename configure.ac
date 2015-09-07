@@ -476,12 +476,6 @@ AC_DEFINE_UNQUOTED(OPENWSMAN_PLUGIN_API_VERSION,
           ["$OPENWSMAN_PLUGIN_API_VERSION"],
           [Plugin API version])
 
-
-PACKAGE_BUILDTS=`"/bin/date" "+%Y%m%d%H%M"`
-
-AC_DEFINE_UNQUOTED(PACKAGE_BUILDTS, ["$PACKAGE_BUILDTS"], [Build timestamp])
-
-
 AC_CHECK_LIB([cmpisfcc],  [cmciConnect], [have_sfcc="yes"],[have_sfcc="no"])
 AM_CONDITIONAL(BUILD_LIBCIM, test "$have_sfcc" = "yes" )
 
