@@ -560,7 +560,7 @@ wsmc_set_selectors_from_uri(const char *resource_uri, client_opt_t * options)
   }
   u_uri_t *uri = u_malloc(sizeof(u_uri_t));
   u_uri_parse(resource_uri, &uri);
-  _wsmc_add_uri_to_list(&(options->selectors), uri->query);
+  wsmc_add_selectors_from_str(options, uri->query);
   u_uri_free(uri);
 }
 
