@@ -499,6 +499,7 @@ rm -f /var/log/wsmand.log
 %{_sbindir}/rc%{name}
 %else
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
+%{_sbindir}/rc%{name}d
 %endif
 %dir %{_libdir}/openwsman
 %dir %{_libdir}/openwsman/authenticators
