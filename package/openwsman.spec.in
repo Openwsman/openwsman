@@ -332,6 +332,9 @@ export EXPLICIT_TARGET=1.5
 cd build
 cmake \
   -DCMAKE_INSTALL_PREFIX=/usr \
+%if 0%{?suse_version} == 1010 # SLE 10 Java doesn't like EXPLICIT_TARGET any more, disable
+  -DBUILD_JAVA=FALSE \
+%endif
   -DCMAKE_VERBOSE_MAKEFILE=TRUE \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS -fno-strict-aliasing" \
