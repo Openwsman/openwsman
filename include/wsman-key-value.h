@@ -41,7 +41,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct epr_struct epr_t;
+struct epr_struct;
 
 /* key/value pair
  * to represent either a value or an epr_t
@@ -51,12 +51,12 @@ typedef struct {
   int type; /* 0: char*, else epr_t* */
   union {
     char *text;
-    epr_t *epr;
+    struct epr_struct *epr;
   } v;
 } key_value_t;
 
 /* if kv is non-NULL, it's pre-allocated (part of array) */
-key_value_t *key_value_create(const char *key, const char *text, const epr_t *epr, key_value_t *prealloc);
+key_value_t *key_value_create(const char *key, const char *text, const struct epr_struct *epr, key_value_t *prealloc);
 void key_value_copy(const key_value_t *from, key_value_t *to);
 /* if part_of_array is non-zero, only release key/value, not element itself */
 void key_value_destroy(key_value_t *, int part_of_array);
