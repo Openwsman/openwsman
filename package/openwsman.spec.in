@@ -43,7 +43,7 @@ BuildRequires:  curl-devel
 %if 0%{?fedora} == 16 || (0%{?centos_version}>=500 && 0%{?centos_version}<700) || (0%{?rhel_version}>=500 && 0%{?rhel_version}<700)
 BuildRequires:  java-1.6.0-openjdk-devel
 %else
-%if 0%{?fedora} >= 17 || 0%{?centos_version} >= 700 || 0%{?rhel_version} >= 700
+%if (0%{?fedora} >= 17 && 0%{?fedora} < 22) || 0%{?centos_version} >= 700 || 0%{?rhel_version} >= 700
 BuildRequires:  java-1.7.0-openjdk-devel
 %else
 BuildRequires:  java-devel
