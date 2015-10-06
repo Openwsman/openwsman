@@ -28,7 +28,7 @@ end
 def handle_fault client, result
   unless result
     if client.last_error != 0
-      STDERR.puts "Client connection to #{client.scheme}://#{client.user}:#{client.password}@#{client.host}:#{client.port}/#{client.path} failed with #{client.last_error}, Fault: #{client.fault_string}"
+      STDERR.puts "Client connection to #{client.scheme}://#{client.user}:#{client.password}@#{client.host}:#{client.port}/#{client.path} failed with #{client.last_error} HTTP #{client.response_code}, Fault: #{client.fault_string}"
       exit 1
     end
     if client.response_code != 200
@@ -58,7 +58,8 @@ end
            [ "-p", "--password", GetoptLong::REQUIRED_ARGUMENT ],
            [ "-P", "--port", GetoptLong::REQUIRED_ARGUMENT ],
            [ "-s", "--scheme", GetoptLong::REQUIRED_ARGUMENT ],
-           [ "-?", "--help", GetoptLong::NO_ARGUMENT ]
+           [ "-?", "--help", GetoptLong::NO_ARGUMENT ],
+           [ "-d", "--debug", GetoptLong::NO_ARGUMENT ]
   )
 
   options = { }
@@ -86,6 +87,8 @@ end
     when "-s"
       usage "-s|--scheme invalid, --url already given" unless url.nil?
       options[:scheme] = arg
+    when "-d"
+      Openwsman::debug = 99       
     end
   end
   
@@ -113,8 +116,7 @@ end
   # client.transport.verify_host = 0
 
   options = Openwsman::ClientOptions.new
-#  options.set_dump_request
-#  Openwsman::debug = -1
+  options.set_dump_request if Openwsman::debug == 99
   options.timeout = 60 * 1000 # 60 seconds
   uri = "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/cmd"
 
