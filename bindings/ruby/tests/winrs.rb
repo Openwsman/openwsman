@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 # winrs.rb
 #
 # Windows Remote Shell
@@ -99,7 +100,7 @@ end
   elsif options.empty?
     usage
   else
-    Openwsman::Client.new(options[:host], options[:port], "wsman", options[:scheme], options[:user], options[:password])
+    Openwsman::Client.new(options[:host], options[:port], "/wsman", options[:scheme], options[:user], options[:password])
   end
 
   #
@@ -122,9 +123,6 @@ end
   # Start shell
   #
 
-  service = "Themes"
-  options.add_selector( "Name", service )
-    
   options.add_option "WINRS_NOPROFILE","FALSE"
   options.add_option "WINRS_CODEPAGE", 437
     
@@ -194,6 +192,9 @@ end
     # Request stdout/stderr
     #
   
+    cmddone = false
+    loop do
+    break if cmddone
     options.options = { }
     # keep ShellId selector
     data = Openwsman::XmlDoc.new("Receive", namespace)
@@ -234,7 +235,7 @@ end
 	str = node.text.unpack('m')[0]
 	case stream_name
 	when "stdout"
-	  puts str
+	  print str
 	when "stderr"
 	  STDERR.puts str
 	else
@@ -248,9 +249,10 @@ end
 	end
         case state.value
         when "http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done"
+          cmddone = true
 	  exit_code = node.get "ExitCode"
 	  if exit_code
-	    puts "Exit code: #{exit_code.text}"
+	    STDERR.puts "Exit code: #{exit_code.text}"
 	  else
 	    STDERR.puts "***Err: No exit code for 'done' command: #{node.to_xml}"
 	  end
@@ -265,6 +267,7 @@ end
       else
 	STDERR.puts "***Err: Unknown receive response: #{node.to_xml}"
       end
+    end
     end # response.each
 
     #
