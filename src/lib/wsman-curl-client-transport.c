@@ -626,6 +626,7 @@ wsmc_handler( WsManClient *cl,
 					 */
 					r = 67;
 #endif
+                    cl->fault_string = u_strdup(curl_easy_strerror(r));
                     curl_err("user/password wrong or empty.");
 		    break;
                 }
