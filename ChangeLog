@@ -1,3 +1,13 @@
+2.6.2
+- Features
+  - Install winrs.rb (Windows Remote Shell) to /usr/bin
+  - New package: winrs
+- Bugfixes
+  - Fix excessive RPM rebuilds (olafhering)
+  - Fix selector extraction from URI query (Markus Kolb)
+  - Fix RPM building on older distributions
+  - Fix RPM building on Fedora 22
+
 2.6.1
 - Features
   - Add curlopt_nosignal option to openwsman_client.conf to prevent
