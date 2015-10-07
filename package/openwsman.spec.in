@@ -309,6 +309,16 @@ This package provides Java bindings to access the openwsman client API.
 
 %endif
 
+%package -n winrs
+Summary: Windows Remote Shell
+Group:   System/Management
+Requires: openwsman-ruby = %{version}
+
+%description -n winrs
+This is a command line tool for the Windows Remote Shell protocol. You
+can use it to send shell commands to a remote Windows hosts.
+
+
 %prep
 %setup -q
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
@@ -376,6 +386,9 @@ install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
+
+# rename winrs.rb -> winrs
+mv $RPM_BUILD_ROOT%{_bindir}/winrs.rb $RPM_BUILD_ROOT%{_bindir}/winrs
 
 %post -n libwsman3 -p /sbin/ldconfig
 
@@ -525,5 +538,9 @@ rm -f /var/log/wsmand.log
 %{_libdir}/libwsman_clientpp.so
 %dir %{_includedir}/openwsman/cpp
 %{_includedir}/openwsman/cpp/*.h
+
+%files -n winrs
+%defattr(-,root,root)
+%{_bindir}/winrs
 
 %changelog
