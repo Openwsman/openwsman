@@ -49,21 +49,19 @@ extern "C" {
 /**
   @brief    Convert a string to lowercase.
   @param    s   String to convert.
-  @return   ptr to statically allocated string.
+  @param    l   Pointer to destination string.
+  @return   ptr to the destination string.
 
-  This function returns a pointer to a statically allocated string
-  containing a lowercased version of the input string. Do not free
-  or modify the returned string! Since the returned string is statically
-  allocated, it will be modified at each function call (not re-entrant).
+  This function returns a pointer to string containing
+  a lowercased version of the input string.
  */
 /*--------------------------------------------------------------------------*/
 
-static char * strlwc(char * s)
+static char * strlwc(char * s, char * l)
 {
-    static char l[ASCIILINESZ+1];
     int i ;
 
-    if (s==NULL) return NULL ;
+    if ((s==NULL) || (l==NULL)) return NULL ;
     memset(l, 0, ASCIILINESZ+1);
     i=0 ;
     while (s[i] && i<ASCIILINESZ) {
@@ -104,23 +102,20 @@ static char * strskp(char * s)
 /**
   @brief    Remove blanks at the end of a string.
   @param    s   String to parse.
-  @return   ptr to statically allocated string.
+  @param    l   Pointer to destination string.
+  @return   ptr to the destination string.
 
-  This function returns a pointer to a statically allocated string,
+  This function returns a pointer to an array which contains string,
   which is identical to the input string, except that all blank
   characters at the end of the string have been removed.
-  Do not free or modify the returned string! Since the returned string
-  is statically allocated, it will be modified at each function call
-  (not re-entrant).
  */
 /*--------------------------------------------------------------------------*/
 
-static char * strcrop(char * s)
+static char * strcrop(char * s, char * l)
 {
-    static char l[ASCIILINESZ+1];
     char * last ;
 
-    if (s==NULL) return NULL ;
+    if ((s==NULL) || (l==NULL)) return NULL ;
     memset(l, 0, ASCIILINESZ+1);
     strcpy(l, s);
     last = l + strlen(l);
@@ -704,16 +699,11 @@ char * iniparser_getstr(dictionary * d, char * key)
 /*--------------------------------------------------------------------------*/
 char * iniparser_getstring(dictionary * d, char * key, char * def)
 {
-    char * lc_key ;
-    char * sval ;
+    char lc_key[ASCIILINESZ+1];
 
     if (d==NULL || key==NULL)
         return def ;
-
-    lc_key = strdup(strlwc(key));
-    sval = dictionary_get(d, lc_key, def);
-    free(lc_key);
-    return sval ;
+    return dictionary_get(d, strlwc(key, lc_key), def);
 }
 
 
@@ -858,7 +848,9 @@ int iniparser_find_entry(
 
 int iniparser_setstr(dictionary * ini, char * entry, char * val)
 {
-    return dictionary_set(ini, strlwc(entry), val);
+    char lc_key[ASCIILINESZ+1];
+
+    return dictionary_set(ini, strlwc(entry, lc_key), val);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -873,7 +865,9 @@ int iniparser_setstr(dictionary * ini, char * entry, char * val)
 /*--------------------------------------------------------------------------*/
 void iniparser_unset(dictionary * ini, char * entry)
 {
-    dictionary_unset(ini, strlwc(entry));
+    char lc_key[ASCIILINESZ+1];
+
+    dictionary_unset(ini, strlwc(entry, lc_key));
 }
 
 
@@ -924,9 +918,11 @@ dictionary * iniparser_new(char *ininame)
         if (*where==';' || *where=='#' || *where==0)
             continue ; /* Comment lines */
         else {
+            char lc_key[ASCIILINESZ+1];
+
             if (sscanf(where, "[%[^]]", sec)==1) {
                 /* Valid section name */
-                strcpy(sec, strlwc(sec));
+                strcpy(sec, strlwc(sec, lc_key));
                 if (iniparser_add_entry(d, sec, NULL, NULL) != 0) {
                   dictionary_del(d);
                   fclose(ini);
@@ -935,7 +931,9 @@ dictionary * iniparser_new(char *ininame)
             } else if (sscanf (where, "%[^=] = \"%[^\"]\"", key, val) == 2
                    ||  sscanf (where, "%[^=] = '%[^\']'",   key, val) == 2
                    ||  sscanf (where, "%[^=] = %[^;#]",     key, val) == 2) {
-                strcpy(key, strlwc(strcrop(key)));
+                char crop_key[ASCIILINESZ+1];
+
+                strcpy(key, strlwc(strcrop(key, crop_key), lc_key));
                 /*
                  * sscanf cannot handle "" or '' as empty value,
                  * this is done here
@@ -943,7 +941,7 @@ dictionary * iniparser_new(char *ininame)
                 if (!strcmp(val, "\"\"") || !strcmp(val, "''")) {
                     val[0] = (char)0;
                 } else {
-                    strcpy(val, strcrop(val));
+                    strcpy(val, strcrop(val, crop_key));
                 }
                 if (iniparser_add_entry(d, sec, key, val) != 0) {
                   dictionary_del(d);
