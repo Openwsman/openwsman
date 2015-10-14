@@ -3,7 +3,8 @@
   - Install winrs.rb (Windows Remote Shell) to /usr/bin
   - New package: winrs
 - Bugfixes
-  - Fix excessive RPM rebuilds (olafhering)
+  - Make iniparser thread-safe (Emil Bartczak)
+  - Fix excessive RPM rebuilds (Olaf Hering)
   - Fix selector extraction from URI query (Markus Kolb)
   - Fix RPM building on older distributions
   - Fix RPM building on Fedora 22
