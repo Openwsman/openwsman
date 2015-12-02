@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+#
 # winrs.rb
 #
 # Windows Remote Shell
