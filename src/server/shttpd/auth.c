@@ -390,7 +390,7 @@ is_authorized_for_put(struct conn *c)
 void
 send_authorization_request(struct conn *c)
 {
-	char	buf[512];
+	char buf[512];
 	int n = 0;
 	int b = 0, d = 0;
 
@@ -401,21 +401,21 @@ send_authorization_request(struct conn *c)
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
 		if (auth->type == DIGEST_AUTH && d == 0) {
-				if (b ) {
-						n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
-				}
-				n += snprintf(buf +n, sizeof(buf) - n,
-	    		"WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
-	    		"nonce=\"%lu\"", c->ctx->auth_realm, (unsigned long) current_time);
-				d = 1;
+			if (b) {
+				n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
+			}
+			n += snprintf(buf+n, sizeof(buf) - n,
+                                      "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
+                                      "nonce=\"%lu\"", c->ctx->auth_realm, (unsigned long) current_time);
+                        d = 1;
 		}
 		if (auth->type == BASIC_AUTH && b == 0) {
-				if (d) {
-						n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
-				}
-				n +=  snprintf(buf +n, sizeof(buf) - n,
-	    		"WWW-Authenticate: Basic realm=\"%s\"", c->ctx->auth_realm);
-				b = 1;
+			if (d) {
+				n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
+			}
+			n += snprintf(buf+n, sizeof(buf) - n,
+                                      "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->auth_realm);
+                        b = 1;
 		}
 	}
 
