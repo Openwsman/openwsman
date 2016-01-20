@@ -387,39 +387,66 @@ is_authorized_for_put(struct conn *c)
 	return (ret);
 }
 
-void
+int
 send_authorization_request(struct conn *c)
 {
-	char buf[512];
-	int n = 0;
+#define BUFSIZE 512
+	char buf[BUFSIZE];
+        char *bufptr = buf;
+	int n;
+        size_t remaining = BUFSIZE;
 	int b = 0, d = 0;
 
 	struct llhead	*lp;
 	struct uri_auth	*auth;
 
-	n = snprintf(buf, sizeof(buf), "Unauthorized\r\n");
+	n = snprintf(bufptr, remaining, "Unauthorized\r\n");
+        bufptr += n;
+        remaining -= n;
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
 		auth = LL_ENTRY(lp, struct uri_auth, link);
 		if (auth->type == DIGEST_AUTH && d == 0) {
 			if (b) {
-				n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
+				n = snprintf(bufptr, remaining, "\r\n");
+                                if (n >= remaining) {
+                                  return -1;
+                                }
+                                bufptr += n;
+                                remaining -= n;
 			}
-			n += snprintf(buf+n, sizeof(buf) - n,
+			n = snprintf(bufptr, remaining,
                                       "WWW-Authenticate: Digest qop=\"auth\", realm=\"%s\", "
                                       "nonce=\"%lu\"", c->ctx->auth_realm, (unsigned long) current_time);
+                        if (n >= remaining) {
+                          return -1;
+                        }
+                        bufptr += n;
+                        remaining -= n;
                         d = 1;
 		}
 		if (auth->type == BASIC_AUTH && b == 0) {
 			if (d) {
-				n += snprintf(buf +n, sizeof(buf) - n, "\r\n");
+				n = snprintf(bufptr, remaining, "\r\n");
+                                if (n >= remaining) {
+                                  return -1;
+                                }
+                                bufptr += n;
+                                remaining -= n;
 			}
-			n += snprintf(buf+n, sizeof(buf) - n,
+			n = snprintf(bufptr, remaining,
                                       "WWW-Authenticate: Basic realm=\"%s\"", c->ctx->auth_realm);
+                        if (n >= remaining) {
+                          return -1;
+                        }
+                        bufptr += n;
+                        remaining -= n;
                         b = 1;
 		}
 	}
 
 	send_server_error(c, 401, buf);
+#undef BUFSIZE
+        return 0;
 }
 
 /*

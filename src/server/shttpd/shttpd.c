@@ -488,11 +488,14 @@ decide_what_to_do(struct conn *c)
 	}
 
 #if !defined(NO_AUTH)
-		rc = check_authorization(c, path);
-		if(rc != 1)
-		{
-				if(rc != 2) /* 2 = multipass auth (GSS)*/
-		send_authorization_request(c);
+	rc = check_authorization(c, path);
+        if (rc != 1) {
+                if  (rc != 2) { /* 2 = multipass auth (GSS)*/
+		        if (send_authorization_request(c)) {
+                                fprintf(stderr, "Digest realm overflows buffer\n");
+                                return;
+                        }
+                }
 	} else
 #endif /* NO_AUTH */
 #ifdef EMBEDDED
@@ -507,7 +510,10 @@ decide_what_to_do(struct conn *c)
 #if !defined(NO_AUTH)
 	if ((c->method == METHOD_PUT || c->method == METHOD_DELETE) &&
 	    (c->ctx->put_auth_file == NULL || !is_authorized_for_put(c))) {
-		send_authorization_request(c);
+		if (send_authorization_request(c)) {
+                        fprintf(stderr, "Digest realm overflows buffer\n");
+                        return;
+                }
 	} else
 #endif /* NO_AUTH */
 	if (c->method == METHOD_PUT) {

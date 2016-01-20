@@ -480,7 +480,7 @@ extern void	ssi_func_destructor(struct llhead *lp);
  */
 extern int	check_authorization(struct conn *c, const char *path);
 extern int	is_authorized_for_put(struct conn *c);
-extern void	send_authorization_request(struct conn *c);
+extern int	send_authorization_request(struct conn *c);
 extern int	edit_passwords(const char *fname, const char *domain,
 		const char *user, const char *pass);
 
