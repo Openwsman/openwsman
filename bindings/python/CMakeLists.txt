@@ -12,7 +12,7 @@ enable_testing()
 
 add_subdirectory(tests)
 
-EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)" OUTPUT_VARIABLE PYTHON_LIB_DIR)
+EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))" OUTPUT_VARIABLE PYTHON_LIB_DIR)
 STRING(REPLACE "\n" "" PYTHON_LIB_DIR "${PYTHON_LIB_DIR}")
 
 MESSAGE(STATUS "Python executable: ${PYTHON_EXECUTABLE}")
