@@ -46,8 +46,10 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#ifdef ENABLE_EVENTING_SUPPORT
 #include <openssl/opensslv.h>
 #include <openssl/ssl.h>
+#endif
 
 #include "u/libu.h"
 #include "wsman-types.h"
