@@ -3,7 +3,7 @@
 cat <<EOS >&2
 *** Autoconf/automake is deprecated for Openwsman and might not fully work.
 *** Please use CMake instead!
-
+*** Pull requests welcome ;-)
 EOS
 
 if [ "$1" != "--ignore-deprecation-warning" ]; then
