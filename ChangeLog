@@ -2,6 +2,10 @@
 - Bugfixes
   - Prevent buffer overflow if digest realm too long
   - Ensure path starts with '/' in client data endpoint
+  - Java bindings build fix
+  - Fix SSL library, usage is not thread safe (vcrhonek)
+  - Improve NetBSD builds
+  - Install winrs with correct name and permissions
 
 2.6.2
 - Features
