@@ -41,7 +41,7 @@ ADD_CUSTOM_COMMAND (
    COMMAND ${JAVA_COMPILE} ${java_SOURCE} ${EXPLICIT_SOURCE} ${java_TARGET} ${EXPLICIT_TARGET} -d . *.java
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
    COMMAND ${JAVA_ARCHIVE} cvf ${jar_NAME} *.so org/*
-   DEPENDS ${SWIG_OUTPUT}
+   DEPENDS jwsman
 )
 
 ADD_CUSTOM_TARGET ( jwsman_all ALL
