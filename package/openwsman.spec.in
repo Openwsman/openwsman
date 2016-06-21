@@ -388,9 +388,6 @@ install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 
-# rename winrs.rb -> winrs
-mv $RPM_BUILD_ROOT%{_bindir}/winrs.rb $RPM_BUILD_ROOT%{_bindir}/winrs
-
 %post -n libwsman3 -p /sbin/ldconfig
 
 %postun -n libwsman3
