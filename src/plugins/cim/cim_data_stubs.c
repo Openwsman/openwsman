@@ -170,27 +170,30 @@ verify_class_namespace(CimClientInfo *client)
 	hscan_t hs;
 	hnode_t *hn;
 	int rv = 0;
-	if(!client){
+	if (!client) {
 		return 0;
 	}
-	if (client->resource_uri && (strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) ==0) ) {
+        if (!client->resource_uri) {
+          return 0;
+        }
+	if (strcmp( client->resource_uri, CIM_ALL_AVAILABLE_CLASSES ) == 0 ) {
 		return 1;
 	}
-        if ( client->resource_uri && (strstr( client->resource_uri, XML_NS_CIM_INTRINSIC ) != NULL )) {
+        if (strstr( client->resource_uri, XML_NS_CIM_INTRINSIC ) != NULL ) {
 	        return 1;
 	}
   
         /* Ok if class schema is CIM, uri starts with XML_NS_CIM_CLASS
          * and method is not 'Create' (CIM_ is abstract, cannot be created)
          */
-	if (client->requested_class && client->resource_uri && client->method
+	if (client->requested_class && client->method
             && (strncmp(client->requested_class, "CIM_", 4) == 0 )
 	    && (strstr(client->resource_uri , XML_NS_CIM_CLASS) == client->resource_uri )
 	    && (strcmp(client->method, TRANSFER_CREATE) != 0)) {
 		return 1;
 	}
 
-	if (client->requested_class && client->namespaces && client->resource_uri) {
+	if (client->requested_class && client->namespaces) {
 		hash_scan_begin(&hs, client->namespaces);
 		while ((hn = hash_scan_next(&hs))) {
 			if ( ( strstr(client->requested_class,
