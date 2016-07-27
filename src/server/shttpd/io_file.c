@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "shttpd_defs.h"
+#include "defs.h"
 
 static int
 write_file(struct stream *stream, const void *buf, size_t len)
@@ -20,16 +20,16 @@ write_file(struct stream *stream, const void *buf, size_t len)
 	assert(fd != -1);
 	n = write(fd, buf, len);
 
-	DBG(("put_file(%p, %d): %d bytes", (void *) stream, len, n));
+	DBG(("put_file(%p, %d): %d bytes", (void *) stream, (int) len, n));
 
-	if (n <= 0 || (rem->io.total >= (big_int_t) rem->headers_len)) {
+	if (n <= 0 || (rem->io.total >= (big_int_t) rem->content_len)) {
 		(void) fstat(fd, &st);
 		stream->io.head = stream->headers_len =
-		    snprintf(stream->io.buf,
+		    _shttpd_snprintf(stream->io.buf,
 		    stream->io.size, "HTTP/1.1 %d OK\r\n"
 		    "Content-Length: %lu\r\nConnection: close\r\n\r\n",
 		    stream->conn->status, st.st_size);
-		stop_stream(stream);
+		_shttpd_stop_stream(stream);
 	}
 
 	return (n);
@@ -90,16 +90,17 @@ close_file(struct stream *stream)
 }
 
 void
-get_file(struct conn *c, struct stat *stp)
+_shttpd_get_file(struct conn *c, struct stat *stp)
 {
 	char		date[64], lm[64], etag[64], range[64] = "";
-	int		n, status = 200;
+	size_t		n, status = 200;
 	unsigned long	r1, r2;
 	const char	*fmt = "%a, %d %b %Y %H:%M:%S GMT", *msg = "OK";
 	big_int_t	cl; /* Content-Length */
 
-	if (c->mime_type == NULL)
-		c->mime_type = get_mime_type(c->ctx, c->uri, strlen(c->uri));
+	if (c->mime_type.len == 0)
+		_shttpd_get_mime_type(c->ctx, c->uri,
+		    strlen(c->uri), &c->mime_type);
 	cl = (big_int_t) stp->st_size;
 
 	/* If Range: header specified, act accordingly */
@@ -108,16 +109,17 @@ get_file(struct conn *c, struct stat *stp)
 		status = 206;
 		(void) lseek(c->loc.chan.fd, r1, SEEK_SET);
 		cl = n == 2 ? r2 - r1 + 1: cl - r1;
-		(void) snprintf(range, sizeof(range),
+		(void) _shttpd_snprintf(range, sizeof(range),
 		    "Content-Range: bytes %lu-%lu/%lu\r\n",
 		    r1, r1 + cl - 1, (unsigned long) stp->st_size);
 		msg = "Partial Content";
 	}
 
 	/* Prepare Etag, Date, Last-Modified headers */
-	(void) strftime(date, sizeof(date), fmt, localtime(&current_time));
+	(void) strftime(date, sizeof(date),
+	    fmt, localtime(&_shttpd_current_time));
 	(void) strftime(lm, sizeof(lm), fmt, localtime(&stp->st_mtime));
-	(void) snprintf(etag, sizeof(etag), "%lx.%lx",
+	(void) _shttpd_snprintf(etag, sizeof(etag), "%lx.%lx",
 	    (unsigned long) stp->st_mtime, (unsigned long) stp->st_size);
 
 	/*
@@ -125,28 +127,29 @@ get_file(struct conn *c, struct stat *stp)
 	 * member in io. We want 'total' to be equal to the content size,
 	 * and exclude the headers length from it.
 	 */
-	c->loc.io.head = c->loc.headers_len = snprintf(c->loc.io.buf,
+	c->loc.io.head = c->loc.headers_len = _shttpd_snprintf(c->loc.io.buf,
 	    c->loc.io.size,
 	    "HTTP/1.1 %d %s\r\n"
 	    "Date: %s\r\n"
 	    "Last-Modified: %s\r\n"
 	    "Etag: \"%s\"\r\n"
-	    "Content-Type: %s\r\n"
+	    "Content-Type: %.*s\r\n"
 	    "Content-Length: %lu\r\n"
-	    "Connection: close\r\n"
+	    "Accept-Ranges: bytes\r\n"
 	    "%s\r\n",
-	    status, msg, date, lm, etag, c->mime_type, cl, range);
+	    status, msg, date, lm, etag,
+	    c->mime_type.len, c->mime_type.ptr, cl, range);
 
 	c->status = status;
 	c->loc.content_len = cl;
-	c->loc.io_class = &io_file;
+	c->loc.io_class = &_shttpd_io_file;
 	c->loc.flags |= FLAG_R | FLAG_ALWAYS_READY;
 
 	if (c->method == METHOD_HEAD)
-		stop_stream(&c->loc);
+		_shttpd_stop_stream(&c->loc);
 }
 
-const struct io_class	io_file =  {
+const struct io_class	_shttpd_io_file =  {
 	"file",
 	read_file,
 	write_file,

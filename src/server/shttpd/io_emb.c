@@ -8,17 +8,12 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "shttpd_defs.h"
+#include "defs.h"
 
-#ifdef ENABLE_IPV6
-extern int wsmand_options_get_use_ipv6(void);
-#endif
-
-#if defined(EMBEDDED)
 const char *
 shttpd_version(void)
 {
-	return (VERSION);
+	return (SHTTPD_VERSION);
 }
 
 static void
@@ -33,13 +28,11 @@ call_user(struct conn *c, struct shttpd_arg *arg, shttpd_callback_t func)
 	arg->in.len		= io_data_len(&c->rem.io);
 	arg->in.num_bytes	= 0;
 
-	if (io_data_len(&c->rem.io) >= c->rem.io.size) {
+	if (io_data_len(&c->rem.io) >= c->rem.io.size)
 		arg->flags |= SHTTPD_POST_BUFFER_FULL;
-	}
 
-	if (c->rem.content_len > 0 && c->rem.io.total < c->rem.content_len) {
-			arg->flags |= SHTTPD_MORE_POST_DATA;
-	}
+	if (c->rem.content_len > 0 && c->rem.io.total < c->rem.content_len)
+		arg->flags |= SHTTPD_MORE_POST_DATA;
 
 	func(arg);
 
@@ -56,15 +49,12 @@ call_user(struct conn *c, struct shttpd_arg *arg, shttpd_callback_t func)
 	 */
 
 	if (arg->flags & SHTTPD_END_OF_OUTPUT)
-	{
-		c->loc.flags |= FLAG_RESPONSE_COMPLETE;
 		c->loc.flags &= ~FLAG_DONT_CLOSE;
-}
 	else
-{
-c->loc.flags &= ~FLAG_RESPONSE_COMPLETE;
 		c->loc.flags |= FLAG_DONT_CLOSE;
-}
+
+	if (arg->flags & SHTTPD_SUSPEND)
+		c->loc.flags |= FLAG_SUSPEND;
 }
 
 static int
@@ -103,13 +93,9 @@ close_embedded(struct stream *stream)
 size_t
 shttpd_printf(struct shttpd_arg *arg, const char *fmt, ...)
 {
-	struct conn	*c = arg->priv;
-	struct io	*io = &c->loc.io;
 	char		*buf = arg->out.buf + arg->out.num_bytes;
 	int		buflen = arg->out.len - arg->out.num_bytes, len = 0;
 	va_list		ap;
-
-	assert(buf <= io->buf + io->size);
 
 	if (buflen > 0) {
 		va_start(ap, fmt);
@@ -138,7 +124,7 @@ shttpd_get_header(struct shttpd_arg *arg, const char *header_name)
 	while (p < e) {
 		if ((s = strchr(p, '\n')) != NULL)
 			s[s[-1] == '\r' ? -1 : 0] = '\0';
-		if (strncasecmp(header_name, p, len) == 0)
+		if (_shttpd_strncasecmp(header_name, p, len) == 0)
 			return (p + len + 2);
 
 		p += strlen(p) + 1;
@@ -154,7 +140,7 @@ shttpd_get_env(struct shttpd_arg *arg, const char *env_name)
 	struct vec	*vec;
 
 	if (strcmp(env_name, "REQUEST_METHOD") == 0) {
-		return (known_http_methods[c->method].ptr);
+		return (_shttpd_known_http_methods[c->method].ptr);
 	} else if (strcmp(env_name, "REQUEST_URI") == 0) {
 		return (c->uri);
 	} else if (strcmp(env_name, "QUERY_STRING") == 0) {
@@ -166,25 +152,15 @@ shttpd_get_env(struct shttpd_arg *arg, const char *env_name)
 			return (vec->ptr);
 		}
 	} else if (strcmp(env_name, "REMOTE_ADDR") == 0) {
-#ifdef ENABLE_IPV6
-		if (wsmand_options_get_use_ipv6()) {
-			static char str[INET6_ADDRSTRLEN];
-			inet_ntop( AF_INET6,&c->sa.u.sin6.sin6_addr, str, sizeof(str));
-			return (const char*)str;
-		}
-		else {
-#endif
-			return (inet_ntoa(c->sa.u.sin.sin_addr));/* FIXME NOT MT safe */
-#ifdef ENABLE_IPV6
-		}
-#endif
+		return (inet_ntoa(c->sa.u.sin.sin_addr));/* FIXME NOT MT safe */
 	}
 
 	return (NULL);
 }
 
 void
-shttpd_get_http_version(struct shttpd_arg *arg, unsigned long *major, unsigned long *minor)
+shttpd_get_http_version(struct shttpd_arg *arg,
+		unsigned long *major, unsigned long *minor)
 {
 	struct conn *c = arg->priv;
 
@@ -199,47 +175,39 @@ shttpd_register_uri(struct shttpd_ctx *ctx,
 	struct registered_uri	*e;
 
 	if ((e = malloc(sizeof(*e))) != NULL) {
-		e->uri			= strdup(uri);
+		e->uri			= _shttpd_strdup(uri);
 		e->callback.v_func	= (void (*)(void)) callback;
 		e->callback_data	= data;
 		LL_TAIL(&ctx->registered_uris, &e->link);
 	}
 }
 
-#if 0
-struct shttpd_ctx *
-shttpd_init2(const char *config_file, char *names[], char *values[], size_t n)
-{
-	size_t i;
-
-	for (i = 0; i < n; i++)
-		set_option(names[i], values[i]);
-
-	return (init_ctx(config_file, 0, NULL));
-}
-#endif
-
 void
 shttpd_protect_uri(struct shttpd_ctx *ctx, const char *uri, const char *file,
-				basic_auth_callback cb, int type)
+                                basic_auth_callback cb, int type)
 {
-	struct uri_auth	*auth;
+        struct uri_auth *auth;
 
-	if ((auth = malloc(sizeof(*auth))) != NULL) {
-		auth->uri	= strdup(uri);
-		if (file)
-			auth->file_name	= strdup(file);
-		else
-			auth->file_name	= NULL;
-		if (cb)
-			auth->callback.v_func = (void (*)(void)) cb;
-		auth->uri_len	= strlen(uri);
-		if (type == BASIC_AUTH || type == DIGEST_AUTH)
-			auth->type = type;
-		else
-			auth->type = DIGEST_AUTH;
-		LL_ADD(&ctx->uri_auths, &auth->link);
-	}
+        if ((auth = malloc(sizeof(*auth))) != NULL) {
+                auth->uri       = strdup(uri);
+                if (file) {
+                        auth->file_name = strdup(file);
+		}
+                else {
+                        auth->file_name = NULL;
+		}
+                if (cb) {
+                        auth->callback.v_func = (void (*)(void)) cb;
+		}
+                auth->uri_len   = strlen(uri);
+                if (type == BASIC_AUTH || type == DIGEST_AUTH) {
+                        auth->type = type;
+		}
+                else {
+                        auth->type = DIGEST_AUTH;
+		}
+                LL_ADD(&ctx->uri_auths, &auth->link);
+        }
 }
 
 int
@@ -256,7 +224,7 @@ shttpd_get_var(const char *var, const char *buf, int buf_len,
 	for (p = buf; p + var_len < e; p++)
 		if ((p == buf || p[-1] == '&') &&
 		    p[var_len] == '=' &&
-		    !strncasecmp(var, p, var_len)) {
+		    !_shttpd_strncasecmp(var, p, var_len)) {
 
 			/* Point 'p' to var value, 's' to the end of value */
 			p += var_len + 1;
@@ -264,7 +232,7 @@ shttpd_get_var(const char *var, const char *buf, int buf_len,
 				s = e;
 
 			/* URL-decode value. Return result length */
-			return (url_decode(p, s - p, value, value_len));
+			return (_shttpd_url_decode(p, s - p, value, value_len));
 		}
 
 	return (-1);
@@ -289,7 +257,7 @@ match_regexp(const char *regexp, const char *text)
 }
 
 struct registered_uri *
-is_registered_uri(struct shttpd_ctx *ctx, const char *uri)
+_shttpd_is_registered_uri(struct shttpd_ctx *ctx, const char *uri)
 {
 	struct llhead		*lp;
 	struct registered_uri	*reg_uri;
@@ -304,12 +272,12 @@ is_registered_uri(struct shttpd_ctx *ctx, const char *uri)
 }
 
 void
-setup_embedded_stream(struct conn *c, union variant func, void *data)
+_shttpd_setup_embedded_stream(struct conn *c, union variant func, void *data)
 {
 	c->loc.chan.emb.state = NULL;
 	c->loc.chan.emb.func = func;
 	c->loc.chan.emb.data = data;
-	c->loc.io_class = &io_embedded;
+	c->loc.io_class = &_shttpd_io_embedded;
 	c->loc.flags |= FLAG_R | FLAG_W |FLAG_ALWAYS_READY;
 }
 
@@ -327,11 +295,25 @@ shttpd_handle_error(struct shttpd_ctx *ctx, int code,
 	}
 }
 
-const struct io_class	io_embedded =  {
+void
+shttpd_wakeup(const void *priv)
+{
+	const struct conn	*conn = priv;
+	char			buf[sizeof(int) + sizeof(void *)];
+	int			cmd = CTL_WAKEUP;
+
+#if 0
+	conn->flags &= ~SHTTPD_SUSPEND;
+#endif
+	(void) memcpy(buf, &cmd, sizeof(cmd));
+	(void) memcpy(buf + sizeof(cmd), conn, sizeof(conn));
+
+	(void) send(conn->worker->ctl[1], buf, sizeof(buf), 0);
+}
+
+const struct io_class	_shttpd_io_embedded =  {
 	"embedded",
 	do_embedded,
 	(int (*)(struct stream *, const void *, size_t)) do_embedded,
 	close_embedded
 };
-
-#endif /* EMBEDDED */

@@ -20,18 +20,6 @@
 
 #ifndef _WIN32_WCE
 
-#ifdef _MSC_VER /* pragmas not valid on MinGW */
-#pragma comment(lib,"ws2_32")
-#pragma comment(lib,"user32")
-#pragma comment(lib,"comctl32")
-#pragma comment(lib,"comdlg32")
-#pragma comment(lib,"shell32")
-#ifdef NO_GUI
-#pragma comment(linker,"/subsystem:console")
-#else
-#pragma comment(linker,"/subsystem:windows")
-#endif /* NO_GUI */
-#endif /* _MSC_VER */
 #include <process.h>
 #include <direct.h>
 #include <io.h>
@@ -51,7 +39,7 @@
 
 #define	ERRNO			GetLastError()
 #define	NO_SOCKLEN_T
-#define	SSL_LIB			L"libssl32.dll"
+#define	SSL_LIB			L"ssleay32.dll"
 #define	DIRSEP			'\\'
 #define	IS_DIRSEP_CHAR(c)	((c) == '/' || (c) == '\\')
 #define	O_NONBLOCK		0

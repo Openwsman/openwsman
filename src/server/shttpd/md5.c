@@ -15,7 +15,7 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
-#include "shttpd_defs.h"
+#include "defs.h"
 
 #ifndef HAVE_MD5
 #if __BYTE_ORDER == 1234
@@ -201,7 +201,7 @@ MD5Update(MD5_CTX *ctx, unsigned char const *buf, unsigned len)
 }
 
 /*
- * Final wrapup - pad to 64-byte boundary with the bit pattern 
+ * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
 void

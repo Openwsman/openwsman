@@ -1,6 +1,6 @@
 
 
-#include "shttpd_defs.h"
+#include "defs.h"
 #include "adapter.h"
 #ifdef SHTTPD_GSS
 void getGssName(struct conn *c, char **user);
