@@ -28,16 +28,16 @@ endif
 sbin_PROGRAMS = openwsmand
 
 openwsmand_SOURCES = \
+		shttpd/adapter.c \
 		shttpd/string.c \
 		shttpd/shttpd.c \
 		shttpd/auth.c \
 		shttpd/md5.c \
-		shttpd/adapter.c \
 		shttpd/cgi.c \
-		shttpd/mime_type.c shttpd/config.c shttpd/io_socket.c \
-		shttpd/io_ssl.c shttpd/io_emb.c shttpd/compat_unix.c shttpd/io_dir.c shttpd/io_file.c \
-		shttpd/shttpd_defs.h shttpd/llist.h shttpd/shttpd.h shttpd/std_includes.h shttpd/io.h shttpd/md5.h shttpd/ssl.h \
-		shttpd/compat_unix.h shttpd/compat_win32.h shttpd/compat_rtems.h shttpd/adapter.h\
+		shttpd/io_socket.c \
+		shttpd/io_ssl.c shttpd/io_emb.c shttpd/compat_unix.c shttpd/io_dir.c shttpd/io_file.c shttpd/log.c \
+		shttpd/llist.h shttpd/shttpd.h shttpd/std_includes.h shttpd/io.h shttpd/md5.h shttpd/ssl.h shttpd/adapter.h \
+		shttpd/compat_unix.h shttpd/compat_win32.h shttpd/compat_rtems.h \
 		wsmand-listener.h \
 		wsmand-daemon.c \
 		wsmand-daemon.h \
