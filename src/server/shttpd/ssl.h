@@ -10,7 +10,7 @@
 
 #ifdef HAVE_OPENSSL
 
-# include <openssl/ssl.h>
+#include <openssl/ssl.h>
 
 #else
 
@@ -26,8 +26,8 @@ typedef struct ssl_ctx_st SSL_CTX;
 
 #define	SSL_ERROR_WANT_READ	2
 #define	SSL_ERROR_WANT_WRITE	3
-#define SSL_ERROR_SYSCALL               5
-#define SSL_FILETYPE_PEM	1
+#define	SSL_ERROR_SYSCALL	5
+#define	SSL_FILETYPE_PEM	1
 
 #endif
 
@@ -59,9 +59,3 @@ extern struct ssl_func	ssl_sw[];
 		const char *, int)) FUNC(11))((x), (y), (z))
 #define	SSL_CTX_use_certificate_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(12))((x), (y), (z))
-#define SSL_CTX_use_certificate_chain_file(x,y)	(* (int (*)(SSL_CTX *, \
-		const char *)) FUNC(15))((x), (y))
-#define	SSL_CTX_free(x)	(*(void (*)(SSL_CTX *)) FUNC(13))(x)
-#define	SSL_pending(x) (*(int (*)(SSL *)) FUNC(14))(x)
-#define SSL_CTX_ctrl(w,x,y,z) (*(long (*)(SSL_CTX *,int,long,void *)) FUNC(16))((w),(x),(y),(z))
-                                    

@@ -8,7 +8,7 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "shttpd_defs.h"
+#include "defs.h"
 
 #if !defined(NO_CGI)
 struct env_block {
@@ -17,94 +17,6 @@ struct env_block {
 	char	*vars[CGI_ENV_VARS];	/* Point into the buffer	*/
 	int	nvars;			/* Number of variables		*/
 };
-
-/*
- * UNIX socketpair() implementation. Why? Because Windows does not have it.
- * Return 0 on success, -1 on error.
- */
-static int
-my_socketpair(struct conn *c, int sp[2])
-{
-
-
-#ifdef ENABLE_IPV6
-	struct sockaddr_in6	sa;
-#else
-	struct sockaddr_in      sa;
-#endif
-	int			sock = -1, ret = -1;
-	socklen_t		len = sizeof(sa);
-
-	(void) memset(&sa, 0, sizeof(sa));
-#ifdef ENABLE_IPV6
-	sa.sin6_family          = AF_INET6;
-        sa.sin6_addr		= in6addr_loopback;
-	sa.sin6_port           	= htons(0);
-
-#else
-	sa.sin_family           = AF_INET;
-	sa.sin_addr.s_addr      = htonl(INADDR_LOOPBACK);
-	sa.sin_port             = htons(0);
-#endif
-	
-#ifdef ENABLE_IPV6
-	 if (!wsmand_options_get_use_ipv6()
-	     || (sock = socket(AF_INET6, SOCK_STREAM, 0)) == -1) {
-		if(!wsmand_options_get_use_ipv4()
-		   || (sock = socket(AF_INET,SOCK_STREAM,0)) == -1)
-	                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
-        } 
-
-#else
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
-	} 
-
-#endif
-	else if (bind(sock, (struct sockaddr *) &sa, len) != 0) {
-		elog(E_LOG, c, "mysocketpair: bind(): %d", ERRNO);
-		(void) closesocket(sock);
-	} else if (listen(sock, 1) != 0) {
-		elog(E_LOG, c, "mysocketpair: listen(): %d", ERRNO);
-		(void) closesocket(sock);
-	} else if (getsockname(sock, (struct sockaddr *) &sa, &len) != 0) {
-		elog(E_LOG, c, "mysocketpair: getsockname(): %d", ERRNO);
-		(void) closesocket(sock);
-	} 
-
-#ifdef ENABLE_IPV6
-	else if ((sp[0] = socket(AF_INET6, SOCK_STREAM, 6)) == -1) {
-                elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
-                (void) closesocket(sock);
-        }
-#else
-	else if ((sp[0] = socket(AF_INET, SOCK_STREAM, 6)) == -1) {
-		elog(E_LOG, c, "mysocketpair: socket(): %d", ERRNO);
-		(void) closesocket(sock);
-	} 
-#endif
-
-	else if (connect(sp[0], (struct sockaddr *) &sa, len) != 0) {
-		elog(E_LOG, c, "mysocketpair: connect(): %d", ERRNO);
-		(void) closesocket(sock);
-		(void) closesocket(sp[0]);
-	} else if ((sp[1] = accept(sock,(struct sockaddr *) &sa, &len)) == -1) {
-		elog(E_LOG, c, "mysocketpair: accept(): %d", ERRNO);
-		(void) closesocket(sock);
-		(void) closesocket(sp[0]);
-	} else {
-		/* Success */
-		ret = 0;
-		(void) closesocket(sock);
-	}
-
-#ifndef _WIN32
-	(void) fcntl(sp[0], F_SETFD, FD_CLOEXEC);
-	(void) fcntl(sp[1], F_SETFD, FD_CLOEXEC);
-#endif /* _WIN32*/
-
-	return (ret);
-}
 
 static void
 addenv(struct env_block *block, const char *fmt, ...)
@@ -136,13 +48,13 @@ add_http_headers_to_env(struct env_block *b, const char *s, int len)
 
 		/* Find where this header ends. Remember where value starts */
 		for (p = s, v = NULL; p < e && *p != '\n'; p++)
-			if (v == NULL && *p == ':') 
+			if (v == NULL && *p == ':')
 				v = p;
 
 		/* 2 null terminators and "HTTP_" */
 		space = (sizeof(b->buf) - b->len) - (2 + 5);
 		assert(space >= 0);
-	
+
 		/* Copy header if enough space in the environment block */
 		if (v > s && p > v + 2 && space > p - s) {
 
@@ -181,42 +93,35 @@ prepare_environment(const struct conn *c, const char *prog,
 		struct env_block *blk)
 {
 	const struct headers	*h = &c->ch;
-	const char		*s;
+	const char		*s, *fname, *root = c->ctx->options[OPT_ROOT];
 	size_t			len;
 
 	blk->len = blk->nvars = 0;
+
+	/* SCRIPT_FILENAME */
+	fname = prog;
+	if ((s = strrchr(prog, '/')))
+		fname = s + 1;
 
 	/* Prepare the environment block */
 	addenv(blk, "%s", "GATEWAY_INTERFACE=CGI/1.1");
 	addenv(blk, "%s", "SERVER_PROTOCOL=HTTP/1.1");
 	addenv(blk, "%s", "REDIRECT_STATUS=200");	/* PHP */
 	addenv(blk, "SERVER_PORT=%d", c->loc_port);
-	addenv(blk, "SERVER_NAME=%s", c->ctx->auth_realm);
-	addenv(blk, "SERVER_ROOT=%s", c->ctx->document_root);
-	addenv(blk, "DOCUMENT_ROOT=%s", c->ctx->document_root);
-	addenv(blk, "REQUEST_METHOD=%s", known_http_methods[c->method].ptr);
-#ifdef ENABLE_IPV6
-	if (wsmand_options_get_use_ipv6()) {
-		char str[INET6_ADDRSTRLEN];
-		inet_ntop( AF_INET6,&c->sa.u.sin.sin6_addr, str, sizeof(str));
-		addenv(blk, "REMOTE_ADDR=%s", str);
-		addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin6_port));
-	}
-	else {
-#endif
-		addenv(blk, "REMOTE_ADDR=%s", inet_ntoa(c->sa.u.sin.sin_addr));
-		addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin_port));
-#ifdef ENABLE_IPV6
-	}
-#endif
-
+	addenv(blk, "SERVER_NAME=%s", c->ctx->options[OPT_AUTH_REALM]);
+	addenv(blk, "SERVER_ROOT=%s", root);
+	addenv(blk, "DOCUMENT_ROOT=%s", root);
+	addenv(blk, "REQUEST_METHOD=%s",
+			_shttpd_known_http_methods[c->method].ptr);
+	addenv(blk, "REMOTE_ADDR=%s", inet_ntoa(c->sa.u.sin.sin_addr));
+	addenv(blk, "REMOTE_PORT=%hu", ntohs(c->sa.u.sin.sin_port));
 	addenv(blk, "REQUEST_URI=%s", c->uri);
-	addenv(blk, "SCRIPT_NAME=%s", prog + strlen(c->ctx->document_root));
-	addenv(blk, "SCRIPT_FILENAME=%s", prog);	/* PHP */
+	addenv(blk, "SCRIPT_NAME=%s", prog + strlen(root));
+	addenv(blk, "SCRIPT_FILENAME=%s", fname);	/* PHP */
 	addenv(blk, "PATH_TRANSLATED=%s", prog);
 
 	if (h->ct.v_vec.len > 0)
-		addenv(blk, "CONTENT_TYPE=%.*s", 
+		addenv(blk, "CONTENT_TYPE=%.*s",
 		    h->ct.v_vec.len, h->ct.v_vec.ptr);
 
 	if (c->query != NULL)
@@ -251,7 +156,7 @@ prepare_environment(const struct conn *c, const char *prog,
 	}
 
 	/* Add user-specified variables */
-	s = c->ctx->cgi_vars;
+	s = c->ctx->options[OPT_CGI_ENVIRONMENT];
 	FOR_EACH_WORD_IN_LIST(s, len)
 		addenv(blk, "%.*s", len, s);
 
@@ -276,7 +181,7 @@ prepare_environment(const struct conn *c, const char *prog,
 }
 
 int
-run_cgi(struct conn *c, const char *prog)
+_shttpd_run_cgi(struct conn *c, const char *prog)
 {
 	struct env_block	blk;
 	char			dir[FILENAME_MAX], *p;
@@ -286,16 +191,17 @@ run_cgi(struct conn *c, const char *prog)
 	pair[0] = pair[1] = -1;
 
 	/* CGI must be executed in its own directory */
-	(void) snprintf(dir, sizeof(dir), "%s", prog);
+	(void) _shttpd_snprintf(dir, sizeof(dir), "%s", prog);
 	for (p = dir + strlen(dir) - 1; p > dir; p--)
 		if (*p == '/') {
 			*p++ = '\0';
 			break;
 		}
-	
-	if (my_socketpair(c, pair) != 0) {
+
+	if (shttpd_socketpair(pair) != 0) {
 		ret = -1;
-	} else if (spawn_process(c, prog, blk.buf, blk.vars, pair[1], dir)) {
+	} else if (_shttpd_spawn_process(c,
+	    prog, blk.buf, blk.vars, pair[1], dir)) {
 		ret = -1;
 		(void) closesocket(pair[0]);
 		(void) closesocket(pair[1]);
@@ -308,13 +214,13 @@ run_cgi(struct conn *c, const char *prog)
 }
 
 void
-do_cgi(struct conn *c)
+_shttpd_do_cgi(struct conn *c)
 {
 	DBG(("running CGI: [%s]", c->uri));
 	assert(c->loc.io.size > CGI_REPLY_LEN);
 	memcpy(c->loc.io.buf, CGI_REPLY, CGI_REPLY_LEN);
 	c->loc.io.head = c->loc.io.tail = c->loc.io.total = CGI_REPLY_LEN;
-	c->loc.io_class = &io_cgi;
+	c->loc.io_class = &_shttpd_io_cgi;
 	c->loc.flags = FLAG_R;
 	if (c->method == METHOD_POST)
 		c->loc.flags |= FLAG_W;

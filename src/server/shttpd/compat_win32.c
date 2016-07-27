@@ -8,523 +8,11 @@
  * this stuff is worth it, you can buy me a beer in return.
  */
 
-#include "shttpd_defs.h"
-
-static const char	*config_file = CONFIG;
-
-#if !defined(NO_GUI)
-
-static HICON		hIcon;			/* SHTTPD icon handle	*/
-HWND			hLog;			/* Log window		*/
-
-/*
- * Dialog box control IDs
- */
-#define ID_GROUP	100
-#define ID_SAVE		101
-#define	ID_STATUS	102
-#define	ID_STATIC	103
-#define	ID_SETTINGS	104
-#define	ID_QUIT		105
-#define	ID_TRAYICON	106
-#define	ID_TIMER	107
-#define	ID_ICON		108
-#define	ID_ADVANCED	109
-#define	ID_SHOWLOG	110
-#define	ID_LOG		111
-
-#define	ID_USER		200
-#define	ID_DELTA	1000
-
-static void
-run_server(void *param)
-{
-	struct shttpd_ctx	*ctx = param;
-
-	open_listening_ports(ctx);
-
-	while (WaitForSingleObject(ctx->ev[0], 0) != WAIT_OBJECT_0)
-		shttpd_poll(ctx, 1000);
-
-	SetEvent(ctx->ev[1]);
-	shttpd_fini(ctx);
-}
-
-/*
- * Save the configuration back into config file
- */
-static void
-save_config(HWND hDlg, FILE *fp)
-{
-	const struct opt	*opt;
-	char			text[FILENAME_MAX];
-	int			id;
-
-	if (fp == NULL)
-		elog(E_FATAL, NULL, "save_config: cannot open %s", config_file);
-
-	for (opt = options; opt->name != NULL; opt++) {
-		id = ID_USER + (opt - options);		/* Control ID */
-
-		/* Do not save if the text is the same as default */
-
-		if (opt->flags & OPT_BOOL)
-			(void) fprintf(fp, "%s\t%d\n",
-			    opt->name, IsDlgButtonChecked(hDlg, id));
-		else if (GetDlgItemText(hDlg, id, text, sizeof(text)) != 0 &&
-		    (opt->def == NULL || strcmp(text, opt->def) != 0))
-			(void) fprintf(fp, "%s\t%s\n", opt->name, text);
-	}
-
-	(void) fclose(fp);
-}
-
-static void
-set_control_values(HWND hDlg, const struct shttpd_ctx *ctx)
-{
-	const struct opt	*opt;
-	const union variant	*v;
-	char			buf[FILENAME_MAX];
-	int			id;
-
-	for (opt = options; opt->name != NULL; opt++) {
-		id = ID_USER + (opt - options);
-		v = (union variant *) ((char *) ctx + opt->ofs);
-		if (opt->flags & OPT_BOOL) {
-			CheckDlgButton(hDlg, id,
-			    v->v_int ? BST_CHECKED : BST_UNCHECKED);
-		} else if (opt->flags & OPT_INT) {
-			snprintf(buf, sizeof(buf), "%d", v->v_int);
-			SetDlgItemText(hDlg, id, buf);
-		} else {
-			SetDlgItemText(hDlg, id, v->v_str);
-		}
-	}
-
-}
-
-static BOOL CALLBACK
-DlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static struct shttpd_ctx *ctx, **pctx;
-	HANDLE		ev;
-	const struct opt *opt;
-	DWORD tid;
-	int		id, up;
-	char		text[256];
-
-	switch (msg) {
-
-	case WM_CLOSE:
-		KillTimer(hDlg, ID_TIMER);
-		DestroyWindow(hDlg);
-		break;
-
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case ID_SAVE:
-			EnableWindow(GetDlgItem(hDlg, ID_SAVE), FALSE);
-			save_config(hDlg, fopen(config_file, "w+"));
-			ev = ctx->ev[1];
-			SetEvent(ctx->ev[0]);
-			WaitForSingleObject(ev, INFINITE);
-			*pctx = ctx = init_from_argc_argv(config_file, 0, NULL);
-			open_listening_ports(ctx);
-			_beginthread(run_server, 0, ctx);
-			EnableWindow(GetDlgItem(hDlg, ID_SAVE), TRUE);
-
-			break;
-		}
-
-		id = ID_USER + ID_DELTA;
-		for (opt = options; opt->name != NULL; opt++, id++)
-			if (LOWORD(wParam) == id) {
-				OPENFILENAME	of;
-				BROWSEINFO	bi;
-				char		path[FILENAME_MAX] = "";
-
-				memset(&of, 0, sizeof(of));
-				of.lStructSize = sizeof(of);
-				of.hwndOwner = (HWND) hDlg;
-				of.lpstrFile = path;
-				of.nMaxFile = sizeof(path);
-				of.lpstrInitialDir = ctx->document_root;
-				of.Flags = OFN_CREATEPROMPT | OFN_NOCHANGEDIR;
-				
-				memset(&bi, 0, sizeof(bi));
-				bi.hwndOwner = (HWND) hDlg;
-				bi.lpszTitle = "Choose WWW root directory:";
-				bi.ulFlags = BIF_RETURNONLYFSDIRS;
-
-				if (opt->flags & OPT_DIR)
-					SHGetPathFromIDList(
-						SHBrowseForFolder(&bi), path);
-				else
-					GetOpenFileName(&of);
-
-				if (path[0] != '\0')
-					SetWindowText(GetDlgItem(hDlg,
-						id - ID_DELTA), path);
-			}
-
-		break;
-
-	case WM_INITDIALOG:
-		pctx = (struct shttpd_ctx **) lParam;
-		ctx = *pctx;
-		SendMessage(hDlg,WM_SETICON,(WPARAM)ICON_SMALL,(LPARAM)hIcon);
-		SendMessage(hDlg,WM_SETICON,(WPARAM)ICON_BIG,(LPARAM)hIcon);
-		SetWindowText(hDlg, "SHTTPD settings");
-		SetFocus(GetDlgItem(hDlg, ID_SAVE));
-		set_control_values(hDlg, ctx);
-		break;
-	default:
-		break;
-	}
-
-	return FALSE;
-}
-
-static void *
-align(void *ptr, DWORD alig)
-{
-	ULONG ul = (ULONG) ptr;
-
-	ul += alig;
-	ul &= ~alig;
-	
-	return ((void *) ul);
-}
-
-
-static void
-add_control(unsigned char **mem, DLGTEMPLATE *dia, WORD type, DWORD id,
-	DWORD style, WORD x, WORD y, WORD cx, WORD cy, const char *caption)
-{
-	DLGITEMTEMPLATE	*tp;
-	LPWORD		p;
-
-	dia->cdit++;
-
-	*mem = align(*mem, 3);
-	tp = (DLGITEMTEMPLATE *) *mem;
-
-	tp->id			= (WORD)id;
-	tp->style		= style;
-	tp->dwExtendedStyle	= 0;
-	tp->x			= x;
-	tp->y			= y;
-	tp->cx			= cx;
-	tp->cy			= cy;
-
-	p = align(*mem + sizeof(*tp), 1);
-	*p++ = 0xffff;
-	*p++ = type;
-
-	while (*caption != '\0')
-		*p++ = (WCHAR) *caption++;
-	*p++ = 0;
-	p = align(p, 1);
-
-	*p++ = 0;
-	*mem = (unsigned char *) p;
-}
-
-static void
-show_settings_dialog(struct shttpd_ctx **ctxp)
-{
-#define	HEIGHT		15
-#define	WIDTH		400
-#define	LABEL_WIDTH	70
-
-	unsigned char		mem[4096], *p;
-	DWORD			style;
-	DLGTEMPLATE		*dia = (DLGTEMPLATE *) mem;
-	WORD			cl, x, y, width, nelems = 0;
-	const struct opt	*opt;
-	static int		guard;
-
-	static struct {
-		DLGTEMPLATE	template;	/* 18 bytes */
-		WORD		menu, class;
-		wchar_t		caption[1];
-		WORD		fontsiz;
-		wchar_t		fontface[7];
-	} dialog_header = {{WS_CAPTION | WS_POPUP | WS_SYSMENU | WS_VISIBLE |
-		DS_SETFONT | WS_DLGFRAME, WS_EX_TOOLWINDOW,
-		0, 200, 200, WIDTH, 0}, 0, 0, L"", 8, L"Tahoma"};
-
-	if (guard == 0)
-		guard++;
-	else
-		return;	
-
-	(void) memset(mem, 0, sizeof(mem));
-	(void) memcpy(mem, &dialog_header, sizeof(dialog_header));
-	p = mem + sizeof(dialog_header);
-
-	for (opt = options; opt->name != NULL; opt++) {
-
-		style = WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-		x = 10 + (WIDTH / 2) * (nelems % 2);
-		y = (nelems/2 + 1) * HEIGHT + 5;
-		width = WIDTH / 2 - 20 - LABEL_WIDTH;
-		if (opt->flags & OPT_INT) {
-			style |= ES_NUMBER;
-			cl = 0x81;
-			style |= WS_BORDER | ES_AUTOHSCROLL;
-		} else if (opt->flags & OPT_BOOL) {
-			cl = 0x80;
-			style |= BS_AUTOCHECKBOX;
-		} else if (opt->flags & (OPT_DIR | OPT_FILE)) {
-			style |= WS_BORDER | ES_AUTOHSCROLL;
-			width -= 20;
-			cl = 0x81;
-			add_control(&p, dia, 0x80,
-				ID_USER + ID_DELTA + (opt - options),
-				WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-				(WORD) (x + width + LABEL_WIDTH + 5),
-				y, 15, 12, "...");
-		} else {
-			cl = 0x81;
-			style |= WS_BORDER | ES_AUTOHSCROLL;
-		}
-		add_control(&p, dia, 0x82, ID_STATIC, WS_VISIBLE | WS_CHILD,
-			x, y, LABEL_WIDTH, HEIGHT, opt->desc);
-		add_control(&p, dia, cl, ID_USER + (opt - options), style,
-			(WORD) (x + LABEL_WIDTH), y, width, 12, "");
-		nelems++;
-	}
-
-	y = (WORD) (((nelems + 1)/2 + 1) * HEIGHT + 5);
-	add_control(&p, dia, 0x80, ID_GROUP, WS_CHILD | WS_VISIBLE |
-		BS_GROUPBOX, 5, 5, WIDTH - 10, y, "Settings");
-	y += 10;
-	add_control(&p, dia, 0x80, ID_SAVE,
-		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,
-		WIDTH - 70, y, 65, 12, "Save Settings");
-#if 0
-	add_control(&p, dia, 0x80, ID_ADVANCED,
-		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | WS_TABSTOP,
-		WIDTH - 190, y, 110, 12, "Show Advanced Settings >>");
-#endif
-	add_control(&p, dia, 0x82, ID_STATIC,
-		WS_CHILD | WS_VISIBLE | WS_DISABLED,
-		5, y, 180, 12,"SHTTPD v." VERSION
-		"      (http://shttpd.sourceforge.net)");
-	
-	dia->cy = ((nelems + 1)/2 + 1) * HEIGHT + 30;
-	DialogBoxIndirectParam(NULL, dia, NULL, DlgProc, (LPARAM) ctxp);
-	guard--;
-}
-
-static BOOL CALLBACK
-LogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static struct shttpd_ctx	*ctx;
-	static HWND	hStatus;
-	HWND		hEdit;
-	RECT		rect, rect2, rect3, rect4;
-	int		len, up, widths[] = {120, 220, 330, 460, -1};
-	char		text[256], buf[1024 * 64];
-
-	switch (msg) {
-
-	case WM_CLOSE:
-		KillTimer(hDlg, ID_TIMER);
-		DestroyWindow(hDlg);
-		break;
-
-	case WM_APP:
-		hEdit = GetDlgItem(hDlg, ID_LOG);
-		len = GetWindowText(hEdit, buf, sizeof(buf));
-		if (len > sizeof(buf) * 4 / 5)
-			len = sizeof(buf) * 4 / 5;
-		snprintf(buf + len, sizeof(buf) - len,
-		    "%s\r\n", (char *) lParam);
-		SetWindowText(hEdit, buf);
-		SendMessage(hEdit, WM_VSCROLL, SB_BOTTOM, 0);
-		break;
-
-	case WM_TIMER:
-		/* Print statistics on a status bar */
-		up = current_time - ctx->start_time;
-		(void) snprintf(text, sizeof(text),
-		    " Up: %3d h %2d min %2d sec",
-		    up / 3600, up / 60 % 60, up % 60);
-		SendMessage(hStatus, SB_SETTEXT, 0, (LPARAM) text);
-		(void) snprintf(text, sizeof(text),
-		    " Requests: %u", ctx->nrequests);
-		SendMessage(hStatus, SB_SETTEXT, 1, (LPARAM) text);
-		(void) snprintf(text, sizeof(text),
-		    " Sent: %4.2f Mb", (double) ctx->out / 1048576);
-		SendMessage(hStatus, SB_SETTEXT, 2, (LPARAM) text);
-		(void) snprintf(text, sizeof(text),
-		    " Received: %4.2f Mb", (double) ctx->in / 1048576);
-		SendMessage(hStatus, SB_SETTEXT, 3, (LPARAM) text);
-		break;
-
-	case WM_INITDIALOG:
-		ctx = (struct shttpd_ctx *) lParam;
-		SendMessage(hDlg,WM_SETICON,(WPARAM)ICON_SMALL,(LPARAM)hIcon);
-		SendMessage(hDlg,WM_SETICON,(WPARAM)ICON_BIG,(LPARAM)hIcon);
-		hStatus = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
-			"", hDlg, ID_STATUS);
-		SendMessage(hStatus, SB_SETPARTS, 5, (LPARAM) widths);
-		SendMessage(hStatus, SB_SETTEXT, 4, (LPARAM) " Running");
-		SetWindowText(hDlg, "SHTTPD web server log");
-		SetTimer(hDlg, ID_TIMER, 1000, NULL);
-		GetWindowRect(GetDesktopWindow(), &rect3);
-		GetWindowRect(hDlg, &rect4);
-		GetClientRect(hDlg, &rect);
-		GetClientRect(hStatus, &rect2);
-		SetWindowPos(GetDlgItem(hDlg, ID_LOG), 0,
-			0, 0, rect.right, rect.bottom - rect2.bottom, 0);
-		SetWindowPos(hDlg, HWND_TOPMOST,
-				rect3.right - (rect4.right - rect4.left),
-				rect3.bottom - (rect4.bottom - rect4.top) - 30,
-				0, 0, SWP_NOSIZE);
-		SetFocus(hStatus);
-		SendMessage(hDlg, WM_TIMER, 0, 0);
-		hLog = hDlg;
-		break;
-	default:
-		break;
-	}
-
-
-	return (FALSE);
-}
-
-static void
-show_log_window(struct shttpd_ctx *ctx)
-{
-	unsigned char		mem[4096], *p;
-	DWORD			style;
-	DLGTEMPLATE		*dia = (DLGTEMPLATE *) mem;
-	WORD			cl, x, y, width, nelems = 0;
-
-	static struct {
-		DLGTEMPLATE	template;	/* 18 bytes */
-		WORD		menu, class;
-		wchar_t		caption[1];
-		WORD		fontsiz;
-		wchar_t		fontface[7];
-	} dialog_header = {{WS_CAPTION | WS_POPUP | WS_VISIBLE | WS_SYSMENU |
-		DS_SETFONT | WS_DLGFRAME, WS_EX_TOOLWINDOW,
-		0, 200, 200, 400, 100}, 0, 0, L"", 8, L"Tahoma"};
-
-	if (hLog != NULL)
-		return;	
-
-	(void) memset(mem, 0, sizeof(mem));
-	(void) memcpy(mem, &dialog_header, sizeof(dialog_header));
-	p = mem + sizeof(dialog_header);
-
-	add_control(&p, dia, 0x81, ID_LOG, WS_CHILD | WS_VISIBLE |
-	    WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL |
-	    ES_READONLY, 5, 5, WIDTH - 10, 60, "");
-
-	DialogBoxIndirectParam(NULL, dia, NULL, LogProc, (LPARAM) ctx);
-
-	hLog = NULL;
-}
-
-static LRESULT CALLBACK
-WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static NOTIFYICONDATA	ni;
-	static struct shttpd_ctx *ctx;
-	DWORD			tid;		/* Thread ID */
-	HMENU			hMenu;
-	POINT			pt;
-
-	switch (msg) {
-	case WM_CREATE:
-		ctx = ((CREATESTRUCT *) lParam)->lpCreateParams;
-		memset(&ni, 0, sizeof(ni));
-		ni.cbSize = sizeof(ni);
-		ni.uID = ID_TRAYICON;
-		ni.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-		ni.hIcon = hIcon;
-		ni.hWnd = hWnd;
-		snprintf(ni.szTip, sizeof(ni.szTip), "SHTTPD web server");
-		ni.uCallbackMessage = WM_USER;
-		Shell_NotifyIcon(NIM_ADD, &ni);
-		ctx->ev[0] = CreateEvent(0, TRUE, FALSE, 0);
-		ctx->ev[1] = CreateEvent(0, TRUE, FALSE, 0);
-		_beginthread(run_server, 0, ctx);
-		break;
-	case WM_CLOSE:
-		Shell_NotifyIcon(NIM_DELETE, &ni);
-		PostQuitMessage(0);
-		break;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case ID_SETTINGS:
-			show_settings_dialog(&ctx);
-			break;
-		case ID_QUIT:
-			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
-			PostQuitMessage(0);
-			break;
-		case ID_SHOWLOG:
-			show_log_window(ctx);
-			break;
-		}
-		break;
-	case WM_USER:
-		switch (lParam) {
-		case WM_RBUTTONUP:
-		case WM_LBUTTONUP:
-		case WM_LBUTTONDBLCLK:
-			hMenu = CreatePopupMenu();
-			AppendMenu(hMenu, 0, ID_SETTINGS, "Settings");
-			AppendMenu(hMenu, 0, ID_SHOWLOG, "Show Log");
-			AppendMenu(hMenu, 0, ID_QUIT, "Exit SHTTPD");
-			GetCursorPos(&pt);
-			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hWnd, NULL);
-			DestroyMenu(hMenu);
-			break;
-		}
-		break;
-	}
-
-	return (DefWindowProc(hWnd, msg, wParam, lParam));
-}
-
-int WINAPI
-WinMain(HINSTANCE h, HINSTANCE prev, char *cmdline, int show)
-{
-	struct shttpd_ctx	*ctx;
-	WNDCLASS		cls;
-	HWND			hWnd;
-	MSG			msg;
-
-	ctx = init_from_argc_argv(config_file, 0, NULL);
-	(void) memset(&cls, 0, sizeof(cls));
-
-	hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(ID_ICON));
-	if (hIcon == NULL)
-		hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	cls.lpfnWndProc = (WNDPROC) WindowProc; 
-	cls.hIcon = hIcon;
-	cls.lpszClassName = "shttpd v." VERSION; 
-
-	if (!RegisterClass(&cls)) 
-		elog(E_FATAL, NULL, "RegisterClass: %d", ERRNO);
-	else if ((hWnd = CreateWindow(cls.lpszClassName, "",WS_OVERLAPPEDWINDOW,
-	    0, 0, 0, 0, NULL, NULL, NULL, ctx)) == NULL)
-		elog(E_FATAL, NULL, "CreateWindow: %d", ERRNO);
-
-	while (GetMessage(&msg, (HWND) NULL, 0, 0)) { 
-		TranslateMessage(&msg); 
-		DispatchMessage(&msg); 
-	}
-
-	return (0);
-}
-#endif /* NO_GUI */
+#include "defs.h"
+
+static SERVICE_STATUS		ss;
+static SERVICE_STATUS_HANDLE	hStatus;
+static SERVICE_DESCRIPTION	service_descr = {"Web server"};
 
 static void
 fix_directory_separators(char *path)
@@ -533,32 +21,68 @@ fix_directory_separators(char *path)
 		if (*path == '/')
 			*path = '\\';
 		if (*path == '\\')
-			while (path[1] == '\\' || path[1] == '/') 
+			while (path[1] == '\\' || path[1] == '/')
 				(void) memmove(path + 1,
 				    path + 2, strlen(path + 2) + 1);
 	}
 }
 
+static int
+protect_against_code_disclosure(const wchar_t *path)
+{
+	WIN32_FIND_DATAW	data;
+	HANDLE			handle;
+	const wchar_t		*p;
+
+	/*
+	 * Protect against CGI code disclosure under Windows.
+	 * This is very nasty hole. Windows happily opens files with
+	 * some garbage in the end of file name. So fopen("a.cgi    ", "r")
+	 * actually opens "a.cgi", and does not return an error! And since
+	 * "a.cgi    " does not have valid CGI extension, this leads to
+	 * the CGI code disclosure.
+	 * To protect, here we delete all fishy characters from the
+	 * end of file name.
+	 */
+
+	if ((handle = FindFirstFileW(path, &data)) == INVALID_HANDLE_VALUE)
+		return (FALSE);
+
+	FindClose(handle);
+
+	for (p = path + wcslen(path); p > path && p[-1] != L'\\';)
+		p--;
+
+	if (!(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+	    wcscmp(data.cFileName, p) != 0)
+		return (FALSE);
+
+	return (TRUE);
+}
+
 int
-my_open(const char *path, int flags, int mode)
+_shttpd_open(const char *path, int flags, int mode)
 {
 	char	buf[FILENAME_MAX];
 	wchar_t	wbuf[FILENAME_MAX];
 
-	my_strlcpy(buf, path, sizeof(buf));
+	_shttpd_strlcpy(buf, path, sizeof(buf));
 	fix_directory_separators(buf);
 	MultiByteToWideChar(CP_UTF8, 0, buf, -1, wbuf, sizeof(wbuf));
+
+	if (protect_against_code_disclosure(wbuf) == FALSE)
+		return (-1);
 
 	return (_wopen(wbuf, flags));
 }
 
 int
-my_stat(const char *path, struct stat *stp)
+_shttpd_stat(const char *path, struct stat *stp)
 {
 	char	buf[FILENAME_MAX], *p;
 	wchar_t	wbuf[FILENAME_MAX];
 
-	my_strlcpy(buf, path, sizeof(buf));
+	_shttpd_strlcpy(buf, path, sizeof(buf));
 	fix_directory_separators(buf);
 
 	p = buf + strlen(buf) - 1;
@@ -571,12 +95,12 @@ my_stat(const char *path, struct stat *stp)
 }
 
 int
-my_remove(const char *path)
+_shttpd_remove(const char *path)
 {
 	char	buf[FILENAME_MAX];
 	wchar_t	wbuf[FILENAME_MAX];
 
-	my_strlcpy(buf, path, sizeof(buf));
+	_shttpd_strlcpy(buf, path, sizeof(buf));
 	fix_directory_separators(buf);
 
 	MultiByteToWideChar(CP_UTF8, 0, buf, -1, wbuf, sizeof(wbuf));
@@ -585,15 +109,15 @@ my_remove(const char *path)
 }
 
 int
-my_rename(const char *path1, const char *path2)
+_shttpd_rename(const char *path1, const char *path2)
 {
 	char	buf1[FILENAME_MAX];
 	char	buf2[FILENAME_MAX];
 	wchar_t	wbuf1[FILENAME_MAX];
 	wchar_t	wbuf2[FILENAME_MAX];
 
-	my_strlcpy(buf1, path1, sizeof(buf1));
-	my_strlcpy(buf2, path2, sizeof(buf2));
+	_shttpd_strlcpy(buf1, path1, sizeof(buf1));
+	_shttpd_strlcpy(buf2, path2, sizeof(buf2));
 	fix_directory_separators(buf1);
 	fix_directory_separators(buf2);
 
@@ -604,12 +128,12 @@ my_rename(const char *path1, const char *path2)
 }
 
 int
-my_mkdir(const char *path, int mode)
+_shttpd_mkdir(const char *path, int mode)
 {
 	char	buf[FILENAME_MAX];
 	wchar_t	wbuf[FILENAME_MAX];
 
-	my_strlcpy(buf, path, sizeof(buf));
+	_shttpd_strlcpy(buf, path, sizeof(buf));
 	fix_directory_separators(buf);
 
 	MultiByteToWideChar(CP_UTF8, 0, buf, -1, wbuf, sizeof(wbuf));
@@ -640,7 +164,7 @@ wide_to_utf8(const wchar_t *str)
 }
 
 char *
-my_getcwd(char *buffer, int maxlen)
+_shttpd_getcwd(char *buffer, int maxlen)
 {
 	char *result = NULL;
 	wchar_t *wbuffer, *wresult;
@@ -686,7 +210,7 @@ opendir(const char *name)
 	} else if ((dir = malloc(sizeof(*dir))) == NULL) {
 		errno = ENOMEM;
 	} else {
-		snprintf(path, sizeof(path), "%s/*", name);
+		_shttpd_snprintf(path, sizeof(path), "%s/*", name);
 		fix_directory_separators(path);
 		MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath));
 		dir->handle = FindFirstFileW(wpath, &dir->info);
@@ -714,7 +238,7 @@ closedir(DIR *dir)
 		free(dir);
 	}
 
-	if (result == -1) 
+	if (result == -1)
 		errno = EBADF;
 
 	return (result);
@@ -742,7 +266,7 @@ readdir(DIR *dir)
 }
 
 int
-set_non_blocking_mode(int fd)
+_shttpd_set_non_blocking_mode(int fd)
 {
 	unsigned long	on = 1;
 
@@ -750,7 +274,7 @@ set_non_blocking_mode(int fd)
 }
 
 void
-set_close_on_exec(int fd)
+_shttpd_set_close_on_exec(int fd)
 {
 	fd = 0;	/* Do nothing. There is no FD_CLOEXEC on Windows */
 }
@@ -762,6 +286,30 @@ struct threadparam {
 	HANDLE	hPipe;
 	big_int_t content_len;
 };
+
+
+enum ready_mode_t {IS_READY_FOR_READ, IS_READY_FOR_WRITE};
+
+/*
+ * Wait until given socket is in ready state. Always return TRUE.
+ */
+static int
+is_socket_ready(int sock, enum ready_mode_t mode)
+{
+	fd_set		read_set, write_set;
+
+	FD_ZERO(&read_set);
+	FD_ZERO(&write_set);
+
+	if (mode == IS_READY_FOR_READ)
+		FD_SET(sock, &read_set);
+	else
+		FD_SET(sock, &write_set);
+
+	select(sock + 1, &read_set, &write_set, NULL, NULL);
+
+	return (TRUE);
+}
 
 /*
  * Thread function that reads POST data from the socket pair
@@ -778,14 +326,19 @@ stdoutput(void *arg)
 	size_t			max_recv;
 
 	max_recv = min(sizeof(buf), tp->content_len - total);
-	while (!stop && max_recv > 0 && (n = recv(tp->s, buf, max_recv, 0)) > 0) {
+	while (!stop &&
+	    max_recv > 0 &&
+	    is_socket_ready(tp->s, IS_READY_FOR_READ) &&
+	    (n = recv(tp->s, buf, max_recv, 0)) > 0) {
+		if (n == -1 && ERRNO == EWOULDBLOCK)
+			continue;
 		for (sent = 0; !stop && sent < n; sent += k)
 			if (!WriteFile(tp->hPipe, buf + sent, n - sent, &k, 0))
 				stop++;
 		total += n;
 		max_recv = min(sizeof(buf), tp->content_len - total);
 	}
-	
+
 	CloseHandle(tp->hPipe);	/* Suppose we have POSTed everything */
 	free(tp);
 }
@@ -804,12 +357,19 @@ stdinput(void *arg)
 
 	while (!stop && ReadFile(tp->hPipe, buf, sizeof(buf), &n, NULL)) {
 		ntotal += n;
-		for (sent = 0; !stop && sent < n; sent += k)
-			if ((k = send(tp->s, buf + sent, n - sent, 0)) <= 0)
+		for (sent = 0; !stop && sent < n; sent += k) {
+			if (is_socket_ready(tp->s, IS_READY_FOR_WRITE) &&
+			    (k = send(tp->s, buf + sent, n - sent, 0)) <= 0) {
+				if (k == -1 && ERRNO == EWOULDBLOCK) {
+					k = 0;
+					continue;
+				}
 				stop++;
+			}
+		}
 	}
 	CloseHandle(tp->hPipe);
-	
+
 	/*
 	 * Windows is a piece of crap. When this thread closes its end
 	 * of the socket pair, the other end (get_cgi() function) may loose
@@ -846,14 +406,14 @@ spawn_stdio_thread(int sock, HANDLE hPipe, void (*func)(void *),
 }
 
 int
-spawn_process(struct conn *c, const char *prog, char *envblk,
+_shttpd_spawn_process(struct conn *c, const char *prog, char *envblk,
 		char *envp[], int sock, const char *dir)
 {
-	HANDLE			a[2], b[2], h[2], me;
-	DWORD			flags;
-	char			*p, cmdline[FILENAME_MAX], line[FILENAME_MAX];
-	FILE			*fp;
-	STARTUPINFOA	si;
+	HANDLE	a[2], b[2], h[2], me;
+	DWORD	flags;
+	char	*p, *interp, cmdline[FILENAME_MAX], line[FILENAME_MAX];
+	FILE	*fp;
+	STARTUPINFOA		si;
 	PROCESS_INFORMATION	pi;
 
 	me = GetCurrentProcess();
@@ -864,7 +424,7 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 	CreatePipe(&b[0], &b[1], NULL, 0);
 	DuplicateHandle(me, a[0], me, &h[0], 0, TRUE, flags);
 	DuplicateHandle(me, b[1], me, &h[1], 0, TRUE, flags);
-	
+
 	(void) memset(&si, 0, sizeof(si));
 	(void) memset(&pi, 0, sizeof(pi));
 
@@ -872,11 +432,12 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 	si.cb		= sizeof(si);
 	si.dwFlags	= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 	si.wShowWindow	= SW_HIDE;
-	si.hStdOutput	= si.hStdError = h[1];
+	si.hStdOutput	= h[1];
 	si.hStdInput	= h[0];
 
 	/* If CGI file is a script, try to read the interpreter line */
-	if (c->ctx->cgi_interpreter == NULL) {
+	interp = c->ctx->options[OPT_CGI_INTERPRETER];
+	if (interp == NULL) {
 		if ((fp = fopen(prog, "r")) != NULL) {
 			(void) fgets(line, sizeof(line), fp);
 			if (memcmp(line, "#!", 2) != 0)
@@ -887,14 +448,17 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 				*p = '\0';
 			(void) fclose(fp);
 		}
-		(void) snprintf(cmdline, sizeof(cmdline), "%s%s%s",
+		interp = line + 2;
+		(void) _shttpd_snprintf(cmdline, sizeof(cmdline), "%s%s%s",
 		    line + 2, line[2] == '\0' ? "" : " ", prog);
-	} else {
-		(void) snprintf(cmdline, sizeof(cmdline), "%s %s",
-		    c->ctx->cgi_interpreter, prog);
 	}
 
-	(void) snprintf(line, sizeof(line), "%s", dir);
+	if ((p = strrchr(prog, '/')) != NULL)
+		prog = p + 1;
+
+	(void) _shttpd_snprintf(cmdline, sizeof(cmdline), "%s %s", interp, prog);
+
+	(void) _shttpd_snprintf(line, sizeof(line), "%s", dir);
 	fix_directory_separators(line);
 	fix_directory_separators(cmdline);
 
@@ -907,7 +471,8 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 
 	if (CreateProcessA(NULL, cmdline, NULL, NULL, TRUE,
 	    CREATE_NEW_PROCESS_GROUP, envblk, line, &si, &pi) == 0) {
-		elog(E_LOG, c,"redirect: CreateProcess(%s): %d",cmdline,ERRNO);
+		_shttpd_elog(E_LOG, c,
+		    "redirect: CreateProcess(%s): %d", cmdline, ERRNO);
 		return (-1);
 	} else {
 		CloseHandle(h[0]);
@@ -920,3 +485,203 @@ spawn_process(struct conn *c, const char *prog, char *envblk,
 }
 
 #endif /* !NO_CGI */
+
+#define	ID_TRAYICON	100
+#define	ID_QUIT		101
+static NOTIFYICONDATA	ni;
+
+static LRESULT CALLBACK
+WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	POINT	pt;
+	HMENU	hMenu;
+
+	switch (msg) {
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case ID_QUIT:
+			exit(EXIT_SUCCESS);
+			break;
+		}
+		break;
+	case WM_USER:
+		switch (lParam) {
+		case WM_RBUTTONUP:
+		case WM_LBUTTONUP:
+		case WM_LBUTTONDBLCLK:
+			hMenu = CreatePopupMenu();
+			AppendMenu(hMenu, 0, ID_QUIT, "Exit SHTTPD");
+			GetCursorPos(&pt);
+			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hWnd, NULL);
+			DestroyMenu(hMenu);
+			break;
+		}
+		break;
+	}
+
+	return (DefWindowProc(hWnd, msg, wParam, lParam));
+}
+
+static void
+systray(void *arg)
+{
+	WNDCLASS	cls;
+	HWND		hWnd;
+	MSG		msg;
+
+	(void) memset(&cls, 0, sizeof(cls));
+
+	cls.lpfnWndProc = (WNDPROC) WindowProc;
+	cls.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	cls.lpszClassName = "shttpd v." SHTTPD_VERSION;
+
+	if (!RegisterClass(&cls))
+		_shttpd_elog(E_FATAL, NULL, "RegisterClass: %d", ERRNO);
+	else if ((hWnd = CreateWindow(cls.lpszClassName, "",
+	    WS_OVERLAPPEDWINDOW, 0, 0, 0, 0, NULL, NULL, NULL, arg)) == NULL)
+		_shttpd_elog(E_FATAL, NULL, "CreateWindow: %d", ERRNO);
+	ShowWindow(hWnd, SW_HIDE);
+
+	ni.cbSize = sizeof(ni);
+	ni.uID = ID_TRAYICON;
+	ni.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+	ni.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	ni.hWnd = hWnd;
+	_shttpd_snprintf(ni.szTip, sizeof(ni.szTip), "SHTTPD web server");
+	ni.uCallbackMessage = WM_USER;
+	Shell_NotifyIcon(NIM_ADD, &ni);
+
+	while (GetMessage(&msg, hWnd, 0, 0)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+}
+
+int
+_shttpd_set_systray(struct shttpd_ctx *ctx, const char *opt)
+{
+	HWND		hWnd;
+	char		title[512];
+	static WNDPROC	oldproc;
+
+	if (!_shttpd_is_true(opt))
+		return (TRUE);
+
+	FreeConsole();
+	GetConsoleTitle(title, sizeof(title));
+	hWnd = FindWindow(NULL, title);
+	ShowWindow(hWnd, SW_HIDE);
+	_beginthread(systray, 0, hWnd);
+
+	return (TRUE);
+}
+
+int
+_shttpd_set_nt_service(struct shttpd_ctx *ctx, const char *action)
+{
+	SC_HANDLE	hSCM, hService;
+	char		path[FILENAME_MAX], key[128];
+	HKEY		hKey;
+	DWORD		dwData;
+
+
+	if (!strcmp(action, "install")) {
+		if ((hSCM = OpenSCManager(NULL, NULL,
+		    SC_MANAGER_ALL_ACCESS)) == NULL)
+			_shttpd_elog(E_FATAL, NULL, "Error opening SCM (%d)", ERRNO);
+
+		GetModuleFileName(NULL, path, sizeof(path));
+
+		hService = CreateService(hSCM, SERVICE_NAME, SERVICE_NAME,
+		    SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
+		    SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, path,
+		    NULL, NULL, NULL, NULL, NULL);
+
+		if (!hService)
+			_shttpd_elog(E_FATAL, NULL,
+			    "Error installing service (%d)", ERRNO);
+
+		ChangeServiceConfig2(hService, SERVICE_CONFIG_DESCRIPTION,
+		    &service_descr);
+		_shttpd_elog(E_FATAL, NULL, "Service successfully installed");
+
+
+	} else if (!strcmp(action, "uninstall")) {
+
+		if ((hSCM = OpenSCManager(NULL, NULL,
+		    SC_MANAGER_ALL_ACCESS)) == NULL) {
+			_shttpd_elog(E_FATAL, NULL, "Error opening SCM (%d)", ERRNO);
+		} else if ((hService = OpenService(hSCM,
+		    SERVICE_NAME, DELETE)) == NULL) {
+			_shttpd_elog(E_FATAL, NULL,
+			    "Error opening service (%d)", ERRNO);
+		} else if (!DeleteService(hService)) {
+			_shttpd_elog(E_FATAL, NULL,
+			    "Error deleting service (%d)", ERRNO);
+		} else {
+			_shttpd_elog(E_FATAL, NULL, "Service deleted");
+		}
+
+	} else {
+		_shttpd_elog(E_FATAL, NULL, "Use -service <install|uninstall>");
+	}
+
+	/* NOTREACHED */
+	return (TRUE);
+}
+
+static void WINAPI
+ControlHandler(DWORD code)
+{
+	if (code == SERVICE_CONTROL_STOP || code == SERVICE_CONTROL_SHUTDOWN) {
+		ss.dwWin32ExitCode	= 0;
+		ss.dwCurrentState	= SERVICE_STOPPED;
+	}
+
+	SetServiceStatus(hStatus, &ss);
+}
+
+static void WINAPI
+ServiceMain(int argc, char *argv[])
+{
+	char	path[MAX_PATH], *p, *av[] = {"shttpd_service", path, NULL};
+	struct shttpd_ctx	*ctx;
+
+	ss.dwServiceType      = SERVICE_WIN32;
+	ss.dwCurrentState     = SERVICE_RUNNING;
+	ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
+
+	hStatus = RegisterServiceCtrlHandler(SERVICE_NAME, ControlHandler);
+	SetServiceStatus(hStatus, &ss);
+
+	GetModuleFileName(NULL, path, sizeof(path));
+
+	if ((p = strrchr(path, DIRSEP)) != NULL)
+		*++p = '\0';
+
+	strcat(path, CONFIG_FILE);	/* woo ! */
+
+	ctx = shttpd_init(NELEMS(av) - 1, av);
+	if ((ctx = shttpd_init(NELEMS(av) - 1, av)) == NULL)
+		_shttpd_elog(E_FATAL, NULL, "Cannot initialize SHTTP context");
+
+	while (ss.dwCurrentState == SERVICE_RUNNING)
+		shttpd_poll(ctx, INT_MAX);
+	shttpd_fini(ctx);
+
+	ss.dwCurrentState  = SERVICE_STOPPED;
+	ss.dwWin32ExitCode = -1;
+	SetServiceStatus(hStatus, &ss);
+}
+
+void
+try_to_run_as_nt_service(void)
+{
+	static SERVICE_TABLE_ENTRY service_table[] = {
+		{SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION) ServiceMain},
+		{NULL, NULL}
+	};
+
+	if (StartServiceCtrlDispatcher(service_table))
+		exit(EXIT_SUCCESS);
+}
