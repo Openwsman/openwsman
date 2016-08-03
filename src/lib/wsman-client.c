@@ -34,6 +34,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
+#include <stdbool.h>
 #endif
 
 #include "u/libu.h"
@@ -381,13 +382,15 @@ wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
  * Add key/value to list_t (e.g. options->properties or ->selectors)
  * either as char* (string set, epr == NULL)
  * or as epr_t (string == NULL, epr set)
+ * if (useArray == true) then value will be added without duplicate key checking
  */
 
 static void
 _wsmc_add_key_value(list_t **list_ptr,
 		const char *key,
 		const char *string,
-		const epr_t *epr)
+		const epr_t *epr,
+                bool useArray)
 {
   key_value_t *kv;
   list_t *list = *list_ptr;
@@ -404,7 +407,7 @@ _wsmc_add_key_value(list_t **list_ptr,
     list = list_create(LISTCOUNT_T_MAX);
     *list_ptr = list;
   }
-  if (list_find(list, key, _list_key_compare)) {
+  if (!useArray && list_find(list, key, _list_key_compare)) {
     error("duplicate key not added to list");
     return;
   }
@@ -421,6 +424,18 @@ _wsmc_add_key_value(list_t **list_ptr,
   list_append(list, lnode);
 }
 
+/*
+ * add a char* as an array type property (an array item)
+ *
+ */
+
+void
+wsmc_add_property_array_item(client_opt_t * options,
+		const char *key,
+		const char *value)
+{
+  _wsmc_add_key_value(&(options->properties), key, value, NULL, true);
+}
 
 /*
  * add a char* as property
@@ -432,7 +447,7 @@ wsmc_add_property(client_opt_t * options,
 		const char *key,
 		const char *value)
 {
-  _wsmc_add_key_value(&(options->properties), key, value, NULL);
+  _wsmc_add_key_value(&(options->properties), key, value, NULL, false);
 }
 
 
@@ -446,7 +461,7 @@ wsmc_add_property_epr(client_opt_t * options,
 		const char *key,
 		const epr_t *value)
 {
-  _wsmc_add_key_value(&(options->properties), key, NULL, value);
+  _wsmc_add_key_value(&(options->properties), key, NULL, value, false);
 }
 
 /*
@@ -478,7 +493,7 @@ wsmc_add_selector(client_opt_t *options,
 		const char *key,
 		const char *value)
 {
-  _wsmc_add_key_value(&(options->selectors), key, value, NULL);
+  _wsmc_add_key_value(&(options->selectors), key, value, NULL, false);
 }
 
 void
@@ -486,7 +501,7 @@ wsmc_add_selector_epr(client_opt_t *options,
 		const char *key,
 		const epr_t *value)
 {
-  _wsmc_add_key_value(&(options->selectors), key, NULL, value);
+  _wsmc_add_key_value(&(options->selectors), key, NULL, value, false);
 }
 
 static void
@@ -509,7 +524,7 @@ _wsmc_add_uri_to_list(list_t **list_ptr, const char *query_string)
       _wsmc_add_key_value(list_ptr,
                           (char *)hnode_getkey(hn),
                           (char *)hnode_get(hn),
-                          NULL);
+                          NULL, false);
     }
     hash_free(query);
   }

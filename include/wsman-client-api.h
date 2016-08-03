@@ -764,6 +764,10 @@ typedef enum {
 
 	void wsmc_add_selector_epr(client_opt_t * options,
 				       const char *key, const epr_t *value);
+        
+        void wsmc_add_property_array_item(client_opt_t * options,
+                                       const char *key,
+                                       const char *value);
 
 	void wsmc_add_property(client_opt_t * options,
 				       const char *key, const char *value);
