@@ -1474,20 +1474,14 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 	char *ssl_disabled_protocols = wsmand_options_get_ssl_disabled_protocols();
 	int		retval = FALSE;
 
-	/* Load SSL library dynamically */
-	if ((lib = dlopen(SSL_LIB, RTLD_LAZY)) == NULL) {
-		_shttpd_elog(E_LOG, NULL, "set_ssl: cannot load %s", SSL_LIB);
-		return (FALSE);
-	}
-
-	for (fp = ssl_sw; fp->name != NULL; fp++)
-		if ((fp->ptr.v_void = dlsym(lib, fp->name)) == NULL) {
-			_shttpd_elog(E_LOG, NULL,"set_ssl: cannot find %s", fp->name);
-			return (FALSE);
-		}
-
 	/* Initialize SSL crap */
+	debug("Initialize SSL");
+	SSL_load_error_strings();
+	#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	SSL_library_init();
+	#else
+	OPENSSL_init_ssl(0, NULL);
+	#endif
 
 	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
 		_shttpd_elog(E_LOG, NULL, "SSL_CTX_new error");
@@ -1523,7 +1517,7 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 			if (strncasecmp(protocols[idx].name, ssl_disabled_protocols, blank_ptr-ssl_disabled_protocols) == 0) {
 				//_shttpd_elog(E_LOG, NULL, "SSL: disable %s protocol", protocols[idx].name);
 				debug("SSL: disable %s protocol", protocols[idx].name);
-				SSL_CTX_ctrl(CTX, SSL_CTRL_OPTIONS, protocols[idx].opt, NULL);
+				SSL_CTX_set_options(CTX, protocols[idx].opt);
 				break;
 			}
 		}

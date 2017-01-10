@@ -11,23 +11,6 @@
 #include "defs.h"
 
 #if !defined(NO_SSL)
-struct ssl_func	ssl_sw[] = {
-	{"SSL_free",			{0}},
-	{"SSL_accept",			{0}},
-	{"SSL_connect",			{0}},
-	{"SSL_read",			{0}},
-	{"SSL_write",			{0}},
-	{"SSL_get_error",		{0}},
-	{"SSL_set_fd",			{0}},
-	{"SSL_new",			{0}},
-	{"SSL_CTX_new",			{0}},
-	{"SSLv23_server_method",	{0}},
-	{"SSL_library_init",		{0}},
-	{"SSL_CTX_use_PrivateKey_file",	{0}},
-	{"SSL_CTX_use_certificate_file",{0}},
-	{NULL,				{0}}
-};
-
 void
 _shttpd_ssl_handshake(struct stream *stream)
 {

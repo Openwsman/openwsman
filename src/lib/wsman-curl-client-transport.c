@@ -241,12 +241,16 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void *arg)
 {
 	unsigned char *thumbprint = (unsigned char *)arg;
-	X509 *cert = ctx->cert;
 	EVP_MD                                  *tempDigest;
 
 	unsigned char   tempFingerprint[EVP_MAX_MD_SIZE];
 	unsigned int      tempFingerprintLen;
 	tempDigest = (EVP_MD*)EVP_sha1( );
+
+	X509 *cert = X509_STORE_CTX_get_current_cert(ctx);
+	if(!cert)
+		return 0;
+
 	if ( X509_digest(cert, tempDigest, tempFingerprint, &tempFingerprintLen ) <= 0)
 		return 0;
 	if(!memcmp(tempFingerprint, thumbprint, tempFingerprintLen))
