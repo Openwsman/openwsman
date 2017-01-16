@@ -18,7 +18,7 @@
 #include "io.h"
 #include "md5.h"
 #include "u/libu.h"
-#include "config.h"
+#include "shttpd_config.h"
 #include "shttpd.h"
 
 #define	NELEMS(ar)	(sizeof(ar) / sizeof(ar[0]))
