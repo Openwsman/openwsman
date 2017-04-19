@@ -43,6 +43,7 @@ void u_free (void *ptr)
 {
     if (ptr)
         free(ptr);
+        ptr = NULL;
 }
 
 /**
