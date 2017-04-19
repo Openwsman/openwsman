@@ -452,6 +452,19 @@ typedef struct {} client_opt_t;
   {
     wsmc_add_property($self, key, value);
   }
+  
+  /*
+   * Add a string property as key/value pair (an 'add_property' analogue for adding array items)
+   * * Input parameters to 'invoke'd methods are represented as ClientOption properties
+   *
+   * call-seq:
+   *   options.add_property( "Key", "Value" )
+   *
+   */
+  void add_property_array_item(const char *key, const char *value)
+  {
+    wsmc_add_property_array_item($self, key, value);
+  }
 
   /*
    * Add an EndPointReference property as key/value pair
