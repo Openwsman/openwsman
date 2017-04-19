@@ -77,6 +77,7 @@ int wsmand_options_get_server_ssl_port(void);
 char *wsmand_options_get_ssl_key_file(void);
 char *wsmand_options_get_ssl_cert_file(void);
 char *wsmand_options_get_ssl_disabled_protocols(void);
+char *wsmand_options_get_ssl_cipher_list(void);
 int wsmand_options_get_digest(void);
 char *wsmand_options_get_digest_password_file(void);
 char *wsmand_options_get_basic_password_file(void);

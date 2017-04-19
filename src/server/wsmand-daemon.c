@@ -79,6 +79,7 @@ static char *ssl_key_file = NULL;
 static char *service_path = DEFAULT_SERVICE_PATH;
 static char *ssl_cert_file = NULL;
 static char *ssl_disabled_protocols = NULL;
+static char *ssl_cipher_list = NULL;
 static char *pid_file = DEFAULT_PID_PATH;
 static char *uri_subscription_repository = DEFAULT_SUBSCRIPTION_REPOSITORY;
 static int daemon_flag = 0;
@@ -178,6 +179,7 @@ int wsmand_read_config(dictionary * ini)
 	ssl_key_file = iniparser_getstr(ini, "server:ssl_key_file");
 	ssl_cert_file = iniparser_getstr(ini, "server:ssl_cert_file");
         ssl_disabled_protocols = iniparser_getstr(ini, "server:ssl_disabled_protocols");
+        ssl_cipher_list = iniparser_getstr(ini, "server:ssl_cipher_list");
 	use_ipv4 = iniparser_getboolean(ini, "server:ipv4", 1);
 #ifdef ENABLE_IPV6
         use_ipv6 = iniparser_getboolean(ini, "server:ipv6", 1);
@@ -346,6 +348,11 @@ char *wsmand_options_get_ssl_cert_file(void)
 char *wsmand_options_get_ssl_disabled_protocols(void)
 {
 	return ssl_disabled_protocols;
+}
+
+char *wsmand_options_get_ssl_cipher_list(void)
+{
+	return ssl_cipher_list;
 }
 
 int wsmand_options_get_digest(void)
