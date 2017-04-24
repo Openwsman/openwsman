@@ -1517,7 +1517,11 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 			if (strncasecmp(protocols[idx].name, ssl_disabled_protocols, blank_ptr-ssl_disabled_protocols) == 0) {
 				//_shttpd_elog(E_LOG, NULL, "SSL: disable %s protocol", protocols[idx].name);
 				debug("SSL: disable %s protocol", protocols[idx].name);
+				#if OPENSSL_VERSION_NUMBER < 0x10100000L
+				SSL_CTX_ctrl(CTX, SSL_CTRL_OPTIONS, protocols[idx].opt, NULL);
+				#else
 				SSL_CTX_set_options(CTX, protocols[idx].opt);
+				#endif
 				break;
 			}
 		}

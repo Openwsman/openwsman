@@ -247,7 +247,11 @@ static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void 
 	unsigned int      tempFingerprintLen;
 	tempDigest = (EVP_MD*)EVP_sha1( );
 
+	#if OPENSSL_VERSION_NUMBER < 0x10100000L
+	X509 *cert = ctx->cert;
+	#else
 	X509 *cert = X509_STORE_CTX_get_current_cert(ctx);
+	#endif
 	if(!cert)
 		return 0;
 
