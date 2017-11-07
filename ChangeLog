@@ -1,3 +1,8 @@
+2.6.4
+- Bugfixes
+  - setup ECDHE to allow Perfect Forward Secrecy, using the p256 NIST
+    prime curve (CVE-2016-2183)
+
 2.6.3
 - Bugfixes
   - Prevent buffer overflow if digest realm too long
