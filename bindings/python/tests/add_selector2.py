@@ -21,7 +21,7 @@ class TestAddSelector(unittest.TestCase):
             (key_asdf, value_asdf) = selector_str.split("=")
             assert key_asdf is not None
             assert value_asdf is not None
-            print "Calling add_selector(%r, %r)" % (key_asdf, value_asdf)
+            print( "Calling add_selector(%r, %r)" % (key_asdf, value_asdf) )
             options.add_selector(str(key_asdf), str(value_asdf))
         dummy = client.invoke(options, "http://uri", "method", XmlDoc("dummy doc"))
 

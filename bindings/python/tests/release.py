@@ -31,7 +31,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		assert root is not None
 		resp = root.find(XML_NS_ADDRESSING, "Action" )
 		self.assertEquals( resp.__str__(), XML_NS_ENUMERATION + '/' +  WSENUM_RELEASE_RESP )
-		print "Action %s" % resp
+		print( "Action %s" % resp )
 
 
 if __name__ == '__main__':

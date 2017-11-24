@@ -25,7 +25,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		root = doc.root()
 		assert root is not None
 		context = root.find(XML_NS_ENUMERATION, "EnumerationContext" )
-		print "Context: %s" % context
+		print( "Context: %s" % context )
 	def test_enum_and_pull(self):
 #		set_debug(1) # enable to print logging to stderr
 		client = Client( "http://wsman:secret@localhost:5985/wsman" )
@@ -43,7 +43,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		assert root is not None
 		pullresp = root.find(XML_NS_ENUMERATION, "PullResponse" )
 		assert pullresp is not None
-		print "Pull response: %s" % pullresp.string()
+		print( "Pull response: %s" % pullresp.string() )
 
 if __name__ == '__main__':
     unittest.main()

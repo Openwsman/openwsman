@@ -30,7 +30,7 @@ class TestSequenceFunctions(unittest.TestCase):
       prot_version = root.find( XML_NS_WSMAN_ID, "ProtocolVersion" )
       prod_vendor = root.find( XML_NS_WSMAN_ID, "ProductVendor" )
       prod_version = root.find( XML_NS_WSMAN_ID, "ProductVersion" )
-      print "Protocol %s, Vendor %s, Version %s"  %( prot_version, prod_vendor, prod_version )
+      print("Protocol %s, Vendor %s, Version %s"  %( prot_version, prod_vendor, prod_version ))
 
 
 if __name__ == '__main__':
