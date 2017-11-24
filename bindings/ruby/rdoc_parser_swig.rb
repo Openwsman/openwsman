@@ -364,11 +364,17 @@ class RDoc::Parser::SWIG < RDoc::Parser
 
       #meth_obj.params = params
       meth_obj.start_collecting_tokens
-      tk = RDoc::RubyToken::Token.new nil, 1, 1
-      tk.set_text body
+      begin
+        RDoc::const_get "RubyToken"
+        tk = RDoc::RubyToken::Token.new nil, 1, 1
+        tk.set_text body
+        meth_obj.offset  = offset
+      rescue NameError
+        # rdoc 2.5
+        tk = { :line_no => 1, :char_no => 1, :text => body }
+      end
       meth_obj.add_token tk
       meth_obj.comment = strip_stars comment
-      meth_obj.offset  = offset
       meth_obj.line    = file_content[0, offset].count("\n") + 1
 
       body
@@ -381,11 +387,17 @@ class RDoc::Parser::SWIG < RDoc::Parser
       find_modifiers comment, meth_obj
 
       meth_obj.start_collecting_tokens
-      tk = RDoc::RubyToken::Token.new nil, 1, 1
-      tk.set_text body
+      begin
+        RDoc::const_get "RubyToken"
+        tk = RDoc::RubyToken::Token.new nil, 1, 1
+        tk.set_text body
+        meth_obj.offset  = offset
+      rescue NameError
+        # rdoc 2.5
+        tk = { :line_no => 1, :char_no => 1, :text => body }
+      end
       meth_obj.add_token tk
       meth_obj.comment = strip_stars(comment) + meth_obj.comment.to_s
-      meth_obj.offset  = offset
       meth_obj.line    = file_content[0, offset].count("\n") + 1
 
       body
