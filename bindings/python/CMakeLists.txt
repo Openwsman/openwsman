@@ -12,6 +12,19 @@ enable_testing()
 
 add_subdirectory(tests)
 
+set(Python_ADDITIONAL_VERSIONS 3.6 3.5 2.7 2.6)
+FIND_PACKAGE(PythonLibs)
+IF (PYTHON_LIBRARY)
+  FIND_PACKAGE(PythonInterp REQUIRED)
+  #MESSAGE(STATUS "Found PythonLibs...")
+  FIND_PACKAGE(PythonLinkLibs)
+  #IF (PYTHON_LINK_LIBS)
+  #  MESSAGE(STATUS "Building Python...")
+  #ENDIF (PYTHON_LINK_LIBS)
+ELSE (PYTHON_LIBRARY)
+  MESSAGE(STATUS "No Python found")
+ENDIF (PYTHON_LIBRARY)
+
 EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))" OUTPUT_VARIABLE PYTHON_LIB_DIR)
 STRING(REPLACE "\n" "" PYTHON_LIB_DIR "${PYTHON_LIB_DIR}")
 
