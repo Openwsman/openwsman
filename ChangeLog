@@ -1,3 +1,10 @@
+2.6.5
+- Bugfixes
+  - Replace obsolete pam modules with standard ones (kukuk@suse.de)
+  - Include shttpd_config.h in tarball (olaf@aepfle.de)
+  - Build with Python 3
+  - Build with Ruby 2.5
+
 2.6.4
 - Bugfixes
   - setup ECDHE to allow Perfect Forward Secrecy, using the p256 NIST
