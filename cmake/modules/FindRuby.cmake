@@ -21,7 +21,7 @@ endif (RUBY_LIBRARY AND RUBY_INCLUDE_PATH)
 #   RUBY_LIBDIR=`$RUBY -r rbconfig -e 'printf("%s",RbConfig::CONFIG@<:@"libdir"@:>@)'`
 #   RUBY_LIBRUBYARG=`$RUBY -r rbconfig -e 'printf("%s",RbConfig::CONFIG@<:@"LIBRUBYARG_SHARED"@:>@)'`
 
-FIND_PROGRAM(RUBY_EXECUTABLE NAMES ruby ruby22 ruby21 ruby20 ruby19 ruby1.8 ruby18 )
+FIND_PROGRAM(RUBY_EXECUTABLE NAMES ruby.ruby2.5 ruby.ruby2.4 ruby.ruby2.3 ruby.ruby2.2 ruby ruby22 ruby21 ruby20 ruby19 ruby1.8 ruby18 )
 
 EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MAJOR']"
    OUTPUT_VARIABLE RUBY_VERSION_MAJOR)
@@ -91,7 +91,7 @@ FIND_PATH(RUBY_INCLUDE_PATH
    /usr/lib/ruby/1.8/i586-linux-gnu/ )
 
 FIND_LIBRARY(RUBY_LIBRARY
-  NAMES ruby ruby1.9 ruby1.8
+  NAMES ruby2.5 ruby2.4 ruby2.3 ruby2.2 ruby2.1 ruby ruby1.9 ruby1.8
   PATHS
    ${RUBY_POSSIBLE_LIB_PATH}
    ${RUBY_RUBY_LIB_PATH}
