@@ -7,6 +7,7 @@
 
 #include "wsman-declarations.h"
 #include "wsman-xml-serializer.h"
+#include "wsman-client-transport.h"
 
 #define XML_REDIRECT_NS    "http://dummy.com/wbem/wscim/1/cim-schema/2"
 
