@@ -12,7 +12,9 @@ enable_testing()
 # cmake2.6: backward compatibility to cmake 2.4
 #
 if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 OLD)
+  cmake_policy(SET CMP0003 NEW)
+  # add_definitions escape behavior: old
+  # setting cmp0005 to NEW adds another \" around gcc -D defines
   cmake_policy(SET CMP0005 OLD)
   if ( POLICY CMP0042 )
     cmake_policy(SET CMP0042 NEW)
@@ -161,43 +163,22 @@ IF(OPENSSL_FOUND)
 ENDIF(OPENSSL_FOUND)
 
 IF( BUILD_RUBY )
-INCLUDE(FindRuby)
+  INCLUDE(FindRuby)
+  MESSAGE(STATUS "Ruby: ${RUBY_EXECUTABLE}" )
   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitearchdir']"
     OUTPUT_VARIABLE RUBY_SITEARCH_DIR)
+  MESSAGE(STATUS "Ruby Library: ${RUBY_LIBRARY}" )
+  MESSAGE(STATUS "Ruby Include: ${RUBY_INCLUDE_PATH}" )
 
-MESSAGE(STATUS "Building Ruby bindings" )
- IF(NOT RUBY_INCLUDE_PATH)
-  IF(BUILD_RUBY_EXPLICIT)
-   NO_HEADERS_WARNING_EXPL(BUILD_RUBY Ruby)
-  ELSE(BUILD_RUBY_EXPLICIT)
-   NO_HEADERS_WARNING(BUILD_RUBY Ruby)
-  ENDIF(BUILD_RUBY_EXPLICIT)
- ENDIF(NOT RUBY_INCLUDE_PATH )
+  MESSAGE(STATUS "Building Ruby bindings" )
+  IF(NOT RUBY_INCLUDE_PATH)
+    IF(BUILD_RUBY_EXPLICIT)
+      NO_HEADERS_WARNING_EXPL(BUILD_RUBY Ruby)
+    ELSE(BUILD_RUBY_EXPLICIT)
+      NO_HEADERS_WARNING(BUILD_RUBY Ruby)
+    ENDIF(BUILD_RUBY_EXPLICIT)
+  ENDIF(NOT RUBY_INCLUDE_PATH )
 ENDIF( BUILD_RUBY )
-
-IF( BUILD_PYTHON )
-  MESSAGE(STATUS "Building Python bindings" )
-  FIND_PACKAGE(PythonLibs 2.6 REQUIRED)
-  IF (PYTHON_LIBRARY)
-    FIND_PACKAGE(PythonInterp 2.6 REQUIRED)
-    MESSAGE(STATUS "Found PythonLibs...")
-    FIND_PACKAGE(PythonLinkLibs)
-    IF (PYTHON_LINK_LIBS)
-      MESSAGE(STATUS "Building Python...")
-    ENDIF (PYTHON_LINK_LIBS)
-  ENDIF (PYTHON_LIBRARY)
-  IF(NOT PYTHON_INCLUDE_DIRS )
-    # fallback for older versions of cmake
-    SET(PYTHON_INCLUDE_DIRS PYTHON_INCLUDE_PATH)
-  ENDIF(NOT PYTHON_INCLUDE_DIRS )
-  IF(NOT PYTHON_INCLUDE_DIRS )
-    IF(BUILD_PYTHON_EXPLICIT)
-      NO_HEADERS_WARNING_EXPL(BUILD_PYTHON Python)
-    ELSE(BUILD_PYTHON_EXPLICIT)
-      NO_HEADERS_WARNING(BUILD_PYTHON Python)
-    ENDIF(BUILD_PYTHON_EXPLICIT)
-  ENDIF(NOT PYTHON_INCLUDE_DIRS )
-ENDIF( BUILD_PYTHON )
 
 IF( BUILD_PERL )
   INCLUDE(FindPerl)
@@ -574,7 +555,7 @@ SET (CPACK_SOURCE_IGNORE_FILES
 "/m4/"
 "autom4te.cache"
 "config.log"
-"config.h$"
+"./config.h"
 "configure$"
 "config.status"
 "depcomp"
