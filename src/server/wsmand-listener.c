@@ -65,7 +65,7 @@
 
 
 #include "shttpd.h"
-
+#include "shttpd/adapter.h" /* shttpd_get_credentials() */
 #include "wsman-plugins.h"
 #include "wsmand-listener.h"
 #include "wsmand-daemon.h"
