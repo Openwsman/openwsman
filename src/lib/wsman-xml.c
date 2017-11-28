@@ -1284,7 +1284,8 @@ int ws_xml_set_node_real(WsXmlNodeH node, double Val)
 {
 	int retVal = -1;
 	if (node) {
-		char buf[12];
+                /* __builtin___sprintf_chk' output between 13 and 15 bytes */
+		char buf[15];
 		sprintf(buf, "%E", Val);
 		retVal = ws_xml_set_node_text(node, buf);
 	}
