@@ -43,8 +43,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "u/memory.h"
-#include "u/misc.h"
+#include "u/libu.h"
 #include "wsman-types.h"
 #include "wsman-key-value.h"
 #include "wsman-epr.h"
@@ -54,7 +53,10 @@ key_value_create(const char *key, const char *text, const epr_t *epr, key_value_
 {
   if (prealloc == NULL)
     prealloc = (key_value_t *)u_malloc(sizeof(key_value_t));
-
+  if (!prealloc) {
+    debug("u_malloc() failed in key_value_create\n");
+    return NULL;
+  }
   if (key) /* might be NULL if only value is stored */
     prealloc->key = u_strdup(key);
   else
