@@ -1425,8 +1425,6 @@ wsmc_action_invoke(WsManClient * cl,
 		const char *method,
 		WsXmlDocH data)
 {
-	hscan_t         hs;
-	hnode_t        *hn;
 	WsXmlDocH       response;
 	WsXmlNodeH body = NULL;
         WsXmlDocH       request = wsmc_create_request(cl, resource_uri, options, NULL,
