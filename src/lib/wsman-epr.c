@@ -198,9 +198,11 @@ static int epr_add_selector(epr_t *epr, const char *name, const char *text, epr_
 	p = epr->refparams.selectorset.selectors;
 	p = u_realloc(p, (epr->refparams.selectorset.count+1) * sizeof(key_value_t));
 	if (p == NULL) return -1;
-        new_p = key_value_create(name, text, added_epr, &(p[epr->refparams.selectorset.count]));
-
 	epr->refparams.selectorset.selectors = p;
+        new_p = key_value_create(name, text, added_epr, &(p[epr->refparams.selectorset.count]));
+        if (new_p == NULL) {
+          return -1;
+        }
 	epr->refparams.selectorset.count++;
 	return 0;
  }
