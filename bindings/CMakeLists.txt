@@ -8,9 +8,9 @@ SET( SWIG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/openwsman.i" )
 
 include_directories(${CMAKE_BINARY_DIR})
 
-IF( BUILD_PYTHON )
+IF( BUILD_PYTHON3 OR BUILD_PYTHON )
 add_subdirectory(python)
-ENDIF( BUILD_PYTHON )
+ENDIF( BUILD_PYTHON3 OR BUILD_PYTHON )
 
 IF( BUILD_RUBY )
 add_subdirectory(ruby)

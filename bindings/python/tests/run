@@ -2,8 +2,8 @@
 #
 # run script for Python tests
 #
-# Usage: run <dir> <file>
+# Usage: run <python> <dir> <file>
 #
-(cd $1;
+(cd $2;
  f=`dirname $0`;
- LD_LIBRARY_PATH=$f/../../../build/src/lib python $2)
+ LD_LIBRARY_PATH=$f/../../../build/src/lib $1 $3)

@@ -31,7 +31,11 @@ BuildRequires:  sblim-sfcc-devel
 BuildRequires:  swig >= 2.0.5
 
 BuildRequires:  perl
+%if 0%{?have_python3}
+BuildRequires:  python3-devel
+%else
 BuildRequires:  python-devel
+%endif
 
 %if 0%{?rhel_version} > 0
 BuildRequires:  -vim
@@ -214,6 +218,20 @@ This package provides a Openwsman server plugin to write a
 WS-Management resource handler in Ruby
 
 
+%if 0%{?have_python3}
+%package python3
+Summary:        Python3 bindings for openwsman client API
+Group:          Development/Libraries/Python
+%{!?python3_sitelib: %global python3_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?python3_sitearch: %global python3_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+%{!?py_requires: %define py_requires Requires: python3}
+%{py_requires}
+
+%description python3
+This package provides Python3 bindings to access the openwsman client
+API.
+
+%else
 %package python
 Summary:        Python bindings for openwsman client API
 Group:          Development/Libraries/Python
@@ -226,6 +244,7 @@ Group:          Development/Libraries/Python
 This package provides Python bindings to access the openwsman client
 API.
 
+%endif
 
 %package ruby
 Requires:       ruby
@@ -344,6 +363,9 @@ cmake \
 %if 0%{?suse_version} == 1010
   -DBUILD_JAVA=FALSE \
 %endif
+%if 0%{?have_python3}
+  -DBUILD_PYTHON=FALSE \
+%endif
   -DCMAKE_VERBOSE_MAKEFILE=TRUE \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_FLAGS_RELEASE:STRING="$RPM_OPT_FLAGS -fno-strict-aliasing" \
@@ -458,10 +480,17 @@ rm -f /var/log/wsmand.log
 %exclude %{_includedir}/openwsman/cpp/*.h
 %exclude %{_libdir}/libwsman_clientpp.so
 
+%if 0%{?have_python3}
+%files python3
+%defattr(-,root,root)
+%{python3_sitearch}/*.so
+%{python3_sitearch}/*.py*
+%else
 %files python
 %defattr(-,root,root)
 %{python_sitearch}/*.so
 %{python_sitearch}/*.py*
+%endif
 
 %files ruby
 %defattr(-,root,root)
