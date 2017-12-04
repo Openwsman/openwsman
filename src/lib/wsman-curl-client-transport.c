@@ -241,7 +241,11 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 static int ssl_certificate_thumbprint_verify_callback(X509_STORE_CTX *ctx, void *arg)
 {
 	unsigned char *thumbprint = (unsigned char *)arg;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+        X509 *cert = X509_STORE_CTX_get_current_cert(ctx);
+#else
 	X509 *cert = ctx->cert;
+#endif
 	EVP_MD                                  *tempDigest;
 
 	unsigned char   tempFingerprint[EVP_MAX_MD_SIZE];
