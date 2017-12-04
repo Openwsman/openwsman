@@ -52,9 +52,11 @@ extern struct ssl_func	ssl_sw[];
 #define	SSL_get_error(x,y)(* (int (*)(SSL *, int)) FUNC(5))((x), (y))
 #define	SSL_set_fd(x,y)	(* (int (*)(SSL *, int)) FUNC(6))((x), (y))
 #define	SSL_new(x)	(* (SSL * (*)(SSL_CTX *)) FUNC(7))(x)
-#define	SSL_CTX_new(x)	(* (SSL_CTX * (*)(SSL_METHOD *)) FUNC(8))(x)
+#define	SSL_CTX_new(x)	(* (SSL_CTX * (*)(const SSL_METHOD *)) FUNC(8))(x)
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 #define	SSLv23_server_method()	(* (SSL_METHOD * (*)(void)) FUNC(9))()
 #define	SSL_library_init() (* (int (*)(void)) FUNC(10))()
+#endif
 #define	SSL_CTX_use_PrivateKey_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(11))((x), (y), (z))
 #define	SSL_CTX_use_certificate_file(x,y,z)	(* (int (*)(SSL_CTX *, \

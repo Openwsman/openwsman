@@ -1512,7 +1512,9 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 			char *name;
 			long opt;
 		} protocols[] = {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 			{ "SSLv2", SSL_OP_NO_SSLv2 },
+#endif
 			{ "SSLv3", SSL_OP_NO_SSLv3 },
 			{ "TLSv1", SSL_OP_NO_TLSv1 },
 # if OPENSSL_VERSION_NUMBER >= 0x10001000L
@@ -1532,7 +1534,11 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 			if (strncasecmp(protocols[idx].name, ssl_disabled_protocols, blank_ptr-ssl_disabled_protocols) == 0) {
 				//_shttpd_elog(E_LOG, NULL, "SSL: disable %s protocol", protocols[idx].name);
 				debug("SSL: disable %s protocol", protocols[idx].name);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+				SSL_CTX_set_options(CTX, protocols[idx].opt);
+#else
 				SSL_CTX_ctrl(CTX, SSL_CTRL_OPTIONS, protocols[idx].opt, NULL);
+#endif
 				break;
 			}
 		}
