@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman
 #
-# Copyright (c) 2015 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2017 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -22,6 +22,12 @@
 %define has_systemd 0
 %endif
 
+%if 0%{?suse_version} >= 1500
+%define want_python3 1
+%else
+%define want_python3 0
+%endif
+
 Name:           openwsman
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -31,7 +37,7 @@ BuildRequires:  sblim-sfcc-devel
 BuildRequires:  swig >= 2.0.5
 
 BuildRequires:  perl
-%if 0%{?have_python3}
+%if 0%{?want_python3}
 BuildRequires:  python3-devel
 %else
 BuildRequires:  python-devel
@@ -136,11 +142,13 @@ License:        BSD-3-Clause
 Group:          System/Management
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
-%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
-Source2:        %{name}.pam.rh
+Source21:       %{name}.pam.rh
+Source22:       %{name}.pam
 Patch1:         openwsman-initscript.patch
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
+%define pamfile %{S:21}
 %else
-Source2:        %{name}.pam
+%define pamfile %{S:22}
 %endif
 Source3:        %{name}.SuSEfirewall2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -208,6 +216,7 @@ Group:          System/Management
 Openwsman Server and service libraries
 
 
+%if 0%{?rhel_version} != 700
 %package server-plugin-ruby
 Requires:       openwsman-server
 Summary:        Openwsman Server Plugin for Ruby extensions
@@ -217,8 +226,9 @@ Group:          System/Management
 This package provides a Openwsman server plugin to write a
 WS-Management resource handler in Ruby
 
+%endif
 
-%if 0%{?have_python3}
+%if 0%{?want_python3}
 %package python3
 Summary:        Python3 bindings for openwsman client API
 Group:          Development/Libraries/Python
@@ -245,6 +255,9 @@ This package provides Python bindings to access the openwsman client
 API.
 
 %endif
+
+# RHEL7 does not have ruby-devel
+%if 0%{?rhel_version} != 700
 
 %package ruby
 Requires:       ruby
@@ -296,6 +309,7 @@ Group:          Documentation/HTML
 This package provides HTML documentation for the Openwsman Ruby
 bindings.
 
+%endif # not rhel7
 
 %package perl
 %if 0%{?fedora}
@@ -326,6 +340,8 @@ This package provides Java bindings to access the openwsman client API.
 
 %endif
 
+# RHEL7 does not have ruby-devel
+%if 0%{?rhel_version} != 700
 %package -n winrs
 Summary:        Windows Remote Shell
 Group:          System/Management
@@ -335,6 +351,7 @@ Requires:       openwsman-ruby = %{version}
 This is a command line tool for the Windows Remote Shell protocol. You
 can use it to send shell commands to a remote Windows hosts.
 
+%endif
 
 %prep
 %setup -q
@@ -363,8 +380,12 @@ cmake \
 %if 0%{?suse_version} == 1010
   -DBUILD_JAVA=FALSE \
 %endif
-%if 0%{?have_python3}
+%if 0%{?want_python3}
   -DBUILD_PYTHON=FALSE \
+  -DBUILD_PYTHON3=TRUE \
+%else
+  -DBUILD_PYTHON=TRUE \
+  -DBUILD_PYTHON3=FALSE \
 %endif
   -DCMAKE_VERBOSE_MAKEFILE=TRUE \
   -DCMAKE_BUILD_TYPE=Release \
@@ -384,7 +405,8 @@ make
 cd build
 make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT%{_docdir}
-cp -a bindings/ruby/html $RPM_BUILD_ROOT%{_docdir}/openwsman-ruby-docs
+# don't copy ruby docs if they don't exist
+[ -d bindings/ruby/html ] && cp -a bindings/ruby/html $RPM_BUILD_ROOT%{_docdir}/openwsman-ruby-docs
 cd ..
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
@@ -403,9 +425,12 @@ ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
 install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
 install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 644 %{S:2} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
+install -m 644 %{pamfile} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
 %if 0%{?suse_version} > 1010
 install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+%endif
+%if 0%{?rhel_version} == 700
+rm -f $RPM_BUILD_ROOT%{_bindir}/winrs
 %endif
 
 %post -n libwsman3 -p /sbin/ldconfig
@@ -480,7 +505,7 @@ rm -f /var/log/wsmand.log
 %exclude %{_includedir}/openwsman/cpp/*.h
 %exclude %{_libdir}/libwsman_clientpp.so
 
-%if 0%{?have_python3}
+%if 0%{?want_python3}
 %files python3
 %defattr(-,root,root)
 %{python3_sitearch}/*.so
@@ -492,6 +517,8 @@ rm -f /var/log/wsmand.log
 %{python_sitearch}/*.py*
 %endif
 
+# RHEL7 does not have ruby-devel
+%if 0%{?rhel_version} != 700
 %files ruby
 %defattr(-,root,root)
 %if 0%{?mandriva_version}
@@ -510,6 +537,7 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %dir %{_docdir}/openwsman-ruby-docs
 %{_docdir}/openwsman-ruby-docs
+%endif # not rhel-7
 
 %files perl
 %defattr(-,root,root)
@@ -550,9 +578,12 @@ rm -f /var/log/wsmand.log
 %{_sbindir}/openwsmand
 %{_libdir}/libwsman_server.so.*
 
+# RHEL7 does not have ruby-devel
+%if 0%{?rhel_version} != 700
 %files server-plugin-ruby
 %defattr(-,root,root)
 %{_libdir}/openwsman/plugins/*ruby*.so
+%endif
 
 %files -n libwsman_clientpp1
 %defattr(-,root,root)
@@ -564,8 +595,11 @@ rm -f /var/log/wsmand.log
 %dir %{_includedir}/openwsman/cpp
 %{_includedir}/openwsman/cpp/*.h
 
+# RHEL7 does not have ruby-devel
+%if 0%{?rhel_version} != 700
 %files -n winrs
 %defattr(-,root,root)
 %{_bindir}/winrs
+%endif
 
 %changelog
