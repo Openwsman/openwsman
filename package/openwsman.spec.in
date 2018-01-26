@@ -229,7 +229,7 @@ WS-Management resource handler in Ruby
 %endif
 
 %if 0%{?want_python3}
-%package python3
+%package -n python3-%{name}
 Summary:        Python3 bindings for openwsman client API
 Group:          Development/Libraries/Python
 %{!?python3_sitelib: %global python3_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -237,7 +237,7 @@ Group:          Development/Libraries/Python
 %{!?py_requires: %define py_requires Requires: python3}
 %{py_requires}
 
-%description python3
+%description -n python3-%{name}
 This package provides Python3 bindings to access the openwsman client
 API.
 
@@ -506,7 +506,7 @@ rm -f /var/log/wsmand.log
 %exclude %{_libdir}/libwsman_clientpp.so
 
 %if 0%{?want_python3}
-%files python3
+%files -n python3-%{name}
 %defattr(-,root,root)
 %{python3_sitearch}/*.so
 %{python3_sitearch}/*.py*
