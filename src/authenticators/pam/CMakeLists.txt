@@ -7,7 +7,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_CURR
 
 SET( pam_auth_SOURCES pam_auth.c )
 
-ADD_LIBRARY( wsman_pam_auth SHARED ${pam_auth_SOURCES} )
+ADD_LIBRARY( wsman_pam_auth ${pam_auth_SOURCES} )
 TARGET_LINK_LIBRARIES( wsman_pam_auth ${CRYPT_LIBRARIES} )
 TARGET_LINK_LIBRARIES( wsman_pam_auth ${HAVE_LIBPAM} )
 if( HAVE_LIBDL )
