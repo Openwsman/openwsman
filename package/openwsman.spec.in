@@ -29,7 +29,7 @@
 %endif
 
 Name:           openwsman
-BuildRequires:  cmake
+BuildRequires:  cmake >= 2.6
 BuildRequires:  gcc-c++
 BuildRequires:  libxml2-devel
 BuildRequires:  pam-devel
