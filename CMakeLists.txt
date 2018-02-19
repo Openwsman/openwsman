@@ -4,7 +4,8 @@
 
 PROJECT(openwsman)
 
-cmake_minimum_required(VERSION 2.4)
+# 2.6 minimum because of CMP0005 (escaping defines)
+cmake_minimum_required(VERSION 2.6)
 
 include(CTest)
 enable_testing()
@@ -13,9 +14,7 @@ enable_testing()
 #
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
-  # add_definitions escape behavior: old
-  # setting cmp0005 to NEW adds another \" around gcc -D defines
-  cmake_policy(SET CMP0005 OLD)
+  cmake_policy(SET CMP0005 NEW)
   if ( POLICY CMP0042 )
     cmake_policy(SET CMP0042 NEW)
   endif ( POLICY CMP0042 )
@@ -68,11 +67,11 @@ ELSE( "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
 ENDIF( "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
 SET( WSMANCONF_DIR "${SYSCONFDIR}/openwsman" )
 MESSAGE(STATUS "Configuration will be installed in ${WSMANCONF_DIR}" )
-SET( DEFAULT_CONFIG_FILE "\"${WSMANCONF_DIR}/openwsman.conf\"")
-SET( DEFAULT_CLIENT_CONFIG_FILE "\"${WSMANCONF_DIR}/openwsman_client.conf\"")
-SET( PACKAGE_SUBSCRIPTION_DIR "/var/lib/openwsman/subscriptions" )
-SET( PACKAGE_PLUGIN_DIR "${LIB_INSTALL_DIR}/openwsman/plugins" )
-SET( PACKAGE_AUTH_DIR "${LIB_INSTALL_DIR}/openwsman/authenticators" )
+SET( DEFAULT_CONFIG_FILE \"${WSMANCONF_DIR}/openwsman.conf\")
+SET( DEFAULT_CLIENT_CONFIG_FILE \"${WSMANCONF_DIR}/openwsman_client.conf\")
+SET( PACKAGE_SUBSCRIPTION_DIR /var/lib/openwsman/subscriptions )
+SET( PACKAGE_PLUGIN_DIR ${LIB_INSTALL_DIR}/openwsman/plugins )
+SET( PACKAGE_AUTH_DIR ${LIB_INSTALL_DIR}/openwsman/authenticators )
 
 
 # Macro for error message when header files not present, but build option

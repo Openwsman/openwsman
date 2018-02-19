@@ -1,3 +1,10 @@
+2.6.7
+- Features
+  - Build with CMake 2.6 or later
+- Bugfixes
+  - fix return value check for SSL_CTX_set_cipher_list()
+  - fix pam config for local install
+
 2.6.6
 - Features
   - Support OpenSSL 1.1.0 API
