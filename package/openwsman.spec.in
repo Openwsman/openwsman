@@ -92,7 +92,7 @@ BuildRequires:  perl-devel
 %if 0%{?suse_version} > 0
 BuildRequires:  java-devel
 # No jni_md.h on SLE10 :-/
-#%%if 0%{?suse_version} < 1100
+#%%if 0%%{?suse_version} < 1100
 #BuildRequires:  java-1_5_0-ibm-devel
 #BuildRequires:  libgcj-devel
 #BuildRequires:  update-alternatives
@@ -234,8 +234,8 @@ Summary:        Python3 bindings for openwsman client API
 Group:          Development/Libraries/Python
 %{!?python3_sitelib: %global python3_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python3_sitearch: %global python3_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
-%{!?py_requires: %define py_requires Requires: python3}
-%{py_requires}
+%{!?py3_requires: %define py3_requires Requires: python3}
+%{py3_requires}
 
 %description -n python3-%{name}
 This package provides Python3 bindings to access the openwsman client
