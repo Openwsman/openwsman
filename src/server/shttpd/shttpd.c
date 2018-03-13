@@ -1543,7 +1543,7 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 
 	if (ssl_cipher_list) {
           int rc = SSL_CTX_set_cipher_list(CTX, ssl_cipher_list);
-          if (rc != 0) {
+          if (rc != 1) {
             _shttpd_elog(E_LOG, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
           }
         }
