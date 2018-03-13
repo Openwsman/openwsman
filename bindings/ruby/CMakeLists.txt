@@ -35,7 +35,7 @@ ADD_CUSTOM_COMMAND (
 SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
 
 SET(rbwsman_SRCS ${SWIG_OUTPUT} ${CMAKE_CURRENT_SOURCE_DIR}/../openwsman.c )
-ADD_LIBRARY( rbwsman SHARED ${rbwsman_SRCS} )
+ADD_LIBRARY( rbwsman ${rbwsman_SRCS} )
 # prevent 'lib...'
 SET_TARGET_PROPERTIES( rbwsman PROPERTIES PREFIX "" )
 SET_TARGET_PROPERTIES( rbwsman PROPERTIES OUTPUT_NAME "_openwsman" )
