@@ -137,8 +137,8 @@ Release:        0
 # Mandriva:
 # Release %%mkrel 1
 Url:            http://www.openwsman.org/
-Summary:        Opensource Implementation of WS-Management
-License:        BSD-3-Clause
+Summary:        An implementation of the WS-MAN specification
+License:        BSD-3-Clause AND GPL-2.0-only
 Group:          System/Management
 Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
@@ -155,22 +155,26 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source4:        %{name}.service
 
 %description
-Opensource Implementation of WS-Management protocol stack
-
+OpenWSMAN is an implementation of the WS-Management protocol stack.
+Web Services for Management (WS-MAN) is a specification for managing
+computer systems using web services standards.
 
 %package -n libwsman3
-Summary:        Opensource Implementation of WS-Management
-Group:          System/Management
+Summary:        An implementation of the WS-MAN specification
+Group:          System/Libraries
 Provides:       openwsman = %{version}
 Obsoletes:      libwsman1 < %{version}
 Obsoletes:      openwsman < %{version}
 
 %description -n libwsman3
-Opensource Implementation of WS-Management protocol stack
-(Common libraries)
+OpenWSMAN is an implementation of the WS-Management protocol stack.
+Web Services for Management (WS-MAN) is a specification for managing
+computer systems using web services standards.
+
+This subpackage provides the common libraries of OpenWSMAN.
 
 %package -n libwsman-devel
-Summary:        Opensource Implementation of WS-Management
+Summary:        Development files for OpenWSMAN
 Group:          Development/Libraries/C and C++
 Provides:       openwsman-devel = %{version}
 Obsoletes:      openwsman-devel < %{version}
@@ -181,27 +185,31 @@ Requires:       pam-devel
 Requires:       sblim-sfcc-devel
 
 %description -n libwsman-devel
-Opensource Implementation of WS-Management stack
-(Development files)
+OpenWSMAN is an implementation of the WS-Management protocol stack.
+
+This subpackage provides the header files for its libraries.
 
 %package -n libwsman_clientpp1
-Summary:        C++ bindings to Openwsman Client libraries
-Group:          System/Management
+Summary:        C++ bindings to the OpenWSMAN client library
+Group:          System/Libraries
 Provides:       openwsman-client = %{version}
 Obsoletes:      openwsman-client < %{version}
 
 %description -n libwsman_clientpp1
-An implementation of the WsmanClient interface using C++
+OpenWSMAN is an implementation of the WS-Management protocol stack.
 
+This subpackage provides a C++ API library for OpenWSMAN.
 
 %package -n libwsman_clientpp-devel
-Summary:        C++ bindings to Openwsman Client libraries
+Summary:        C++ development files for OpenWSMAN
 Group:          Development/Libraries/C and C++
 Requires:       libwsman-devel = %{version}
 Requires:       libwsman_clientpp1 = %{version}
 
 %description -n libwsman_clientpp-devel
-Development files for C++ interface to OpenWSMAN client library.
+OpenWSMAN is an implementation of the WS-Management protocol stack.
+
+Development files for the C++ interface to the OpenWSMAN client library.
 
 
 %package server
@@ -209,41 +217,38 @@ Requires(pre):  sed coreutils grep diffutils /bin/hostname
 %if 0%{?suse_version}
 Requires(pre):  fillup
 %endif
-Summary:        Openwsman Server and service libraries
+Summary:        OpenWSMAN server and service libraries
 Group:          System/Management
 
 %description server
-Openwsman Server and service libraries
+OpenWSMAN server and service libraries.
 
-
-%if 0%{?rhel_version} != 700
 %package server-plugin-ruby
 Requires:       openwsman-server
-Summary:        Openwsman Server Plugin for Ruby extensions
+Summary:        OpenWSMAN Server Plugin for Ruby extensions
 Group:          System/Management
 
 %description server-plugin-ruby
-This package provides a Openwsman server plugin to write a
-WS-Management resource handler in Ruby
-
-%endif
+This package provides a OpenWSMAN server plugin to write a
+WS-Management resource handler in Ruby.
 
 %if 0%{?want_python3}
 %package -n python3-%{name}
-Summary:        Python3 bindings for openwsman client API
+Summary:        Python3 bindings for OpenWSMAN client API
 Group:          Development/Libraries/Python
+Provides:       %{name}-python
 %{!?python3_sitelib: %global python3_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python3_sitearch: %global python3_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 %{!?py3_requires: %define py3_requires Requires: python3}
 %{py3_requires}
 
 %description -n python3-%{name}
-This package provides Python3 bindings to access the openwsman client
+This package provides Python3 bindings to access the OpenWSMAN client
 API.
 
 %else
 %package python
-Summary:        Python bindings for openwsman client API
+Summary:        Python bindings for OpenWSMAN client API
 Group:          Development/Libraries/Python
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -251,7 +256,7 @@ Group:          Development/Libraries/Python
 %{py_requires}
 
 %description python
-This package provides Python bindings to access the openwsman client
+This package provides Python bindings to access the OpenWSMAN client
 API.
 
 %endif
@@ -295,18 +300,18 @@ Requires:       ruby(abi) = %{ruby_version}
 %endif
 %endif
 
-Summary:        Ruby bindings for openwsman client API
+Summary:        Ruby bindings for OpenWSMAN client API
 Group:          System/Management
 
 %description ruby
-This package provides Ruby bindings to access the openwsman client API.
+This package provides Ruby bindings to access the OpenWSMAN client API.
 
 %package ruby-docs
-Summary:        HTML documentation for Opendwsman Ruby bindings
+Summary:        HTML documentation for OpenWSMAN Ruby bindings
 Group:          Documentation/HTML
 
 %description ruby-docs
-This package provides HTML documentation for the Openwsman Ruby
+This package provides HTML documentation for the OpenWSMAN Ruby
 bindings.
 
 %endif # not rhel7
@@ -319,11 +324,11 @@ Requires:       %{perl_requires}
 %else
 Requires:       perl = %{perl_version}
 %endif
-Summary:        Perl bindings for openwsman client API
+Summary:        Perl bindings for OpenWSMAN client API
 Group:          System/Management
 
 %description perl
-This package provides Perl bindings to access the openwsman client API.
+This package provides Perl bindings to access the OpenWSMAN client API.
 
 
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
@@ -331,11 +336,11 @@ This package provides Perl bindings to access the openwsman client API.
 %package java
 Requires:       java
 Requires:       libwsman3 = %{version}
-Summary:        Java bindings for openwsman client API
+Summary:        Java bindings for OpenWSMAN client API
 Group:          System/Management
 
 %description java
-This package provides Java bindings to access the openwsman client API.
+This package provides Java bindings to access the OpenWSMAN client API.
 
 
 %endif
@@ -348,8 +353,8 @@ Group:          System/Management
 Requires:       openwsman-ruby = %{version}
 
 %description -n winrs
-This is a command line tool for the Windows Remote Shell protocol. You
-can use it to send shell commands to a remote Windows hosts.
+This is a command line tool for the Windows Remote Shell protocol.
+It can be used to send shell commands to remote Windows hosts.
 
 %endif
 
@@ -403,41 +408,38 @@ make
 
 %install
 cd build
-make DESTDIR=$RPM_BUILD_ROOT install
-mkdir -p $RPM_BUILD_ROOT%{_docdir}
+%make_install
+mkdir -p %{buildroot}/%{_docdir}
 # don't copy ruby docs if they don't exist
-[ -d bindings/ruby/html ] && cp -a bindings/ruby/html $RPM_BUILD_ROOT%{_docdir}/openwsman-ruby-docs
+[ -d bindings/ruby/html ] && cp -a bindings/ruby/html %{buildroot}/%{_docdir}/openwsman-ruby-docs
 cd ..
-rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/plugins/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/openwsman/authenticators/*.la
-[ -d $RPM_BUILD_ROOT%{ruby_sitelib} ] && rm -f $RPM_BUILD_ROOT%{ruby_sitelib}/openwsmanplugin.rb
-[ -d $RPM_BUILD_ROOT%{ruby_vendorlib} ] && rm -f $RPM_BUILD_ROOT%{ruby_vendorlib}/openwsmanplugin.rb
+rm -f %{buildroot}/%{_libdir}/*.la
+rm -f %{buildroot}/%{_libdir}/openwsman/plugins/*.la
+rm -f %{buildroot}/%{_libdir}/openwsman/authenticators/*.la
+[ -d %{buildroot}/%{ruby_sitelib} ] && rm -f %{buildroot}/%{ruby_sitelib}/openwsmanplugin.rb
+[ -d %{buildroot}/%{ruby_vendorlib} ] && rm -f %{buildroot}/%{ruby_vendorlib}/openwsmanplugin.rb
 %if 0%{?has_systemd}
-install -D -m 644 %{S:4} $RPM_BUILD_ROOT%{_unitdir}/%{name}.service
+install -D -m 644 %{S:4} %{buildroot}/%{_unitdir}/%{name}.service
 # rcopenwsman
-ln -sf %{_sbindir}/service $RPM_BUILD_ROOT%{_sbindir}/rc%{name}
+ln -sf %{_sbindir}/service %{buildroot}/%{_sbindir}/rc%{name}
 %else
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d
-install -m 755 build/etc/init/openwsmand.sh $RPM_BUILD_ROOT%{_sysconfdir}/init.d/openwsmand
-ln -sf %{_sysconfdir}/init.d/openwsmand $RPM_BUILD_ROOT%{_sbindir}/rcopenwsmand
+mkdir -p %{buildroot}/%{_sysconfdir}/init.d
+install -m 755 build/etc/init/openwsmand.sh %{buildroot}/%{_sysconfdir}/init.d/openwsmand
+ln -sf %{_sysconfdir}/init.d/openwsmand %{buildroot}/%{_sbindir}/rcopenwsmand
 %endif
-install -m 644 etc/openwsman.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 644 etc/openwsman_client.conf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 644 etc/ssleay.cnf $RPM_BUILD_ROOT%{_sysconfdir}/openwsman
-install -m 644 %{pamfile} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/openwsman
+install -m 644 etc/openwsman.conf %{buildroot}/%{_sysconfdir}/openwsman
+install -m 644 etc/openwsman_client.conf %{buildroot}/%{_sysconfdir}/openwsman
+install -m 644 etc/ssleay.cnf %{buildroot}/%{_sysconfdir}/openwsman
+install -m 644 %{pamfile} %{buildroot}/%{_sysconfdir}/pam.d/openwsman
 %if 0%{?suse_version} > 1010
-install -D -m 644 %{S:3} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+install -D -m 644 %{S:3} %{buildroot}/%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 %if 0%{?rhel_version} == 700
-rm -f $RPM_BUILD_ROOT%{_bindir}/winrs
+rm -f %{buildroot}/%{_bindir}/winrs
 %endif
 
 %post -n libwsman3 -p /sbin/ldconfig
-
-%postun -n libwsman3
-/sbin/ldconfig
-exit 0
+%postun -n libwsman3 -p /sbin/ldconfig
 
 # follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
