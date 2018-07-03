@@ -1693,7 +1693,7 @@ static const struct opt {
 	{OPT_SSL_CERTIFICATE, "ssl_cert", "SSL certificate file", NULL,set_ssl},
 #endif /* NO_SSL */
 	{OPT_PORTS, "ports", "Listening ports", NULL, set_ports},
-	{OPT_DIR_LIST, "dir_list", "Directory listing", "yes", NULL},
+	{OPT_DIR_LIST, "dir_list", "Directory listing", "no", NULL},
 	{OPT_CFG_URI, "cfg_uri", "Config uri", NULL, set_cfg_uri},
 	{OPT_PROTECT, "protect", "URI to htpasswd mapping", NULL, NULL},
 #ifndef NO_CGI
