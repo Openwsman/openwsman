@@ -15,6 +15,9 @@
 
 #include "defs.h"
 #include "wsmand-daemon.h"
+#ifndef NO_SSL
+#include "u/libu.h"
+#endif
 
 time_t	_shttpd_current_time;	/* Current UTC time		*/
 int	_shttpd_tz_offset;	/* Time zone offset from UTC	*/
@@ -1469,10 +1472,12 @@ static int
 set_ssl(struct shttpd_ctx *ctx, const char *pem)
 {
 	SSL_CTX		*CTX;
+	SSL         *ssl;
 	void		*lib;
 	struct ssl_func	*fp;
 	char *ssl_disabled_protocols = wsmand_options_get_ssl_disabled_protocols();
-	char *ssl_cipher_list = wsmand_options_get_ssl_cipher_list();
+	const char *ssl_cipher_list = wsmand_options_get_ssl_cipher_list();
+	STACK_OF(SSL_CIPHER) *stack;
 	int		retval = FALSE;
 	EC_KEY*		key;
 
@@ -1542,11 +1547,37 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 	}
 
 	if (ssl_cipher_list) {
-          int rc = SSL_CTX_set_cipher_list(CTX, ssl_cipher_list);
-          if (rc != 1) {
-            _shttpd_elog(E_LOG, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
-          }
-        }
+		int rc = SSL_CTX_set_cipher_list(CTX, ssl_cipher_list);
+		if (rc != 1) {
+			_shttpd_elog(E_LOG, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
+		}
+	} else {
+		int i, rc;
+		u_buf_t *buf;
+		char *cipher_name;
+		char comma[]=",";
+		ssl = SSL_new(CTX);
+		u_buf_create(&buf);
+		if (!ssl || !buf)
+			elog(E_FATAL, NULL, "Failed to create SSL or allocate buffer");
+		stack = SSL_get_ciphers(ssl);
+		for (i = 0; i < sk_SSL_CIPHER_num (stack); i++)  {
+			ssl_cipher_list = SSL_CIPHER_get_name (sk_SSL_CIPHER_value (stack, i));
+			cipher_name = malloc(strlen(ssl_cipher_list)+2);
+			if (!cipher_name)
+				elog(E_FATAL, NULL, "Failed to allocate memory for cipher_name");
+			strcpy(cipher_name, ssl_cipher_list);
+			cipher_name = strcat(cipher_name, comma);
+			u_buf_append(buf, cipher_name, strlen(cipher_name));
+			free(cipher_name);
+		}
+		rc = SSL_CTX_set_cipher_list(CTX, u_buf_ptr(buf));
+		if (rc != 1) {
+			elog(E_FATAL, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
+		}
+		SSL_free(ssl);
+		u_buf_free(buf);
+	}
 	ctx->ssl_ctx = CTX;
 
 	return (retval);
