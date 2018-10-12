@@ -1,3 +1,7 @@
+2.6.8
+- Bugfixes
+  - disable http(s) directory listing
+
 2.6.7
 - Features
   - Build with CMake 2.6 or later
