@@ -1,3 +1,7 @@
+2.6.9
+- Features
+  - Build with CURL 7.62 (vcrhonek@redhat.com)
+
 2.6.8
 - Bugfixes
   - disable http(s) directory listing
