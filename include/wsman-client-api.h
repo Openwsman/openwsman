@@ -195,7 +195,7 @@ typedef enum {
 		unsigned int max_elements;
 		hash_t *options; /* for WSM_OPTION_SET */
                 char *locale; /* Sect. 6.3: wsman:Locale */
-          char *__reserved[16]; /* reserved for future extensions */
+          char *reserved__[16]; /* reserved for future extensions */
 	} client_opt_t;
 
 	struct _WsManFault {
