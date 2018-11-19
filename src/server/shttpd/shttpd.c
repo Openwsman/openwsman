@@ -1489,9 +1489,14 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 		}
 
 	/* Initialize SSL crap */
-	SSL_library_init();
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+	SSL_library_init();
 	if ((CTX = SSL_CTX_new(SSLv23_server_method())) == NULL)
+#else
+        OPENSSL_init_ssl();
+	if ((CTX = SSL_CTX_new(TLS_server_method())) == NULL)
+#endif
 		_shttpd_elog(E_LOG, NULL, "SSL_CTX_new error");
 	else if (SSL_CTX_use_certificate_file(CTX, wsmand_options_get_ssl_cert_file(), SSL_FILETYPE_PEM) != 1)
 		_shttpd_elog(E_LOG, NULL, "cannot open certificate file %s", pem);
@@ -1551,6 +1556,10 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
           int rc = SSL_CTX_set_cipher_list(CTX, ssl_cipher_list);
           if (rc != 1) {
             _shttpd_elog(E_LOG, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
+          }
+          else if ((*ssl_cipher_list == 0) || (*ssl_cipher_list == ' ')) {
+            _shttpd_elog(E_LOG, NULL, "Empty 'ssl_cipher_list' defaults to 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256'.");
+            _shttpd_elog(E_LOG, NULL, "Check openSSL documentation.");
           }
         }
 	ctx->ssl_ctx = CTX;

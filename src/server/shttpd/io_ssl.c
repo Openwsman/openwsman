@@ -21,8 +21,13 @@ struct ssl_func	ssl_sw[] = {
 	{"SSL_set_fd",			{0}},
 	{"SSL_new",			{0}},
 	{"SSL_CTX_new",			{0}},
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	{"SSLv23_server_method",	{0}},
 	{"SSL_library_init",		{0}},
+#else
+	{"TLS_server_method",	{0}},
+	{"OPENSSL_init_ssl",		{0}},
+#endif
 	{"SSL_CTX_use_PrivateKey_file",	{0}},
 	{"SSL_CTX_use_certificate_file",{0}},
 	{NULL,				{0}}

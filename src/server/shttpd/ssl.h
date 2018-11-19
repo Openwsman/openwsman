@@ -56,6 +56,9 @@ extern struct ssl_func	ssl_sw[];
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 #define	SSLv23_server_method()	(* (SSL_METHOD * (*)(void)) FUNC(9))()
 #define	SSL_library_init() (* (int (*)(void)) FUNC(10))()
+#else
+#define	TLS_server_method()	(* (SSL_METHOD * (*)(void)) FUNC(9))()
+#define	OPENSSL_init_ssl() (* (int (*)(void)) FUNC(10))()
 #endif
 #define	SSL_CTX_use_PrivateKey_file(x,y,z)	(* (int (*)(SSL_CTX *, \
 		const char *, int)) FUNC(11))((x), (y), (z))
