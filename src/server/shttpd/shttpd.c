@@ -1557,10 +1557,10 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
           if (rc != 1) {
             _shttpd_elog(E_LOG, NULL, "Failed to set SSL cipher list \"%s\"", ssl_cipher_list);
           }
-          else if ((*ssl_cipher_list == 0) || (*ssl_cipher_list == ' ')) {
-            _shttpd_elog(E_LOG, NULL, "Empty 'ssl_cipher_list' defaults to 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256'.");
-            _shttpd_elog(E_LOG, NULL, "Check openSSL documentation.");
-          }
+        }
+        else {
+          _shttpd_elog(E_LOG, NULL, "Empty 'ssl_cipher_list' defaults to 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256'.");
+          _shttpd_elog(E_LOG, NULL, "Check openSSL documentation.");
         }
 	ctx->ssl_ctx = CTX;
 
