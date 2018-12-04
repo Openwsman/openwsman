@@ -22,12 +22,17 @@ using namespace WsmanClientNamespace;
 WsmanOptions::WsmanOptions()
 	: options(wsmc_options_init())
 {
+	if (!options)
+		throw std::bad_alloc();
 }
 
 WsmanOptions::WsmanOptions(unsigned long flags)
     : options(wsmc_options_init())
 {
+	if (options)
     options->flags = flags;
+	else
+		throw std::bad_alloc();
 }
 
 WsmanOptions::~WsmanOptions()
