@@ -411,7 +411,7 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 	string error;
 
 	if(lastError) {
-		char tmp[11];
+		char tmp[12];
 		error = "Failed to establish a connection with the server.\n";
 		sprintf(tmp, "%ld", lastError);
 		error.append("Openwsman last error = ").append(tmp);
@@ -424,7 +424,7 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 			responseCode != 400 &&
 			responseCode != 500)
 	{
-		char tmp[11];
+		char tmp[12];
 		error = "An HTTP error occurred.\n";
 		sprintf(tmp, "%ld", responseCode);
 		error.append("HTTP Error = ").append(tmp);
@@ -436,7 +436,7 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 		throw WsmanClientException("The Wsman response was NULL.");
 
 	if (wsmc_check_for_fault(doc)) {
-		char tmp[11];
+		char tmp[12];
 		WsManFault *fault = wsmc_fault_new();
 		wsmc_get_fault_data(doc, fault);
 		string subcode_s = fault->subcode ? string(fault->subcode) : "";
