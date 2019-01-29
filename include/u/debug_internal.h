@@ -52,8 +52,8 @@ struct _debug_handler_t {
 };
 typedef struct _debug_handler_t debug_handler_t;
 
-void debug_full(debug_level_e  level, const char *format, ...);
-void debug_full_verbose(debug_level_e  level, char *file,
+int debug_full(debug_level_e  level, const char *format, ...);
+int debug_full_verbose(debug_level_e  level, char *file,
                  int line, const char *proc, const char *format, ...);
 
 // #define ENABLE_TRACING

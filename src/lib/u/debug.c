@@ -106,13 +106,14 @@ static void call_handlers(debug_level_e level, char *str)
 }
 
 
-void debug_full(debug_level_e level, const char *format, ...)
+int debug_full(debug_level_e level, const char *format, ...)
 {
 	va_list args;
 	char *str;
+	int ret = 0;
 
 	if (handlers == NULL) {
-		return;
+		return -1;
 	}
 
 	va_start(args, format);
@@ -120,13 +121,15 @@ void debug_full(debug_level_e level, const char *format, ...)
 	va_end(args);
 
 	call_handlers(level, str);
+	ret = strlen(str);
 
 	u_free(str);
+	return ret;
 }
 
 
 
-void
+int
 debug_full_verbose(debug_level_e level,
 		   char *file,
 		   int line, const char *proc, const char *format, ...)
@@ -134,9 +137,10 @@ debug_full_verbose(debug_level_e level,
 	va_list args;
 	char *str;
 	char *body;
+	int ret = 0;
 
 	if (handlers == NULL) {
-		return;
+		return -1;
 	}
 
 	va_start(args, format);
@@ -147,6 +151,8 @@ debug_full_verbose(debug_level_e level,
 	u_free(body);
 
 	call_handlers(level, str);
+	ret = strlen(str);
 
 	u_free(str);
+	return ret;
 }
