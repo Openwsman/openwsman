@@ -16,6 +16,7 @@
 
 
 #include <u/log.h>
+#include "./debug_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

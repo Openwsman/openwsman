@@ -7,6 +7,7 @@ static const char rcsid[] =
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
