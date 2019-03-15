@@ -558,6 +558,7 @@ decide_what_to_do(struct conn *c)
 
 	(void) _shttpd_snprintf(path, sizeof(path), "%s%s", root, c->uri);
 
+	DBG(("decide_what_to_do -> processed path: [%s]", path));
 	/* User may use the aliases - check URI for mount point */
 	if (is_alias(c->ctx, c->uri, &alias_uri, &alias_path) != NULL) {
 		(void) _shttpd_snprintf(path, sizeof(path), "%.*s%s",
