@@ -336,9 +336,11 @@ date_to_epoch(const char *s)
 }
 
 static void
-remove_double_dots(char *s)
+remove_all_leading_and_double_dots(char *s)
 {
 	char	*p = s;
+
+	while (*s != '\0' && *s == '.') s++;
 
 	while (*s != '\0') {
 		*p++ = *s++;
@@ -546,7 +548,7 @@ decide_what_to_do(struct conn *c)
 		*c->query++ = '\0';
 
 	_shttpd_url_decode(c->uri, strlen(c->uri), c->uri, strlen(c->uri) + 1);
-	remove_double_dots(c->uri);
+	remove_all_leading_and_double_dots(c->uri);
 
 	root = c->ctx->options[OPT_ROOT];
 	if (strlen(c->uri) + strlen(root) >= sizeof(path)) {
