@@ -698,10 +698,10 @@ parse_http_request(struct conn *c)
 		_shttpd_send_server_error(c, 500, "Cannot allocate request");
 	}
 
+	io_inc_tail(&c->rem.io, req_len);
+
 	if (c->loc.flags & FLAG_CLOSED)
 		return;
-
-	io_inc_tail(&c->rem.io, req_len);
 
 	DBG(("Conn %d: parsing request: [%.*s]", c->rem.chan.sock, req_len, s));
 	c->rem.flags |= FLAG_HEADERS_PARSED;
