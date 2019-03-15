@@ -198,6 +198,10 @@ static void daemonize(void)
 	int fd;
 	char *pid;
 
+	/* Change our CWD to / */
+	i=chdir("/");
+        assert(i == 0);
+
 	if (wsmand_options_get_foreground_debug() > 0) {
 		return;
 	}
@@ -213,10 +217,6 @@ static void daemonize(void)
 
 	log_pid = 0;
 	setsid();
-
-	/* Change our CWD to / */
-	i=chdir("/");
-        assert(i == 0);
 
 	/* Close all file descriptors. */
 	for (i = getdtablesize(); i >= 0; --i)
