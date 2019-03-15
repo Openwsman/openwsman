@@ -971,7 +971,7 @@ write_stream(struct stream *from, struct stream *to)
 }
 
 
-static void
+static int
 connection_desctructor(struct llhead *lp)
 {
 	struct conn		*c = LL_ENTRY(lp, struct conn, link);
@@ -995,7 +995,8 @@ connection_desctructor(struct llhead *lp)
 	 * Check the "Connection: " header before we free c->request
 	 * If it its 'keep-alive', then do not close the connection
 	 */
-	do_close = (c->ch.connection.v_vec.len >= vec.len &&
+	do_close = c->rem.flags & FLAG_CLOSED ||
+	    (c->ch.connection.v_vec.len >= vec.len &&
 	    !_shttpd_strncasecmp(vec.ptr,c->ch.connection.v_vec.ptr,vec.len)) ||
 	    (c->major_version < 1 ||
 	    (c->major_version >= 1 && c->minor_version < 1));
@@ -1017,7 +1018,7 @@ connection_desctructor(struct llhead *lp)
 		io_clear(&c->loc.io);
 		c->birth_time = _shttpd_current_time;
 		if (io_data_len(&c->rem.io) > 0)
-			process_connection(c, 0, 0);
+			return 1;
 	} else {
 		if (c->rem.io_class != NULL)
 			c->rem.io_class->close(&c->rem);
@@ -1028,6 +1029,8 @@ connection_desctructor(struct llhead *lp)
 
 		free(c);
 	}
+
+	return 0;
 }
 
 static void
@@ -1035,7 +1038,7 @@ worker_destructor(struct llhead *lp)
 {
 	struct worker	*worker = LL_ENTRY(lp, struct worker, link);
 
-	free_list(&worker->connections, connection_desctructor);
+	free_list(&worker->connections, (void (*)(struct llhead *))connection_desctructor);
 	free(worker);
 }
 
@@ -1068,6 +1071,7 @@ add_to_set(int fd, fd_set *set, int *max_fd)
 static void
 process_connection(struct conn *c, int remote_ready, int local_ready)
 {
+again:
 	/* Read from remote end if it is ready */
 	if (remote_ready && io_space_len(&c->rem.io))
 		read_stream(&c->rem);
@@ -1096,7 +1100,12 @@ process_connection(struct conn *c, int remote_ready, int local_ready)
 	if ((_shttpd_current_time > c->expire_time) ||
 	    (c->rem.flags & FLAG_CLOSED) ||
 	    ((c->loc.flags & FLAG_CLOSED) && !io_data_len(&c->loc.io)))
-		connection_desctructor(&c->link);
+		if (connection_desctructor(&c->link)) {
+			// More data to read and process ...
+			remote_ready = 0;
+			local_ready = 0;
+			goto again;
+		}
 }
 
 static int
@@ -1653,7 +1662,7 @@ worker_function(void *param)
 	while (worker->exit_flag == 0)
 		poll_worker(worker, 1000 * 10);
 
-	free_list(&worker->connections, connection_desctructor);
+	free_list(&worker->connections, (void (*)(struct llhead *))connection_desctructor);
 	free(worker);
 }
 
