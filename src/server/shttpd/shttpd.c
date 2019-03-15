@@ -1073,7 +1073,6 @@ static void
 process_connection(struct conn *c, int remote_ready, int local_ready)
 {
 again:
-
 	/* Read from remote end if it is ready */
 	if (remote_ready && io_space_len(&c->rem.io))
 		read_stream(&c->rem);
@@ -1103,6 +1102,7 @@ again:
 	    (c->rem.flags & FLAG_CLOSED) ||
 	    ((c->loc.flags & FLAG_CLOSED) && !io_data_len(&c->loc.io)))
 		if (connection_desctructor(&c->link)) {
+			// More data to read and process ...
 			remote_ready = 0;
 			local_ready = 0;
 			goto again;
