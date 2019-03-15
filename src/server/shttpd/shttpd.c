@@ -575,7 +575,10 @@ decide_what_to_do(struct conn *c)
 	if ((ruri = _shttpd_is_registered_uri(c->ctx, c->uri)) != NULL) {
 		_shttpd_setup_embedded_stream(c,
 		    ruri->callback, ruri->callback_data);
-	} else
+	} else {
+		_shttpd_send_server_error(c, 403, "Forbidden");
+	}
+#if 0
 	if (strstr(path, HTPASSWD)) {
 		/* Do not allow to view passwords files */
 		_shttpd_send_server_error(c, 403, "Forbidden");
@@ -659,6 +662,7 @@ decide_what_to_do(struct conn *c)
 	} else {
 		_shttpd_send_server_error(c, 500, "Internal Error");
 	}
+#endif
 }
 
 static int
