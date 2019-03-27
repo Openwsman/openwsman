@@ -1873,7 +1873,20 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 		   &tmx->tm.tm_mon, &tmx->tm.tm_mday,
 		   &tmx->tm.tm_hour, &tmx->tm.tm_min, &tmx->tm.tm_sec,
 		   &hours, &mins);
-	if (r != 8) {
+	if (r != 8 ||
+		/*
+		 https://pubs.opengroup.org/onlinepubs/007908799/xsh/time.h.html
+		 tm_year and tm_mon reduced below to be inside the bounds
+		*/
+		tmx->tm.tm_year < 1900 || tmx->tm.tm_year > 3000 ||
+		tmx->tm.tm_mon < 1 || tmx->tm.tm_mon > 12 ||
+		tmx->tm.tm_mday < 1 || tmx->tm.tm_mday > 31 ||
+		tmx->tm.tm_hour < 0 || tmx->tm.tm_hour > 23 ||
+		tmx->tm.tm_min < 0 || tmx->tm.tm_min > 59 ||
+		tmx->tm.tm_sec < 0 || tmx->tm.tm_sec > 61 ||
+		hours < -24 || hours > 24 ||
+		mins < 0 || mins > 59
+		) {
 		debug("wrong body of datetime(%d): %s", r, text);
 		res = 1;
 		goto DONE;
