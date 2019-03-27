@@ -117,7 +117,13 @@ int LocalSubscriptionOpGet(char * uri_repository, char * uuid, unsigned char  **
             pre_count = count;
             count += m;
             debug("buf = %0x, count = %d", buf, count);
-            buf = u_realloc(buf, count);
+            unsigned char *temp = u_realloc(buf, count);
+            if (!temp) {
+              free(buf);
+              fclose(fp);
+              return -1;
+            }
+            buf = temp;
             memcpy(buf+pre_count, block, m);
           }
 	}
@@ -186,7 +192,13 @@ int LocalSubscriptionOpLoad (char * uri_repository, list_t * subscription_list)
 				if (m > 0) {
 					pre_count = count;
 					count += m;
-					buf = u_realloc(buf, count);
+					unsigned char *temp = u_realloc(buf, count);
+					if (!temp) {
+						free(buf);
+						fclose(subs);
+						return -1;
+					}
+					buf = temp;
 					memcpy(buf+pre_count, block, m);
 				}
 			}
