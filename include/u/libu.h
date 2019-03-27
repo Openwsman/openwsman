@@ -40,6 +40,9 @@
 #define strnicmp _strnicmp
 #define fileno _fileno
 #define cputs _cputs
+#if _MSC_VER < 1900
+  #define snprintf _snprintf
+#endif /* _MSC_VER < 1900 */
 #endif
 #ifndef TRUE
 #define TRUE    1
