@@ -16,6 +16,7 @@ public:
 	WsmanEPR(const string &eprstring);
 	WsmanEPR(const string &uri, const string &address);
 	WsmanEPR(WsmanEPR &epr);
+	WsmanEPR& operator=(const WsmanEPR &other);
 	~WsmanEPR();
 
 	int addTextSelector(const string &name, const string &value);
