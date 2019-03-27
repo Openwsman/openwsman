@@ -1056,11 +1056,12 @@ wsenum_enumerate_stub(SoapOpH op,
                 }
         }
 
+	wsman_status_init(&status);
+
 	epcntx = ws_create_ep_context(soap, _doc);
 	if (epcntx == NULL) {
 		goto DONE;
 	}
-	wsman_status_init(&status);
 	doc = create_enum_info(op, epcntx, _doc, &enumInfo);
 	if (doc != NULL) {
 		/* wrong enum elements met. Fault message generated */
