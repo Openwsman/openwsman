@@ -231,8 +231,8 @@ parse_htpasswd_line(const char *s, struct vec *user,
 	if (*s++ != ':')
 		return (0);
 
-	for (ha1->ptr = s; *s != '\0' && !isspace(* (unsigned char *) s);
-	    s++, ha1->len++);
+	for (ha1->ptr = s; *s != '\0' && !isspace(* (unsigned char *) s); s++, ha1->len++)
+		;
 
 	DBG(("parse_htpasswd_line: [%.*s] [%.*s] [%.*s]", user->len, user->ptr,
 	    domain->len, domain->ptr, ha1->len, ha1->ptr));

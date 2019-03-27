@@ -306,7 +306,7 @@ shttpd_wakeup(const void *priv)
 	conn->flags &= ~SHTTPD_SUSPEND;
 #endif
 	(void) memcpy(buf, &cmd, sizeof(cmd));
-	(void) memcpy(buf + sizeof(cmd), conn, sizeof(conn));
+	(void) memcpy(buf + sizeof(cmd), &conn, sizeof(conn));
 
 	(void) send(conn->worker->ctl[1], buf, sizeof(buf), 0);
 }
