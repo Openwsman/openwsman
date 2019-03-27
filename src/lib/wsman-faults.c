@@ -126,9 +126,13 @@ WsmanFaultDetailTable fault_detail_table[] =
 	// WS-Trust
 	{WST_DETAIL_UNSUPPORTED_TOKENTYPE, "UnsupportedTokenType"},
 
+	// WS_Policy
+	{WSP_DETAIL_INVALID_EPR, "InvalidEPR"},
+
 	// OpenWSMAN
 	{ OWSMAN_DETAIL_ENDPOINT_ERROR, "Unknown" },
-	{ OWSMAN_NO_DETAILS, "Unknown" }
+	{ OWSMAN_NO_DETAILS, "Unknown" },
+	{ OWSMAN_SYSTEM_ERROR, "Unknown" }
 };
 
 
