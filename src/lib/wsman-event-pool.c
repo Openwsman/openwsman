@@ -46,8 +46,8 @@ int MemEventPoolAddPullEvent (char *uuid, WsNotificationInfoH notification) ;
 int MemEventPoolGetAndDeleteEvent (char *uuid, WsNotificationInfoH *notification);
 int MemEventPoolClearEvent (char *uuid, clearproc proc);
 
-list_t *global_event_list = NULL;
-int max_pull_event_number = 16;
+static list_t *global_event_list = NULL;
+static int max_pull_event_number = 16;
 
 struct __EventPoolOpSet event_pool_op_set ={MemEventPoolInit, MemEventPoolFinalize, 
 	MemEventPoolCount, MemEventPoolAddEvent, MemEventPoolAddPullEvent,
