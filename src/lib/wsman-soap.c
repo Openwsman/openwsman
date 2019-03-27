@@ -546,7 +546,7 @@ ws_create_runtime(list_t * interfaces)
 	dispInfo = (WsManDispatcherInfo *) u_zalloc(size);
 	if (dispInfo == NULL) {
 		error("Could not allocate memory");
-		u_free(soap);
+		soap_destroy(soap);
 		return NULL;
 	}
 	debug("Registering %d plugins", (int) list_count(interfaces));
