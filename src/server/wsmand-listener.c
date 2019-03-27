@@ -359,7 +359,8 @@ DONE:
 		// we had an encrypted message so now we have to encypt the reply
 		char *enc;
 		int enclen;
-		gss_encrypt(arg, state->response, state->len, &enc, &enclen);
+		if(gss_encrypt(arg, state->response, state->len, &enc, &enclen) != 1) //Not OK
+			return;
 		u_free(state->response);
 		state->response = enc;
 		state->len = enclen;
