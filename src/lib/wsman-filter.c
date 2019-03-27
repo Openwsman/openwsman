@@ -396,23 +396,23 @@ filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
 		filter->epr = epr_deserialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, 1);
 		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_CLASS_NAME);
 		if(entry_node)
-			filter->assocClass = u_strdup(ws_xml_get_node_text(entry_node));
+			filter->assocClass = u_strdup(ws_xml_get_node_text_safe(entry_node));
 		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_ROLE);
 		if(entry_node)
-			filter->role = u_strdup(ws_xml_get_node_text(entry_node));
+			filter->role = u_strdup(ws_xml_get_node_text_safe(entry_node));
 		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_CLASS_NAME);
 		if(entry_node)
-			filter->resultClass = u_strdup(ws_xml_get_node_text(entry_node));
+			filter->resultClass = u_strdup(ws_xml_get_node_text_safe(entry_node));
 		entry_node = ws_xml_get_child(instance_node, 0, XML_NS_CIM_BINDING, WSMB_RESULT_ROLE);
 		if(entry_node)
-			filter->resultRole = u_strdup(ws_xml_get_node_text(entry_node));
+			filter->resultRole = u_strdup(ws_xml_get_node_text_safe(entry_node));
 		properNum = ws_xml_get_child_count(instance_node) - 4;
 		filter->resultProp = u_zalloc(properNum * sizeof(char*));
 		while(i < properNum) {
 			filter_node = ws_xml_get_child(instance_node, i, XML_NS_CIM_BINDING, WSMB_INCLUDE_RESULT_PROPERTY);
 			if(filter_node == NULL)
 				break;
-			filter->resultProp[i] = u_strdup(ws_xml_get_node_text(filter_node));
+			filter->resultProp[i] = u_strdup(ws_xml_get_node_text_safe(filter_node));
 			i++;
 		}
 		filter->PropNum = i;
@@ -442,7 +442,7 @@ filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
                           text = NULL;
 			}
 			else {
-				text = ws_xml_get_node_text(entry_node);
+				text = ws_xml_get_node_text_safe(entry_node);
                           epr = NULL;
 			}
                   key_value_create(key, text, epr, filter->selectorset.selectors + i);
@@ -453,7 +453,7 @@ filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
 		}
 	}
 	else
-		filter->query = u_strdup(ws_xml_get_node_text(filter_node));
+		filter->query = u_strdup(ws_xml_get_node_text_safe(filter_node));
 
 	return filter;
 

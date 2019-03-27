@@ -538,7 +538,7 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 	if(temp == NULL)
 		goto CLEANUP;
 
-	epr->address = u_strdup(ws_xml_get_node_text(temp));
+	epr->address = u_strdup(ws_xml_get_node_text_safe(temp));
 	if(epr->address == NULL) {
 		goto CLEANUP;
 	}
@@ -556,7 +556,7 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 	if(temp == NULL)
 		goto CLEANUP;
 
-	epr->refparams.uri = u_strdup(ws_xml_get_node_text(temp));
+	epr->refparams.uri = u_strdup(ws_xml_get_node_text_safe(temp));
 	if (epr->refparams.uri == NULL) {
 		goto CLEANUP;
 	}
@@ -579,7 +579,7 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 				p->v.epr = epr_deserialize(temp, XML_NS_ADDRESSING, WSA_EPR, 1);
 			} else {
 				p->type = 0;
-				p->v.text = u_strdup(ws_xml_get_node_text(temp));
+				p->v.text = u_strdup(ws_xml_get_node_text_safe(temp));
 			}
 			p++;
 		}
