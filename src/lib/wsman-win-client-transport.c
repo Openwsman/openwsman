@@ -374,6 +374,12 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	if(cl->proxy_data.proxy_username)
 	{
 		proxy_username = convert_to_unicode(cl->proxy_data.proxy_username);
+		if (proxy_username == NULL) {
+			lastErr = GetLastError();
+			dwStatusCode = 400;
+			error("could not convert proxy_username to unicode");
+			goto DONE;
+		}
 		bResults = WinHttpSetOption(request, WINHTTP_OPTION_PROXY_USERNAME,
 				proxy_username, wcslen(proxy_username));
 		u_free(proxy_username);
@@ -388,6 +394,12 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	if(cl->proxy_data.proxy_password)
 	{
 		proxy_password = convert_to_unicode(cl->proxy_data.proxy_password);
+		if (proxy_password == NULL) {
+			lastErr = GetLastError();
+			dwStatusCode = 400;
+			error("could not convert proxy_password to unicode");
+			goto DONE;
+		}
 		bResults = WinHttpSetOption(request, WINHTTP_OPTION_PROXY_PASSWORD,
 				proxy_password, wcslen(proxy_password));
 		u_free(proxy_password);
