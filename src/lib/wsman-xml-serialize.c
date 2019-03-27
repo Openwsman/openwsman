@@ -1869,7 +1869,7 @@ int ws_deserialize_datetime(const char *text, XML_DATETIME * tmx)
 	}
 	bzero(tmx, sizeof(XML_DATETIME));
 
-	r = sscanf(text, "%u-%u-%uT%u:%u:%u%d:%u", &tmx->tm.tm_year,
+	r = sscanf(text, "%d-%d-%dT%d:%d:%d%d:%d", &tmx->tm.tm_year,
 		   &tmx->tm.tm_mon, &tmx->tm.tm_mday,
 		   &tmx->tm.tm_hour, &tmx->tm.tm_min, &tmx->tm.tm_sec,
 		   &hours, &mins);
