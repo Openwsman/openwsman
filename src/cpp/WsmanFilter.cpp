@@ -51,7 +51,7 @@ WsmanFilter::WsmanFilter(
 	char **props = NULL;
 
 	if (!resultProp.empty()) {
-		props = static_cast<char**>(malloc(sizeof(char *) * resultProp.size()));
+		props = new char* [resultProp.size()];
 		vector<string>::const_iterator itr;
 		for (itr = resultProp.begin(); itr != resultProp.end(); itr++, i++) {
 			props[i] = const_cast<char*>(itr->c_str());
@@ -67,7 +67,7 @@ WsmanFilter::WsmanFilter(
 		(resultRole.empty() ? NULL : resultRole.c_str()),
 		props, i);
 
-	free(props);
+	 delete [] props;
 }
 
 WsmanFilter::~WsmanFilter()
