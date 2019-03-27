@@ -71,10 +71,14 @@ static int filter_set(filter_t *filter, const char *dialect, const char *query, 
 			filter->resultRole = u_strdup(resultRole);
 		if(resultProp && propNum) {
 			filter->resultProp = u_malloc(propNum*sizeof(char *));
-			filter->PropNum = propNum;
-			while(i < propNum) {
-				filter->resultProp[i] = u_strdup(resultProp[i]);
-				i++;
+			if (filter->resultProp) {
+				filter->PropNum = propNum;
+				while (i < propNum) {
+					filter->resultProp[i] = u_strdup(resultProp[i]);
+					i++;
+				}
+			} else {
+				filter->PropNum = 0;
 			}
 		}
 	} else if(selectors) {
@@ -209,12 +213,14 @@ filter_t * filter_copy(filter_t *filter)
 	filter_cpy->selectorset.count = filter->selectorset.count;
 	filter_cpy->selectorset.selectors = u_malloc(sizeof(key_value_t) *
 		filter->selectorset.count);
-	p1 = filter->selectorset.selectors;
-	p2 = filter_cpy->selectorset.selectors;
-	for(i = 0; i < filter_cpy->selectorset.count; i++) {
-          key_value_copy(p1, p2);
-		p1++;
-		p2++;
+	if (filter_cpy->selectorset.selectors) {
+		p1 = filter->selectorset.selectors;
+		p2 = filter_cpy->selectorset.selectors;
+		for (i = 0; i < filter_cpy->selectorset.count; i++) {
+			key_value_copy(p1, p2);
+			p1++;
+			p2++;
+		}
 	}
 
 	if(filter->assocClass)
@@ -226,10 +232,12 @@ filter_t * filter_copy(filter_t *filter)
 	if(filter->resultProp) {
 		int i = 0;
 		filter_cpy->resultProp = u_malloc(filter->PropNum*sizeof(char *));
-		filter_cpy->PropNum = filter->PropNum;
-		while(i < filter->PropNum) {
-			filter_cpy->resultProp[i] = u_strdup(filter->resultProp[i]);
-			i++;
+		if (filter_cpy->resultProp != NULL) {
+			filter_cpy->PropNum = filter->PropNum;
+			while (i < filter->PropNum) {
+				filter_cpy->resultProp[i] = u_strdup(filter->resultProp[i]);
+				i++;
+			}
 		}
 	}
 	return filter_cpy;
@@ -283,10 +291,15 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter, const char *ns)
 		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, filter->query);
 	} else if(filter->epr) {
 		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, NULL);
+		if (!filter_node)
+			return -1;
 		if(filter->assocType == 0)
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATED_INSTANCES, NULL);
 		else
 			instance_node = ws_xml_add_child(filter_node, XML_NS_CIM_BINDING, WSMB_ASSOCIATION_INSTANCES, NULL);
+		if (!instance_node)
+			return -1;
+
 		r = epr_serialize(instance_node, XML_NS_CIM_BINDING, WSMB_OBJECT, filter->epr, 1);
 
 		if(r)
@@ -313,7 +326,11 @@ int filter_serialize(WsXmlNodeH node, filter_t *filter, const char *ns)
 	} else if(filter->selectorset.count) {
 		int i = 0;
 		filter_node = ws_xml_add_child(node, ns, WSM_FILTER, NULL);
+		if (!filter_node)
+			return -1;
 		node = ws_xml_add_child(filter_node, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
+		if (!node)
+			return -1;
 
 		while (i < filter->selectorset.count) {
 			if(filter->selectorset.selectors[i].type == 0) {
@@ -349,6 +366,9 @@ filter_t * filter_deserialize(WsXmlNodeH node, const char *ns)
 	WsXmlNodeH filter_node = ws_xml_get_child(node, 0, ns, WSM_FILTER);
 	if(filter_node == NULL) return NULL;
 	filter = u_zalloc(sizeof(filter_t));
+	if (filter == NULL) {
+		return NULL;
+	}
 	dialect = ws_xml_find_attr_value(filter_node, NULL, WSM_DIALECT);
 	if(dialect)
 		filter->dialect = u_strdup(dialect);
