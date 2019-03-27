@@ -65,6 +65,8 @@ WsmanMessage*
 wsman_soap_message_new()
 {
     WsmanMessage *wsman_msg = u_zalloc(sizeof(WsmanMessage));
+    if (!wsman_msg)
+        return NULL;
     u_buf_create(&wsman_msg->request);
     u_buf_create(&wsman_msg->response);
 //    wsman_msg->charset = "UTF-8";
