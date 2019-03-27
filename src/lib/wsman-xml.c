@@ -89,6 +89,10 @@ ws_xml_make_default_prefix(WsXmlNodeH node,
 			   const char *uri, char *buf, int bufsize)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
+	if (!doc) {
+		return;
+	}
+
 	int i = 0;
 	if (doc != NULL && uri != NULL) {
 		for (i = 0; g_wsNsData[i].uri != NULL; i++) {
@@ -155,7 +159,7 @@ ns_enum_at_node(WsXmlNodeH node, WsXmlNsEnumCallback callback, void *data)
 static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 {
 	char *buf = NULL;
-	if (name && uri && name) {
+	if (name && uri && node) {
 		size_t len = 1 + strlen(name);
 		WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1);
 		const char *prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns);
@@ -163,7 +167,7 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 		if (prefix != NULL)
 			len += 1 + strlen(prefix);
 
-		buf = u_malloc(len);
+		buf = u_zalloc(len);
 		if (!buf)
 			return buf;
 
@@ -891,6 +895,10 @@ ws_xml_find_ns_callback(WsXmlNodeH node, WsXmlNsH ns, void *_data)
 	char *curPrefix = ws_xml_get_ns_prefix(ns);
 	// debug("uri: %s prefix: %s", curUri, curPrefix );
 
+	if (curUri == NULL) {
+		return 0;
+	}
+
 	if ((data->nsUri != NULL && !strcmp(curUri, data->nsUri))
 	    ||
 	    (data->prefix != NULL && curPrefix != NULL &&
@@ -1428,24 +1436,27 @@ void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang)
 void ws_xml_dump_node_tree(FILE * f, WsXmlNodeH node)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-	xml_parser_doc_dump(f, doc);
-	return;
+	if (doc) {
+		xml_parser_doc_dump(f, doc);
+	}
 }
 
 void ws_xml_dump_memory_node_tree(WsXmlNodeH node, char **buf,
 				  int *ptrSize)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-	xml_parser_doc_dump_memory(doc, buf, ptrSize);
-	return;
+	if (doc) {
+		xml_parser_doc_dump_memory(doc, buf, ptrSize);
+	}
 }
 
 void ws_xml_dump_memory_node_tree_enc(WsXmlNodeH node, char **buf,
 				  int *ptrSize, const char *encoding)
 {
 	WsXmlDocH doc = xml_parser_get_doc(node);
-	xml_parser_doc_dump_memory_enc(doc, buf, ptrSize, encoding);
-	return;
+	if (doc) {
+		xml_parser_doc_dump_memory_enc(doc, buf, ptrSize, encoding);
+	}
 }
 
 void ws_xml_dump_doc(FILE * f, WsXmlDocH doc)
@@ -1479,7 +1490,9 @@ char *ws_xml_get_xpath_value(WsXmlDocH doc, char *expression)
 WsXmlDocH ws_xml_create_doc_by_import(WsXmlNodeH node)
 {
 	WsXmlDocH wsDoc = (WsXmlDocH) u_zalloc(sizeof(*wsDoc));
-	xml_parser_create_doc_by_import(wsDoc, node);
+	if (wsDoc) {
+		xml_parser_create_doc_by_import(wsDoc, node);
+	}
 	return wsDoc;
 }
 
