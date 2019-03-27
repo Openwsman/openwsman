@@ -72,8 +72,10 @@ wsman_debug_message_handler(const char *str, debug_level_e level, void *user_dat
 
         time(&now);
         tm = localtime(&now);
-        strftime(timestr, 128, "%b %e %T", tm);
-        fprintf(stderr, "%s  %s\n", timestr, str);
+        if (tm) {
+            strftime(timestr, 128, "%b %e %T", tm);
+            fprintf(stderr, "%s  %s\n", timestr, str);
+        }
     }
 }
 
