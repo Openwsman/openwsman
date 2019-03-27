@@ -38,6 +38,7 @@
 #endif
 
 #define _GNU_SOURCE
+#include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -111,6 +112,8 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 
 	dstHeader = ws_xml_get_soap_header(doc);
 	srcHeader = ws_xml_get_soap_header(rqstDoc);
+	if (dstHeader == NULL || srcHeader == NULL)
+		return doc;
 
 	srcNode = ws_xml_get_child(srcHeader, 0, XML_NS_ADDRESSING,
 			     WSA_REPLY_TO);
@@ -322,6 +325,12 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 		goto cleanup;
 	}
 	soapNsUri = ws_xml_get_node_name_ns(root);
+	if (!soapNsUri) {
+		wsman_set_fault(msg, WSMAN_INTERNAL_ERROR, 0, NULL);
+		retval = 0;
+		debug("allocation failure");
+		goto cleanup;
+	}
 	if (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0) {
 		wsman_set_fault(msg, SOAP_FAULT_VERSION_MISMATCH, 0, NULL);
 		retval = 0;
@@ -416,6 +425,11 @@ int wsman_is_valid_xml_envelope(WsXmlDocH doc)
 		goto cleanup;
 	}
 	soapNsUri = ws_xml_get_node_name_ns(root);
+	if (!soapNsUri) {
+		retval = 0;
+		goto cleanup;
+	}
+
 	if (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0) {
 		retval = 0;
 		goto cleanup;
@@ -466,39 +480,60 @@ wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 		return NULL;
 	}
 	header = ws_xml_get_soap_header(doc);
+	if (header == NULL) {
+		return NULL;
+	}
 	body = ws_xml_get_soap_body(doc);
 	soapNs = ws_xml_get_node_name_ns(body);
 	fault = ws_xml_add_child(body, soapNs, SOAP_FAULT, NULL);
+	if (!fault)
+		goto out;
 	codeNode = ws_xml_add_child(fault, soapNs, SOAP_CODE, NULL);
+	if (!codeNode)
+		goto out;
 	node = ws_xml_add_child(codeNode, soapNs, SOAP_VALUE, NULL);
+	if (!node)
+		goto out;
 
 	ws_xml_set_node_qname_val(node, soapNs, code);
 
 	if (subCode && subCode[0] != 0 ) {
 		node =
 		    ws_xml_add_child(codeNode, soapNs, SOAP_SUBCODE, NULL);
-		node = ws_xml_add_child(node, soapNs, SOAP_VALUE, NULL);
-		if (subCodeNs)
-			ws_xml_set_node_qname_val(node, subCodeNs,
-						  subCode);
-		else
-			ws_xml_set_node_text(node, subCode);
+		if (node) {
+			node = ws_xml_add_child(node, soapNs, SOAP_VALUE, NULL);
+			if (node) {
+				if (subCodeNs)
+					ws_xml_set_node_qname_val(node, subCodeNs,
+						subCode);
+				else
+					ws_xml_set_node_text(node, subCode);
+			}
+		}
 	}
 	if (reason) {
 		node = ws_xml_add_child(fault, soapNs, SOAP_REASON, NULL);
-		node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
-		ws_xml_set_node_text(node, reason);
-		ws_xml_set_node_lang(node, !lang ? "en" : lang);
+		if (node) {
+			node = ws_xml_add_child(node, soapNs, SOAP_TEXT, NULL);
+			if (node) {
+				ws_xml_set_node_text(node, reason);
+				ws_xml_set_node_lang(node, !lang ? "en" : lang);
+			}
+		}
 	}
 	if (faultDetail) {
 		WsXmlNodeH d =
 		    ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);
-		node =
-		    ws_xml_add_child_format(d, XML_NS_WS_MAN,
-					    SOAP_FAULT_DETAIL, "%s/%s",
-					    XML_NS_WSMAN_FAULT_DETAIL,
-					    faultDetail);
+		if (d) {
+			node =
+				ws_xml_add_child_format(d, XML_NS_WS_MAN,
+							SOAP_FAULT_DETAIL, "%s/%s",
+							XML_NS_WSMAN_FAULT_DETAIL,
+							faultDetail);
+		}
 	}
+
+out:
 	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 	ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_MESSAGE_ID,
 			 uuidBuf);
@@ -556,12 +591,14 @@ int wsman_parse_enum_request(WsContextH cntx,
 				WSMB_POLYMORPHISM_MODE);
 		if (opt) {
 			char *mode = ws_xml_get_node_text(opt);
-			if (strcmp(mode, WSMB_EXCLUDE_SUBCLASS_PROP) == 0) {
-				enumInfo->flags |= WSMAN_ENUMINFO_POLY_EXCLUDE;
-			} else if (strcmp(mode, WSMB_INCLUDE_SUBCLASS_PROP) == 0) {
-				enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
-			} else if (strcmp(mode, WSMB_NONE) == 0) {
-				enumInfo->flags |= WSMAN_ENUMINFO_POLY_NONE;
+			if (mode != NULL) {
+				if (strcmp(mode, WSMB_EXCLUDE_SUBCLASS_PROP) == 0) {
+					enumInfo->flags |= WSMAN_ENUMINFO_POLY_EXCLUDE;
+				} else if (strcmp(mode, WSMB_INCLUDE_SUBCLASS_PROP) == 0) {
+					enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
+				} else if (strcmp(mode, WSMB_NONE) == 0) {
+					enumInfo->flags |= WSMAN_ENUMINFO_POLY_NONE;
+				}
 			}
 		} else {
 			enumInfo->flags |= WSMAN_ENUMINFO_POLY_INCLUDE;
@@ -627,6 +664,8 @@ static int is_existing_filter_epr(WsXmlNodeH node, filter_t **f)
 	if(xmlnode == NULL)
 		return -1;
 	uri = ws_xml_get_node_text(xmlnode);
+	if (!uri)
+		return -1;
 	if(strcmp(uri, CIM_ALL_AVAILABLE_CLASSES) == 0)
 		return -1;
 	xmlnode = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_SELECTOR_SET);
@@ -643,6 +682,7 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 	int i = 0;
 	WsXmlNodeH tnode = NULL, snode = NULL, node = NULL, temp = NULL;
 	char *value = NULL;
+	char *text = NULL;
 	snode = ws_xml_get_soap_header(doc);
 	snode = ws_xml_get_child(snode, 0, XML_NS_TRUST, WST_ISSUEDTOKENS);
 	if(snode == NULL) return 0;
@@ -655,16 +695,29 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 			node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_EPR);
 			if(node) {
 				node = ws_xml_get_child(node, 0, XML_NS_ADDRESSING, WSA_ADDRESS);
-				if(node)
-					if(strcmp(ws_xml_get_node_text(node), subsInfo->epr_notifyto)) {
+				if(node) {
+					text = ws_xml_get_node_text(node);
+					if(text) {
+						if(strcmp(text, subsInfo->epr_notifyto)) {
+							*faultcode = WSMAN_INVALID_PARAMETER;
+							*detailcode = WSMAN_DETAIL_INVALID_ADDRESS;
+							return -1;
+						}
+					} else {
 						*faultcode = WSMAN_INVALID_PARAMETER;
 						*detailcode = WSMAN_DETAIL_INVALID_ADDRESS;
 						return -1;
 					}
+				}
 			}
 		}
 		node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_TOKENTYPE);
 		value = ws_xml_get_node_text(node);
+		if (!value) {
+			*faultcode = WSMAN_INVALID_OPTIONS;
+			*detailcode = WST_DETAIL_UNSUPPORTED_TOKENTYPE;
+			return -1;
+		}
 		if(strcmp(value, WST_USERNAMETOKEN) == 0) {
 			node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
 			if(node) {
@@ -674,18 +727,27 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 					if(temp) {
 						if (subsInfo->username)
 							u_free(subsInfo->username);
-						subsInfo->username = u_strdup(ws_xml_get_node_text(temp));
+						value = ws_xml_get_node_text(temp);
+						if (value)
+							subsInfo->username = u_strdup(value);
+						else
+							subsInfo->username = NULL;
 					}
 					temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_PASSWORD);
 					if(temp) {
 						if (subsInfo->password)
 							u_free(subsInfo->password);
-						subsInfo->password = u_strdup(ws_xml_get_node_text(temp));
+						value = ws_xml_get_node_text(temp);
+						if (value)
+							subsInfo->password = u_strdup(value);
+						else
+							subsInfo->password = NULL;
 					}
 				}
 			}
-			debug("subsInfo->username = %s, subsInfo->password = %s", subsInfo->username, \
-				subsInfo->password);
+			if (subsInfo->username && subsInfo->password)
+				debug("subsInfo->username = %s, subsInfo->password = %s", subsInfo->username, \
+					subsInfo->password);
 		}
 		else if(strcmp(value, WST_CERTIFICATETHUMBPRINT) == 0) {
 			node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
@@ -694,7 +756,11 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				if(node) {
 					if (subsInfo->certificate_thumbprint)
 						u_free(subsInfo->certificate_thumbprint);
-					subsInfo->certificate_thumbprint = u_strdup(ws_xml_get_node_text(node));
+					value = ws_xml_get_node_text(node);
+					if (value)
+						subsInfo->certificate_thumbprint = u_strdup(value);
+					else
+						subsInfo->certificate_thumbprint = NULL;
 				}
 			}
 		}
@@ -797,6 +863,8 @@ wsman_get_option_set(WsContextH cntx, WsXmlDocH doc,
 					WSM_NAME);
 			if (attrVal && strcmp(attrVal, op ) == 0 ) {
 				optval = ws_xml_get_node_text(option);
+				if (!optval)
+					return NULL;
 				if (optval[0] == 0)
 					optval = "true";
 				optval = u_strdup(optval);
@@ -1013,6 +1081,8 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 	char *input = NULL;
 	WsXmlDocH doc = cntx->indoc;
 	hash_t *h = hash_create(HASHCOUNT_T_MAX, 0, 0);
+	if (!h)
+		return NULL;
 	hash_set_allocator(h, NULL, wsman_free_method_hnode, NULL);
 	if (doc) {
 		WsXmlNodeH in_node;
@@ -1029,35 +1099,50 @@ wsman_get_method_args(WsContextH cntx, const char *resource_uri)
 			WsXmlNodeH arg, epr;
 			int index = 0;
 			list_t *arglist = list_create(LISTCOUNT_T_MAX);
-			lnode_t *argnode;
-			while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
-				char *key = ws_xml_get_node_local_name(arg);
-                                epr_t *e;
-                                char *text;
-				methodarglist_t *nodeval = u_malloc(sizeof(methodarglist_t));
-				epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
-					WSA_REFERENCE_PARAMETERS);
-				nodeval->key = u_strdup(key);
-				nodeval->arraycount = 0;
-				argnode = lnode_create(nodeval);
-				if (epr) {
-					debug("epr: %s", key);
-					e = epr_deserialize(arg, NULL, NULL, 1); 
-                                        text = NULL;
-					//wsman_get_epr(cntx, arg, key, XML_NS_CIM_CLASS);
-				} else {
-					debug("text: %s", key);
-					text = ws_xml_get_node_text(arg);
-                                        e = NULL;
+			if (!arglist) {
+				error("error: list_create failed");
+			} else {
+				lnode_t *argnode;
+				while ((arg = ws_xml_get_child(in_node, index++, NULL, NULL))) {
+					char *key = ws_xml_get_node_local_name(arg);
+					epr_t *e;
+					char *text;
+					methodarglist_t *nodeval = u_malloc(sizeof(methodarglist_t));
+					if (!nodeval) {
+						error("error: u_malloc failed");
+						continue;
+					}
+					epr = ws_xml_get_child(arg, 0, XML_NS_ADDRESSING,
+						WSA_REFERENCE_PARAMETERS);
+					nodeval->key = u_strdup(key);
+					nodeval->arraycount = 0;
+					argnode = lnode_create(nodeval);
+					if (!argnode) {
+						if (nodeval)
+							u_free(nodeval->key);
+						u_free(nodeval);
+						error("error: lnode_create failed");
+						continue;
+					}
+					if (epr) {
+						debug("epr: %s", key);
+						e = epr_deserialize(arg, NULL, NULL, 1);
+						text = NULL;
+						//wsman_get_epr(cntx, arg, key, XML_NS_CIM_CLASS);
+					} else {
+						debug("text: %s", key);
+						text = ws_xml_get_node_text(arg);
+						e = NULL;
+					}
+					nodeval->data = key_value_create(NULL, text, e, NULL);
+					if (e)
+						epr_destroy(e);
+					list_append(arglist, argnode);
 				}
-				nodeval->data = key_value_create(NULL, text, e, NULL);
-                                if (e)
-                                  epr_destroy(e);
-				list_append(arglist, argnode);
-			}
-			if (!hash_alloc_insert(h, METHOD_ARGS_KEY, arglist)) {
-				error("hash_alloc_insert failed");
-				wsman_free_method_list(arglist);
+				if (!hash_alloc_insert(h, METHOD_ARGS_KEY, arglist)) {
+					error("hash_alloc_insert failed");
+					wsman_free_method_list(arglist);
+				}
 			}
 		}
 		u_free(mn);
@@ -1081,6 +1166,8 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 	key_value_t *sentry;
 	int index = 0;
 	hash_t *h = hash_create2(HASHCOUNT_T_MAX, 0, 0);
+	if (!h)
+		return NULL;
 
 	node = ws_xml_get_child(epr_node, 0, XML_NS_WS_MAN,
 			WSM_SELECTOR_SET);
@@ -1296,7 +1383,7 @@ void wsman_add_selector_epr(WsXmlNodeH baseNode, const char *name, const epr_t *
 
 void
 wsman_set_estimated_total(WsXmlDocH in_doc,
-			  WsXmlDocH out_doc, WsEnumerateInfo * enumInfo)
+			  WsXmlDocH out_doc, WsEnumerateInfo *enumInfo)
 {
 	WsXmlNodeH header = ws_xml_get_soap_header(in_doc);
 	if (ws_xml_get_child(header, 0,
@@ -1304,6 +1391,8 @@ wsman_set_estimated_total(WsXmlDocH in_doc,
 		if (out_doc) {
 			WsXmlNodeH response_header =
 			    ws_xml_get_soap_header(out_doc);
+			if (!response_header)
+				return;
 			if (enumInfo->totalItems >= 0)
 				ws_xml_add_child_format(response_header,
 							XML_NS_WS_MAN,
@@ -1321,7 +1410,8 @@ wsman_set_estimated_total(WsXmlDocH in_doc,
 void wsman_add_namespace_as_selector(WsXmlDocH doc, const char *_namespace)
 {
 	WsXmlNodeH header = ws_xml_get_soap_header(doc);
-	wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, _namespace);
+	if (header)
+		wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, _namespace);
 
 	return;
 }
