@@ -93,7 +93,7 @@ void get_endpoints(void *self, void **data)
 }
 
 
-int init( void *self, void **data )
+static int init( void *self, void **data )
 {
     char* filename;
     dictionary *ini=NULL, *inc_ini=NULL;
@@ -141,13 +141,13 @@ int init( void *self, void **data )
     return 1;
 }
 
-void
-cleanup( void  *self, void *data )
+static void cleanup( void  *self, void *data )
 {
     free(redirect_data);
     return;
 }
-void set_config( void *self, dictionary *config )
+
+static void set_config( void *self, dictionary *config )
 {
     if (config == NULL)
 	return;

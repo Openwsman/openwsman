@@ -58,7 +58,7 @@ int LocalSubscriptionOpUpdate (char * uri_repository, char * uuid, char *expire)
 int LocalSubscriptionOpDelete (char * uri_repository, char * uuid);
 
 
-struct __SubsRepositoryOpSet subscription_repository_op_set = { 
+static struct __SubsRepositoryOpSet subscription_repository_op_set = {
   LocalSubscriptionOpInit,
   LocalSubscriptionOpFinalize,
   LocalSubscriptionOpLoad,
