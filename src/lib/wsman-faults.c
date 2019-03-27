@@ -611,7 +611,7 @@ wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
   char *subcode_value_msg;
   char *start_pos;
 
-  if (strlen(subcode_value) == 0)
+  if (!subcode_value || strlen(subcode_value) == 0)
     return;
 
   subcode_value_msg = calloc(1, strlen(subcode_value));
