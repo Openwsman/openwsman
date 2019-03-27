@@ -138,6 +138,8 @@ int wsmand_parse_options(int argc, char **argv)
 
 	wsmand_argv = (const char **) argv;
 	opt_ctx = u_option_context_new("WS-Management Server");
+	if (!opt_ctx)
+		return 0;
 	u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
 	u_option_context_add_main_entries(opt_ctx, options, "wsman");
 	retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
