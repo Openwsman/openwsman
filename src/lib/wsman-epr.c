@@ -242,7 +242,10 @@ int epr_delete_selector(epr_t *epr, const char *name)
 		memcpy(&selectors[k], &selectors[k+1], sizeof(key_value_t));
 	}
 
-	epr->refparams.selectorset.selectors = u_realloc(selectors, (count-1)*sizeof(key_value_t));
+	key_value_t *temp = u_realloc(selectors, (count-1)*sizeof(key_value_t));
+	if (!temp)
+		return -1;
+	epr->refparams.selectorset.selectors = temp;
 	epr->refparams.selectorset.count--;
 
 	return 0;
