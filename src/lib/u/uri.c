@@ -213,6 +213,8 @@ _u_parse(const char *query, const char *separator)
 	dbg_err_if(separator == NULL);
 	q = u_strdup(query);
 	h = hash_create3(HASHCOUNT_T_MAX, 0, 0);
+	if (!q || !h)
+		goto err;
 
 	/* foreach name=value pair... */
 	for (src = q; (tok = strtok_r(src, separator, &pp)) != NULL; src = NULL) {
@@ -268,7 +270,8 @@ _u_parse(const char *query, const char *separator)
 err:
 	u_free(q);
 	u_free(key);
-	hash_free(h);
+	if (h)
+		hash_free(h);
 	return NULL;
 }
 
