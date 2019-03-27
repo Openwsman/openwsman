@@ -500,6 +500,12 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					pwd = convert_to_unicode(cl->data.pwd);
 					usr = convert_to_unicode(cl->data.user);
 					if ((pwd == NULL) || (usr == NULL)) {
+						if (pwd != NULL) {
+							u_free(pwd);
+						}
+						if (usr != NULL) {
+							u_free(usr);
+						}
 						bDone = TRUE;
 						bResults = 0;
 						break;
@@ -599,6 +605,12 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				pwd = convert_to_unicode(cl->data.pwd);
 				usr = convert_to_unicode(cl->data.user);
 				if ((pwd == NULL) || (usr == NULL)) {
+					if (pwd != NULL) {
+						u_free(pwd);
+					}
+					if (usr != NULL) {
+						u_free(usr);
+					}
 					bDone = TRUE;
 					bResults = 0;
 					break;
