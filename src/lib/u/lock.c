@@ -61,6 +61,7 @@ void u_init_lock(void *data)
     pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE_NP );
     if ( data != NULL )
         pthread_mutex_init((pthread_mutex_t*)data, &attr);
+    pthread_mutexattr_destroy(&attr);
 }
 
 int u_try_lock(void* data)
