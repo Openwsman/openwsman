@@ -1388,17 +1388,12 @@ wsman_set_estimated_total(WsXmlDocH in_doc,
 	if (ws_xml_get_child(header, 0,
 			     XML_NS_WS_MAN, WSM_REQUEST_TOTAL) != NULL) {
 		if (out_doc) {
-			WsXmlNodeH response_header =
-			    ws_xml_get_soap_header(out_doc);
+			WsXmlNodeH response_header = ws_xml_get_soap_header(out_doc);
 			if (!response_header)
 				return;
-			if (enumInfo->totalItems >= 0)
-				ws_xml_add_child_format(response_header,
-							XML_NS_WS_MAN,
-							WSM_TOTAL_ESTIMATE,
-							"%d",
-							enumInfo->
-							totalItems);
+			ws_xml_add_child_format(response_header,
+						XML_NS_WS_MAN, WSM_TOTAL_ESTIMATE,
+						"%d", enumInfo->totalItems);
 		}
 	}
 	return;

@@ -2874,8 +2874,7 @@ cim_get_enum_items(CimClientInfo * client,
                 if (maxelements <= 0) {
                         maxelements = -1; /* don't check maxelements */
                 }
-		while (enumInfo->index >= 0 &&
-				enumInfo->index < enumInfo->totalItems) {
+		while (enumInfo->index < enumInfo->totalItems) {
 			if (enumInfo->flags & WSMAN_ENUMINFO_EPR ) {
 				c = cim_getEprAt(client, enumInfo, itemsNode);
 			} else if (enumInfo->flags & WSMAN_ENUMINFO_OBJEPR) {
