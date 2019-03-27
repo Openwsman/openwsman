@@ -1109,6 +1109,8 @@ int main(int argc, char **argv)
 	};
 	u_option_context_t *opt_ctx;
 	opt_ctx = u_option_context_new("");
+	if (!opt_ctx)
+		return 1;
 	u_option_context_set_ignore_unknown_options(opt_ctx, FALSE);
 	u_option_context_add_main_entries(opt_ctx, opt, "wsmid_identify");
 	retval = u_option_context_parse(opt_ctx, &argc, &argv, &error);
