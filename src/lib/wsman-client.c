@@ -83,13 +83,18 @@ wsmc_get_conffile(WsManClient *cl)
 
 
 static char*
-wsman_make_action(char *uri, char *op_name)
+wsman_make_action(const char *uri, const char *op_name)
 {
 	if (uri && op_name) {
 		size_t len = strlen(uri) + strlen(op_name) + 2;
-		char *ptr = (char *) malloc(len);
+		char *ptr = (char *)u_malloc(len);
 		if (ptr) {
-			sprintf(ptr, "%s/%s", uri, op_name);
+			int ret = snprintf(ptr, len, "%s/%s", uri, op_name);
+			if (ret < 0 || ret >= len) {
+				error("Error: formating action");
+				u_free(ptr);
+				return NULL;
+			}
 			return ptr;
 		}
 	}
@@ -155,9 +160,15 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 	}
 	if (options->timeout) {
 	  /* FIXME: see wsman-xml-serialize.c */
-		char            buf[20];
-		sprintf(buf, "PT%u.%uS", (unsigned int) options->timeout / 1000,
+		char buf[20];
+		int ret;
+		ret = snprintf(buf, sizeof(buf), "PT%u.%uS",
+				(unsigned int) options->timeout / 1000,
 				(unsigned int) options->timeout % 1000);
+		if (ret < 0 || ret >= sizeof(buf)) {
+			error("Error: formating time");
+			return NULL;
+		}
 		ws_serialize_str(serctx, header, buf,
 			XML_NS_WS_MAN, WSM_OPERATION_TIMEOUT, 0);
 	}

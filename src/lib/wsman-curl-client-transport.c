@@ -448,6 +448,7 @@ wsmc_handler( WsManClient *cl,
 	CURLcode r;
 	char *upwd = NULL;
 	char *usag = NULL;
+	size_t usag_len = 0;
 	struct curl_slist *headers=NULL;
 	char *buf = NULL;
 	int len;
@@ -495,7 +496,8 @@ wsmc_handler( WsManClient *cl,
 	snprintf(content_type, 64, "Content-Type: application/soap+xml;charset=%s", cl->content_encoding);
 	headers = curl_slist_append(headers, content_type);
 	tmp_str = wsman_transport_get_agent(cl);
-	usag = malloc(12 + strlen(tmp_str) + 1);
+	usag_len = strlen("User-Agent: ") + strlen(tmp_str) + 1;
+	usag = u_malloc(usag_len);
 	if (usag == NULL) {
 		r = CURLE_OUT_OF_MEMORY;
 		cl->fault_string = u_strdup("Could not malloc memory");
@@ -503,14 +505,14 @@ wsmc_handler( WsManClient *cl,
 		goto DONE;
 	}
 
-	sprintf(usag, "User-Agent: %s", tmp_str);
+	snprintf(usag, usag_len, "User-Agent: %s", tmp_str);
 	free(tmp_str);
 	headers = curl_slist_append(headers, usag);
 
 #if 0
 	soapaction = ws_xml_get_xpath_value(rqstDoc, "/s:Envelope/s:Header/wsa:Action");
 	if (soapaction) {
-		soapact_header = malloc(12 + strlen(soapaction) + 1);
+		soapact_header = u_malloc(12 + strlen(soapaction) + 1);
 		if (soapact_header) {
 			sprintf(soapact_header, "SOAPAction: %s", soapaction);
 			headers = curl_slist_append(headers, soapact_header);
