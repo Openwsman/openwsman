@@ -126,7 +126,12 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 				size_t len = strlen(action) + sizeof(WSFW_RESPONSE_STR) + 2;
 				char *tmp = (char *) u_malloc(sizeof(char) * len);
 				if (tmp && action) {
-					sprintf(tmp, "%s%s", action, WSFW_RESPONSE_STR);
+					int ret;
+					ret = snprintf(tmp, len, "%s%s", action, WSFW_RESPONSE_STR);
+					if (ret < 0 ||  ret >= len) {
+						u_free(tmp);
+						return NULL;
+					}
 					ws_xml_add_child(dstHeader, XML_NS_ADDRESSING,
 							 WSA_ACTION, tmp);
 					u_free(tmp);

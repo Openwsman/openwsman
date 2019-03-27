@@ -158,17 +158,23 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 	if (name && uri && name) {
 		size_t len = 1 + strlen(name);
 		WsXmlNsH ns = xml_parser_ns_find(node, uri, NULL, 1, 1);
-		const char *prefix =
-		    (!ns) ? NULL : ws_xml_get_ns_prefix(ns);
+		const char *prefix = (!ns) ? NULL : ws_xml_get_ns_prefix(ns);
 
 		if (prefix != NULL)
 			len += 1 + strlen(prefix);
 
-		if ((buf = u_malloc(len)) != NULL) {
-			if (prefix != NULL && name != NULL)
-				sprintf(buf, "%s:%s", prefix, name);
-			else
-				strcpy(buf, name);
+		buf = u_malloc(len);
+		if (!buf)
+			return buf;
+
+		if (prefix != NULL && name != NULL) {
+			int ret = snprintf(buf, len, "%s:%s", prefix, name);
+			if (ret < 0 || ret >= len) {
+				u_free(buf);
+				return NULL;
+			}
+		} else {
+			strncpy(buf, name, len);
 		}
 	}
 	return buf;
@@ -1263,7 +1269,9 @@ int ws_xml_set_node_ulong(WsXmlNodeH node, unsigned long uVal)
 	int retVal = -1;
 	if (node) {
 		char buf[12];
-		sprintf(buf, "%lu", uVal);
+		int ret = snprintf(buf, sizeof(buf), "%lu", uVal);
+		if (ret < 0 || ret >= sizeof(buf))
+			return -1;
 		retVal = ws_xml_set_node_text(node, buf);
 	}
 	return retVal;
@@ -1274,7 +1282,9 @@ int ws_xml_set_node_long(WsXmlNodeH node, long Val)
 	int retVal = -1;
 	if (node) {
 		char buf[12];
-		sprintf(buf, "%ld", Val);
+		int ret = snprintf(buf, sizeof(buf), "%ld", Val);
+		if (ret < 0 || ret >= sizeof(buf))
+			return -1;
 		retVal = ws_xml_set_node_text(node, buf);
 	}
 	return retVal;
@@ -1286,7 +1296,9 @@ int ws_xml_set_node_real(WsXmlNodeH node, double Val)
 	if (node) {
                 /* __builtin___sprintf_chk' output between 13 and 15 bytes */
 		char buf[15];
-		sprintf(buf, "%E", Val);
+		int ret = snprintf(buf, sizeof(buf), "%E", Val);
+		if (ret < 0 || ret >= sizeof(buf))
+			return -1;
 		retVal = ws_xml_set_node_text(node, buf);
 	}
 	return retVal;

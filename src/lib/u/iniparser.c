@@ -490,17 +490,17 @@ static void dictionary_dump(dictionary *d, FILE *f)
  */
 static int iniparser_add_entry(
     dictionary * d,
-    char * sec,
-    char * key,
+    const char * sec,
+    const char * key,
     char * val)
 {
     char longkey[2*ASCIILINESZ+1];
 
     /* Make a key as section:keyword */
     if (key!=NULL) {
-        sprintf(longkey, "%s:%s", sec, key);
+        snprintf(longkey, sizeof(longkey), "%s:%s", sec, key);
     } else {
-        strcpy(longkey, sec);
+        strncpy(longkey, sec, sizeof(longkey));
     }
 
     /* Add (key,val) to dictionary */
@@ -624,6 +624,7 @@ void iniparser_dump_ini(dictionary * d, FILE * f)
     int     nsec ;
     char *  secname ;
     int     seclen ;
+    int     ret ;
 
     if (d==NULL || f==NULL) return ;
 
@@ -641,8 +642,10 @@ void iniparser_dump_ini(dictionary * d, FILE * f)
         secname = iniparser_getsecname(d, i) ;
         seclen  = (int)strlen(secname);
         fprintf(f, "\n[%s]\n", secname);
-        sprintf(keym, "%s:", secname);
-        for (j=0 ; j<d->size ; j++) {
+        ret = snprintf(keym, sizeof(keym), "%s:", secname);
+        if (ret < 0 || ret >= sizeof(keym))
+            return;
+        for (j = 0 ; j < d->size ; j++) {
             if (d->key[j]==NULL)
                 continue ;
             if (!strncmp(d->key[j], keym, seclen+1)) {
