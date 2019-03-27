@@ -32,6 +32,12 @@ WsmanFilter::WsmanFilter(const NameValuePairs *s)
 	addSelectors(s);
 }
 
+WsmanFilter& WsmanFilter::operator=(const WsmanFilter &other)
+{
+	filter = filter_copy(other.getFilter());
+	return *this;
+}
+
 WsmanFilter::WsmanFilter(
 	const WsmanEPR &epr,
 	enum WsmanAssocType assocType,

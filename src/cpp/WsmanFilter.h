@@ -25,6 +25,7 @@ namespace WsmanClientNamespace {
 
 		public:
 			WsmanFilter(const WsmanFilter &filter);
+			WsmanFilter& operator=(const WsmanFilter &other);
 			WsmanFilter(const string &dialect, const string &query);
 			WsmanFilter(const NameValuePairs *s = NULL);
                         WsmanFilter(
