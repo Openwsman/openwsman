@@ -926,8 +926,8 @@ dictionary * iniparser_new(char *ininame)
             continue ; /* Comment lines */
         else {
             char lc_key[ASCIILINESZ+1];
-
-            if (sscanf(where, "[%[^]]", sec)==1) {
+            // Note - is ASCIILINESZ value is changed - the %1024 in sscanf below should be updated accordingly
+            if (sscanf(where, "[%1024[^]]", sec)==1) {
                 /* Valid section name */
                 strncpy(sec, strlwc(sec, lc_key), sizeof(sec));
                 sec[sizeof(sec)-1] = 0;
@@ -936,9 +936,10 @@ dictionary * iniparser_new(char *ininame)
                   fclose(ini);
                   return NULL;
                 }
-            } else if (sscanf (where, "%[^=] = \"%[^\"]\"", key, val) == 2
-                   ||  sscanf (where, "%[^=] = '%[^\']'",   key, val) == 2
-                   ||  sscanf (where, "%[^=] = %[^;#]",     key, val) == 2) {
+            // Note - is ASCIILINESZ value is changed - the %1024 in all the sscanf below should be updated accordingly
+            } else if (sscanf (where, "%1024[^=] = \"%1024[^\"]\"", key, val) == 2
+                   ||  sscanf (where, "%1024[^=] = '%1024[^\']'",   key, val) == 2
+                   ||  sscanf (where, "%1024[^=] = %1024[^;#]",     key, val) == 2) {
                 char crop_key[ASCIILINESZ+1];
 
                 strncpy(key, strlwc(strcrop(key, crop_key), lc_key), sizeof(key));
