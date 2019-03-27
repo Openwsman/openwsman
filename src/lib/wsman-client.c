@@ -891,16 +891,18 @@ wsman_set_subscribe_options(WsManClient * cl,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
 	temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
 	if(temp) {
-		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE,
-			wsmc_create_delivery_mode_str(options->delivery_mode));
+		char *mode = wsmc_create_delivery_mode_str(options->delivery_mode);
+		ws_xml_add_node_attr(temp, NULL, WSEVENT_DELIVERY_MODE, mode);
+		u_free(mode);
 		if(options->delivery_uri) {
 			node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
 			ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		}
 		if(options->delivery_sec_mode) {
 			temp = ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_AUTH, NULL);
-			ws_xml_add_node_attr(temp, NULL, WSM_PROFILE,
-				wsmc_create_delivery_sec_mode_str(options->delivery_sec_mode));
+			char *mode = wsmc_create_delivery_sec_mode_str(options->delivery_sec_mode);
+			ws_xml_add_node_attr(temp, NULL, WSM_PROFILE, mode);
+			u_free(mode);
 		}
 		if(options->heartbeat_interval) {
 			snprintf(buf, 32, "PT%fS", options->heartbeat_interval);
