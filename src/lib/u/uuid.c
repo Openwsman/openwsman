@@ -191,14 +191,23 @@ static int mac_address(unsigned char *data_ptr, size_t data_len)
 
         if ((s = socket(PF_INET, SOCK_DGRAM, 0)) < 0)
             return FALSE;
-        sprintf(ifr.ifr_name, "eth0");
+
+        i = snprintf(ifr.ifr_name, IFNAMSIZ, "eth0");
+        if (i != strlen("eth0")) {
+            close(s)
+            return 0;
+        }
+
         if (ioctl(s, SIOCGIFHWADDR, &ifr) < 0) {
             close(s);
             return 0;
         }
+
         sa = (struct sockaddr *)&ifr.ifr_addr;
-        for (i = 0; i < MAC_LEN; i++)
+        for (i = 0; i < MAC_LEN; i++) {
             data_ptr[i] = (unsigned char)(sa->sa_data[i] & 0xff);
+        }
+
         close(s);
         return 1;
     }
@@ -348,20 +357,25 @@ generate_uuid ( char* buf,
     *(short int*)(uuid+10) = (short int)timeMid;
     *(int*)(uuid+12) = timeLow;
 
+    i = 0;
     if ( !no_prefix )
     {
-        sprintf( ptr, "uuid:" );
-        ptr += 5;
+        i = snprintf( ptr, size, "uuid:" );
+        if ( i != strlen("uuid:") )
+           return 0;
     }
 
-    sprintf( ptr, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+    i = snprintf( &ptr[i], size - i,
+            "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
             uuid[15], uuid[14], uuid[13], uuid[12],
             uuid[11], uuid[10], uuid[9], uuid[8],
             uuid[7], uuid[6], uuid[5], uuid[4],
             uuid[3], uuid[2], uuid[1], uuid[0] );
 
-    return 1;
+    if ( i != SIZE_OF_UUID_STRING)
+       return 0;
 
+    return 1;
 }
 
 #else /* Solaris */
@@ -372,8 +386,9 @@ generate_uuid ( char* buf,
 {
     int max_length = SIZE_OF_UUID_STRING;
     char* ptr = buf;
-	char uuid_str[UUID_PRINTABLE_STRING_LENGTH];
-	uuid_t uuid;
+    char uuid_str[UUID_PRINTABLE_STRING_LENGTH];
+    uuid_t uuid;
+    int i;
 
     if ( !no_prefix ) max_length += 5;      // space for "uuid:"
     if ( size < max_length )
@@ -382,23 +397,25 @@ generate_uuid ( char* buf,
     if ( buf == NULL )
         return 0;
 
+    i = 0;
     if ( !no_prefix )
     {
-        sprintf( ptr, "uuid:" );
-        ptr += 5;
+        i = snprintf( ptr, size,  "uuid:" );
+        if ( i != strlen("uuid:") )
+            return 0;
     }
+    ptr += i;
 
-	uuid_generate(uuid);
-	uuid_unparse(uuid, uuid_str);
+    uuid_generate(uuid);
+    uuid_unparse(uuid, uuid_str);
 
-	int uuidlen = strlen(uuid_str);
-	if (((ptr - buf) + uuidlen) < size) {
-		strlcpy(ptr, uuid_str, uuidlen);
-		return 1;
-	}
-	else
-		return 0;
-
+    int uuidlen = strlen(uuid_str);
+    if (((ptr - buf) + uuidlen) < size) {
+        strlcpy(ptr, uuid_str, uuidlen);
+        return 1;
+    }
+    else
+       return 0;
 }
 
 #endif
