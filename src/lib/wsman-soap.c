@@ -465,10 +465,12 @@ make_callback_entry(SoapServiceCallback proc,
 	if (entry) {
 		lnode_init(&entry->node, data);
 		entry->proc = proc;
-		if (list_to_add == NULL) {
-			list_to_add = list_create(LISTCOUNT_T_MAX);
+		if (list_to_add || (list_to_add = list_create(LISTCOUNT_T_MAX))) {
+			list_append(list_to_add, &entry->node);
+		} else {
+			u_free(entry);
+			return NULL;
 		}
-		list_append(list_to_add, &entry->node);
 	} else {
 		return NULL;
 	}
@@ -481,11 +483,15 @@ void
 ws_initialize_context(WsContextH cntx, SoapH soap)
 {
 	cntx->entries = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
-	hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+	if (cntx->entries) {
+		hash_set_allocator(cntx->entries, NULL, free_hentry_func, NULL);
+	}
 
 	cntx->enuminfos = hash_create(HASHCOUNT_T_MAX, NULL, NULL);
 	cntx->subscriptionMemList = list_create(LISTCOUNT_T_MAX);
-	hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
+	if (cntx->enuminfos) {
+		hash_set_allocator(cntx->enuminfos, NULL, free_hentry_func, NULL);
+	}
 	cntx->owner = 1;
 	cntx->soap = soap;
 	cntx->serializercntx = ws_serializer_init();
@@ -751,9 +757,19 @@ wsman_identify_stub(SoapOpH op,
 	SoapH           soap;
 	WsEndPointGet   endPoint;
 
-	status = u_zalloc(sizeof(WsmanStatus *));
 	soap = soap_get_op_soap(op);
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
+	status = u_zalloc(sizeof(WsmanStatus *));
 	cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+	if (cntx == NULL) {
+		error("ws_create_ep_context failed");
+		u_free(status);
+		return -1;
+	}
 	info = (WsDispatchEndPointInfo *) appData;
 	typeInfo = info->serializationInfo;
 	endPoint = (WsEndPointGet) info->serviceEndPoint;
@@ -795,7 +811,17 @@ ws_transfer_put_stub(SoapOpH op,
 	void           *outData = NULL;
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH   cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+	if (cntx == NULL) {
+		error("ws_create_ep_context");
+		return -1;
+	}
 	WsDispatchEndPointInfo *info = (WsDispatchEndPointInfo *) appData;
 	XmlSerializerInfo *typeInfo = info->serializationInfo;
 	WsEndPointPut   endPoint = (WsEndPointPut) info->serviceEndPoint;
@@ -839,6 +865,12 @@ ws_transfer_delete_stub(SoapOpH op,
 {
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH      cntx = ws_create_ep_context(soap,
 					soap_get_op_doc(op, 1));
 
@@ -879,8 +911,17 @@ ws_transfer_get_stub(SoapOpH op,
 
 
 	SoapH       soap = soap_get_op_soap(op);
-	WsContextH  cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
+	WsContextH  cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
+	if (cntx == NULL) {
+		error("ws_create_ep_context failed");
+		return -1;
+	}
 	WsDispatchEndPointInfo *info = (WsDispatchEndPointInfo *) appData;
 	XmlSerializerInfo *typeInfo = info->serializationInfo;
 	WsEndPointGet   endPoint = (WsEndPointGet) info->serviceEndPoint;
@@ -974,6 +1015,11 @@ wsenum_enumerate_stub(SoapOpH op,
 	WsContextH      soapCntx;
 	SoapH           soap = soap_get_op_soap(op);
 
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointEnumerate endPoint =
 			(WsEndPointEnumerate)ep->serviceEndPoint;
@@ -1011,6 +1057,9 @@ wsenum_enumerate_stub(SoapOpH op,
         }
 
 	epcntx = ws_create_ep_context(soap, _doc);
+	if (epcntx == NULL) {
+		goto DONE;
+	}
 	wsman_status_init(&status);
 	doc = create_enum_info(op, epcntx, _doc, &enumInfo);
 	if (doc != NULL) {
@@ -1036,6 +1085,9 @@ wsenum_enumerate_stub(SoapOpH op,
 
 	wsman_set_estimated_total(_doc, doc, enumInfo);
 	body = ws_xml_get_soap_body(doc);
+	if (!body) {
+		goto DONE;
+	}
 
 	if (enumInfo->pullResultPtr == NULL) {
 		resp_node = ws_xml_add_child(body, XML_NS_ENUMERATION,
@@ -1043,6 +1095,9 @@ wsenum_enumerate_stub(SoapOpH op,
 	} else {
 		resp_node = ws_xml_get_child(body, 0,
 				 XML_NS_ENUMERATION, WSENUM_ENUMERATE_RESP);
+	}
+	if (!resp_node) {
+		goto DONE;
 	}
 
 	soapCntx = ws_get_soap_context(soap);
@@ -1082,6 +1137,12 @@ wsenum_release_stub(SoapOpH op,
 	WsXmlDocH       doc = NULL;
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH      soapCntx = ws_get_soap_context(soap);
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointRelease endPoint = (WsEndPointRelease) ep->serviceEndPoint;
@@ -1130,6 +1191,12 @@ wsenum_pull_stub(SoapOpH op, void *appData,
 	WsXmlNodeH      node;
 	WsmanStatus     status;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH      soapCntx = ws_get_soap_context(soap);
 
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
@@ -1142,6 +1209,7 @@ wsenum_pull_stub(SoapOpH op, void *appData,
 
 	WsXmlDocH _doc = soap_get_op_doc(op, 1);
 	WsEnumerateInfo *enumInfo;
+	WsXmlNodeH body;
 
 	wsman_status_init(&status);
 	enumInfo = get_locked_enuminfo(soapCntx, _doc,
@@ -1165,9 +1233,12 @@ wsenum_pull_stub(SoapOpH op, void *appData,
 	}
 
 	wsman_set_estimated_total(_doc, doc, enumInfo);
-	node = ws_xml_add_child(ws_xml_get_soap_body(doc),
-				XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
+	body = ws_xml_get_soap_body(doc);
+	if (!body) {
+		goto DONE;
+	}
 
+	node = ws_xml_add_child(body, XML_NS_ENUMERATION, WSENUM_PULL_RESP, NULL);
 	if (node == NULL) {
 		goto DONE;
 	}
@@ -1213,6 +1284,12 @@ wsenum_pull_direct_stub(SoapOpH op,
 	WsmanStatus     status;
 	WsXmlDocH       doc = NULL;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH      soapCntx = ws_get_soap_context(soap);
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 #ifdef ENABLE_EVENTING_SUPPORT
@@ -1259,7 +1336,11 @@ wsenum_pull_direct_stub(SoapOpH op,
 					XML_NS_ENUMERATION, WSENUM_PULL_RESP);
 			items = ws_xml_get_child(response, 0,
                                         XML_NS_ENUMERATION, WSENUM_ITEMS);
-
+			if (items == NULL) {
+				error("Invalid enumeration items...");
+				doc = wsman_generate_fault( _doc, WSMAN_INTERNAL_ERROR, WSMAN_DETAIL_INVALID, NULL);
+				goto cleanup;
+			}
 			if (enumInfo->totalItems == 0 || enumInfo->index == enumInfo->totalItems) {
 				/*
 				   ws_serialize_str(soapCntx, response, NULL,
@@ -1731,6 +1812,12 @@ wse_subscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsmanStatus     status;
 	WsXmlNodeH      inNode, body, header, temp;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH soapCntx = ws_get_soap_context(soap);
 	int i;
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
@@ -1843,6 +1930,12 @@ wse_unsubscribe_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      inNode;
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH soapCntx = ws_get_soap_context(soap);
 	WsDispatchEndPointInfo *ep = (WsDispatchEndPointInfo *) appData;
 	WsEndPointSubscribe endPoint =
@@ -1921,6 +2014,12 @@ wse_renew_stub(SoapOpH op, void *appData, void *opaqueData)
 	WsXmlNodeH      body;
 	WsXmlNodeH      header;
 	SoapH           soap = soap_get_op_soap(op);
+
+	if (soap == NULL) {
+		error("soap_get_op_soap failed");
+		return -1;
+	}
+
 	WsContextH soapCntx = ws_get_soap_context(soap);
 	char * expirestr = NULL;
 
@@ -2410,6 +2509,11 @@ create_context_entry(hash_t * h,
 {
 	char           *key = u_strdup(name);
 	hnode_t        *hn = hnode_create(val);
+	if (!key || !hn) {
+		u_free(key);
+		u_free(hn);
+		return NULL;
+	}
 	hash_insert(h, hn, (void *) key);
 	return hn;
 }
