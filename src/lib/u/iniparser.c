@@ -215,19 +215,20 @@ static dictionary * dictionary_new(int size)
     if (size<DICTMINSZ) size=DICTMINSZ ;
 
     d = (dictionary *)calloc(1, sizeof(dictionary));
-    if (d != NULL) {
-      d->size = size ;
-      d->val  = (char **)calloc(size, sizeof(char*));
-      d->key  = (char **)calloc(size, sizeof(char*));
-      d->hash = (unsigned int *)calloc(size, sizeof(unsigned));
-    }
-    if ((d == NULL) || (d->val == NULL) || (d->key == NULL) || (d->hash == NULL)) {
-      fprintf(stderr, "dictionary_new: memory allocation failure\n");
-      free(d->val);
-      free(d->key);
-      free(d->hash);
-      free(d);
-      d = NULL;
+    if (d == NULL)
+		return NULL;
+
+    d->size = size ;
+    d->val  = (char **)calloc(size, sizeof(char*));
+    d->key  = (char **)calloc(size, sizeof(char*));
+    d->hash = (unsigned int *)calloc(size, sizeof(unsigned int));
+    if ((d->val == NULL) || (d->key == NULL) || (d->hash == NULL)) {
+         fprintf(stderr, "dictionary_new: memory allocation failure\n");
+         free(d->val);
+         free(d->key);
+         free(d->hash);
+         free(d);
+		 d = NULL;
     }
     return d;
 }
@@ -871,8 +872,9 @@ int iniparser_setstr(dictionary * ini, char * entry, char * val)
 void iniparser_unset(dictionary * ini, char * entry)
 {
     char lc_key[ASCIILINESZ+1];
-
-    dictionary_unset(ini, strlwc(entry, lc_key));
+    char *lwc = strlwc(entry, lc_key);
+    if (lwc)
+        dictionary_unset(ini, lwc);
 }
 
 
