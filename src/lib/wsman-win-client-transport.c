@@ -168,6 +168,7 @@ static void *init_win_transport(WsManClient * cl)
 	}
 	if (cl->session_handle == NULL) {
 		error("could not initialize session");
+		u_free(host);
 		return NULL;
 	}
 
