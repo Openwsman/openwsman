@@ -133,6 +133,9 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 	}
 
 	header = ws_xml_get_soap_header(doc);
+	if (header == NULL) {
+		return NULL;
+	}
 	generate_uuid(uuidBuf, sizeof(uuidBuf), 0);
 
 	if (reply_to_uri == NULL) {
@@ -195,6 +198,9 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 	}
 
 	node = ws_xml_add_child(header, XML_NS_ADDRESSING, WSA_REPLY_TO, NULL);
+	if (node == NULL) {
+		return NULL;
+	}
 	ws_xml_add_child(node, XML_NS_ADDRESSING, WSA_ADDRESS, (char *)reply_to_uri);
 
   	/* Do not add the selectors to the header for reference instances */
@@ -833,6 +839,9 @@ wsman_set_enumeration_options(WsManClient * cl, WsXmlNodeH body, const char* res
 			client_opt_t *options, filter_t *filter)
 {
 	WsXmlNodeH node = ws_xml_get_child(body, 0, NULL, NULL);
+	if (node == NULL) {
+		return;
+	}
 	if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 			FLAG_ENUMERATION_OPTIMIZATION) {
 		ws_xml_add_child(node, XML_NS_WS_MAN, WSM_OPTIMIZE_ENUM, NULL);
@@ -886,33 +895,74 @@ wsman_set_subscribe_options(WsManClient * cl,
 	if(options->delivery_certificatethumbprint ||options->delivery_password ||
 		options->delivery_password) {
 		node = ws_xml_add_child(header, XML_NS_TRUST, WST_ISSUEDTOKENS, NULL);
+		if (node == NULL) {
+			return;
+		}
 		ws_xml_add_node_attr(node, XML_NS_SOAP_1_2, SOAP_MUST_UNDERSTAND, "true");
 		if(options->delivery_certificatethumbprint) {
+			if (node == NULL) {
+				return;
+			}
 			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
+			if (node2 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node2, XML_NS_TRUST, WST_TOKENTYPE,WST_CERTIFICATETHUMBPRINT );
 			node3 = ws_xml_add_child(node2, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node3, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT,
 				options->delivery_certificatethumbprint);
 			node3 = ws_xml_add_child(node2, XML_NS_POLICY, WSP_APPLIESTO, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			node3 = ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_EPR, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		}
 		if(options->delivery_username || options->delivery_password) {
 			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
+			if (node2 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node2, XML_NS_TRUST, WST_TOKENTYPE,WST_USERNAMETOKEN);
 			node3 = ws_xml_add_child(node2, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			node3 = ws_xml_add_child(node3, XML_NS_SE, WSSE_USERNAMETOKEN, NULL);
-			if(options->delivery_username)
+			if (options->delivery_username) {
+				if (node3 == NULL) {
+					return;
+				}
 				ws_xml_add_child(node3, XML_NS_SE, WSSE_USERNAME, options->delivery_username);
-			if(options->delivery_password)
+			}
+			if (options->delivery_password) {
+				if (node3 == NULL) {
+					return;
+				}
 				ws_xml_add_child(node3, XML_NS_SE, WSSE_PASSWORD, options->delivery_password);
+			}
 			node3 = ws_xml_add_child(node2, XML_NS_POLICY, WSP_APPLIESTO, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			node3 = ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_EPR, NULL);
+			if (node3 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node3, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		}
 	}
 	node = ws_xml_add_child(body,
 				XML_NS_EVENTING, WSEVENT_SUBSCRIBE,NULL);
+	if (node == NULL) {
+		return;
+	}
 	temp = ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_DELIVERY, NULL);
 	if(temp) {
 		char *mode = wsmc_create_delivery_mode_str(options->delivery_mode);
@@ -920,10 +970,16 @@ wsman_set_subscribe_options(WsManClient * cl,
 		u_free(mode);
 		if(options->delivery_uri) {
 			node2 = ws_xml_add_child(temp, XML_NS_EVENTING, WSEVENT_NOTIFY_TO, NULL);
+			if (node2 == NULL) {
+				return;
+			}
 			ws_xml_add_child(node2, XML_NS_ADDRESSING, WSA_ADDRESS, options->delivery_uri);
 		}
 		if(options->delivery_sec_mode) {
 			temp = ws_xml_add_child(temp, XML_NS_WS_MAN, WSM_AUTH, NULL);
+			if (temp == NULL) {
+				return;
+			}
 			char *mode = wsmc_create_delivery_sec_mode_str(options->delivery_sec_mode);
 			ws_xml_add_node_attr(temp, NULL, WSM_PROFILE, mode);
 			u_free(mode);
@@ -1062,6 +1118,9 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	    /* need WSM_OPTION_SET */
 		opset = ws_xml_add_child(header,
 				XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
+		if (opset == NULL) {
+		  return NULL;
+		}
 		if ((options->flags & FLAG_CIM_EXTENSIONS) == FLAG_CIM_EXTENSIONS) {
 			WsXmlNodeH op = ws_xml_add_child(opset,
 				XML_NS_WS_MAN, WSM_OPTION, NULL);
@@ -1083,6 +1142,9 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 				       XML_NS_WS_MAN, WSM_OPTION_SET, NULL);
 	    }
 	    while ((hn = hash_scan_next(&hs))) {
+		  if (opset == NULL) {
+			  return NULL;
+		  }
 	      WsXmlNodeH op = ws_xml_add_child(opset,
 					       XML_NS_WS_MAN, WSM_OPTION, NULL);
 	      ws_xml_add_node_attr(op, NULL, WSM_NAME, (char *) hnode_getkey(hn));
@@ -1112,6 +1174,9 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	case WSMAN_ACTION_PULL:
 		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_PULL, NULL);
+		if (node == NULL) {
+		  return NULL;
+		}
 		if (data) {
 			ws_xml_add_child(node, XML_NS_ENUMERATION,
 					WSENUM_ENUMERATION_CONTEXT, (char *) data);
@@ -1120,6 +1185,9 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	case WSMAN_ACTION_RELEASE:
 		node = ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_RELEASE, NULL);
+		if (node == NULL) {
+		  return NULL;
+		}
 		if (data) {
 			ws_xml_add_child(node, XML_NS_ENUMERATION,
 					WSENUM_ENUMERATION_CONTEXT, (char *) data);
@@ -1147,6 +1215,9 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 			return NULL;
 		}
                 /* %f default precision is 6 -> [-]ddd.ddd */
+		if (node == NULL) {
+			return NULL;
+		}
 		snprintf(buf, 20, "PT%fS", options->expires);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
@@ -1170,11 +1241,17 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 			if (action == WSMAN_ACTION_ENUMERATION) {
 				if ((options->flags & FLAG_ENUMERATION_OPTIMIZATION) ==
 					FLAG_ENUMERATION_OPTIMIZATION ) {
+						if (node == NULL) {
+							return NULL;
+						}
 						/* wsman:MaxElements is for Enumerate */
 						ws_xml_add_child_format(node, XML_NS_WS_MAN,
 									WSENUM_MAX_ELEMENTS, "%d", options->max_elements);
 				}
 		         } else {
+				if (node == NULL) {
+					return NULL;
+				}
 				/* wsen:MaxElements is for Pull */
 				ws_xml_add_child_format(node, XML_NS_ENUMERATION,
 						WSENUM_MAX_ELEMENTS, "%d", options->max_elements);
@@ -1492,6 +1569,9 @@ wsmc_action_invoke(WsManClient * cl,
             if (method) {
               WsXmlNodeH xnode = ws_xml_add_empty_child_format(body,
                                   (char *)resource_uri, "%s_INPUT", method);
+              if (xnode == NULL) {
+                  return NULL;
+              }
               lnode_t *lnode = list_first(options->properties);
               while (lnode) {
                 key_value_t *property = (key_value_t *)lnode->list_data;
