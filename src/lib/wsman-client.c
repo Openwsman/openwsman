@@ -602,6 +602,7 @@ wsmc_set_selectors_from_uri(const char *resource_uri, client_opt_t * options)
   if (options->selectors) {
     list_destroy_nodes(options->selectors);
     list_destroy(options->selectors);
+    options->selectors = NULL;
   }
   u_uri_t *uri = u_malloc(sizeof(u_uri_t));
   u_uri_parse(resource_uri, &uri);
