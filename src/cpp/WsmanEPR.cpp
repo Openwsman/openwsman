@@ -29,6 +29,12 @@ WsmanEPR::WsmanEPR(WsmanEPR &epr)
 {
 }
 
+WsmanEPR& WsmanEPR::operator=(const WsmanEPR &other)
+{
+	epr = epr_copy(other.getepr());
+	return *this;
+}
+
 WsmanEPR::~WsmanEPR()
 {
 	if (epr) {
