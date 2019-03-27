@@ -147,8 +147,6 @@ int xml_parser_create_doc_by_import(WsXmlDocH wsDoc, WsXmlNodeH node)
 	xmlNodePtr rootNode;
 
 	if ((doc = xmlNewDoc(BAD_CAST "1.0")) == NULL) {
-		if (doc)
-			xmlFreeDoc(doc);
 		return 0;
 	} else {
 		doc->_private = wsDoc;
