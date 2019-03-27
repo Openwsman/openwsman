@@ -11,6 +11,7 @@
 
 #include "OpenWsmanClient.h"
 
+#include <sstream>
 
 extern "C" {
 #include "u/libu.h"
@@ -408,15 +409,12 @@ string XmlDocToString(WsXmlDocH& doc) {
 bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 {
 	long lastError = wsmc_get_last_error(cl);
-	string error;
 
 	if(lastError) {
-		char tmp[11];
-		error = "Failed to establish a connection with the server.\n";
-		sprintf(tmp, "%ld", lastError);
-		error.append("Openwsman last error = ").append(tmp);
+		std::stringstream ss1;
+		ss1 << "Failed to establish a connection with the server." << std::endl << "Openwsman last error = " << lastError;
 		ws_xml_destroy_doc(doc);
-		throw WsmanClientException(error.c_str(), WSMAN_CONNECT_ERROR);
+		throw WsmanClientException(ss1.str().c_str(), WSMAN_CONNECT_ERROR);
 	}
 
 	long responseCode = wsmc_get_response_code(cl);
@@ -424,19 +422,16 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 			responseCode != 400 &&
 			responseCode != 500)
 	{
-		char tmp[11];
-		error = "An HTTP error occurred.\n";
-		sprintf(tmp, "%ld", responseCode);
-		error.append("HTTP Error = ").append(tmp);
+		std::stringstream ss2;
+		ss2 << "An HTTP error occurred." << std::endl << "HTTP Error = " << responseCode;
 		ws_xml_destroy_doc(doc);
-		throw WsmanClientException(error.c_str(), WSMAN_HTTP_ERROR);
+		throw WsmanClientException(ss2.str().c_str(), WSMAN_HTTP_ERROR);
 	}
 
 	if(!doc)
 		throw WsmanClientException("The Wsman response was NULL.");
 
 	if (wsmc_check_for_fault(doc)) {
-		char tmp[11];
 		WsManFault *fault = wsmc_fault_new();
 		wsmc_get_fault_data(doc, fault);
 		string subcode_s = fault->subcode ? string(fault->subcode) : "";
@@ -445,14 +440,14 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 		string detail_s = fault->fault_detail ? string(fault->fault_detail) : "";
 		ws_xml_destroy_doc(doc);
 		wsmc_fault_destroy(fault);
-		error = "A Soap Fault was received:";
-		error.append("\nFaultCode: " + code_s);
-		error.append("\nFaultSubCode: " + subcode_s);
-		error.append("\nFaultReason: " + reason_s);
-		error.append("\nFaultDetail: " + detail_s);
-		sprintf(tmp, "%ld", responseCode);
-		error.append("\nHttpCode:  = ").append(tmp);
-		throw WsmanSoapFault(error.c_str(), code_s, subcode_s, reason_s, detail_s);
+
+		std::stringstream ss3;
+		ss3 << "FaultCode: " << code_s << std::endl;
+		ss3 << "FaultSubCode: " + subcode_s << std::endl;
+		ss3 << "FaultReason: " + reason_s<< std::endl;
+		ss3 << "FaultDetail: " + detail_s<< std::endl;
+		ss3 << "HttpCode:  = " << responseCode;
+		throw WsmanSoapFault(ss3.str().c_str(), code_s, subcode_s, reason_s, detail_s);
 	}
 
 	return true;
