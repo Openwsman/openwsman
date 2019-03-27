@@ -1049,6 +1049,7 @@ wsenum_enumerate_stub(SoapOpH op,
 		ws_serialize_str(epcntx->serializercntx, resp_node, enumInfo->enumId,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		insert_enum_info(soapCntx, enumInfo);
+		enumInfo = NULL;
 	}
 
 DONE:
@@ -1057,6 +1058,9 @@ DONE:
 	}
 	ws_destroy_context(epcntx);
 	u_free(status.fault_msg);
+	if (enumInfo) {
+		destroy_enuminfo(enumInfo);
+	}
 	return retVal;
 }
 
