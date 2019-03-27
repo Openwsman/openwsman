@@ -430,7 +430,7 @@ xml_parser_ns_find(WsXmlNodeH node,
 		xmlNode = xmlNode->parent;
 	}
 
-	if (xmlNs == NULL && bAddAtRootIfNotFound) {
+	if (node != NULL && xmlNs == NULL && bAddAtRootIfNotFound) {
 		xmlNodePtr xmlRoot =
 			xmlDocGetRootElement(((xmlDocPtr) node)->doc);
 		char buf[12];
