@@ -466,7 +466,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		lnode_t *node;
 		char *msgId;
 		msgId = ws_xml_get_node_text(msgIdNode);
-		if (msgId[0] == 0 ) {
+		if (msgId == NULL || msgId[0] == '\0' ) {
 			generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0 );
 			debug("MessageId missing");
 			return 1;
@@ -476,6 +476,10 @@ static int wsman_is_duplicate_message_id(op_t * op)
 
 		if (soap->processedMsgIdList == NULL) {
 			soap->processedMsgIdList = list_create(LISTCOUNT_T_MAX);
+			if (!soap->processedMsgIdList) {
+				error("list_create failed");
+				return 1;
+			}
 		}
 #ifndef IGNORE_DUPLICATE_ID
 		node = list_first(soap->processedMsgIdList);
@@ -879,7 +883,7 @@ wsman_get_release_endpoint(WsContextH cntx, WsXmlDocH doc)
 			r = ifc;
 			break;
 		}
-		if (ifc->wsmanResourceUri &&
+		if (uri && ifc->wsmanResourceUri &&
 		    !strcmp(uri, ifc->wsmanResourceUri)) {
 			r = ifc;
 			break;
@@ -989,8 +993,7 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 
 		WsDispatchInterfaceInfo *ifc = (WsDispatchInterfaceInfo *) node->list_data;
 		if (wsman_is_identify_request(doc)) {
-			if ((ns = wsman_dispatcher_match_ns(ifc,
-						       XML_NS_WSMAN_ID))) {
+			if ((ns = wsman_dispatcher_match_ns(ifc, XML_NS_WSMAN_ID))) {
 				r = ifc;
 				break;
 			}
@@ -1001,14 +1004,19 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 		 * with  a generic plugin supporting a namespace with
 		 * multiple Resource URIs (e.g. CIM)
 		 **/
-		else if (ifc->wsmanResourceUri == NULL &&
-			 (ns = wsman_dispatcher_match_ns(ifc, uri))) {
-			r = ifc;
-			break;
-		} else if (ifc->wsmanResourceUri &&
-			   !strcmp(uri, ifc->wsmanResourceUri)) {
-			r = ifc;
-			break;
+		else {
+			if (!uri) {
+				goto cleanup;
+			}
+			if (ifc->wsmanResourceUri == NULL &&
+			    (ns = wsman_dispatcher_match_ns(ifc, uri))) {
+				r = ifc;
+				break;
+			} else if (ifc->wsmanResourceUri &&
+				   !strcmp(uri, ifc->wsmanResourceUri)) {
+				r = ifc;
+				break;
+			}
 		}
 		node = list_next((list_t *) dispInfo->interfaces, node);
 	}
@@ -1017,6 +1025,9 @@ SoapDispatchH wsman_dispatcher(WsContextH cntx, void *data, WsXmlDocH doc)
 	if (wsman_is_identify_request(doc) && r != NULL) {
 		ep = &r->endPoints[0];
 	} else if (r != NULL) {
+		if (!action) {
+			goto cleanup;
+		}
 		char *ptr = action;
 		/*
 		 * See if the action is part of the namespace which means that
