@@ -38,12 +38,12 @@
 #endif
 
 #define _GNU_SOURCE
-#include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 
+#include "u/gettimeofday.h"
 #include "u/libu.h"
 #include "wsman-xml-api.h"
 #include "wsman-client-api.h"
