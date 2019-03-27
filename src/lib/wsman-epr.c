@@ -426,6 +426,11 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
 	}
 	else
 		eprnode = node;
+
+	if (eprnode == NULL) {
+		return 0;
+	}
+
 	if(embedded)
 		ws_xml_add_child(eprnode, XML_NS_ADDRESSING, WSA_ADDRESS, epr->address);
 	else
@@ -435,9 +440,14 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
 	else
 		refparamnode = node;
 
+	if (refparamnode == NULL) {
+		return 0;
+	}
 	ws_xml_add_child(refparamnode, XML_NS_WS_MAN, WSM_RESOURCE_URI, epr->refparams.uri);
 	selectorsetnode = ws_xml_add_child(refparamnode, XML_NS_WS_MAN, WSM_SELECTOR_SET, NULL);
-
+	if (selectorsetnode == NULL) {
+		return 0;
+	}
 	p = epr->refparams.selectorset.selectors;
 	for(i = 0; i < epr->refparams.selectorset.count; i++) {
 		WsXmlNodeH temp = NULL;
@@ -445,6 +455,9 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
 			temp = ws_xml_add_child(selectorsetnode, XML_NS_WS_MAN, WSM_SELECTOR, p->v.text);
 		else {
 			temp = ws_xml_add_child(selectorsetnode, XML_NS_WS_MAN, WSM_SELECTOR, NULL);
+			if (temp == NULL) {
+				return 0;
+			}
 			epr_serialize(temp, XML_NS_ADDRESSING, WSA_EPR, p->v.epr, 1);
 		}
 		ws_xml_add_node_attr(temp, NULL, WSM_NAME, p->key);
