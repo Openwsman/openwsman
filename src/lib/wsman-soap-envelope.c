@@ -1090,7 +1090,6 @@ wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node)
 						   WSM_NAME);
 
 		if (attrVal && !hash_lookup(h, attrVal)) {
-			sentry = u_malloc(sizeof(*sentry));
 			epr = ws_xml_get_child(selector, 0, XML_NS_ADDRESSING,
 					WSA_EPR);
 			if (epr) {
