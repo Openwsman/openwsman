@@ -502,6 +502,7 @@ static int iniparser_add_entry(
     } else {
         strncpy(longkey, sec, sizeof(longkey));
     }
+    longkey[sizeof(longkey)-1] = 0;
 
     /* Add (key,val) to dictionary */
     return dictionary_set(d, longkey, val);
@@ -925,7 +926,8 @@ dictionary * iniparser_new(char *ininame)
 
             if (sscanf(where, "[%[^]]", sec)==1) {
                 /* Valid section name */
-                strcpy(sec, strlwc(sec, lc_key));
+                strncpy(sec, strlwc(sec, lc_key), sizeof(sec));
+                sec[sizeof(sec)-1] = 0;
                 if (iniparser_add_entry(d, sec, NULL, NULL) != 0) {
                   dictionary_del(d);
                   fclose(ini);
@@ -936,7 +938,8 @@ dictionary * iniparser_new(char *ininame)
                    ||  sscanf (where, "%[^=] = %[^;#]",     key, val) == 2) {
                 char crop_key[ASCIILINESZ+1];
 
-                strcpy(key, strlwc(strcrop(key, crop_key), lc_key));
+                strncpy(key, strlwc(strcrop(key, crop_key), lc_key), sizeof(key));
+                key[sizeof(key)-1] = 0;
                 /*
                  * sscanf cannot handle "" or '' as empty value,
                  * this is done here
@@ -944,7 +947,8 @@ dictionary * iniparser_new(char *ininame)
                 if (!strcmp(val, "\"\"") || !strcmp(val, "''")) {
                     val[0] = (char)0;
                 } else {
-                    strcpy(val, strcrop(val, crop_key));
+                    strncpy(val, strcrop(val, crop_key), sizeof(val));
+                    val[sizeof(val)-1] = 0;
                 }
                 if (iniparser_add_entry(d, sec, key, val) != 0) {
                   dictionary_del(d);
