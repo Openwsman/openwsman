@@ -671,11 +671,17 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				node = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAMETOKEN);
 				if(node) {
 					temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_USERNAME);
-					if(temp)
+					if(temp) {
+						if (subsInfo->username)
+							u_free(subsInfo->username);
 						subsInfo->username = u_strdup(ws_xml_get_node_text(temp));
+					}
 					temp = ws_xml_get_child(node, 0, XML_NS_SE, WSSE_PASSWORD);
-					if(temp)
+					if(temp) {
+						if (subsInfo->password)
+							u_free(subsInfo->password);
 						subsInfo->password = u_strdup(ws_xml_get_node_text(temp));
+					}
 				}
 			}
 			debug("subsInfo->username = %s, subsInfo->password = %s", subsInfo->username, \
@@ -685,8 +691,11 @@ int wsman_parse_credentials(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 			node = ws_xml_get_child(tnode, 0, XML_NS_TRUST, WST_REQUESTEDSECURITYTOKEN);
 			if(node) {
 				node = ws_xml_get_child(node, 0, XML_NS_WS_MAN, WSM_CERTIFICATETHUMBPRINT);
-				if(node)
+				if(node) {
+					if (subsInfo->certificate_thumbprint)
+						u_free(subsInfo->certificate_thumbprint);
 					subsInfo->certificate_thumbprint = u_strdup(ws_xml_get_node_text(node));
+				}
 			}
 		}
 		else {
