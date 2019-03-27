@@ -611,7 +611,7 @@ wsmc_handler( WsManClient *cl,
 				break;
 			default:
 				// The status code does not indicate success.
-				r = WS_LASTERR_OTHER_ERROR;
+				r = CURLE_FAILED_INIT;
 				iDone = 1;
 				break;
 		}
