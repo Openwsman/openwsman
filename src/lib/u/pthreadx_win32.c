@@ -107,6 +107,13 @@ pthread_mutexattr_init(pthread_mutexattr_t *attr)
 	return 0;
 }
 
+int
+pthread_mutexattr_destroy(pthread_mutexattr_t *attr)
+{
+	memset(attr, 0, sizeof(*attr));
+	return 0;
+}
+
 int pthread_mutex_lock(pthread_mutex_t *mp)
 {
     EnterCriticalSection(mp);
