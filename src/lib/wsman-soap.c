@@ -154,7 +154,7 @@ remove_locked_enuminfo(WsContextH cntx,
 		return;
 	}
 	hash_delete_free(cntx->enuminfos,
-	             hash_lookup(cntx->enuminfos, enumInfo->enumId));
+		hash_lookup(cntx->enuminfos, enumInfo->enumId));
 	u_unlock(cntx->soap);
 }
 
@@ -198,14 +198,22 @@ search_pull_subs_info(SoapH soap, WsXmlDocH indoc)
 		uuid = ws_xml_get_node_text(node);
 	}
 	if(uuid == NULL) return subsInfo;
-	pthread_mutex_lock(&soap->lockSubs);
+	if (pthread_mutex_lock(&soap->lockSubs))
+	{
+		error("Error: Can't lock soap->lockSubs");
+		return NULL;
+	}
 	lnode = list_first(soapCntx->subscriptionMemList);
 	while(lnode) {
 		subsInfo = (WsSubscribeInfo *)lnode->list_data;
 		if(!strcmp(subsInfo->subsId, uuid+5)) break;
 		lnode = list_next(soapCntx->subscriptionMemList, lnode);
 	}
-	pthread_mutex_unlock(&soap->lockSubs);
+	if (pthread_mutex_unlock(&soap->lockSubs))
+	{
+		error("Error: Can't unlock soap->lockSubs");
+		return NULL;
+	}
 	if(lnode == NULL) return NULL;
 	return subsInfo;
 }
