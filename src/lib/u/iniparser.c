@@ -117,7 +117,8 @@ static char * strcrop(char * s, char * l)
 
     if ((s==NULL) || (l==NULL)) return NULL ;
     memset(l, 0, ASCIILINESZ+1);
-    strcpy(l, s);
+    strncpy(l, s, ASCIILINESZ + 1);
+    l[ASCIILINESZ] = '\0';
     last = l + strlen(l);
     while (last > l) {
         if (!isspace((int)*(last-1)))
