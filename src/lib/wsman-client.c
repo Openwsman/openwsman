@@ -2164,7 +2164,9 @@ wsmc_release(WsManClient * cl)
 int
 wsmc_lock(WsManClient * cl)
 {
-	pthread_mutex_lock(&cl->mutex);
+	if (pthread_mutex_lock(&cl->mutex))
+		return 1;
+
 	if (cl->flags & WSMAN_CLIENT_BUSY) {
 		pthread_mutex_unlock(&cl->mutex);
 		return 1;
@@ -2178,7 +2180,9 @@ wsmc_lock(WsManClient * cl)
 void
 wsmc_unlock(WsManClient * cl)
 {
-	pthread_mutex_lock(&cl->mutex);
+	if (pthread_mutex_lock(&cl->mutex))
+		return;
+
 	cl->flags &= ~WSMAN_CLIENT_BUSY;
 	pthread_mutex_unlock(&cl->mutex);
 }
