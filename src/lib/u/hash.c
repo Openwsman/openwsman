@@ -707,6 +707,9 @@ int hash_alloc_insert(hash_t *hash, const void *key, const void *data)
 
 void hash_delete_free(hash_t *hash, hnode_t *node)
 {
+    if (node == NULL || hash == NULL)
+        return;
+
     hash_delete(hash, node);
     hash->freenode(node, hash->context);
 }
