@@ -21,11 +21,7 @@ int	_shttpd_tz_offset;	/* Time zone offset from UTC	*/
 int	_shttpd_exit_flag;	/* Program exit flag		*/
 
 const struct vec _shttpd_known_http_methods[] = {
-	{"GET",		3},
 	{"POST",	4},
-	{"PUT",		3},
-	{"DELETE",	6},
-	{"HEAD",	4},
 	{NULL,		0}
 };
 
@@ -336,9 +332,11 @@ date_to_epoch(const char *s)
 }
 
 static void
-remove_double_dots(char *s)
+remove_all_leading_dots(char *s)
 {
 	char	*p = s;
+
+	while (*s != '\0' && *s == '.') s++;
 
 	while (*s != '\0') {
 		*p++ = *s++;
@@ -546,7 +544,7 @@ decide_what_to_do(struct conn *c)
 		*c->query++ = '\0';
 
 	_shttpd_url_decode(c->uri, strlen(c->uri), c->uri, strlen(c->uri) + 1);
-	remove_double_dots(c->uri);
+	remove_all_leading_dots(c->uri);
 
 	root = c->ctx->options[OPT_ROOT];
 	if (strlen(c->uri) + strlen(root) >= sizeof(path)) {
@@ -556,6 +554,7 @@ decide_what_to_do(struct conn *c)
 
 	(void) _shttpd_snprintf(path, sizeof(path), "%s%s", root, c->uri);
 
+	DBG(("decide_what_to_do -> processed path: [%s]", path));
 	/* User may use the aliases - check URI for mount point */
 	if (is_alias(c->ctx, c->uri, &alias_uri, &alias_path) != NULL) {
 		(void) _shttpd_snprintf(path, sizeof(path), "%.*s%s",
@@ -572,7 +571,10 @@ decide_what_to_do(struct conn *c)
 	if ((ruri = _shttpd_is_registered_uri(c->ctx, c->uri)) != NULL) {
 		_shttpd_setup_embedded_stream(c,
 		    ruri->callback, ruri->callback_data);
-	} else
+	} else {
+		_shttpd_send_server_error(c, 403, "Forbidden");
+	}
+#if 0
 	if (strstr(path, HTPASSWD)) {
 		/* Do not allow to view passwords files */
 		_shttpd_send_server_error(c, 403, "Forbidden");
@@ -656,6 +658,8 @@ decide_what_to_do(struct conn *c)
 	} else {
 		_shttpd_send_server_error(c, 500, "Internal Error");
 	}
+#endif //0
+  return;
 }
 
 static int
