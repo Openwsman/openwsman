@@ -328,6 +328,18 @@ ENDIF(BUILD_LIBCIM)
 # Various include files
 
 INCLUDE(CheckIncludeFile)
+INCLUDE(CheckFunctionExists)
+
+CHECK_FUNCTION_EXISTS( "alloca" HAVE_ALLOCA )
+IF (NOT HAVE_ALLOCA)
+  SET(HAVE_ALLOCA 0)
+  SET(C_ALLOCA 0)
+  CHECK_INCLUDE_FILE( "alloca.h" HAVE_ALLOCA_H )
+ELSE (NOT HAVE_ALLOCA)
+  SET(HAVE_ALLOCA 1)
+  SET(C_ALLOCA 1)
+  SET(HAVE_ALLOCA_H 0)
+ENDIF (NOT HAVE_ALLOCA)
 
 #
 # The wsman_config file checks include file existance via "#if",
@@ -337,8 +349,7 @@ INCLUDE(CheckIncludeFile)
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
 
-SET (FILES_TO_TEST "crypt.h" "ctype.h" "CUnit/Basic.h" "dirent.h" "dlfcn.h" "ifaddrs.h" "inttypes.h" "memory.h" "netinet/in.h" "net/if_dl.h" "net/if.h" "pam/pam_appl.h" "pam/pam_misc.h" "pthread.h" "security/pam_appl.h" "security/pam_misc.h" "stdarg.h" "stdint.h" "stdlib.h" "strings.h" "string.h" "sys/ioctl.h" "sys/resource.h" "sys/select.h" "sys/sendfile.h" "sys/signal.h" "sys/socket.h" "sys/sockio.h" "sys/stat.h" "sys/types.h" "unistd.h" "vararg.h" )
-#SET(FILES_TO_TEST "crypt.h")
+SET (FILES_TO_TEST "alloca.h" "crypt.h" "ctype.h" "CUnit/Basic.h" "dirent.h" "dlfcn.h" "ifaddrs.h" "inttypes.h" "memory.h" "netinet/in.h" "net/if_dl.h" "net/if.h" "pam/pam_appl.h" "pam/pam_misc.h" "pthread.h" "security/pam_appl.h" "security/pam_misc.h" "stdarg.h" "stdint.h" "stdlib.h" "strings.h" "string.h" "sys/ioctl.h" "sys/resource.h" "sys/select.h" "sys/sendfile.h" "sys/signal.h" "sys/socket.h" "sys/sockio.h" "sys/stat.h" "sys/types.h" "unistd.h" "vararg.h" )
 FOREACH( FILE ${FILES_TO_TEST})
   STRING(REGEX REPLACE "\\." "_" FILEDOT ${FILE})
   STRING(REGEX REPLACE "/" "_" FILESLASH ${FILEDOT})
@@ -364,23 +375,11 @@ SET(SSIZE_T_MISSING 0)
 
 # library functions
 
-INCLUDE(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS("getifaddrs" HAVE_GETIFADDRS)
 #SIOCGIFHWADDR
 #SIOCGARP
 
 SET( CRAY_STACKSEG_END 0 )
-
-CHECK_FUNCTION_EXISTS( "alloca" HAVE_ALLOCA )
-IF (NOT HAVE_ALLOCA)
-  SET(HAVE_ALLOCA 0)
-  SET(C_ALLOCA 0)
-  CHECK_INCLUDE_FILE( "alloca.h" HAVE_ALLOCA_H )
-ELSE (NOT HAVE_ALLOCA)
-  SET(HAVE_ALLOCA 1)
-  SET(C_ALLOCA 1)
-  SET(HAVE_ALLOCA_H 0)
-ENDIF (NOT HAVE_ALLOCA)
 
 #
 # The wsman_config file checks functions existance via "#if",
