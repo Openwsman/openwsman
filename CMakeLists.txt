@@ -389,7 +389,7 @@ SET( CRAY_STACKSEG_END 0 )
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
 
-SET (FUNCS_TO_TEST "bcopy" "crypt" "daemon" "fnmatch" "getaddrinfo" "getnameinfo" "getpid" "gettimeofday" "gmtime_r" "inet_aton" "inet_ntop" "inet_pton" "sleep" "srandom" "strsep" "strtok_r" "syslog" "timegm" "memmove" "unlink" "va_copy" )
+SET (FUNCS_TO_TEST "bcopy" "crypt" "daemon" "fnmatch" "getaddrinfo" "getnameinfo" "getpid" "gettimeofday" "gmtime_r" "inet_aton" "inet_ntop" "inet_pton" "sleep" "srandom" "ssl" "strsep" "strtok_r" "syslog" "timegm" "memmove" "unlink" "va_copy" )
 FOREACH( FUNC ${FUNCS_TO_TEST})
   STRING(TOUPPER ${FUNC} UPNAME)
   SET(HAVENAME "HAVE_${UPNAME}")
