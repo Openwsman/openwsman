@@ -49,10 +49,14 @@ IF ( NOT DISABLE_SERVER )
 ENDIF ( NOT DISABLE_SERVER )
 
 ########## wsman_curl_client_transport ###############
-
-SET( wsman_curl_client_transport_SOURCES wsman-client-transport.c wsman-curl-client-transport.c )
-ADD_LIBRARY( ${WSMAN_CLIENT_TRANSPORT_PKG} ${wsman_curl_client_transport_SOURCES} )
-TARGET_LINK_LIBRARIES( ${WSMAN_CLIENT_TRANSPORT_PKG} ${CURL_LIBRARIES} )
+IF(UNIX)
+ SET( wsman_curl_client_transport_SOURCES wsman-client-transport.c wsman-curl-client-transport.c )
+ ADD_LIBRARY( ${WSMAN_CLIENT_TRANSPORT_PKG} ${wsman_curl_client_transport_SOURCES} )
+ TARGET_LINK_LIBRARIES( ${WSMAN_CLIENT_TRANSPORT_PKG} ${CURL_LIBRARIES} )
+ELSE(UNIX)
+ SET( wsman_win_client_transport_SOURCES wsman-client-transport.c wsman-win-client-transport.c )
+ ADD_LIBRARY( ${WSMAN_CLIENT_TRANSPORT_PKG} ${wsman_win_client_transport_SOURCES} )
+ENDIF(UNIX)
 IF( ENABLE_EVENTING_SUPPORT )
 TARGET_LINK_LIBRARIES( ${WSMAN_CLIENT_TRANSPORT_PKG} ${OPENSSL_LIBRARIES} )
 ENDIF( ENABLE_EVENTING_SUPPORT )
@@ -64,7 +68,7 @@ INSTALL(TARGETS ${WSMAN_CLIENT_TRANSPORT_PKG} DESTINATION ${LIB_INSTALL_DIR})
 
 SET( wsman_client_SOURCES wsman-client.c )
 ADD_LIBRARY( ${WSMAN_CLIENT_PKG} ${wsman_client_SOURCES} )
-TARGET_LINK_LIBRARIES( ${WSMAN_CLIENT_PKG} wsman_curl_client_transport )
+TARGET_LINK_LIBRARIES( ${WSMAN_CLIENT_PKG} ${WSMAN_CLIENT_TRANSPORT_PKG} )
 SET_TARGET_PROPERTIES( ${WSMAN_CLIENT_PKG} PROPERTIES VERSION 4.0.0 SOVERSION 4)
 INSTALL(TARGETS ${WSMAN_CLIENT_PKG} DESTINATION ${LIB_INSTALL_DIR})
 
