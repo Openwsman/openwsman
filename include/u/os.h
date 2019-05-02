@@ -41,7 +41,9 @@ pid_t getpid(void);
 #define strtoull(nptr, endptr, base) _strtoul_l(nptr, endptr, base, NULL)
 #define strtoll(nptr, endptr, base) _strtol_l(nptr, endptr, base, NULL)
 #define sleep(secs) Sleep( (secs) * 1000 )
-#define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
+#if _MSC_VER < 1900
+  #define snprintf _snprintf              /*!< The snprintf is called _snprintf() in Win32 */
+#endif /* _MSC_VER < 1900 */
 #define popen _popen
 #define getpid GetCurrentProcessId
 #define pclose _pclose
