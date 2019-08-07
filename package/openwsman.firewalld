@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Openwsman</short>
+  <description>Openwsman is a project intended to provide an open-source implementation of the Web Services Management specification (WS-Management) and to expose system management information on the Linux operating system using the WS-Management protocol.</description>
+  <port protocol="tcp" port="5985"/>
+  <port protocol="tcp" port="5986"/>
+</service>
