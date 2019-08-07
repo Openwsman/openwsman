@@ -19,7 +19,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0042 NEW)
   endif ( POLICY CMP0042 )
   if ( POLICY CMP0046 )
-  cmake_policy(SET CMP0046 OLD)
+    cmake_policy(SET CMP0046 NEW)
   endif ( POLICY CMP0046 )
 endif(COMMAND cmake_policy)
 	      
@@ -618,6 +618,7 @@ SET( AUTOBUILD_COMMAND
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.pam.rh" "${CMAKE_BINARY_DIR}/package"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.rpmlintrc" "${CMAKE_BINARY_DIR}/package"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.SuSEfirewall2" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.firewalld" "${CMAKE_BINARY_DIR}/package"
 )
 
 ADD_CUSTOM_TARGET( srcpackage_local

@@ -50,7 +50,7 @@ BuildRequires:  python-devel
 %endif
 
 %if 0%{?rhel_version} > 0
-BuildRequires:  -vim
+#!BuildIgnore:  vim
 %endif
 
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
@@ -133,7 +133,7 @@ BuildRequires:  ruby
 %endif
 
 %if 0%{?has_systemd}
-BuildRequires:  systemd
+BuildRequires:  pkgconfig(systemd)
 %{?systemd_requires}
 %endif
 
@@ -580,7 +580,7 @@ rm -f /var/log/wsmand.log
 %dir %{_libexecdir}/firewalld
 %dir %{_libexecdir}/firewalld/services
 %{_libexecdir}/firewalld/services/%{name}.xml
-#else
+%else
 %config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
 %endif
 %if 0%{?has_systemd}
