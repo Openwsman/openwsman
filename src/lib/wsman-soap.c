@@ -285,6 +285,7 @@ DONE:
 	if (fault_code != WSMAN_RC_OK) {
 		outdoc = wsman_generate_fault(indoc, fault_code, fault_detail_code, NULL);
 		u_free(enumInfo);
+                *eInfo = NULL;
 	} else {
 		*eInfo = enumInfo;
 	}
@@ -1021,7 +1022,6 @@ wsenum_enumerate_stub(SoapOpH op,
                 debug("enumeration fault");
 		doc = wsman_generate_fault( _doc, status.fault_code,
 				status.fault_detail_code, status.fault_msg);
-		destroy_enuminfo(enumInfo);
 		goto DONE;
 	}
 	if (enumInfo->pullResultPtr) {
@@ -1052,7 +1052,6 @@ wsenum_enumerate_stub(SoapOpH op,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
 		ws_serialize_str(epcntx->serializercntx, resp_node,
 			       NULL, XML_NS_WS_MAN, WSENUM_END_OF_SEQUENCE, 0);
-		destroy_enuminfo(enumInfo);
 	} else {
 		ws_serialize_str(epcntx->serializercntx, resp_node, enumInfo->enumId,
 			    XML_NS_ENUMERATION, WSENUM_ENUMERATION_CONTEXT, 0);
