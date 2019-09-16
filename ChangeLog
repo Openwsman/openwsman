@@ -12,6 +12,7 @@
      HTTP requests. A remote, unauthenticated attacker can exploit this
      vulnerability by sending malicious HTTP request to cause denial of
      service to openwsman server."
+  - Many potential NULL dereferences fixed (Alexander Usyskin)
 
 2.6.9
 - Features
