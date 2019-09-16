@@ -1,7 +1,7 @@
 #
 # spec file for package openwsman
 #
-# Copyright (c) 2018 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -12,7 +12,7 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
+# Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
 
@@ -455,7 +455,6 @@ rm -f %{buildroot}/%{_bindir}/winrs
 %post -n libwsman3 -p /sbin/ldconfig
 %postun -n libwsman3 -p /sbin/ldconfig
 
-# follow http://en.opensuse.org/openSUSE:Systemd_packaging_guidelines
 %if 0%{?has_systemd}
 %pre server
 if [ -f /var/lib/systemd/migrated/%{name} ]; then
