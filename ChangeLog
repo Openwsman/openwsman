@@ -1,3 +1,7 @@
+2.6.11
+- Bugfixes
+  - prevent double-free in error processing of events
+
 2.6.10
 - Features
   - rpm installs firewalld configuration
