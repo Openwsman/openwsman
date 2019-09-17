@@ -210,7 +210,7 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 		if (options->cim_ns) {
                   /* don't add CIM_NAMESPACE_SELECTOR twice */
                   if (options->selectors && list_count(options->selectors) > 0) {
-                    if (list_find(options->selectors, CIM_NAMESPACE_SELECTOR, _list_key_compare)) {
+                    if (!list_find(options->selectors, CIM_NAMESPACE_SELECTOR, _list_key_compare)) {
                       wsman_add_selector(header, CIM_NAMESPACE_SELECTOR, options->cim_ns);
                     }
                   }

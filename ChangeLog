@@ -1,3 +1,8 @@
+2.6.12
+- Bugfixes
+  - fix regression introduced in 2.5.0, __cimnamespace selector
+    was not properly set in requests.
+
 2.6.11
 - Bugfixes
   - prevent double-free in error processing of events
