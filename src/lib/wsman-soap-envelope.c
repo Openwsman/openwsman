@@ -828,7 +828,6 @@ wsman_parse_event_request(WsXmlDocH doc, WsSubscribeInfo * subsInfo,
 				subsInfo->flags |= WSMAN_SUBSCRIPTION_SELECTORSET;
 			}
 		}
-		filter_destroy(wsman_f);
 	}
 
 	return 0;
