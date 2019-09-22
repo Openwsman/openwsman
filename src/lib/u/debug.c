@@ -119,6 +119,9 @@ int debug_full(debug_level_e level, const char *format, ...)
 	va_start(args, format);
 	str = u_strdup_vprintf(format, args);
 	va_end(args);
+	if (str == NULL) {
+		return -1;
+	}
 
 	call_handlers(level, str);
 	ret = strlen(str);
@@ -146,9 +149,16 @@ debug_full_verbose(debug_level_e level,
 	va_start(args, format);
 	body = u_strdup_vprintf(format, args);
 	va_end(args);
+	if (body == NULL) {
+		return -1;
+	}
+
 	str = u_strdup_printf("[%d] %s:%d(%s) %s",
 			      level, file, line, proc, body);
 	u_free(body);
+	if (str == NULL) {
+		return -1;
+	}
 
 	call_handlers(level, str);
 	ret = strlen(str);
