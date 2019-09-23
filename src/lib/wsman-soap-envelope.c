@@ -1262,7 +1262,7 @@ wsman_get_selector_list_from_filter(WsContextH cntx, WsXmlDocH doc)
 	}
 
 	object = ws_xml_get_child(assInst, 0, XML_NS_CIM_BINDING, WSMB_OBJECT);
-	if(!node) {
+	if(!object) {
 		debug("no SelectorSet defined. Missing Object");
 		return NULL;
 	}
