@@ -49,8 +49,14 @@ debug_add_handler(debug_fn fn, debug_level_e level, void *user_data)
 	lnode_t *new_node;
 	debug_handler_t *handler =
 	    (debug_handler_t *) u_malloc(sizeof(debug_handler_t));
+	if (!handler)
+		return 0;
 	if (!handlers) {
 		handlers = list_create(LISTCOUNT_T_MAX);
+		if (!handlers) {
+			u_free(handler);
+			return 0;
+		}
 	}
 	handler->fn = fn;
 	handler->level = level;
@@ -63,6 +69,10 @@ debug_add_handler(debug_fn fn, debug_level_e level, void *user_data)
 		handler->id = 1;
 
 	new_node = lnode_create(handler);
+	if (!new_node) {
+		u_free(handler);
+		return 0;
+	}
 	list_append(handlers, new_node);
 
 	return handler->id;
