@@ -252,8 +252,18 @@ create_enum_info(SoapOpH op,
 	enumInfo->releaseproc = wsman_get_release_endpoint(epcntx, indoc);
 	to = ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_ADDRESSING, WSA_TO));
+	if (to == NULL) {
+		error("No to node");
+		fault_code = WSMAN_INTERNAL_ERROR;
+		goto DONE;
+	}
 	uri =  ws_xml_get_node_text(
 			ws_xml_get_child(header, 0, XML_NS_WS_MAN, WSM_RESOURCE_URI));
+	if (uri == NULL) {
+		error("No uri node");
+		fault_code = WSMAN_INTERNAL_ERROR;
+		goto DONE;
+	}
 
 	enumInfo->epr_to = u_strdup(to);
 	enumInfo->epr_uri = u_strdup(uri);
@@ -320,6 +330,12 @@ wsman_verify_enum_info(SoapOpH op,
 			XML_NS_ADDRESSING, WSA_TO));
 	char *uri= ws_xml_get_node_text(ws_xml_get_child(header, 0,
 			XML_NS_WS_MAN, WSM_RESOURCE_URI));
+	if (to == NULL || uri == NULL) {
+		error("No to or uri node");
+		status->fault_code = WSMAN_INTERNAL_ERROR;
+		status->fault_detail_code = 0;
+		return 0;
+	}
 
 	if (strcmp(enumInfo->epr_to, to) != 0 ||
 			strcmp(enumInfo->epr_uri, uri) != 0 ) {
