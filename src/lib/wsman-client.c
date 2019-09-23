@@ -34,8 +34,9 @@
 
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
-#include <stdbool.h>
 #endif
+
+#include <stdbool.h>
 
 #include "u/libu.h"
 #include "wsman-xml-api.h"
