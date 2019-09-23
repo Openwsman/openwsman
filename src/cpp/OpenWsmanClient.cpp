@@ -448,6 +448,7 @@ bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
 		ws_xml_destroy_doc(doc);
 
 		std::stringstream ss3;
+		ss3 << "A Soap Fault was received:" << std::endl;
 		ss3 << "FaultCode: " << code_s << std::endl;
 		ss3 << "FaultSubCode: " + subcode_s << std::endl;
 		ss3 << "FaultReason: " + reason_s<< std::endl;
