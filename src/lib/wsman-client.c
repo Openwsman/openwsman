@@ -1217,10 +1217,7 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 			return NULL;
 		}
                 /* %f default precision is 6 -> [-]ddd.ddd */
-		if (node == NULL) {
-			return NULL;
-		}
-		snprintf(buf, 20, "PT%fS", options->expires);
+		snprintf(buf, 20, "PT%fS", (options) ? options->expires : 0);
 		ws_xml_add_child(node, XML_NS_EVENTING, WSEVENT_EXPIRES, buf);
 		if(data) {
 			if(((char *)data)[0] != 0)
