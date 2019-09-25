@@ -43,7 +43,8 @@ extern "C" {
 
 /* strlib.c following */
 
-#define ASCIILINESZ 1024
+#define ASCIILINESZ 1024 // Note - if ASCIILINESZ value is changed - the %1024 in sscanf()s below should be updated accordingly
+
 // #define INIPARSER_EXTENDED_FEATURES 1
 /*-------------------------------------------------------------------------*/
 /**
@@ -484,7 +485,6 @@ static void dictionary_dump(dictionary *d, FILE *f)
 
 
 /* iniparser.c.c following */
-#define ASCIILINESZ         1024
 #define INI_INVALID_KEY     ((char*)-1)
 
 /* Private: add an entry to the dictionary
@@ -926,7 +926,7 @@ dictionary * iniparser_new(char *ininame)
             continue ; /* Comment lines */
         else {
             char lc_key[ASCIILINESZ+1];
-            // Note - is ASCIILINESZ value is changed - the %1024 in sscanf below should be updated accordingly
+            // Note - if ASCIILINESZ value is changed - the %1024 in sscanf below should be updated accordingly
             if (sscanf(where, "[%1024[^]]", sec)==1) {
                 /* Valid section name */
                 strncpy(sec, strlwc(sec, lc_key), sizeof(sec));
@@ -936,7 +936,7 @@ dictionary * iniparser_new(char *ininame)
                   fclose(ini);
                   return NULL;
                 }
-            // Note - is ASCIILINESZ value is changed - the %1024 in all the sscanf below should be updated accordingly
+            // Note - if ASCIILINESZ value is changed - the %1024 in all the sscanf below should be updated accordingly
             } else if (sscanf (where, "%1024[^=] = \"%1024[^\"]\"", key, val) == 2
                    ||  sscanf (where, "%1024[^=] = '%1024[^\']'",   key, val) == 2
                    ||  sscanf (where, "%1024[^=] = %1024[^;#]",     key, val) == 2) {
