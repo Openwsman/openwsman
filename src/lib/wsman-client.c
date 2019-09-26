@@ -373,14 +373,14 @@ wsmc_options_destroy(client_opt_t * op)
 }
 
 void
-wsmc_set_action_option(client_opt_t * options, unsigned int flag)
+wsmc_set_action_option(client_opt_t * options, unsigned long flag)
 {
 	options->flags |= flag;
 	return;
 }
 
 
-unsigned int
+unsigned long
 wsmc_get_action_option(client_opt_t * options)
 {
 	return options->flags;
@@ -388,7 +388,7 @@ wsmc_get_action_option(client_opt_t * options)
 
 
 void
-wsmc_clear_action_option(client_opt_t * options, unsigned int flag)
+wsmc_clear_action_option(client_opt_t * options, unsigned long flag)
 {
 	options->flags &= ~flag;
 	return;
