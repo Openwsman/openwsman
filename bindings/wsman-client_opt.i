@@ -65,7 +65,7 @@ typedef struct {} client_opt_t;
   }
 
 #if defined(SWIGRUBY)
-  %rename( "flags=" ) set_flags(int flags);
+  %rename( "flags=" ) set_flags(unsigned long flags);
 #endif
   /*
    * set option flag(s)
@@ -76,7 +76,7 @@ typedef struct {} client_opt_t;
    *   options.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
    *
    */
-  void set_flags(int flags) {
+  void set_flags(unsigned long flags) {
     wsmc_set_action_option($self, flags);
   }
 
@@ -92,7 +92,7 @@ typedef struct {} client_opt_t;
    *   optins.flags -> Integer
    *
    */
-  unsigned int get_flags() {
+  unsigned long get_flags() {
     return wsmc_get_action_option($self);
   }
 
@@ -105,7 +105,7 @@ typedef struct {} client_opt_t;
    *   options.clear_flags Openwsman::FLAG_ENUMERATION_OPTIMIZATION
    *
    */
-  void clear_flags(int flags) {
+  void clear_flags(unsigned long flags) {
     wsmc_clear_action_option($self, flags);
   }
 

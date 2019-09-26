@@ -744,12 +744,12 @@ typedef enum {
 					     client_opt_t * options);
 
 	void wsmc_set_action_option(client_opt_t * options,
-				     unsigned int);
+				     unsigned long);
 
-	unsigned int wsmc_get_action_option(client_opt_t * options);
+	unsigned long wsmc_get_action_option(client_opt_t * options);
 
 	void wsmc_clear_action_option(client_opt_t * options,
-				     unsigned int);
+				     unsigned long);
 
 	void wsmc_set_options_from_uri(const char *resource_uri,
 					client_opt_t * options);
