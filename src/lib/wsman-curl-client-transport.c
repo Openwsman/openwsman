@@ -521,6 +521,11 @@ wsmc_handler( WsManClient *cl,
 	}
 #endif
 
+	if (cl->flags & WSMAN_CLIENT_SUPRESS_100_CONTINUE) {
+		/* Don't request 100-continue */
+		headers = curl_slist_append(headers, "Expect:");
+	}
+
 	r = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	if (r != CURLE_OK) {
 		cl->fault_string = u_strdup(curl_easy_strerror(r));
