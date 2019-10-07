@@ -1113,6 +1113,16 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	if (!body  || !header )
 		return NULL;
 	/*
+	 * flags to be passed to client
+	 */
+	if (options) {
+		if (options->flags & FLAG_SUPRESS_100_CONTINUE) {
+			cl->flags |= WSMAN_CLIENT_SUPRESS_100_CONTINUE;
+		} else {
+			cl->flags &= ~WSMAN_CLIENT_SUPRESS_100_CONTINUE;
+		}
+	}
+	/*
 	 * flags to be passed as <w:OptionSet ...> <w:Option Name="..." ...> >
 	 */
 	if (options) {
