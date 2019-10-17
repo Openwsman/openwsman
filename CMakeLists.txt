@@ -502,6 +502,11 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/openwsman.pc
               ${CMAKE_CURRENT_BINARY_DIR}/openwsman++.pc
 	      ${CMAKE_CURRENT_BINARY_DIR}/openwsman-server.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
+OPTION(MSVC_STATIC_RUNTIME "Use multi-threaded statically-linked runtime library" NO)
+IF(MSVC_STATIC_RUNTIME)
+ add_compile_options(/MT$<$<CONFIG:Debug>:d>)
+ENDIF(MSVC_STATIC_RUNTIME)
+
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(doc)
