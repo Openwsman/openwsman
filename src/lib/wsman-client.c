@@ -648,13 +648,13 @@ wsmc_set_reference(const char *reference, client_opt_t * options)
 }
 
 void
-wsmc_set_sub_expiry(int event_subscription_expire, client_opt_t * options)
+wsmc_set_sub_expiry(float event_subscription_expire, client_opt_t * options)
 {
 	options->expires = event_subscription_expire;
 }
 
 void
-wsmc_set_heartbeat_interval(int heartbeat_interval, client_opt_t * options)
+wsmc_set_heartbeat_interval(float heartbeat_interval, client_opt_t * options)
 {
 	options->heartbeat_interval = heartbeat_interval;
 }
