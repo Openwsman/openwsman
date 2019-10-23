@@ -91,7 +91,7 @@ void wsman_set_estimated_total(WsXmlDocH in_doc,
 			       WsEnumerateInfo * enumInfo);
 
 char *wsman_get_selector(WsContextH cntx, WsXmlDocH doc, const char *name,
-			 const int index);
+			 int index);
 
 hash_t *wsman_get_selectors_from_epr(WsContextH cntx, WsXmlNodeH epr_node);
 
