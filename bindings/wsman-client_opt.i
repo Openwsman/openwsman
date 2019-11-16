@@ -522,16 +522,16 @@ typedef struct {} client_opt_t;
   }
 
 #if defined(SWIGRUBY)
-  %rename( "sub_expiry=" ) set_sub_expiry(unsigned int event_subscription_expire);
+  %rename( "sub_expiry=" ) set_sub_expiry(float event_subscription_expire);
 #endif
   /*
-   * Set subscription expiry timeout (in seconds)
+   * Set subscription expiry timeout (in seconds.milliseconds (float))
    *
    * call-seq:
    *   options.sub_expiry = 600 # 10 mins
    *
    */
-  void set_sub_expiry(unsigned int event_subscription_expire) {
+  void set_sub_expiry(float event_subscription_expire) {
 	wsmc_set_sub_expiry(event_subscription_expire, $self);
   }
 
@@ -539,24 +539,24 @@ typedef struct {} client_opt_t;
    * Get subscription expiry timeout (in seconds)
    *
    * call-seq:
-   *   options.sub_expiry -> Integer
+   *   options.sub_expiry -> Float
    *
    */
-  int sub_expiry() {
+  float sub_expiry() {
     return $self->expires;
   }
 
 #if defined(SWIGRUBY)
-  %rename("heartbeat_interval=") set_heartbeat_interval(unsigned int heartbeat_interval);
+  %rename("heartbeat_interval=") set_heartbeat_interval(float heartbeat_interval);
 #endif
   /*
-   * Set subscription heartbeat interval (in seconds)
+   * Set subscription heartbeat interval (in seconds.milliseconds (float))
    *
    * call-seq:
    *   options.heartbeat_interval = 60 # every minute
    *
    */
-  void set_heartbeat_interval(unsigned int heartbeat_interval) {
+  void set_heartbeat_interval(float heartbeat_interval) {
 	wsmc_set_heartbeat_interval(heartbeat_interval, $self);
   }
 
@@ -564,10 +564,10 @@ typedef struct {} client_opt_t;
    * Get subscription heartbeat interval (in seconds)
    *
    * call-seq:
-   *   options.heartbeat_interval -> Integer
+   *   options.heartbeat_interval -> Float
    *
    */
-  int heartbeat_interval() {
+  float heartbeat_interval() {
     return $self->heartbeat_interval;
   }
 
