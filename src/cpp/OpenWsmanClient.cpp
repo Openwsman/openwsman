@@ -204,12 +204,48 @@ string OpenWsmanClient::Get(
 	return Get(resourceUri, options);
 }
 
+string OpenWsmanClient::GetWithFlags(
+	const string &resourceUri,
+	const NameValuePairs *s,
+	unsigned long flags) const
+{
+	WsmanOptions options(flags);
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	return Get(resourceUri, options);
+}
+
 string OpenWsmanClient::Put(
 	const string &resourceUri,
 	const string &content,
 	const NameValuePairs *s) const
 {
 	WsmanOptions options;
+	options.setNamespace(GetNamespace());
+	options.addSelectors(s);
+
+	WsXmlDocH doc = wsmc_action_put_fromtext(
+		cl,
+		resourceUri.c_str(),
+		options,
+		content.c_str(),
+		content.length(),
+		WSMAN_ENCODING);
+
+	CheckWsmanResponse(cl, doc);
+	string xml = ExtractPayload(doc);
+	ws_xml_destroy_doc(doc);
+	return xml;
+}
+
+string OpenWsmanClient::PutWithFlags(
+	const string &resourceUri,
+	const string &content,
+	const NameValuePairs *s,
+	unsigned long flags) const
+{
+	WsmanOptions options(flags);
 	options.setNamespace(GetNamespace());
 	options.addSelectors(s);
 

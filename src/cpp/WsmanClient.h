@@ -141,12 +141,21 @@ namespace WsmanClientNamespace
 		virtual string Get(
 			const string &resourceUri,
 			const NameValuePairs *s = NULL) const = 0;
+		virtual string GetWithFlags(
+			const string &resourceUri,
+			const NameValuePairs *s = NULL,
+			unsigned long flags = 0) const = 0;
 
 		// Update a resource.
 		virtual string Put(
 			const string &resourceUri,
 			const string &content,
 			const NameValuePairs *s = NULL) const = 0;
+		virtual string PutWithFlags(
+			const string &resourceUri,
+			const string &content,
+			const NameValuePairs *s = NULL,
+			unsigned long flags = 0) const = 0;
 
 		// Invokes a method and returns the results of the method call.
 		virtual string Invoke(

@@ -93,12 +93,21 @@ namespace WsmanClientNamespace
 			string Get(
 				const string &resourceUri,
 				const NameValuePairs *s = NULL) const;
+			string GetWithFlags(
+				const string &resourceUri,
+				const NameValuePairs *s = NULL,
+				unsigned long flags = 0) const;
 
 			// Update a resource.
 			string Put(
 				const string &resourceUri,
 				const string &content,
 				const NameValuePairs *s = NULL) const;
+			string PutWithFlags(
+				const string &resourceUri,
+				const string &content,
+				const NameValuePairs *s = NULL,
+				unsigned long flags = 0) const;
 
 			// Invokes a method and returns the results of the method call.
 			string Invoke(
