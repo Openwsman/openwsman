@@ -17,7 +17,7 @@
 - Bugfixes
   - fixed several compiler warnings (Alexander Usyskin)
   - code cleanup (Alexander Usyskin)
-  - general code robustness (Alexander Usyskin)  
+  - general code robustness (Alexander Usyskin)
 
 2.6.12
 - Bugfixes
