@@ -894,8 +894,9 @@ wsman_set_subscribe_options(WsManClient * cl,
 	if (header == NULL || body == NULL) {
 		return;
 	}
-	if(options->delivery_certificatethumbprint ||options->delivery_password ||
-		options->delivery_password) {
+	if(options->delivery_certificatethumbprint ||
+	   options->delivery_username ||
+	   options->delivery_password) {
 		node = ws_xml_add_child(header, XML_NS_TRUST, WST_ISSUEDTOKENS, NULL);
 		if (node == NULL) {
 			return;
