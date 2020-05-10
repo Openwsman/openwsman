@@ -153,7 +153,7 @@ static void clear_table(hash_t *hash)
  * 8.  The low chain replaces the current chain.  The high chain goes
  *     into the corresponding sister chain in the upper half of the table.
  * 9.  We have finished dealing with the chains and nodes. We now update
- *     the various bookeeping fields of the hash structure.
+ *     the various bookkeeping fields of the hash structure.
  */
 
 static void grow_table(hash_t *hash)

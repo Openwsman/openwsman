@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
 static const char rcsid[] =
@@ -30,7 +30,7 @@ struct u_buf_s
  */
 
 /**
- * \brief  Enlarge the underlaying memory block of the given buffer
+ * \brief  Enlarge the underlying memory block of the given buffer
  *
  * Enlarge the buffer data block to (at least) \a size bytes.
  *
@@ -47,7 +47,7 @@ int u_buf_reserve(u_buf_t *ubuf, size_t size)
 
     if(size <= ubuf->size)
         return 0; /* nothing to do */
-   
+
     /* size plus 1 char to store a '\0' */
     nbuf = u_realloc(ubuf->data, size+1);
     dbg_err_if(nbuf == NULL);
@@ -145,14 +145,14 @@ err:
     if(fp)
         fclose(fp);
     return ~0;
-}
+
 
 /**
- * \brief  Release buffer's underlaying memory block without freeing it
+ * \brief  Release buffer's underlying memory block without freeing it
  *
- * Release the underlaying memory block of the given buffer without 
+ * Release the underlying memory block of the given buffer without
  * calling free() on it. The caller must free the buffer later on (probably
- * after using it somwhow). 
+ * after using it somehow).
  *
  * Use u_buf_ptr() to get the pointer of the memory block, u_buf_size() to
  * get its size and u_buf_len() to get its length.
@@ -269,7 +269,7 @@ char *u_buf_steal(u_buf_t *ubuf)
 
 
 /**
- * \brief  Return a pointer to the buffer internal momory block
+ * \brief  Return a pointer to the buffer internal memory block
  *
  * Return a void* pointer to the memory block allocated by the buffer object.
  *

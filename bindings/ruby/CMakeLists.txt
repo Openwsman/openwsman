@@ -106,7 +106,7 @@ ADD_CUSTOM_COMMAND (
 
 #
 # Prep GEM files
-# gemspec needs _relative_ pathes
+# gemspec needs _relative_ paths
 # so create ext and lib here and copy files
 #
 ADD_CUSTOM_COMMAND (

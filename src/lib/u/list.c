@@ -395,7 +395,7 @@ void ow_list_sort(list_t *list, int compare(const void *, const void *))
 	ow_list_sort(list, compare);
 	/* sort 'right' half */
 	ow_list_sort(&extra, compare);
-	/* merge sorted halfs */
+	/* merge sorted halves */
 	ow_list_merge(list, &extra, compare);
     } 
     assert (list_is_sorted(list, compare));

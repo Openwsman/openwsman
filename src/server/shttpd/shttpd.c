@@ -444,7 +444,7 @@ _shttpd_get_mime_type(struct shttpd_ctx *ctx,
 	const char	*eq, *p = ctx->options[OPT_MIME_TYPES];
 	int		i, n, ext_len;
 
-	/* Firt, loop through the custom mime types if any */
+	/* First, loop through the custom mime types if any */
 	FOR_EACH_WORD_IN_LIST(p, n) {
 		if ((eq = memchr(p, '=', n)) == NULL || eq >= p + n || eq == p)
 			continue;
@@ -769,7 +769,7 @@ add_socket(struct worker *worker, int sock, int is_ssl)
 #if !defined(NO_SSL)
 	SSL		*ssl = NULL;
 #else
-	is_ssl = is_ssl;	/* supress warnings */
+	is_ssl = is_ssl;	/* suppress warnings */
 #endif /* NO_SSL */
 
 	sa.len = sizeof(sa.u.sin);

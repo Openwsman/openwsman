@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     client_opt_t *options = NULL;
 
 
-    printf ("Test 1: Testin Identify Request:");
+    printf ("Test 1: Testing Identify Request:");
     cl = wsmc_create( sd[0].server,
         sd[0].port,
         sd[0].path,

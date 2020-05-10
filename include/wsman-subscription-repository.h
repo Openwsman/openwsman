@@ -54,10 +54,10 @@ struct __SubsRepositoryEntry {
 typedef struct __SubsRepositoryEntry *SubsRepositoryEntryH;
 
 struct __SubsRepositoryOpSet{
-        SubscriptionOpInit init_subscription; //entry of initializing subscripton repository
+        SubscriptionOpInit init_subscription; //entry of initializing subscription repository
         SubscriptionOpFinalize finalize_subscription; //entry of finalizing subscription repository
         SubscriptionOpLoad load_subscription; //entry of loading all of subscriptions
-        SubscriptionOpGet get_subscription; //entry of geting a subscription from the repository
+        SubscriptionOpGet get_subscription; //entry of getting a subscription from the repository
         SubscriptionOpSearch search_subscription; //entry of searching a subscription from the repository
         SubscriptionOpSave save_subscritption; //entry of saving a subscription in the repository
         SubscriptionOpUpdate update_subscription; //entry of updating a subscription

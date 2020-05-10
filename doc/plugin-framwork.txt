@@ -25,14 +25,14 @@ and send this package to client.
                        |         WS-MAN         |
                        --------------------------
 
-1. Importand Data Structure
+1. Important Data Structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 struct __WsDispatchInterfaceInfo
 {
 	unsigned long flags;                // reserved
 	char *notes;                        // plugin information -- note
 	char *vendor;                       // plugin information -- vendor
-	char *displayName;                  // plugin information -- titile
+	char *displayName;                  // plugin information -- title
 	char *compliance;                   // compliant protocol
 	char *actionUriBase;                // base part of the action URI string
 	char *wsmanSystemUri;               // WS-MAN system URI, it may be NULL
@@ -52,7 +52,7 @@ struct __WsSelector
                                             // mof class keybind.
 	char *value;                        // selector value
 	char *type;                         // selector type,
-	char *description;                  // decription of 
+	char *description;                  // description of
 };
 typedef struct __WsSelector WsSelector;
 
@@ -87,10 +87,10 @@ struct __WsDispatchEndPointInfo
 	struct __XmlSerializerInfo* serializationInfo;  
                                                // pointer to a table, used to 
                                                // serialize this endpoint
-	WsProcType serviceEndPoint;            // hook fuction for this endpoint
+	WsProcType serviceEndPoint;            // hook function for this endpoint
 	void* data;                            // pointer to the base resource 
                                                // URI, used as a namespace
-	struct __WsSelector* selectors;        // pointer to a seclector table,
+	struct __WsSelector* selectors;        // pointer to a selector table,
                                                // It may be NULL.
 };
 typedef struct __WsDispatchEndPointInfo WsDispatchEndPointInfo;
@@ -110,7 +110,7 @@ struct __XmlSerializerInfo
                                           // elementd; > 1 for fixed size             
                                           // array; 0 for dynamic array.              
 	unsigned short funcMaxCount;                                                        
-	XmlSerializationProc proc;        // hook fuction for this property,          
+	XmlSerializationProc proc;        // hook function for this property,          
                                           // used to serialize this property.         
                                           // it can be one of do_serialize_xxx        
 	XML_TYPE_PTR extData;             // if type of this property is a            
@@ -120,7 +120,7 @@ struct __XmlSerializerInfo
 };
 typedef struct __XmlSerializerInfo XmlSerializerInfo;
 
-This structure deccribes all Serialization type information for resource
+This structure describes all Serialization type information for resource
 ================================================================================
 
 2. useful MACRO
@@ -386,7 +386,7 @@ void get_endpoints(GModule *self, void **data);
 
 This is the only way that the plugin framework collects all endpoints
 information about this plugin, so in this interface body, the plugin should
-initialize the WsDispatchEndPointInfo structre pointed by data.
+initialize the WsDispatchEndPointInfo structure pointed by data.
 
 for example:
 void get_endpoints(GModule *self, void **data) 

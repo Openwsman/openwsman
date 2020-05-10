@@ -132,7 +132,7 @@ set_close_on_exec(int fd)
 {
         // RTEMS Does not have a functional "execve"
         // so technically this call does not do anything,
-        // but it doesnt hurt either.
+        // but it doesn't hurt either.
         (void) fcntl(fd, F_SETFD, FD_CLOEXEC);
 }
 

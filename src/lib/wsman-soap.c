@@ -1014,7 +1014,7 @@ extern int wsmand_options_get_max_connections_per_thread(void);
 
 /**
  * Enumeration Stub for processing enumeration requests
- * @param op SOAP pperation handler
+ * @param op SOAP operation handler
  * @param appData Application data
  * @return status
  */
@@ -1636,7 +1636,7 @@ create_subs_info(SoapOpH op,
 	}
 	subsInfo->uri = u_strdup(wsman_get_resource_uri(epcntx, indoc));
 	if(!subNode) {
-		message("No subsribe body");
+		message("No subscribe body");
 		fault_code = WSE_INVALID_MESSAGE;
 		goto DONE;
 	}
@@ -1795,7 +1795,7 @@ create_subs_info(SoapOpH op,
 	temp = ws_xml_get_soap_header(indoc);
 	temp = ws_xml_get_child(temp, 0, XML_NS_OPENWSMAN, "FormerUID");
 	ntext = ws_xml_get_node_text(temp);
-	if(temp && ntext) { //it is a request from the saved reqeust. So we recover the former UUID
+	if(temp && ntext) { //it is a request from the saved request. So we recover the former UUID
 		strncpy(subsInfo->subsId, ntext, EUIDLEN);
 		debug("Recover to uuid:%s",subsInfo->subsId);
 	}
@@ -1816,7 +1816,7 @@ DONE:
 
 /**
  * Subscribe Stub for processing subscription requests
- * @param op SOAP pperation handler
+ * @param op SOAP operation handler
  * @param appData Application data
  * @return status
  */
@@ -1933,7 +1933,7 @@ DONE:
 
 /**
  * Unsubscribe Stub for processing unsubscription requests
- * @param op SOAP pperation handler
+ * @param op SOAP operation handler
  * @param appData Application data
  * @return status
  */
@@ -2016,7 +2016,7 @@ DONE:
 
 /**
  * Renew Stub for processing renew requests
- * @param op SOAP pperation handler
+ * @param op SOAP operation handler
  * @param appData Application data
  * @return status
  */

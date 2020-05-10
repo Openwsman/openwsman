@@ -114,7 +114,7 @@ void ws_xml_set_node_lang(WsXmlNodeH node, const char *lang);
 
 void ws_xml_unlink_node(WsXmlNodeH node);
 
-//to check if the size of envelop exceeds a maxium size
+// to check if the size of envelop exceeds a maximum size
 int check_envelope_size(WsXmlDocH doc, unsigned int size, const char *charset);
 
 /** @} */

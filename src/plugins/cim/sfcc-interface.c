@@ -1822,7 +1822,7 @@ cim_invoke_method(CimClientInfo * client,
 		}
 
 	        if (strstr(client->resource_uri, XML_NS_CIM_INTRINSIC) != NULL) {
-			debug("Instrinsic op ?: %s", client->method);
+			debug("Intrinsic op ?: %s", client->method);
 
 			if (!strcmp(client->method, CIM_ACTION_ENUMERATE_CLASS_NAMES))
 				invoke_enumerate_class_names(client, body, &rc);
@@ -2544,7 +2544,7 @@ cim_create_indication_subscription(CimClientInfo * client, WsSubscribeInfo *subs
 			rc.rc, (rc.msg) ? CMGetCharPtr(rc.msg) : NULL);
 	if (rc.rc == CMPI_RC_ERR_FAILED) {
 		status->fault_code = WSA_ACTION_NOT_SUPPORTED;
-	} else if (rc.rc != 11){ // an object already exists. We take this erros as success
+	} else if (rc.rc != 11){ // an object already exists. We take this error as success
 		cim_to_wsman_status(rc, status);
 	}
 	if (rc.msg)

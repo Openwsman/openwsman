@@ -442,7 +442,7 @@ _shttpd_spawn_process(struct conn *c, const char *prog, char *envblk,
 			(void) fgets(line, sizeof(line), fp);
 			if (memcmp(line, "#!", 2) != 0)
 				line[2] = '\0';
-			/* Trim whitespaces from interpreter name */
+			/* Trim white spaces from interpreter name */
 			for (p = &line[strlen(line) - 1]; p > line &&
 			    isspace(*p); p--)
 				*p = '\0';
@@ -464,7 +464,7 @@ _shttpd_spawn_process(struct conn *c, const char *prog, char *envblk,
 
 	/*
 	 * Spawn reader & writer threads before we create CGI process.
-	 * Otherwise CGI process may die too quickly, loosing the data
+	 * Otherwise CGI process may die too quickly, losing the data
 	 */
 	spawn_stdio_thread(sock, b[0], stdinput, 0);
 	spawn_stdio_thread(sock, a[1], stdoutput, c->rem.content_len);
