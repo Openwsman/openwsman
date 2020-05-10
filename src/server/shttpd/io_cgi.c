@@ -47,7 +47,7 @@ read_cgi(struct stream *stream, void *buf, size_t len)
 	 * may alter the status code. Buffer in headers, parse
 	 * them, send correct status code and then forward all data
 	 * from CGI script back to the remote end.
-	 * Reply line was alredy appended to the IO buffer in
+	 * Reply line was already appended to the IO buffer in
 	 * decide_what_to_do(), with blank status code.
 	 */
 

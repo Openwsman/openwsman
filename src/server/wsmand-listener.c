@@ -197,7 +197,7 @@ void server_callback(struct shttpd_arg *arg)
 	char *payload = 0; // used for gss encrypt
 
 	if (ct && !memcmp(ct, "multipart/encrypted", 19)) {
-	        // we have a encrypted payload. decrypt it 
+	        // we have a encrypted payload, decrypt it 
         	payload = gss_decrypt(arg, u_buf_ptr(state->request), u_buf_len(state->request));
 	}
 #endif
@@ -251,7 +251,7 @@ void server_callback(struct shttpd_arg *arg)
 #ifdef SHTTPD_GSS
 			if (payload) {
 				free(payload);
-				/* note that payload is stiil set - this is used as a flag later */
+				/* note that payload is still set - this is used as a flag later */
 			}
 			else {
 #endif
@@ -356,7 +356,7 @@ DONE:
 	shttpd_printf(arg, "Server: %s/%s\r\n", PACKAGE_NAME, PACKAGE_VERSION);
 #ifdef SHTTPD_GSS
 	if(payload) {
-		// we had an encrypted message so now we have to encypt the reply
+		// we had an encrypted message so now we have to encrypt the reply
 		char *enc;
 		int enclen;
 		if(gss_encrypt(arg, state->response, state->len, &enc, &enclen) != 1) //Not OK
@@ -364,7 +364,7 @@ DONE:
 		u_free(state->response);
 		state->response = enc;
 		state->len = enclen;
-		payload = 0; // and reset the indicator so that if we send in packates we dont do this again
+		payload = 0; // and reset the indicator so that if we send in packets we don't do this again
 		shttpd_printf(arg, "Content-Type: multipart/encrypted;protocol=\"application/HTTP-Kerberos-session-encrypted\";boundary=\"Encrypted Boundary\"\r\n");
 		shttpd_printf(arg, "Content-Length: %d\r\n", state->len);
 	}
@@ -487,7 +487,7 @@ static int initialize_basic_authenticator(void)
 			     wsmand_option_get_basic_authenticator()))) ||
 		    wsmand_option_get_basic_authenticator_arg()) {
 			fprintf(stderr,
-				"basic authentication is ambigious in config file\n");
+				"basic authentication is ambiguous in config file\n");
 			return 1;
 		}
 		auth = wsmand_default_basic_authenticator();
@@ -498,7 +498,7 @@ static int initialize_basic_authenticator(void)
 	}
 
 	if (auth == NULL) {
-		/* No basic authenticationame */
+		/* No basic authentication name */
 		return 0;
 	}
 

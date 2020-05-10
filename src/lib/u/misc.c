@@ -188,7 +188,7 @@ void* u_memdup(const void *src, size_t size)
  * Tokenize the \p delim separated string \p wlist and place its
  * pieces (at most \p tokv_sz - 1) into \p tokv.
  *
- * \param wlist     list of strings possibily separated by chars in \p delim
+ * \param wlist     list of strings possibly separated by chars in \p delim
  * \param delim     set of token separators
  * \param tokv      pre-allocated string array
  * \param tokv_sz   number of cells in \p tokv array

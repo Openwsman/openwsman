@@ -173,7 +173,7 @@ int wsman_check_identify(WsmanMessage * msg)
 }
 
 /**
- * Buid Inbound Envelope
+ * Build Inbound Envelope
  * @param buf Message buffer
  * @return XML document with Envelope
  */
@@ -237,7 +237,7 @@ wsman_get_soap_header_element(WsXmlDocH doc, const char *nsUri, const char *name
  * @param faultNsUri Fault Namespace URI
  * @param code Fault code
  * @param subCode Fault Subcode
- * @param reason Fault Reson
+ * @param reason Fault Reason
  * @param detail Fault Details
  * @return Fault XML document
  */

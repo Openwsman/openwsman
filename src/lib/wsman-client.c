@@ -92,7 +92,7 @@ wsman_make_action(const char *uri, const char *op_name)
 		if (ptr) {
 			int ret = snprintf(ptr, len, "%s/%s", uri, op_name);
 			if (ret < 0 || ret >= len) {
-				error("Error: formating action");
+				error("Error: formatting action");
 				u_free(ptr);
 				return NULL;
 			}
@@ -170,7 +170,7 @@ wsmc_build_envelope(WsSerializerContextH serctx,
 				(unsigned int) options->timeout / 1000,
 				(unsigned int) options->timeout % 1000);
 		if (ret < 0 || ret >= sizeof(buf)) {
-			error("Error: formating time");
+			error("Error: formatting time");
 			return NULL;
 		}
 		ws_serialize_str(serctx, header, buf,
@@ -1942,7 +1942,7 @@ wsmc_free_enum_context(char *enumcontext)
 
 
 /**
- * Buid Inbound Envelope from Response
+ * Build Inbound Envelope from Response
  * @param cl Client Handler
  * @return XML document with Envelope
  */
@@ -2187,7 +2187,7 @@ wsmc_create(const char *hostname,
                                              (*wsc->data.path == '/') ? "" : "/",
                                              wsc->data.path);
 	debug("Endpoint: %s", wsc->data.endpoint);
-	wsc->authentication.verify_host = 1; //verify CN in server certicates by default
+	wsc->authentication.verify_host = 1; //verify CN in server certificates by default
 	wsc->authentication.verify_peer = 1; //validate server certificates by default
 #ifndef _WIN32
 	wsc->authentication.crl_check = 0;   // No CRL check by default

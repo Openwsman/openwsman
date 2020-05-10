@@ -52,9 +52,9 @@ class WsmanTest < Test::Unit::TestCase
 
     node.each do |child|
       text = child.text
-      acount = child.attr_count
-      puts "Child [#{acount}] #{child.name}: #{text}"
-      if acount > 0
+      account = child.attr_count
+      puts "Child [#{account}] #{child.name}: #{text}"
+      if account > 0
 	child.each_attr{ |attr| puts "\tAttr #{attr.ns}:#{attr.name}=#{attr.value}" }
       end
       #	return false if text.nil?

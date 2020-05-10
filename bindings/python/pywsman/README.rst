@@ -35,7 +35,7 @@ Building from within the openwsman source directory
 
 Running ``setup.py install``, or similar, from within the openwsman source directory, will cause the setup script to look for its include files in the source directory, as opposed to an installation path on the system. 
 
-NOTE: Shared libaries will still be sourced from the standard system location(s).
+NOTE: Shared libraries will still be sourced from the standard system location(s).
 
 About the bindings
 ==================

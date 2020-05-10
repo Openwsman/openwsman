@@ -358,7 +358,7 @@ module RDoc
    end
 
     ##
-    # Adds constant comments.  By providing some_value: at the start ofthe
+    # Adds constant comments.  By providing some_value: at the start of the
     # comment you can override the C value of the comment to give a friendly
     # definition.
     #

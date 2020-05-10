@@ -222,7 +222,7 @@ typedef enum {
  	* @param path HTTP path, for example /wsman
  	* @param scheme scheme, HTTP or HTTPS
  	* @param username User name
- 	* @param password Passwrod
+ 	* @param password Password
  	* @return client handle
  	*/
 	WsManClient *wsmc_create(const char *hostname,

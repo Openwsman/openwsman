@@ -240,7 +240,7 @@ write_handler( void *ptr, size_t size, size_t nmemb, void *data)
 
 	len = size * nmemb;
 	u_buf_append(buf, ptr, len);
-	debug("write_handler: recieved %d bytes, all = %d\n", len, u_buf_len(buf));
+	debug("write_handler: received %d bytes, all = %d\n", len, u_buf_len(buf));
 	return len;
 }
 
@@ -660,9 +660,9 @@ wsmc_handler( WsManClient *cl,
                 size_t inbuf_len = outbuf_len;
                 char *inbuf = u_buf_ptr(response);
                 char *outbuf = mbbuf;
-                size_t coverted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
+                size_t converted = iconv(cd, &inbuf, &inbuf_len, &outbuf, &outbuf_len);
 		  iconv_close(cd);
-                if( coverted == -1) {
+                if( converted == -1) {
 			cl->last_error = WS_LASTERR_BAD_CONTENT_ENCODING;
 			goto DONE2;
                 }

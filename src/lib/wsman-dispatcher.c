@@ -143,7 +143,7 @@ generate_notunderstood_fault(op_t * op,
 					      (notUnderstoodHeader));
 		}
 	} else {
-		error("cant generate fault");
+		error("can't generate fault");
 	}
 	return;
 }

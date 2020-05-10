@@ -181,7 +181,7 @@ int do_gss(struct conn *c)
 
     // pp = start, p = end. Now decode
 
-    char decbuf[p - pp]; // this is too long but we dont care
+    char decbuf[p - pp]; // this is too long but we don't care
     int l = ws_base64_decode(pp, p - pp, decbuf, 4095);
 
     int ret = connectContext(decbuf, l, gsscreds, &c->gss_ctx, &client_name, &reply, &retflags);
@@ -192,7 +192,7 @@ int do_gss(struct conn *c)
     }
 
     // encode the reply
-    char repbuf[reply.length * 2]; // again, too large but we dont care
+    char repbuf[reply.length * 2]; // again, too large but we don't care
 
     ws_base64_encode(reply.value, reply.length, repbuf);
 
@@ -267,7 +267,7 @@ int gss_encrypt(struct shttpd_arg *arg, char *input, int inlen, char **output, i
         displayError("wrapping message", maj_stat, min_stat);
         return -1;
     }
-    // thsi is the encryption space overhead
+    // this is the encryption space overhead
     *p++ = out_buf.length - in_buf.length - 1; // not quite sure why I need -1 but I do. Its all to do with the gss pad byte
     *p++ = 0;
     *p++ = 0;

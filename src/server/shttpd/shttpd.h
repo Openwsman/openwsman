@@ -65,7 +65,7 @@ typedef void (*shttpd_callback_t)(struct shttpd_arg *);
 
 /*
  * shttpd_init		Initialize shttpd context
- * shttpd_fini		Dealocate the context, close all connections
+ * shttpd_fini		Deallocate the context, close all connections
  * shttpd_set_option	Set new value for option
  * shttpd_register_uri	Setup the callback function for specified URL
  * shttpd_poll		Do connections processing

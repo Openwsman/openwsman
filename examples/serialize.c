@@ -259,7 +259,7 @@ static void example2(void)
 					       CLASSNAME, NULL, NULL,
 					       0, 0);
 	if (cs == NULL) {
-		printf("Errror ws_deserialize\n");
+		printf("Error ws_deserialize\n");
 		return;
 	}
 
@@ -332,7 +332,7 @@ static void example3(void)
 					       CLASSNAME, NULL, NULL,
 					       0, 0);
 	if (cs == NULL) {
-		printf("Errror ws_serialize\n");
+		printf("Error ws_serialize\n");
 		return;
 	}
 
@@ -605,7 +605,7 @@ static void example6(void)
 					 CLASSNAME,
 					 XML_NS_ADDRESSING, NULL, 0, 0);
 	if (news == NULL) {
-		printf("Errror ws_deserialize\n");
+		printf("Error ws_deserialize\n");
 		return;
 	}
 
@@ -758,7 +758,7 @@ static void example7(void)
 					"EndpointReference",
 					XML_NS_ADDRESSING, NULL, 0, 0);
 	if (newEPR == NULL) {
-		printf("Errror ws_deserialize\n");
+		printf("Error ws_deserialize\n");
 		return;
 	}
 
@@ -888,7 +888,7 @@ static void example10()
 	WsXmlDocH doc = ws_xml_read_memory(xmlstring, strlen(xmlstring), "UTF-8", 0);
 	WsXmlNodeH node = ws_xml_get_doc_root(doc);
 	 printf
-            ("\n\n   ********   example10. xsi:nil attibute test  ********\n");
+            ("\n\n   ********   example10. xsi:nil attribute test  ********\n");
 	WsSerializerContextH cntx = ws_serializer_init();
 	if (cntx == NULL) {
                 printf("Error ws_create_runtime\n");
@@ -965,7 +965,7 @@ static void example11()
 					       CLASSNAME, NULL, NULL,
 					       0, 0);
 	if (cs == NULL) {
-		printf("Errror ws_deserialize\n");
+		printf("Error ws_deserialize\n");
 		return;
 	}
 

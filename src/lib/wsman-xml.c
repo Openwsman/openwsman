@@ -194,7 +194,7 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
  * @param value Child Value
  * @return Child XML node
  * @note
- * if namespaces has been changed after this function is called, itis caller's
+ * if namespaces has been changed after this function is called, it is caller's
  * responsibility to update QName fields accordingly
  */
 WsXmlAttrH ws_xml_add_qname_attr(WsXmlNodeH node,
@@ -790,7 +790,7 @@ ws_xml_get_child(WsXmlNodeH parent,
  * @param nsUri Namespace URI
  * @param name node name
  * @return Returns 1 if node is QName
- * @brief Shortcats for QName manipulation name can be NULL, in this case just check namespace
+ * @brief Shortcuts for QName manipulation name can be NULL, in this case just check namespace
  */
 int ws_xml_is_node_qname(WsXmlNodeH node, const char *nsUri,
 			 const char *name)

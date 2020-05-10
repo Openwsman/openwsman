@@ -209,7 +209,7 @@ handle_attrs(struct __XmlSerializationData *data,
 	}
 	debug("initial DATABUF = %p", DATA_BUF(data));
 	DATA_BUF(data) = DATA_BUF(data) + pad;
-	debug("alligned databuf = %p; pad = 0x%x", DATA_BUF(data), pad);
+	debug("aligned databuf = %p; pad = 0x%x", DATA_BUF(data), pad);
 
 	if (data->mode == XML_SMODE_FREE_MEM) {
 		// XXXXX   free memory
@@ -1307,7 +1307,7 @@ int do_serialize_dyn_size_array(XmlSerializationData * data)
 	}
 
 	if (dyn->count == 0) {
-		// no dynamic data. nothing to do
+		// no dynamic data, nothing to do
 		goto DONE;
 	}
 
@@ -1429,7 +1429,7 @@ int do_serialize_struct(XmlSerializationData * data)
 			child = xml_serializer_add_child(data, NULL);
 			data->xmlNode = child;
 			if (data->xmlNode == NULL) {
-				error("cant add child");
+				error("can't add child");
 				retVal = WS_ERR_INSUFFICIENT_RESOURCES;
 				goto DONE;
 			}
@@ -1748,7 +1748,7 @@ int ws_deserialize_duration(const char *t, time_t * value)
 		t++;
 	}
 	if (*t != 'P') {
-		debug("Wrong begining of duration");
+		debug("Wrong beginning of duration");
 		goto DONE;
 	}
 	while (*++t) {
@@ -1836,7 +1836,7 @@ int ws_deserialize_duration(const char *t, time_t * value)
 	}
 
 	// We don't know exact date and time of the sender.
-	// For simplicity comsider 1 month = 30days;
+	// For simplicity consider 1 month = 30days;
 
 	vs = secs + 60 * mins + 60 * 60 * hours + 60 * 60 * 24 * days +
 	    60 * 60 * 24 * 30 * months + 60 * 60 * 24 * 30 * 12 * years;

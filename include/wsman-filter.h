@@ -78,13 +78,13 @@ int filter_set_assoc(filter_t *filter, epr_t *epr, const int assocType, const ch
 /**
  * Create a new filter_t with a simple query string
  * @param dialect Filter dialect string
- * @param query Query sting
- * @ return created filter_t strucrture point
+ * @param query Query string
+ * @ return created filter_t structure point
  */
 filter_t * filter_create_simple(const char *dialect, const char *query);
 
 /**
- * Create a new filter_t with assciation query
+ * Create a new filter_t with association query
  * @param epr EPR structure, Identifies the source object for the association query and is required
  * @param assocType Association query type: 0 for associated instances, 1 for association instances
  * @param assocClass Represents the name of a CIM association class.  Optional
@@ -93,7 +93,7 @@ filter_t * filter_create_simple(const char *dialect, const char *query);
  * @param resultRole Represents the name of a key reference property of a CIM association class.  Optional
  * @param resultProp Represents the name of one or more properties of a CIM class. Optional
  * @param propNum Number of resultProp
- * @return created filter_t strucrture point
+ * @return created filter_t structure point
  */
 filter_t * filter_create_assoc(epr_t *epr, const int assocType, const char *assocClass,
 	const char *resultClass, const char *role, const char *resultRole, char **resultProp,
