@@ -1,3 +1,9 @@
+2.6.13
+- Bugfixes
+  - fixed several compiler warnings (Alexander Usyskin)
+  - code cleanup (Alexander Usyskin)
+  - general code robustness (Alexander Usyskin)  
+
 2.6.12
 - Bugfixes
   - fix regression introduced in 2.5.0, __cimnamespace selector
