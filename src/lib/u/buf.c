@@ -145,7 +145,7 @@ err:
     if(fp)
         fclose(fp);
     return ~0;
-
+}
 
 /**
  * \brief  Release buffer's underlying memory block without freeing it
