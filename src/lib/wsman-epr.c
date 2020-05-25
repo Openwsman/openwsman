@@ -59,12 +59,13 @@
 char *wsman_epr_selector_by_name(const epr_t *epr, const char* name)
 {
 	char *value = NULL;
+        unsigned int i;
 	key_value_t *ss = epr->refparams.selectorset.selectors;
 	if (ss == NULL) {
 			debug("epr->refparams.selectorset.selectors == NULL\n");
 		return NULL;
 	}
-	for (unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+	for (i = 0; i < epr->refparams.selectorset.count; i++) {
 		key_value_t *s;
 		s = ss + i;
 		if (strcmp(s->key, name) == 0 && s->type == 0) {
@@ -79,11 +80,12 @@ char *wsman_epr_selector_by_name(const epr_t *epr, const char* name)
 void wsman_epr_selector_cb(const epr_t *epr, selector_callback cb, void *cb_data)
 {
 	key_value_t *ss = epr->refparams.selectorset.selectors;
+        unsigned int i;
 	if (ss == NULL) {
 		debug("epr->refparams.selectorset.selectors == NULL\n");
 		return;
 	}
-	for (unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+	for (i = 0; i < epr->refparams.selectorset.count; i++) {
 		key_value_t *s;
 		s = ss + i;
 		cb(cb_data, s);
@@ -93,11 +95,12 @@ void wsman_epr_selector_cb(const epr_t *epr, selector_callback cb, void *cb_data
 void wsman_selectorset_cb(SelectorSet *selectorset, selector_callback cb, void *cb_data)
 {
 	key_value_t *ss = selectorset->selectors;
+        unsigned int i;
 	if (ss == NULL) {
 		debug("epr->refparams.selectors == NULL");
 		return;
 	}
-	for (unsigned int i = 0; i < selectorset->count; i++) {
+	for (i = 0; i < selectorset->count; i++) {
 		key_value_t *s;
 		s = ss + i;
 		cb(cb_data, s);
@@ -210,9 +213,10 @@ epr_t *epr_from_string(const char* str)
 static int epr_add_selector(epr_t *epr, const char *name, const char *text, epr_t *added_epr)
 {
 	key_value_t *p, *new_p;
+        unsigned int i;
 	if (epr == NULL) return 0;
 	p = epr->refparams.selectorset.selectors;
-	for(unsigned int i = 0; i< epr->refparams.selectorset.count; i++) {
+	for(i = 0; i< epr->refparams.selectorset.count; i++) {
 		if(p->key && ( strcmp(name, p->key) == 0 ) ) {
 			return -1;
 		}
@@ -277,11 +281,12 @@ int epr_delete_selector(epr_t *epr, const char *name)
 void epr_destroy(epr_t *epr)
 {
 	key_value_t *p;
+        unsigned int i;
 	if(epr == NULL) return;
 	u_free(epr->address);
 	u_free(epr->refparams.uri);
 	p = epr->refparams.selectorset.selectors;
-	for(unsigned int i = 0; i< epr->refparams.selectorset.count; i++) {
+	for(i = 0; i< epr->refparams.selectorset.count; i++) {
           key_value_destroy(p, 1);
 		p++;
 	}
@@ -312,10 +317,11 @@ epr_t *epr_copy(const epr_t *epr)
 			epr->refparams.selectorset.count);
 
 	if (cpy_epr->refparams.selectorset.selectors) {
+                unsigned int i;
 		cpy_epr->refparams.selectorset.count = epr->refparams.selectorset.count;
 		p1 = epr->refparams.selectorset.selectors;
 		p2 = cpy_epr->refparams.selectorset.selectors;
-		for (unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+		for (i = 0; i < epr->refparams.selectorset.count; i++) {
 			key_value_copy(p1, p2);
 			p1++;
 			p2++;
@@ -329,6 +335,7 @@ epr_t *epr_copy(const epr_t *epr)
 int epr_cmp(const epr_t *epr1, const epr_t *epr2)
 {
 	int matches = 0;
+        unsigned int i;
 	key_value_t *p1;
 	key_value_t *p2;
 	assert(epr1 != NULL && epr2 != NULL);
@@ -338,9 +345,10 @@ int epr_cmp(const epr_t *epr1, const epr_t *epr2)
 	if(epr1->refparams.selectorset.count != epr2->refparams.selectorset.count)
 		return 1;
 	p1 = epr1->refparams.selectorset.selectors;
-	for(unsigned int i = 0; i < epr1->refparams.selectorset.count; i++) {
+	for(i = 0; i < epr1->refparams.selectorset.count; i++) {
+                unsigned int j;
 		p2 = epr1->refparams.selectorset.selectors;
-		for(unsigned int j = 0; j < epr2->refparams.selectorset.count; j++, p2++) {
+		for(j = 0; j < epr2->refparams.selectorset.count; j++, p2++) {
 			if(strcmp(p1->key, p2->key))
 				continue;
 			if(p1->type != p2->type)
@@ -368,7 +376,7 @@ char *epr_to_string(const epr_t *epr)
 {
   int len;
   char *buf, *ptr;
-
+  unsigned int i;
   key_value_t *p = NULL;
   if (epr == NULL) return NULL;
 
@@ -376,7 +384,7 @@ char *epr_to_string(const epr_t *epr)
   len = strlen(epr->refparams.uri);
 
   p = epr->refparams.selectorset.selectors;
-  for(unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+  for(i = 0; i < epr->refparams.selectorset.count; i++) {
     len += (strlen(p->key) + 1); /* (?|&)key */
     if (p->type == 0)
       len += (strlen(p->v.text) + 1); /* =value */
@@ -391,10 +399,11 @@ char *epr_to_string(const epr_t *epr)
   }
   buf = u_malloc(len + 1);
   if (buf) {
-	  strcpy(buf, epr->refparams.uri);
+          unsigned int i;
+          strcpy(buf, epr->refparams.uri);
 	  ptr = buf + strlen(buf);
 	  p = epr->refparams.selectorset.selectors;
-	  for (unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+	  for (i = 0; i < epr->refparams.selectorset.count; i++) {
 		  if (i == 0)
 			  *ptr++ = '?';
 		  else
@@ -451,6 +460,7 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
 	WsXmlNodeH refparamnode = NULL;
 	WsXmlNodeH selectorsetnode = NULL;
 	key_value_t *p = NULL;
+        unsigned int i;
 	if(epr == NULL) return 0;
 
 	if(epr_node_name) {
@@ -481,7 +491,7 @@ int epr_serialize(WsXmlNodeH node, const char *ns,
 		return 0;
 	}
 	p = epr->refparams.selectorset.selectors;
-	for(unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+	for(i = 0; i < epr->refparams.selectorset.count; i++) {
 		WsXmlNodeH temp = NULL;
 		if(p->type == 0)
 			temp = ws_xml_add_child(selectorsetnode, XML_NS_WS_MAN, WSM_SELECTOR, p->v.text);
@@ -558,8 +568,9 @@ epr_t *epr_deserialize(WsXmlNodeH node, const char *ns,
 		 sizeof(key_value_t));
 
 	if (epr->refparams.selectorset.selectors) {
+                unsigned int i;
 		p = epr->refparams.selectorset.selectors;
-		for (unsigned int i = 0; i < epr->refparams.selectorset.count; i++) {
+		for (i = 0; i < epr->refparams.selectorset.count; i++) {
 			temp = ws_xml_get_child(selectorsetnode, i, XML_NS_WS_MAN, WSM_SELECTOR);
 			attr = ws_xml_find_node_attr(temp, NULL, "Name");
 			if (attr) {

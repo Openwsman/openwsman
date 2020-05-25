@@ -162,10 +162,11 @@ static int
 _filter_add_selector(filter_t *filter, const char* key, const char *value, const epr_t *epr)
 {
         key_value_t *entry;
+        unsigned int i;
 	if(filter == NULL || key == NULL || ((value == NULL) && (epr == NULL)))
 		return 0;
 	entry = filter->selectorset.selectors;
-	for(unsigned int i = 0; i < filter->selectorset.count; i++) {
+	for(i = 0; i < filter->selectorset.count; i++) {
 		if(strcmp(key, entry[i].key) == 0)
 			return -1;
 	}
