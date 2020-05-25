@@ -184,6 +184,17 @@ computer systems using web services standards.
 
 This subpackage provides the common libraries of OpenWSMAN.
 
+%package -n libwsman_client5
+Summary:        An implementation of the WS-MAN specification
+Group:          System/Libraries
+
+%description -n libwsman_client5
+OpenWSMAN is an implementation of the WS-Management protocol stack.
+Web Services for Management (WS-MAN) is a specification for managing
+computer systems using web services standards.
+
+This subpackage provides the client libraries of OpenWSMAN.
+
 %package -n libwsman-devel
 Summary:        Development files for OpenWSMAN
 Group:          Development/Libraries/C and C++
@@ -455,6 +466,9 @@ rm -f %{buildroot}/%{_bindir}/winrs
 %post -n libwsman3 -p /sbin/ldconfig
 %postun -n libwsman3 -p /sbin/ldconfig
 
+%post -n libwsman_client5 -p /sbin/ldconfig
+%postun -n libwsman_client5 -p /sbin/ldconfig
+
 %if 0%{?has_systemd}
 %pre server
 if [ -f /var/lib/systemd/migrated/%{name} ]; then
@@ -508,10 +522,16 @@ rm -f /var/log/wsmand.log
 
 %files -n libwsman3
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README.md TODO src/plugins/redirect/redirect-README
+%doc AUTHORS ChangeLog README.md TODO src/plugins/redirect/redirect-README
+%license COPYING
 %{_libdir}/libwsman.so.*
-%{_libdir}/libwsman_client.so.*
 %{_libdir}/libwsman_curl_client_transport.so.*
+
+%files -n libwsman_client5
+%defattr(-,root,root)
+%doc AUTHORS
+%license COPYING
+%{_libdir}/libwsman_client.so.*
 %dir %{_sysconfdir}/openwsman
 %config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
 
@@ -571,6 +591,7 @@ rm -f /var/log/wsmand.log
 
 %files server
 %defattr(-,root,root)
+%dir %{_sysconfdir}/openwsman
 %config(noreplace) %{_sysconfdir}/openwsman/openwsman.conf
 %config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
 %attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
