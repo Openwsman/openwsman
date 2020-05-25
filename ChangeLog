@@ -1,3 +1,12 @@
+2.7.0
+- API change
+  - client_opt: expiry and hearbeat_interval are float (Alexander Usyskin)
+    wsmc_set_sub_expiry() and wsmc_set_heartbeat_interval() change their
+    first parameter from int to float
+  - bump so version of libwsman_client from 4 to 5
+  - fixed several compiler warnings (Alexander Usyskin)
+  - fixed spelling errors (Tomas Winkler)
+
 2.6.13
 - Bugfixes
   - fixed several compiler warnings (Alexander Usyskin)
