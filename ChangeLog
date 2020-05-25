@@ -4,6 +4,12 @@
     wsmc_set_sub_expiry() and wsmc_set_heartbeat_interval() change their
     first parameter from int to float
   - bump so version of libwsman_client from 4 to 5
+  - new functions for C++ bindings: OpenWsmanClient::GetWithFlags()
+    and OpenWsmanClient::PutWithFlags to add a 'flags' parameter
+    (Alexander Usyskin)
+  - add FLAG_SUPRESS_100_CONTINUE to options, fixes #131 to workaround
+    a curl problem. Reportedly curl 7.69.0 fixes this also in curl.
+    (Alexander Usyskin)
   - fixed several compiler warnings (Alexander Usyskin)
   - fixed spelling errors (Tomas Winkler)
 
