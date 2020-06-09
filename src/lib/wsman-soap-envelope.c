@@ -955,6 +955,8 @@ void wsman_get_fragment_type(char *fragstr, int *fragment_flag, char **element,
 	*index = 0;
 	if(fragstr == NULL) return;
 	dupstr = u_strdup(fragstr);
+	if (dupstr == NULL)
+		return;
 	p = strstr(dupstr, "/text()");
 	if(p) {
 		*p = '\0';
