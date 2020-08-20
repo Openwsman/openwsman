@@ -2,8 +2,6 @@
 # SSLeay example configuration file.
 #
 
-RANDFILE                = /dev/random
-
 [ req ]
 default_bits            = 1024
 default_keyfile         = privkey.pem

@@ -25,7 +25,6 @@ echo
 # use special .cnf, because with normal one no valid selfsigned
 # certificate is created
 
-export RANDFILE=/dev/random
 openssl req -days 365 $@ -config $CNFFILE \
   -new -x509 -nodes -out $CERTFILE \
   -keyout $KEYFILE
