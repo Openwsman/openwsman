@@ -1433,7 +1433,7 @@ create_instance_from_xml(CMPIInstance * instance,
 				CMRelease(propertyname);
 				break;
 			} else {
-				warning("cannot handle property");
+				_warning("cannot handle property");
 			}
 		}
 		else {

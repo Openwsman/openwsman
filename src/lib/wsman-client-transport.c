@@ -88,7 +88,7 @@ int wsman_send_request(WsManClient * cl, WsXmlDocH request)
 
 	wsmc_handler(cl, request, NULL);
         if (cl->last_error != WS_LASTERR_OK) {
-          warning("Couldn't send request to client: %s\n", cl->fault_string);
+          _warning("Couldn't send request to client: %s\n", cl->fault_string);
           ret = 1;
         }
 #ifdef BENCHMARK
