@@ -522,10 +522,15 @@ ENDIF ( BUILD_EXAMPLES )
 
 INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/include )
 
+if (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} "/GS /sdl /W3")
+SET( CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} "/GS /sdl /W3")
+else (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Woverloaded-virtual -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wunused -Werror" )
 SET( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -g -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wunused -Werror" )
 SET( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3" )
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3" )
+endif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 
 ####################################################################
 # PACKAGING                                                        #
