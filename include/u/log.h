@@ -141,10 +141,10 @@ int u_log_set_hook(u_log_hook_t hook, void *arg, u_log_hook_t *old, void**parg);
 #define die_if(expr) if(expr) die(EXIT_FAILURE, #expr)
 
 /** \brief same as u_log_warning but using the facility global variable */
-#define warning(...) u_log_warning(facility, 1, __VA_ARGS__)
+#define _warning(...) u_log_warning(facility, 1, __VA_ARGS__)
 
 /** \brief same as u_log_info but using the facility global variable */
-#define info(...) u_log_info(facility, 0, __VA_ARGS__)
+#define _info(...) u_log_info(facility, 0, __VA_ARGS__)
 
 /** \brief same as u_log_debug but using the facility global variable */
 #define _debug(...) u_log_debug(facility, 1, __VA_ARGS__)

@@ -898,7 +898,7 @@ ws_transfer_delete_stub(SoapOpH op,
 
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
-		warning("Transfer Delete fault");
+		_warning("Transfer Delete fault");
 		doc = wsman_generate_fault(soap_get_op_doc(op, 1),
 					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
@@ -947,7 +947,7 @@ ws_transfer_get_stub(SoapOpH op,
 
 	wsman_status_init(&status);
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
-		warning("Transfer Get fault");
+		_warning("Transfer Get fault");
 		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
 					 WSMAN_INVALID_SELECTORS, 0, NULL);
 	} else {
@@ -963,7 +963,7 @@ ws_transfer_get_stub(SoapOpH op,
 		debug("Setting operation document");
 		soap_set_op_doc(op, doc, 0);
 	} else {
-		warning("Response doc invalid");
+		_warning("Response doc invalid");
 	}
 
 	ws_destroy_context(cntx);
@@ -2229,7 +2229,7 @@ static int wse_send_notification(WsEventThreadContextH cntx, WsXmlDocH outdoc, W
 	}
 	wsmc_transport_init(notificationSender, NULL);
 	if (wsman_send_request(notificationSender, outdoc)) {
-                warning("wse_send_notification: wsman_send_request fails for endpoint %s", subsInfo->epr_notifyto);
+                _warning("wse_send_notification: wsman_send_request fails for endpoint %s", subsInfo->epr_notifyto);
                 /* FIXME: retVal */
         }
 	if(acked) {

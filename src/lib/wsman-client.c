@@ -1644,7 +1644,7 @@ wsmc_action_invoke_fromtext(WsManClient * cl,
 		ws_xml_duplicate_tree(ws_xml_get_soap_body(request), n);
 		ws_xml_destroy_doc(doc);
 	} else {
-            warning("No XML provided");
+            _warning("No XML provided");
         }
 	if ((options->flags & FLAG_DUMP_REQUEST) == FLAG_DUMP_REQUEST) {
 		ws_xml_dump_node_tree(cl->dumpfile, ws_xml_get_doc_root(request));

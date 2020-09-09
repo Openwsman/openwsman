@@ -104,7 +104,7 @@ myXmlErrorReporting (void *ctx, const char* msg, ...)
 	char *string;
 	va_start(args, msg);
 	string = u_strdup_vprintf (msg, args);
-	warning (string);
+	_warning (string);
 	va_end(args);
 
 	u_free(string);
