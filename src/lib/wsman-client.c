@@ -2239,7 +2239,7 @@ wsmc_release(WsManClient * cl)
 	}
 
 	if (cl->data.pwd) {
-		u_free(cl->data.pwd);
+		u_cleanfree(cl->data.pwd);
 		cl->data.pwd = NULL;
 	}
 
@@ -2288,7 +2288,7 @@ wsmc_release(WsManClient * cl)
           cl->proxy_data.proxy_username = NULL;
         }
         if (cl->proxy_data.proxy_password != NULL) {
-          u_free(cl->proxy_data.proxy_password);
+          u_cleanfree(cl->proxy_data.proxy_password);
           cl->proxy_data.proxy_password = NULL;
         }
         pthread_mutex_destroy(&cl->mutex);

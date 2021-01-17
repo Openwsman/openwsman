@@ -402,7 +402,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		}
 		bResults = WinHttpSetOption(request, WINHTTP_OPTION_PROXY_PASSWORD,
 				proxy_password, wcslen(proxy_password));
-		u_free(proxy_password);
+		u_cleanfreew(proxy_password);
 		if (!bResults)
 		{
 			lastErr = GetLastError();
@@ -513,7 +513,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					usr = convert_to_unicode(cl->data.user);
 					if ((pwd == NULL) || (usr == NULL)) {
 						if (pwd != NULL) {
-							u_free(pwd);
+							u_cleanfreew(pwd);
 						}
 						if (usr != NULL) {
 							u_free(usr);
@@ -527,7 +527,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 							dwSelectedScheme,
 							usr, pwd,
 							NULL);
-					u_free(pwd);
+					u_cleanfreew(pwd);
 					u_free(usr);
 				}
 				if (cleanup_request_data(request)) {
@@ -618,7 +618,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 				usr = convert_to_unicode(cl->data.user);
 				if ((pwd == NULL) || (usr == NULL)) {
 					if (pwd != NULL) {
-						u_free(pwd);
+						u_cleanfreew(pwd);
 					}
 					if (usr != NULL) {
 						u_free(usr);
@@ -632,7 +632,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 						dwSelectedScheme,
 						usr, pwd,
 						NULL);
-				u_free(pwd);
+				u_cleanfreew(pwd);
 				u_free(usr);
 			}
 			if (cleanup_request_data(request)) {

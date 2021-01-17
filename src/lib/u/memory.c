@@ -6,6 +6,8 @@ static const char rcsid[] =
     "$Id: memory.c,v 1.2 2006/01/09 12:38:38 tat Exp $";
 
 #include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
 
 #include <u/memory.h>
 
@@ -43,6 +45,29 @@ void u_free (void *ptr)
 {
     if (ptr)
         free(ptr);
+}
+
+typedef void* (*memset_t)(void*, int, size_t);
+
+/* To make compiler always execute it */
+static volatile memset_t memset_func = memset;
+
+/** \brief Wrapper for free(3), sanity checks the supplied pointer and cleans memory*/
+void u_cleanfree(char *ptr)
+{
+   if (!ptr)
+      return;
+   memset_func(ptr, strlen(ptr) * sizeof(char), 0);
+   free(ptr);
+}
+
+/** \brief Wrapper for free(3), sanity checks the supplied pointer and cleans memory*/
+void u_cleanfreew(wchar_t *ptr)
+{
+   if (!ptr)
+      return;
+   memset_func(ptr, wcslen(ptr) * sizeof(wchar_t), 0);
+   free(ptr);
 }
 
 /**
