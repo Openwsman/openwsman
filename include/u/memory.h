@@ -16,6 +16,8 @@ void *u_zalloc(size_t sz);
 void *u_calloc(size_t cnt, size_t sz);
 void *u_realloc(void *ptr, size_t sz);
 void u_free(void *ptr);
+void u_cleanfree(char *ptr);
+void u_cleanfreew(wchar_t *ptr);
 
 #ifdef __cplusplus
 }
