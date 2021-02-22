@@ -2,9 +2,6 @@
  * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
-static const char rcsid[] =
-    "$Id: buf.c,v 1.1 2006/05/28 15:39:43 tat Exp $";
-
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif

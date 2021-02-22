@@ -26,10 +26,6 @@
 #define HASH_IMPLEMENTATION
 #include "u/hash.h"
 
-#ifdef KAZLIB_RCSID
-static const char rcsid[] = "$Id: hash.c,v 1.36.2.11 2000/11/13 01:36:45 kaz Exp $";
-#endif
-
 #define INIT_BITS	6
 #define INIT_SIZE	(1UL << (INIT_BITS))	/* must be power of two		*/
 #define INIT_MASK	((INIT_SIZE) - 1)

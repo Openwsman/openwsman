@@ -2,8 +2,6 @@
  * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
-static const char rcsid[] =
-    "$Id: log.c,v 1.9 2006/03/11 14:41:16 tat Exp $";
 #ifdef HAVE_CONFIG_H
 #include <wsman_config.h>
 #endif
