@@ -2,9 +2,6 @@
  * Copyright (c) 2005, 2006 by KoanLogic s.r.l. - All rights reserved.
  */
 
-static const char rcsid[] =
-    "$Id: memory.c,v 1.2 2006/01/09 12:38:38 tat Exp $";
-
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
