@@ -51,8 +51,6 @@ pid_t getpid(void);
 typedef int ssize_t;
 #endif
 
-#define bzero(p, l) memset(p, 0, l)
-
 #endif // WIN32
 
 
