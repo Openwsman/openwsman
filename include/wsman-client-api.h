@@ -752,6 +752,8 @@ typedef enum {
 	void wsmc_clear_action_option(client_opt_t * options,
 				     unsigned long);
 
+	void wsmc_set_selectors_from_uri(const char *resource_uri,
+					client_opt_t * options);
 	void wsmc_set_options_from_uri(const char *resource_uri,
 					client_opt_t * options);
 
