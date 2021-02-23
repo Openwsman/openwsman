@@ -283,7 +283,10 @@ init_curl_transport(WsManClient *cl)
 	CURLcode r = CURLE_OK;
         char *sslhack;
         long sslversion;
-        dictionary *ini = iniparser_new(wsmc_get_conffile(cl));
+        dictionary *ini = NULL;
+#ifndef _WIN32
+        ini = iniparser_new(wsmc_get_conffile(cl));
+#endif
 
 #define curl_err(str)  debug("Error = %d (%s); %s", \
 		r, curl_easy_strerror(r), str);
