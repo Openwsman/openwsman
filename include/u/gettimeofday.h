@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef WIN32
+#if defined (WIN32) && ! defined (__MINGW32__)
 
 #ifdef __cplusplus
 extern "C" {

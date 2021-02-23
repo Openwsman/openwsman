@@ -46,7 +46,7 @@
 #include <u/memory.h>
 
 
-#ifndef WIN32
+#ifndef _WIN32
 extern int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 #endif
 

@@ -80,7 +80,7 @@ static __inline void TRACE_DETAILS(char* format, ...) {
 #endif
 
 
-#ifdef WIN32
+#if defined (WIN32) && ! defined (__MINGW32__)
 
 # ifdef WSMAN_DEBUG_VERBOSE
 
