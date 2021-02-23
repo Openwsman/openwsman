@@ -1,6 +1,6 @@
 
 
-#ifndef WIN32           /* Unix */
+#ifndef _WIN32           /* Unix */
 
 
 #include <sys/types.h>

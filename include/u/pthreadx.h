@@ -26,7 +26,7 @@
 #ifndef PTHREADX_H_INCLUDED
 #define PTHREADX_H_INCLUDED
 
-#ifndef WIN32
+#if ! defined (WIN32) || defined (__MINGW32__)
 #  include <pthread.h>
 #elif defined (WIN32)
 #include <windows.h>

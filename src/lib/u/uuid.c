@@ -99,7 +99,7 @@
 #include "u/os.h"
 #include "u/debug.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "windows.h"
 #include "rpcdce.h"
 /* don't forget to link with rpcrt4.lib */
@@ -420,4 +420,4 @@ generate_uuid ( char* buf,
 
 #endif
 
-#endif /* #if WIN32 ... #else */
+#endif /* #if _WIN32 ... #else */
