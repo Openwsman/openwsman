@@ -752,7 +752,7 @@ BOOL find_cert(const _TCHAR * oid,
 	if ( !(hStoreHandle = CertOpenStore(
 					CERT_STORE_PROV_SYSTEM,          // The store provider type
 					0,                               // The encoding type is not needed
-					NULL,                            // Use the default HCRYPTPROV
+					(HCRYPTPROV_LEGACY)NULL,         // Use the default HCRYPTPROV
 					flags,  // Set the store location in a registry location
 					L"MY"                            // The store name as a Unicode string
 					)))
