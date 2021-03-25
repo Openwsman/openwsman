@@ -1007,9 +1007,13 @@ unsigned long get_total_enum_context(WsContextH cntx){
  * preset, hence marking them as weak symbols and testing to see
  * if they are resolved before using them.
  */
+#ifndef _MSC_VER /* no such pragma in MSVC */
 #pragma weak wsmand_options_get_max_threads
+#endif /* _MSC_VER */
 extern int wsmand_options_get_max_threads(void);
+#ifndef _MSC_VER /* no such pragma in MSVC */
 #pragma weak wsmand_options_get_max_connections_per_thread
+#endif /* _MSC_VER */
 extern int wsmand_options_get_max_connections_per_thread(void);
 
 /**
