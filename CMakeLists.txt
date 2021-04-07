@@ -5,7 +5,8 @@
 PROJECT(openwsman)
 
 # 2.6 minimum because of CMP0005 (escaping defines)
-cmake_minimum_required(VERSION 2.6)
+# 2.8.12 minimum because CMake 3.19.7 says so
+cmake_minimum_required(VERSION 2.8.12)
 
 include(CTest)
 enable_testing()
