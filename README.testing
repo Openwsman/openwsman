@@ -1,0 +1,36 @@
+# How to set up a testing environment
+
+Testing needs a running 'openwsmand' service which can connect
+to a CIM broker.
+
+
+sfcb (small footprint cim broker) is used as the CIM broker. It should
+have the 'cmpi-base' CIM provider available.
+
+
+## Authentication
+
+It is assumed that a 'wsman' user exists with password 'secret'.
+
+This user should be in the 'sfcb' group.
+
+
+## Testing under (open)SUSE
+
+zypper in sblim-sfcb
+zypper in sblim-cmpi-base
+
+
+Start sblim-sfcb
+
+> sudo sfcbd
+
+
+Start openwsmand
+
+> sudo openwsmand -d
+
+Run tests
+
+> cd build
+> make test
