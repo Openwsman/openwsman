@@ -44,10 +44,10 @@
 #    set COMPATMINOR to MINOR. (binary incompatible change)
 #
 
-# Package version 2.7.0
+# Package version 2.7.1
 SET(OPENWSMAN_MAJOR "2")
 SET(OPENWSMAN_MINOR "7")
-SET(OPENWSMAN_PATCH "0")
+SET(OPENWSMAN_PATCH "1")
 
 # Plugin API 2.2
 SET(OPENWSMAN_PLUGIN_API_MAJOR "2")

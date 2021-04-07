@@ -1,3 +1,11 @@
+2.7.1
+- Bugfixes
+  - msvc build fixes (Alexander Usyskin)
+  - cleanup passwords after use (Alexander Usyskin)
+  - drop RANDFILE in owsmangencert.h (kkaempf)
+  - fix potential NULL pointer dereference (Alexander Usyskin)
+  - MinGW build enablement (Bastian Germann)
+
 2.7.0
 - API change
   - client_opt: expiry and hearbeat_interval are float (Alexander Usyskin)
