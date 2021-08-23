@@ -1047,7 +1047,10 @@ wsmc_set_put_prop(WsXmlDocH get_response,
 void
 wsmc_node_to_buf(WsXmlNodeH node, char **buf) {
 	int   len;
-	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
+	WsXmlDocH doc = ws_xml_create_doc_by_import(node);
+	if (doc == NULL) {
+		return;
+	}
 	ws_xml_dump_memory_enc(doc, buf, &len, "UTF-8");
 	ws_xml_destroy_doc(doc);
 	return;
@@ -1058,8 +1061,15 @@ char*
 wsmc_node_to_formatbuf(WsXmlNodeH node) {
 	char *buf;
 	int   len;
-	WsXmlDocH doc = ws_xml_create_doc_by_import( node);
-	ws_xml_dump_memory_node_tree(ws_xml_get_doc_root(doc), &buf, &len);
+	WsXmlDocH doc = ws_xml_create_doc_by_import(node);
+	if (doc == NULL) {
+		return NULL;
+	}
+	WsXmlNodeH root = ws_xml_get_doc_root(doc);
+	if (root == NULL) {
+		return NULL;
+	}
+	ws_xml_dump_memory_node_tree(root, &buf, &len);
 	ws_xml_destroy_doc(doc);
 	return buf;
 }
@@ -1070,7 +1080,9 @@ add_subscription_context(WsXmlNodeH node, char *context)
 {
 	WsXmlNodeH subsnode;
 	WsXmlDocH doc = ws_xml_read_memory(context, strlen(context), "UTF-8", 0);
-	if(doc == NULL) return;
+	if (doc == NULL) {
+		return;
+	}
 	subsnode = ws_xml_get_doc_root(doc);
 	ws_xml_duplicate_children(node, subsnode);
 }
