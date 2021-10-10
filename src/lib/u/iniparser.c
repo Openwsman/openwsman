@@ -496,7 +496,8 @@ static int iniparser_add_entry(
     const char * key,
     char * val)
 {
-    char longkey[2*ASCIILINESZ+1];
+    /* two strings, colon and trailing zero */
+    char longkey[2*ASCIILINESZ+2];
 
     /* Make a key as section:keyword */
     if (key!=NULL) {
