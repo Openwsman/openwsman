@@ -302,7 +302,7 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	char pszAnsi[128];
 	wchar_t *pwsz;
 
-	PCCERT_CONTEXT certificate;
+	PCCERT_CONTEXT certificate = NULL;
 	wchar_t *proxy_username;
 	wchar_t *proxy_password;
 	if (cl->session_handle == NULL && wsmc_transport_init(cl, NULL)) {
