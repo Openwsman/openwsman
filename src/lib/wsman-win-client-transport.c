@@ -111,6 +111,7 @@ int wsmc_transport_init(WsManClient *cl, void *arg)
 	while (InterlockedExchange(&cl->lock_session_handle, 1L));
 	if (cl->session_handle != NULL) {
 		cl->lock_session_handle = 0L;
+		u_free(agent);
 		return 0;
 	}
 	if(!cl->proxy_data.proxy){
