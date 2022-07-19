@@ -459,6 +459,7 @@ wsmc_handler( WsManClient *cl,
 	long http_code;
 	long auth_avail = 0;
 	char *_user = NULL, *_pass = NULL;
+	int _no_auth = 0; /* 0 if authentication is used, 1 if no authentication was used */
 	u_buf_t *response = NULL;
 	//char *soapaction;
 	char *tmp_str = NULL;
@@ -564,6 +565,7 @@ wsmc_handler( WsManClient *cl,
 		_user = wsmc_get_user(cl);
 		_pass = wsmc_get_password(cl);
 		if (_user && _pass && cl->data.auth_set) {
+			_no_auth = 0;
 			r = curl_easy_setopt(curl, CURLOPT_HTTPAUTH, cl->data.auth_set);
 			if (r != CURLE_OK) {
 				cl->fault_string = u_strdup(curl_easy_strerror(r));
@@ -584,6 +586,11 @@ wsmc_handler( WsManClient *cl,
 				curl_err("curl_easy_setopt(curl, CURLOPT_USERPWD, ..) failed");
 				goto DONE;
 			}
+        } else {
+            /* request without user credentials, remember this for
+             * later use when it might become necessary to print an error message
+             */
+            _no_auth = 1;
 		}
 
 		if (wsman_debug_level_debugged(DEBUG_LEVEL_MESSAGE)) {
@@ -616,6 +623,24 @@ wsmc_handler( WsManClient *cl,
 				break;
 			case 401:
 				// The server requires authentication.
+                /* RFC 2616 states:
+                 *
+                 * If the request already included Authorization credentials, then the 401
+                 * response indicates that authorization has been refused for those
+                 * credentials. If the 401 response contains the same challenge as the
+                 * prior response, and the user agent has already attempted
+                 * authentication at least once, then the user SHOULD be presented the
+                 * entity that was given in the response, since that entity might
+                 * include relevant diagnostic information.
+                 */
+                if (_no_auth == 0) {
+                    /* no authentication credentials were used. It is only
+                     * possible to write a message about the current situation. There
+                     * is no information about the last attempt to access the resource.
+                     * Maybe at a later point in time I will implement more state information.
+                     */
+                    fprintf(stdout,"Authentication failed, please retry\n");
+                }
 				break;
 			default:
 				// The status code does not indicate success.
