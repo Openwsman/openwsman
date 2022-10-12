@@ -366,7 +366,7 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * alias: to_s
    *
    * call-seq:
-   *  node.text(XmlNode) -> String
+   *  node.text() -> String
    *
    */
   char *text() {
@@ -502,8 +502,8 @@ typedef struct __WsXmlNode* WsXmlNodeH;
    * a NULL passed as 'ns' (namespace) is treated as wildcard
    *
    * call-seq:
-   *  node.find("namespace", "name") -> String # recursive
-   *  node.find("namespace", "name", 0) -> String # non-recursive
+   *  node.find("namespace", "name") -> XmlNode # recursive
+   *  node.find("namespace", "name", 0) -> XmlNode # non-recursive
    *
    */
   WsXmlNodeH find( const char *ns, const char *name, int recursive = 1) {
