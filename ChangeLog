@@ -1,3 +1,10 @@
+2.7.2
+- Bugfixes
+  - wsman-win-client-transport: initialize certificate pointer (Alexander Usyskin)
+  - iniparser: fix buffer size (Alexander Usyskin)
+  - wsman-win-client-transport: plug leak in error path (Alexander Usyskin)
+  - Improve handling of HTTP 401 Unauthorized (Vitezslav Crhonek)
+
 2.7.1
 - Bugfixes
   - msvc build fixes (Alexander Usyskin)
