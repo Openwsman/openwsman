@@ -4,6 +4,7 @@
   - iniparser: fix buffer size (Alexander Usyskin)
   - wsman-win-client-transport: plug leak in error path (Alexander Usyskin)
   - Improve handling of HTTP 401 Unauthorized (Vitezslav Crhonek)
+  - small adaption to swig 4.1.0
 
 2.7.1
 - Bugfixes
