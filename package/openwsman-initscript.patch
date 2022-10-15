@@ -1,0 +1,22 @@
+diff -up openwsman-2.2.3/etc/init/openwsmand.sh.cmake.orig openwsman-2.2.3/etc/init/openwsmand.sh.in
+--- openwsman-2.2.3/etc/init/openwsmand.sh.cmake.orig	2010-04-22 09:36:29.186800378 -0500
++++ openwsman-2.2.3/etc/init/openwsmand.sh.cmake	2010-04-22 09:38:15.507820659 -0500
+@@ -4,15 +4,15 @@
+ # Provides: openwsmand
+ # Required-Start: $remote_fs
+ # Required-Stop: $network
+-# Default-Start: 2 3 5
+-# Default-Stop: 0 1 6 
++# Default-Start:
++# Default-Stop:
+ # Short-Description: Openwsman Daemon
+ # Description: openwsmand
+ #       Start/Stop the Openwsman Daemon
+ ### END INIT INFO
+ #
+ #
+-# chkconfig: 2345 36 64
++# chkconfig: - 36 64
+ # description: Openwsman Daemon
+ # processname: openwsmand
+ 
