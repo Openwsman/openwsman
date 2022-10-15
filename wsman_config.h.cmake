@@ -54,11 +54,6 @@
 #define HAVE_CTYPE_H 1
 #endif
 
-/* Define to 1 if you have the <CUnit/Basic.h> header file. */
-#if @HAVE_CUNIT_BASIC_H@
-#define HAVE_CUNIT_BASIC_H 1
-#endif
-
 /* Define to 1 if you have the `daemon' function. */
 #if @HAVE_DAEMON@
 #define HAVE_DAEMON 1
