@@ -47,7 +47,7 @@
  * 
  */
 
-#if SWIGVERSION > 0x020004
+#if SWIG_VERSION > 0x020004
 #define KLASS_DECL(k,t) swig_class *k = (swig_class *)(t->clientdata)
 #define KLASS_OF(x) x->klass
 #else
