@@ -13,6 +13,7 @@
  * $Id: shttpd.c,v 1.57 2008/08/23 21:00:38 drozd Exp $
  */
 
+#include <grp.h>
 #include "defs.h"
 #include "wsmand-daemon.h"
 
