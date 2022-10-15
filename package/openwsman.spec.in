@@ -37,6 +37,7 @@
 
 Name:           openwsman
 BuildRequires:  cmake >= 2.6
+BuildRequires:  cunit-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libxml2-devel
 BuildRequires:  pam-devel
