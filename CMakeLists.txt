@@ -624,7 +624,7 @@ SET( AUTOBUILD_COMMAND
   COMMAND ${CMAKE_MAKE_PROGRAM} package_source
   COMMAND ${CMAKE_COMMAND} -E copy ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.bz2 ${CMAKE_BINARY_DIR}/package
   COMMAND ${CMAKE_COMMAND} -E remove ${CPACK_SOURCE_PACKAGE_FILE_NAME}.tar.bz2
-  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman-initscript.patch" "${CMAKE_BINARY_DIR}/package"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman-redhat-initscript.patch" "${CMAKE_BINARY_DIR}/package"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.pam" "${CMAKE_BINARY_DIR}/package"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.pam.rh" "${CMAKE_BINARY_DIR}/package"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/package/openwsman.rpmlintrc" "${CMAKE_BINARY_DIR}/package"
