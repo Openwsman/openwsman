@@ -4,6 +4,10 @@
   - iniparser: fix buffer size (Alexander Usyskin)
   - wsman-win-client-transport: plug leak in error path (Alexander Usyskin)
   - Improve handling of HTTP 401 Unauthorized (Vitezslav Crhonek)
+  - Fix serialization tests (kkaempf)
+  - Fix Ruby bindings warnings (kkaempf)
+  - Fix Ruby plugin loading test (kkaempf)
+  - Fix rpm packaging (kkaempf)
 
 2.7.1
 - Bugfixes
