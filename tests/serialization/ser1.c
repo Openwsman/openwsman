@@ -137,21 +137,23 @@ static void test_basic_types(void)
 	    SER_END_ITEMS(Sample_Servie);
 
 	WsContextH cntx;
+	WsSerializerContextH scntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	cntx = ws_create_runtime(NULL);
 	CU_ASSERT_PTR_NOT_NULL(cntx);
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc(NULL, "example");
 	node = ws_xml_get_doc_root(doc);
+        scntx = ws_serializer_init();
 
-	retval = ws_serialize(cntx, node, &servie, Sample_Servie_TypeInfo,
+	retval = ws_serialize(scntx, node, &servie, Sample_Servie_TypeInfo,
 			      CLASSNAME, NULL, NULL, 0);
 	//ws_xml_dump_node_tree(stdout, node);
 	node = ws_xml_get_doc_root(doc);
 
-	Sample_Servie *cs = (Sample_Servie *) ws_deserialize(cntx,
+	Sample_Servie *cs = (Sample_Servie *) ws_deserialize(scntx,
 							     node,
 							     Sample_Servie_TypeInfo,
 							     CLASSNAME,
@@ -166,6 +168,7 @@ static void test_basic_types(void)
 	} else {
 		CU_FAIL("memcpy failed");
 	}
+        ws_serializer_cleanup(scntx);
 }
 
 static void test_static_struct(void)
@@ -203,21 +206,23 @@ static void test_static_struct(void)
 	SER_END_ITEMS(Sample);
 
 	WsContextH cntx;
+	WsSerializerContextH scntx;
 	WsXmlDocH doc;
 	WsXmlNodeH node;
 	int retval;
 
 	cntx = ws_create_runtime(NULL);
 	CU_ASSERT_PTR_NOT_NULL(cntx);
-	doc = ws_xml_create_doc(cntx->soap, NULL, "example");
+	doc = ws_xml_create_doc(NULL, "example");
 	CU_ASSERT_PTR_NOT_NULL(doc);
 	node = ws_xml_get_doc_root(doc);
 	CU_ASSERT_PTR_NOT_NULL(node);
-	retval = ws_serialize(cntx, node, &sample, Sample_TypeInfo,
+        scntx = ws_serializer_init();
+	retval = ws_serialize(scntx, node, &sample, Sample_TypeInfo,
 			      CLASSNAME, NULL, NULL, 0);
-	//ws_xml_dump_node_tree(stdout, node);
+	ws_xml_dump_node_tree(stdout, node);
 	node = ws_xml_get_doc_root(doc);
-	Sample *sample_out = (Sample *) ws_deserialize(cntx,
+	Sample *sample_out = (Sample *) ws_deserialize(scntx,
 							     node,
 							     Sample_TypeInfo,
 							     CLASSNAME,
@@ -227,7 +232,7 @@ static void test_static_struct(void)
 	CU_ASSERT_TRUE(sample_out->A == 10 );
 	CU_ASSERT_TRUE(sample_out->EMBED[0].a);
 	CU_ASSERT_FALSE(sample_out->EMBED[1].a);
-
+        ws_serializer_cleanup(scntx);
 }
 
 
