@@ -2,6 +2,7 @@
 # spec file for package openwsman
 #
 # Copyright (c) 2019 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2022 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -146,7 +147,7 @@ Version:        @VERSION@
 Release:        0
 # Mandriva:
 # Release %%mkrel 1
-Url:            http://www.openwsman.org/
+URL:            http://www.openwsman.org/
 Summary:        An implementation of the WS-MAN specification
 License:        BSD-3-Clause AND GPL-2.0-only
 Group:          System/Management
@@ -154,7 +155,7 @@ Source:         %{name}-%{version}.tar.bz2
 Source1:        %{name}.rpmlintrc
 Source21:       %{name}.pam.rh
 Source22:       %{name}.pam
-Patch1:         openwsman-initscript.patch
+Patch1:         openwsman-redhat-initscript.patch
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version} || 0%{?fedora} || 0%{?rhel}
 %define pamfile %{S:21}
 %else
