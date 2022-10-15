@@ -3,7 +3,7 @@ dnl *** Initialize automake and set version ***
 dnl *******************************************
 
 AC_PREREQ(2.53)
-AC_INIT([openwsman], [2.6.1])
+AC_INIT([openwsman], [2.7.2])
 AC_CONFIG_SRCDIR(src/server/wsmand.c)
 AC_CANONICAL_HOST
 AC_CONFIG_MACRO_DIR([m4])
