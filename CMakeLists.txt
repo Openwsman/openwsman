@@ -354,7 +354,7 @@ ENDIF (NOT HAVE_ALLOCA)
 # The code below ensures that "HAVE_xxx" is set to "0" or "1"
 #
 
-SET (FILES_TO_TEST "alloca.h" "crypt.h" "ctype.h" "CUnit/Basic.h" "dirent.h" "dlfcn.h" "ifaddrs.h" "inttypes.h" "memory.h" "netinet/in.h" "net/if_dl.h" "net/if.h" "pam/pam_appl.h" "pam/pam_misc.h" "pthread.h" "security/pam_appl.h" "security/pam_misc.h" "stdarg.h" "stdint.h" "stdlib.h" "strings.h" "string.h" "sys/ioctl.h" "sys/resource.h" "sys/select.h" "sys/sendfile.h" "sys/signal.h" "sys/socket.h" "sys/sockio.h" "sys/stat.h" "sys/types.h" "unistd.h" "vararg.h" )
+SET (FILES_TO_TEST "alloca.h" "crypt.h" "ctype.h" "dirent.h" "dlfcn.h" "ifaddrs.h" "inttypes.h" "memory.h" "netinet/in.h" "net/if_dl.h" "net/if.h" "pam/pam_appl.h" "pam/pam_misc.h" "pthread.h" "security/pam_appl.h" "security/pam_misc.h" "stdarg.h" "stdint.h" "stdlib.h" "strings.h" "string.h" "sys/ioctl.h" "sys/resource.h" "sys/select.h" "sys/sendfile.h" "sys/signal.h" "sys/socket.h" "sys/sockio.h" "sys/stat.h" "sys/types.h" "unistd.h" "vararg.h" )
 FOREACH( FILE ${FILES_TO_TEST})
   STRING(REGEX REPLACE "\\." "_" FILEDOT ${FILE})
   STRING(REGEX REPLACE "/" "_" FILESLASH ${FILEDOT})
@@ -368,6 +368,14 @@ FOREACH( FILE ${FILES_TO_TEST})
     SET(${HAVENAME} 0)
   ENDIF(HAVE_${FILE}_FILE)
 ENDFOREACH( FILE ${FILES_TO_TEST})
+
+IF(BUILD_CUNIT_TESTS)
+  CHECK_INCLUDE_FILE( "CUnit/Basic.h" HAVE_CUNIT_BASIC_H )
+  IF(HAVE_CUNIT_BASIC_H)
+  ELSE(HAVE_CUNIT_BASIC_H)
+    MESSAGE(FATAL_ERROR "Can't find CUnit/Basic.h - missing cunit-devel package ?")
+  ENDIF(HAVE_CUNIT_BASIC_H)
+ENDIF(BUILD_CUNIT_TESTS)
 
 #/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 CHECK_INCLUDE_FILE( "sys/time.h" TIME_WITH_SYS_TIME )
