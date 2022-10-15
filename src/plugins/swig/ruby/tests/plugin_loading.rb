@@ -1,4 +1,4 @@
 # load openwsmanplugin.rb
 
 $:.unshift "../../../../../build/bindings/ruby"
-require 'openwsmanplugin'
+require_relative '../openwsmanplugin'
