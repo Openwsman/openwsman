@@ -424,6 +424,7 @@ cmake \
   -DEXPLICIT_TARGET="$EXPLICIT_TARGET" \
   -DLIB=%{_lib} \
   -DBUILD_RUBY_GEM=no \
+  -DBUILD_CUNIT_TESTS=on \
   ..
 
 make
