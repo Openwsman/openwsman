@@ -4,15 +4,16 @@
 # Provides: openwsmand
 # Required-Start: $remote_fs
 # Required-Stop: $network
-# Default-Start: 2 3 5
-# Default-Stop: 0 1 6 
+# Default-Start:
+# Default-Stop:
 # Short-Description: Openwsman Daemon
 # Description: openwsmand
 #       Start/Stop the Openwsman Daemon
 ### END INIT INFO
 #
 #
-# chkconfig: 2345 36 64
+
+# chkconfig: - 36 64
 # description: Openwsman Daemon
 # processname: openwsmand
 
