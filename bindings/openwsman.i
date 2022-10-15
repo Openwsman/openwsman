@@ -423,6 +423,7 @@ static epr_t *my_epr_deserialize(WsXmlNodeH node) {
   return epr_deserialize(node, XML_NS_ADDRESSING, WSA_EPR, 1);
 }
 
+/*:nodoc:*/
 static VALUE kv_list_to_hash(list_t *list)
 {
   VALUE v = Qnil;

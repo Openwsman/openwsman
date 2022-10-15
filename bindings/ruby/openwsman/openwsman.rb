@@ -104,6 +104,7 @@ module Openwsman
     def method_missing name, *args # :nodoc:
       selector(name.to_s)
     end
+    # convert EndPointReference to string
     def to_s
       s = "#{classname}"
       first = true
@@ -119,6 +120,7 @@ module Openwsman
   # Fault
   #
   class Fault
+    # convert Fault to string
     def to_s
       "Fault #{code}.#{subcode}: #{detail} - #{reason}"
     end
