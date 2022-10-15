@@ -362,6 +362,7 @@ Requires:       java
 Requires:       libwsman1 = %{version}
 Summary:        Java bindings for OpenWSMAN client API
 Group:          System/Management
+BuildArch:      noarch
 
 %description java
 This package provides Java bindings to access the OpenWSMAN client API.
@@ -375,6 +376,7 @@ This package provides Java bindings to access the OpenWSMAN client API.
 Summary:        Windows Remote Shell
 Group:          System/Management
 Requires:       openwsman-ruby = %{version}
+BuildArch:      noarch
 
 %description -n winrs
 This is a command line tool for the Windows Remote Shell protocol.
