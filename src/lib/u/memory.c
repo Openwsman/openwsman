@@ -54,7 +54,7 @@ void u_cleanfree(char *ptr)
 {
    if (!ptr)
       return;
-   memset_func(ptr, strlen(ptr) * sizeof(char), 0);
+   memset_func(ptr, 0, strlen(ptr) * sizeof(char));
    free(ptr);
 }
 
@@ -63,7 +63,7 @@ void u_cleanfreew(wchar_t *ptr)
 {
    if (!ptr)
       return;
-   memset_func(ptr, wcslen(ptr) * sizeof(wchar_t), 0);
+   memset_func(ptr, 0, wcslen(ptr) * sizeof(wchar_t));
    free(ptr);
 }
 
