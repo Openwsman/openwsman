@@ -173,7 +173,7 @@ static char *make_qname(WsXmlNodeH node, const char *uri, const char *name)
 
 		if (prefix != NULL && name != NULL) {
 			int ret = snprintf(buf, len, "%s:%s", prefix, name);
-			if (ret < 0 || ret >= len) {
+			if (ret < 0 || (size_t)ret >= len) {
 				u_free(buf);
 				return NULL;
 			}
