@@ -11,7 +11,7 @@ ADD_TEST(bindings_python_loading      ${CMAKE_CURRENT_SOURCE_DIR}/run ${PYTHON_E
 
         # Xml bindings
 # ADD_TEST(bindings_python_xmldoc     ${CMAKE_CURRENT_SOURCE_DIR}/run ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} xmldoc.py )
-# ADD_TEST(bindings_python_xmlnode    ${CMAKE_CURRENT_SOURCE_DIR}/run ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} xmlnode.py )
+ADD_TEST(bindings_python_xmlnode    ${CMAKE_CURRENT_SOURCE_DIR}/run ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} xmlnode.py )
 # ADD_TEST(bindings_python_xmlattr    ${CMAKE_CURRENT_SOURCE_DIR}/run ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} xmlattr.py )
 	
 	# Client
