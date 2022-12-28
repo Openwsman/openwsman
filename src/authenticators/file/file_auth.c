@@ -44,6 +44,7 @@
 #endif
 #include "u/libu.h"
 #include <stdio.h>
+#include <unistd.h>
 
 
 int initialize(void *arg);
@@ -63,7 +64,7 @@ int initialize(void *arg) {
 
     fp = fopen(filename, "r");
     if (fp == NULL) {
-        debug("Could not fopen password file %s", filename);
+        debug("Could not fopen password file %s (current dir %s)", filename, get_current_dir_name());
         return 1;
     }
     fclose(fp);

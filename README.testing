@@ -1,8 +1,21 @@
 # How to set up a testing environment
 
-Testing needs a running 'openwsmand' service which can connect
+
+## Running openwsman server
+
+Testing needs a running `openwsmand` service which can connect
 to a CIM broker.
 
+This can be achieved by running `make install` followed by
+`sudo openwsman -d` or by
+
+```
+LD_LIBRARY_PATH=src/lib:src/authenticators/file ./src/server/openwsmand -d -c ../etc/openwsman_test.conf -a `pwd`/src/authenticators/file -b `pwd`/../etc/test_simple_auth.passwd -P `pwd`/src/plugins/cim
+```
+
+from the `build` directory.
+
+## Running a CIM server
 
 sfcb (small footprint cim broker) is used as the CIM broker. It should
 have the 'cmpi-base' CIM provider available.
@@ -26,11 +39,15 @@ Start sblim-sfcb
 > sudo sfcbd
 
 
-Start openwsmand
 
-> sudo openwsmand -d
-
-Run tests
+## Running tests
 
 > cd build
 > make test
+
+Note: When running openwsmand from the local build directory as
+outlined above, this will fail all `identify` tests since the
+respective plugin isn't loaded.
+
+You can change the last parameter (`-P`) to end with `/identify`
+(instead of `/cim`) to just make the identity tests pass.

@@ -49,6 +49,7 @@
 #endif
 #include "u/libu.h"
 #include "wsman-plugins.h"
+extern char *wsmand_options_get_plugin_dir(void);
 
 
 
@@ -230,7 +231,7 @@ scan_plugins_in_directory ( WsManListenerH *listener,
 int
 wsman_plugins_load(WsManListenerH *listener)
 {
-    char *plugin_dir = iniparser_getstring(listener->config, "server:plugin_dir", PACKAGE_PLUGIN_DIR);
+    char *plugin_dir = iniparser_getstring(listener->config, "server:plugin_dir", wsmand_options_get_plugin_dir());
     debug("using plugin directory: %s", plugin_dir);
     scan_plugins_in_directory(listener, plugin_dir);
     return 0;
