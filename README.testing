@@ -43,6 +43,7 @@ Start sblim-sfcb
 ## Running tests
 
 > cd build
+> export LD_LIBRARY_PATH=`pwd`/src/lib
 > make test
 
 Note: When running openwsmand from the local build directory as
