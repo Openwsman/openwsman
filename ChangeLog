@@ -1,13 +1,20 @@
 2.7.2
+- Security
+  - call setgroups before setuid or setgid (kkaempf)
+  - harden systemd service (https://en.opensuse.org/openSUSE:Security_Features#Systemd_hardening_effort)
 - Bugfixes
   - wsman-win-client-transport: initialize certificate pointer (Alexander Usyskin)
   - iniparser: fix buffer size (Alexander Usyskin)
   - wsman-win-client-transport: plug leak in error path (Alexander Usyskin)
+  - memory.c: fix memory cleanup (Alexander Usyskin)
   - Improve handling of HTTP 401 Unauthorized (Vitezslav Crhonek)
   - Fix serialization tests (kkaempf)
   - Fix Ruby bindings warnings (kkaempf)
   - Fix Ruby plugin loading test (kkaempf)
   - Fix rpm packaging (kkaempf)
+  - Allow to run tests from 'build' directory (kkaempf)
+  - Add Python XML test (kkaempf)
+  - Enable CUNIT tests (kkaempf)
 
 2.7.1
 - Bugfixes
