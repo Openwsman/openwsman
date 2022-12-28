@@ -428,8 +428,8 @@ static void protect_uri(struct shttpd_ctx *ctx, char *uri)
 		shttpd_protect_uri(ctx, uri, wsmand_options_get_basic_password_file(),
 						basic_callback, 0);
 		debug("Using Basic Authorization %s for %s",
-		      wsmand_option_get_basic_authenticator()?
-		      wsmand_option_get_basic_authenticator() :
+		      wsmand_options_get_basic_authenticator()?
+		      wsmand_options_get_basic_authenticator() :
 		      wsmand_default_basic_authenticator(), uri);
 	}
 }
@@ -482,10 +482,10 @@ static int initialize_basic_authenticator(void)
 	int res = 0;
 
 	if (wsmand_options_get_basic_password_file() != NULL) {
-		if ((wsmand_option_get_basic_authenticator() &&
+		if ((wsmand_options_get_basic_authenticator() &&
 		     (strcmp(wsmand_default_basic_authenticator(),
-			     wsmand_option_get_basic_authenticator()))) ||
-		    wsmand_option_get_basic_authenticator_arg()) {
+			     wsmand_options_get_basic_authenticator()))) ||
+		    wsmand_options_get_basic_authenticator_arg()) {
 			fprintf(stderr,
 				"basic authentication is ambiguous in config file\n");
 			return 1;
@@ -493,8 +493,8 @@ static int initialize_basic_authenticator(void)
 		auth = wsmand_default_basic_authenticator();
 		arg = wsmand_options_get_basic_password_file();
 	} else {
-		auth = wsmand_option_get_basic_authenticator();
-		arg = wsmand_option_get_basic_authenticator_arg();
+		auth = wsmand_options_get_basic_authenticator();
+		arg = wsmand_options_get_basic_authenticator_arg();
 	}
 
 	if (auth == NULL) {
@@ -505,7 +505,7 @@ static int initialize_basic_authenticator(void)
 	if (auth[0] == '/') {
 		name = auth;
 	} else {
-		name = u_strdup_printf("%s/%s", PACKAGE_AUTH_DIR, auth);
+		name = u_strdup_printf("%s/%s", wsmand_options_get_auth_dir(), auth);
 		should_return = 1;
 	}
 
@@ -545,8 +545,8 @@ static int get_server_auth(void) {
 	}
 	if (basic_callback) {
 		message("Using Basic Authorization %s",
-			wsmand_option_get_basic_authenticator()?
-			wsmand_option_get_basic_authenticator() :
+			wsmand_options_get_basic_authenticator()?
+			wsmand_options_get_basic_authenticator() :
 			wsmand_default_basic_authenticator());
 	}
 

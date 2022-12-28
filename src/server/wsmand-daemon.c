@@ -99,7 +99,8 @@ static int max_threads = 1;
 static unsigned long enumIdleTimeout = 100;
 static char *thread_stack_size="0";
 static int max_connections_per_thread=20;
-
+static char *auth_dir = PACKAGE_AUTH_DIR;
+static char *plugin_dir = PACKAGE_PLUGIN_DIR;
 static char *config_file = NULL;
 
 
@@ -133,6 +134,12 @@ int wsmand_parse_options(int argc, char **argv)
 		 "PID file", "<file>"},
 		{"subscription-repository-location", 'r',  U_OPTION_ARG_STRING, &uri_subscription_repository,
 		"Subscription Repository Location", "<uri>"},
+		{"auth-dir", 'a', U_OPTION_ARG_STRING, &auth_dir,
+		 "Authentication plugin dir (testing)", "<directory>"},
+		{"basic-password-file", 'b', U_OPTION_ARG_STRING, &basic_password_file,
+		 "Basic password file (testing)", "<file>"},
+		{"plugin-dir", 'P', U_OPTION_ARG_STRING, &plugin_dir,
+		 "Dispatcher plugins directory (testing)", "<directory>"},
 		{NULL}
 	};
 
@@ -194,7 +201,7 @@ int wsmand_read_config(dictionary * ini)
 	digest_password_file = iniparser_getstr(ini,
 						"server:digest_password_file");
 	basic_password_file =
-	    iniparser_getstr(ini, "server:basic_password_file");
+	    iniparser_getstring(ini, "server:basic_password_file", basic_password_file);
 	custom_identify_file =
 	    iniparser_getstr(ini, "server:identify_file");
 	custom_anon_identify_file =
@@ -243,6 +250,16 @@ const char *wsmand_options_get_config_file(void)
 			    u_strdup_printf("%s/%s", cwd, config_file);
 	}
 	return config_file;
+}
+
+char *wsmand_options_get_auth_dir(void)
+{
+    return auth_dir;
+}
+
+char *wsmand_options_get_plugin_dir(void)
+{
+    return plugin_dir;
 }
 
 char *wsmand_options_get_digest_password_file(void)
@@ -383,12 +400,12 @@ char *wsmand_default_basic_authenticator()
 	return DEFAULT_BASIC_AUTH;
 }
 
-char *wsmand_option_get_basic_authenticator()
+char *wsmand_options_get_basic_authenticator()
 {
 	return basic_authenticator;
 }
 
-char *wsmand_option_get_basic_authenticator_arg()
+char *wsmand_options_get_basic_authenticator_arg()
 {
 	return basic_authenticator_arg;
 }

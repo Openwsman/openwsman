@@ -781,7 +781,7 @@ static SoapDispatchH get_dispatch_entry(SoapH soap, WsXmlDocH doc)
 						soap->dispatcherData, doc);
 	}
 	if (dispatch == NULL) {
-		error("Dispatcher Error");
+		error("No dispatcher found for request");
 	} else {
 		dispatch->usageCount++;
 	}
