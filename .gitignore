@@ -73,3 +73,4 @@ bindings/python/pywsman/wsman-soap.i
 bindings/python/pywsman/wsman-transport.i
 bindings/python/pywsman/wsman-xml.i
 bindings/version.i
+bindings/python/tests/__pycache__
