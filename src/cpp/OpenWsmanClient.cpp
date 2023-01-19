@@ -27,7 +27,6 @@ using namespace WsmanClientNamespace;
 static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
 static string XmlDocToString(WsXmlDocH& doc);
-static client_opt_t *SetOptions(WsManClient* cl);
 static string GetSubscribeContext(WsXmlDocH& doc);
 static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
