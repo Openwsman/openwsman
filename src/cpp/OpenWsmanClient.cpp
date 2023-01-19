@@ -26,7 +26,6 @@ using namespace WsmanClientNamespace;
 
 static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
-static string XmlDocToString(WsXmlDocH& doc);
 static string GetSubscribeContext(WsXmlDocH& doc);
 static string ExtractPayload(WsXmlDocH& doc);
 static string ExtractItems(WsXmlDocH& doc);
@@ -432,20 +431,6 @@ string ExtractItems(WsXmlDocH& doc)
 		u_free(buf);
 	}
 	return payload;
-}
-
-string XmlDocToString(WsXmlDocH& doc) {
-	char *buf;
-	int  len;
-	ws_xml_dump_memory_enc(doc, &buf, &len, WSMAN_ENCODING);
-	string str = (buf) ? string(buf) : "";	// This constructor copies the data.
-	if (buf)
-#ifdef _WIN32
-		ws_xml_free_memory(buf);
-#else
-	u_free(buf);
-#endif
-	return str;
 }
 
 bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc)
