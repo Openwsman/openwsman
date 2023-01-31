@@ -569,6 +569,15 @@ void OpenWsmanClient::SetProxy(
                 wsman_transport_set_proxy_password(cl, proxy_password.c_str());
 }
 
+// Allow self-signed server certificate
+void OpenWsmanClient::AllowSelfSignedServerCert()
+{
+	// Ignore SECURITY_FLAG_IGNORE_CERT_DATE_INVALID and SECURITY_FLAG_IGNORE_UNKNOWN_CA errors.
+	wsman_transport_set_verify_peer(cl, 0);
+	// Ignore SECURITY_FLAG_IGNORE_CERT_CN_INVALID error.
+	wsman_transport_set_verify_host(cl, 0);
+}
+
 #ifdef _WIN32
 void OpenWsmanClient::SetClientCert(
 	const string &caOid,
