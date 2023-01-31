@@ -400,6 +400,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 	}
 	if(0==cl->authentication.verify_host || 0==cl->authentication.verify_peer)
 	{
+		// Setting flags to 0 to clear previously set flags such as WINHTTP_FLAG_SECURE
+		flags = 0;
 		if(0==cl->authentication.verify_host)
 			flags = flags | SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
 		if(0==cl->authentication.verify_peer)
