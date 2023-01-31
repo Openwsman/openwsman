@@ -166,6 +166,10 @@ namespace WsmanClientNamespace
 				const string &proxy = string(),
 				const string &proxy_username = string(),
 				const string &proxy_password = string());
+
+			// Allow self-signed server certificate
+			void AllowSelfSignedServerCert();
+
 #ifdef _WIN32
 			// Set client certificate params
 			void SetClientCert(
