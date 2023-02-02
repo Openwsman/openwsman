@@ -893,11 +893,10 @@ ws_transfer_delete_stub(SoapOpH op,
 	WsDispatchEndPointInfo *info = (WsDispatchEndPointInfo *) appData;
 	WsEndPointGet   endPoint = (WsEndPointGet) info->serviceEndPoint;
 
-	void           *data;
 	WsXmlDocH       doc = NULL;
 
 	wsman_status_init(&status);
-	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
+	if (endPoint(cntx, &status, opaqueData) == NULL) {
 		_warning("Transfer Delete fault");
 		doc = wsman_generate_fault(soap_get_op_doc(op, 1),
 					 WSMAN_INVALID_SELECTORS, 0, NULL);
