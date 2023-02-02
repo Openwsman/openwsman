@@ -67,8 +67,8 @@
 #define AUTH_SCHEME_NTLM			0x00000004
 /* ensure that the winhttp library is linked */
 #pragma comment( lib, "winhttp.lib" )
-static BOOL find_cert(const _TCHAR * oid,
-		const _TCHAR * certName,
+static BOOL find_cert(CHAR* oid,
+		const CHAR* certName,
 		BOOL localMachine,
 		PCCERT_CONTEXT  *pCertContext,
 		int* errorLast);
@@ -99,12 +99,18 @@ static wchar_t *convert_to_unicode(char *str)
 
 int wsmc_transport_init(WsManClient *cl, void *arg)
 {
+	char* agent_char;
 	wchar_t *agent;
 	wchar_t *proxy;
 	if (cl->session_handle != NULL) {
 		return 0;
 	}
-	agent = convert_to_unicode(wsman_transport_get_agent(cl));
+	agent_char = wsman_transport_get_agent(cl);
+	if (agent_char == NULL) {
+		return 1;
+	}
+	agent = convert_to_unicode(agent_char);
+	u_free(agent_char);
 	if (agent == NULL) {
 		return 1;
 	}
@@ -245,7 +251,7 @@ static DWORD Auth2Scheme(int ws_auth)
 static int cleanup_request_data(HINTERNET request)
 {
 
-	LPSTR buffer[BUFLEN];
+	CHAR buffer[BUFLEN];
 	DWORD dwDownloaded = 0;
 	DWORD dwSize = 0;
 	while (1) {
@@ -461,8 +467,8 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 					lastErr) {
 				lastErr = 0;
 
-				if (!find_cert(	(const _TCHAR *)  cl->authentication.caoid,
-							(const _TCHAR *)  cl->authentication.cainfo,
+				if (!find_cert(cl->authentication.caoid,
+							cl->authentication.cainfo,
 							cl->authentication.calocal, &certificate, &lastErr)) {
 					debug("No certificate");
 
@@ -724,14 +730,14 @@ DONE:
 }
 
 // in future change this to return a list of certs...
-BOOL find_cert(const _TCHAR * oid,
-		const _TCHAR * certName,
+BOOL find_cert(CHAR* oid,
+		const CHAR* certName,
 		BOOL localMachine,
 		PCCERT_CONTEXT  *pCertContext,
 		int* errorLast)
 {
 
-	_TCHAR pszNameString[CERT_MAX_STR_LEN];
+	CHAR pszNameString[CERT_MAX_STR_LEN] = { 0 };
 	HANDLE hStoreHandle = NULL;
 	LPSTR oids[MAX_NUM_OF_OIDS] = {OID_CLIENT,oid};
 	BOOL certSuccess = FALSE;
@@ -780,7 +786,7 @@ BOOL find_cert(const _TCHAR * oid,
 	   defined by the user
 	   */
 	while (*pCertContext != NULL) {
-		if (!CertGetNameString(*pCertContext,
+		if (!CertGetNameStringA(*pCertContext,
 					CERT_NAME_SIMPLE_DISPLAY_TYPE,
 					0,
 					NULL,
@@ -793,7 +799,7 @@ BOOL find_cert(const _TCHAR * oid,
 		}
 
 		if (certName == NULL ||
-				_tcscmp(pszNameString, certName) == 0) {
+				strcmp(pszNameString, certName) == 0) {
 			certSuccess = TRUE;
 			break;
 		}
