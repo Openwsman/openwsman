@@ -1293,9 +1293,9 @@ wsman_get_selector(WsContextH cntx,
 
 		if (node) {
 			WsXmlNodeH selector;
-			int index = 0;
+			int int_index = 0;
 
-			while ((selector = ws_xml_get_child(node, index++,
+			while ((selector = ws_xml_get_child(node, int_index++,
 						 XML_NS_WS_MAN, WSM_SELECTOR))) {
 				char *attrVal = ws_xml_find_attr_value(selector,
 							   XML_NS_WS_MAN,
