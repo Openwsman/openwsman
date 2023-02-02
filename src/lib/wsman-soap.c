@@ -779,7 +779,7 @@ wsman_identify_stub(SoapOpH op,
 		return -1;
 	}
 
-	status = u_zalloc(sizeof(WsmanStatus *));
+	status = u_zalloc(sizeof(WsmanStatus));
 	cntx = ws_create_ep_context(soap, soap_get_op_doc(op, 1));
 	if (cntx == NULL) {
 		error("ws_create_ep_context failed");
