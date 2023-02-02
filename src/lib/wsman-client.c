@@ -1065,7 +1065,7 @@ wsmc_node_to_buf(WsXmlNodeH node, char **buf) {
 
 char*
 wsmc_node_to_formatbuf(WsXmlNodeH node) {
-	char *buf;
+	char *buf = NULL;
 	int   len;
 	WsXmlDocH doc = ws_xml_create_doc_by_import(node);
 	if (doc == NULL) {
