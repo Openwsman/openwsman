@@ -140,7 +140,7 @@ int u_uri_parse(const char *s, u_uri_t ** pu)
 
 	*pu = uri;
 
-	uri_string = u_strdup(s);
+	dbg_err_if((uri_string = u_strdup(s)) == NULL);
 	/*
 	   end = strchr (uri_string, '#');
 	   if (!end)
