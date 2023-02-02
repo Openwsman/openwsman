@@ -1445,6 +1445,7 @@ wsman_get_expired_enuminfos(WsContextH cntx)
 	list_t *list = NULL;
 	hnode_t        *hn;
 	hscan_t         hs;
+	lnode_t         *lnode;
 	WsEnumerateInfo *enumInfo;
 	struct timeval tv;
 	unsigned long mytime;
@@ -1481,7 +1482,14 @@ wsman_get_expired_enuminfos(WsContextH cntx)
 			return NULL;
 		}
 		hash_scan_delfree(cntx->enuminfos, hn);
-		list_append(list, lnode_create(enumInfo));
+		lnode = lnode_create(enumInfo);
+		if (lnode == NULL) {
+			list_destroy(list);
+			u_unlock(cntx->soap);
+			error("could not create lnode");
+			return NULL;
+		}
+		list_append(list, lnode);
 		debug("Enum expired list appended: %s", enumInfo->enumId);
 	}
 	u_unlock(cntx->soap);
