@@ -294,8 +294,10 @@ create_enum_info(SoapOpH op,
 DONE:
 	if (fault_code != WSMAN_RC_OK) {
 		outdoc = wsman_generate_fault(indoc, fault_code, fault_detail_code, NULL);
+		if (enumInfo && enumInfo->encoding)
+			u_free(enumInfo->encoding);
 		u_free(enumInfo);
-                *eInfo = NULL;
+		*eInfo = NULL;
 	} else {
 		*eInfo = enumInfo;
 	}
