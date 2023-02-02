@@ -228,26 +228,6 @@ static DWORD ChooseAuthScheme(DWORD dwSupportedSchemes, int ws_auth)
 	return 0;
 }
 
-static DWORD Auth2Scheme(int ws_auth)
-{
-	if (ws_auth == WS_GSSNEGOTIATE_AUTH) {
-		return WINHTTP_AUTH_SCHEME_NEGOTIATE;
-	}
-	if (ws_auth == WS_NTLM_AUTH) {
-		return WINHTTP_AUTH_SCHEME_NTLM;
-	}
-	if (ws_auth == WS_PASS_AUTH) {
-		return WINHTTP_AUTH_SCHEME_PASSPORT;
-	}
-	if (ws_auth == WS_DIGEST_AUTH) {
-		return WINHTTP_AUTH_SCHEME_DIGEST;
-	}
-	if (ws_auth == WS_BASIC_AUTH) {
-		return WINHTTP_AUTH_SCHEME_BASIC;
-	}
-	return 0;
-}
-
 static int cleanup_request_data(HINTERNET request)
 {
 
