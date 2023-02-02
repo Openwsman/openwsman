@@ -504,12 +504,16 @@ wsmc_add_option(client_opt_t * options,
 		}
 	}
 	if (!hash_lookup(options->options, key)) {
-          char *k = u_strdup(key);
-          char *v = u_strdup(value);
-		if (!hash_alloc_insert(options->options, k, v)) {
+		char *k = u_strdup(key);
+		char *v = u_strdup(value);
+		if (k == NULL || v == NULL) {
+			error("u_strdup failed");
+			u_free(v);
+			u_free(k);
+		} else if (!hash_alloc_insert(options->options, k, v)) {
 			error( "hash_alloc_insert failed");
-                  u_free(v);
-                  u_free(k);
+			u_free(v);
+			u_free(k);
 		}
 	} else {
 		error( "duplicate not added to hash");
