@@ -2340,6 +2340,8 @@ wsmc_release(WsManClient * cl)
 
 	wsman_transport_close_transport(cl);
 
+	ws_serializer_cleanup(cl->serctx);
+
 	u_free(cl);
 }
 
