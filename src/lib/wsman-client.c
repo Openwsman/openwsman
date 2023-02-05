@@ -2196,17 +2196,38 @@ wsmc_create(const char *hostname,
         }
 #endif
 	wsc->serctx = ws_serializer_init();
+	if (wsc->serctx == NULL) {
+		goto err;
+	}
 	wsc->dumpfile = stdout;
 	wsc->data.scheme = u_strdup(scheme ? scheme : "http");
+	if (wsc->data.scheme == NULL) {
+		goto err;
+	}
 	wsc->data.hostname = hostname ? u_strdup(hostname) : u_strdup("localhost");
+	if (wsc->data.hostname == NULL) {
+		goto err;
+	}
 	wsc->data.port = port;
 	wsc->data.path = u_strdup(path ? path : "/wsman");
+	if (wsc->data.path == NULL) {
+		goto err;
+	}
 	wsc->data.user = username ? u_strdup(username) : NULL;
+	if (username != NULL && wsc->data.user == NULL) {
+		goto err;
+	}
 	wsc->data.pwd = password ? u_strdup(password) : NULL;
+	if (password != NULL && wsc->data.pwd == NULL) {
+		goto err;
+	}
 	wsc->data.auth_set = 0;
 	wsc->initialized = 0;
 	wsc->transport_timeout = 0;
 	wsc->content_encoding = u_strdup("UTF-8");
+	if (wsc->content_encoding == NULL) {
+		goto err;
+	}
 #ifdef _WIN32
 	wsc->session_handle = 0;
 #endif
@@ -2215,6 +2236,9 @@ wsmc_create(const char *hostname,
                                              wsc->data.port,
                                              (*wsc->data.path == '/') ? "" : "/",
                                              wsc->data.path);
+	if (wsc->data.endpoint == NULL) {
+		goto err;
+	}
 	debug("Endpoint: %s", wsc->data.endpoint);
 	wsc->authentication.verify_host = 1; //verify CN in server certificates by default
 	wsc->authentication.verify_peer = 1; //validate server certificates by default
@@ -2226,6 +2250,9 @@ wsmc_create(const char *hostname,
 	init_client_connection(wsc);
 
 	return wsc;
+err:
+	wsmc_release(wsc);
+	return NULL;
 }
 
 
