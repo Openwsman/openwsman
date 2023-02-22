@@ -121,8 +121,8 @@ set_context_val(WsContextH cntx,
 			}
 		}
 		if (ptr || val == NULL) {
-			u_lock(cntx->soap);
 			ws_remove_context_val(cntx, name);
+			u_lock(cntx->soap);
 			if (create_context_entry(cntx->entries, name, ptr)) {
 				retVal = 0;
 			}
