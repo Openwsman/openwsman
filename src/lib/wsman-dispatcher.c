@@ -129,7 +129,7 @@ generate_notunderstood_fault(op_t * op,
 
 	if (op->in_doc == NULL)
 		return;
-	generate_op_fault(op, SOAP_FAULT_MUSTUNDERSTAND, 0);
+	generate_op_fault(op, SOAP_FAULT_MUSTUNDERSTAND, WSMAN_DETAIL_OK);
 
 	if (op->out_doc != NULL) {
 		header = ws_xml_get_soap_header(op->out_doc);
@@ -243,7 +243,7 @@ static int validate_control_headers(op_t * op)
 			return 0;
 		}
 		if (duration <= 0) {
-			generate_op_fault(op, WSMAN_TIMED_OUT, 0);
+			generate_op_fault(op, WSMAN_TIMED_OUT, WSMAN_DETAIL_OK);
 			return 0;
 		}
 		op->expires = duration;
@@ -372,7 +372,7 @@ check_unsupported_features(op_t * op)
 	m = ws_xml_get_child(enumurate, 0, XML_NS_WS_MAN, WSM_FILTER);
 	if (n != NULL && m != NULL) {
 		retVal = 1;
-		generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, 0);
+		generate_op_fault(op, WSEN_CANNOT_PROCESS_FILTER, WSMAN_DETAIL_OK);
 		goto DONE;
 	} else if (n || m) {
 		char *dia = NULL;
@@ -389,7 +389,7 @@ check_unsupported_features(op_t * op)
 		if (retVal) {
 			retVal = 1;
 			generate_op_fault(op, WSEN_FILTER_DIALECT_REQUESTED_UNAVAILABLE,
-						0);
+				WSMAN_DETAIL_OK);
 			goto DONE;
 			}
 	}
@@ -419,7 +419,7 @@ check_unsupported_features(op_t * op)
 	*/	n = ws_xml_get_child(subscribe, 0, XML_NS_EVENTING, WSEVENT_DELIVERY);
 		if(n == NULL) {
 			retVal = 1;
-			generate_op_fault(op, WSE_INVALID_MESSAGE, 0);
+			generate_op_fault(op, WSE_INVALID_MESSAGE, WSMAN_DETAIL_OK);
 			goto DONE;
 		}
 		attr = ws_xml_find_node_attr(n, NULL,WSEVENT_DELIVERY_MODE);
@@ -431,7 +431,7 @@ check_unsupported_features(op_t * op)
 				strcasecmp(mu, WSEVENT_DELIVERY_MODE_PULL)) {
 				debug("Unsupported delivery mode : %s",ws_xml_get_attr_value(attr));
 				retVal = 1;
-				generate_op_fault(op, WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE, 0);
+				generate_op_fault(op, WSE_DELIVERY_MODE_REQUESTED_UNAVAILABLE, WSMAN_DETAIL_OK);
 				goto DONE;
 			}
 		}
@@ -467,7 +467,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		char *msgId;
 		msgId = ws_xml_get_node_text(msgIdNode);
 		if (msgId == NULL || msgId[0] == '\0' ) {
-			generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0 );
+			generate_op_fault(op, WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSMAN_DETAIL_OK);
 			debug("MessageId missing");
 			return 1;
 		}
@@ -515,7 +515,7 @@ static int wsman_is_duplicate_message_id(op_t * op)
 		}
 		u_unlock(soap);
 	} else if (!wsman_is_identify_request(op->in_doc)) {
-		generate_op_fault(op, WSA_MESSAGE_INFORMATION_HEADER_REQUIRED, 0);
+		generate_op_fault(op, WSA_MESSAGE_INFORMATION_HEADER_REQUIRED, WSMAN_DETAIL_OK);
 		debug("No MessageId Header found");
 		return 1;
 	}

@@ -241,7 +241,7 @@ wsman_auth_type_t wsmc_transport_get_auth_value(WsManClient * cl)
 	if (m == NULL) {
 		return WS_NO_AUTH;
 	}
-	for (i = 0; auth_methods[i] != NULL; i++) {
+	for (i = WS_NO_AUTH; auth_methods[i] != NULL; i++) {
 		if (!strcasecmp(m, auth_methods[i])) {
 			return i;
 		}

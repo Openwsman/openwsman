@@ -335,14 +335,14 @@ wsman_verify_enum_info(SoapOpH op,
 	if (to == NULL || uri == NULL) {
 		error("No to or uri node");
 		status->fault_code = WSMAN_INTERNAL_ERROR;
-		status->fault_detail_code = 0;
+		status->fault_detail_code = WSMAN_DETAIL_OK;
 		return 0;
 	}
 
 	if (strcmp(enumInfo->epr_to, to) != 0 ||
 			strcmp(enumInfo->epr_uri, uri) != 0 ) {
 		status->fault_code = WSA_MESSAGE_INFORMATION_HEADER_REQUIRED;
-		status->fault_detail_code = 0;
+		status->fault_detail_code = WSMAN_DETAIL_OK;
 		debug("verifying enumeration context: ACTUAL  uri: %s, to: %s", uri, to);
 		debug("verifying enumeration context: SHOULD uri: %s, to: %s",
 				enumInfo->epr_uri, enumInfo->epr_to);
@@ -355,7 +355,7 @@ wsman_verify_enum_info(SoapOpH op,
 				strcmp(msg->auth_data.password,
 				enumInfo->auth_data.password) != 0) {
 			status->fault_code = WSMAN_ACCESS_DENIED;
-			status->fault_detail_code = 0;
+			status->fault_detail_code = WSMAN_DETAIL_OK;
 			return 0;
 		}
 	}
@@ -795,7 +795,7 @@ wsman_identify_stub(SoapOpH op,
 
 	if ((data = endPoint(cntx, status, opaqueData)) == NULL) {
 		error("Identify Fault");
-		doc = wsman_generate_fault(soap_get_op_doc(op, 1), WSMAN_INTERNAL_ERROR, 0, NULL);
+		doc = wsman_generate_fault(soap_get_op_doc(op, 1), WSMAN_INTERNAL_ERROR, WSMAN_DETAIL_OK, NULL);
 	} else {
 		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
 		ws_serialize(cntx->serializercntx, ws_xml_get_soap_body(doc), data, typeInfo,
@@ -901,7 +901,7 @@ ws_transfer_delete_stub(SoapOpH op,
 	if (endPoint(cntx, &status, opaqueData) == NULL) {
 		_warning("Transfer Delete fault");
 		doc = wsman_generate_fault(soap_get_op_doc(op, 1),
-					 WSMAN_INVALID_SELECTORS, 0, NULL);
+					 WSMAN_INVALID_SELECTORS, WSMAN_DETAIL_OK, NULL);
 	} else {
 		debug("Creating Response doc");
 		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
@@ -950,7 +950,7 @@ ws_transfer_get_stub(SoapOpH op,
 	if ((data = endPoint(cntx, &status, opaqueData)) == NULL) {
 		_warning("Transfer Get fault");
 		doc = wsman_generate_fault( soap_get_op_doc(op, 1),
-					 WSMAN_INVALID_SELECTORS, 0, NULL);
+					 WSMAN_INVALID_SELECTORS, WSMAN_DETAIL_OK, NULL);
 	} else {
 		debug("Creating Response doc");
 		doc = wsman_create_response_envelope(soap_get_op_doc(op, 1), NULL);
@@ -2815,8 +2815,8 @@ soap_destroy(SoapH soap)
 void
 wsman_status_init(WsmanStatus * status)
 {
-	status->fault_code = 0;
-	status->fault_detail_code = 0;
+	status->fault_code = WSMAN_RC_OK;
+	status->fault_detail_code = WSMAN_DETAIL_OK;
 	status->fault_msg = NULL;
 }
 
