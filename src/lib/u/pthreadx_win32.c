@@ -42,7 +42,7 @@ int pthread_create(pthread_t *new_thread_ID,
                    pthread_func start_func, void *arg)
 {
     HANDLE hThread;
-    DWORD dwThreadID;
+    unsigned int dwThreadID;
 
     hThread = (HANDLE) _beginthreadex (
         NULL, 0, start_func, (LPVOID)arg, CREATE_SUSPENDED, &dwThreadID);
