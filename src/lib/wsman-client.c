@@ -907,9 +907,6 @@ wsman_set_subscribe_options(WsManClient * cl,
 		}
 		ws_xml_add_node_attr(node, XML_NS_SOAP_1_2, SOAP_MUST_UNDERSTAND, "true");
 		if(options->delivery_certificatethumbprint) {
-			if (node == NULL) {
-				return;
-			}
 			node2 = ws_xml_add_child(node, XML_NS_TRUST, WST_REQUESTSECURITYTOKENRESPONSE, NULL);
 			if (node2 == NULL) {
 				return;
