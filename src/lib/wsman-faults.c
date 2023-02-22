@@ -508,7 +508,7 @@ wsman_is_fault_envelope( WsXmlDocH doc )
 WsmanKnownStatusCode
 wsman_find_httpcode_for_value( WsXmlDocH doc )
 {
-	WsmanKnownStatusCode httpcode = 200;
+	WsmanKnownStatusCode httpcode = WSMAN_STATUS_OK;
 	char *xp = ws_xml_get_xpath_value(doc, FAULT_XPATH_EXPR );
 	if (xp != NULL) {
 		if (strcmp(xp, FAULT_RECEIVER_CODE_NS) == 0 )
@@ -637,7 +637,7 @@ wsman_get_fault_status_from_doc (WsXmlDocH doc, WsmanStatus *status)
       if (strcmp (subcode_value_msg , fault_code_table[i].subCode) == 0) {
         status->fault_code = fault_code_table[i].fault_code;
         /* some default values */
-        status->fault_detail_code = 0;
+        status->fault_detail_code = WSMAN_DETAIL_OK;
         status->fault_msg = NULL;
         free(subcode_value_msg);
         return;

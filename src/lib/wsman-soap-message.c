@@ -70,8 +70,8 @@ wsman_soap_message_new()
     u_buf_create(&wsman_msg->request);
     u_buf_create(&wsman_msg->response);
 //    wsman_msg->charset = "UTF-8";
-    wsman_msg->status.fault_code = 0;
-    wsman_msg->status.fault_detail_code = 0;
+    wsman_msg->status.fault_code = WSMAN_RC_OK;
+    wsman_msg->status.fault_detail_code = WSMAN_DETAIL_OK;
     wsman_msg->status.fault_msg = NULL;
     return wsman_msg;
 }

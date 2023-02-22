@@ -2019,7 +2019,7 @@ wsmc_reinit_conn(WsManClient * cl)
 	u_buf_clear(cl->connection->response);
 	u_buf_clear(cl->connection->request);
 	cl->response_code = 0;
-	cl->last_error = 0;
+	cl->last_error = WS_LASTERR_OK;
 	if (cl->fault_string) {
 		u_free(cl->fault_string);
 		cl->fault_string = NULL;
