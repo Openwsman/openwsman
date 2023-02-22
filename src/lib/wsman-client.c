@@ -1191,7 +1191,7 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 	case WSMAN_ACTION_ENUMERATION:
 	case WSMAN_ACTION_ASSOCIATORS:
 	case WSMAN_ACTION_REFERENCES:
-		node = ws_xml_add_child(body,
+		ws_xml_add_child(body,
 				XML_NS_ENUMERATION, WSENUM_ENUMERATE, NULL);
 		if (options) {
 			wsman_set_enumeration_options(cl, body, resource_uri, options, filter);
