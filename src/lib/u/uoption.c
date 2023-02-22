@@ -181,11 +181,11 @@ static void print_help_group(u_option_group_t *group, help_buf_t *help_buf)
 			put_to_help_buf(help_buf, 1, "  --%s",
 					group->entries[i].name);
 		}
-			if (group->entries[i].descr) {
-				buf[help_buf->num - 1].part2 =
-					u_strdup_printf("%s",
-						group->entries[i].descr);
-			}
+		if (group->entries[i].descr) {
+			buf[help_buf->num - 1].part2 =
+				u_strdup_printf("%s",
+					group->entries[i].descr);
+		}
 	}
 	put_to_help_buf(help_buf, 0, "");
 }
