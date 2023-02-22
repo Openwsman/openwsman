@@ -101,10 +101,11 @@ static void
 myXmlErrorReporting (void *ctx, const char* msg, ...)
 {
 	va_list args;
-	char *string;
+	char *string = NULL;
 	va_start(args, msg);
 	string = u_strdup_vprintf (msg, args);
-	_warning (string);
+	if (string)
+		_warning (string);
 	va_end(args);
 
 	u_free(string);
