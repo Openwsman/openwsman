@@ -727,9 +727,7 @@ wsmc_add_selector_from_uri(WsXmlDocH doc,
 	hash_free_nodes(query);
 	hash_destroy(query);
 cleanup:
-	if (uri) {
-		u_uri_free(uri);
-	}
+	u_uri_free(uri);
 }
 
 
