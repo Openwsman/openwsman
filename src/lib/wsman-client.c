@@ -2026,8 +2026,10 @@ static void
 init_client_connection(WsManClient * cl)
 {
 	WsManConnection *conn = (WsManConnection *) u_zalloc(sizeof(WsManConnection));
-	u_buf_create(&conn->response);
-	u_buf_create(&conn->request);
+	if (conn != NULL) {
+		u_buf_create(&conn->response);
+		u_buf_create(&conn->request);
+	}
 	cl->response_code = 0;
 	cl->connection = conn;
 }
