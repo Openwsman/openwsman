@@ -676,7 +676,7 @@ static void
 dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 {
 	char *buf = NULL;
-	int len;
+	int len = 0;
 	if (!soap)
 		return;
 
@@ -687,8 +687,10 @@ dispatcher_create_fault(SoapH soap, WsmanMessage * msg, WsXmlDocH in_doc)
 					    msg->status.fault_detail_code,
 					    msg->status.fault_msg,
 					    &buf, &len);
-		u_buf_set(msg->response, buf, len);
-		u_free(buf);
+		if (buf) {
+			u_buf_set(msg->response, buf, len);
+			u_free(buf);
+		}
 		msg->http_code = wsman_find_httpcode_for_fault_code(
 						msg->status.
 					    fault_code);
