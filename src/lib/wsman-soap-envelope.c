@@ -525,7 +525,6 @@ wsman_create_fault_envelope(WsXmlDocH rqstDoc,
 		WsXmlNodeH d =
 		    ws_xml_add_child(fault, soapNs, SOAP_DETAIL, NULL);
 		if (d) {
-			node =
 				ws_xml_add_child_format(d, XML_NS_WS_MAN,
 							SOAP_FAULT_DETAIL, "%s/%s",
 							XML_NS_WSMAN_FAULT_DETAIL,
