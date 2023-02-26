@@ -82,7 +82,7 @@ WsSerializerContextH ws_serializer_init()
 		u_free(serializercntx);
 		return NULL;
 	}
-	u_init_lock(serializercntx);
+	u_init_lock(&serializercntx->lock);
 	return serializercntx;
 }
 
