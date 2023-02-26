@@ -1225,8 +1225,8 @@ wsmc_create_request(WsManClient * cl, const char *resource_uri,
 		}
 		break;
 	case WSMAN_ACTION_UNSUBSCRIBE:
-		node = ws_xml_add_child(body,
-				XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
+		ws_xml_add_child(body,
+			XML_NS_EVENTING, WSEVENT_UNSUBSCRIBE,NULL);
 		if(data) {
 			if(((char *)data)[0] != 0)
 				add_subscription_context(ws_xml_get_soap_header(request), (char *)data);
