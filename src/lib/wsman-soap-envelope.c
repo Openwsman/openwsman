@@ -183,7 +183,7 @@ WsXmlDocH wsman_build_inbound_envelope(WsmanMessage * msg)
 					   u_buf_len(msg->request), msg->charset,  0);
 
 	if (doc == NULL) {
-		wsman_set_fault(msg, WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0, NULL);
+		wsman_set_fault(msg, WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSMAN_DETAIL_OK, NULL);
 		return NULL;
 	}
 	if (wsman_is_identify_request(doc)) {
@@ -318,7 +318,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 
 	if (strcmp(SOAP_ENVELOPE, ws_xml_get_node_local_name(root)) != 0) {
 		wsman_set_fault(msg,
-				WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0,
+				WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSMAN_DETAIL_OK,
 				"No Envelope");
 		retval = 0;
 		debug("no envelope");
@@ -326,20 +326,20 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 	}
 	soapNsUri = ws_xml_get_node_name_ns(root);
 	if (!soapNsUri) {
-		wsman_set_fault(msg, WSMAN_INTERNAL_ERROR, 0, NULL);
+		wsman_set_fault(msg, WSMAN_INTERNAL_ERROR, WSMAN_DETAIL_OK, NULL);
 		retval = 0;
 		debug("allocation failure");
 		goto cleanup;
 	}
 	if (strcmp(soapNsUri, XML_NS_SOAP_1_2) != 0) {
-		wsman_set_fault(msg, SOAP_FAULT_VERSION_MISMATCH, 0, NULL);
+		wsman_set_fault(msg, SOAP_FAULT_VERSION_MISMATCH, WSMAN_DETAIL_OK, NULL);
 		retval = 0;
 		debug("version mismatch");
 		goto cleanup;
 	}
 	if (ws_xml_get_soap_body(doc) == NULL) {
 		wsman_set_fault(msg,
-				WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0,
+				WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSMAN_DETAIL_OK,
 				"No Body");
 		retval = 0;
 		debug("no body");
@@ -348,7 +348,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 	header = ws_xml_get_soap_header(doc);
 	if (!header) {
 		wsman_set_fault(msg,
-				WSA_INVALID_MESSAGE_INFORMATION_HEADER, 0,
+				WSA_INVALID_MESSAGE_INFORMATION_HEADER, WSMAN_DETAIL_OK,
 				"No Header");
 		retval = 0;
 		debug("no header");
@@ -380,7 +380,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 			if (!action) {
 				wsman_set_fault(msg,
 						WSA_ACTION_NOT_SUPPORTED,
-						0, NULL);
+						WSMAN_DETAIL_OK, NULL);
 				retval = 0;
 				debug("no wsa:Action");
 				goto cleanup;
@@ -388,7 +388,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 			if (!reply) {
 				wsman_set_fault(msg,
 						WSA_MESSAGE_INFORMATION_HEADER_REQUIRED,
-						0, NULL);
+						WSMAN_DETAIL_OK, NULL);
 				retval = 0;
 				debug("no wsa:ReplyTo");
 				goto cleanup;
@@ -396,7 +396,7 @@ int wsman_is_valid_envelope(WsmanMessage * msg, WsXmlDocH doc)
 			if (!to) {
 				wsman_set_fault(msg,
 						WSA_DESTINATION_UNREACHABLE,
-						0, NULL);
+						WSMAN_DETAIL_OK, NULL);
 				retval = 0;
 				debug("no wsa:To");
 				goto cleanup;
