@@ -13,7 +13,7 @@ enable_testing()
 add_subdirectory(tests)
 
 IF( BUILD_PYTHON3 )
-set(Python_ADDITIONAL_VERSIONS 3.10 3.9 3.8 3.7 3.6 3.5 3.4)
+set(Python_ADDITIONAL_VERSIONS 3.11 3.10 3.9 3.8 3.7)
 ELSE( BUILD_PYTHON3 )
 set(Python_ADDITIONAL_VERSIONS 2.7 2.6)
 ENDIF( BUILD_PYTHON3 )
