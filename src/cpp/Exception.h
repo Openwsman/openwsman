@@ -14,7 +14,8 @@
 #include <string>
 #include <stdexcept>
 
-using namespace std;
+using std::string;
+using std::exception;
 // Error Codes
 #define WSMAN_SUCCESS 0
 // A general error occurred
