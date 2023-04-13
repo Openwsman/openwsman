@@ -20,7 +20,7 @@ extern "C" {
 } 
 #include "WsmanFilter.h" // For NameValuePairs
 
-using namespace std;
+using std::string;
 
 namespace WsmanClientNamespace {
 	class WsmanEPR;
