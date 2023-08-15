@@ -87,6 +87,8 @@ void u_destroy_lock(void* data)
 {
     if ( data )
     {
+        /* 'man pthread_mutex_destroy' says: Attempting to destroy a locked mutex ... results in undefined behavior. */
+        pthread_mutex_unlock((pthread_mutex_t*)data);
         pthread_mutex_destroy((pthread_mutex_t*)data);
     }
 }
@@ -98,6 +100,3 @@ void u_unlock(void* data)
         pthread_mutex_unlock((pthread_mutex_t*)data);
     }
 }
-
-
-
