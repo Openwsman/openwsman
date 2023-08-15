@@ -90,7 +90,7 @@ int ws_serializer_cleanup(WsSerializerContextH serctx)
 {
 	if(serctx && serctx->WsSerializerAllocList) {
 		ws_serializer_free_all(serctx);
-                u_destroy_lock(serctx);
+                u_destroy_lock(&serctx->lock);
 		list_destroy(serctx->WsSerializerAllocList);
 		u_free(serctx);
 	}
@@ -1919,14 +1919,14 @@ void *ws_serializer_alloc(WsSerializerContextH serctx, int size)
 	TRACE_ENTER;
 	if ((ptr = (WsSerializerMemEntry *) u_malloc(sizeof(WsSerializerMemEntry) + size)) != NULL) {
 		lnode_t *node;
-		u_lock(serctx);
+		u_lock(&serctx->lock);
 		if ((node = lnode_create(ptr)) == NULL) {
 			u_free(ptr);
 			ptr = NULL;
 		} else {
 			list_append(serctx->WsSerializerAllocList, node);
 		}
-		u_unlock(serctx);
+		u_unlock(&serctx->lock);
 	}
 	TRACE_EXIT;
 	return ptr ? ptr->buf : NULL;
@@ -1939,7 +1939,7 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 	lnode_t *node2 = NULL;
 	TRACE_ENTER;
 	if (serctx) {
-		u_lock(serctx);
+		u_lock(&serctx->lock);
 		node = list_first(serctx->WsSerializerAllocList);
 		while (node != NULL) {
 			WsSerializerMemEntry *entry =
@@ -1957,7 +1957,7 @@ static int do_serializer_free(WsSerializerContextH serctx, void *ptr)
 			else
 				node = list_next(serctx->WsSerializerAllocList, node);
 		}
-		u_unlock(serctx);
+		u_unlock(&serctx->lock);
 	}
 	TRACE_EXIT;
 	return (node != NULL);
