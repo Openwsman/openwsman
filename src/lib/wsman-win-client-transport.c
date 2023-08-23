@@ -405,7 +405,9 @@ wsmc_handler(WsManClient * cl, WsXmlDocH rqstDoc, void *user_data)
 		if(0==cl->authentication.verify_host)
 			flags = flags | SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
 		if(0==cl->authentication.verify_peer)
-			flags = flags | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+			flags = flags | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
+						  | SECURITY_FLAG_IGNORE_UNKNOWN_CA
+						  | SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE;
 		bResult = WinHttpSetOption(request,WINHTTP_OPTION_SECURITY_FLAGS,(LPVOID) (&flags),sizeof(DWORD));
 		if (!bResult) {
 			//log the error and proceed
