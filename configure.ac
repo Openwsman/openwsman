@@ -128,7 +128,8 @@ daemon  \
 va_copy \
 memmove \
 bcopy \
-gmtime_r
+gmtime_r \
+floor
 )
 AC_CHECK_FUNC(socket, , AC_CHECK_LIB(socket, socket))
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
