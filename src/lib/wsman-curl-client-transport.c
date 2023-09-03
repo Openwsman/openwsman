@@ -276,6 +276,15 @@ sslctxfun(CURL *curl, void *sslctx, void *parm)
 }
 #endif
 
+static CURLcode
+setSSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION(CURL* curl, void* sslctx, void* parm)
+{
+    CURLcode r = CURLE_OK;
+    SSL_CTX* ctx = (SSL_CTX*)sslctx;
+    SSL_CTX_set_options(ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+    return r;
+}
+
 static void *
 init_curl_transport(WsManClient *cl)
 {
@@ -388,6 +397,14 @@ init_curl_transport(WsManClient *cl)
 	}
 #endif
 #endif
+	// In Openssl 1.1.1 SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION was set by default. From Openssl 3 secure renegotiation is required by default. 
+	// To allow unsecure legacy renegotiation we need to set SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION.
+	
+	r = curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, setSSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+    if (r != 0) {
+        curl_err("Couldn't set SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION!");
+        goto DONE;
+    }
 	// sslkey
 	r = curl_easy_setopt(curl, CURLOPT_SSLKEY, cl->authentication.sslkey);
 	if (r != 0) {
