@@ -374,7 +374,7 @@ int epr_cmp(const epr_t *epr1, const epr_t *epr2)
 
 char *epr_to_string(const epr_t *epr)
 {
-  int len;
+  size_t len;
   char *buf, *ptr;
   unsigned int i;
   key_value_t *p = NULL;

@@ -4,7 +4,7 @@
 #include <string>
 #include "wsman-epr.h"
 
-using namespace std;
+using std::string;
 
 namespace WsmanClientNamespace {
 

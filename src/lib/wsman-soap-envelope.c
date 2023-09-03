@@ -131,7 +131,7 @@ wsman_create_response_envelope(WsXmlDocH rqstDoc, const char *action)
 				if (tmp && action) {
 					int ret;
 					ret = snprintf(tmp, len, "%s%s", action, WSFW_RESPONSE_STR);
-					if (ret < 0 ||  ret >= len) {
+					if (ret < 0 || (size_t)ret >= len) {
 						u_free(tmp);
 						return NULL;
 					}

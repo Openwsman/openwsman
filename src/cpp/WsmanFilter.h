@@ -6,7 +6,8 @@
 #include <vector>
 #include "wsman-filter.h"
 
-using namespace std;
+using std::string;
+using std::vector;
 typedef std::map<std::string, std::string> NameValuePairs;
 typedef std::map<std::string, std::string>::const_iterator PairsIterator;
 

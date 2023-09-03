@@ -91,7 +91,7 @@ wsman_make_action(const char *uri, const char *op_name)
 		char *ptr = (char *)u_malloc(len);
 		if (ptr) {
 			int ret = snprintf(ptr, len, "%s/%s", uri, op_name);
-			if (ret < 0 || ret >= len) {
+			if (ret < 0 || (size_t)ret >= len) {
 				error("Error: formatting action");
 				u_free(ptr);
 				return NULL;

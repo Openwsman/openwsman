@@ -19,7 +19,8 @@
 #include "WsmanFilter.h"
 #include "WsmanOptions.h"
 
-using namespace std;
+using std::string;
+using std::vector;
 using namespace WsmanExceptionNamespace;
 
 namespace WsmanClientNamespace
