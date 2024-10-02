@@ -903,7 +903,6 @@ dictionary * iniparser_new(char *ininame)
     char        val[ASCIILINESZ+1];
     char    *   where ;
     FILE    *   ini ;
-    int         lineno ;
 
     if ((ini=fopen(ininame, "r"))==NULL) {
         return NULL ;
@@ -919,9 +918,7 @@ dictionary * iniparser_new(char *ininame)
       fclose(ini);
       return d;
     }
-    lineno = 0 ;
     while (fgets(lin, ASCIILINESZ, ini)!=NULL) {
-        lineno++ ;
         where = strskp(lin); /* Skip leading spaces */
         if (*where==';' || *where=='#' || *where==0)
             continue ; /* Comment lines */
