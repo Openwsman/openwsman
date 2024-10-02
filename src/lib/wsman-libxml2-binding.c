@@ -111,12 +111,12 @@ myXmlErrorReporting (void *ctx, const char* msg, ...)
 	u_free(string);
 }
 
-void xml_parser_initialize()
+void xml_parser_initialize(void)
 {
 	xmlSetGenericErrorFunc(NULL, myXmlErrorReporting);
 }
 
-void xml_parser_destroy()
+void xml_parser_destroy(void)
 {
 }
 

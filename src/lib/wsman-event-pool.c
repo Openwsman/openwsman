@@ -53,7 +53,7 @@ struct __EventPoolOpSet event_pool_op_set ={MemEventPoolInit, MemEventPoolFinali
 	MemEventPoolCount, MemEventPoolAddEvent, MemEventPoolAddPullEvent,
 	MemEventPoolGetAndDeleteEvent, MemEventPoolClearEvent};
 
-EventPoolOpSetH wsman_get_eventpool_opset()
+EventPoolOpSetH wsman_get_eventpool_opset(void)
 {
 	return &event_pool_op_set;
 }

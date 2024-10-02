@@ -526,7 +526,7 @@ ws_create_context(SoapH soap)
 }
 
 SoapH
-ws_soap_initialize()
+ws_soap_initialize(void)
 {
 	SoapH soap = (SoapH) u_zalloc(sizeof(*soap));
 

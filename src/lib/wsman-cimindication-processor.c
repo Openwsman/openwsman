@@ -240,7 +240,7 @@ void create_indication_event(WsXmlDocH indoc, WsSubscribeInfo *subsInfo, EventPo
 
 }
 
-CimxmlMessage *cimxml_message_new() {
+CimxmlMessage *cimxml_message_new(void) {
 	CimxmlMessage *cimxml_msg = u_zalloc(sizeof(CimxmlMessage));
 	u_buf_create(&cimxml_msg->request);
 	u_buf_create(&cimxml_msg->response);

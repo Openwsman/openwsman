@@ -62,7 +62,7 @@ wsman_set_message_flags(WsmanMessage *msg,
 
 
 WsmanMessage*
-wsman_soap_message_new()
+wsman_soap_message_new(void)
 {
     WsmanMessage *wsman_msg = u_zalloc(sizeof(WsmanMessage));
     if (!wsman_msg)
