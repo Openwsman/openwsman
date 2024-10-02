@@ -13,7 +13,7 @@ wsmaninclude_HEADERS = \
 	wsman-client-transport.h \
 	wsman-xml-serializer.h \
 	wsman-xml-serialize.h \
-    	wsman-server-api.h \
+	wsman-server-api.h \
 	wsman-faults.h \
 	wsman-soap-message.h \
 	wsman-api.h \
@@ -24,7 +24,8 @@ wsmaninclude_HEADERS = \
 	wsman-soap-envelope.h \
 	wsman-subscription-repository.h \
 	wsman-event-pool.h \
-	wsman-cimindication-processor.h
+	wsman-cimindication-processor.h \
+	wsman-key-value.h
 
 EXTRA_DIST = wsman-xml.h \
 	     wsman-xml-binding.h \
