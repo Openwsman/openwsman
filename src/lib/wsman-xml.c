@@ -409,14 +409,14 @@ WsXmlDocH ws_xml_clone_and_create_doc(WsXmlDocH doc,
  * @param soap SOAP handle
  * @param nsData Array with namespace data
  */
-int ws_xml_parser_initialize()
+int ws_xml_parser_initialize(void)
 {
 	xml_parser_initialize();
 	return 1;
 }
 
 
-void ws_xml_parser_destroy()
+void ws_xml_parser_destroy(void)
 {
 	xml_parser_destroy();
 }

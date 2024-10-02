@@ -72,7 +72,7 @@ struct __WsSerializerContext
 	list_t *WsSerializerAllocList;
 };
 
-WsSerializerContextH ws_serializer_init()
+WsSerializerContextH ws_serializer_init(void)
 {
 	WsSerializerContextH serializercntx = NULL;
 	serializercntx = u_malloc(sizeof(struct __WsSerializerContext));
