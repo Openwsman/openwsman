@@ -1,12 +1,13 @@
 #
 # CMakeLists.txt for openwsman/
 #
-
-PROJECT(openwsman)
-
 # 2.6 minimum because of CMP0005 (escaping defines)
 # 2.8.12 minimum because CMake 3.19.7 says so
-cmake_minimum_required(VERSION 2.8.12)
+# 3.27 for new find python commands
+cmake_minimum_required(VERSION 3.27)
+
+
+PROJECT(openwsman)
 
 include(CTest)
 enable_testing()
@@ -22,10 +23,12 @@ if(COMMAND cmake_policy)
   if ( POLICY CMP0046 )
     cmake_policy(SET CMP0046 NEW)
   endif ( POLICY CMP0046 )
+  # new find python commands
+  cmake_policy(SET CMP0148 NEW)
 endif(COMMAND cmake_policy)
 	      
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+# SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 INCLUDE( ${CMAKE_SOURCE_DIR}/VERSION.cmake )
 SET(VERSION "${OPENWSMAN_MAJOR}.${OPENWSMAN_MINOR}.${OPENWSMAN_PATCH}")
@@ -43,6 +46,8 @@ IF ( NOT DEFINED PACKAGE_ARCHITECTURE )
 ENDIF ( NOT DEFINED PACKAGE_ARCHITECTURE )
 MESSAGE(STATUS "Building for ${PACKAGE_ARCHITECTURE}" )
 
+# pkg-config
+find_package(PkgConfig)
 
 # Library path (lib / lib64 )
 
@@ -113,7 +118,7 @@ OPTION( BUILD_LIBCIM "Build CIM plugin" YES )
 OPTION( BUILD_EXAMPLES "Build examples" YES )
 OPTION( BUILD_BINDINGS "Build client bindings and swig server plugin" YES )
 OPTION( BUILD_PYTHON3 "Build Python3 bindings" YES )
-OPTION( BUILD_PYTHON "Build Python2 bindings" YES )
+OPTION( BUILD_PYTHON "Build Python2 bindings" NO )
 IF (BUILD_PYTHON3)
 IF (BUILD_PYTHON)
 MESSAGE(FATAL_ERROR "Can only build for Python2 or Python3, but not both")
@@ -142,6 +147,7 @@ ENDIF (UNIX)
 
 IF (ENABLE_EVENTING_SUPPORT)
   SET(ENABLE_EVENTING_SUPPORT 1)
+  find_package(OpenSSL REQUIRED)
 ELSE (ENABLE_EVENTING_SUPPORT)
   SET(ENABLE_EVENTING_SUPPORT 0)
 ENDIF (ENABLE_EVENTING_SUPPORT)
@@ -167,14 +173,14 @@ ELSE( USE_PAM )
  MESSAGE(STATUS "Disabling PAM authentication" )
 ENDIF( USE_PAM )
 
-INCLUDE(FindOpenSSL)
+find_package(OpenSSL)
 IF(OPENSSL_FOUND)
   SET(HAVE_SSL 1)
   SET(USE_OPENSSL 1)
 ENDIF(OPENSSL_FOUND)
 
 IF( BUILD_RUBY )
-  INCLUDE(FindRuby)
+  find_package(Ruby)
   MESSAGE(STATUS "Ruby: ${RUBY_EXECUTABLE}" )
   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitearchdir']"
     OUTPUT_VARIABLE RUBY_SITEARCH_DIR)
@@ -192,7 +198,7 @@ IF( BUILD_RUBY )
 ENDIF( BUILD_RUBY )
 
 IF( BUILD_PERL )
-  INCLUDE(FindPerl)
+  find_package(Perl)
   IF(PERL_EXECUTABLE)
     MESSAGE(STATUS "Building Perl bindings" )
   ELSE(PERL_EXECUTABLE)
@@ -201,9 +207,9 @@ IF( BUILD_PERL )
 ENDIF( BUILD_PERL )
 
 IF( BUILD_JAVA )
-  INCLUDE(FindJava)
+  find_package(Java)
   IF(JAVA_COMPILE)
-    INCLUDE(FindJNI)
+    find_package(JNI)
     IF(JNI_INCLUDE_DIRS)
       MESSAGE(STATUS "Building Java bindings" )
     ELSE(JNI_INCLUDE_DIRS)
@@ -253,7 +259,7 @@ ENDIF ( NOT SWIG_EXECUTABLE )
 # curl
 
 IF(UNIX)
-  INCLUDE(FindCURL)
+  find_package(CURL)
   IF ( NOT CURL_FOUND)
    MESSAGE( FATAL_ERROR " curl not found" )
   ELSE ( NOT CURL_FOUND)
@@ -269,7 +275,7 @@ ENDIF(UNIX)
 
 # xml2
 
-INCLUDE(FindLibXml2)
+find_package(LibXml2)
 IF ( NOT LIBXML2_FOUND)
   MESSAGE( FATAL_ERROR " libxml2 not found" )
 ELSE ( NOT LIBXML2_FOUND)
@@ -279,7 +285,7 @@ ENDIF( NOT LIBXML2_FOUND)
 # pthreads
 
 IF(UNIX)
-  INCLUDE(FindThreads)
+  find_package(Threads)
   IF( NOT CMAKE_USE_PTHREADS_INIT )
     MESSAGE( FATAL_ERROR " openwsman needs pthread" )
   ELSE( NOT CMAKE_USE_PTHREADS_INIT )
