@@ -105,18 +105,20 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 #if HAVE_RUBY_THREAD_H /* New threading model */
 #include <ruby/thread.h>
 #endif
+#if RUBY_VERSION > 18
+  #if HAVE_RB_IO_T
+    #define rb_fptr_t rb_io_t
+  #else
+    #define rb_fptr_t struct rb_io
+  #endif
+#else
+  #define rb_fptr_t struct OpenFile
+#endif
 %}
 
 %typemap(in) FILE* {
-#if RUBY_VERSION > 18
-  #if HAVE_RB_IO_T
-    struct rb_io_t *fptr;
-  #else
-    struct rb_io *fptr;
-  #endif
-#else
-  struct OpenFile *fptr;
-#endif
+  rb_fptr_t *fptr;
+
   Check_Type($input, T_FILE);
   GetOpenFile($input, fptr);
   /*rb_io_check_writable(fptr);*/
