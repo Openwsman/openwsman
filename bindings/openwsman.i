@@ -109,7 +109,11 @@ SWIGINTERNINLINE SV *SWIG_From_double  SWIG_PERL_DECL_ARGS_1(double value);
 
 %typemap(in) FILE* {
 #if RUBY_VERSION > 18
-  struct rb_io *fptr;
+  #if HAVE_RB_IO_T
+    struct rb_io *fptr;
+  #else
+    struct rb_io_t *fptr;
+  #endif
 #else
   struct OpenFile *fptr;
 #endif
