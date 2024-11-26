@@ -36,7 +36,6 @@ ENDIF(EXPLICIT_SOURCE)
   
 ADD_CUSTOM_COMMAND (
    OUTPUT ${jar_NAME}
-   POST_BUILD
    COMMAND ${CMAKE_COMMAND} -E echo_append "Compiling Java files ..."
    COMMAND ${JAVA_COMPILE} ${java_SOURCE} ${EXPLICIT_SOURCE} ${java_TARGET} ${EXPLICIT_TARGET} -d . *.java
    COMMAND ${CMAKE_COMMAND} -E echo_append "Creating JAR ..."
