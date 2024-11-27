@@ -42,6 +42,7 @@ ENDIF (Python2_FOUND)
 
 # CMake 3.30 and Python 3.11 do not set _STDLIB, _STDARCH, _SITELIB, or _SITEARCH
 
+# CMake + Python not always define proper STD or SITE directories :-/
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
     import sysconfig as sc
