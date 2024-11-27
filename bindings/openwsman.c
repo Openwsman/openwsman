@@ -1,4 +1,7 @@
 #include <u/libu.h>
+
+int facility = LOG_DAEMON;
+
 #include <wsman-debug.h>
 #include "openwsman.h"
 /*-----------------------------------------------------------------*/

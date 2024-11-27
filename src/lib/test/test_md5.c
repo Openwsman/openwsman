@@ -5,6 +5,8 @@
 
 #include <u/libu.h>
 
+int facility = LOG_DAEMON;
+
 int main(int argc, char **argv)
 {
     static const char *const test[7] = {
