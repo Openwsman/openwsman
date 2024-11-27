@@ -206,7 +206,7 @@ IF( BUILD_RUBY )
 ENDIF( BUILD_RUBY )
 
 IF( BUILD_PERL )
-  find_package(Perl)
+  find_package(PerlLibs)
   IF(PERL_EXECUTABLE)
     MESSAGE(STATUS "Building Perl bindings" )
   ELSE(PERL_EXECUTABLE)
