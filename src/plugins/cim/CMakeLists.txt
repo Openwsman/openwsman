@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/cim 
 CHECK_INCLUDE_FILE("CimClientLib/cmci.h" CMCI_FOUND)
 
 IF(NOT CMCI_FOUND)
-  MESSAGE(WARNING "CIM client library not found")
+  MESSAGE(WARNING "CIM client library (CimClientLib/cmci.h) not found")
 ELSE(NOT CMCI_FOUND)
   MESSAGE(STATUS "Building CIM plugin")
 
