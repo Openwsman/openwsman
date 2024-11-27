@@ -52,7 +52,7 @@ static int _debug = 0;
 #define FAILED "\t\t\033[22;31mFAILED\033[m\n"
 #define ENUM_ACTION_RELEASE_REPS		"http://schemas.xmlsoap.org/ws/2004/09/enumeration/ReleaseResponse"
 
-//int facility = LOG_DAEMON;
+int facility = LOG_DAEMON;
 int errors = 0;
 unsigned char optimized_flags;
 

@@ -52,7 +52,7 @@
 
 
 
-//int facility = LOG_DAEMON;
+int facility = LOG_DAEMON;
 int errors = 0;
 char *host = "langley.home.planux.com";
 

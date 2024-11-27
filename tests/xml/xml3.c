@@ -7,6 +7,7 @@
 
 #include "u/libu.h"
 
+int facility = LOG_DAEMON;
 
 #include "wsman-soap.h"
 #include "wsman-xml.h"

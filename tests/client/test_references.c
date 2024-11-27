@@ -18,7 +18,7 @@
 #include "wsman-epr.h"
 #include "wsman-filter.h"
 
-//int facility = LOG_DAEMON;
+int facility = LOG_DAEMON;
 int errors = 0;
 
 typedef struct {

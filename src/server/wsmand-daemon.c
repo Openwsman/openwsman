@@ -63,7 +63,7 @@
 #define DEFAULT_BASIC_AUTH  "libwsman_file_auth.so"
 #endif
 
-//int facility = LOG_DAEMON;
+int facility = LOG_DAEMON;
 
 static const char **wsmand_argv = NULL;
 
