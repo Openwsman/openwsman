@@ -31,8 +31,6 @@ extern int facility;
 /* log hook. if not-zero use this function to write log messages */
 static u_log_hook_t hook = NULL;
 static void *hook_arg = NULL;
-int facility = LOG_DAEMON;
-
 
 #ifdef WIN32
 #define err_type DWORD

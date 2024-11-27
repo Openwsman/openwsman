@@ -49,7 +49,7 @@
 #define INVALID_RURI "wsa:DestinationUnreachablex"
 #define XPATH_V "/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value"
 
-//int facility = LOG_DAEMON;
+int facility = LOG_DAEMON;
 int errors = 0;
 unsigned char optimized_flags;
 

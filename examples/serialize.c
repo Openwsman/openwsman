@@ -40,6 +40,8 @@
 #include <time.h>
 
 #include "u/libu.h"
+int facility = LOG_DAEMON;
+
 #include "wsman-soap.h"
 #include "wsman-xml.h"
 #include "wsman-xml-serializer.h"

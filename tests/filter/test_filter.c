@@ -4,6 +4,8 @@
 #include "wsman-names.h"
 #include "wsman-xml.h"
 
+int facility = LOG_DAEMON;
+
 static void serialize_filter1(void)
 {
 	hash_t *selectors = hash_create(HASHCOUNT_T_MAX, 0, 0);

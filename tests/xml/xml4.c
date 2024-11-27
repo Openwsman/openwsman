@@ -8,6 +8,9 @@
 #include <wsman-api.h>
 #include <wsman-xml.h>
 
+#include "u/libu.h"
+int facility = LOG_DAEMON;
+
 struct __CIM_ComputerSystem {
     unsigned int number;
     char *NameFormat;
