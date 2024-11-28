@@ -36,7 +36,7 @@
 %endif
 
 Name:           openwsman
-BuildRequires:  cmake >= 2.6
+BuildRequires:  cmake >= 3.18
 BuildRequires:  cunit-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libxml2-devel
@@ -431,18 +431,17 @@ cmake \
   -DBUILD_CUNIT_TESTS=on \
   ..
 
-make
+make %{?_smp_mflags}
 
 %install
-cd build
-%make_install
+%cmake_install
 mkdir -p %{buildroot}/%{_docdir}
 # don't copy ruby docs if they don't exist
-[ -d bindings/ruby/html ] && cp -a bindings/ruby/html %{buildroot}/%{_docdir}/openwsman-ruby-docs
-cd ..
+[ -d build/bindings/ruby/html ] && cp -a build/bindings/ruby/html %{buildroot}/%{_docdir}/%{name}-ruby-docs
+
 rm -f %{buildroot}/%{_libdir}/*.la
-rm -f %{buildroot}/%{_libdir}/openwsman/plugins/*.la
-rm -f %{buildroot}/%{_libdir}/openwsman/authenticators/*.la
+rm -f %{buildroot}/%{_libdir}/%{name}/plugins/*.la
+rm -f %{buildroot}/%{_libdir}/%{name}/authenticators/*.la
 [ -d %{buildroot}/%{ruby_sitelib} ] && rm -f %{buildroot}/%{ruby_sitelib}/openwsmanplugin.rb
 [ -d %{buildroot}/%{ruby_vendorlib} ] && rm -f %{buildroot}/%{ruby_vendorlib}/openwsmanplugin.rb
 %if 0%{?has_systemd}
@@ -458,15 +457,15 @@ ln -sf %{_sysconfdir}/init.d/openwsmand %{buildroot}/%{_sbindir}/rcopenwsmand
 mkdir -p %{buildroot}/%{_prefix}/lib/firewalld/services
 install -D -m 644 %{S:5} %{buildroot}/%{_prefix}/lib/firewalld/services/%{name}.xml
 %else
-install -D -m 644 %{S:3} %{buildroot}/%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+install -D -m 644 %{S:3} %{buildroot}/%{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/%{name}
 %endif
-install -m 644 etc/openwsman.conf %{buildroot}/%{_sysconfdir}/openwsman
-install -m 644 etc/openwsman_client.conf %{buildroot}/%{_sysconfdir}/openwsman
-install -m 644 etc/ssleay.cnf %{buildroot}/%{_sysconfdir}/openwsman
-install -m 644 %{pamfile} %{buildroot}/%{_sysconfdir}/pam.d/openwsman
+#install -m 644 etc/%{name}.conf %{buildroot}/%{_sysconfdir}/%{name}
+#install -m 644 etc/openwsman_client.conf %{buildroot}/%{_sysconfdir}/%{name}
+#install -m 644 etc/ssleay.cnf %{buildroot}/%{_sysconfdir}/%{name}
+#install -m 644 %{pamfile} %{buildroot}/%{_sysconfdir}/pam.d/%{name}
 %if 0%{?suse_version} > 1500
 mkdir -p %{buildroot}%{_pam_vendordir}
-mv %{buildroot}/%{_sysconfdir}/pam.d/openwsman %{buildroot}/%{_pam_vendordir}
+mv %{buildroot}/%{_sysconfdir}/pam.d/%{name} %{buildroot}/%{_pam_vendordir}
 %endif
 %if 0%{?rhel_version} == 700
 rm -f %{buildroot}/%{_bindir}/winrs
@@ -486,13 +485,13 @@ fi
 %endif
 %if 0%{?suse_version} > 1500
 # Prepare for migration to /usr/lib; save any old .rpmsave
-for i in pam.d/openwsman ; do
+for i in pam.d/%{name} ; do
      test -f %{_sysconfdir}/${i}.rpmsave && mv -v %{_sysconfdir}/${i}.rpmsave %{_sysconfdir}/${i}.rpmsave.old ||:
 done
 
 %posttrans server
 # Migration to /usr/lib, restore just created .rpmsave
-for i in pam.d/openwsman ; do
+for i in pam.d/%{name} ; do
      test -f %{_sysconfdir}/${i}.rpmsave && mv -v %{_sysconfdir}/${i}.rpmsave %{_sysconfdir}/${i} ||:
 done
 %endif
@@ -553,15 +552,15 @@ rm -f /var/log/wsmand.log
 %doc AUTHORS
 %license COPYING
 %{_libdir}/libwsman_client.so.*
-%dir %{_sysconfdir}/openwsman
-%config(noreplace) %{_sysconfdir}/openwsman/openwsman_client.conf
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/openwsman_client.conf
 
 %files -n libwsman-devel
 %defattr(-,root,root)
 %{_includedir}/*
 %{_libdir}/pkgconfig/*
 %{_libdir}/*.so
-%exclude %{_includedir}/openwsman/cpp/*.h
+%exclude %{_includedir}/%{name}/cpp/*.h
 %exclude %{_libdir}/libwsman_clientpp.so
 
 %if 0%{?want_python3}
@@ -583,26 +582,26 @@ rm -f /var/log/wsmand.log
 %defattr(-,root,root)
 %if 0%{?mandriva_version}
 %{ruby_sitearchdir}/_openwsman.so
-%dir %{ruby_sitelibdir}/openwsman
+%dir %{ruby_sitelibdir}/%{name}
 %{ruby_sitelibdir}/openwsman.rb
-%{ruby_sitelibdir}/openwsman/*.rb
+%{ruby_sitelibdir}/%{name}/*.rb
 %else
 %{ruby_sitearch}/_openwsman.so
-%dir %{ruby_sitelib}/openwsman
+%dir %{ruby_sitelib}/%{name}
 %{ruby_sitelib}/openwsman.rb
-%{ruby_sitelib}/openwsman/*.rb
+%{ruby_sitelib}/%{name}/*.rb
 %endif
 
 %files ruby-docs
 %defattr(-,root,root)
-%dir %{_docdir}/openwsman-ruby-docs
-%{_docdir}/openwsman-ruby-docs
+%dir %{_docdir}/%{name}-ruby-docs
+%{_docdir}/%{name}-ruby-docs
 %endif # not rhel-7
 
 %files perl
 %defattr(-,root,root)
-%{perl_vendorarch}/openwsman.so
-%{perl_vendorlib}/openwsman.pm
+%{perl_vendorarch}/%{name}.so
+%{perl_vendorlib}/%{name}.pm
 
 %if 0%{?suse_version} == 0 || 0%{?suse_version} >= 1100
 
@@ -613,21 +612,21 @@ rm -f /var/log/wsmand.log
 
 %files server
 %defattr(-,root,root)
-%dir %{_sysconfdir}/openwsman
-%config(noreplace) %{_sysconfdir}/openwsman/openwsman.conf
-%config(noreplace) %{_sysconfdir}/openwsman/ssleay.cnf
-%attr(0755,root,root) %{_sysconfdir}/openwsman/owsmangencert.sh
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
+%config(noreplace) %{_sysconfdir}/%{name}/ssleay.cnf
+%attr(0755,root,root) %{_sysconfdir}/%{name}/owsmangencert.sh
 %if 0%{?suse_version} > 1500
-%{_pam_vendordir}/openwsman
+%{_pam_vendordir}/%{name}
 %else
-%config %{_sysconfdir}/pam.d/openwsman
+%config %{_sysconfdir}/pam.d/%{name}
 %endif
 %if 0%{?has_firewalld}
 %dir %{_prefix}/lib/firewalld
 %dir %{_prefix}/lib/firewalld/services
 %{_prefix}/lib/firewalld/services/%{name}.xml
 %else
-%config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/openwsman
+%config %{_sysconfdir}/sysconfig/SuSEfirewall2.d/services/%{name}
 %endif
 %if 0%{?has_systemd}
 %{_unitdir}/%{name}.service
@@ -636,14 +635,14 @@ rm -f /var/log/wsmand.log
 %attr(0755,root,root) %{_sysconfdir}/init.d/openwsmand
 %{_sbindir}/rc%{name}d
 %endif
-%dir %{_libdir}/openwsman
-%dir %{_libdir}/openwsman/authenticators
-%{_libdir}/openwsman/authenticators/*.so
-%{_libdir}/openwsman/authenticators/*.so.*
-%dir %{_libdir}/openwsman/plugins
-%{_libdir}/openwsman/plugins/*.so
-%{_libdir}/openwsman/plugins/*.so.*
-%exclude %{_libdir}/openwsman/plugins/*ruby*.so*
+%dir %{_libdir}/%{name}
+%dir %{_libdir}/%{name}/authenticators
+%{_libdir}/%{name}/authenticators/*.so
+%{_libdir}/%{name}/authenticators/*.so.*
+%dir %{_libdir}/%{name}/plugins
+%{_libdir}/%{name}/plugins/*.so
+%{_libdir}/%{name}/plugins/*.so.*
+%exclude %{_libdir}/%{name}/plugins/*ruby*.so*
 %{_sbindir}/openwsmand
 %{_libdir}/libwsman_server.so.*
 
@@ -651,7 +650,7 @@ rm -f /var/log/wsmand.log
 %if 0%{?rhel_version} != 700
 %files server-plugin-ruby
 %defattr(-,root,root)
-%{_libdir}/openwsman/plugins/*ruby*.so
+%{_libdir}/%{name}/plugins/*ruby*.so
 %endif
 
 %files -n libwsman_clientpp1
@@ -661,8 +660,8 @@ rm -f /var/log/wsmand.log
 %files -n libwsman_clientpp-devel
 %defattr(-,root,root)
 %{_libdir}/libwsman_clientpp.so
-%dir %{_includedir}/openwsman/cpp
-%{_includedir}/openwsman/cpp/*.h
+%dir %{_includedir}/%{name}/cpp
+%{_includedir}/%{name}/cpp/*.h
 
 # RHEL7 does not have ruby-devel
 %if 0%{?rhel_version} != 700
