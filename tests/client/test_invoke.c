@@ -171,7 +171,9 @@ int main(int argc, char** argv)
 
     for (i = 0; i < ntests; i++) {
         printf ("Test %3d: %s ", i + 1, tests[i].explanation);
-        tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
+        if (tests[i].selectors != NULL) {
+          tests[i].selectors = u_strdup_printf(tests[i].selectors, host, host, host);
+        }
 
         cl = wsmc_create(sd[0].server,
                                  sd[0].port,
