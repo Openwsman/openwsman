@@ -8,10 +8,6 @@
 # and the .py file gets imported. See bindings/python/tests.
 #
 
-enable_testing()
-
-add_subdirectory(tests)
-
 IF( BUILD_PYTHON3 )
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 ELSEIF( BUILD_PYTHON2 )
@@ -39,6 +35,8 @@ SET(PYTHON_SITEARCH ${Python3_SITEARCH})
 ELSE (Python3_FOUND)
   MESSAGE(STATUS "No Python found")
 ENDIF (Python2_FOUND)
+
+add_subdirectory(tests)
 
 # CMake 3.30 and Python 3.11 do not set _STDLIB, _STDARCH, _SITELIB, or _SITEARCH
 

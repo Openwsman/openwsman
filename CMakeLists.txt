@@ -253,6 +253,7 @@ ENDIF( BUILD_BINDINGS )
 
 IF ( NOT SWIG_EXECUTABLE )
   MESSAGE( STATUS "SWIG not found, skipping bindings and swig server plugin." )
+  SET(BUILD_BINDINGS FALSE)
   IF (BUILD_SWIG_PLUGIN_EXPLICIT)
     MESSAGE( FATAL "Cannot build SWIG server plugin" )
   ENDIF (BUILD_SWIG_PLUGIN_EXPLICIT)
@@ -262,7 +263,6 @@ IF ( NOT SWIG_EXECUTABLE )
   ENDIF( BUILD_PYTHON3_EXPLICIT OR BUILD_PYTHON_EXPLICIT OR BUILD_RUBY_EXPLICIT OR BUILD_PERL_EXPLICIT OR BUILD_JAVA_EXPLICIT)
 ELSE ( NOT SWIG_EXECUTABLE )
   MESSAGE( STATUS "SWIG ${SWIG_VERSION} found at ${SWIG_EXECUTABLE}" )
-  ADD_SUBDIRECTORY(bindings)
 ENDIF ( NOT SWIG_EXECUTABLE )
 
 # curl
@@ -544,6 +544,10 @@ add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(doc)
 add_subdirectory(etc)
+
+IF(BUILD_BINDINGS)
+  add_subdirectory(bindings)
+ENDIF(BUILD_BINDINGS)
 
 IF ( BUILD_TESTS )
 add_subdirectory(tests)
