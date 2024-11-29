@@ -1,3 +1,25 @@
+2.8.0
+- API change
+  - 'int facility' must be defined in all executables using u/log
+- Features
+  - support TLS v1.3
+  - support CMake 3 for building
+  - builds on MacOS now (kkaempf)
+  - add Python 3.11 support (Joshua Kugler)
+- Bugfixes
+  - fix Ruby rb_io vs rb_io_t to support Ruby 3.x (Vitezslav Crhonek, kkaempf)
+  - Fixed missing void in prototypes causing compile errors when
+    using -Wstrict-prototypes (Olaf Trygve Berglihn)
+  - Removed unused token lineno causing errors due to compile
+    flag -Wunused (Olaf Trygve Berglihn)
+  - Link with libm for floor() function (Khem Raj)
+  - Added wsman-key-value.h to list of headers to install (Olaf Trygve Berglihn)
+  - wsman-win-client-transport: add SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE,
+    Ignore more problematic certificates if verify_peer is 0. (Alexander Usyskin)
+  - unlock mutex before destroy (kkaempf)
+  - fix many compiler warnings (Alexander Usyskin)
+  - drop Python 3.7 support (kkaempf)
+
 2.7.2
 - Security
   - call setgroups before setuid or setgid (kkaempf)
