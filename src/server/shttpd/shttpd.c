@@ -1542,6 +1542,9 @@ set_ssl(struct shttpd_ctx *ctx, const char *pem)
 # if OPENSSL_VERSION_NUMBER >= 0x10001000L
 			{ "TLSv1_1", SSL_OP_NO_TLSv1_1 },
 			{ "TLSv1_2", SSL_OP_NO_TLSv1_2 },
+# if OPENSSL_VERSION_NUMBER >= 0x10100000L
+			{ "TLSv1_3", SSL_OP_NO_TLSv1_3 },
+# endif
 # endif
 			{ NULL, 0 }
 		};
