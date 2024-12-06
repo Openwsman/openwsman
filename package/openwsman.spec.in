@@ -36,7 +36,7 @@
 %endif
 
 Name:           openwsman
-BuildRequires:  cmake >= 3.18
+BuildRequires:  cmake >= 3.27
 BuildRequires:  cunit-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libxml2-devel
