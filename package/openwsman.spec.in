@@ -68,7 +68,7 @@ BuildRequires:  java-devel
 %endif
 %endif
 
-BuildRequires:  openssl-devel
+BuildRequires:  openssl-3-devel
 BuildRequires:  pkgconfig
 BuildRequires:  ruby
 
