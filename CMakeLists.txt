@@ -23,8 +23,10 @@ if(COMMAND cmake_policy)
   if ( POLICY CMP0046 )
     cmake_policy(SET CMP0046 NEW)
   endif ( POLICY CMP0046 )
-  # new find python commands
-  cmake_policy(SET CMP0148 NEW)
+  if ( POLICY CMP0148 )
+    # new find python commands
+    cmake_policy(SET CMP0148 NEW)
+  endif ( POLICY CMP0148 )
 endif(COMMAND cmake_policy)
 	      
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
