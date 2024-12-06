@@ -3,7 +3,7 @@
   - 'int facility' must be defined in all executables using u/log
 - Features
   - support TLS v1.3
-  - support CMake 3 for building
+  - use CMake 3.27 or later for building
   - builds on MacOS now (kkaempf)
   - add Python 3.11 support (Joshua Kugler)
 - Bugfixes
