@@ -3,8 +3,8 @@
 #
 # 2.6 minimum because of CMP0005 (escaping defines)
 # 2.8.12 minimum because CMake 3.19.7 says so
-# 3.27 for new find python commands
-cmake_minimum_required(VERSION 3.27)
+# 3.12 for new find python commands
+cmake_minimum_required(VERSION 3.12)
 
 
 PROJECT(openwsman)
