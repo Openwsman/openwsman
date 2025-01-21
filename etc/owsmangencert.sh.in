@@ -29,7 +29,7 @@ echo
 
 #export RANDFILE=/dev/random
 cat <<EOF  |openssl req -days 365 $@ -config $CNFFILE \
-  -new -x509 -nodes -out $CERTFILE \
+  -newkey rsa:2048 -x509 -nodes -out $CERTFILE \
   -keyout $KEYFILE
 --
 SomeState

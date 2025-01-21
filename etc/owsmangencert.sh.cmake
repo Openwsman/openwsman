@@ -26,7 +26,7 @@ echo
 # certificate is created
 
 openssl req -days 365 $@ -config $CNFFILE \
-  -new -x509 -nodes -out $CERTFILE \
+  -newkey rsa:2048 -x509 -nodes -out $CERTFILE \
   -keyout $KEYFILE
 chmod 600 $KEYFILE
 
