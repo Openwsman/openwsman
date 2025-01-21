@@ -106,6 +106,9 @@ BuildRequires:  java-devel
 #BuildRequires:  update-alternatives
 #%%endif
 
+%if 0%{?suse_version} > 1500
+BuildRequires:  strip-nondeterminism
+%endif
 %if 0%{?suse_version} > 1010
 BuildRequires:  fdupes
 BuildRequires:  libcurl-devel
@@ -466,6 +469,8 @@ install -D -m 644 %{S:3} %{buildroot}/%{_sysconfdir}/sysconfig/SuSEfirewall2.d/s
 %if 0%{?suse_version} > 1500
 mkdir -p %{buildroot}%{_pam_vendordir}
 mv %{buildroot}/%{_sysconfdir}/pam.d/%{name} %{buildroot}/%{_pam_vendordir}
+# for reproducible build:
+strip-nondeterminism %{buildroot}/%{_javadir}/*jar
 %endif
 %if 0%{?rhel_version} == 700
 rm -f %{buildroot}/%{_bindir}/winrs
