@@ -56,6 +56,14 @@ localhost:
   username: wsman
   password: secret
 
+localhosts:
+  scheme: https
+  host: localhost
+  port: 5986
+  path: /wsman
+  username: wsman
+  password: secret
+
 heron:
   scheme: http
   host: heron.suse.de
