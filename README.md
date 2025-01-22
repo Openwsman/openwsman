@@ -17,7 +17,7 @@ Most likely you will need to install some of the packages, depending
 on the distribution you are running.
 
 Pre-build (RPM) packages for many distributions are available at
-[the openSUSE build service](https://build.opensuse.org/project/show?project=Openwsman)
+[the openSUSE build service](https://build.opensuse.org/package/show/systemsmanagement:wbem/openwsman)
 
 
 ## Packages and other software needed:
@@ -34,16 +34,31 @@ as well. This the help output when you run:
 
     /usr/sbin/openwsmand --help
     Usage:
-    openwsmand [OPTION...] WS-Management Server
+      openwsmand [Option...] WS-Management Server
+  
+    Help Options
+      -?, --help
+    
+    Application Options
+      -S, --ssl                                       Use SSL port
+      -q, --version                                   Display application version
+      -d, --debug                                     Start daemon in foreground and turn on debugging
+      -s, --syslog=0-6                                Set the verbosity of syslog output.
+      -e, --enum-idle-timeout=default 100             Enumeration Idle timeout in secs
+      -c, --config-file=<file>                        Alternate configuration file
+      -p, --pid-file=<file>                           PID file
+      -r, --subscription-repository-location=<uri>    Subscription Repository Location
+      -a, --auth-dir=<directory>                      Authentication plugin dir (testing)
+      -b, --basic-password-file=<file>                Basic password file (testing)
+      -P, --plugin-dir=<directory>                    Dispatcher plugins directory (testing)
 
-    Help Options:
-     -?, --help                   Show help options
+### Running with SSL enabled
 
-    Application Options:
-     -n, --no-plugins             Do not load any plugins
-     -d, --debug                  Start daemon in foreground and turn on debugging
-     -s, --syslog=0-6             Set the verbosity of syslog output.
-     -c, --config-file=<file>     Alternate configuration file
+openwsmand requires a certificate when running in SSL mode (`-S` option).
+This can be created by running the `owsmangencert.sh` script available
+in `./etc` (after build) resp. `/etc/openwsman` (after install).
+
+## Configuration file
 
 Starting from version 0.1.1 a configuration file is needed. you can
 find an example in the `./etc` directory. The configuration file has the
@@ -80,9 +95,7 @@ following syntax:
     # The following are in part fake namespaces for some publicly available CIM implementations.
     vendor_namespaces = OpenWBEM=http://schema.openwbem.org/wbem/wscim/1/cim-schema/2,Linux=http://sblim.sf.net/wbem/wscim/1/cim-schema/2,OMC=http://schema.omc-project.org/wbem/wscim/1/cim-schema/2,Reef=http://reef.sblim.sf.net/wbem/wscim/1/cim-schema/2,CWS=http://cws.sblim.sf.net/wbem/wscim/1/cim-schema/2
 
-
-To run in SSL mode you need to enable the SSL port and create certificates and adapt the configuration
-with the correct path to the files.
+## Running openwsman server
 
 To start the server in the foreground, run:
 
@@ -90,7 +103,9 @@ To start the server in the foreground, run:
 
 You can also specify the configuration file to be used on the command line using the -c option.
 
-On the client side, which has the following options
+## Running openwsman client
+
+`wsman` is the client command line tool for executing WSMAN requests against the openwsman server:
 
     /usr/bin/wsman --help-all
 
