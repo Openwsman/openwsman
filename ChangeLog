@@ -1,3 +1,11 @@
+2.8.1
+- Bugfixes
+  - openssl 3 requires minimal key length of 2048 bits
+  - improve error reporting for openssl errors
+  - update README.md
+  - revert minimal cmake to 3.12 (Alexander Usyskin)
+  - fix .spec file for reproducible build (Bernhard Wiedemann)
+
 2.8.0
 - API change
   - 'int facility' must be defined in all executables using u/log
