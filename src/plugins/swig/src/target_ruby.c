@@ -49,7 +49,7 @@
  */
 
 static VALUE
-load_module()
+load_module(VALUE)
 {
   ruby_script(PLUGIN_FILE);
   return rb_require(PLUGIN_FILE);
